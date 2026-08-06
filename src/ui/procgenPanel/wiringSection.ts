@@ -2,6 +2,8 @@ import type { InputSpec } from '../../procgen/nodeType';
 import type { NodeInstance } from '../../procgen/pipeline/pipelineState';
 import type { PipelineStore } from '../../procgen/pipeline/pipelineStore';
 import { wiringCandidates } from '../../procgen/pipeline/wiringRules';
+import { attachTooltip } from '../tooltips/floatingTooltip';
+import { wiringTooltip } from './help/wiringTooltip';
 import { labeledRow, selectInput } from './rowElements';
 
 const UNWIRED = '';
@@ -19,6 +21,7 @@ export function wiringRow(
   );
   const row = labeledRow(`← ${spec.label}`, select);
   if (!spec.optional && !node.inputs[inputName]) row.classList.add('wire-missing');
+  attachTooltip(row, wiringTooltip(spec));
   return row;
 }
 

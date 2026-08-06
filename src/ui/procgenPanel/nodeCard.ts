@@ -3,6 +3,7 @@ import { outputKindOf } from '../../procgen/nodeType';
 import type { NodeInstance } from '../../procgen/pipeline/pipelineState';
 import { displaySection } from './displaySection';
 import { nodeCardHeader } from './nodeCardHeader';
+import { nodeCommentRow } from './nodeCommentRow';
 import type { PanelDeps } from './panelDeps';
 import { paramRow } from './paramRows';
 import { wiringRow } from './wiringSection';
@@ -19,6 +20,7 @@ export function nodeCard(deps: PanelDeps, node: NodeInstance): HTMLElement {
   }
   card.append(
     nodeCardHeader(deps.store, node, def.title),
+    nodeCommentRow(deps.store, node),
     errorNote(node.id),
     ...wiringRows(deps, node),
     ...paramRowsFor(deps, node),

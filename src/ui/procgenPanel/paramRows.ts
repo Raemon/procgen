@@ -1,5 +1,7 @@
 import type { ParamSpec, ParamValue } from '../../procgen/nodeType';
 import type { Tileset } from '../../world/tiles/tileset';
+import { attachTooltip } from '../tooltips/floatingTooltip';
+import { paramTooltip } from './help/paramTooltip';
 import { formatNumber, labeledRow, rangeInput, selectInput, valueReadout } from './rowElements';
 import { tileSelectOptions } from './tileSelectOptions';
 
@@ -10,12 +12,18 @@ export interface ParamRowDeps {
 }
 
 export function paramRow(spec: ParamSpec, deps: ParamRowDeps): HTMLElement {
+  const row = paramControl(spec, deps);
+  if (spec.kind !== 'code') attachTooltip(row, paramTooltip(spec));
+  return row;
+}
+
+function paramControl(spec: ParamSpec, deps: ParamRowDeps): HTMLElement {
   if (spec.kind === 'number') return sliderRow(spec.label, spec.min, spec.max, spec.step, deps);
   if (spec.kind === 'int') return sliderRow(spec.label, spec.min, spec.max, 1, deps);
   if (spec.kind === 'boolean') return checkboxRow(spec.label, deps);
   if (spec.kind === 'select') return selectRow(spec.label, spec.options, deps);
   if (spec.kind === 'tile') return tileRow(spec.label, deps);
-  if (spec.kind === 'code') return codeRow(deps);
+  if (spec.kind === 'code') return codeRow(spec, deps);
   return textRow(spec.label, deps);
 }
 
@@ -67,11 +75,13 @@ function textRow(label: string, deps: ParamRowDeps): HTMLElement {
   return labeledRow(label, input);
 }
 
-function codeRow(deps: ParamRowDeps): HTMLElement {
+function codeRow(spec: ParamSpec, deps: ParamRowDeps): HTMLElement {
   const wrap = document.createElement('div');
   wrap.className = 'code-param';
   const editor = codeEditor(String(deps.value));
-  wrap.append(editor, applyCodeButton(editor, deps));
+  const apply = applyCodeButton(editor, deps);
+  attachTooltip(apply, paramTooltip(spec));
+  wrap.append(editor, apply);
   return wrap;
 }
 

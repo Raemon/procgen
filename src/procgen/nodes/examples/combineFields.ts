@@ -11,13 +11,34 @@ registerNodeType({
   title: 'combine fields',
   category: 'examples',
   description: 'Cell-by-cell math on two upstream fields.',
+  whenToUse:
+    'Shaping terrain out of ingredients: multiply a noise by a mask to confine it, add bumps onto a base, or max two shapes together into one landmass.',
   inputs: {
-    a: { kind: 'field', label: 'a' },
-    b: { kind: 'field', label: 'b' },
+    a: { kind: 'field', label: 'a', help: 'First operand — the field being shaped.' },
+    b: { kind: 'field', label: 'b', help: 'Second operand — the field doing the shaping (mask, bumps, bias).' },
   },
   params: {
-    operation: { kind: 'select', label: 'operation', options: OPERATIONS, default: 'add' },
-    clamp: { kind: 'boolean', label: 'clamp to 0..1', default: true },
+    operation: {
+      kind: 'select',
+      label: 'operation',
+      help: 'How each pair of cells is merged into one value.',
+      options: OPERATIONS,
+      optionHelp: {
+        add: 'a + b. Raises a by b — stack bumps onto a base.',
+        subtract: 'a − b. Carves b out of a.',
+        multiply: 'a × b. Acts as masking: wherever b is 0, the result is 0.',
+        min: 'Lower of the two. Intersection-like: keeps only what both fields allow.',
+        max: 'Higher of the two. Union-like: merges the raised areas of both.',
+        average: '(a + b) / 2. A soft 50/50 blend.',
+      },
+      default: 'add',
+    },
+    clamp: {
+      kind: 'boolean',
+      label: 'clamp to 0..1',
+      help: 'Keep results inside 0..1 so downstream thresholds and elevation behave predictably.',
+      default: true,
+    },
   },
   output: 'field',
   generateChunk: combineChunk,

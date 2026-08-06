@@ -77,6 +77,34 @@ function tileIdsInRegion(sampler: WorldSampler, span: number): Set<number> {
 
 check('node registry has example and custom nodes', allNodeTypes().length >= 6);
 check(
+  'every node type explains what it does and when to use it',
+  allNodeTypes().every((def) => def.description.length > 0 && def.whenToUse.length > 0),
+);
+check(
+  'every param and input carries help text for its tooltip',
+  allNodeTypes().every(
+    (def) =>
+      Object.values(def.params).every((spec) => spec.help.length > 0) &&
+      Object.values(def.inputs).every((spec) => spec.help.length > 0),
+  ),
+);
+check(
+  'every select param explains each of its options',
+  allNodeTypes().every((def) =>
+    Object.values(def.params).every(
+      (spec) => spec.kind !== 'select' || spec.options.every((option) => (spec.optionHelp[option] ?? '').length > 0),
+    ),
+  ),
+);
+check(
+  'every example pipeline describes itself and comments every node',
+  examplePipelines().every(
+    (example) =>
+      example.description.length > 0 &&
+      sanitizePipeline(example.state).nodes.every((node) => node.comment.length > 0),
+  ),
+);
+check(
   'every node type declares a resolvable output kind',
   allNodeTypes().every((def) =>
     ['field', 'tiles', 'points'].includes(outputKindOf(def, defaultParams(def))),
@@ -176,6 +204,10 @@ check('broken script surfaces an error and yields an empty layer', broken.evalua
 
 const roundtrip = sanitizePipeline(JSON.parse(JSON.stringify(islandsState())));
 check('pipeline serialization roundtrips', JSON.stringify(roundtrip) === JSON.stringify(islandsState()));
+check(
+  'node comments survive sanitize and serialization',
+  roundtrip.nodes.every((node, i) => node.comment === islandsState().nodes[i]!.comment),
+);
 
 const withUnknown = sanitizePipeline({
   seed: 1,

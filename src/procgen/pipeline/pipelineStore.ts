@@ -80,6 +80,12 @@ export class PipelineStore {
     });
   }
 
+  setComment(nodeId: string, comment: string): void {
+    this.updateNode(nodeId, 'values', (node) => {
+      node.comment = comment;
+    });
+  }
+
   setParam(nodeId: string, name: string, value: ParamValue): void {
     const node = this.nodeById(nodeId);
     const def = node && nodeTypeOf(node.type);

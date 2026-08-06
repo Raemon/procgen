@@ -39,13 +39,14 @@ registerNodeType({
   type: 'myNode',            // unique id, stored in saved pipelines
   title: 'my node',          // shown in the panel
   category: 'terrain',       // grouping in the add-node menu (any string)
-  description: 'What it does — shown as the add-menu tooltip.',
+  description: 'What it does — first line of the add-menu tooltip.',
+  whenToUse: 'When/why to reach for it — the tooltip\'s "when to use" line.',
   inputs: {
-    source: { kind: 'field', label: 'source' },              // required
-    mask: { kind: 'field', label: 'mask', optional: true },  // optional
+    source: { kind: 'field', label: 'source', help: 'Tooltip for the wiring row.' },
+    mask: { kind: 'field', label: 'mask', help: 'Optional inputs say what unwired means.', optional: true },
   },
   params: {
-    strength: { kind: 'number', label: 'strength', min: 0, max: 1, step: 0.01, default: 0.5 },
+    strength: { kind: 'number', label: 'strength', help: 'Tooltip for the param row.', min: 0, max: 1, step: 0.01, default: 0.5 },
   },
   output: 'field',
   generateChunk(ctx) {
@@ -112,10 +113,17 @@ in the panel.
 | `number`  | number   | slider (`min`, `max`, `step`, `default`) |
 | `int`     | number   | slider, step 1   |
 | `boolean` | boolean  | checkbox         |
-| `select`  | string   | dropdown (`options`, `default`) |
+| `select`  | string   | dropdown (`options`, `optionHelp`, `default`) |
 | `tile`    | tile id  | dropdown of the tileset (+ empty = -1) |
 | `text`    | string   | text input       |
 | `code`    | string   | code editor with apply button |
+
+Every param and input spec carries a required `help` string, and every
+`select` an `optionHelp` record explaining each option — the panel renders
+these as hover tooltips, and `npm run check` fails on empty ones. Nodes placed
+in the panel also have a free-form per-instance `comment` field (the italic
+notes row on the card) for recording why that node is set up the way it is;
+it is saved with the pipeline and never affects generation or caching.
 
 ## Display bindings
 
@@ -157,4 +165,6 @@ polyline paths or region graphs):
 `src/procgen/presets/examplePipelines.ts` holds the presets in the panel's
 *examples* dropdown. They are plain serialized pipelines built only from the
 example nodes — read them to see how primitives compose into something bigger,
-and add your own the same way.
+and add your own the same way. Each example has a `description` (shown in the
+dropdown's tooltip) and a `comment` on every node explaining why it is built
+that way; `npm run check` requires both.
