@@ -27,7 +27,7 @@ import { PanOffset } from '../src/views/camera/panOffset';
 import { ZoomScale } from '../src/views/camera/zoomScale';
 import { cellPixelsFor, MAX_CELL_PX, MIN_CELL_PX } from '../src/views/ascii/asciiCellPixels';
 import { viewportCoveringCanvas } from '../src/views/ascii/asciiViewport';
-import { recenterViewsWhenPlayerMoves } from '../src/views/camera/recenterOnPlayerMove';
+import { WorldRenderers, type WorldRenderer } from '../src/app/worldRenderers';
 import { worldPanForDrag } from '../src/views/view3d/dragToWorldPan';
 import { streamingRadiusChunks } from '../src/views/view3d/streamingRadius';
 import { markerPlacementsForRect } from '../src/views/view3d/markerPlacements';
@@ -851,12 +851,22 @@ check(
   restored !== null && restored.nodes[0]!.params.scale !== 0.29 && historyStates.canUndo(),
 );
 
+function recenteringRenderer(recenterOnPlayer: () => void): WorldRenderer {
+  return { redraw: () => {}, recenterOnPlayer };
+}
+
+function recenterViewsWhenPlayerMoves(world: World, views: WorldRenderer[]): void {
+  const renderers = new WorldRenderers();
+  for (const view of views) renderers.add(view);
+  world.on('player-moved', () => renderers.recenterAll());
+}
+
 const pannedViews = [new PanOffset(), new PanOffset()];
 pannedViews.forEach((offset) => offset.shiftBy(40, -25));
 const walkableWorld = new World(() => true);
 recenterViewsWhenPlayerMoves(
   walkableWorld,
-  pannedViews.map((offset) => ({ recenterOnPlayer: () => void offset.recenter() })),
+  pannedViews.map((offset) => recenteringRenderer(() => void offset.recenter())),
 );
 check(
   'panning still holds before the player moves',
@@ -872,7 +882,7 @@ const walledWorld = new World(() => false);
 const walledViewPan = new PanOffset();
 walledViewPan.shiftBy(40, -25);
 recenterViewsWhenPlayerMoves(walledWorld, [
-  { recenterOnPlayer: () => void walledViewPan.recenter() },
+  recenteringRenderer(() => void walledViewPan.recenter()),
 ]);
 walledWorld.tryStep(1, 0);
 check('a blocked step leaves the camera where the player put it', walledViewPan.tilesX() === 40);

@@ -1,12 +1,14 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
 import { defineConfig, type Connect, type ViteDevServer } from 'vite';
 
 const DATA_DIR = 'data';
 const PERSISTED_FILES = ['pipeline', 'tileset'];
 
 export default defineConfig({
-  plugins: [persistToRepoFiles()],
+  plugins: [react(), tailwindcss(), persistToRepoFiles()],
 });
 
 function persistToRepoFiles() {

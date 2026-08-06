@@ -1,5 +1,5 @@
 import type { NodeTypeDef } from '../../../procgen/nodeType';
-import type { TooltipContent } from '../../tooltips/tooltipContentElements';
+import type { TooltipContent } from '../../tooltips/tooltipContent';
 
 export function nodeTypeTooltip(def: NodeTypeDef): TooltipContent {
   return {

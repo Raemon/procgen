@@ -5,6 +5,7 @@ import type { World } from '../../world/world';
 import { listenForDragPan } from '../camera/dragPanListener';
 import { listenForWheelZoom } from '../camera/wheelZoomListener';
 import { containerSize, devicePixelRatioCapped, isCollapsed } from '../canvasSurface';
+import { WORLD_CANVAS_CLASSES } from '../worldCanvasClasses';
 import { ChunkMeshStreamer } from './chunkMeshStreamer';
 import { createDaylitScene, createPlayerMesh } from './daylitScene';
 import { FollowCamera } from './followCamera';
@@ -33,7 +34,7 @@ export class View3D {
     tileset: Tileset,
   ) {
     this.canvas = this.renderer.domElement;
-    this.canvas.className = 'view3d-canvas pannable';
+    this.canvas.className = WORLD_CANVAS_CLASSES;
     container.appendChild(this.canvas);
     this.scene.add(this.worldGroup, this.player);
     this.streamer = new ChunkMeshStreamer(this.worldGroup, this.sampler, tileset);

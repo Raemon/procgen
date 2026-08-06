@@ -1,5 +1,5 @@
 import type { InputSpec } from '../../../procgen/nodeType';
-import type { TooltipContent, TooltipOption } from '../../tooltips/tooltipContentElements';
+import type { TooltipContent, TooltipOption } from '../../tooltips/tooltipContent';
 
 export function wiringTooltip(spec: InputSpec): TooltipContent {
   return {
