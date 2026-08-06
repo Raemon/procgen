@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { AgentLogPanel } from '../agent/ui/AgentLogPanel';
+import { AgentsPanel } from '../agent/ui/AgentsPanel';
 import { ProcgenPanel } from '../ui/procgenPanel/ProcgenPanel';
 import { TileEditorPanel } from '../ui/tileEditor/TileEditorPanel';
 import { FloatingTooltip } from '../ui/tooltips/FloatingTooltip';
@@ -8,6 +11,7 @@ import { usePanelWidths } from './usePanelWidths';
 
 export function App() {
   const { widths, gridTemplateColumns, resizePanel } = usePanelWidths();
+  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   return (
     <>
       <div className="grid h-full" style={{ gridTemplateColumns }}>
@@ -19,6 +23,14 @@ export function App() {
           <ProcgenPanel />
         </Panel>
         <PanelResizer width={widths[1]!} onResize={(width) => resizePanel(1, width)} />
+        <Panel className="bg-panel">
+          <AgentsPanel selectedId={selectedAgentId} onSelect={setSelectedAgentId} />
+        </Panel>
+        <PanelResizer width={widths[2]!} onResize={(width) => resizePanel(2, width)} />
+        <Panel className="bg-procgen">
+          <AgentLogPanel selectedId={selectedAgentId} />
+        </Panel>
+        <PanelResizer width={widths[3]!} onResize={(width) => resizePanel(3, width)} />
         <WorldPanel />
       </div>
       <FloatingTooltip />

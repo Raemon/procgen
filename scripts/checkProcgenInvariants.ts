@@ -53,6 +53,19 @@ import { defaultTiles } from '../src/world/tiles/defaultTiles';
 import { Tileset } from '../src/world/tiles/tileset';
 import { isWalkableTile } from '../src/world/tileWalkability';
 import { World } from '../src/world/world';
+import { applyAction } from '../src/agent/actions';
+import { buildApiDocs } from '../src/agent/apiDocs';
+import { ALL_VERBS } from '../src/agent/controls';
+import { FAILURES } from '../src/agent/failures';
+import {
+  buildObservation,
+  CHARACTER_VIEW_SIZE,
+  GOD_VIEW_SIZE,
+  SELF_GLYPH,
+} from '../src/agent/observation';
+import { observationText } from '../src/agent/observationText';
+import { facingRelativeStep } from '../src/input/facingRelativeStep';
+import { isInFrontHalfPlane, turnedFacing, type FacingIndex } from '../src/world/facing';
 
 const failures: string[] = [];
 const tileset = new Tileset();
@@ -1113,6 +1126,90 @@ check(
   [0, 1, 2, 4].every((tile) => tileIdsInRegion(earthlike.sampler, 96).has(tile)),
 );
 
+
+const agentWorld = worldFromState(islandsState());
+const godObs = buildObservation(agentWorld.sampler, tileset, { x: 0, y: 0, facing: 0 }, 'god');
+check('god observation grid is GOD_VIEW_SIZE² with @ at the center', (() => {
+  const center = Math.floor(GOD_VIEW_SIZE / 2);
+  return (
+    godObs.view.length === GOD_VIEW_SIZE &&
+    godObs.view.every((row) => row.length === GOD_VIEW_SIZE) &&
+    godObs.view[center]![center] === SELF_GLYPH
+  );
+})());
+check('god observation states its facing', godObs.facing === 'north');
+
+const charObs = buildObservation(agentWorld.sampler, tileset, { x: 0, y: 0, facing: 0 }, 'character');
+check('character observation never states a facing', charObs.facing === null);
+check('character observation blanks everything behind the agent', (() => {
+  const center = Math.floor(CHARACTER_VIEW_SIZE / 2);
+  for (let row = 0; row < CHARACTER_VIEW_SIZE; row++) {
+    for (let column = 0; column < CHARACTER_VIEW_SIZE; column++) {
+      const behind = !isInFrontHalfPlane(0, column - center, row - center);
+      const isSelf = row === center && column === center;
+      if (behind && !isSelf && charObs.view[row]![column] !== ' ') return false;
+    }
+  }
+  return true;
+})());
+check('every facing rotates the blank half of the character view', (() => {
+  const center = Math.floor(CHARACTER_VIEW_SIZE / 2);
+  const views = new Set<string>();
+  for (let facing = 0; facing < 8; facing++) {
+    const obs = buildObservation(
+      agentWorld.sampler,
+      tileset,
+      { x: 0, y: 0, facing: facing as FacingIndex },
+      'character',
+    );
+    views.add(obs.view.join('\n'));
+    for (let row = 0; row < CHARACTER_VIEW_SIZE; row++) {
+      for (let column = 0; column < CHARACTER_VIEW_SIZE; column++) {
+        const inFront = isInFrontHalfPlane(facing as FacingIndex, column - center, row - center);
+        if (!inFront && !(row === center && column === center) && obs.view[row]![column] !== ' ') {
+          return false;
+        }
+      }
+    }
+  }
+  return views.size === 8;
+})());
+check('character legend appears only for visible glyphs plus the fixed entries', charObs.legend.every((entry) => entry.glyph === '@' || entry.glyph === ' ' || charObs.view.some((row) => row.includes(entry.glyph))));
+
+const agentDocs = buildApiDocs(tileset);
+check('api docs render with no unfilled placeholder', !/\{\{\w+\}\}/.test(agentDocs));
+check('api docs list every verb of both modes', ALL_VERBS.every((verb) => agentDocs.includes(`\`${verb.action}\``)));
+check('api docs list every failure code', FAILURES.every((failure) => agentDocs.includes(`\`${failure.code}\``)));
+check("api docs legend names every tileset symbol", tileset.all().every((tile) => agentDocs.includes(`'${tile.symbol}' = ${tile.name}`)));
+
+check('turning wraps in eighth turns', turnedFacing(7, 1) === 0 && turnedFacing(0, -1) === 7);
+check('facing-relative steps never exceed one tile per axis', (() => {
+  for (let facing = 0; facing < 8; facing++) {
+    for (const forward of [-1, 0, 1]) {
+      for (const strafe of [-1, 0, 1]) {
+        const [dx, dy] = facingRelativeStep(facing as FacingIndex, forward, strafe);
+        if (Math.abs(dx) > 1 || Math.abs(dy) > 1) return false;
+      }
+    }
+  }
+  return true;
+})());
+check('applyAction enforces mode verb ownership', (() => {
+  const pose = { x: 0, y: 0, facing: 0 as FacingIndex };
+  const actor = {
+    pose: () => pose,
+    tryStep: (dx: number, dy: number) => ((pose.x += dx), (pose.y += dy), true),
+    turn: (turns: number) => (pose.facing = turnedFacing(pose.facing, turns)),
+  };
+  return (
+    applyAction(actor, 'character', 'step_north') === 'unknown_action' &&
+    applyAction(actor, 'god', 'turn_left') === 'unknown_action' &&
+    applyAction(actor, 'god', 'step_east') === 'moved' &&
+    applyAction(actor, 'character', 'turn_right') === 'turned' &&
+    pose.facing === 1
+  );
+})());
+check('observation text and json carry the same grid', observationText(charObs).includes(charObs.view.join('\n')));
 
 if (failures.length > 0) throw new Error(`${failures.length} check(s) failed: ${failures.join(', ')}`);
 console.log('\nall checks passed');

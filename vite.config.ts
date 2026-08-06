@@ -8,8 +8,31 @@ const DATA_DIR = 'data';
 const PERSISTED_FILES = ['pipeline', 'tileset'];
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), persistToRepoFiles()],
+  plugins: [react(), tailwindcss(), persistToRepoFiles(), agentApi()],
 });
+
+function agentApi() {
+  let state: unknown = null;
+  return {
+    name: 'agent-api',
+    configureServer(server: ViteDevServer) {
+      server.middlewares.use((req, res, next) => {
+        if (!req.url?.startsWith('/api/v1')) return next();
+        void server
+          .ssrLoadModule('/src/agent/api/nodeEntry.ts')
+          .then((entry) => {
+            state ??= entry.newAgentApiState();
+            return entry.serveAgentApi(state, server.config.root, req, res);
+          })
+          .catch((error: unknown) => {
+            res.statusCode = 500;
+            res.setHeader('content-type', 'application/json');
+            res.end(JSON.stringify({ error: 'internal', message: String(error) }));
+          });
+      });
+    },
+  };
+}
 
 function persistToRepoFiles() {
   return {

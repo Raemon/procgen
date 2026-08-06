@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react';
 const MIN_PANEL_WIDTH = 150;
 const MAX_PANEL_WIDTH = 640;
 const HANDLE_WIDTH = 6;
-const START_WIDTHS = [260, 300];
+const START_WIDTHS = [240, 280, 250, 270];
 
 export interface PanelWidths {
   widths: readonly number[];
@@ -20,7 +20,7 @@ export function usePanelWidths(): PanelWidths {
 }
 
 function columnTemplate(widths: readonly number[]): string {
-  return `${widths[0]}px ${HANDLE_WIDTH}px ${widths[1]}px ${HANDLE_WIDTH}px 1fr`;
+  return `${widths.map((width) => `${width}px ${HANDLE_WIDTH}px`).join(' ')} 1fr`;
 }
 
 function clamped(width: number): number {

@@ -45,6 +45,7 @@ export function createAppRuntime(): AppRuntime {
   );
   tileset.onChange(applyWorldChange);
   world.on('player-moved', () => renderers.recenterAll());
+  world.on('player-turned', () => renderers.recenterAll());
 
   return {
     tileset,
