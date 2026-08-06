@@ -79,7 +79,12 @@ function codeRow(spec: ParamSpec, deps: ParamRowDeps): HTMLElement {
   const wrap = document.createElement('div');
   wrap.className = 'code-param';
   const editor = codeEditor(String(deps.value));
-  const apply = applyCodeButton(editor, deps);
+  const applyCode = applyEditedCodeOnce(editor, deps);
+  const apply = applyCodeButton(applyCode);
+  editor.addEventListener('blur', applyCode);
+  editor.addEventListener('keydown', (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') applyCode();
+  });
   attachTooltip(apply, paramTooltip(spec));
   wrap.append(editor, apply);
   return wrap;
@@ -94,14 +99,20 @@ function codeEditor(startValue: string): HTMLTextAreaElement {
   return editor;
 }
 
-function applyCodeButton(editor: HTMLTextAreaElement, deps: ParamRowDeps): HTMLElement {
+function applyEditedCodeOnce(editor: HTMLTextAreaElement, deps: ParamRowDeps): () => void {
+  let appliedCode = String(deps.value);
+  return () => {
+    if (editor.value === appliedCode) return;
+    appliedCode = editor.value;
+    deps.onChange(appliedCode);
+  };
+}
+
+function applyCodeButton(applyCode: () => void): HTMLElement {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'btn apply-code';
   button.textContent = 'apply code';
-  button.addEventListener('click', () => deps.onChange(editor.value));
-  editor.addEventListener('keydown', (event) => {
-    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') deps.onChange(editor.value);
-  });
+  button.addEventListener('click', applyCode);
   return button;
 }
