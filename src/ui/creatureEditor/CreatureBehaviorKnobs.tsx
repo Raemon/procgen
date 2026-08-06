@@ -1,6 +1,6 @@
+import { useAppRuntime } from '../../app/appRuntimeContext';
 import { BEHAVIOR_CHOICES } from '../../creatures/behaviorKinds';
 import type { CreatureDef } from '../../creatures/creatureDef';
-import type { CreatureLibrary } from '../../creatures/creatureLibrary';
 import { KnobRow } from '../controls/KnobRow';
 import { Select } from '../controls/Select';
 import { Slider } from '../controls/Slider';
@@ -44,13 +44,10 @@ const MOTION_KNOBS: readonly MotionKnob[] = [
   },
 ];
 
-export function CreatureBehaviorKnobs({
-  creature,
-  library,
-}: {
-  creature: CreatureDef;
-  library: CreatureLibrary;
-}) {
+export function CreatureBehaviorKnobs({ creature }: { creature: CreatureDef }) {
+  const { perform } = useAppRuntime();
+  const setKnob = (patch: Record<string, number>) =>
+    perform('update_creature', { creature_id: creature.id, ...patch });
   return (
     <div className="mt-1.5 rounded border border-art-edge bg-art-panel p-2">
       <KnobRow label="behavior" tooltip={behaviorTooltip()}>
@@ -60,7 +57,7 @@ export function CreatureBehaviorKnobs({
             value: String(choice.value),
             text: choice.label,
           }))}
-          onChange={(value) => library.update(creature.id, { behavior: Number(value) })}
+          onChange={(value) => setKnob({ behavior: Number(value) })}
         />
       </KnobRow>
       {MOTION_KNOBS.map((knob) => (
@@ -70,7 +67,7 @@ export function CreatureBehaviorKnobs({
             max={knob.max}
             step={knob.step}
             value={creature[knob.field]}
-            onChange={(value) => library.update(creature.id, { [knob.field]: value })}
+            onChange={(value) => setKnob({ [knob.field]: value })}
           />
           <ValueReadout value={creature[knob.field]} />
         </KnobRow>
@@ -86,7 +83,7 @@ export function CreatureBehaviorKnobs({
           type="checkbox"
           className="justify-self-start accent-accent"
           checked={creature.phasing === 1}
-          onChange={(event) => library.update(creature.id, { phasing: event.target.checked ? 1 : 0 })}
+          onChange={(event) => setKnob({ phasing: event.target.checked ? 1 : 0 })}
         />
       </KnobRow>
     </div>

@@ -1,5 +1,5 @@
 import type { ParamSpec, ParamValue } from '../../procgen/nodeType';
-import type { Tileset } from '../../world/tiles/tileset';
+import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
 import { KnobRow } from '../controls/KnobRow';
 import { Select } from '../controls/Select';
 import { Slider } from '../controls/Slider';
@@ -10,7 +10,7 @@ import { tileSelectOptions } from './tileSelectOptions';
 
 export interface ParamRowProps {
   spec: ParamSpec;
-  tileset: Tileset;
+  tileset: ReadOnlyTileset;
   value: ParamValue;
   onChange(value: ParamValue): void;
 }

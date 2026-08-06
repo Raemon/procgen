@@ -16,7 +16,7 @@ export function NodeCardHeader({
   collapsed: boolean;
   onToggleCollapsed(): void;
 }) {
-  const { store } = useAppRuntime();
+  const { perform } = useAppRuntime();
   return (
     <div className={classes('flex items-center gap-[5px]', collapsed ? '' : 'mb-2')}>
       <DragHandle nodeId={node.id} />
@@ -33,21 +33,21 @@ export function NodeCardHeader({
         className="accent-accent"
         title="enabled"
         checked={node.enabled}
-        onChange={(event) => store.setEnabled(node.id, event.target.checked)}
+        onChange={(event) => perform(event.target.checked ? 'enable_node' : 'disable_node', { node_id: node.id })}
       />
       <NodeLabelInput node={node} />
       <span className="text-[10px] whitespace-nowrap text-ink-dim">{typeTitle}</span>
       <Button
         className="px-1.5 py-0.5 text-[11px]"
         title="duplicate node"
-        onClick={() => store.duplicateNode(node.id)}
+        onClick={() => perform('duplicate_node', { node_id: node.id })}
       >
         ⧉
       </Button>
       <Button
         className="px-1.5 py-0.5 text-[11px] hover:border-danger-edge hover:text-danger-ink"
         title="delete node"
-        onClick={() => store.removeNode(node.id)}
+        onClick={() => perform('remove_node', { node_id: node.id })}
       >
         ✕
       </Button>
@@ -76,9 +76,9 @@ function startCardDrag(event: DragEvent<HTMLElement>, nodeId: string): void {
 }
 
 function NodeLabelInput({ node }: { node: NodeInstance }) {
-  const { store } = useAppRuntime();
+  const { perform } = useAppRuntime();
   const [draft, setDraft] = useState(node.label);
-  const commit = () => draft.trim() && store.setLabel(node.id, draft.trim());
+  const commit = () => draft.trim() && perform('rename_node', { node_id: node.id, label: draft.trim() });
   return (
     <input
       type="text"

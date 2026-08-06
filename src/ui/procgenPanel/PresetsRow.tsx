@@ -1,11 +1,8 @@
 import { useSyncExternalStore } from 'react';
 import { useAppRuntime } from '../../app/appRuntimeContext';
-import { emptyPipeline } from '../../procgen/pipeline/pipelineState';
-import { sanitizePipeline } from '../../procgen/pipeline/sanitizePipeline';
-import type { PipelineStore } from '../../procgen/pipeline/pipelineStore';
+import type { ReadOnlyPipelineStore, ReadOnlyWorldPresetLibrary } from '../../app/readOnlyLibraries';
 import { examplePipelines } from '../../procgen/presets/examplePipelines';
 import type { WorldPreset } from '../../procgen/presets/worldPreset';
-import type { WorldPresetLibrary } from '../../procgen/presets/worldPresetLibrary';
 import { Button } from '../controls/Button';
 import { KnobRow } from '../controls/KnobRow';
 import { Select, type SelectOption } from '../controls/Select';
@@ -17,7 +14,7 @@ const SAVED_PREFIX = 'saved:';
 const DELETE_CHOICE = 'delete-saved';
 
 export function PresetsRow() {
-  const { store, worldPresets } = useAppRuntime();
+  const { store, worldPresets, perform } = useAppRuntime();
   const saved = useSyncExternalStore(
     (listener) => worldPresets.onChange(listener),
     () => worldPresets.savedPresets(),
@@ -27,16 +24,16 @@ export function PresetsRow() {
       <Select
         value={PLACEHOLDER}
         options={presetOptions(saved)}
-        onChange={(choice) => onPickChoice(store, worldPresets, choice)}
+        onChange={(choice) => onPickChoice(perform, worldPresets, choice)}
       />
       <div className="flex gap-1.5">
         <Button
           title="save the whole current pipeline as a named preset"
-          onClick={() => saveCurrentPipeline(store, worldPresets)}
+          onClick={() => saveCurrentPipeline(perform, store, worldPresets)}
         >
           save
         </Button>
-        <Button title="remove all nodes" onClick={() => clearPipeline(store)}>
+        <Button title="remove all nodes" onClick={() => clearPipeline(perform)}>
           clear
         </Button>
       </div>
@@ -56,37 +53,44 @@ function presetOptions(saved: readonly WorldPreset[]): SelectOption[] {
   ];
 }
 
-function onPickChoice(store: PipelineStore, library: WorldPresetLibrary, choice: string): void {
-  if (choice === DELETE_CHOICE) return deleteSavedPreset(library);
-  const state = stateOfChoice(library, choice);
-  if (state !== undefined && confirmReplace()) store.replaceAll(sanitizePipeline(state));
+type Perform = (action: string, params?: Record<string, unknown>) => unknown;
+
+function onPickChoice(
+  perform: Perform,
+  library: ReadOnlyWorldPresetLibrary,
+  choice: string,
+): void {
+  if (choice === DELETE_CHOICE) return deleteSavedPreset(perform, library);
+  const name = presetNameOfChoice(choice);
+  if (name && confirmReplace()) perform('load_preset', { name });
 }
 
-function stateOfChoice(library: WorldPresetLibrary, choice: string): unknown {
-  if (choice.startsWith(EXAMPLE_PREFIX)) {
-    const name = choice.slice(EXAMPLE_PREFIX.length);
-    return examplePipelines().find((preset) => preset.name === name)?.state;
-  }
-  if (choice.startsWith(SAVED_PREFIX)) return library.byName(choice.slice(SAVED_PREFIX.length))?.state;
-  return undefined;
+function presetNameOfChoice(choice: string): string | null {
+  if (choice.startsWith(EXAMPLE_PREFIX)) return choice.slice(EXAMPLE_PREFIX.length);
+  if (choice.startsWith(SAVED_PREFIX)) return choice.slice(SAVED_PREFIX.length);
+  return null;
 }
 
-function saveCurrentPipeline(store: PipelineStore, library: WorldPresetLibrary): void {
+function saveCurrentPipeline(
+  perform: Perform,
+  store: ReadOnlyPipelineStore,
+  library: ReadOnlyWorldPresetLibrary,
+): void {
   if (store.nodes().length === 0) return window.alert('Nothing to save — the pipeline is empty.');
   const name = window.prompt('Save the whole pipeline as a preset named:')?.trim();
   if (!name) return;
   if (library.byName(name) && !window.confirm(`Overwrite your saved preset "${name}"?`)) return;
-  library.save({ name, description: '', state: sanitizePipeline(store.snapshot()) });
+  perform('save_preset', { name });
 }
 
-function deleteSavedPreset(library: WorldPresetLibrary): void {
+function deleteSavedPreset(perform: Perform, library: ReadOnlyWorldPresetLibrary): void {
   const name = window.prompt('Delete which saved preset? (exact name)')?.trim();
   if (!name || !library.byName(name)) return;
-  if (window.confirm(`Delete your saved preset "${name}"?`)) library.remove(name);
+  if (window.confirm(`Delete your saved preset "${name}"?`)) perform('delete_preset', { name });
 }
 
-function clearPipeline(store: PipelineStore): void {
-  if (confirmReplace()) store.replaceAll(emptyPipeline());
+function clearPipeline(perform: Perform): void {
+  if (confirmReplace()) perform('clear_pipeline');
 }
 
 function confirmReplace(): boolean {

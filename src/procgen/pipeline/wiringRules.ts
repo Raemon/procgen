@@ -3,13 +3,13 @@ import { outputKindOf, type InputSpec } from '../nodeType';
 import { nodeIndexById, type NodeInstance, type PipelineState } from './pipelineState';
 
 export function wiringCandidates(
-  state: PipelineState,
+  nodes: readonly NodeInstance[],
   nodeId: string,
   spec: InputSpec,
 ): NodeInstance[] {
-  const nodeIndex = nodeIndexById(state, nodeId);
+  const nodeIndex = nodes.findIndex((node) => node.id === nodeId);
   if (nodeIndex < 0) return [];
-  return state.nodes.slice(0, nodeIndex).filter((source) => sourceMatchesSpec(source, spec));
+  return nodes.slice(0, nodeIndex).filter((source) => sourceMatchesSpec(source, spec));
 }
 
 export function isWireValid(

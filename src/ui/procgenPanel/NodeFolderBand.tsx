@@ -1,6 +1,5 @@
 import { useState, type ReactNode } from 'react';
 import { useAppRuntime } from '../../app/appRuntimeContext';
-import { templateFromNodes } from '../../procgen/templates/templateFromNodes';
 import { Button } from '../controls/Button';
 import type { NodeRun } from './nodeFolderRuns';
 
@@ -32,7 +31,7 @@ function FolderHeader({
   collapsed: boolean;
   onToggleCollapsed(): void;
 }) {
-  const { store } = useAppRuntime();
+  const { perform } = useAppRuntime();
   const nodeIds = run.nodes.map((node) => node.id);
   return (
     <div className="mb-1.5 flex items-center gap-[5px] px-0.5">
@@ -52,7 +51,7 @@ function FolderHeader({
       <Button
         className="px-1.5 py-0.5 text-[11px]"
         title="ungroup — leaves every node exactly where it is"
-        onClick={() => store.setFolderOfNodes(nodeIds, '')}
+        onClick={() => setFolderOfNodes(perform, nodeIds, '')}
       >
         ⊘
       </Button>
@@ -61,10 +60,14 @@ function FolderHeader({
 }
 
 function SaveAsTemplateButton({ run }: { run: NodeRun }) {
-  const { templates } = useAppRuntime();
+  const { perform } = useAppRuntime();
   const [saved, setSaved] = useState(false);
   function save(): void {
-    templates.save(templateFromNodes(run.nodes, run.folder, describeRun(run)));
+    perform('save_template', {
+      name: run.folder,
+      node_ids: run.nodes.map((node) => node.id),
+      description: describeRun(run),
+    });
     setSaved(true);
   }
   return (
@@ -83,9 +86,9 @@ function describeRun(run: NodeRun): string {
 }
 
 function FolderNameInput({ folder, nodeIds }: { folder: string; nodeIds: string[] }) {
-  const { store } = useAppRuntime();
+  const { perform } = useAppRuntime();
   const [draft, setDraft] = useState(folder);
-  const commit = () => draft.trim() && store.setFolderOfNodes(nodeIds, draft.trim());
+  const commit = () => draft.trim() && setFolderOfNodes(perform, nodeIds, draft.trim());
   return (
     <input
       type="text"
@@ -105,4 +108,12 @@ function CollapsedSummary({ run }: { run: NodeRun }) {
       {run.nodes.map((node) => node.label).join(' → ')}
     </p>
   );
+}
+
+function setFolderOfNodes(
+  perform: (action: string, params: Record<string, unknown>) => unknown,
+  nodeIds: readonly string[],
+  folder: string,
+): void {
+  for (const nodeId of nodeIds) perform('set_folder', { node_id: nodeId, folder });
 }

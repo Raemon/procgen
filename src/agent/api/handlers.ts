@@ -1,6 +1,7 @@
+import { examplePipelines } from '../../procgen/presets/examplePipelines';
 import { isAgentMode, type AgentMode } from '../agentMode';
 import { buildApiDocs } from '../apiDocs';
-import { verbsForMode } from '../controls';
+import { abilitiesForMode } from '../../abilities/abilityRegistry';
 import { failureByCode } from '../failures';
 import { nodeTypesJson, pipelineJson } from '../nodeCatalog';
 import { buildObservation, type AgentObservation } from '../observation';
@@ -37,6 +38,44 @@ export function handleApiRequest(
   }
   if (req.path === '/node-types' && req.method === 'GET') {
     return json(200, nodeTypesJson());
+  }
+  if (req.path === '/tiles' && req.method === 'GET') {
+    return json(200, {
+      tiles: world.tileset.all().map((tile) => ({
+        id: tile.id,
+        name: tile.name,
+        symbol: tile.symbol,
+        color: tile.color,
+        walkable: tile.walkable,
+        has_face_art: tile.faceArt !== null,
+      })),
+    });
+  }
+  if (req.path === '/templates' && req.method === 'GET') {
+    return json(200, {
+      templates: world.templates.all().map((template) => ({
+        name: template.name,
+        description: template.description,
+        node_count: template.nodes.length,
+        saved: world.templates.savedTemplates().some((each) => each.name === template.name),
+      })),
+    });
+  }
+  if (req.path === '/presets' && req.method === 'GET') {
+    return json(200, {
+      presets: [
+        ...examplePipelines().map((preset) => ({
+          name: preset.name,
+          description: preset.description ?? '',
+          saved: false,
+        })),
+        ...world.worldPresets.savedPresets().map((preset) => ({
+          name: preset.name,
+          description: preset.description,
+          saved: true,
+        })),
+      ],
+    });
   }
   if (req.path === '/prefabs' && req.method === 'GET') {
     return json(200, {
@@ -143,7 +182,7 @@ function act(session: AgentSession, access: WorldAccess, body: unknown): ApiResp
   const { action: _dropped, ...params } = record!;
   const world = access.current();
   const result = performVerb(session, world, action, params);
-  if (result.changedPipeline) access.persistPipeline(world);
+  if (result.changedPipeline) access.persistWorld(world);
   const fresh = result.changedPipeline ? access.current() : world;
   const observation = buildObservation(fresh.sampler, fresh.tileset, sessionPose(session), session.mode);
   return json(result.outcome === 'unknown_action' || result.outcome === 'failed' ? 400 : 200, {
@@ -217,10 +256,15 @@ function observationJson(mode: AgentMode, observation: AgentObservation) {
     view_size: observation.viewSize,
     view: observation.view,
     legend: observation.legend,
-    available_actions: verbsForMode(mode).map((verb) => ({
-      action: verb.action,
-      params: verb.params,
-      description: verb.description,
+    available_actions: abilitiesForMode(mode).map((spec) => ({
+      action: spec.action,
+      params: Object.fromEntries(
+        Object.entries(spec.params).map(([name, param]) => [
+          name,
+          param.optional ? `${param.help} (optional)` : param.help,
+        ]),
+      ),
+      description: spec.description,
     })),
   };
 }

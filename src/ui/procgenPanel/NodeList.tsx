@@ -8,7 +8,7 @@ import { NodeFolderBand } from './NodeFolderBand';
 import { nodeFolderRuns, type NodeRun } from './nodeFolderRuns';
 
 export function NodeList() {
-  const { store } = useAppRuntime();
+  const { store, perform } = useAppRuntime();
   const list = useRef<HTMLDivElement>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
   const [collapsedFolders, setCollapsedFolders] = useState<ReadonlySet<string>>(new Set());
@@ -27,7 +27,7 @@ export function NodeList() {
     if (!nodeId) return;
     event.preventDefault();
     setDropIndex(null);
-    store.moveNodeToIndex(nodeId, insertionIndexAt(list.current, event.clientY, nodes.length));
+    perform('move_node', { node_id: nodeId, before_node_id: nodes[insertionIndexAt(list.current, event.clientY, nodes.length)]?.id });
   }
 
   return (

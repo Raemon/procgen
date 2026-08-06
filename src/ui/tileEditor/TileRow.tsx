@@ -10,9 +10,9 @@ import { FaceArtToggle } from './FaceArtToggle';
 import { SymbolInput } from './SymbolInput';
 
 export function TileRow({ tile }: { tile: TileDef }) {
-  const { tileset } = useAppRuntime();
+  const { perform } = useAppRuntime();
   const [artOpen, setArtOpen] = useState(false);
-  const editTile = (patch: EditableTileFields) => tileset.update(tile.id, patch);
+  const editTile = (patch: EditableTileFields) => perform('update_tile', { tile_id: tile.id, ...patch });
   return (
     <div className="mb-1.5">
       <div className="flex items-center gap-1.5">
@@ -36,7 +36,7 @@ export function TileRow({ tile }: { tile: TileDef }) {
         <Button
           className="px-2 py-0.5 hover:border-danger-edge hover:text-danger-ink"
           title="delete tile"
-          onClick={() => tileset.remove(tile.id)}
+          onClick={() => perform('remove_tile', { tile_id: tile.id })}
         >
           ×
         </Button>

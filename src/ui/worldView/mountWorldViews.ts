@@ -1,10 +1,10 @@
 import type { AppRuntime } from '../../app/appRuntime';
-import { cameraRelativeStep, slideAlongEachAxis } from '../../input/cameraRelativeStep';
-import { facingRelativeStep } from '../../input/facingRelativeStep';
+import { cameraRelativeStep } from '../../input/cameraRelativeStep';
 import { MovementInput } from '../../input/movementInput';
 import { AgentTextView } from '../../views/agentText/agentTextView';
 import { View3D } from '../../views/view3d/view3d';
 import type { WorldViewDeps } from '../../views/worldViewDeps';
+import { FACING_NAMES, facingVector, type FacingIndex } from '../../world/facing';
 import { isCharacterControlled, type ViewMode } from './viewMode';
 
 export interface ViewSlots {
@@ -23,7 +23,7 @@ export function mountWorldViews(
   slots: ViewSlots,
   currentMode: () => ViewMode,
 ): MountedWorldViews {
-  const { world, sampler, tileset } = runtime;
+  const { world, sampler, tileset, perform } = runtime;
   const view3d = new View3D(slots.view3d, worldViewDepsOf(runtime));
   const agentGodView = new AgentTextView(slots.agentGod, world, sampler, tileset, 'god');
   const agentCharacterView = new AgentTextView(
@@ -51,13 +51,12 @@ export function mountWorldViews(
 
   const movement = new MovementInput({
     moveIntent: (forwardInput, strafeInput) => {
-      const step = isCharacterControlled(currentMode())
-        ? facingRelativeStep(world.facing, forwardInput, strafeInput)
-        : cameraRelativeStep(godYawQuadrant(currentMode(), view3d), forwardInput, strafeInput);
-      slideAlongEachAxis(step, (dx, dy) => world.tryStep(dx, dy));
+      for (const action of moveActions(currentMode(), view3d, forwardInput, strafeInput)) {
+        perform(action);
+      }
     },
     rotate: (direction) => {
-      if (isCharacterControlled(currentMode())) world.turn(direction);
+      if (isCharacterControlled(currentMode())) perform(direction === -1 ? 'turn_left' : 'turn_right');
       else if (currentMode() === '3d-god') view3d.rotate(direction);
     },
   });
@@ -73,13 +72,41 @@ export function mountWorldViews(
       agentCharacterView.dispose();
     },
     onModeChanged: (mode) => {
+      runtime.setPlayerMode(isCharacterControlled(mode) ? 'character' : 'god');
       view3d.setCameraStyle(mode === 'character' ? 'character' : 'god');
     },
   };
 }
 
-function godYawQuadrant(mode: ViewMode, view3d: View3D): number {
-  return mode === '3d-god' ? view3d.yawQuadrant() : 0;
+function moveActions(
+  mode: ViewMode,
+  view3d: View3D,
+  forwardInput: number,
+  strafeInput: number,
+): string[] {
+  if (isCharacterControlled(mode)) return characterMoveActions(forwardInput, strafeInput);
+  const yawQuadrant = mode === '3d-god' ? view3d.yawQuadrant() : 0;
+  const [dx, dy] = cameraRelativeStep(yawQuadrant, forwardInput, strafeInput);
+  const name = compassNameOfStep(dx, dy);
+  return name ? [`step_${name}`] : [];
+}
+
+function characterMoveActions(forwardInput: number, strafeInput: number): string[] {
+  const actions: string[] = [];
+  if (forwardInput > 0) actions.push('step_forward');
+  if (forwardInput < 0) actions.push('step_back');
+  if (strafeInput > 0) actions.push('strafe_right');
+  if (strafeInput < 0) actions.push('strafe_left');
+  return actions;
+}
+
+function compassNameOfStep(dx: number, dy: number): string | null {
+  if (dx === 0 && dy === 0) return null;
+  const facing = FACING_NAMES.findIndex((_, index) => {
+    const vector = facingVector(index as FacingIndex);
+    return vector.dx === dx && vector.dy === dy;
+  });
+  return facing < 0 ? null : FACING_NAMES[facing]!;
 }
 
 function worldViewDepsOf(runtime: AppRuntime): WorldViewDeps {

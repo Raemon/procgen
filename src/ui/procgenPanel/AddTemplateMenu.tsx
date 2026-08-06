@@ -5,7 +5,7 @@ import { Button } from '../controls/Button';
 import { tooltipHandlers } from '../tooltips/tooltipHandlers';
 
 export function AddTemplateMenu({ onAdded }: { onAdded(nodeId: string): void }) {
-  const { store, templates } = useAppRuntime();
+  const { store, templates, perform } = useAppRuntime();
   const [open, setOpen] = useState(false);
   const saved = useSyncExternalStore(
     (listener) => templates.onChange(listener),
@@ -13,9 +13,11 @@ export function AddTemplateMenu({ onAdded }: { onAdded(nodeId: string): void }) 
   );
 
   function stamp(template: NodeTemplate): void {
-    const added = store.addTemplate(template);
+    const before = store.nodes().map((node) => node.id);
+    perform('stamp_template', { name: template.name });
     setOpen(false);
-    if (added[0]) onAdded(added[0].id);
+    const added = store.nodes().find((node) => !before.includes(node.id));
+    if (added) onAdded(added.id);
   }
 
   return (
@@ -74,7 +76,7 @@ function TemplateItem({
   onPick(template: NodeTemplate): void;
   removable: boolean;
 }) {
-  const { templates } = useAppRuntime();
+  const { perform } = useAppRuntime();
   return (
     <div className="flex items-center gap-1">
       <button
@@ -98,7 +100,7 @@ function TemplateItem({
         <Button
           className="px-1.5 py-0.5 text-[11px] hover:border-danger-edge hover:text-danger-ink"
           title="forget this saved template"
-          onClick={() => templates.remove(template.name)}
+          onClick={() => perform('delete_template', { name: template.name })}
         >
           ✕
         </Button>

@@ -8,17 +8,17 @@ import { KnobRow } from '../controls/KnobRow';
 const MAX_RANDOM_SEED = 1_000_000;
 
 export function WorldSeedRow() {
-  const { store } = useAppRuntime();
+  const { store, perform } = useAppRuntime();
   const [draft, setDraft] = useState<string | null>(null);
 
   function typeSeed(text: string): void {
     setDraft(text);
-    if (Number.isFinite(Number(text)) && text.trim()) store.setSeed(Number(text));
+    if (Number.isFinite(Number(text)) && text.trim()) perform('set_seed', { seed: Number(text) });
   }
 
   function rollSeed(): void {
     setDraft(null);
-    store.setSeed(Math.floor(Math.random() * MAX_RANDOM_SEED));
+    perform('set_seed', { seed: Math.floor(Math.random() * MAX_RANDOM_SEED) });
   }
 
   return (

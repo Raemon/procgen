@@ -25,7 +25,7 @@ export function NodeCard({
   index: number;
   dropMarker: DropMarker;
 }) {
-  const { store, tileset } = useAppRuntime();
+  const { perform, tileset } = useAppRuntime();
   const [collapsed, setCollapsed] = useState(false);
   const def = nodeTypeOf(node.type);
   const highlighted = useSyncExternalStore(subscribeToWireHighlight, highlightedWireSource);
@@ -65,7 +65,7 @@ export function NodeCard({
                   spec={spec}
                   tileset={tileset}
                   value={node.params[name]!}
-                  onChange={(value) => store.setParam(node.id, name, value)}
+                  onChange={(value) => perform('set_param', { node_id: node.id, param: name, value })}
                 />
               ))}
               <DisplaySection node={node} kind={outputKindOf(def, node.params)} />

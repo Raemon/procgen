@@ -1,5 +1,5 @@
 import type { FacingIndex } from '../../world/facing';
-import type { ActorWorld } from '../actions';
+import type { AbilityActor } from '../../abilities/ability';
 import type { AgentMode, AgentPose } from '../agentMode';
 
 export interface AgentSession {
@@ -60,7 +60,7 @@ export function sessionPose(session: AgentSession): AgentPose {
 export function sessionActor(
   session: AgentSession,
   isWalkable: (x: number, y: number) => boolean,
-): ActorWorld {
+): AbilityActor {
   return {
     pose: () => sessionPose(session),
     tryStep: (dx, dy) => {

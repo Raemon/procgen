@@ -28,16 +28,18 @@ enforces both.
 
 ## The API
 
-`GET /api/v1/docs` is the reference, and it is rendered from the same tables
-the server dispatches on (`src/agent/controls.ts`, `failures.ts`, the live
-tileset), so it cannot drift: an unfilled placeholder throws, and
-`npm run check` asserts every verb, failure code and tileset symbol appears.
-Add a verb to the table — never to the docs prose.
+`GET /api/v1/docs` is the reference, and it is rendered from the registries the
+app itself runs on (`src/abilities/`, `failures.ts`, the live tileset and node
+registry), so it cannot drift: an unfilled placeholder throws, and
+`npm run check` asserts every ability, its example, its human control, every
+failure code, node type and tileset symbol appears. Add an ability to the
+registry — never prose to the docs.
 
 The server side is a vite dev-server plugin (`vite.config.ts` → `agentApi()`)
 that `ssrLoadModule`s `src/agent/api/nodeEntry.ts`, so the exact TypeScript the
-browser runs also evaluates the pipeline in Node against `data/pipeline.json` +
-`data/tileset.json` (re-read when their mtimes change). Agents are in-memory
+browser runs also evaluates the pipeline in Node against the `data/*.json`
+files (re-read when their mtimes change), and writes every library back there
+after an edit. Agents are in-memory
 sessions; they do not survive a server restart. There is no auth: this is a
 local dev tool.
 
@@ -49,16 +51,17 @@ tools.
 
 ## God agents build the world
 
-God mode's verb table has a second group: editing verbs (`add_node`,
-`set_param`, `wire_input`, `set_display`, `move_node`, `set_seed`, …) that
-manipulate the same procgen node pipeline the human edits in the panel — the
-whole app is LLM-first. `GET /api/v1/pipeline` lists every node;
-`GET /api/v1/node-types` renders the registry (descriptions, param ranges,
-choices, input kinds) straight from `registerNodeType` metadata. Validation
-lives in `src/agent/editActions.ts` and every failure hint names the real
-options so an agent can self-correct. Character agents own no editing verbs.
+Every ability in the app is an agent action — see
+[`abilities.md`](abilities.md) for the registry and the rules that keep it that
+way. God mode owns all of them beyond movement: nodes and wiring, knobs,
+displays, the seed, the tile/prefab/creature libraries, templates, presets,
+world rolls and region capture. `GET /api/v1/pipeline`, `/node-types`,
+`/tiles`, `/prefabs`, `/creatures`, `/templates` and `/presets` are the reads
+that make those actions usable, all rendered from the same registries the app
+runs on. Every failure hint names the real options so an agent can self-correct
+from the response alone. Character agents own nothing but movement.
 
-A successful edit persists to `data/pipeline.json`, rebuilds the server world
+A successful edit persists to `data/`, rebuilds the server world
 (so the next observation shows the new terrain), and pushes an
 `agent-pipeline-changed` event over the vite websocket — the browser reloads
 the pipeline into its store live, so you can watch an agent terraform in any

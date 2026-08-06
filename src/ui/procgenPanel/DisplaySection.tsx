@@ -4,11 +4,9 @@ import {
   useRerenderOnPrefabChange,
 } from '../../app/rerenderHooks';
 import {
-  defaultBindingForMode,
   displayModesForKind,
   RANDOM_ROTATION,
   type DisplayBinding,
-  type DisplayMode,
 } from '../../procgen/display/displayBinding';
 import type { MarkerBinding } from '../../procgen/display/markerAppearance';
 import type { NodeInstance } from '../../procgen/pipeline/pipelineState';
@@ -36,7 +34,7 @@ const ROTATION_OPTIONS = [
 ];
 
 export function DisplaySection({ node, kind }: { node: NodeInstance; kind: ValueKind }) {
-  const { store } = useAppRuntime();
+  const { perform } = useAppRuntime();
   return (
     <div className="mt-2 border-t border-dashed border-panel-edge pt-2">
       <KnobRow label="display" tooltip={displayModeTooltip(kind)}>
@@ -46,7 +44,7 @@ export function DisplaySection({ node, kind }: { node: NodeInstance; kind: Value
             value: mode,
             text: MODE_LABELS[mode],
           }))}
-          onChange={(mode) => store.setDisplay(node.id, defaultBindingForMode(mode as DisplayMode))}
+          onChange={(mode) => perform('set_display', { node_id: node.id, display: mode })}
         />
       </KnobRow>
       {node.display.mode === 'elevation' && (
@@ -66,7 +64,7 @@ function PrefabRows({
   node: NodeInstance;
   binding: Extract<DisplayBinding, { mode: 'prefabs' }>;
 }) {
-  const { store, prefabs } = useAppRuntime();
+  const { perform, prefabs } = useAppRuntime();
   useRerenderOnPrefabChange();
   return (
     <>
@@ -74,14 +72,14 @@ function PrefabRows({
         <Select
           value={String(binding.prefabId)}
           options={libraryOptions('(none)', prefabs.all())}
-          onChange={(value) => store.setDisplay(node.id, { ...binding, prefabId: Number(value) })}
+          onChange={(value) => perform('set_display', { node_id: node.id, display: 'prefabs', prefab_id: Number(value) })}
         />
       </KnobRow>
       <KnobRow label="rotation" tooltip={prefabRotationTooltip()}>
         <Select
           value={String(binding.rotation)}
           options={ROTATION_OPTIONS}
-          onChange={(value) => store.setDisplay(node.id, { ...binding, rotation: Number(value) })}
+          onChange={(value) => perform('set_display', { node_id: node.id, display: 'prefabs', rotation: Number(value) })}
         />
       </KnobRow>
     </>
@@ -95,14 +93,14 @@ function CreatureRows({
   node: NodeInstance;
   binding: Extract<DisplayBinding, { mode: 'creatures' }>;
 }) {
-  const { store, creatures } = useAppRuntime();
+  const { perform, creatures } = useAppRuntime();
   useRerenderOnCreatureChange();
   return (
     <KnobRow label="creature">
       <Select
         value={String(binding.creatureId)}
         options={libraryOptions('(none)', creatures.all())}
-        onChange={(value) => store.setDisplay(node.id, { ...binding, creatureId: Number(value) })}
+        onChange={(value) => perform('set_display', { node_id: node.id, display: 'creatures', creature_id: Number(value) })}
       />
     </KnobRow>
   );
@@ -119,7 +117,7 @@ function libraryOptions(
 }
 
 function HeightScaleRow({ node, heightScale }: { node: NodeInstance; heightScale: number }) {
-  const { store } = useAppRuntime();
+  const { perform } = useAppRuntime();
   return (
     <KnobRow label="height">
       <Slider
@@ -127,7 +125,7 @@ function HeightScaleRow({ node, heightScale }: { node: NodeInstance; heightScale
         max={10}
         step={0.1}
         value={heightScale}
-        onChange={(value) => store.patchDisplay(node.id, { heightScale: value })}
+        onChange={(value) => perform('set_display', { node_id: node.id, display: 'elevation', height_scale: value })}
       />
       <ValueReadout value={heightScale} />
     </KnobRow>
@@ -135,14 +133,14 @@ function HeightScaleRow({ node, heightScale }: { node: NodeInstance; heightScale
 }
 
 function MarkerRows({ node, binding }: { node: NodeInstance; binding: MarkerBinding }) {
-  const { store, tileset } = useAppRuntime();
+  const { perform, tileset } = useAppRuntime();
   return (
     <>
       <KnobRow label="tile" tooltip={markerTileTooltip()}>
         <Select
           value={String(binding.tileId)}
           options={tileSelectOptions(tileset, '(custom glyph)')}
-          onChange={(value) => store.setDisplay(node.id, { ...binding, tileId: Number(value) })}
+          onChange={(value) => perform('set_display', { node_id: node.id, display: 'markers', tile_id: Number(value) })}
         />
       </KnobRow>
       {binding.tileId < 0 && (
@@ -154,7 +152,7 @@ function MarkerRows({ node, binding }: { node: NodeInstance; binding: MarkerBind
               className={classes(FIELD_CLASSES, 'w-11 justify-self-start text-center')}
               value={binding.glyph}
               onChange={(event) =>
-                event.target.value && store.patchDisplay(node.id, { glyph: event.target.value })
+                event.target.value && perform('set_display', { node_id: node.id, display: 'markers', glyph: event.target.value })
               }
             />
           </KnobRow>
@@ -163,7 +161,7 @@ function MarkerRows({ node, binding }: { node: NodeInstance; binding: MarkerBind
               type="color"
               className={COLOR_INPUT_CLASSES}
               value={binding.color}
-              onChange={(event) => store.patchDisplay(node.id, { color: event.target.value })}
+              onChange={(event) => perform('set_display', { node_id: node.id, display: 'markers', color: event.target.value })}
             />
           </KnobRow>
         </>

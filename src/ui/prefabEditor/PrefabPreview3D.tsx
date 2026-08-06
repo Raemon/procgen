@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
 import type { Prefab } from '../../prefabs/prefabDef';
-import type { Tileset } from '../../world/tiles/tileset';
+import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
 import { PrefabPreviewScene } from './prefabPreviewScene';
 
-export function PrefabPreview3D({ prefab, tileset }: { prefab: Prefab; tileset: Tileset }) {
+export function PrefabPreview3D({ prefab, tileset }: { prefab: Prefab; tileset: ReadOnlyTileset }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const scene = useRef<PrefabPreviewScene | null>(null);
 

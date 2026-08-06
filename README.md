@@ -56,14 +56,18 @@ Five panels:
 
 ## Agents
 
-Any verb a human gets, an agent gets, and the two agent view modes render the
-same bytes the API sends — see `docs/agents-and-view-modes.md`. Character
-agents see only what is in front of them (the blank half of the grid is how
-they know which way they face); god agents see a wider window and can edit the
-procgen pipeline itself — add and wire nodes, set knobs, bind displays, reseed —
-so an LLM can build a world, not just walk one. Start at
-`GET /api/v1/docs`, which is rendered from the same tables the server
-dispatches on and so cannot drift from the code.
+Every ability in this app is an API action, and the UI calls the same registry
+an agent POSTs to — a button that changes the world without an action for it
+will not compile, and `npm run check` fails if anything outside the ability
+layer can reach a mutable library. See `docs/abilities.md`. The two agent view
+modes render the same bytes the API sends — see
+`docs/agents-and-view-modes.md`. Character agents see only what is in front of
+them (the blank half of the grid is how they know which way they face); god
+agents see a wider window and own every other ability — nodes, wiring, knobs,
+displays, the seed, the tile/prefab/creature libraries, templates, presets,
+world rolls and region capture — so an LLM can build a world, not just walk
+one. Start at `GET /api/v1/docs`, which is rendered from those same registries
+and so cannot drift from the code.
 
 ## Layout
 
@@ -94,9 +98,12 @@ src/creatures     creature definitions, library + persistence, and sim/
 src/world         Tileset, walkability, infinite-world player state
   tiles/art/        code-generated 32×32 face art for the shipped tiles
   capture/          world-selection tool behind the capture button
-src/agent         the LLM-first layer: verb tables, observation builders (shared
-                  by the UI agent views and the API), generated docs, and api/
-                  (dev-server endpoints, node editing, autopilot)
+src/abilities     every ability in the app: one registry, one apply function
+                  each, shared by the UI and the API. The only code that may
+                  hold a mutable library
+src/agent         the LLM-first layer: observation builders (shared by the UI
+                  agent views and the API), docs generated from the ability
+                  registry, and api/ (dev-server endpoints, autopilot)
 src/views         agentText (the observation as an agent receives it), ascii
                   (pure-text snapshot used by the checks) and view3d (chunk-mesh
                   streamer, god + character cameras, face-art materials)

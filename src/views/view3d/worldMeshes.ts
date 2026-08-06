@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { CHUNK_SIZE, chunkOrigin } from '../../procgen/chunk';
 import type { WorldSampler } from '../../procgen/worldSampler';
 import type { CubeFaceArt } from '../../world/tiles/tileFaceArt';
-import type { Tileset } from '../../world/tiles/tileset';
+import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
 import { cubeFaceMaterials, sideFaceMaterial } from './faceArtMaterials';
 import { instancedTileMesh, type PlacementPosition } from './instancedTileMesh';
 import { markerPlacementsForRect } from './markerPlacements';
@@ -31,7 +31,7 @@ interface FaceArtGroup {
 
 export function buildChunkMeshGroup(
   sampler: WorldSampler,
-  tileset: Tileset,
+  tileset: ReadOnlyTileset,
   chunkX: number,
   chunkY: number,
 ): THREE.Group {

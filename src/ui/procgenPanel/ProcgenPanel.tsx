@@ -1,7 +1,5 @@
-import { useRef } from 'react';
 import { useAppRuntime } from '../../app/appRuntimeContext';
 import { useRerenderOnPipelineChange, useRerenderOnTilesetChange } from '../../app/rerenderHooks';
-import { RandomizeHistory } from '../../procgen/randomize/randomizeHistory';
 import { HINT_CLASSES, PANEL_HEADING_CLASSES } from '../controls/fieldClasses';
 import { AddNodeMenu } from './AddNodeMenu';
 import { AddTemplateMenu } from './AddTemplateMenu';
@@ -12,13 +10,13 @@ import { scrollNodeCardIntoView } from './scrollNodeCardIntoView';
 import { WorldSeedRow } from './WorldSeedRow';
 
 export function ProcgenPanel() {
-  const { store } = useAppRuntime();
-  const randomizeHistory = useRef(new RandomizeHistory());
+  const { store, perform } = useAppRuntime();
   useRerenderOnPipelineChange();
   useRerenderOnTilesetChange();
 
   function addNodeAndReveal(type: string): void {
-    const node = store.addNode(type);
+    const added = perform('add_node', { type });
+    const node = added.ok ? store.nodes()[store.nodes().length - 1] : undefined;
     if (node) scrollNodeCardIntoView(node.id);
   }
 
@@ -27,7 +25,7 @@ export function ProcgenPanel() {
       <h2 className={PANEL_HEADING_CLASSES}>procgen</h2>
       <WorldSeedRow />
       <PresetsRow />
-      <RandomizeRow history={randomizeHistory.current} />
+      <RandomizeRow />
       <NodeList />
       <div className="flex flex-col gap-1.5">
         <AddNodeMenu onPick={addNodeAndReveal} />

@@ -1,6 +1,6 @@
 import type { Marker, WorldSampler } from '../../procgen/worldSampler';
 import { EMPTY_TILE } from '../../procgen/values/chunkValues';
-import type { Tileset } from '../../world/tiles/tileset';
+import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
 import type { AsciiViewport } from './asciiViewport';
 
 export const PLAYER_GLYPH = '@';
@@ -28,7 +28,7 @@ export function markerLookup(sampler: WorldSampler, viewport: AsciiViewport): Ma
 
 export function asciiCellAt(
   sampler: WorldSampler,
-  tileset: Tileset,
+  tileset: ReadOnlyTileset,
   markers: Map<string, Marker>,
   x: number,
   y: number,
@@ -42,7 +42,7 @@ export function asciiCellAt(
 
 function tileCell(
   sampler: WorldSampler,
-  tileset: Tileset,
+  tileset: ReadOnlyTileset,
   x: number,
   y: number,
 ): AsciiCell | null {

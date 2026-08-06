@@ -2,7 +2,7 @@ import type { Marker, WorldSampler } from '../procgen/worldSampler';
 import { EMPTY_TILE } from '../procgen/values/chunkValues';
 import { markerLookup } from '../views/ascii/asciiCells';
 import { viewportCenteredOn } from '../views/ascii/asciiViewport';
-import type { Tileset } from '../world/tiles/tileset';
+import type { ReadOnlyTileset } from '../app/readOnlyLibraries';
 import { FACING_NAMES, isInFrontHalfPlane } from '../world/facing';
 import type { AgentMode, AgentPose } from './agentMode';
 
@@ -33,7 +33,7 @@ export function viewSizeFor(mode: AgentMode): number {
 
 export function buildObservation(
   sampler: WorldSampler,
-  tileset: Tileset,
+  tileset: ReadOnlyTileset,
   pose: AgentPose,
   mode: AgentMode,
 ): AgentObservation {
@@ -64,7 +64,7 @@ export function buildObservation(
 
 function observedGlyph(
   sampler: WorldSampler,
-  tileset: Tileset,
+  tileset: ReadOnlyTileset,
   markers: Map<string, Marker>,
   legend: Map<string, LegendEntry>,
   pose: AgentPose,
@@ -83,7 +83,7 @@ function observedGlyph(
 
 function tileGlyph(
   sampler: WorldSampler,
-  tileset: Tileset,
+  tileset: ReadOnlyTileset,
   legend: Map<string, LegendEntry>,
   x: number,
   y: number,

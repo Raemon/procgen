@@ -1,9 +1,7 @@
 import { useRef, useState } from 'react';
-import { EMPTY_VOXEL, voxelAt, voxelIndex, type Prefab } from '../../prefabs/prefabDef';
-import type { PrefabLibrary } from '../../prefabs/prefabLibrary';
-import { resizedPrefab, type PrefabExtent } from '../../prefabs/prefabResize';
-import { rotatedPrefab } from '../../prefabs/prefabRotation';
-import { floodFilledIndices } from './ops/floodFillLayer';
+import { useAppRuntime } from '../../app/appRuntimeContext';
+import { EMPTY_VOXEL, voxelAt, type Prefab } from '../../prefabs/prefabDef';
+import type { PrefabExtent } from '../../prefabs/prefabResize';
 
 export type VoxelTool = 'paint' | 'erase' | 'fill' | 'pick';
 
@@ -28,42 +26,34 @@ export interface PrefabEditor {
   undo(): void;
 }
 
-export function usePrefabEditor(prefab: Prefab, library: PrefabLibrary): PrefabEditor {
+export function usePrefabEditor(prefab: Prefab): PrefabEditor {
+  const { perform } = useAppRuntime();
   const [layer, setLayer] = useState(0);
   const [tool, setTool] = useState<VoxelTool>('paint');
   const [tileId, setTileId] = useState(EMPTY_VOXEL);
   const history = useRef<number[][]>([]);
   const clipboard = useRef<number[] | null>(null);
 
-  function commit(voxels: number[], extent?: Partial<Prefab>): void {
+  function remember(): void {
     history.current = [...history.current.slice(-UNDO_DEPTH), [...prefab.voxels]];
-    library.update(prefab.id, { voxels, ...extent });
   }
 
-  function paintIndices(indices: number[], value: number): void {
-    const voxels = [...prefab.voxels];
-    for (const index of indices) voxels[index] = value;
-    commit(voxels);
+  function act(action: string, params: Record<string, unknown>): void {
+    remember();
+    perform(action, { prefab_id: prefab.id, ...params });
+  }
+
+  function resizeTo(extent: PrefabExtent): void {
+    remember();
+    perform('resize_prefab', { prefab_id: prefab.id, ...extent });
+    setLayer(Math.min(layer, extent.layers - 1));
   }
 
   function paintCell(x: number, y: number): void {
     if (tool === 'pick') return setTileId(voxelAt(prefab, x, y, layer));
     const value = tool === 'erase' ? EMPTY_VOXEL : tileId;
-    if (tool === 'fill') return paintIndices(floodFilledIndices(prefab, layer, x, y), value);
-    paintIndices([voxelIndex(prefab, x, y, layer)], value);
-  }
-
-  function replacePrefab(next: Prefab): void {
-    history.current = [...history.current.slice(-UNDO_DEPTH), [...prefab.voxels]];
-    library.update(prefab.id, {
-      voxels: next.voxels,
-      width: next.width,
-      depth: next.depth,
-      layers: next.layers,
-      anchorX: next.anchorX,
-      anchorY: next.anchorY,
-    });
-    setLayer(Math.min(layer, next.layers - 1));
+    const action = tool === 'fill' ? 'flood_fill_prefab' : 'paint_prefab';
+    act(action, { x, y, layer, tile_id: value });
   }
 
   return {
@@ -76,14 +66,13 @@ export function usePrefabEditor(prefab: Prefab, library: PrefabLibrary): PrefabE
     setTileId,
     paintCell,
     addLayer: () => {
-      replacePrefab(resizedPrefab(prefab, extentOf(prefab, { layers: prefab.layers + 1 })));
+      resizeTo(extentOf(prefab, { layers: prefab.layers + 1 }));
       setLayer(Math.min(prefab.layers, layer + 1));
     },
-    removeLayer: () =>
-      replacePrefab(resizedPrefab(prefab, extentOf(prefab, { layers: prefab.layers - 1 }))),
-    resize: (extent) => replacePrefab(resizedPrefab(prefab, extent)),
-    rotate: () => replacePrefab(rotatedPrefab(prefab, 1)),
-    clearLayer: () => paintIndices(layerIndices(prefab, layer), EMPTY_VOXEL),
+    removeLayer: () => resizeTo(extentOf(prefab, { layers: prefab.layers - 1 })),
+    resize: resizeTo,
+    rotate: () => act('rotate_prefab', {}),
+    clearLayer: () => act('fill_prefab_layer', { layer, tile_id: EMPTY_VOXEL }),
     copyLayer: () => {
       clipboard.current = layerIndices(prefab, layer).map((index) => prefab.voxels[index]!);
     },
@@ -94,12 +83,12 @@ export function usePrefabEditor(prefab: Prefab, library: PrefabLibrary): PrefabE
       layerIndices(prefab, layer).forEach((index, cell) => {
         voxels[index] = copied[cell] ?? EMPTY_VOXEL;
       });
-      commit(voxels);
+      act('set_prefab_voxels', { voxels });
     },
     undo: () => {
       const previous = history.current.pop();
       if (previous && previous.length === prefab.voxels.length) {
-        library.update(prefab.id, { voxels: previous });
+        perform('set_prefab_voxels', { prefab_id: prefab.id, voxels: previous });
       }
     },
   };

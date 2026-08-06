@@ -1,6 +1,6 @@
 import { useEffect, useRef, type PointerEvent } from 'react';
 import { EMPTY_VOXEL, voxelAt, type Prefab } from '../../prefabs/prefabDef';
-import type { Tileset } from '../../world/tiles/tileset';
+import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
 
 const TARGET_CANVAS_PIXELS = 200;
 const EMPTY_INK = '#141b28';
@@ -15,7 +15,7 @@ export function VoxelLayerCanvas({
 }: {
   prefab: Prefab;
   layer: number;
-  tileset: Tileset;
+  tileset: ReadOnlyTileset;
   onPaintCell(x: number, y: number): void;
 }) {
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -52,7 +52,7 @@ function redraw(
   canvas: HTMLCanvasElement,
   prefab: Prefab,
   layer: number,
-  tileset: Tileset,
+  tileset: ReadOnlyTileset,
 ): void {
   const scale = fitCanvasToFootprint(canvas, prefab);
   const ctx = canvas.getContext('2d')!;
@@ -75,7 +75,7 @@ function paintLayer(
   ctx: CanvasRenderingContext2D,
   prefab: Prefab,
   layer: number,
-  tileset: Tileset,
+  tileset: ReadOnlyTileset,
   scale: number,
   alpha: number,
 ): void {
