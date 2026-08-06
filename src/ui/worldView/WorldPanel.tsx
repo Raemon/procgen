@@ -20,7 +20,7 @@ export function WorldPanel() {
           </Button>
         ))}
         <WorldToolbar />
-        <p className={`${HINT_CLASSES} ml-auto`}>{MODE_HINTS[mode]}</p>
+        <p className={`${HINT_CLASSES} ml-auto`}>{MODE_HINTS[mode]} · return opens chat</p>
       </div>
       <WorldStage mode={mode} />
     </div>

@@ -2,6 +2,7 @@ import type { WebSocket } from 'ws';
 import { encodeServer } from '../../src/net/codec';
 import type { KickCode, ServerMsg } from '../../src/net/protocol';
 import type { Entity } from '../game/entities';
+import { newSayAllowance } from './sayAllowance';
 
 export type ConnState = 'AWAITING_HELLO' | 'PLAYING';
 
@@ -15,6 +16,7 @@ export class Connection {
   entity: Entity | null = null;
   readonly knownEntities = new Set<number>();
   inputViolations = 0;
+  readonly sayAllowance = newSayAllowance();
   alive = true;
   helloTimer?: ReturnType<typeof setTimeout>;
 

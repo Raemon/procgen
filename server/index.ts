@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { newAgentApiState } from '../src/agent/api/nodeEntry';
 import { loadServerConfig } from './config';
 import { AgentEntitySync } from './game/agentEntitySync';
+import { ChatFeed } from './game/chatFeed';
 import { afterWorldPersistedByAgent, type DocSyncDeps } from './game/docSync';
 import { EntityRegistry } from './game/entities';
 import { GameLoop } from './game/gameLoop';
@@ -28,6 +29,7 @@ async function main(): Promise<void> {
   const registry = new EntityRegistry();
   const connections = new Set<Connection>();
   const feed = new SnapshotFeed(connections, registry);
+  const chat = new ChatFeed(connections);
   const writeBehind = new WriteBehind(store, registry);
   const agentSync = new AgentEntitySync(agentState.sessions, registry);
   const loop = new GameLoop(registry, worldHost, feed, agentSync);
@@ -56,6 +58,7 @@ async function main(): Promise<void> {
     store,
     registry,
     feed,
+    chat,
     loop,
     connections,
     worldHost,

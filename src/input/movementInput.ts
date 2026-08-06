@@ -11,6 +11,7 @@ export interface MovementDeps {
   moveIntent(forwardInput: number, strafeInput: number): void;
   moveReleased(): void;
   rotate(direction: -1 | 1): void;
+  isSuspended(): boolean;
 }
 
 const ROTATION_KEYS: Readonly<Record<string, -1 | 1>> = { KeyQ: -1, KeyE: 1 };
@@ -25,6 +26,12 @@ export class MovementInput {
     window.addEventListener('blur', this.onBlur);
   }
 
+  releaseHeldKeys(): void {
+    if (this.heldAxes.size === 0) return;
+    this.heldAxes.clear();
+    this.releaseAll();
+  }
+
   dispose(): void {
     window.removeEventListener('keydown', this.onKeyDown);
     window.removeEventListener('keyup', this.onKeyUp);
@@ -34,6 +41,7 @@ export class MovementInput {
 
   private onKeyDown = (event: KeyboardEvent): void => {
     if (event.repeat || isTypingInFormControl(event) || hasModifier(event)) return;
+    if (this.deps.isSuspended()) return;
     const rotation = ROTATION_KEYS[event.code];
     if (rotation) {
       this.deps.rotate(rotation);
@@ -55,9 +63,7 @@ export class MovementInput {
   };
 
   private onBlur = (): void => {
-    if (this.heldAxes.size === 0) return;
-    this.heldAxes.clear();
-    this.releaseAll();
+    this.releaseHeldKeys();
   };
 
   private releaseAll(): void {
