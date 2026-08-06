@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { paintFacePixels } from '../../views/paintFacePixels';
 import type { TileDef } from '../../world/tiles/tileDef';
 import { blankFacePixels, faceGridSize } from '../../world/tiles/tileFaceArt';
-import { Button } from '../controls/Button';
+import { IconButton } from '../controls/IconButton';
 
 export function FaceArtToggle({
   tile,
@@ -14,14 +14,9 @@ export function FaceArtToggle({
   onToggle(): void;
 }) {
   return (
-    <Button
-      className="h-6 w-7 shrink-0 p-0.5"
-      title="pixel art (per cube face)"
-      active={open}
-      onClick={onToggle}
-    >
+    <IconButton title="pixel art (per cube face)" active={open} onClick={onToggle}>
       <TopFacePreview tile={tile} />
-    </Button>
+    </IconButton>
   );
 }
 

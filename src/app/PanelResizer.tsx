@@ -7,12 +7,15 @@ interface DragOrigin {
 
 export function PanelResizer({
   width,
+  disabled,
   onResize,
 }: {
   width: number;
+  disabled?: boolean;
   onResize(width: number): void;
 }) {
   const origin = useRef<DragOrigin | null>(null);
+  if (disabled) return <div className="bg-panel-edge" />;
   return (
     <div
       className="cursor-col-resize bg-panel-edge transition-colors hover:bg-accent"

@@ -1,6 +1,6 @@
 import { useAppRuntime } from '../../app/appRuntimeContext';
 import { useRerenderOnPipelineChange, useRerenderOnTilesetChange } from '../../app/rerenderHooks';
-import { HINT_CLASSES, PANEL_HEADING_CLASSES } from '../controls/fieldClasses';
+import { HINT_CLASSES } from '../controls/fieldClasses';
 import { AddNodeMenu } from './AddNodeMenu';
 import { AddTemplateMenu } from './AddTemplateMenu';
 import { NodeList } from './NodeList';
@@ -22,7 +22,6 @@ export function ProcgenPanel() {
 
   return (
     <>
-      <h2 className={PANEL_HEADING_CLASSES}>procgen</h2>
       <WorldSeedRow />
       <PresetsRow />
       <RandomizeRow />

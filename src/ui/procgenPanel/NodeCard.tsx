@@ -35,7 +35,8 @@ export function NodeCard({
       data-node-id={node.id}
       {...{ [DROP_INDEX_ATTRIBUTE]: index }}
       className={classes(
-        'rounded-md border bg-field p-2',
+        'rounded-md border bg-field',
+        collapsed ? 'w-fit p-1' : 'p-2',
         highlighted === node.id ? 'border-accent' : 'border-panel-edge',
         !node.enabled && 'opacity-45',
         dropMarkerClasses(dropMarker),

@@ -9,7 +9,7 @@ const TABS: { tab: LibraryTab; tip: TooltipContent }[] = [
     tab: 'tiles',
     tip: {
       title: 'tiles',
-      body: 'The materials every other library is built from: symbol, color, walkability and cube art.',
+      body: 'The materials every other library is built from: symbol, walkability and cube art.',
     },
   },
   {
