@@ -1,4 +1,6 @@
 import { useCallback, useState } from 'react';
+import { panelWidthsThatLeaveRoomForWorld } from './panelWidthBudget';
+import { useWindowWidth } from './useWindowWidth';
 
 export type PanelKey = 'library' | 'procgen' | 'agents' | 'log';
 
@@ -25,6 +27,7 @@ export interface PanelLayout {
 export function usePanelLayout(visible: readonly PanelKey[]): PanelLayout {
   const [widths, setWidths] = useState<Readonly<Record<PanelKey, number>>>(START_WIDTHS);
   const [collapsed, setCollapsed] = useState<ReadonlySet<PanelKey>>(new Set());
+  const windowWidth = useWindowWidth();
 
   const resizePanel = useCallback((key: PanelKey, width: number) => {
     setWidths((current) => ({ ...current, [key]: clamped(width) }));
@@ -34,11 +37,19 @@ export function usePanelLayout(visible: readonly PanelKey[]): PanelLayout {
   }, []);
 
   const isCollapsed = (key: PanelKey) => collapsed.has(key);
-  const widthOf = (key: PanelKey) =>
+  const requestedWidthOf = (key: PanelKey) =>
     isCollapsed(key) ? COLLAPSED_PANEL_WIDTH : (widths[key] ?? MIN_PANEL_WIDTH);
 
+  const fitted = panelWidthsThatLeaveRoomForWorld(
+    visible.map(requestedWidthOf),
+    HANDLE_WIDTH,
+    COLLAPSED_PANEL_WIDTH,
+    windowWidth,
+  );
+  const widthOf = (key: PanelKey) => fitted[visible.indexOf(key)] ?? requestedWidthOf(key);
+
   return {
-    gridTemplateColumns: columnTemplate(visible.map(widthOf)),
+    gridTemplateColumns: columnTemplate(fitted),
     widthOf,
     isCollapsed,
     resizePanel,
@@ -47,7 +58,8 @@ export function usePanelLayout(visible: readonly PanelKey[]): PanelLayout {
 }
 
 function columnTemplate(widths: readonly number[]): string {
-  return `${widths.map((width) => `${width}px ${HANDLE_WIDTH}px`).join(' ')} 1fr`;
+  const panelTracks = widths.map((width) => `${width}px ${HANDLE_WIDTH}px`).join(' ');
+  return `${panelTracks} minmax(0, 1fr)`;
 }
 
 function clamped(width: number): number {

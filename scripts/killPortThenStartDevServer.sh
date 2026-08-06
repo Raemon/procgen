@@ -23,7 +23,7 @@ kill_port() {
 kill_port "$VITE_PORT"
 kill_port "$GAME_SERVER_PORT"
 
-npx tsx watch server/index.ts &
+PORT="$GAME_SERVER_PORT" npx tsx watch server/index.ts &
 GAME_SERVER_PID=$!
 trap 'kill $GAME_SERVER_PID 2>/dev/null || true' EXIT
 

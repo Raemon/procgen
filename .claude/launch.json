@@ -3,9 +3,9 @@
   "configurations": [
     {
       "name": "procgen",
-      "runtimeExecutable": "node_modules/.bin/vite",
-      "runtimeArgs": ["--port", "5174", "--strictPort"],
-      "port": 5174
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 1111
     }
   ]
 }

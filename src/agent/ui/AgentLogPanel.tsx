@@ -16,7 +16,7 @@ const ENTRY_INKS: Readonly<Record<WireTranscriptEntry['type'], string>> = {
 export function AgentLogPanel({ selectedId }: { selectedId: string }) {
   const { entries, runStatus } = useTranscript(selectedId);
   const bottom = useRef<HTMLDivElement>(null);
-  useEffect(() => bottom.current?.scrollIntoView({ block: 'nearest' }), [entries.length]);
+  useEffect(() => scrollOwnPanelToBottom(bottom.current), [entries.length]);
   return (
     <>
       {runStatus && <p className={`${HINT_CLASSES} mb-1.5`}>run · {runStatus}</p>}
@@ -34,6 +34,18 @@ export function AgentLogPanel({ selectedId }: { selectedId: string }) {
       )}
     </>
   );
+}
+
+function scrollOwnPanelToBottom(anchor: HTMLElement | null): void {
+  const panel = scrollingAncestorOf(anchor);
+  if (panel) panel.scrollTop = panel.scrollHeight;
+}
+
+function scrollingAncestorOf(element: HTMLElement | null): HTMLElement | null {
+  for (let node = element?.parentElement ?? null; node !== null; node = node.parentElement) {
+    if (node.scrollHeight > node.clientHeight) return node;
+  }
+  return null;
 }
 
 function useTranscript(selectedId: string): {
