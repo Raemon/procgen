@@ -1,8 +1,10 @@
 import '../src/procgen/nodes';
 import { checkPrefabAndCreatureInvariants } from './checkPrefabAndCreatureInvariants';
 import { checkLatentInvariants } from './checkLatentInvariants';
+import { checkLatentSteeringInvariants } from './checkLatentSteeringInvariants';
 import { cameraRelativeStep } from '../src/input/cameraRelativeStep';
 import { PipelineEvaluator } from '../src/procgen/eval/evaluator';
+import { FieldOffsets } from '../src/procgen/eval/fieldOffsets';
 import { allNodeTypes } from '../src/procgen/nodeRegistry';
 import { defaultParams, isKnobParamSpec, outputKindOf } from '../src/procgen/nodeType';
 import { computeNodeSignatures } from '../src/procgen/pipeline/nodeSignatures';
@@ -1285,6 +1287,7 @@ function abilityWorld() {
       elevationAt: () => 0,
       voxelColumnAt: () => null,
     },
+    fieldOffsets: new FieldOffsets(),
     actor: {
       pose: () => pose,
       tryStep: (dx: number, dy: number) => ((pose.x += dx), (pose.y += dy), true),
@@ -1682,6 +1685,7 @@ check(
 
 checkPrefabAndCreatureInvariants(check);
 checkLatentInvariants(check);
+checkLatentSteeringInvariants(check);
 
 if (failures.length > 0) throw new Error(`${failures.length} check(s) failed: ${failures.join(', ')}`);
 console.log('\nall checks passed');

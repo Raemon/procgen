@@ -7,6 +7,7 @@ import { MultiplayerSession } from '../net/multiplayerSession';
 import { CreatureClock } from '../creatures/sim/creatureClock';
 import { CreatureSim } from '../creatures/sim/creatureSim';
 import { PipelineEvaluator } from '../procgen/eval/evaluator';
+import { FieldOffsets } from '../procgen/eval/fieldOffsets';
 import { attachPipelinePersistence, loadStoredPipeline } from '../procgen/pipeline/pipelineStorage';
 import { PipelineStore } from '../procgen/pipeline/pipelineStore';
 import { WorldPresetLibrary } from '../procgen/presets/worldPresetLibrary';
@@ -41,6 +42,7 @@ export interface AppRuntime {
   templates: ReadOnlyTemplateLibrary;
   worldPresets: ReadOnlyWorldPresetLibrary;
   evaluator: PipelineEvaluator;
+  fieldOffsets: FieldOffsets;
   sampler: WorldSampler;
   world: ReadOnlyWorld;
   net: MultiplayerSession;
@@ -65,7 +67,8 @@ export function createAppRuntime(): AppRuntime {
   const creatures = new CreatureLibrary();
   const store = new PipelineStore(loadStoredPipeline());
   attachPipelinePersistence(store);
-  const evaluator = new PipelineEvaluator(store);
+  const fieldOffsets = new FieldOffsets();
+  const evaluator = new PipelineEvaluator(store, fieldOffsets);
   const sampler = new WorldSampler(store, evaluator, tileset, prefabs);
   const isWalkableAt = (x: number, y: number) => isWalkableTile(tileset, sampler.tileAt(x, y));
   const world = new World(isWalkableAt);
@@ -98,6 +101,7 @@ export function createAppRuntime(): AppRuntime {
         worldPresets,
         randomizeHistory,
         regionSampler: sampler,
+        fieldOffsets,
         actor: {
           pose: () => ({ x: world.playerX, y: world.playerY, facing: world.facing }),
           tryStep: (dx, dy) => world.tryStep(dx, dy),
@@ -131,6 +135,7 @@ export function createAppRuntime(): AppRuntime {
   tileset.onChange(applyWorldChange);
   prefabs.onChange(applyWorldChange);
   creatures.onChange(applyWorldChange);
+  fieldOffsets.onChange(() => applyAfterTweaks.schedule());
   world.on('player-moved', () => renderers.recenterAll());
   world.on('player-turned', () => renderers.recenterAll());
 
@@ -142,6 +147,7 @@ export function createAppRuntime(): AppRuntime {
     creatures,
     store,
     evaluator,
+    fieldOffsets,
     sampler,
     world,
     net,

@@ -1,4 +1,5 @@
 import type { CreatureLibrary } from '../creatures/creatureLibrary';
+import type { FieldOffsets } from '../procgen/eval/fieldOffsets';
 import type { PrefabLibrary } from '../prefabs/prefabLibrary';
 import type { RegionSampler } from '../prefabs/captureRegionAsPrefab';
 import type { PipelineStore } from '../procgen/pipeline/pipelineStore';
@@ -26,6 +27,7 @@ export interface AbilityContext {
   worldPresets: WorldPresetLibrary;
   randomizeHistory: RandomizeHistory;
   regionSampler: RegionSampler;
+  fieldOffsets: FieldOffsets;
   actor: AbilityActor;
 }
 

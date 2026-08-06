@@ -1,6 +1,7 @@
 import type { PipelineEvaluator } from '../procgen/eval/evaluator';
 import { kMeansSteps } from './clusterCells';
 import { clusterShapes } from './clusterShapes';
+import { freezeScale } from './frozenScale';
 import { nameClusters } from './latentNames';
 import type { InferenceProgress, LatentReport } from './latentTypes';
 import { principalAxes } from './principalAxes';
@@ -41,6 +42,8 @@ export function* inferLatentSteps(
     clusters: nameClusters(shapes, clusters.centroids, axes),
     axes,
     sealedChannelLabels: sampled.sealedChannelLabels,
+    channelNodeIds: sampled.channelNodeIds,
+    frozenScale: freezeScale(sampled.channels),
   };
 }
 
@@ -75,5 +78,7 @@ function emptyReport(cellsPerSide: number): LatentReport {
     clusters: [],
     axes: [],
     sealedChannelLabels: [],
+    channelNodeIds: [],
+    frozenScale: { sortedSamples: [] },
   };
 }

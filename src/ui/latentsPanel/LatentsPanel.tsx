@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import type { LatentReport, NamedCluster } from '../../latents/latentTypes';
 import { Button } from '../controls/Button';
+import { AxisOffsetSliders } from './AxisOffsetSliders';
 import { CLUSTER_COLORS, LatentMiniMap } from './LatentMiniMap';
+import { SteeringSliders } from './SteeringSliders';
 import type { LatentInferenceState } from './useLatentInference';
 import { useLatentInference } from './useLatentInference';
 
@@ -13,8 +15,16 @@ export function LatentsPanel() {
         Reads every enabled field node with its labels sealed away, then tries to rediscover — and
         name in English — the world&apos;s latent structure from the numbers alone.
       </p>
-      <div>
+      <div className="flex items-center gap-1.5">
         <Button onClick={run}>{state.status === 'running' ? 'running…' : 'infer latents'}</Button>
+        <a
+          href="/explainer.html"
+          target="_blank"
+          rel="noreferrer"
+          className="text-ink-dim underline hover:text-ink"
+        >
+          what is a latent variable?
+        </a>
       </div>
       <StateBody state={state} />
     </div>
@@ -38,13 +48,15 @@ function ReportBody({ report, stale }: { report: LatentReport; stale: boolean })
     return <p className="text-ink-dim">no enabled field nodes to read — add some to the pipeline</p>;
   }
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2.5">
       {stale && <p className="text-ink-dim">the pipeline changed since this run — rerun to refresh</p>}
       <LatentMiniMap report={report} />
       <AxesSummary report={report} />
       {sortedByShare(report.clusters).map(({ cluster, index }) => (
         <ClusterCard key={index} cluster={cluster} index={index} />
       ))}
+      <AxisOffsetSliders report={report} />
+      <SteeringSliders report={report} />
       <RevealChannels labels={report.sealedChannelLabels} />
     </div>
   );

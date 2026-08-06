@@ -6,6 +6,11 @@ const GAME_SERVER = 'http://localhost:8080';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  build: {
+    rollupOptions: {
+      input: { main: 'index.html', explainer: 'explainer.html' },
+    },
+  },
   server: {
     proxy: {
       '/ws': { target: GAME_SERVER.replace('http', 'ws'), ws: true },

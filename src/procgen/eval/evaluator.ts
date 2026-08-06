@@ -7,6 +7,7 @@ import type { PipelineStore } from '../pipeline/pipelineStore';
 import { emptyValueOfKind, type ChunkValue } from '../values/chunkValues';
 import { cacheCapacityForPipeline } from './cacheCapacity';
 import { ChunkValueCache } from './chunkValueCache';
+import { FieldOffsets, NO_FIELD_OFFSETS } from './fieldOffsets';
 import { createChunkGenCtx } from './genCtxFactory';
 
 export class PipelineEvaluator {
@@ -14,7 +15,10 @@ export class PipelineEvaluator {
   private readonly runtimeErrors = new Map<string, string>();
   private signatures = new Map<string, string>();
 
-  constructor(private readonly store: PipelineStore) {
+  constructor(
+    private readonly store: PipelineStore,
+    private readonly offsets: FieldOffsets = NO_FIELD_OFFSETS,
+  ) {
     this.refreshSignatures();
     store.onChange(() => this.refreshSignatures());
   }
@@ -42,12 +46,18 @@ export class PipelineEvaluator {
     chunkX: number,
     chunkY: number,
   ): ChunkValue {
-    const key = `${this.signatures.get(node.id)}|${chunkKey(chunkX, chunkY)}`;
+    const key = `${this.signatures.get(node.id)}|${chunkKey(chunkX, chunkY)}|${this.offsets.revision()}`;
     const cached = this.cache.get(key);
     if (cached !== undefined) return cached;
-    const value = this.generate(node, def, chunkX, chunkY);
+    const value = this.offsetApplied(node.id, this.generate(node, def, chunkX, chunkY));
     this.cache.set(key, value);
     return value;
+  }
+
+  private offsetApplied(nodeId: string, value: ChunkValue): ChunkValue {
+    const offset = this.offsets.offsetFor(nodeId);
+    if (offset === 0 || value.kind !== 'field') return value;
+    return { kind: 'field', field: Float32Array.from(value.field, (cell) => cell + offset) };
   }
 
   private generate(

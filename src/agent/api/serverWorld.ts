@@ -6,6 +6,7 @@ import { creaturesFromStoredJson } from '../../creatures/creatureStorage';
 import { PrefabLibrary } from '../../prefabs/prefabLibrary';
 import { prefabsFromStoredJson } from '../../prefabs/prefabStorage';
 import { PipelineEvaluator } from '../../procgen/eval/evaluator';
+import { FieldOffsets } from '../../procgen/eval/fieldOffsets';
 import { PipelineStore } from '../../procgen/pipeline/pipelineStore';
 import { WorldPresetLibrary } from '../../procgen/presets/worldPresetLibrary';
 import { RandomizeHistory } from '../../procgen/randomize/randomizeHistory';
@@ -31,6 +32,7 @@ export interface ServerWorld {
   templates: TemplateLibrary;
   worldPresets: WorldPresetLibrary;
   randomizeHistory: RandomizeHistory;
+  fieldOffsets: FieldOffsets;
   isWalkable(x: number, y: number): boolean;
   spawn(): { x: number; y: number };
 }
@@ -77,7 +79,8 @@ function buildServerWorld(
   const templates = new TemplateLibrary(sanitizeTemplates(dataFileJson(root, 'templates')));
   const worldPresets = new WorldPresetLibrary(sanitizeWorldPresets(dataFileJson(root, 'worldPresets')));
   const store = new PipelineStore(sanitizePipeline(dataFileJson(root, 'pipeline')));
-  const evaluator = new PipelineEvaluator(store);
+  const fieldOffsets = new FieldOffsets();
+  const evaluator = new PipelineEvaluator(store, fieldOffsets);
   const sampler = new WorldSampler(store, evaluator, tileset, prefabs);
   const isWalkable = (x: number, y: number) => isWalkableTile(tileset, sampler.tileAt(x, y));
   return {
@@ -90,6 +93,7 @@ function buildServerWorld(
     templates,
     worldPresets,
     randomizeHistory,
+    fieldOffsets,
     isWalkable,
     spawn: () => nearestWalkable(0, 0, SPAWN_SEARCH_RADIUS, isWalkable) ?? { x: 0, y: 0 },
   };

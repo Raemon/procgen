@@ -2,6 +2,7 @@ export interface SampledChannels {
   cellsPerSide: number;
   channels: Float32Array[];
   sealedChannelLabels: string[];
+  channelNodeIds: string[];
 }
 
 export interface AxisSummary {
@@ -30,9 +31,21 @@ export interface LatentReport {
   clusters: NamedCluster[];
   axes: AxisSummary[];
   sealedChannelLabels: string[];
+  channelNodeIds: string[];
+  frozenScale: FrozenScale;
 }
 
-export type InferencePhase = 'sampling' | 'ranking' | 'axes' | 'clustering' | 'shaping';
+export interface FrozenScale {
+  sortedSamples: Float32Array[];
+}
+
+export type InferencePhase =
+  | 'sampling'
+  | 'ranking'
+  | 'axes'
+  | 'clustering'
+  | 'shaping'
+  | 'calibrating';
 
 export interface InferenceProgress {
   phase: InferencePhase;

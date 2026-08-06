@@ -33,6 +33,7 @@ export function* sampleChannelSteps(
     cellsPerSide,
     channels,
     sealedChannelLabels: ordered.map((node) => `"${node.label}" (${node.type})`),
+    channelNodeIds: ordered.map((node) => node.id),
   };
 }
 

@@ -5,9 +5,19 @@ export function TooltipBody({ content }: { content: TooltipContent }) {
     <>
       <div className="mb-[3px] text-xs font-semibold text-accent">{content.title}</div>
       {content.body && <div>{content.body}</div>}
+      {content.example && <ExampleNote example={content.example} />}
       {content.options?.length ? <OptionList options={content.options} /> : null}
       {content.when && <WhenToUse when={content.when} />}
     </>
+  );
+}
+
+function ExampleNote({ example }: { example: string }) {
+  return (
+    <div className="mt-1.5 border-t border-dashed border-panel-edge pt-[5px] text-ink-dim">
+      <span className="text-accent italic">for example: </span>
+      {example}
+    </div>
   );
 }
 

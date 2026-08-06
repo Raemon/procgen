@@ -6,6 +6,7 @@ export interface TooltipOption {
 export interface TooltipContent {
   title: string;
   body?: string;
+  example?: string;
   options?: TooltipOption[];
   when?: string;
 }
