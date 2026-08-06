@@ -9,6 +9,7 @@ import { emptyPipeline, type PipelineState } from '../src/procgen/pipeline/pipel
 import { PipelineStore } from '../src/procgen/pipeline/pipelineStore';
 import { sanitizePipeline } from '../src/procgen/pipeline/sanitizePipeline';
 import { examplePipelines } from '../src/procgen/presets/examplePipelines';
+import { sanitizeWorldPresets } from '../src/procgen/presets/worldPreset';
 import { builtInTemplates } from '../src/procgen/templates/builtInTemplates';
 import { stampTemplateInto } from '../src/procgen/templates/stampTemplate';
 import { templateFromNodes } from '../src/procgen/templates/templateFromNodes';
@@ -1244,6 +1245,85 @@ check(
   sanitizeTemplates(JSON.parse(JSON.stringify([captured]))).length === 1,
 );
 check('templates reject junk', sanitizeTemplates([{ name: '', nodes: [] }, null, 7]).length === 0);
+
+function presetStateNamed(name: string): PipelineState {
+  return sanitizePipeline(examplePipelines().find((preset) => preset.name === name)!.state);
+}
+
+function tileIdsInRect(
+  sampler: WorldSampler,
+  centerX: number,
+  centerY: number,
+  halfWidth: number,
+  halfHeight: number,
+): Set<number> {
+  const seen = new Set<number>();
+  for (let y = centerY - halfHeight; y < centerY + halfHeight; y++) {
+    for (let x = centerX - halfWidth; x < centerX + halfWidth; x++) seen.add(sampler.tileAt(x, y));
+  }
+  return seen;
+}
+
+const metropolis = worldFromState(presetStateNamed('fallen metropolis'));
+const metropolisAgain = worldFromState(presetStateNamed('fallen metropolis'));
+check(
+  'the fallen metropolis preset survives sanitize with all nodes',
+  presetStateNamed('fallen metropolis').nodes.length === 28,
+);
+check(
+  'the fallen metropolis regenerates identically from the same seed',
+  fieldBytes(metropolis.evaluator, 'n9', 1, 1) === fieldBytes(metropolisAgain.evaluator, 'n9', 1, 1) &&
+    tileBytes(metropolis.evaluator, 'n10', 1, 1) === tileBytes(metropolisAgain.evaluator, 'n10', 1, 1),
+);
+const metropolisTiles = tileIdsInRegion(metropolis.sampler, 96);
+check(
+  'the fallen metropolis shows stone walls, flagstone streets, rubble and reclaiming grass',
+  [17, 16, 9, 2].every((tile) => metropolisTiles.has(tile)),
+);
+check('the risen sea drowns part of the fallen metropolis', metropolisTiles.has(0));
+const districtFate = asField(metropolis.evaluator.valueFor('n9', 0, 0))!;
+const districtFateEast = asField(metropolis.evaluator.valueFor('n9', 1, 0))!;
+check(
+  'district fate varies between districts but stays inside 0..1',
+  JSON.stringify(Array.from(districtFate)) !== JSON.stringify(Array.from(districtFateEast)) &&
+    [...districtFate, ...districtFateEast].every((value) => value >= 0 && value <= 1),
+);
+
+const climates = worldFromState(presetStateNamed('pole to equator'));
+const climatesAgain = worldFromState(presetStateNamed('pole to equator'));
+check(
+  'the pole to equator preset survives sanitize with all nodes',
+  presetStateNamed('pole to equator').nodes.length === 41,
+);
+check(
+  'the pole to equator preset regenerates identically from the same seed',
+  fieldBytes(climates.evaluator, 'n20', 1, 1) === fieldBytes(climatesAgain.evaluator, 'n20', 1, 1) &&
+    tileBytes(climates.evaluator, 'n31', 0, -20) === tileBytes(climatesAgain.evaluator, 'n31', 0, -20),
+);
+const polarTiles = tileIdsInRect(climates.sampler, 0, -700, 96, 16);
+const temperateTiles = tileIdsInRect(climates.sampler, 0, 0, 96, 16);
+const desertTiles = tileIdsInRect(climates.sampler, 0, 700, 96, 16);
+check('the far north of pole to equator is snow or ice', polarTiles.has(7) || polarTiles.has(6));
+check('the middle latitudes of pole to equator grow grass', temperateTiles.has(2));
+check('the far south of pole to equator is sand', desertTiles.has(1));
+check(
+  'grass belongs to the middle latitudes, not the polar cap',
+  !polarTiles.has(2) && temperateTiles.has(2),
+);
+
+check(
+  'a saved world preset round-trips through storage with its seed and nodes',
+  (() => {
+    const saved = sanitizeWorldPresets(
+      JSON.parse(JSON.stringify([{ name: 'mine', description: 'combo', state: earthlikeState() }])),
+    );
+    return saved.length === 1 && saved[0]!.state.seed === earthlikeState().seed && saved[0]!.state.nodes.length === earthlikeState().nodes.length;
+  })(),
+);
+check(
+  'world presets reject junk',
+  sanitizeWorldPresets([{ name: '', state: earthlikeState() }, { name: 'empty', state: { nodes: [] } }, null, 7]).length === 0,
+);
 
 checkPrefabAndCreatureInvariants(check);
 
