@@ -160,6 +160,8 @@ function customScriptDemo(): ExamplePipeline {
 function endlessLabyrinth(): ExamplePipeline {
   return {
     name: 'endless labyrinth',
+    description:
+      'A single maze node: one labyrinth per chunk, stitched to its neighbors through border doors.',
     state: {
       seed: 41,
       nodes: [
@@ -167,6 +169,8 @@ function endlessLabyrinth(): ExamplePipeline {
           id: 'n1',
           type: 'mazeChunk',
           label: 'labyrinth',
+          comment:
+            'One node is the whole world: each chunk carves its own maze and the door-per-edge stitching keeps every chunk reachable. Classic lattice + dfs for the traditional long-corridor look; a little braid so it is not all dead ends.',
           enabled: true,
           params: {
             lattice: 'classic',
