@@ -6,7 +6,7 @@ const ANTHROPIC_VERSION = '2023-06-01';
 const MAX_ATTEMPTS = 5;
 const FIRST_BACKOFF_MS = 1000;
 const MAX_BACKOFF_MS = 16000;
-// Retryable per the API's error table: rate limits, overload, transient server faults.
+const MAX_RETRY_AFTER_MS = 180000;
 const RETRYABLE_STATUSES: ReadonlySet<number> = new Set([408, 409, 429, 500, 502, 503, 504, 529]);
 
 export interface AnthropicMessage {
@@ -67,7 +67,6 @@ async function attemptCall(call: AnthropicCall): Promise<CallOutcome> {
       body: JSON.stringify(requestBody(call)),
     });
   } catch (error) {
-    // No response at all: DNS, TLS, connection reset. Always worth another try.
     return { ok: false, retryable: true, error: `network error: ${String(error)}` };
   }
   if (response.ok) return { ok: true, reply: (await response.json()) as AnthropicReply };
@@ -79,9 +78,7 @@ async function attemptCall(call: AnthropicCall): Promise<CallOutcome> {
   };
 }
 
-// tools render before system, so one breakpoint on the last system block caches
-// both. Both are fixed for the life of a run, which is what makes that worth doing.
-function requestBody(call: AnthropicCall) {
+function requestBody(call: AnthropicCall): object {
   return {
     model: call.model,
     max_tokens: call.maxTokens,
@@ -96,12 +93,11 @@ function retryAfterMs(response: Response): number | undefined {
   if (!header) return undefined;
   const seconds = Number(header);
   if (!Number.isFinite(seconds) || seconds < 0) return undefined;
-  return Math.min(seconds * 1000, MAX_BACKOFF_MS);
+  return Math.min(seconds * 1000, MAX_RETRY_AFTER_MS);
 }
 
 function backoffMs(attempt: number): number {
   const flat = Math.min(FIRST_BACKOFF_MS * 2 ** (attempt - 1), MAX_BACKOFF_MS);
-  // Jitter so several agents retrying at once don't march in step.
   return flat / 2 + Math.random() * (flat / 2);
 }
 

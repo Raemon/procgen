@@ -1,11 +1,8 @@
-import '../../abilities/index'; // registers every ability; without it the registry is empty
+import '../../abilities/index';
 import { abilitiesForMode } from '../../abilities/abilityRegistry';
 import type { AbilityParamSpec, AbilitySpec } from '../../abilities/ability';
 import type { AgentMode } from '../agentMode';
 
-// Every world action is its own tool with a real schema, so the model can't
-// invent a param name the ability never declared. The catalog is fixed per mode,
-// which is what lets the whole tools block sit behind a cache breakpoint.
 export const META_TOOLS = {
   finish: 'finish',
   remember: 'remember',
@@ -18,6 +15,10 @@ export const META_TOOLS = {
 } as const;
 
 const META_TOOL_NAMES: ReadonlySet<string> = new Set(Object.values(META_TOOLS));
+const GOD_ONLY_META_TOOLS: ReadonlySet<string> = new Set([
+  META_TOOLS.inspectPipeline,
+  META_TOOLS.inspectNodeTypes,
+]);
 
 export interface ToolDefinition {
   name: string;
@@ -25,15 +26,16 @@ export interface ToolDefinition {
   input_schema: object;
 }
 
-export function isMetaTool(name: string): boolean {
-  return META_TOOL_NAMES.has(name);
+export function isMetaTool(mode: AgentMode, name: string): boolean {
+  if (!META_TOOL_NAMES.has(name)) return false;
+  return mode === 'god' || !GOD_ONLY_META_TOOLS.has(name);
 }
 
 export function toolDefinitions(mode: AgentMode): ToolDefinition[] {
   return [...abilityTools(mode), ...metaTools(mode)];
 }
 
-export function abilityTools(mode: AgentMode): ToolDefinition[] {
+function abilityTools(mode: AgentMode): ToolDefinition[] {
   return abilitiesForMode(mode).map(abilityTool);
 }
 
@@ -58,8 +60,6 @@ function paramSchema(param: AbilityParamSpec): object {
 function typeSchema(kind: AbilityParamSpec['kind']): object {
   if (kind === 'int') return { type: 'integer' };
   if (kind === 'number') return { type: 'number' };
-  // nodeId is a node's string id ('n1'); json is a value the ability parses itself,
-  // and the schema has to stay open because its shape differs per node type.
   if (kind === 'json') return {};
   return { type: 'string' };
 }

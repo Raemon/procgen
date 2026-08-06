@@ -245,8 +245,8 @@ function agentJson(session: AgentSession) {
     run_steps: session.run?.steps ?? 0,
     run_budget_usd: session.run?.budgetUsd ?? null,
     run_spent_usd: session.run?.spentUsd ?? null,
-    memory_notes: session.notebook.notes.length,
-    scripts: session.notebook.scripts.length,
+    notebook_notes: session.notebook.notes.length,
+    notebook_scripts: session.notebook.scripts.length,
     created_at: session.createdAt,
   };
 }

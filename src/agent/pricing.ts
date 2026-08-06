@@ -1,8 +1,6 @@
-// Anthropic list prices, US dollars per million tokens (checked 2026-06-24).
-// Cache reads bill at 0.1x the input rate; cache writes at 1.25x for the default
-// 5-minute TTL. Prices are list rates, so a run's estimate is an upper bound for
-// anyone on a discount.
-const RATES: Readonly<Record<string, ModelRates>> = {
+export const LIST_PRICES_CHECKED_ON = '2026-06-24';
+
+const USD_PER_MTOK: Readonly<Record<string, ModelRates>> = {
   'claude-fable-5': { inputPerMTok: 10, outputPerMTok: 50 },
   'claude-mythos-5': { inputPerMTok: 10, outputPerMTok: 50 },
   'claude-opus-5': { inputPerMTok: 5, outputPerMTok: 25 },
@@ -14,9 +12,7 @@ const RATES: Readonly<Record<string, ModelRates>> = {
   'claude-haiku-4-5': { inputPerMTok: 1, outputPerMTok: 5 },
 };
 
-// What an unpriced model id costs us to assume: the most expensive rate we know.
-// Overestimating keeps the budget a real ceiling instead of a suggestion.
-const UNKNOWN_MODEL_RATES: ModelRates = { inputPerMTok: 10, outputPerMTok: 50 };
+const DEAREST_KNOWN_RATES: ModelRates = { inputPerMTok: 10, outputPerMTok: 50 };
 
 const CACHE_READ_MULTIPLIER = 0.1;
 const CACHE_WRITE_MULTIPLIER = 1.25;
@@ -37,8 +33,8 @@ export function modelIsPriced(model: string): boolean {
   return ratesEntry(model) !== null;
 }
 
-export function ratesForModel(model: string): ModelRates {
-  return ratesEntry(model) ?? UNKNOWN_MODEL_RATES;
+function ratesForModel(model: string): ModelRates {
+  return ratesEntry(model) ?? DEAREST_KNOWN_RATES;
 }
 
 export function usageCostUsd(model: string, usage: TokenUsage | undefined): number {
@@ -58,9 +54,8 @@ export function formatUsd(amount: number): string {
 }
 
 function ratesEntry(model: string): ModelRates | null {
-  // Model ids may carry a date suffix (claude-haiku-4-5-20251001); the alias prefix prices it.
-  const alias = Object.keys(RATES).find((each) => model === each || model.startsWith(`${each}-`));
-  return alias ? (RATES[alias] ?? null) : null;
+  const alias = Object.keys(USD_PER_MTOK).find((each) => model === each || model.startsWith(`${each}-`));
+  return alias ? (USD_PER_MTOK[alias] ?? null) : null;
 }
 
 function count(raw: number | undefined): number {

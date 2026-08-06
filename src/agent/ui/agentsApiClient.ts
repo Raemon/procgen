@@ -11,8 +11,8 @@ export interface RosterAgent {
   run_steps: number;
   run_budget_usd: number | null;
   run_spent_usd: number | null;
-  memory_notes: number;
-  scripts: number;
+  notebook_notes: number;
+  notebook_scripts: number;
   created_at: number;
 }
 

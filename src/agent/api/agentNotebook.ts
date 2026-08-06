@@ -1,7 +1,6 @@
-// The notebook is what an agent keeps across history trimming and across runs:
-// notes it chose to remember, and scripts it wrote for itself. It lives on the
-// session rather than the run, and every observation repeats it back, so the
-// agent never has to have it in the conversation window to use it.
+import { parseScriptForMode, scriptFaultText } from './scriptSyntax';
+import type { AgentMode } from '../agentMode';
+
 export interface MemoryNote {
   id: string;
   note: string;
@@ -33,12 +32,11 @@ export function remember(notebook: AgentNotebook, note: string): string {
   const id = `m${notebook.nextNoteNumber}`;
   notebook.nextNoteNumber += 1;
   notebook.notes.push({ id, note: text });
-  // Oldest notes fall off first; the agent can re-save anything it still wants.
   const dropped = notebook.notes.splice(0, Math.max(0, notebook.notes.length - MAX_NOTES));
-  const note1 = `remembered as ${id}`;
+  const saved = `remembered as ${id}`;
   return dropped.length === 0
-    ? note1
-    : `${note1} (memory was full, so ${dropped.map((each) => each.id).join(', ')} fell off)`;
+    ? saved
+    : `${saved} (memory was full, so ${dropped.map((each) => each.id).join(', ')} fell off)`;
 }
 
 export function forget(notebook: AgentNotebook, id: string): string {
@@ -50,10 +48,13 @@ export function forget(notebook: AgentNotebook, id: string): string {
 
 export function writeScript(
   notebook: AgentNotebook,
+  mode: AgentMode,
   script: SavedScript,
 ): { ok: true; summary: string } | { ok: false; hint: string } {
   const name = script.name.trim();
   if (name === '') return { ok: false, hint: 'a script needs a name' };
+  const parsed = parseScriptForMode(mode, script.body);
+  if (!parsed.ok) return { ok: false, hint: `not saved — ${scriptFaultText(parsed.fault)}` };
   const existing = notebook.scripts.findIndex((each) => each.name === name);
   if (existing === -1 && notebook.scripts.length >= MAX_SCRIPTS) {
     return { ok: false, hint: `you already have ${MAX_SCRIPTS} scripts; delete one first` };

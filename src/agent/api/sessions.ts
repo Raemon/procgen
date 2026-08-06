@@ -12,7 +12,6 @@ export interface AgentSession {
   facing: FacingIndex;
   createdAt: number;
   lastAction: { action: string; outcome: string } | null;
-  // Notes and scripts the agent wrote for itself. Outlives any one run.
   notebook: AgentNotebook;
   run: AutopilotRun | null;
 }
@@ -29,7 +28,6 @@ export interface AutopilotRun {
   goal: string;
   model: string;
   status: RunStatus;
-  // World actions performed, reported for the roster; the budget is what stops a run.
   steps: number;
   budgetUsd: number;
   spentUsd: number;

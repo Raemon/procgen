@@ -144,13 +144,24 @@ world only changes when someone acts on it.
 
 ## Autopilot runs
 
-A run started through POST .../run drives the agent with an LLM, which gets one
-tool per action above plus four of its own: remember and forget keep notes,
-write_script and run_script keep replayable action sequences. Both outlive the
-run, and both are repeated back in every observation the model sees, along with
-what is left of the run's dollar budget. A script is a list of these same
-actions — one per line, params as key=value, optionally prefixed with
-"repeat N" — so it can do nothing an agent could not do a step at a time.
+A run started through POST .../run drives the agent with an LLM. It gets one tool
+per action above, plus six of its own:
+
+| tool | what it does |
+| --- | --- |
+| remember | save a note to memory |
+| forget | delete a memory note |
+| write_script | save a named script, replacing one of the same name |
+| run_script | run a saved script |
+| delete_script | delete a saved script |
+| finish | end the run with a summary |
+
+Notes and scripts outlive the run, and both are repeated back in every
+observation the model sees, along with what is left of the run's dollar budget.
+A script is a list of these same actions — one per line, params as key=value,
+optionally prefixed with "repeat N" — so it can do nothing an agent could not do
+a step at a time. Scripts are checked against this mode's actions and their
+params when they are written, not when they are run.
 `;
 
 export function buildApiDocs(tileset: ReadOnlyTileset): string {

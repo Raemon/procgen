@@ -53,9 +53,9 @@ export function AgentCard({
             {formatUsd(agent.run_spent_usd)}/{formatUsd(agent.run_budget_usd)}
           </span>
         )}
-        {(agent.memory_notes > 0 || agent.scripts > 0) && (
+        {(agent.notebook_notes > 0 || agent.notebook_scripts > 0) && (
           <span title="memory notes / saved scripts">
-            {agent.memory_notes}m {agent.scripts}s
+            {agent.notebook_notes}m {agent.notebook_scripts}s
           </span>
         )}
         <span className="ml-auto flex gap-1">

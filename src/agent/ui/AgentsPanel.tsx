@@ -83,19 +83,21 @@ export function AgentsPanel({
           value={settings.goal}
           onChange={(event) => setSettings({ ...settings, goal: event.target.value })}
         />
-        <label className={`${HINT_CLASSES} flex items-center gap-1.5`}>
-          budget $
-          <input
-            type="number"
-            min={0.01}
-            max={100}
-            step={0.25}
-            className={`${FIELD_CLASSES} w-16`}
-            value={settings.budgetUsd}
-            onChange={(event) => setSettings({ ...settings, budgetUsd: Number(event.target.value) })}
-          />
-          <span>spent at list prices; the run stops when it runs out</span>
-        </label>
+        <div className={`${HINT_CLASSES} flex items-center gap-1.5`}>
+          <label className="flex items-center gap-1.5">
+            budget $
+            <input
+              type="number"
+              min={0.01}
+              max={100}
+              step={0.25}
+              className={`${FIELD_CLASSES} w-16`}
+              value={settings.budgetUsd}
+              onChange={(event) => setSettings({ ...settings, budgetUsd: Number(event.target.value) })}
+            />
+          </label>
+          <span>at list prices; the run stops when it runs out</span>
+        </div>
       </div>
       <div className="mt-2.5 flex flex-col gap-1.5">
         {agents.map((agent) => (
