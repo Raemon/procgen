@@ -201,7 +201,6 @@ function run(session: AgentSession, access: WorldAccess, body: unknown): ApiResp
   const opts = body as {
     goal?: unknown;
     model?: unknown;
-    max_steps?: unknown;
     budget_usd?: unknown;
     anthropic_api_key?: unknown;
   } | null;
@@ -210,7 +209,6 @@ function run(session: AgentSession, access: WorldAccess, body: unknown): ApiResp
   startAutopilot(session, access, {
     goal,
     model: typeof opts?.model === 'string' ? opts.model : 'claude-sonnet-5',
-    maxSteps: clampSteps(opts?.max_steps),
     budgetUsd: clampBudget(opts?.budget_usd),
     apiKey:
       typeof opts?.anthropic_api_key === 'string' && opts.anthropic_api_key !== ''
@@ -218,11 +216,6 @@ function run(session: AgentSession, access: WorldAccess, body: unknown): ApiResp
         : (process.env.ANTHROPIC_API_KEY ?? null),
   });
   return json(202, { agent: agentJson(session) });
-}
-
-function clampSteps(raw: unknown): number {
-  const steps = typeof raw === 'number' && Number.isFinite(raw) ? Math.floor(raw) : 30;
-  return Math.max(1, Math.min(200, steps));
 }
 
 function clampBudget(raw: unknown): number {
@@ -252,6 +245,8 @@ function agentJson(session: AgentSession) {
     run_steps: session.run?.steps ?? 0,
     run_budget_usd: session.run?.budgetUsd ?? null,
     run_spent_usd: session.run?.spentUsd ?? null,
+    memory_notes: session.notebook.notes.length,
+    scripts: session.notebook.scripts.length,
     created_at: session.createdAt,
   };
 }

@@ -11,6 +11,8 @@ export interface RosterAgent {
   run_steps: number;
   run_budget_usd: number | null;
   run_spent_usd: number | null;
+  memory_notes: number;
+  scripts: number;
   created_at: number;
 }
 
@@ -23,7 +25,6 @@ export interface WireTranscriptEntry {
 export interface RunRequest {
   goal: string;
   model: string;
-  maxSteps: number;
   budgetUsd: number;
   apiKey: string | null;
 }
@@ -53,7 +54,6 @@ export async function startRun(id: string, run: RunRequest): Promise<void> {
     body: JSON.stringify({
       goal: run.goal,
       model: run.model,
-      max_steps: run.maxSteps,
       budget_usd: run.budgetUsd,
       anthropic_api_key: run.apiKey ?? undefined,
     }),

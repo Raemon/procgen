@@ -1,6 +1,7 @@
 import type { FacingIndex } from '../../world/facing';
 import type { AbilityActor } from '../../abilities/ability';
 import type { AgentMode, AgentPose } from '../agentMode';
+import { newNotebook, type AgentNotebook } from './agentNotebook';
 
 export interface AgentSession {
   id: string;
@@ -11,6 +12,8 @@ export interface AgentSession {
   facing: FacingIndex;
   createdAt: number;
   lastAction: { action: string; outcome: string } | null;
+  // Notes and scripts the agent wrote for itself. Outlives any one run.
+  notebook: AgentNotebook;
   run: AutopilotRun | null;
 }
 
@@ -26,8 +29,8 @@ export interface AutopilotRun {
   goal: string;
   model: string;
   status: RunStatus;
+  // World actions performed, reported for the roster; the budget is what stops a run.
   steps: number;
-  maxSteps: number;
   budgetUsd: number;
   spentUsd: number;
   transcript: TranscriptEntry[];
@@ -51,6 +54,7 @@ export function newSession(
     facing: 0,
     createdAt: Date.now(),
     lastAction: null,
+    notebook: newNotebook(),
     run: null,
   };
 }

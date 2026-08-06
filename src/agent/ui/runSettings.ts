@@ -1,7 +1,6 @@
 export interface RunSettings {
   model: string;
   goal: string;
-  maxSteps: number;
   budgetUsd: number;
 }
 
@@ -15,7 +14,6 @@ export function defaultRunSettings(): RunSettings {
   return {
     model: MODEL_OPTIONS[0].value,
     goal: 'Explore and describe the terrain you find.',
-    maxSteps: 30,
     budgetUsd: 1,
   };
 }
