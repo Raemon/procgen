@@ -72,17 +72,39 @@ import { nodeTypesJson } from '../src/agent/nodeCatalog';
 import { buildObservation, GOD_VIEW_SIZE, SELF_GLYPH } from '../src/agent/observation';
 import { observationText } from '../src/agent/observationText';
 import { facingRelativeStep } from '../src/input/facingRelativeStep';
-import { isInFrontHalfPlane, turnedFacing, type FacingIndex } from '../src/world/facing';
+import {
+  facingVector,
+  facingYawRadians,
+  isInFrontHalfPlane,
+  turnedFacing,
+  type FacingIndex,
+} from '../src/world/facing';
+import { Vector3 } from 'three';
 import {
   CHARACTER_SIGHT_RADIUS_TILES,
   CHARACTER_HAZE_START_TILES,
   CHARACTER_VIEW_SIZE,
-  fogDistancesFromCamera,
-  groundRadiusToStreamTiles,
   isWithinCharacterSight,
 } from '../src/world/vision/characterSight';
+import { CharacterCamera } from '../src/views/view3d/characterCamera';
+import { createCharacterFog } from '../src/views/view3d/daylitScene';
 
 const failures: string[] = [];
+
+function firstPersonCamera(
+  x = 0,
+  y = 0,
+  elevation = 0,
+  facing: FacingIndex = 0,
+): CharacterCamera {
+  const camera = new CharacterCamera();
+  camera.update(0, x, y, elevation, facingYawRadians(facing));
+  return camera;
+}
+
+function round(value: number): number {
+  return Math.round(value * 1000) / 1000;
+}
 const tileset = new Tileset();
 
 function check(name: string, condition: boolean): void {
@@ -1142,15 +1164,29 @@ check('character observation blanks everything behind the agent', (() => {
   return true;
 })());
 check('the character view grid is exactly wide enough to hold the sight radius', CHARACTER_VIEW_SIZE === CHARACTER_SIGHT_RADIUS_TILES * 2 + 1);
-check('the character view spans the same tiles the 2.5D fog leaves visible', (() => {
-  for (const cameraDistance of [2.5, 6, 9, CHARACTER_SIGHT_RADIUS_TILES]) {
-    const fog = fogDistancesFromCamera(cameraDistance);
-    if (fog.opaque - cameraDistance !== CHARACTER_SIGHT_RADIUS_TILES) return false;
-    if (fog.haze - cameraDistance !== CHARACTER_HAZE_START_TILES) return false;
-    if (!(fog.haze < fog.opaque)) return false;
-    if (groundRadiusToStreamTiles(cameraDistance) < fog.opaque - cameraDistance) return false;
+check('the 2.5D fog turns opaque exactly at the sight radius', (() => {
+  const fog = createCharacterFog();
+  return fog.far === CHARACTER_SIGHT_RADIUS_TILES && fog.near === CHARACTER_HAZE_START_TILES;
+})());
+check('the character camera renders nothing past the fog', firstPersonCamera().camera.far === CHARACTER_SIGHT_RADIUS_TILES);
+check('the character camera stands in the player tile, so nothing behind the player can reach the screen', (() => {
+  const camera = firstPersonCamera(3, 7, 2);
+  const eye = camera.camera.position;
+  return eye.x === 3.5 && eye.z === 7.5 && eye.y > 2 && eye.y < 2 + 2;
+})());
+check('the character camera looks along the facing it is given', (() => {
+  const forward = new Vector3();
+  const seen = new Set<string>();
+  for (let facing = 0; facing < 8; facing++) {
+    firstPersonCamera(0, 0, 0, facing as FacingIndex).camera.getWorldDirection(forward);
+    const step = facingVector(facing as FacingIndex);
+    if (Math.sign(round(forward.x)) !== step.dx || Math.sign(round(forward.z)) !== step.dy) {
+      return false;
+    }
+    if (forward.y >= 0) return false;
+    seen.add(`${round(forward.x)},${round(forward.z)}`);
   }
-  return true;
+  return seen.size === 8;
 })());
 check('character observation blanks every tile the fog would swallow', (() => {
   const center = Math.floor(CHARACTER_VIEW_SIZE / 2);

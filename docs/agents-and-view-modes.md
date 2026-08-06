@@ -7,7 +7,7 @@ the agent API rather than renderings of the world:
 | --- | --- | --- |
 | 3-D God | Three.js follow camera, free pan/zoom, Q/E rotates the camera in quarter turns | WASD camera-relative |
 | Agent God | the literal text a god-mode API agent receives for the player's position | WASD compass |
-| 2.5D Character | Three.js camera locked behind the player's facing, fogged out at the sight radius, Q/E turns the player in 45° steps | W/S forward/back, A/D strafe |
+| 2.5D Character | first-person Three.js camera at the player's eye, fogged out at the sight radius, Q/E turns the player in 45° steps | W/S forward/back, A/D strafe |
 | Agent Character | the literal text a character-mode API agent receives for the player's pose | same as 2.5D Character |
 
 ## Parity rule
@@ -34,19 +34,29 @@ place either view learns how far a character can see:
 
 God mode sees its full window and is told its facing.
 
-The 2.5D character view spends that same constant on `THREE.Fog`:
-`fogDistancesFromCamera` turns the camera's current distance to the player into
-the fog's near and far planes, so the wall of fog stays anchored to the player
-rather than to the camera as the wheel zooms, and it turns opaque at the ring
-where the agent grid runs out of glyphs. The camera's far plane is pinned to
-that same opaque distance — geometry is culled exactly where it would have been
-painted pure fog anyway — and the chunk streamer is asked only for
-`groundRadiusToStreamTiles`, which is why character mode streams a couple of
-chunks instead of the dozens the old zoom-derived radius asked for.
+The 2.5D character view is **first person** for the same reason. Its camera
+stands in the player's own tile at eye height and looks along the facing, so a
+third-person camera can no longer pull back far enough to show ground the agent
+is told is behind it, and the player mesh is hidden while that camera is live.
+Because the eye is the player, three.js fog — which measures from the camera —
+measures from the player too: `createCharacterFog` is just the two constants,
+`CHARACTER_HAZE_START_TILES` to `CHARACTER_SIGHT_RADIUS_TILES`, with no
+distance correction to get wrong. The camera's far plane is the sight radius as
+well, so geometry is culled exactly where it would have been painted pure fog,
+and the chunk streamer is asked for the sight radius rather than anything
+derived from zoom, which is why character mode streams a couple of chunks
+instead of the dozens the old third-person camera asked for. The wheel narrows
+the field of view instead of pulling the camera back; that changes how much of
+the half-disc is on screen at once and never how far the player can see.
+
+What still differs: the human's field of view is narrower than the agent's flat
+180°, and in first person terrain and prefabs occlude, so the human sometimes
+sees *less* than the grid shows. Never more.
 
 Changing what a character can see therefore means changing one constant.
-`npm run check` asserts the grid size, the fog distances, the streaming radius
-and the blanked tiles all still agree with it.
+`npm run check` asserts the grid size, the fog distances, the camera's far
+plane, the eye's position and facing, and the blanked tiles all still agree
+with it.
 
 ## The API
 

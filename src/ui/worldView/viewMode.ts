@@ -21,7 +21,7 @@ export const MODE_HINTS: Readonly<Record<ViewMode, string>> = {
   '3d-god':
     'WASD/arrows move (camera-relative) · Q/E rotate camera · wheel zoom · drag pan · double-click recenters',
   'agent-god': 'WASD/arrows move (compass) · this text is exactly what a god-mode API agent receives',
-  character: `W/S forward/back · A/D strafe · Q/E turn 45° · wheel zoom · fog closes in at ${CHARACTER_SIGHT_RADIUS_TILES} tiles, exactly what Agent Character sees`,
+  character: `first person · W/S forward/back · A/D strafe · Q/E turn 45° · wheel narrows the field of view · fog closes in at ${CHARACTER_SIGHT_RADIUS_TILES} tiles, exactly what Agent Character sees`,
   'agent-character':
     'W/S forward/back · A/D strafe · Q/E turn 45° · this text is exactly what a character-mode API agent receives',
 };

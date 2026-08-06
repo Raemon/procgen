@@ -48,11 +48,12 @@ Five panels:
    thinking, messages, tool calls and their outcomes.
 5. **World view** — four modes over the same world. **3-D God** and **2.5D
    Character** are three.js views that stream chunk meshes around the player;
-   **Agent God** and **Agent Character** render the exact observation text the
-   API sends an agent, so you can read what an LLM is working from. WASD/arrows
-   to walk, Q/E to rotate the god camera or turn the character 45°, wheel to
-   zoom. `capture` lifts a dragged rectangle into a prefab; `life` pauses or
-   runs the creature simulation.
+   the character one is first person and fogs out at the same sight radius the
+   agent grid covers. **Agent God** and **Agent Character** render the exact
+   observation text the API sends an agent, so you can read what an LLM is
+   working from. WASD/arrows to walk, Q/E to rotate the god camera or turn the
+   character 45°, wheel to zoom. `capture` lifts a dragged rectangle into a
+   prefab; `life` pauses or runs the creature simulation.
 
 ## Agents
 

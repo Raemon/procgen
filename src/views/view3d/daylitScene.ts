@@ -1,4 +1,8 @@
 import * as THREE from 'three';
+import {
+  CHARACTER_HAZE_START_TILES,
+  CHARACTER_SIGHT_RADIUS_TILES,
+} from '../../world/vision/characterSight';
 
 export const SKY_INK = '#0a0d13';
 const PLAYER_INK = 0xffd86a;
@@ -9,6 +13,10 @@ export function createDaylitScene(): THREE.Scene {
   scene.add(new THREE.AmbientLight(0xbfd0e0, 0.55));
   scene.add(sunlight());
   return scene;
+}
+
+export function createCharacterFog(): THREE.Fog {
+  return new THREE.Fog(SKY_INK, CHARACTER_HAZE_START_TILES, CHARACTER_SIGHT_RADIUS_TILES);
 }
 
 export function createPlayerMesh(): THREE.Mesh {

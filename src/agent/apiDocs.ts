@@ -44,7 +44,7 @@ An agent is created in one of two modes and stays in it for life.
   which is why the corners of the grid are blank too. The blank half is how you
   know which way you face — the observation never states it. That half-disc is
   exactly the ground the 2.5D character view renders before its fog closes in,
-  so a human playing that view knows no more of the world than you do. You move
+  which is first person and shows no more of the world than you are told. You move
   relative to your facing and turn in 45-degree steps. Characters can only
   move.
 
