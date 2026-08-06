@@ -1,4 +1,5 @@
 import type { ServerConfig } from '../config';
+import type { ChatFeed } from '../game/chatFeed';
 import type { EntityRegistry } from '../game/entities';
 import type { GameLoop } from '../game/gameLoop';
 import type { SnapshotFeed } from '../game/snapshotFeed';
@@ -12,6 +13,7 @@ export interface WsDeps {
   store: Store;
   registry: EntityRegistry;
   feed: SnapshotFeed;
+  chat: ChatFeed;
   loop: GameLoop;
   connections: Set<Connection>;
   worldHost: WorldHost;

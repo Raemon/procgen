@@ -12,6 +12,7 @@
     "build": "vite build",
     "start:prod": "sh -c 'if [ -n \"$DATABASE_URL\" ]; then npx prisma db push --skip-generate --accept-data-loss; fi; exec npx tsx server/index.ts'",
     "typecheck": "tsc --noEmit",
+    "check:chat": "npx tsx scripts/checkSpeechBubbleStore.ts && npx tsx scripts/checkChatOverWebsocket.ts",
     "check": "esbuild scripts/checkProcgenInvariants.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
     "roll": "esbuild scripts/rollAndRankWorlds.ts --bundle --format=esm --platform=node --log-level=error --outfile=dist/rollAndRankWorlds.mjs && node dist/rollAndRankWorlds.mjs",
     "tiles:write": "esbuild scripts/writeTilesetDataFile.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",

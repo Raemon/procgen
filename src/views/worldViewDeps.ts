@@ -3,6 +3,7 @@ import type {
   ReadOnlyTileset,
   ReadOnlyWorld,
 } from '../app/readOnlyLibraries';
+import type { SpeechBubbles } from '../chat/speechBubbles';
 import type { CreatureSim } from '../creatures/sim/creatureSim';
 import type { RemotePlayers } from '../net/remotePlayers';
 import type { WorldSampler } from '../procgen/worldSampler';
@@ -16,4 +17,5 @@ export interface WorldViewDeps {
   sim: CreatureSim;
   capture: CaptureTool;
   remotePlayers: RemotePlayers;
+  speech: SpeechBubbles;
 }

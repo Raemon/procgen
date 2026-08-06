@@ -61,12 +61,18 @@ export function mountWorldViews(
       if (isCharacterControlled(currentMode())) perform(direction === -1 ? 'turn_left' : 'turn_right');
       else if (currentMode() === '3d-god') view3d.rotate(direction);
     },
+    isSuspended: () => runtime.chatComposer.isOpen(),
+  });
+
+  const stopWalkingWhileTyping = runtime.chatComposer.subscribe(() => {
+    if (runtime.chatComposer.isOpen()) movement.releaseHeldKeys();
   });
 
   runtime.applyWorldChange();
 
   return {
     dispose: () => {
+      stopWalkingWhileTyping();
       movement.dispose();
       for (const remove of unregister) remove();
       view3d.dispose();
@@ -89,5 +95,6 @@ function worldViewDepsOf(runtime: AppRuntime): WorldViewDeps {
     sim: runtime.sim,
     capture: runtime.capture,
     remotePlayers: runtime.net.remotePlayers,
+    speech: runtime.net.speech,
   };
 }
