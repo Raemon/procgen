@@ -4,7 +4,7 @@ export interface ExamplePipeline {
 }
 
 export function examplePipelines(): ExamplePipeline[] {
-  return [islandsAndForests(), cavesAndMonsters(), customScriptDemo()];
+  return [islandsAndForests(), cavesAndMonsters(), customScriptDemo(), endlessLabyrinth()];
 }
 
 function islandsAndForests(): ExamplePipeline {
@@ -123,6 +123,33 @@ function customScriptDemo(): ExamplePipeline {
           enabled: true,
           params: { outputKind: 'tiles', code: CONTOUR_BANDS_SCRIPT },
           inputs: { a: 'n1' },
+          display: { mode: 'tileLayer' },
+        },
+      ],
+    },
+  };
+}
+
+function endlessLabyrinth(): ExamplePipeline {
+  return {
+    name: 'endless labyrinth',
+    state: {
+      seed: 41,
+      nodes: [
+        {
+          id: 'n1',
+          type: 'mazeChunk',
+          label: 'labyrinth',
+          enabled: true,
+          params: {
+            lattice: 'classic',
+            carver: 'dfs',
+            braid: 0.15,
+            doorsPerEdge: 1,
+            wallTile: 4,
+            floorTile: 1,
+          },
+          inputs: {},
           display: { mode: 'tileLayer' },
         },
       ],

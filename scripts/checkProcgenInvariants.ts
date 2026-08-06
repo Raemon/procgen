@@ -9,6 +9,8 @@ import { PipelineStore } from '../src/procgen/pipeline/pipelineStore';
 import { sanitizePipeline } from '../src/procgen/pipeline/sanitizePipeline';
 import { examplePipelines } from '../src/procgen/presets/examplePipelines';
 import { CHUNK_SIZE } from '../src/procgen/chunk';
+import { CARVER_NAMES } from '../src/procgen/nodes/maze/mazeCarvers';
+import { LATTICE_NAMES } from '../src/procgen/nodes/maze/mazeLattices';
 import { EMPTY_TILE } from '../src/procgen/values/chunkValues';
 import { asField, asPoints, asTiles } from '../src/procgen/values/valueAccess';
 import { WorldSampler } from '../src/procgen/worldSampler';
@@ -156,6 +158,116 @@ check(
     (p) =>
       p.x >= 2 * CHUNK_SIZE && p.x < 3 * CHUNK_SIZE && p.y >= -CHUNK_SIZE && p.y < 0,
   ),
+);
+
+const MAZE_FLOOR = 1;
+
+function labyrinthVariant(params: Record<string, number | string>): PipelineState {
+  const state = sanitizePipeline(examplePipelines()[3]!.state);
+  Object.assign(state.nodes[0]!.params, params);
+  return state;
+}
+
+function verticalSeamDoorRuns(sampler: WorldSampler, cx: number, cy: number): number {
+  let runs = 0;
+  let inRun = false;
+  for (let y = cy * CHUNK_SIZE; y < (cy + 1) * CHUNK_SIZE; y++) {
+    const open =
+      sampler.tileAt((cx + 1) * CHUNK_SIZE - 1, y) === MAZE_FLOOR &&
+      sampler.tileAt((cx + 1) * CHUNK_SIZE, y) === MAZE_FLOOR;
+    if (open && !inRun) runs++;
+    inRun = open;
+  }
+  return runs;
+}
+
+function horizontalSeamDoorRuns(sampler: WorldSampler, cx: number, cy: number): number {
+  let runs = 0;
+  let inRun = false;
+  for (let x = cx * CHUNK_SIZE; x < (cx + 1) * CHUNK_SIZE; x++) {
+    const open =
+      sampler.tileAt(x, (cy + 1) * CHUNK_SIZE - 1) === MAZE_FLOOR &&
+      sampler.tileAt(x, (cy + 1) * CHUNK_SIZE) === MAZE_FLOOR;
+    if (open && !inRun) runs++;
+    inRun = open;
+  }
+  return runs;
+}
+
+function allSeamsCrossable(sampler: WorldSampler, chunkSpan: number): boolean {
+  for (let cy = -chunkSpan; cy < chunkSpan; cy++) {
+    for (let cx = -chunkSpan; cx < chunkSpan; cx++) {
+      if (cx + 1 < chunkSpan && verticalSeamDoorRuns(sampler, cx, cy) === 0) return false;
+      if (cy + 1 < chunkSpan && horizontalSeamDoorRuns(sampler, cx, cy) === 0) return false;
+    }
+  }
+  return true;
+}
+
+function regionFloorsConnected(sampler: WorldSampler, minX: number, minY: number, size: number): boolean {
+  const isFloor = (i: number) =>
+    sampler.tileAt(minX + (i % size), minY + Math.floor(i / size)) === MAZE_FLOOR;
+  const floors = Array.from({ length: size * size }, (_, i) => i).filter(isFloor);
+  if (floors.length === 0) return false;
+  return floodedFloorCount(floors, size) === floors.length;
+}
+
+function floodedFloorCount(floors: number[], size: number): number {
+  const floorSet = new Set(floors);
+  const seen = new Set([floors[0]!]);
+  const queue = [floors[0]!];
+  while (queue.length > 0) {
+    const i = queue.pop()!;
+    for (const next of gridNeighbors(i, size)) {
+      if (floorSet.has(next) && !seen.has(next)) {
+        seen.add(next);
+        queue.push(next);
+      }
+    }
+  }
+  return seen.size;
+}
+
+function gridNeighbors(i: number, size: number): number[] {
+  const x = i % size;
+  const y = Math.floor(i / size);
+  const found: number[] = [];
+  if (x > 0) found.push(i - 1);
+  if (x < size - 1) found.push(i + 1);
+  if (y > 0) found.push(i - size);
+  if (y < size - 1) found.push(i + size);
+  return found;
+}
+
+const mazeA = worldFromState(labyrinthVariant({}));
+const mazeB = worldFromState(labyrinthVariant({}));
+const mazeSeq = [tileBytes(mazeA.evaluator, 'n1', 0, 0), tileBytes(mazeA.evaluator, 'n1', 3, -2)];
+const mazeRev = [tileBytes(mazeB.evaluator, 'n1', 3, -2), tileBytes(mazeB.evaluator, 'n1', 0, 0)];
+check(
+  'labyrinth chunks are deterministic regardless of evaluation order',
+  mazeSeq[0] === mazeRev[1] && mazeSeq[1] === mazeRev[0],
+);
+
+for (const lattice of LATTICE_NAMES) {
+  for (const carver of CARVER_NAMES) {
+    const combo = worldFromState(labyrinthVariant({ lattice, carver }));
+    check(
+      `labyrinth ${lattice}+${carver} stays connected across all chunks and seams`,
+      allSeamsCrossable(combo.sampler, 2) && regionFloorsConnected(combo.sampler, -CHUNK_SIZE, -CHUNK_SIZE, 3 * CHUNK_SIZE),
+    );
+  }
+}
+
+const denseDoors = worldFromState(labyrinthVariant({ doorsPerEdge: 4 }));
+check(
+  'doors per edge adds extra seam crossings',
+  verticalSeamDoorRuns(denseDoors.sampler, 0, 0) >= 2 && horizontalSeamDoorRuns(denseDoors.sampler, 0, 0) >= 2,
+);
+
+check(
+  'lattice choice reshapes the labyrinth',
+  tileBytes(worldFromState(labyrinthVariant({ lattice: 'cathedral' })).evaluator, 'n1', 0, 0) !==
+    tileBytes(mazeA.evaluator, 'n1', 0, 0),
 );
 
 const scriptState = sanitizePipeline(examplePipelines()[2]!.state);
