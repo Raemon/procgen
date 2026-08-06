@@ -1,12 +1,6 @@
-import type { WorldSampler } from '../../procgen/worldSampler';
+import type { Marker, WorldSampler } from '../../procgen/worldSampler';
 import type { Tileset } from '../../world/tiles/tileset';
-import {
-  asciiCellAt,
-  emptyOverlays,
-  markerLookup,
-  EMPTY_GLYPH,
-  type AsciiOverlays,
-} from './asciiCells';
+import { asciiCellAt, markerLookup, EMPTY_GLYPH } from './asciiCells';
 import { viewportCenteredOn, type AsciiViewport } from './asciiViewport';
 
 export function asciiSnapshot(
@@ -18,10 +12,10 @@ export function asciiSnapshot(
   rows: number,
 ): string {
   const viewport = viewportCenteredOn(playerX, playerY, columns, rows);
-  const overlays = { ...emptyOverlays(), markers: markerLookup(sampler, viewport) };
+  const markers = markerLookup(sampler, viewport);
   const lines: string[] = [];
   for (let row = 0; row < rows; row++) {
-    lines.push(snapshotRow(sampler, tileset, overlays, viewport, playerX, playerY, row));
+    lines.push(snapshotRow(sampler, tileset, markers, viewport, playerX, playerY, row));
   }
   return lines.join('\n');
 }
@@ -29,7 +23,7 @@ export function asciiSnapshot(
 function snapshotRow(
   sampler: WorldSampler,
   tileset: Tileset,
-  overlays: AsciiOverlays,
+  markers: Map<string, Marker>,
   viewport: AsciiViewport,
   playerX: number,
   playerY: number,
@@ -40,7 +34,7 @@ function snapshotRow(
     const x = viewport.originX + column;
     const y = viewport.originY + row;
     const isPlayerHere = x === playerX && y === playerY;
-    line += asciiCellAt(sampler, tileset, overlays, x, y, isPlayerHere)?.glyph ?? EMPTY_GLYPH;
+    line += asciiCellAt(sampler, tileset, markers, x, y, isPlayerHere)?.glyph ?? EMPTY_GLYPH;
   }
   return line;
 }

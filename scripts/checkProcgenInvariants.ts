@@ -32,8 +32,6 @@ import { asciiSnapshot } from '../src/views/ascii/asciiSnapshot';
 import { PLAYER_GLYPH } from '../src/views/ascii/asciiCells';
 import { PanOffset } from '../src/views/camera/panOffset';
 import { ZoomScale } from '../src/views/camera/zoomScale';
-import { cellPixelsFor, MAX_CELL_PX, MIN_CELL_PX } from '../src/views/ascii/asciiCellPixels';
-import { viewportCoveringCanvas } from '../src/views/ascii/asciiViewport';
 import { WorldRenderers, type WorldRenderer } from '../src/app/worldRenderers';
 import { worldPanForDrag } from '../src/views/view3d/dragToWorldPan';
 import { streamingRadiusChunks } from '../src/views/view3d/streamingRadius';
@@ -733,32 +731,6 @@ zoom.applyWheelPixels(-4200);
 check('zooming in stops at the maximum scale', zoom.current() === 4);
 zoom.applyWheelPixels(42000);
 check('zooming out stops at the minimum scale', zoom.current() === 0.25);
-
-const bigCanvas = { cssWidth: 1600, cssHeight: 900 };
-check('zooming in far is capped to a readable cell size', cellPixelsFor(1000, bigCanvas) === MAX_CELL_PX);
-check('zooming out far never draws sub-pixel cells', cellPixelsFor(0.0001, bigCanvas) >= MIN_CELL_PX);
-check(
-  'zooming out is bounded by the per-frame cell budget',
-  cellPixelsFor(0.0001, bigCanvas) * cellPixelsFor(0.0001, bigCanvas) * 250_000 >= 1600 * 900 - 1,
-);
-
-const zoomedOut = viewportCoveringCanvas(10.5, -4.5, 4, bigCanvas);
-check(
-  'the viewport covers the whole canvas at any zoom',
-  zoomedOut.subCellOffsetX + zoomedOut.columns * zoomedOut.cellPx >= bigCanvas.cssWidth &&
-    zoomedOut.subCellOffsetY + zoomedOut.rows * zoomedOut.cellPx >= bigCanvas.cssHeight,
-);
-check(
-  'the requested world point lands at the canvas center',
-  Math.abs(
-    zoomedOut.subCellOffsetX + (10.5 - zoomedOut.originX) * zoomedOut.cellPx -
-      bigCanvas.cssWidth / 2,
-  ) < 1e-9,
-);
-check(
-  'sub-cell scrolling keeps the grid aligned to whole tiles',
-  zoomedOut.subCellOffsetX <= 0 && zoomedOut.subCellOffsetX > -zoomedOut.cellPx,
-);
 
 const pan = new PanOffset();
 pan.shiftBy(3, -2);

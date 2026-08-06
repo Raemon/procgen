@@ -5,7 +5,7 @@ Vite + three.js, no server. The world is infinite, chunked, and fully determined
 seed — walk in any direction forever and the same seed always gives the same
 world.
 
-Three panels:
+Five panels:
 
 1. **Library panel** — three tabs over the reusable definitions the world is
    assembled from:
@@ -40,11 +40,30 @@ Three panels:
    binding (tile layer / elevation / markers / prefabs / creatures). Starts
    blank — build worlds up from zero, load an example pipeline, or write a
    `custom script` node in the browser. See `docs/authoring-nodes.md` for writing node types.
-3. **World view** — toggle between ASCII (one colored glyph per tile, `@` is
-   you — doubles as an LLM-agent observation format) and a 2.5D three.js view
-   that streams chunk meshes around the player. WASD/arrows to walk, Q/E to
-   rotate the 2.5D camera, wheel to zoom. `capture` lifts a dragged rectangle
-   into a prefab; `life` pauses or runs the creature simulation.
+3. **Agents panel** — create agents that play the world through the REST API,
+   in `god` or `character` mode, and drive them with an LLM on your own
+   Anthropic key (stored in this browser only): pick a model, give a goal and a
+   step budget, then run/stop them. God agents can rebuild the world.
+4. **Agent log** — the selected agent's autopilot transcript as it streams:
+   thinking, messages, tool calls and their outcomes.
+5. **World view** — four modes over the same world. **3-D God** and **2.5D
+   Character** are three.js views that stream chunk meshes around the player;
+   **Agent God** and **Agent Character** render the exact observation text the
+   API sends an agent, so you can read what an LLM is working from. WASD/arrows
+   to walk, Q/E to rotate the god camera or turn the character 45°, wheel to
+   zoom. `capture` lifts a dragged rectangle into a prefab; `life` pauses or
+   runs the creature simulation.
+
+## Agents
+
+Any verb a human gets, an agent gets, and the two agent view modes render the
+same bytes the API sends — see `docs/agents-and-view-modes.md`. Character
+agents see only what is in front of them (the blank half of the grid is how
+they know which way they face); god agents see a wider window and can edit the
+procgen pipeline itself — add and wire nodes, set knobs, bind displays, reseed —
+so an LLM can build a world, not just walk one. Start at
+`GET /api/v1/docs`, which is rendered from the same tables the server
+dispatches on and so cannot drift from the code.
 
 ## Layout
 
@@ -75,14 +94,19 @@ src/creatures     creature definitions, library + persistence, and sim/
 src/world         Tileset, walkability, infinite-world player state
   tiles/art/        code-generated 32×32 face art for the shipped tiles
   capture/          world-selection tool behind the capture button
-src/views         ascii (canvas + pure-text snapshot) and view3d (chunk-mesh
-                  streamer, camera, face-art materials)
-src/input         key tracking and camera-relative step math
+src/agent         the LLM-first layer: verb tables, observation builders (shared
+                  by the UI agent views and the API), generated docs, and api/
+                  (dev-server endpoints, node editing, autopilot)
+src/views         agentText (the observation as an agent receives it), ascii
+                  (pure-text snapshot used by the checks) and view3d (chunk-mesh
+                  streamer, god + character cameras, face-art materials)
+src/input         key tracking, camera-relative and facing-relative step math
 src/app           React shell: app runtime (core objects + world-change wiring),
                   runtime context, re-render hooks, resizable panel layout
 src/ui            React panels: library (tiles / prefabs / creatures), procgen
-                  pipeline, world view, shared controls, floating tooltips, plus
-                  a self-contained PixelArtEditor ({art, baseColor, onChange})
+                  pipeline, agents + agent log, world view, shared controls,
+                  floating tooltips, plus a self-contained PixelArtEditor
+                  ({art, baseColor, onChange})
 src/styles        index.css — the only stylesheet: Tailwind plus the @theme
                   color tokens. All other styling is utility classes.
 scripts           headless checks over the DOM-free core (`npm run check`),
