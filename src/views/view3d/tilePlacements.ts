@@ -1,12 +1,14 @@
-import * as THREE from 'three';
 import { EMPTY, type Grid } from '../../world/grid';
 import type { TileDef } from '../../world/tiles/tileDef';
+import type { CubeFaceArt } from '../../world/tiles/tileFaceArt';
 import type { Tileset } from '../../world/tiles/tileset';
 
 export interface TilePlacement {
   x: number;
   y: number;
-  color: THREE.Color;
+  baseColor: string;
+  shade: number;
+  faceArt: CubeFaceArt | null;
   sunkenAsWater: boolean;
 }
 
@@ -37,17 +39,16 @@ function addTileToShapes(
   x: number,
   y: number,
 ): void {
-  const color = new THREE.Color(tile.color);
   if (tile.role === 'water') {
-    shapes.floors.push(placement(x, y, color.multiplyScalar(WATER_SHADE), true));
+    shapes.floors.push(placement(x, y, tile, WATER_SHADE, true));
   } else if (tile.role === 'tree') {
-    shapes.floors.push(placement(x, y, treeGroundColor(tileset), false));
-    shapes.trees.push(placement(x, y, color, false));
+    shapes.floors.push(groundUnderTree(tileset, x, y));
+    shapes.trees.push(placement(x, y, tile, 1, false));
   } else if (standsAsSolidBlock(tile)) {
-    shapes.floors.push(placement(x, y, color.clone().multiplyScalar(BLOCK_FLOOR_SHADE), false));
-    shapes.blocks.push(placement(x, y, color, false));
+    shapes.floors.push(placement(x, y, tile, BLOCK_FLOOR_SHADE, false));
+    shapes.blocks.push(placement(x, y, tile, 1, false));
   } else {
-    shapes.floors.push(placement(x, y, color, false));
+    shapes.floors.push(placement(x, y, tile, 1, false));
   }
 }
 
@@ -55,15 +56,24 @@ function standsAsSolidBlock(tile: TileDef): boolean {
   return tile.role === 'rock' || !tile.walkable;
 }
 
-function treeGroundColor(tileset: Tileset): THREE.Color {
-  return new THREE.Color(tileset.byRole('grass')?.color ?? FALLBACK_TREE_GROUND);
+function groundUnderTree(tileset: Tileset, x: number, y: number): TilePlacement {
+  const grass = tileset.byRole('grass');
+  return {
+    x,
+    y,
+    baseColor: grass?.color ?? FALLBACK_TREE_GROUND,
+    shade: 1,
+    faceArt: grass?.faceArt ?? null,
+    sunkenAsWater: false,
+  };
 }
 
 function placement(
   x: number,
   y: number,
-  color: THREE.Color,
+  tile: TileDef,
+  shade: number,
   sunkenAsWater: boolean,
 ): TilePlacement {
-  return { x, y, color, sunkenAsWater };
+  return { x, y, baseColor: tile.color, shade, faceArt: tile.faceArt, sunkenAsWater };
 }

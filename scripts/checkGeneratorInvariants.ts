@@ -3,7 +3,14 @@ import { generate } from '../src/gen/generate';
 import { PASS_NAMES } from '../src/gen/passes/passPipeline';
 import { cameraRelativeStep } from '../src/input/cameraRelativeStep';
 import { PLAYER_GLYPH, worldToAscii } from '../src/views/ascii/worldToAscii';
+import { tilePlacementsByShape } from '../src/views/view3d/tilePlacements';
 import { spawnPointForSeed } from '../src/world/spawnPoint';
+import {
+  blankCubeFaceArt,
+  cloneCubeFaceArt,
+  isCubeFaceArt,
+  isEntirelyBlank,
+} from '../src/world/tiles/tileFaceArt';
 import { isWalkableTile } from '../src/world/tileWalkability';
 import { Tileset } from '../src/world/tiles/tileset';
 import { World } from '../src/world/world';
@@ -63,6 +70,20 @@ world.playerX = 0;
 world.playerY = 0;
 check('steps off the grid are refused', !world.tryStep(-1, 0));
 check('the player stays put after a refused step', world.playerX === 0 && world.playerY === 0);
+
+const art = blankCubeFaceArt();
+check('blank face art validates and counts as blank', isCubeFaceArt(art) && isEntirelyBlank(art));
+art.top[0] = '#ff0000';
+check('painting a pixel makes face art non-blank', !isEntirelyBlank(art));
+check('cloned face art does not share pixel arrays', cloneCubeFaceArt(art).top !== art.top);
+check('malformed face art is rejected', !isCubeFaceArt({ top: [], sides: [], bottom: [] }));
+
+const grass = tileset.byRole('grass')!;
+tileset.update(grass.id, { faceArt: art });
+const shapes = tilePlacementsByShape(world.grid, tileset);
+check('placements carry the tile face art', shapes.floors.some((p) => p.faceArt === art));
+check('tiles without art stay flat-colored', shapes.floors.some((p) => p.faceArt === null));
+tileset.update(grass.id, { faceArt: null });
 
 check('forward faces north with the camera at north', String(cameraRelativeStep(0, 1, 0)) === '0,-1');
 check('forward faces east with the camera turned right', String(cameraRelativeStep(1, 1, 0)) === '1,0');

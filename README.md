@@ -6,7 +6,8 @@ three.js, no server.
 Three panels:
 
 1. **Tile editor** — create/edit tile types (name, ascii symbol, color,
-   walkable). Persisted to localStorage.
+   walkable), plus optional 8×8 pixel art per cube face (top/sides/bottom)
+   painted in an inline editor. Persisted to localStorage.
 2. **Generation panel** — knobs feeding a pass pipeline (seeded noise →
    terrain thresholds → cellular-automata smoothing → tree scatter).
 3. **World view** — toggle between ASCII (one colored glyph per tile, `@` is

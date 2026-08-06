@@ -1,11 +1,15 @@
+.tile-entry {
+  margin-bottom: 6px;
+}
+
 .tile-row {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 6px;
 }
 
-.tile-row input[type='color'] {
+.tile-row input[type='color'],
+.pixel-tools input[type='color'] {
   width: 28px;
   height: 24px;
   padding: 0;
@@ -44,10 +48,66 @@
   white-space: nowrap;
 }
 
+.tile-art {
+  width: 28px;
+  height: 24px;
+  padding: 2px;
+  flex: none;
+}
+
+.tile-art canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  border-radius: 2px;
+}
+
 .tile-del {
   padding: 2px 8px;
 }
 
 .tile-add {
   margin-top: 8px;
+}
+
+.pixel-editor {
+  margin-top: 6px;
+  padding: 8px;
+  border: 1px solid var(--panel-edge);
+  border-radius: 4px;
+  background: #0d1119;
+}
+
+.pixel-editor.hidden {
+  display: none;
+}
+
+.pixel-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.pixel-tab,
+.pixel-tools .btn {
+  padding: 2px 8px;
+  font-size: 11px;
+}
+
+.pixel-canvas {
+  display: block;
+  width: 100%;
+  image-rendering: pixelated;
+  border: 1px solid var(--panel-edge);
+  border-radius: 3px;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.pixel-tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
 }
