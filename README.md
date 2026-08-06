@@ -33,7 +33,7 @@ Three panels:
 
 ```
 src/random        seeded streams (hash, mulberry32, per-label streams)
-src/noise         value + fractal noise built on the lattice hash
+src/noise         value, gradient and fractal noise built on the lattice hash
 src/procgen       the node framework:
   chunk.ts          chunk math (32×32 cells)
   values/           typed per-chunk values: field, tiles, points
@@ -43,7 +43,9 @@ src/procgen       the node framework:
   eval/             lazy per-chunk evaluator + LRU cache + deterministic ctx
   display/          display bindings (tile layer / elevation / markers)
   worldSampler.ts   composes displayed nodes into tileAt/elevationAt/markersIn
-  nodes/            node types: examples/ primitives + the custom script node
+  nodes/            node types: examples/ primitives, terrain/ (plates, ridged
+                    noise, warp, curves), hydrology/ (drainage, erosion,
+                    rivers), coast/, maze/, rivers/ + the custom script node
   presets/          example pipelines for the panel dropdown
 src/world         Tileset, walkability, infinite-world player state
   tiles/art/        code-generated 32×32 face art for the shipped tiles

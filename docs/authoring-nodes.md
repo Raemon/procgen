@@ -126,6 +126,11 @@ in the panel.
   while staying deterministic. `worldFieldReader(ctx, name)` /
   `worldTileReader(ctx, name)` in `values/worldInputReaders.ts` wrap it as
   world-coordinate lookups — see the river nodes for the pattern.
+- `gatherFieldWindow(ctx, name, radius)` in `values/fieldWindow.ts` — the same
+  halo, copied once into a flat `Float32Array` covering the chunk plus `radius`
+  tiles on every side. Use it instead of per-cell `inputAt` whenever an
+  algorithm sweeps the halo (flood fill, distance transform, flow routing):
+  it reads each upstream chunk once instead of once per cell.
 - `ctx.rng(label)` — a seeded random stream unique to (seed, node, chunk,
   label). Use for anything "random"; same seed ⇒ same world.
 - `ctx.rngAt(gridX, gridY, label)` — like `ctx.rng` but keyed to coordinates
@@ -139,6 +144,28 @@ in the panel.
   [0, 1), independent of chunk boundaries. Use for scatter-style decisions so
   results don't change when the same cell is viewed from another chunk.
 - `ctx.hashSeed(label)` — a stable integer seed for noise functions.
+
+## Windowed nodes
+
+Some questions cannot be answered inside one chunk: *how much water flows
+through this cell*, *how far is this cell from the coast*, *is this hollow
+closed*. Those nodes gather a window around the chunk and run a normal
+whole-array algorithm on it — priority flood in `fillDepressions`, a chamfer
+distance transform in `coastDistance`, a sorted downhill sweep in
+`flowAccumulation`.
+
+Two rules keep that honest:
+
+- **The window is a pure function of the chunk.** Every chunk computes its own
+  window from its own coordinates, so the result is still deterministic and
+  order-independent, which is what `npm run check` verifies.
+- **The window radius is a knob, and it is the cost knob.** The answer is only
+  correct out to the radius: a catchment wider than the window is truncated at
+  the window edge, and stacking windowed nodes multiplies how many upstream
+  chunks a single output chunk needs. Say so in the param's `help`, keep the
+  default modest, and prefer reading the *pre-erosion* field when a downstream
+  node does not really need the eroded one — it cuts a whole branch out of the
+  demand cascade.
 
 ## Determinism rules
 

@@ -1,8 +1,7 @@
-export interface ExamplePipeline {
-  name: string;
-  description: string;
-  state: unknown;
-}
+import { earthlikeCoastsAndRanges } from './earthlikeCoastsAndRanges';
+import type { ExamplePipeline } from './examplePipeline';
+
+export type { ExamplePipeline };
 
 export function examplePipelines(): ExamplePipeline[] {
   return [
@@ -12,6 +11,7 @@ export function examplePipelines(): ExamplePipeline[] {
     endlessLabyrinth(),
     nestedLabyrinths(),
     riversAndTowns(),
+    earthlikeCoastsAndRanges(),
   ];
 }
 
