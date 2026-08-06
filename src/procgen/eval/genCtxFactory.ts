@@ -22,14 +22,18 @@ export function createChunkGenCtx(args: GenCtxArgs): ChunkGenCtx {
   const labelSeeds = new Map<string, number>();
   const labelSeed = (label: string): number => seedForLabel(labelSeeds, seed, nodeId, label);
   const input = (name: string): ChunkValue | null => resolveInput(name, chunkX, chunkY);
+  const rngAt = (gridX: number, gridY: number, label: string) =>
+    mulberry32(hashString(`${seed}:${nodeId}:${gridX},${gridY}:${label}`));
   return {
+    nodeId,
     chunkX,
     chunkY,
     originX: chunkOrigin(chunkX),
     originY: chunkOrigin(chunkY),
     size: CHUNK_SIZE,
     params,
-    rng: (label) => mulberry32(hashString(`${seed}:${nodeId}:${chunkX},${chunkY}:${label}`)),
+    rng: (label) => rngAt(chunkX, chunkY, label),
+    rngAt,
     hashSeed: labelSeed,
     hash01: (worldX, worldY, label) => hashLatticePoint(worldX, worldY, labelSeed(label)),
     input,

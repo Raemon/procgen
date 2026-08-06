@@ -7,12 +7,22 @@ import type {
   ValueKind,
 } from './values/chunkValues';
 
-export type ParamValue = number | string | boolean;
+export type ParamValue = number | string;
 
-export type ParamSpec =
+export interface ChoiceOption {
+  value: number;
+  label: string;
+  help: string;
+}
+
+export type KnobParamSpec =
   | { kind: 'number'; label: string; help: string; min: number; max: number; step: number; default: number }
   | { kind: 'int'; label: string; help: string; min: number; max: number; default: number }
-  | { kind: 'boolean'; label: string; help: string; default: boolean }
+  | { kind: 'choice'; label: string; help: string; options: readonly ChoiceOption[]; default: number }
+  | { kind: 'toggle'; label: string; help: string; default: 0 | 1 }
+  | { kind: 'tile'; label: string; help: string };
+
+export type ScriptOnlyParamSpec =
   | {
       kind: 'select';
       label: string;
@@ -21,9 +31,15 @@ export type ParamSpec =
       optionHelp: Record<string, string>;
       default: string;
     }
-  | { kind: 'tile'; label: string; help: string }
-  | { kind: 'text'; label: string; help: string; default: string }
   | { kind: 'code'; label: string; help: string; default: string };
+
+export type ParamSpec = KnobParamSpec | ScriptOnlyParamSpec;
+
+export const KNOB_PARAM_KINDS = ['number', 'int', 'choice', 'toggle', 'tile'] as const;
+
+export function isKnobParamSpec(spec: ParamSpec): spec is KnobParamSpec {
+  return (KNOB_PARAM_KINDS as readonly string[]).includes(spec.kind);
+}
 
 export interface InputSpec {
   kind: ValueKind | 'any';
@@ -33,6 +49,7 @@ export interface InputSpec {
 }
 
 export interface ChunkGenCtx {
+  readonly nodeId: string;
   readonly chunkX: number;
   readonly chunkY: number;
   readonly originX: number;
@@ -40,6 +57,7 @@ export interface ChunkGenCtx {
   readonly size: number;
   readonly params: Record<string, ParamValue>;
   rng(label: string): RandomStream;
+  rngAt(gridX: number, gridY: number, label: string): RandomStream;
   hashSeed(label: string): number;
   hash01(worldX: number, worldY: number, label: string): number;
   input(name: string): ChunkValue | null;
@@ -61,6 +79,10 @@ export interface NodeTypeDef {
   params: Record<string, ParamSpec>;
   output: ValueKind | ((params: Record<string, ParamValue>) => ValueKind);
   generateChunk(ctx: ChunkGenCtx): ChunkValue;
+}
+
+export interface StandardNodeTypeDef extends Omit<NodeTypeDef, 'params'> {
+  params: Record<string, KnobParamSpec>;
 }
 
 export function outputKindOf(def: NodeTypeDef, params: Record<string, ParamValue>): ValueKind {

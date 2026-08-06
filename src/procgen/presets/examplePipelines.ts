@@ -5,7 +5,14 @@ export interface ExamplePipeline {
 }
 
 export function examplePipelines(): ExamplePipeline[] {
-  return [islandsAndForests(), cavesAndMonsters(), customScriptDemo(), endlessLabyrinth()];
+  return [
+    islandsAndForests(),
+    cavesAndMonsters(),
+    customScriptDemo(),
+    endlessLabyrinth(),
+    nestedLabyrinths(),
+    riversAndTowns(),
+  ];
 }
 
 function islandsAndForests(): ExamplePipeline {
@@ -67,7 +74,7 @@ function islandsAndForests(): ExamplePipeline {
           comment:
             'Masked to the 0.54–0.66 height band so trees only grow on grassland — above the coast, below the peaks. Styled from the tree tile so tile edits restyle the forest.',
           enabled: true,
-          params: { density: 0.08, maskAtLeast: 0.54, maskAtMost: 0.66, tag: 'tree' },
+          params: { density: 0.08, maskAtLeast: 0.54, maskAtMost: 0.66 },
           inputs: { mask: 'n1' },
           display: { mode: 'markers', tileId: 3, glyph: '♠', color: '#2d6a34' },
         },
@@ -113,7 +120,7 @@ function cavesAndMonsters(): ExamplePipeline {
           comment:
             'Mask ≤ 0.45 keeps monsters strictly inside open floor (walls start at 0.52), and the sparse density makes each encounter matter. Custom glyph instead of a tile because no tileset tile means "monster".',
           enabled: true,
-          params: { density: 0.012, maskAtLeast: 0, maskAtMost: 0.45, tag: 'monster' },
+          params: { density: 0.012, maskAtLeast: 0, maskAtMost: 0.45 },
           inputs: { mask: 'n1' },
           display: { mode: 'markers', tileId: -1, glyph: 'M', color: '#ff4444' },
         },
@@ -170,11 +177,13 @@ function endlessLabyrinth(): ExamplePipeline {
           type: 'mazeChunk',
           label: 'labyrinth',
           comment:
-            'One node is the whole world: each chunk carves its own maze and the door-per-edge stitching keeps every chunk reachable. Classic lattice + dfs for the traditional long-corridor look; a little braid so it is not all dead ends.',
+            'One node is the whole world: each chunk carves its own maze and the door-per-edge stitching keeps every chunk reachable. Corridor 3 / wall 1 + dfs for the traditional long-corridor look; a little braid so it is not all dead ends.',
           enabled: true,
           params: {
-            lattice: 'classic',
-            carver: 'dfs',
+            corridor: 3,
+            wall: 1,
+            mazeChunks: 1,
+            carver: 0,
             braid: 0.15,
             doorsPerEdge: 1,
             wallTile: 4,
@@ -182,6 +191,123 @@ function endlessLabyrinth(): ExamplePipeline {
           },
           inputs: {},
           display: { mode: 'tileLayer' },
+        },
+      ],
+    },
+  };
+}
+
+function nestedLabyrinths(): ExamplePipeline {
+  return {
+    name: 'nested labyrinths',
+    description:
+      'A labyrinth inside a labyrinth: a small hedge maze fills the world, and a huge rock maze with empty floors is layered over it, so the hedges show through the giant corridors.',
+    state: {
+      seed: 77,
+      nodes: [
+        {
+          id: 'n1',
+          type: 'mazeChunk',
+          label: 'inner hedge maze',
+          comment:
+            'The fine maze, one per chunk: tree walls on grass floors read as garden hedges. Extra doors and braid keep it open enough to survive the outer walls being stamped on top.',
+          enabled: true,
+          params: {
+            corridor: 3,
+            wall: 1,
+            mazeChunks: 1,
+            carver: 0,
+            braid: 0.4,
+            doorsPerEdge: 3,
+            wallTile: 3,
+            floorTile: 2,
+          },
+          inputs: {},
+          display: { mode: 'tileLayer' },
+        },
+        {
+          id: 'n2',
+          type: 'mazeChunk',
+          label: 'outer rock maze',
+          comment:
+            'The higher-order labyrinth: one maze spanning 4×4 chunks with 24-wide corridors and 8-thick rock walls. Its floor is (empty), so wherever the giant corridors run, the hedge maze underneath shows through — that emptiness is what nests the two.',
+          enabled: true,
+          params: {
+            corridor: 24,
+            wall: 8,
+            mazeChunks: 4,
+            carver: 0,
+            braid: 0.1,
+            doorsPerEdge: 1,
+            wallTile: 4,
+            floorTile: -1,
+          },
+          inputs: {},
+          display: { mode: 'tileLayer' },
+        },
+      ],
+    },
+  };
+}
+
+function riversAndTowns(): ExamplePipeline {
+  return {
+    name: 'rivers & towns',
+    description:
+      'Rivers trace downhill from springs to the sea across noise terrain, and towns are founded where rivers meet the ocean or meet each other.',
+    state: {
+      seed: 20,
+      nodes: [
+        {
+          id: 'n1',
+          type: 'noiseField',
+          label: 'terrain',
+          comment:
+            'One elevation field drives everything downstream: the land layer, the river courses, and where towns can appear all read this same node, so they always agree.',
+          enabled: true,
+          params: { scale: 0.05, octaves: 5 },
+          inputs: {},
+          display: { mode: 'elevation', heightScale: 3 },
+        },
+        {
+          id: 'n2',
+          type: 'thresholdTiles',
+          label: 'sea & land',
+          comment:
+            'Base layer painting every cell: ocean below 0.45, grass above. The rivers node uses the same 0.45 as its sea level so river mouths land exactly on this coastline.',
+          enabled: true,
+          params: { threshold: 0.45, belowTile: 0, aboveTile: 2 },
+          inputs: { source: 'n1' },
+          display: { mode: 'tileLayer' },
+        },
+        {
+          id: 'n3',
+          type: 'riverTiles',
+          label: 'rivers',
+          comment:
+            'Springs on ground above 0.62 flow down the steepest path with a little meander until they hit sea level. Painted with the water tile so rivers and ocean read as one body of water.',
+          enabled: true,
+          params: {
+            sourceDensity: 0.003,
+            minSourceHeight: 0.62,
+            seaLevel: 0.45,
+            maxLength: 80,
+            meander: 0.04,
+            riverTile: 0,
+          },
+          inputs: { elevation: 'n1' },
+          display: { mode: 'tileLayer' },
+        },
+        {
+          id: 'n4',
+          type: 'riverTowns',
+          label: 'towns',
+          comment:
+            'Reads the rivers and the same terrain: a town candidate is any river cell touching the sea (a mouth) or with three river neighbors (a junction), thinned to one town per 14 tiles.',
+          enabled: true,
+          params: { seaLevel: 0.45, spacing: 14 },
+          inputs: { rivers: 'n3', elevation: 'n1' },
+          display: { mode: 'markers', tileId: -1, glyph: '⌂', color: '#e0b06a' },
         },
       ],
     },

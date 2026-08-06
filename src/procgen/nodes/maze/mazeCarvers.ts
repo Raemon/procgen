@@ -8,12 +8,20 @@ import {
   type CellMaze,
 } from './cellMaze';
 
-export const CARVER_NAMES = ['dfs', 'prim', 'sidewinder'] as const;
+export const CARVER_DFS = 0;
+export const CARVER_PRIM = 1;
+export const CARVER_SIDEWINDER = 2;
 
-export function carveCellMaze(cells: number, carver: string, rng: RandomStream): CellMaze {
+export const CARVER_CHOICES = [
+  { value: CARVER_DFS, label: 'dfs', help: 'Depth-first backtracker: long winding corridors with few branches.' },
+  { value: CARVER_PRIM, label: 'prim', help: 'Random frontier growth: short branchy passages with many dead ends.' },
+  { value: CARVER_SIDEWINDER, label: 'sidewinder', help: 'Row-by-row runs: a horizontal bias with long straight stretches.' },
+] as const;
+
+export function carveCellMaze(cells: number, carver: number, rng: RandomStream): CellMaze {
   const maze = newCellMaze(cells);
-  if (carver === 'prim') carvePrim(maze, rng);
-  else if (carver === 'sidewinder') carveSidewinder(maze, rng);
+  if (carver === CARVER_PRIM) carvePrim(maze, rng);
+  else if (carver === CARVER_SIDEWINDER) carveSidewinder(maze, rng);
   else carveDfs(maze, rng);
   return maze;
 }

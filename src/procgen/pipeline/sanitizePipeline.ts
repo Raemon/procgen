@@ -68,8 +68,11 @@ function sanitizeParamValue(spec: ParamSpec, stored: unknown): ParamValue {
   if (spec.kind === 'number' || spec.kind === 'int' || spec.kind === 'tile') {
     return typeof stored === 'number' && Number.isFinite(stored) ? stored : defaultParamValue(spec);
   }
-  if (spec.kind === 'boolean') {
-    return typeof stored === 'boolean' ? stored : spec.default;
+  if (spec.kind === 'choice') {
+    return spec.options.some((option) => option.value === stored) ? (stored as number) : spec.default;
+  }
+  if (spec.kind === 'toggle') {
+    return stored === 0 || stored === 1 ? stored : spec.default;
   }
   if (spec.kind === 'select') {
     return typeof stored === 'string' && spec.options.includes(stored) ? stored : spec.default;

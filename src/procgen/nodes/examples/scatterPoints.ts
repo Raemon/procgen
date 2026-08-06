@@ -6,7 +6,8 @@ registerNodeType({
   type: 'scatterPoints',
   title: 'scatter points',
   category: 'examples',
-  description: 'Drops tagged points using a per-cell world-position hash, optionally masked by a field band.',
+  description:
+    'Drops points using a per-cell world-position hash, optionally masked by a field band. Points carry this node\'s id as their tag.',
   whenToUse:
     'Placing things rather than painting terrain: trees, monsters, loot. Wire a terrain field into the mask and set the band so points only land where the terrain suits them.',
   inputs: {
@@ -45,12 +46,6 @@ registerNodeType({
       step: 0.01,
       default: 1,
     },
-    tag: {
-      kind: 'text',
-      label: 'tag',
-      help: 'Name attached to every point so game logic can tell trees from monsters from loot.',
-      default: 'point',
-    },
   },
   output: 'points',
   generateChunk: scatterChunk,
@@ -76,6 +71,6 @@ function collectPoint(ctx: ChunkGenCtx, points: PointsChunk, x: number, y: numbe
   const worldX = ctx.originX + x;
   const worldY = ctx.originY + y;
   if (ctx.hash01(worldX, worldY, 'scatter') < (ctx.params.density as number)) {
-    points.push({ x: worldX, y: worldY, tag: ctx.params.tag as string });
+    points.push({ x: worldX, y: worldY, tag: ctx.nodeId });
   }
 }

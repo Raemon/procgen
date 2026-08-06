@@ -20,11 +20,11 @@ export function paramRow(spec: ParamSpec, deps: ParamRowDeps): HTMLElement {
 function paramControl(spec: ParamSpec, deps: ParamRowDeps): HTMLElement {
   if (spec.kind === 'number') return sliderRow(spec.label, spec.min, spec.max, spec.step, deps);
   if (spec.kind === 'int') return sliderRow(spec.label, spec.min, spec.max, 1, deps);
-  if (spec.kind === 'boolean') return checkboxRow(spec.label, deps);
+  if (spec.kind === 'toggle') return toggleRow(spec.label, deps);
+  if (spec.kind === 'choice') return choiceRow(spec, deps);
   if (spec.kind === 'select') return selectRow(spec.label, spec.options, deps);
   if (spec.kind === 'tile') return tileRow(spec.label, deps);
-  if (spec.kind === 'code') return codeRow(spec, deps);
-  return textRow(spec.label, deps);
+  return codeRow(spec, deps);
 }
 
 function sliderRow(
@@ -43,12 +43,21 @@ function sliderRow(
   return labeledRow(label, slider, readout);
 }
 
-function checkboxRow(label: string, deps: ParamRowDeps): HTMLElement {
+function toggleRow(label: string, deps: ParamRowDeps): HTMLElement {
   const checkbox = document.createElement('input');
   checkbox.type = 'checkbox';
-  checkbox.checked = Boolean(deps.value);
-  checkbox.addEventListener('change', () => deps.onChange(checkbox.checked));
+  checkbox.checked = Number(deps.value) === 1;
+  checkbox.addEventListener('change', () => deps.onChange(checkbox.checked ? 1 : 0));
   return labeledRow(label, checkbox);
+}
+
+function choiceRow(spec: Extract<ParamSpec, { kind: 'choice' }>, deps: ParamRowDeps): HTMLElement {
+  const select = selectInput(
+    spec.options.map((option) => ({ value: String(option.value), text: option.label })),
+    String(deps.value),
+    (value) => deps.onChange(Number(value)),
+  );
+  return labeledRow(spec.label, select);
 }
 
 function selectRow(label: string, options: readonly string[], deps: ParamRowDeps): HTMLElement {
@@ -64,15 +73,6 @@ function tileRow(label: string, deps: ParamRowDeps): HTMLElement {
   const options = tileSelectOptions(deps.tileset, '(empty)');
   const select = selectInput(options, String(deps.value), (value) => deps.onChange(Number(value)));
   return labeledRow(label, select);
-}
-
-function textRow(label: string, deps: ParamRowDeps): HTMLElement {
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.className = 'text-param';
-  input.value = String(deps.value);
-  input.addEventListener('change', () => deps.onChange(input.value));
-  return labeledRow(label, input);
 }
 
 function codeRow(spec: ParamSpec, deps: ParamRowDeps): HTMLElement {

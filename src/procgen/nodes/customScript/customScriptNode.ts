@@ -1,4 +1,4 @@
-import { registerNodeType } from '../../nodeRegistry';
+import { registerScriptNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import type { ChunkValue, ValueKind } from '../../values/chunkValues';
 import { coerceScriptResult } from './coerceScriptResult';
@@ -7,7 +7,7 @@ import { SCRIPT_TEMPLATE } from './scriptTemplate';
 
 const OUTPUT_KINDS = ['field', 'tiles', 'points'] as const;
 
-registerNodeType({
+registerScriptNodeType({
   type: 'customScript',
   title: 'custom script',
   category: 'custom',

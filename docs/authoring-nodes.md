@@ -16,6 +16,41 @@ function of `(world seed, node, chunk coordinates, inputs)` — never of time,
 `Math.random`, or which chunks happened to be generated first. That is what
 makes the world infinite, stable, and scrubbable.
 
+## The knob typology
+
+Every node type is built from exactly three kinds of field. This is the
+contract that keeps vibecoded nodes uniform, serializable, and tunable from
+the panel:
+
+1. **Numeric knobs** — every param value is a number. Continuous quantities
+   use `number`, counts and sizes use `int`, named alternatives use `choice`
+   (a dropdown whose stored value is a small integer), on/off uses `toggle`
+   (a checkbox stored as 0/1).
+2. **Tile links** — params of kind `tile` hold a tile id from the tileset
+   (`-1` = empty). Anything about appearance/material should be a tile link,
+   never a color or name string.
+3. **Node links** — `inputs` wire to upstream nodes by value kind. Anything
+   spatial a node consumes (a heightfield, a mask, another layer) comes in as
+   an input, never as a param.
+
+There are **no free-text, boolean, or string-enum params** on normal nodes.
+`registerNodeType` throws at registration if a param is not one of the knob
+kinds, the `StandardNodeTypeDef` type rejects it at compile time, and
+`npm run check` fails if any node type other than `custom script` breaks the
+rule. The `custom script` node is the single escape hatch (it needs a `code`
+param and a `select` for its output kind) and registers through
+`registerScriptNodeType`.
+
+Consequences worth knowing when writing a node:
+
+- Sizes are numbers, not presets. The labyrinth exposes `corridor width` /
+  `wall thickness` / `chunks per maze` instead of named lattice styles;
+  follow that pattern rather than baking size tables into a `choice`.
+- A `choice` is for genuinely discrete *behaviors* (which carving algorithm),
+  not for anything a slider could express.
+- Points don't take a tag param: generic scatterers tag points with
+  `ctx.nodeId`, special-purpose nodes hardcode a semantic tag (`'town'`).
+
 ## Two ways to build a node
 
 1. **A TypeScript file** (real nodes): add a file under `src/procgen/nodes/`,
@@ -88,9 +123,18 @@ in the panel.
 - `ctx.inputAt(name, chunkX, chunkY)` — an upstream value for **any** chunk.
   This is how algorithms that need context beyond the chunk edge (rivers,
   region labeling, wall continuity) read a halo of neighboring input chunks
-  while staying deterministic.
+  while staying deterministic. `worldFieldReader(ctx, name)` /
+  `worldTileReader(ctx, name)` in `values/worldInputReaders.ts` wrap it as
+  world-coordinate lookups — see the river nodes for the pattern.
 - `ctx.rng(label)` — a seeded random stream unique to (seed, node, chunk,
   label). Use for anything "random"; same seed ⇒ same world.
+- `ctx.rngAt(gridX, gridY, label)` — like `ctx.rng` but keyed to coordinates
+  you choose instead of the current chunk. This is how structures larger than
+  a chunk stay coherent: every chunk of a maze region calls
+  `ctx.rngAt(regionX, regionY, 'carve')` and gets the same stream, so they
+  all agree on the same maze (see `mazeChunkNode.ts`).
+- `ctx.nodeId` — this node instance's id; generic points nodes use it as the
+  point tag.
 - `ctx.hash01(worldX, worldY, label)` — deterministic per-cell value in
   [0, 1), independent of chunk boundaries. Use for scatter-style decisions so
   results don't change when the same cell is viewed from another chunk.
@@ -108,19 +152,28 @@ in the panel.
 
 ## Param spec kinds
 
+Knob kinds — the only kinds `registerNodeType` accepts:
+
+| kind      | value        | UI               |
+|-----------|--------------|------------------|
+| `number`  | number       | slider (`min`, `max`, `step`, `default`) |
+| `int`     | number       | slider, step 1   |
+| `choice`  | number       | dropdown; `options` is a list of `{ value, label, help }` |
+| `toggle`  | number (0/1) | checkbox         |
+| `tile`    | tile id      | dropdown of the tileset (+ empty = -1) |
+
+Script-only kinds, allowed solely on the `custom script` node via
+`registerScriptNodeType`:
+
 | kind      | value    | UI               |
 |-----------|----------|------------------|
-| `number`  | number   | slider (`min`, `max`, `step`, `default`) |
-| `int`     | number   | slider, step 1   |
-| `boolean` | boolean  | checkbox         |
 | `select`  | string   | dropdown (`options`, `optionHelp`, `default`) |
-| `tile`    | tile id  | dropdown of the tileset (+ empty = -1) |
-| `text`    | string   | text input       |
 | `code`    | string   | code editor with apply button |
 
-Every param and input spec carries a required `help` string, and every
-`select` an `optionHelp` record explaining each option — the panel renders
-these as hover tooltips, and `npm run check` fails on empty ones. Nodes placed
+Every param and input spec carries a required `help` string, every `choice`
+option a `help` of its own, and every `select` an `optionHelp` record — the
+panel renders these as hover tooltips, and `npm run check` fails on empty
+ones. Nodes placed
 in the panel also have a free-form per-instance `comment` field (the italic
 notes row on the card) for recording why that node is set up the way it is;
 it is saved with the pipeline and never affects generation or caching.
