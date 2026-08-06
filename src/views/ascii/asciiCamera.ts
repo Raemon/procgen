@@ -1,3 +1,4 @@
+import type { CursorPixels } from '../camera/wheelZoomListener';
 import { PanOffset } from '../camera/panOffset';
 import { ZoomScale } from '../camera/zoomScale';
 import type { CanvasSize } from '../canvasSurface';
@@ -50,9 +51,4 @@ export class AsciiCamera {
       fromCenterY / cellPxBefore - fromCenterY / cellPxAfter,
     );
   }
-}
-
-export interface CursorPixels {
-  x: number;
-  y: number;
 }

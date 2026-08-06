@@ -5,7 +5,6 @@ import type { Tileset } from '../../world/tiles/tileset';
 import { disposeMeshChildren } from './disposeMeshResources';
 import { buildChunkMeshGroup } from './worldMeshes';
 
-const VIEW_RADIUS_CHUNKS = 2;
 const CHUNK_BUILDS_PER_FRAME = 3;
 
 interface BuiltChunk {
@@ -27,28 +26,36 @@ export class ChunkMeshStreamer {
     this.version++;
   }
 
-  streamAround(playerX: number, playerY: number): void {
-    const centerChunkX = chunkCoordOfCell(playerX);
-    const centerChunkY = chunkCoordOfCell(playerY);
-    this.dropChunksOutsideRadius(centerChunkX, centerChunkY);
-    this.buildNearestStaleChunks(centerChunkX, centerChunkY);
+  streamAround(centerX: number, centerY: number, radiusChunks: number): void {
+    const centerChunkX = chunkCoordOfCell(centerX);
+    const centerChunkY = chunkCoordOfCell(centerY);
+    this.dropChunksOutsideRadius(centerChunkX, centerChunkY, radiusChunks);
+    this.buildNearestStaleChunks(centerChunkX, centerChunkY, radiusChunks);
   }
 
   dispose(): void {
     for (const key of [...this.builtChunks.keys()]) this.dropChunk(key);
   }
 
-  private dropChunksOutsideRadius(centerChunkX: number, centerChunkY: number): void {
+  private dropChunksOutsideRadius(
+    centerChunkX: number,
+    centerChunkY: number,
+    radiusChunks: number,
+  ): void {
     for (const key of [...this.builtChunks.keys()]) {
       const [chunkX, chunkY] = key.split(',').map(Number);
       const distance = Math.max(Math.abs(chunkX! - centerChunkX), Math.abs(chunkY! - centerChunkY));
-      if (distance > VIEW_RADIUS_CHUNKS) this.dropChunk(key);
+      if (distance > radiusChunks) this.dropChunk(key);
     }
   }
 
-  private buildNearestStaleChunks(centerChunkX: number, centerChunkY: number): void {
+  private buildNearestStaleChunks(
+    centerChunkX: number,
+    centerChunkY: number,
+    radiusChunks: number,
+  ): void {
     let buildsLeft = CHUNK_BUILDS_PER_FRAME;
-    for (const [chunkX, chunkY] of spiralOffsets(centerChunkX, centerChunkY)) {
+    for (const [chunkX, chunkY] of spiralOffsets(centerChunkX, centerChunkY, radiusChunks)) {
       if (buildsLeft === 0) return;
       if (this.rebuildIfStale(chunkX, chunkY)) buildsLeft--;
     }
@@ -74,9 +81,13 @@ export class ChunkMeshStreamer {
   }
 }
 
-function spiralOffsets(centerX: number, centerY: number): [number, number][] {
+function spiralOffsets(
+  centerX: number,
+  centerY: number,
+  radiusChunks: number,
+): [number, number][] {
   const offsets: [number, number][] = [];
-  for (let radius = 0; radius <= VIEW_RADIUS_CHUNKS; radius++) {
+  for (let radius = 0; radius <= radiusChunks; radius++) {
     for (let dy = -radius; dy <= radius; dy++) {
       for (let dx = -radius; dx <= radius; dx++) {
         if (Math.max(Math.abs(dx), Math.abs(dy)) !== radius) continue;

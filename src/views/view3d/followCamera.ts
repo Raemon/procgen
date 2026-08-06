@@ -1,14 +1,17 @@
 import * as THREE from 'three';
 import { PanOffset } from '../camera/panOffset';
 import { ZoomScale } from '../camera/zoomScale';
+import { worldPanForDrag } from './dragToWorldPan';
 
 const TURN_SMOOTHING_RATE = 14;
 const FOCUS_SMOOTHING_RATE = 10;
 const PITCH_DEG = 52;
 const FIELD_OF_VIEW_DEG = 50;
 const DISTANCE_AT_UNIT_ZOOM = 16;
-const MIN_MAGNIFICATION = 16 / 4000;
-const MAX_MAGNIFICATION = 16 / 1.5;
+const FARTHEST_CAMERA_DISTANCE = 800;
+const CLOSEST_CAMERA_DISTANCE = 1.2;
+const MIN_MAGNIFICATION = DISTANCE_AT_UNIT_ZOOM / FARTHEST_CAMERA_DISTANCE;
+const MAX_MAGNIFICATION = DISTANCE_AT_UNIT_ZOOM / CLOSEST_CAMERA_DISTANCE;
 const QUARTER_TURN = Math.PI / 2;
 const TAU = Math.PI * 2;
 
@@ -18,7 +21,7 @@ export interface FocusPoint {
 }
 
 export class FollowCamera {
-  readonly camera = new THREE.PerspectiveCamera(FIELD_OF_VIEW_DEG, 1, 0.1, 20000);
+  readonly camera = new THREE.PerspectiveCamera(FIELD_OF_VIEW_DEG, 1, 0.1, FARTHEST_CAMERA_DISTANCE * 3);
 
   private readonly zoom = new ZoomScale(1, MIN_MAGNIFICATION, MAX_MAGNIFICATION);
   private readonly pan = new PanOffset();
@@ -44,12 +47,11 @@ export class FollowCamera {
   }
 
   panByDragPixels(dxPixels: number, dyPixels: number): void {
-    const acrossGround = this.worldPerPixel();
-    const intoGround = acrossGround / Math.sin(pitchRadians());
-    this.pan.shiftBy(
-      -Math.cos(this.yaw) * dxPixels * acrossGround + Math.sin(this.yaw) * dyPixels * intoGround,
-      -Math.sin(this.yaw) * dxPixels * acrossGround - Math.cos(this.yaw) * dyPixels * intoGround,
+    const delta = worldPanForDrag(
+      { dxPixels, dyPixels },
+      { yaw: this.yaw, worldPerPixel: this.worldPerPixel(), pitchRadians: pitchRadians() },
     );
+    this.pan.shiftBy(delta.dx, delta.dy);
   }
 
   recenterOnPlayer(): void {

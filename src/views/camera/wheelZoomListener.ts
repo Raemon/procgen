@@ -1,15 +1,20 @@
 const PIXELS_PER_WHEEL_LINE = 16;
 const PIXELS_PER_WHEEL_PAGE = 400;
 
+export interface CursorPixels {
+  x: number;
+  y: number;
+}
+
 export function listenForWheelZoom(
   target: HTMLElement,
-  onZoomPixels: (wheelPixelsY: number) => void,
+  onZoomPixels: (wheelPixelsY: number, cursor: CursorPixels) => void,
 ): void {
   target.addEventListener(
     'wheel',
     (event) => {
       event.preventDefault();
-      onZoomPixels(wheelPixelsOf(event));
+      onZoomPixels(wheelPixelsOf(event), { x: event.offsetX, y: event.offsetY });
     },
     { passive: false },
   );

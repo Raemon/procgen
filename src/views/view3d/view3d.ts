@@ -2,13 +2,15 @@ import * as THREE from 'three';
 import type { WorldSampler } from '../../procgen/worldSampler';
 import type { Tileset } from '../../world/tiles/tileset';
 import type { World } from '../../world/world';
+import { listenForDragPan } from '../camera/dragPanListener';
+import { listenForWheelZoom } from '../camera/wheelZoomListener';
 import { containerSize, devicePixelRatioCapped, isCollapsed } from '../canvasSurface';
 import { ChunkMeshStreamer } from './chunkMeshStreamer';
 import { createDaylitScene, createPlayerMesh } from './daylitScene';
 import { FollowCamera } from './followCamera';
+import { streamingRadiusChunks } from './streamingRadius';
 
 const MAX_FRAME_MS = 100;
-const ZOOM_PER_WHEEL_UNIT = 0.02;
 const PLAYER_HEIGHT = 0.55;
 
 export class View3D {
@@ -31,11 +33,11 @@ export class View3D {
     tileset: Tileset,
   ) {
     this.canvas = this.renderer.domElement;
-    this.canvas.className = 'view3d-canvas';
+    this.canvas.className = 'view3d-canvas pannable';
     container.appendChild(this.canvas);
     this.scene.add(this.worldGroup, this.player);
     this.streamer = new ChunkMeshStreamer(this.worldGroup, this.sampler, tileset);
-    this.listenForWheelZoom();
+    this.listenForCameraGestures();
     this.resizeObserver.observe(container);
     this.resize();
     this.animationFrame = requestAnimationFrame(this.onFrame);
@@ -61,15 +63,14 @@ export class View3D {
     this.streamer.invalidateAll();
   }
 
-  private listenForWheelZoom(): void {
-    this.canvas.addEventListener(
-      'wheel',
-      (event) => {
-        event.preventDefault();
-        this.followCamera.zoomBy(event.deltaY * ZOOM_PER_WHEEL_UNIT);
-      },
-      { passive: false },
+  private listenForCameraGestures(): void {
+    listenForWheelZoom(this.canvas, (wheelPixelsY) =>
+      this.followCamera.zoomByWheelPixels(wheelPixelsY),
     );
+    listenForDragPan(this.canvas, (dxPixels, dyPixels) =>
+      this.followCamera.panByDragPixels(dxPixels, dyPixels),
+    );
+    this.canvas.addEventListener('dblclick', () => this.followCamera.recenterOnPlayer());
   }
 
   private resize(): void {
@@ -77,7 +78,7 @@ export class View3D {
     if (isCollapsed(size)) return;
     this.renderer.setPixelRatio(devicePixelRatioCapped());
     this.renderer.setSize(size.cssWidth, size.cssHeight);
-    this.followCamera.setAspect(size.cssWidth, size.cssHeight);
+    this.followCamera.setViewportSize(size.cssWidth, size.cssHeight);
   }
 
   private onFrame = (time: number): void => {
@@ -88,10 +89,19 @@ export class View3D {
 
   private renderFrame(dtSeconds: number): void {
     if (isCollapsed(containerSize(this.container))) return;
-    this.streamer.streamAround(this.world.playerX, this.world.playerY);
     this.placePlayer();
     this.followCamera.update(dtSeconds, this.world.playerX, this.world.playerY);
+    this.streamAroundCameraFocus();
     this.renderer.render(this.scene, this.followCamera.camera);
+  }
+
+  private streamAroundCameraFocus(): void {
+    const focus = this.followCamera.focusPoint();
+    this.streamer.streamAround(
+      focus.x,
+      focus.y,
+      streamingRadiusChunks(this.followCamera.visibleGroundRadiusTiles()),
+    );
   }
 
   private placePlayer(): void {

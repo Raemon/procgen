@@ -23,7 +23,6 @@ export class AsciiView {
   private readonly ctx: CanvasRenderingContext2D;
   private readonly camera = new AsciiCamera();
   private readonly resizeObserver = new ResizeObserver(() => this.draw());
-  private lastCursor = { x: 0, y: 0 };
 
   constructor(
     private readonly container: HTMLElement,
@@ -51,13 +50,10 @@ export class AsciiView {
   }
 
   private listenForCameraGestures(): void {
-    listenForWheelZoom(this.canvas, (wheelPixelsY) => {
+    listenForWheelZoom(this.canvas, (wheelPixelsY, cursor) => {
       const size = containerSize(this.container);
       if (isCollapsed(size)) return;
-      if (this.camera.zoomAtCursor(wheelPixelsY, this.lastCursor, size)) this.draw();
-    });
-    this.canvas.addEventListener('pointermove', (event) => {
-      this.lastCursor = { x: event.offsetX, y: event.offsetY };
+      if (this.camera.zoomAtCursor(wheelPixelsY, cursor, size)) this.draw();
     });
     listenForDragPan(this.canvas, (dxPixels, dyPixels) => {
       this.camera.dragByPixels(dxPixels, dyPixels, containerSize(this.container));

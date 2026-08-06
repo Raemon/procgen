@@ -43,3 +43,12 @@
   width: 100%;
   height: 100%;
 }
+
+.pannable {
+  cursor: grab;
+  touch-action: none;
+}
+
+.pannable.grabbing {
+  cursor: grabbing;
+}

@@ -16,6 +16,12 @@ import { asField, asPoints, asTiles } from '../src/procgen/values/valueAccess';
 import { WorldSampler } from '../src/procgen/worldSampler';
 import { asciiSnapshot } from '../src/views/ascii/asciiSnapshot';
 import { PLAYER_GLYPH } from '../src/views/ascii/asciiCells';
+import { PanOffset } from '../src/views/camera/panOffset';
+import { ZoomScale } from '../src/views/camera/zoomScale';
+import { cellPixelsFor, MAX_CELL_PX, MIN_CELL_PX } from '../src/views/ascii/asciiCellPixels';
+import { viewportCoveringCanvas } from '../src/views/ascii/asciiViewport';
+import { worldPanForDrag } from '../src/views/view3d/dragToWorldPan';
+import { streamingRadiusChunks } from '../src/views/view3d/streamingRadius';
 import { markerPlacementsForRect } from '../src/views/view3d/markerPlacements';
 import { tilePlacementsForRect } from '../src/views/view3d/tilePlacements';
 import { floodFillFacePixels } from '../src/ui/pixelArtEditor/ops/floodFillFacePixels';
@@ -437,6 +443,75 @@ tileset.update(treeId, { faceArt: null });
 check('forward faces north with the camera at north', String(cameraRelativeStep(0, 1, 0)) === '0,-1');
 check('forward faces east with the camera turned right', String(cameraRelativeStep(1, 1, 0)) === '1,0');
 check('strafing right of south faces west', String(cameraRelativeStep(2, 0, 1)) === '-1,0');
+
+
+const zoom = new ZoomScale(1, 0.25, 4);
+zoom.applyWheelPixels(-420);
+check('one wheel notch out doubles the zoom scale', Math.abs(zoom.current() - 2) < 1e-9);
+zoom.applyWheelPixels(420);
+check('scrolling back returns to the starting scale', Math.abs(zoom.current() - 1) < 1e-9);
+zoom.applyWheelPixels(-4200);
+check('zooming in stops at the maximum scale', zoom.current() === 4);
+zoom.applyWheelPixels(42000);
+check('zooming out stops at the minimum scale', zoom.current() === 0.25);
+
+const bigCanvas = { cssWidth: 1600, cssHeight: 900 };
+check('zooming in far is capped to a readable cell size', cellPixelsFor(1000, bigCanvas) === MAX_CELL_PX);
+check('zooming out far never draws sub-pixel cells', cellPixelsFor(0.0001, bigCanvas) >= MIN_CELL_PX);
+check(
+  'zooming out is bounded by the per-frame cell budget',
+  cellPixelsFor(0.0001, bigCanvas) * cellPixelsFor(0.0001, bigCanvas) * 250_000 >= 1600 * 900 - 1,
+);
+
+const zoomedOut = viewportCoveringCanvas(10.5, -4.5, 4, bigCanvas);
+check(
+  'the viewport covers the whole canvas at any zoom',
+  zoomedOut.subCellOffsetX + zoomedOut.columns * zoomedOut.cellPx >= bigCanvas.cssWidth &&
+    zoomedOut.subCellOffsetY + zoomedOut.rows * zoomedOut.cellPx >= bigCanvas.cssHeight,
+);
+check(
+  'the requested world point lands at the canvas center',
+  Math.abs(
+    zoomedOut.subCellOffsetX + (10.5 - zoomedOut.originX) * zoomedOut.cellPx -
+      bigCanvas.cssWidth / 2,
+  ) < 1e-9,
+);
+check(
+  'sub-cell scrolling keeps the grid aligned to whole tiles',
+  zoomedOut.subCellOffsetX <= 0 && zoomedOut.subCellOffsetX > -zoomedOut.cellPx,
+);
+
+const pan = new PanOffset();
+pan.shiftBy(3, -2);
+check('panning accumulates in tiles', pan.tilesX() === 3 && pan.tilesY() === -2);
+check('recentering reports that it moved the camera', pan.recenter() && pan.tilesX() === 0);
+check('recentering an unpanned camera is a no-op', !pan.recenter());
+
+const northView = { yaw: 0, worldPerPixel: 0.1, pitchRadians: Math.PI / 2 };
+const draggedRight = worldPanForDrag({ dxPixels: 10, dyPixels: 0 }, northView);
+check(
+  'dragging right pulls the world right by moving the camera west',
+  Math.abs(draggedRight.dx + 1) < 1e-9 && Math.abs(draggedRight.dy) < 1e-9,
+);
+const draggedDown = worldPanForDrag({ dxPixels: 0, dyPixels: 10 }, northView);
+check(
+  'dragging down looks further north',
+  Math.abs(draggedDown.dy + 1) < 1e-9 && Math.abs(draggedDown.dx) < 1e-9,
+);
+const turnedRight = worldPanForDrag(
+  { dxPixels: 10, dyPixels: 0 },
+  { ...northView, yaw: Math.PI / 2 },
+);
+check(
+  'dragging right with the camera turned right moves the camera north',
+  Math.abs(turnedRight.dx) < 1e-9 && Math.abs(turnedRight.dy + 1) < 1e-9,
+);
+const shallowPitch = worldPanForDrag({ dxPixels: 0, dyPixels: 10 }, { ...northView, pitchRadians: Math.PI / 6 });
+check('a shallower pitch covers more ground per vertical drag pixel', Math.abs(shallowPitch.dy) > 1);
+
+check('a close camera streams the minimum chunk radius', streamingRadiusChunks(8) === 2);
+check('zooming out streams more chunks', streamingRadiusChunks(120) > streamingRadiusChunks(40));
+check('streaming radius stays capped when zoomed way out', streamingRadiusChunks(100000) === 6);
 
 if (failures.length > 0) throw new Error(`${failures.length} check(s) failed: ${failures.join(', ')}`);
 console.log('\nall checks passed');
