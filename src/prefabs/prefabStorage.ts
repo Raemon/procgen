@@ -4,7 +4,10 @@ import { EMPTY_VOXEL, MAX_PREFAB_LAYERS, MAX_PREFAB_SIDE, type Prefab } from './
 const FILE_NAME = 'prefabs';
 
 export function loadStoredPrefabs(): Prefab[] | null {
-  const parsed = readPersistedFile<unknown>(FILE_NAME);
+  return prefabsFromStoredJson(readPersistedFile<unknown>(FILE_NAME));
+}
+
+export function prefabsFromStoredJson(parsed: unknown): Prefab[] | null {
   if (!Array.isArray(parsed)) return null;
   const prefabs = parsed.filter(isPrefab);
   return prefabs.length > 0 ? prefabs : null;

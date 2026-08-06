@@ -5,9 +5,14 @@ import { defaultCreatures } from './defaultCreatures';
 export type CreaturePatch = Partial<Omit<CreatureDef, 'id'>>;
 
 export class CreatureLibrary {
-  private creatures: CreatureDef[] = loadStoredCreatures() ?? defaultCreatures();
-  private nextId = this.creatures.reduce((highest, creature) => Math.max(highest, creature.id + 1), 0);
+  private creatures: CreatureDef[];
+  private nextId: number;
   private readonly listeners = new Set<() => void>();
+
+  constructor(initialCreatures?: CreatureDef[]) {
+    this.creatures = initialCreatures ?? loadStoredCreatures() ?? defaultCreatures();
+    this.nextId = this.creatures.reduce((highest, creature) => Math.max(highest, creature.id + 1), 0);
+  }
 
   all(): readonly CreatureDef[] {
     return this.creatures;

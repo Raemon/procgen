@@ -11,8 +11,8 @@ export class PrefabLibrary {
   private readonly listeners = new Set<() => void>();
   private readonly addedListeners = new Set<PrefabAddedListener>();
 
-  constructor(tileIdOf: TileIdByName) {
-    this.prefabs = loadStoredPrefabs() ?? defaultPrefabs(tileIdOf);
+  constructor(tileIdOf: TileIdByName, initialPrefabs?: Prefab[]) {
+    this.prefabs = initialPrefabs ?? loadStoredPrefabs() ?? defaultPrefabs(tileIdOf);
     this.nextId = this.prefabs.reduce((highest, prefab) => Math.max(highest, prefab.id + 1), 0);
   }
 

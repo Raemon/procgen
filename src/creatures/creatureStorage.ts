@@ -5,7 +5,10 @@ import type { CreatureDef } from './creatureDef';
 const FILE_NAME = 'creatures';
 
 export function loadStoredCreatures(): CreatureDef[] | null {
-  const parsed = readPersistedFile<unknown>(FILE_NAME);
+  return creaturesFromStoredJson(readPersistedFile<unknown>(FILE_NAME));
+}
+
+export function creaturesFromStoredJson(parsed: unknown): CreatureDef[] | null {
   if (!Array.isArray(parsed)) return null;
   const creatures = parsed.filter(isCreatureDef).map(withValidatedFaceArt);
   return creatures.length > 0 ? creatures : null;

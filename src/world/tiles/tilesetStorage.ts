@@ -5,7 +5,10 @@ import type { TileDef } from './tileDef';
 const FILE_NAME = 'tileset';
 
 export function loadStoredTiles(): TileDef[] | null {
-  const parsed = readPersistedFile<unknown>(FILE_NAME);
+  return tilesFromStoredJson(readPersistedFile<unknown>(FILE_NAME));
+}
+
+export function tilesFromStoredJson(parsed: unknown): TileDef[] | null {
   if (!Array.isArray(parsed)) return null;
   const tiles = parsed.filter(isTileDef).map(withValidatedFaceArt);
   return tiles.length > 0 ? tiles : null;

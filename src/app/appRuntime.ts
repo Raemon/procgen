@@ -4,6 +4,7 @@ import { CreatureSim } from '../creatures/sim/creatureSim';
 import { PipelineEvaluator } from '../procgen/eval/evaluator';
 import { attachPipelinePersistence, loadStoredPipeline } from '../procgen/pipeline/pipelineStorage';
 import { PipelineStore } from '../procgen/pipeline/pipelineStore';
+import { WorldPresetLibrary } from '../procgen/presets/worldPresetLibrary';
 import { TemplateLibrary } from '../procgen/templates/templateLibrary';
 import { WorldSampler } from '../procgen/worldSampler';
 import { PrefabLibrary } from '../prefabs/prefabLibrary';
@@ -24,6 +25,7 @@ export interface AppRuntime {
   creatures: CreatureLibrary;
   store: PipelineStore;
   templates: TemplateLibrary;
+  worldPresets: WorldPresetLibrary;
   evaluator: PipelineEvaluator;
   sampler: WorldSampler;
   world: World;
@@ -39,6 +41,7 @@ export interface AppRuntime {
 export function createAppRuntime(): AppRuntime {
   const tileset = new Tileset();
   const templates = new TemplateLibrary();
+  const worldPresets = new WorldPresetLibrary();
   const prefabs = new PrefabLibrary((name) => tileIdByName(tileset, name));
   const creatures = new CreatureLibrary();
   const store = new PipelineStore(loadStoredPipeline());
@@ -69,10 +72,12 @@ export function createAppRuntime(): AppRuntime {
   prefabs.onChange(applyWorldChange);
   creatures.onChange(applyWorldChange);
   world.on('player-moved', () => renderers.recenterAll());
+  world.on('player-turned', () => renderers.recenterAll());
 
   return {
     tileset,
     templates,
+    worldPresets,
     prefabs,
     creatures,
     store,

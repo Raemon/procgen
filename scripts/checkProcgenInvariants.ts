@@ -9,6 +9,7 @@ import { emptyPipeline, type PipelineState } from '../src/procgen/pipeline/pipel
 import { PipelineStore } from '../src/procgen/pipeline/pipelineStore';
 import { sanitizePipeline } from '../src/procgen/pipeline/sanitizePipeline';
 import { examplePipelines } from '../src/procgen/presets/examplePipelines';
+import { sanitizeWorldPresets } from '../src/procgen/presets/worldPreset';
 import { builtInTemplates } from '../src/procgen/templates/builtInTemplates';
 import { stampTemplateInto } from '../src/procgen/templates/stampTemplate';
 import { templateFromNodes } from '../src/procgen/templates/templateFromNodes';
@@ -59,6 +60,23 @@ import { defaultTiles } from '../src/world/tiles/defaultTiles';
 import { Tileset } from '../src/world/tiles/tileset';
 import { isWalkableTile } from '../src/world/tileWalkability';
 import { World } from '../src/world/world';
+import { applyAction } from '../src/agent/actions';
+import { buildApiDocs } from '../src/agent/apiDocs';
+import { ALL_VERBS } from '../src/agent/controls';
+import { applyEditAction } from '../src/agent/editActions';
+import { CreatureLibrary } from '../src/creatures/creatureLibrary';
+import { PrefabLibrary } from '../src/prefabs/prefabLibrary';
+import { FAILURES } from '../src/agent/failures';
+import { nodeTypesJson } from '../src/agent/nodeCatalog';
+import {
+  buildObservation,
+  CHARACTER_VIEW_SIZE,
+  GOD_VIEW_SIZE,
+  SELF_GLYPH,
+} from '../src/agent/observation';
+import { observationText } from '../src/agent/observationText';
+import { facingRelativeStep } from '../src/input/facingRelativeStep';
+import { isInFrontHalfPlane, turnedFacing, type FacingIndex } from '../src/world/facing';
 
 const failures: string[] = [];
 const tileset = new Tileset();
@@ -1120,6 +1138,153 @@ check(
 );
 
 
+const agentWorld = worldFromState(islandsState());
+const godObs = buildObservation(agentWorld.sampler, tileset, { x: 0, y: 0, facing: 0 }, 'god');
+check('god observation grid is GOD_VIEW_SIZE² with @ at the center', (() => {
+  const center = Math.floor(GOD_VIEW_SIZE / 2);
+  return (
+    godObs.view.length === GOD_VIEW_SIZE &&
+    godObs.view.every((row) => row.length === GOD_VIEW_SIZE) &&
+    godObs.view[center]![center] === SELF_GLYPH
+  );
+})());
+check('god observation states its facing', godObs.facing === 'north');
+
+const charObs = buildObservation(agentWorld.sampler, tileset, { x: 0, y: 0, facing: 0 }, 'character');
+check('character observation never states a facing', charObs.facing === null);
+check('character observation blanks everything behind the agent', (() => {
+  const center = Math.floor(CHARACTER_VIEW_SIZE / 2);
+  for (let row = 0; row < CHARACTER_VIEW_SIZE; row++) {
+    for (let column = 0; column < CHARACTER_VIEW_SIZE; column++) {
+      const behind = !isInFrontHalfPlane(0, column - center, row - center);
+      const isSelf = row === center && column === center;
+      if (behind && !isSelf && charObs.view[row]![column] !== ' ') return false;
+    }
+  }
+  return true;
+})());
+check('every facing rotates the blank half of the character view', (() => {
+  const center = Math.floor(CHARACTER_VIEW_SIZE / 2);
+  const views = new Set<string>();
+  for (let facing = 0; facing < 8; facing++) {
+    const obs = buildObservation(
+      agentWorld.sampler,
+      tileset,
+      { x: 0, y: 0, facing: facing as FacingIndex },
+      'character',
+    );
+    views.add(obs.view.join('\n'));
+    for (let row = 0; row < CHARACTER_VIEW_SIZE; row++) {
+      for (let column = 0; column < CHARACTER_VIEW_SIZE; column++) {
+        const inFront = isInFrontHalfPlane(facing as FacingIndex, column - center, row - center);
+        if (!inFront && !(row === center && column === center) && obs.view[row]![column] !== ' ') {
+          return false;
+        }
+      }
+    }
+  }
+  return views.size === 8;
+})());
+check('character legend appears only for visible glyphs plus the fixed entries', charObs.legend.every((entry) => entry.glyph === '@' || entry.glyph === ' ' || charObs.view.some((row) => row.includes(entry.glyph))));
+
+const agentDocs = buildApiDocs(tileset);
+check('api docs render with no unfilled placeholder', !/\{\{\w+\}\}/.test(agentDocs));
+check('api docs list every verb of both modes', ALL_VERBS.every((verb) => agentDocs.includes(`\`${verb.action}\``)));
+check('api docs list every failure code', FAILURES.every((failure) => agentDocs.includes(`\`${failure.code}\``)));
+check("api docs legend names every tileset symbol", tileset.all().every((tile) => agentDocs.includes(`'${tile.symbol}' = ${tile.name}`)));
+
+check('turning wraps in eighth turns', turnedFacing(7, 1) === 0 && turnedFacing(0, -1) === 7);
+check('facing-relative steps never exceed one tile per axis', (() => {
+  for (let facing = 0; facing < 8; facing++) {
+    for (const forward of [-1, 0, 1]) {
+      for (const strafe of [-1, 0, 1]) {
+        const [dx, dy] = facingRelativeStep(facing as FacingIndex, forward, strafe);
+        if (Math.abs(dx) > 1 || Math.abs(dy) > 1) return false;
+      }
+    }
+  }
+  return true;
+})());
+check('applyAction enforces mode verb ownership', (() => {
+  const pose = { x: 0, y: 0, facing: 0 as FacingIndex };
+  const actor = {
+    pose: () => pose,
+    tryStep: (dx: number, dy: number) => ((pose.x += dx), (pose.y += dy), true),
+    turn: (turns: number) => (pose.facing = turnedFacing(pose.facing, turns)),
+  };
+  return (
+    applyAction(actor, 'character', 'step_north') === 'unknown_action' &&
+    applyAction(actor, 'god', 'turn_left') === 'unknown_action' &&
+    applyAction(actor, 'god', 'step_east') === 'moved' &&
+    applyAction(actor, 'character', 'turn_right') === 'turned' &&
+    pose.facing === 1
+  );
+})());
+check('observation text and json carry the same grid', observationText(charObs).includes(charObs.view.join('\n')));
+
+check('api docs list every registered node type', allNodeTypes().every((def) => agentDocs.includes(`\`${def.type}\``)));
+check('api docs render an example body for every editing verb', ALL_VERBS.filter((verb) => verb.group === 'editing').every((verb) => agentDocs.includes(JSON.stringify(verb.example))));
+check('every registered node type serializes into the catalog', nodeTypesJson().types.length === allNodeTypes().length);
+
+const editStore = new PipelineStore(emptyPipeline());
+const editCtx = {
+  store: editStore,
+  tileset,
+  prefabs: new PrefabLibrary(() => -1),
+  creatures: new CreatureLibrary(),
+};
+check('add_node rejects an unknown type', (() => {
+  const result = applyEditAction(editCtx, 'add_node', { type: 'noSuchThing' });
+  return !result.ok && result.code === 'unknown_node_type';
+})());
+check('add_node creates and reports the node', (() => {
+  const result = applyEditAction(editCtx, 'add_node', { type: 'noiseField' });
+  return result.ok && editStore.nodes().length === 1;
+})());
+const noiseId = editStore.nodes()[0]!.id;
+check('set_param clamps a knob to its range', (() => {
+  const result = applyEditAction(editCtx, 'set_param', { node_id: noiseId, param: 'scale', value: 999 });
+  return result.ok && editStore.nodeById(noiseId)!.params.scale === 0.3;
+})());
+check('set_param names the real params on a miss', (() => {
+  const result = applyEditAction(editCtx, 'set_param', { node_id: noiseId, param: 'nope', value: 1 });
+  return !result.ok && result.code === 'unknown_param' && result.hint.includes('scale');
+})());
+check('threshold auto-wires to the noise field when added', (() => {
+  const result = applyEditAction(editCtx, 'add_node', { type: 'thresholdTiles' });
+  const threshold = editStore.nodes()[1];
+  return result.ok && threshold?.type === 'thresholdTiles' && Object.values(threshold.inputs).includes(noiseId);
+})());
+const thresholdId = editStore.nodes()[1]!.id;
+check('wire_input refuses a later source for an earlier node', (() => {
+  const result = applyEditAction(editCtx, 'wire_input', { node_id: noiseId, input: 'field', source_node_id: thresholdId });
+  return !result.ok && (result.code === 'invalid_wire' || result.code === 'unknown_param');
+})());
+check('set_display refuses a mode the output kind cannot take', (() => {
+  const result = applyEditAction(editCtx, 'set_display', { node_id: noiseId, display: 'tileLayer' });
+  return !result.ok && result.code === 'invalid_display';
+})());
+check('set_display binds elevation with a height scale', (() => {
+  const result = applyEditAction(editCtx, 'set_display', { node_id: noiseId, display: 'elevation', height_scale: 5 });
+  const display = editStore.nodeById(noiseId)!.display;
+  return result.ok && display.mode === 'elevation' && display.heightScale === 5;
+})());
+check('set_seed reseeds the pipeline', (() => {
+  const result = applyEditAction(editCtx, 'set_seed', { seed: 777 });
+  return result.ok && editStore.seed() === 777;
+})());
+check('remove_node deletes and reports', (() => {
+  const result = applyEditAction(editCtx, 'remove_node', { node_id: thresholdId });
+  return result.ok && editStore.nodes().length === 1;
+})());
+check('character mode owns no editing verbs', ALL_VERBS.every((verb) => verb.group !== 'editing' || verb.mode === 'god'));
+check('set_display rejects a prefab id the library does not have', (() => {
+  const added = applyEditAction(editCtx, 'add_node', { type: 'scatterPoints' });
+  const points = editCtx.store.nodes()[editCtx.store.nodes().length - 1]!;
+  const bad = applyEditAction(editCtx, 'set_display', { node_id: points.id, display: 'prefabs', prefab_id: 9999 });
+  const good = applyEditAction(editCtx, 'set_display', { node_id: points.id, display: 'creatures', creature_id: -1 });
+  return added.ok && !bad.ok && bad.code === 'invalid_value' && good.ok;
+})());
 const BIOME_SEA = 0;
 const BIOME_SHORE = 1;
 const BIOME_GROUND = 2;
@@ -1244,6 +1409,85 @@ check(
   sanitizeTemplates(JSON.parse(JSON.stringify([captured]))).length === 1,
 );
 check('templates reject junk', sanitizeTemplates([{ name: '', nodes: [] }, null, 7]).length === 0);
+
+function presetStateNamed(name: string): PipelineState {
+  return sanitizePipeline(examplePipelines().find((preset) => preset.name === name)!.state);
+}
+
+function tileIdsInRect(
+  sampler: WorldSampler,
+  centerX: number,
+  centerY: number,
+  halfWidth: number,
+  halfHeight: number,
+): Set<number> {
+  const seen = new Set<number>();
+  for (let y = centerY - halfHeight; y < centerY + halfHeight; y++) {
+    for (let x = centerX - halfWidth; x < centerX + halfWidth; x++) seen.add(sampler.tileAt(x, y));
+  }
+  return seen;
+}
+
+const metropolis = worldFromState(presetStateNamed('fallen metropolis'));
+const metropolisAgain = worldFromState(presetStateNamed('fallen metropolis'));
+check(
+  'the fallen metropolis preset survives sanitize with all nodes',
+  presetStateNamed('fallen metropolis').nodes.length === 28,
+);
+check(
+  'the fallen metropolis regenerates identically from the same seed',
+  fieldBytes(metropolis.evaluator, 'n9', 1, 1) === fieldBytes(metropolisAgain.evaluator, 'n9', 1, 1) &&
+    tileBytes(metropolis.evaluator, 'n10', 1, 1) === tileBytes(metropolisAgain.evaluator, 'n10', 1, 1),
+);
+const metropolisTiles = tileIdsInRegion(metropolis.sampler, 96);
+check(
+  'the fallen metropolis shows stone walls, flagstone streets, rubble and reclaiming grass',
+  [17, 16, 9, 2].every((tile) => metropolisTiles.has(tile)),
+);
+check('the risen sea drowns part of the fallen metropolis', metropolisTiles.has(0));
+const districtFate = asField(metropolis.evaluator.valueFor('n9', 0, 0))!;
+const districtFateEast = asField(metropolis.evaluator.valueFor('n9', 1, 0))!;
+check(
+  'district fate varies between districts but stays inside 0..1',
+  JSON.stringify(Array.from(districtFate)) !== JSON.stringify(Array.from(districtFateEast)) &&
+    [...districtFate, ...districtFateEast].every((value) => value >= 0 && value <= 1),
+);
+
+const climates = worldFromState(presetStateNamed('pole to equator'));
+const climatesAgain = worldFromState(presetStateNamed('pole to equator'));
+check(
+  'the pole to equator preset survives sanitize with all nodes',
+  presetStateNamed('pole to equator').nodes.length === 41,
+);
+check(
+  'the pole to equator preset regenerates identically from the same seed',
+  fieldBytes(climates.evaluator, 'n20', 1, 1) === fieldBytes(climatesAgain.evaluator, 'n20', 1, 1) &&
+    tileBytes(climates.evaluator, 'n31', 0, -20) === tileBytes(climatesAgain.evaluator, 'n31', 0, -20),
+);
+const polarTiles = tileIdsInRect(climates.sampler, 0, -700, 96, 16);
+const temperateTiles = tileIdsInRect(climates.sampler, 0, 0, 96, 16);
+const desertTiles = tileIdsInRect(climates.sampler, 0, 700, 96, 16);
+check('the far north of pole to equator is snow or ice', polarTiles.has(7) || polarTiles.has(6));
+check('the middle latitudes of pole to equator grow grass', temperateTiles.has(2));
+check('the far south of pole to equator is sand', desertTiles.has(1));
+check(
+  'grass belongs to the middle latitudes, not the polar cap',
+  !polarTiles.has(2) && temperateTiles.has(2),
+);
+
+check(
+  'a saved world preset round-trips through storage with its seed and nodes',
+  (() => {
+    const saved = sanitizeWorldPresets(
+      JSON.parse(JSON.stringify([{ name: 'mine', description: 'combo', state: earthlikeState() }])),
+    );
+    return saved.length === 1 && saved[0]!.state.seed === earthlikeState().seed && saved[0]!.state.nodes.length === earthlikeState().nodes.length;
+  })(),
+);
+check(
+  'world presets reject junk',
+  sanitizeWorldPresets([{ name: '', state: earthlikeState() }, { name: 'empty', state: { nodes: [] } }, null, 7]).length === 0,
+);
 
 checkPrefabAndCreatureInvariants(check);
 
