@@ -3,6 +3,7 @@ import { blankFacePixels, faceGridSize } from '../../world/tiles/tileFaceArt';
 import type { EditableTileFields } from '../../world/tiles/tileset';
 import { paintFacePixels } from '../../views/paintFacePixels';
 import { pixelArtEditor, type PixelArtEditor } from '../pixelArtEditor/pixelArtEditor';
+import { attachSymbolPicker } from './symbolPicker';
 
 export type TileRowCallbacks = {
   onEdit(patch: EditableTileFields): void;
@@ -97,6 +98,10 @@ function symbolInput(tile: TileDef, onEdit: EditTile): HTMLElement {
   symbol.addEventListener('input', () => {
     const character = symbol.value.slice(0, 1);
     if (character) onEdit({ symbol: character });
+  });
+  attachSymbolPicker(symbol, (character) => {
+    symbol.value = character;
+    onEdit({ symbol: character });
   });
   return symbol;
 }
