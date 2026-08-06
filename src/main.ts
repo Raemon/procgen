@@ -6,6 +6,7 @@ import { attachPipelinePersistence, loadStoredPipeline } from './procgen/pipelin
 import { PipelineStore } from './procgen/pipeline/pipelineStore';
 import { WorldSampler } from './procgen/worldSampler';
 import { elementById, PANEL_START_WIDTHS, renderAppLayout } from './ui/appLayout';
+import { preloadPersistedFiles } from './persistence/repoFileStore';
 import { debounce } from './ui/debounce';
 import { enablePanelResizing } from './ui/panelResize';
 import { ProcgenPanel } from './ui/procgenPanel/procgenPanel';
@@ -19,48 +20,52 @@ import { World } from './world/world';
 
 const VALUE_TWEAK_DEBOUNCE_MS = 150;
 
-const app = elementById('app');
-renderAppLayout(app);
-enablePanelResizing(app, PANEL_START_WIDTHS);
+void preloadPersistedFiles(['pipeline', 'tileset']).then(startApp);
 
-const tileset = new Tileset();
-const store = new PipelineStore(loadStoredPipeline());
-attachPipelinePersistence(store);
-const evaluator = new PipelineEvaluator(store);
-const sampler = new WorldSampler(store, evaluator, tileset);
-const world = new World((x, y) => isWalkableTile(tileset, sampler.tileAt(x, y)));
+function startApp(): void {
+  const app = elementById('app');
+  renderAppLayout(app);
+  enablePanelResizing(app, PANEL_START_WIDTHS);
 
-new TileEditor(elementById('tile-panel'), tileset);
-const panel = new ProcgenPanel(elementById('procgen-panel'), { store, tileset, evaluator });
+  const tileset = new Tileset();
+  const store = new PipelineStore(loadStoredPipeline());
+  attachPipelinePersistence(store);
+  const evaluator = new PipelineEvaluator(store);
+  const sampler = new WorldSampler(store, evaluator, tileset);
+  const world = new World((x, y) => isWalkableTile(tileset, sampler.tileAt(x, y)));
 
-const asciiView = new AsciiView(elementById('slot-ascii'), world, sampler, tileset);
-const view3d = new View3D(elementById('slot-3d'), world, sampler, tileset);
+  new TileEditor(elementById('tile-panel'), tileset);
+  const panel = new ProcgenPanel(elementById('procgen-panel'), { store, tileset, evaluator });
 
-function applyWorldChange(): void {
-  world.ensurePlayerOnWalkableGround();
-  asciiView.draw();
-  view3d.onWorldChanged();
-  panel.refreshErrors();
+  const asciiView = new AsciiView(elementById('slot-ascii'), world, sampler, tileset);
+  const view3d = new View3D(elementById('slot-3d'), world, sampler, tileset);
+
+  function applyWorldChange(): void {
+    world.ensurePlayerOnWalkableGround();
+    asciiView.draw();
+    view3d.onWorldChanged();
+    panel.refreshErrors();
+  }
+
+  const applyAfterTweaks = debounce(applyWorldChange, VALUE_TWEAK_DEBOUNCE_MS);
+
+  store.onChange((change) => {
+    if (change === 'structure') applyWorldChange();
+    else applyAfterTweaks();
+  });
+  tileset.onChange(() => applyWorldChange());
+  world.on('player-moved', () => asciiView.draw());
+
+  const viewMode = new ViewModeToggle(
+    { ascii: elementById('slot-ascii'), view3d: elementById('slot-3d') },
+    () => asciiView.draw(),
+  );
+
+  new MovementInput({
+    step: (dx, dy) => world.tryStep(dx, dy),
+    rotate: (direction) => view3d.rotate(direction),
+    yawQuadrant: () => (viewMode.current() === '3d' ? view3d.yawQuadrant() : 0),
+  });
+
+  applyWorldChange();
 }
-
-const applyAfterTweaks = debounce(applyWorldChange, VALUE_TWEAK_DEBOUNCE_MS);
-
-store.onChange((change) => {
-  if (change === 'structure') applyWorldChange();
-  else applyAfterTweaks();
-});
-tileset.onChange(() => applyWorldChange());
-world.on('player-moved', () => asciiView.draw());
-
-const viewMode = new ViewModeToggle(
-  { ascii: elementById('slot-ascii'), view3d: elementById('slot-3d') },
-  () => asciiView.draw(),
-);
-
-new MovementInput({
-  step: (dx, dy) => world.tryStep(dx, dy),
-  rotate: (direction) => view3d.rotate(direction),
-  yawQuadrant: () => (viewMode.current() === '3d' ? view3d.yawQuadrant() : 0),
-});
-
-applyWorldChange();

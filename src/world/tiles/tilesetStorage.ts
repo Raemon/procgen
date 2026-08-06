@@ -1,11 +1,11 @@
-import { readJson, writeJson } from '../../persistence/localJsonStore';
+import { readPersistedFile, writePersistedFile } from '../../persistence/repoFileStore';
 import { upgradeStoredFaceArt } from './legacyFaceArt';
 import type { TileDef } from './tileDef';
 
-const STORAGE_KEY = 'procgen.tileset.v1';
+const FILE_NAME = 'tileset';
 
 export function loadStoredTiles(): TileDef[] | null {
-  const parsed = readJson<unknown>(STORAGE_KEY);
+  const parsed = readPersistedFile<unknown>(FILE_NAME);
   if (!Array.isArray(parsed)) return null;
   const tiles = parsed.filter(isTileDef).map(withValidatedFaceArt);
   return tiles.length > 0 ? tiles : null;
@@ -16,7 +16,7 @@ function withValidatedFaceArt(tile: TileDef): TileDef {
 }
 
 export function storeTiles(tiles: readonly TileDef[]): void {
-  writeJson(STORAGE_KEY, tiles);
+  writePersistedFile(FILE_NAME, tiles);
 }
 
 function isTileDef(value: unknown): value is TileDef {
