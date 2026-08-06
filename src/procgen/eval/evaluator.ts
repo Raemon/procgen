@@ -5,13 +5,12 @@ import { computeNodeSignatures } from '../pipeline/nodeSignatures';
 import type { NodeInstance } from '../pipeline/pipelineState';
 import type { PipelineStore } from '../pipeline/pipelineStore';
 import { emptyValueOfKind, type ChunkValue } from '../values/chunkValues';
+import { cacheCapacityForPipeline } from './cacheCapacity';
 import { ChunkValueCache } from './chunkValueCache';
 import { createChunkGenCtx } from './genCtxFactory';
 
-const CACHE_CAPACITY = 4096;
-
 export class PipelineEvaluator {
-  private readonly cache = new ChunkValueCache(CACHE_CAPACITY);
+  private readonly cache = new ChunkValueCache(0);
   private readonly runtimeErrors = new Map<string, string>();
   private signatures = new Map<string, string>();
 
@@ -34,6 +33,7 @@ export class PipelineEvaluator {
 
   private refreshSignatures(): void {
     this.signatures = computeNodeSignatures(this.store.snapshot());
+    this.cache.growTo(cacheCapacityForPipeline(this.signatures.size));
   }
 
   private cachedOrGenerated(

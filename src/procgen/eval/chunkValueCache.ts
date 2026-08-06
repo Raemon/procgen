@@ -3,7 +3,11 @@ import type { ChunkValue } from '../values/chunkValues';
 export class ChunkValueCache {
   private readonly entries = new Map<string, ChunkValue>();
 
-  constructor(private readonly capacity: number) {}
+  constructor(private capacity: number) {}
+
+  growTo(capacity: number): void {
+    this.capacity = Math.max(this.capacity, capacity);
+  }
 
   get(key: string): ChunkValue | undefined {
     const value = this.entries.get(key);
