@@ -1,4 +1,5 @@
 import { earthlikeCoastsAndRanges } from './earthlikeCoastsAndRanges';
+import { emberMarches } from './emberMarches';
 import type { ExamplePipeline } from './examplePipeline';
 import { fallenMetropolis } from './fallenMetropolis';
 import { poleToEquator } from './poleToEquator';
@@ -18,6 +19,7 @@ export function examplePipelines(): ExamplePipeline[] {
     settlementsAndWildlife(),
     fallenMetropolis(),
     poleToEquator(),
+    emberMarches(),
   ];
 }
 
