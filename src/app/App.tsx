@@ -6,9 +6,11 @@ import { LibraryPanel } from '../ui/libraryPanel/LibraryPanel';
 import {
   AgentLogIcon,
   AgentsIcon,
+  LatentsIcon,
   LibraryIcon,
   ProcgenIcon,
 } from '../ui/icons/panelIcons';
+import { LatentsPanel } from '../ui/latentsPanel/LatentsPanel';
 import { FloatingTooltip } from '../ui/tooltips/FloatingTooltip';
 import { WorldPanel } from '../ui/worldView/WorldPanel';
 import { Panel } from './Panel';
@@ -75,6 +77,13 @@ function visibleColumns(
       icon: <ProcgenIcon />,
       tone: 'bg-procgen',
       body: <ProcgenPanel />,
+    },
+    {
+      key: 'latents',
+      title: 'latents',
+      icon: <LatentsIcon />,
+      tone: 'bg-panel',
+      body: <LatentsPanel />,
     },
     {
       key: 'agents',

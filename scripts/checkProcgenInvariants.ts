@@ -1,5 +1,6 @@
 import '../src/procgen/nodes';
 import { checkPrefabAndCreatureInvariants } from './checkPrefabAndCreatureInvariants';
+import { checkLatentInvariants } from './checkLatentInvariants';
 import { cameraRelativeStep } from '../src/input/cameraRelativeStep';
 import { PipelineEvaluator } from '../src/procgen/eval/evaluator';
 import { allNodeTypes } from '../src/procgen/nodeRegistry';
@@ -1680,6 +1681,7 @@ check(
 );
 
 checkPrefabAndCreatureInvariants(check);
+checkLatentInvariants(check);
 
 if (failures.length > 0) throw new Error(`${failures.length} check(s) failed: ${failures.join(', ')}`);
 console.log('\nall checks passed');

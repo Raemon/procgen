@@ -11,6 +11,17 @@ export function LibraryIcon({ size }: { size?: number }) {
   );
 }
 
+/** Magnifier over scattered cells — the latent inference column. */
+export function LatentsIcon({ size }: { size?: number }) {
+  return (
+    <Icon size={size}>
+      <circle cx="10" cy="10" r="6.5" />
+      <path d="m15 15 6 6" />
+      <path d="M8 10h.01M11.5 8h.01M10.5 12h.01" />
+    </Icon>
+  );
+}
+
 /** Node graph — the procgen pipeline column. */
 export function ProcgenIcon({ size }: { size?: number }) {
   return (
