@@ -1,3 +1,7 @@
+#procgen-panel {
+  background: #1a2333;
+}
+
 .knob {
   display: grid;
   grid-template-columns: 76px 1fr auto;
