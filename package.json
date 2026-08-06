@@ -10,7 +10,8 @@
     "dev": "bash scripts/killPortThenStartDevServer.sh",
     "build": "vite build",
     "typecheck": "tsc --noEmit",
-    "check": "esbuild scripts/checkProcgenInvariants.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module"
+    "check": "esbuild scripts/checkProcgenInvariants.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
+    "roll": "esbuild scripts/rollAndRankWorlds.ts --bundle --format=esm --platform=node --log-level=error --outfile=dist/rollAndRankWorlds.mjs && node dist/rollAndRankWorlds.mjs"
   },
   "dependencies": {
     "three": "0.185.1"
