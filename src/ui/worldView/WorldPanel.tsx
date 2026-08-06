@@ -5,9 +5,14 @@ import { WorldIcon } from '../icons/panelIcons';
 import { WorldStage } from './WorldStage';
 import { WorldToolbar } from './WorldToolbar';
 import { MODE_HINTS, VIEW_MODES, type ViewMode } from './viewMode';
+import { lastUsedViewMode, rememberViewMode } from './viewModePreference';
 
 export function WorldPanel() {
-  const [mode, setMode] = useState<ViewMode>('3d-god');
+  const [mode, setMode] = useState<ViewMode>(lastUsedViewMode);
+  const chooseMode = (next: ViewMode): void => {
+    rememberViewMode(next);
+    setMode(next);
+  };
   return (
     <div className="flex min-w-0 flex-col">
       <div className="flex items-center gap-1.5 border-b border-panel-edge bg-panel px-3 py-2">
@@ -15,7 +20,7 @@ export function WorldPanel() {
           <WorldIcon />
         </span>
         {VIEW_MODES.map((entry) => (
-          <Button key={entry.id} active={mode === entry.id} onClick={() => setMode(entry.id)}>
+          <Button key={entry.id} active={mode === entry.id} onClick={() => chooseMode(entry.id)}>
             {entry.label}
           </Button>
         ))}
