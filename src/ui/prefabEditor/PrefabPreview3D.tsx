@@ -1,0 +1,27 @@
+import { useEffect, useRef } from 'react';
+import type { Prefab } from '../../prefabs/prefabDef';
+import type { Tileset } from '../../world/tiles/tileset';
+import { PrefabPreviewScene } from './prefabPreviewScene';
+
+export function PrefabPreview3D({ prefab, tileset }: { prefab: Prefab; tileset: Tileset }) {
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const scene = useRef<PrefabPreviewScene | null>(null);
+
+  useEffect(() => {
+    scene.current = new PrefabPreviewScene(canvas.current!);
+    return () => {
+      scene.current?.dispose();
+      scene.current = null;
+    };
+  }, []);
+
+  useEffect(() => scene.current?.showPrefab(prefab, tileset));
+
+  return (
+    <canvas
+      ref={canvas}
+      title="drag to orbit"
+      className="mt-1.5 block h-32 w-full cursor-grab touch-none rounded-[3px] border border-art-edge"
+    />
+  );
+}

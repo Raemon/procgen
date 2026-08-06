@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '../controls/Button';
 import { HINT_CLASSES } from '../controls/fieldClasses';
 import { WorldStage } from './WorldStage';
+import { WorldToolbar } from './WorldToolbar';
 import type { ViewMode } from './viewMode';
 
 export function WorldPanel() {
@@ -15,9 +16,9 @@ export function WorldPanel() {
         <Button active={mode === '3d'} onClick={() => setMode('3d')}>
           2.5D
         </Button>
+        <WorldToolbar />
         <p className={`${HINT_CLASSES} ml-auto`}>
-          WASD/arrows move (recenters the camera) · Q/E rotate camera · wheel zoom · drag to pan ·
-          double-click to recenter
+          WASD/arrows move · Q/E rotate camera · wheel zoom · drag to pan · double-click to recenter
         </p>
       </div>
       <WorldStage mode={mode} />

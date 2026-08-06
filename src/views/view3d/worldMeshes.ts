@@ -7,6 +7,7 @@ import { cubeFaceMaterials, sideFaceMaterial } from './faceArtMaterials';
 import { instancedTileMesh, type PlacementPosition } from './instancedTileMesh';
 import { markerPlacementsForRect } from './markerPlacements';
 import { tilePlacementsForRect, type TilePlacement } from './tilePlacements';
+import { voxelPlacementsForRect } from './voxelPlacements';
 
 export { disposeMeshChildren } from './disposeMeshResources';
 
@@ -45,14 +46,24 @@ export function buildChunkMeshGroup(
     CHUNK_SIZE,
   );
   const markers = markerPlacementsForRect(sampler, minX, minY, CHUNK_SIZE, CHUNK_SIZE);
+  const voxels = voxelPlacementsForRect(sampler, tileset, minX, minY, CHUNK_SIZE, CHUNK_SIZE);
   const group = new THREE.Group();
   group.add(
     ...meshesForShape(floors, floorShape()),
     ...meshesForShape(blocks, blockShape()),
+    ...meshesForShape(voxels, voxelShape()),
     ...meshesForShape(trees, treeShape()),
     ...meshesForShape(markers, markerShape()),
   );
   return group;
+}
+
+function voxelShape(): ShapeSpec {
+  return {
+    geometry: () => new THREE.BoxGeometry(1, BLOCK_HEIGHT, 1),
+    artMaterials: cubeFaceMaterials,
+    positionOf: (p) => [p.x + 0.5, p.elevation + BLOCK_HEIGHT / 2, p.y + 0.5],
+  };
 }
 
 function floorShape(): ShapeSpec {

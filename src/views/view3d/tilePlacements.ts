@@ -67,7 +67,7 @@ function addTileToShapes(
   } else if (tile.role === 'tree') {
     shapes.floors.push(groundUnderTree(tileset, x, y, elevation));
     shapes.trees.push(placement(x, y, elevation, tile, 1, false));
-  } else if (standsAsSolidBlock(tile)) {
+  } else if (tileStandsAsSolidBlock(tile)) {
     shapes.floors.push(placement(x, y, elevation, tile, BLOCK_FLOOR_SHADE, false));
     shapes.blocks.push(placement(x, y, elevation, tile, 1, false));
   } else {
@@ -75,7 +75,7 @@ function addTileToShapes(
   }
 }
 
-function standsAsSolidBlock(tile: TileDef): boolean {
+export function tileStandsAsSolidBlock(tile: TileDef): boolean {
   return tile.role === 'rock' || !tile.walkable;
 }
 

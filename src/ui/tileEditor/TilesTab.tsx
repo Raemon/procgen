@@ -2,15 +2,14 @@ import { useAppRuntime } from '../../app/appRuntimeContext';
 import { useRerenderOnTilesetChange } from '../../app/rerenderHooks';
 import { Button } from '../controls/Button';
 import { classes } from '../controls/classes';
-import { HINT_CLASSES, PANEL_HEADING_CLASSES } from '../controls/fieldClasses';
+import { HINT_CLASSES } from '../controls/fieldClasses';
 import { TileRow } from './TileRow';
 
-export function TileEditorPanel() {
+export function TilesTab() {
   const { tileset } = useAppRuntime();
   useRerenderOnTilesetChange();
   return (
     <>
-      <h2 className={PANEL_HEADING_CLASSES}>tiles</h2>
       {tileset.all().map((tile) => (
         <TileRow key={tile.id} tile={tile} />
       ))}

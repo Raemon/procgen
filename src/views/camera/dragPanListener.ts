@@ -3,13 +3,14 @@ const PRIMARY_BUTTON = 0;
 export function listenForDragPan(
   target: HTMLElement,
   onDragPixels: (dxPixels: number, dyPixels: number) => void,
+  isPanningAllowed: () => boolean = () => true,
 ): void {
   let draggingPointerId: number | null = null;
   let lastX = 0;
   let lastY = 0;
 
   target.addEventListener('pointerdown', (event) => {
-    if (event.button !== PRIMARY_BUTTON) return;
+    if (event.button !== PRIMARY_BUTTON || !isPanningAllowed()) return;
     draggingPointerId = event.pointerId;
     lastX = event.clientX;
     lastY = event.clientY;

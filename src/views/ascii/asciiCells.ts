@@ -1,3 +1,5 @@
+import type { CreatureLibrary } from '../../creatures/creatureLibrary';
+import type { CreatureSim } from '../../creatures/sim/creatureSim';
 import type { Marker, WorldSampler } from '../../procgen/worldSampler';
 import { EMPTY_TILE } from '../../procgen/values/chunkValues';
 import type { Tileset } from '../../world/tiles/tileset';
@@ -14,6 +16,15 @@ export interface AsciiCell {
   ink: string;
 }
 
+export interface AsciiOverlays {
+  markers: Map<string, Marker>;
+  creatures: Map<string, AsciiCell>;
+}
+
+export function emptyOverlays(): AsciiOverlays {
+  return { markers: new Map(), creatures: new Map() };
+}
+
 export function markerLookup(sampler: WorldSampler, viewport: AsciiViewport): Map<string, Marker> {
   const lookup = new Map<string, Marker>();
   const markers = sampler.markersIn(
@@ -26,16 +37,35 @@ export function markerLookup(sampler: WorldSampler, viewport: AsciiViewport): Ma
   return lookup;
 }
 
+export function creatureLookup(
+  sim: CreatureSim,
+  library: CreatureLibrary,
+): Map<string, AsciiCell> {
+  const lookup = new Map<string, AsciiCell>();
+  for (const creature of sim.active()) {
+    const def = library.byId(creature.creatureId);
+    if (!def) continue;
+    lookup.set(`${Math.round(creature.x)},${Math.round(creature.y)}`, {
+      glyph: def.symbol,
+      ink: def.color,
+    });
+  }
+  return lookup;
+}
+
 export function asciiCellAt(
   sampler: WorldSampler,
   tileset: Tileset,
-  markers: Map<string, Marker>,
+  overlays: AsciiOverlays,
   x: number,
   y: number,
   isPlayerHere: boolean,
 ): AsciiCell | null {
   if (isPlayerHere) return { glyph: PLAYER_GLYPH, ink: PLAYER_INK };
-  const marker = markers.get(`${x},${y}`);
+  const key = `${x},${y}`;
+  const creature = overlays.creatures.get(key);
+  if (creature) return creature;
+  const marker = overlays.markers.get(key);
   if (marker) return { glyph: marker.glyph, ink: marker.color };
   return tileCell(sampler, tileset, x, y);
 }
@@ -46,8 +76,13 @@ function tileCell(
   x: number,
   y: number,
 ): AsciiCell | null {
-  const tileId = sampler.tileAt(x, y);
+  const tileId = visibleTileAt(sampler, x, y);
   if (tileId === EMPTY_TILE) return null;
   const tile = tileset.byId(tileId);
   return { glyph: tile?.symbol ?? UNKNOWN_GLYPH, ink: tile?.color ?? UNKNOWN_INK };
+}
+
+function visibleTileAt(sampler: WorldSampler, x: number, y: number): number {
+  const topVoxel = sampler.topVoxelAt(x, y);
+  return topVoxel === EMPTY_TILE ? sampler.tileAt(x, y) : topVoxel;
 }

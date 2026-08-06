@@ -3,7 +3,7 @@ import * as THREE from 'three';
 export function disposeMeshChildren(group: THREE.Group): void {
   for (const child of [...group.children]) {
     group.remove(child);
-    if (child instanceof THREE.Mesh) disposeMesh(child);
+    if (child instanceof THREE.Mesh) disposeMeshResources(child);
   }
 }
 
@@ -14,7 +14,7 @@ export function disposeMaterials(material: THREE.Material | THREE.Material[]): v
   }
 }
 
-function disposeMesh(mesh: THREE.Mesh): void {
+export function disposeMeshResources(mesh: THREE.Mesh): void {
   mesh.geometry.dispose();
   disposeMaterials(mesh.material);
 }
