@@ -7,7 +7,14 @@ import { createAppRuntime } from './app/appRuntime';
 import { AppRuntimeProvider } from './app/appRuntimeContext';
 import { preloadPersistedFiles } from './persistence/repoFileStore';
 
-void preloadPersistedFiles(['pipeline', 'tileset', 'templates', 'prefabs', 'creatures']).then(
+void preloadPersistedFiles([
+  'pipeline',
+  'tileset',
+  'templates',
+  'worldPresets',
+  'prefabs',
+  'creatures',
+]).then(
   startApp,
 );
 
