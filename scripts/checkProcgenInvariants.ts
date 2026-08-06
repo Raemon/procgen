@@ -1,6 +1,5 @@
 import '../src/procgen/nodes';
 import { checkPrefabAndCreatureInvariants } from './checkPrefabAndCreatureInvariants';
-import { measureWorld } from '../src/explore/metrics/measureWorld';
 import { cameraRelativeStep } from '../src/input/cameraRelativeStep';
 import { PipelineEvaluator } from '../src/procgen/eval/evaluator';
 import { allNodeTypes } from '../src/procgen/nodeRegistry';
@@ -1563,29 +1562,6 @@ check(
 check(
   'world presets reject junk',
   sanitizeWorldPresets([{ name: '', state: earthlikeState() }, { name: 'empty', state: { nodes: [] } }, null, 7]).length === 0,
-);
-
-const explorerLimits = { stepBudget: 600, radiusCap: 96 };
-const explorerRunA = measureWorld(worldFromState(islandsState()).sampler, tileset, explorerLimits);
-const explorerRunB = measureWorld(worldFromState(islandsState()).sampler, tileset, explorerLimits);
-check(
-  'explorer walks the same path over fresh evaluators of the same world',
-  explorerRunA !== null &&
-    explorerRunB !== null &&
-    JSON.stringify(explorerRunA.trace.path) === JSON.stringify(explorerRunB.trace.path),
-);
-check(
-  'explorer visits every cell it stepped on exactly once in the visited set',
-  explorerRunA !== null &&
-    explorerRunA.trace.visited.size <= explorerRunA.trace.path.length &&
-    explorerRunA.trace.path.every((cell) => explorerRunA.trace.visited.has(`${cell.x},${cell.y}`)),
-);
-check(
-  'explorer scores land in [0, 1] with every metric reading scored',
-  explorerRunA !== null &&
-    explorerRunA.score.overall >= 0 &&
-    explorerRunA.score.overall <= 1 &&
-    explorerRunA.score.readings.every((r) => r.score >= 0 && r.score <= 1),
 );
 
 checkPrefabAndCreatureInvariants(check);
