@@ -5,6 +5,7 @@ import './style.css';
 import { AsciiView } from './asciiView';
 import { GenPanel } from './genPanel';
 import { MovementInput } from './input';
+import { enablePanelResizing } from './panelResize';
 import { TileEditor } from './tileEditor';
 import { Tileset } from './tiles';
 import { View3D } from './view3d';
@@ -15,7 +16,9 @@ type ViewMode = 'ascii' | '3d';
 const app = document.getElementById('app')!;
 app.innerHTML = `
   <div class="panel" id="tile-panel"></div>
+  <div class="panel-resizer"></div>
   <div class="panel" id="gen-panel"></div>
+  <div class="panel-resizer"></div>
   <div class="world-panel">
     <div class="world-toolbar">
       <button type="button" class="btn" id="btn-ascii">ASCII</button>
@@ -30,6 +33,8 @@ app.innerHTML = `
     </div>
   </div>
 `;
+
+enablePanelResizing(app, [260, 280]);
 
 const tileset = new Tileset();
 const world = new World(tileset);

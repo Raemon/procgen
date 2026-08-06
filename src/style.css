@@ -24,8 +24,19 @@ body {
 
 #app {
   display: grid;
-  grid-template-columns: 260px 280px 1fr;
+  grid-template-columns: 260px 6px 280px 6px 1fr;
   height: 100vh;
+}
+
+.panel-resizer {
+  cursor: col-resize;
+  background: var(--panel-edge);
+  transition: background 0.15s;
+}
+
+.panel-resizer:hover,
+.panel-resizer.dragging {
+  background: var(--accent);
 }
 
 .panel {
