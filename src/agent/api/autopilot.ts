@@ -64,12 +64,19 @@ async function driveAgent(
     if (run.steps >= run.maxSteps) return endRun(run, 'finished', 'step budget spent');
     const reply = await callAnthropic(opts, access, session, messages);
     messages.push({ role: 'assistant', content: reply.content });
-    const toolUse = recordReply(run, reply);
-    if (!toolUse) return endRun(run, 'finished', 'the model ended its turn');
-    if (toolUse.name === 'finish') {
-      return endRun(run, 'finished', `finished: ${String((toolUse.input as { summary?: unknown }).summary ?? '')}`);
+    const toolUses = recordReply(run, reply);
+    if (toolUses.length === 0) return endRun(run, 'finished', 'the model ended its turn');
+    // The model may call several tools in one turn; every tool_use needs its own
+    // tool_result in the next message or the API rejects the whole conversation.
+    const results: object[] = [];
+    for (const toolUse of toolUses) {
+      if (toolUse.name === 'finish') {
+        const summary = String((toolUse.input as { summary?: unknown } | undefined)?.summary ?? '');
+        return endRun(run, 'finished', `finished: ${summary}`);
+      }
+      results.push(toolResultBlock(session, access, run, toolUse));
     }
-    messages.push({ role: 'user', content: [toolResultBlock(session, access, run, toolUse)] });
+    messages.push({ role: 'user', content: results });
     trimHistory(messages);
   }
 }
@@ -181,17 +188,17 @@ function toolDefinitions(session: AgentSession) {
   return tools;
 }
 
-function recordReply(run: NonNullable<AgentSession['run']>, reply: AnthropicReply): ContentBlock | null {
-  let toolUse: ContentBlock | null = null;
+function recordReply(run: NonNullable<AgentSession['run']>, reply: AnthropicReply): ContentBlock[] {
+  const toolUses: ContentBlock[] = [];
   for (const block of reply.content) {
     if (block.type === 'thinking' && block.thinking) appendTranscript(run, 'thinking', block.thinking);
     if (block.type === 'text' && block.text) appendTranscript(run, 'message', block.text);
     if (block.type === 'tool_use') {
       appendTranscript(run, 'tool_use', `${block.name} ${JSON.stringify(block.input)}`);
-      toolUse = block;
+      toolUses.push(block);
     }
   }
-  return toolUse;
+  return toolUses;
 }
 
 function toolResultBlock(
