@@ -1,9 +1,11 @@
 # procgen
 
 A playground for procedurally generated worlds. React + TypeScript + Tailwind +
-Vite + three.js, no server. The world is infinite, chunked, and fully determined by a
+Vite + three.js, plus a small multiplayer game server (`server/`, WebSocket +
+optional Postgres). The world is infinite, chunked, and fully determined by a
 seed — walk in any direction forever and the same seed always gives the same
-world.
+world, which is why multiplayer only ever syncs player poses and the pipeline
+docs, never terrain. See `docs/multiplayer.md`.
 
 Five panels:
 
@@ -101,6 +103,12 @@ src/views         agentText (the observation as an agent receives it), ascii
                   (pure-text snapshot used by the checks) and view3d (chunk-mesh
                   streamer, god + character cameras, face-art materials)
 src/input         key tracking, camera-relative and facing-relative step math
+src/net           multiplayer client: wire protocol + codec (shared with the
+                  server), WebSocket client with backoff, remote-entity
+                  registry, session glue (docs/multiplayer.md)
+server            the game server: WebSocket + snapshots, persisted docs +
+                  characters (optional Postgres via Prisma), agent API host,
+                  static client in production
 src/app           React shell: app runtime (core objects + world-change wiring),
                   runtime context, re-render hooks, resizable panel layout
 src/ui            React panels: library (tiles / prefabs / creatures), procgen
@@ -121,6 +129,8 @@ npm ci --ignore-scripts
 npm run dev
 ```
 
-Dev server: http://localhost:1111. Node >= 22. Dependencies are exact-pinned;
-`--ignore-scripts` is deliberate (npm supply-chain hygiene) and everything
-works without lifecycle scripts.
+Dev server: http://localhost:1111 (Vite, proxying `/ws`, `/api/v1` and
+`/persist` to the game server on 8080 — `npm run dev` starts both). Node >= 22.
+Dependencies are exact-pinned; `--ignore-scripts` is deliberate (npm
+supply-chain hygiene) and everything works without lifecycle scripts — run
+`npx prisma generate` once if you set `DATABASE_URL`.

@@ -74,8 +74,8 @@ neither the API nor the UI agent views show creature positions — the parity
 rule (UI agent text ≡ API payload) is kept by leaving them out of both. Giving
 agents creatures means simulating server-side, which is future work.
 
-The human player's pose lives in the browser; API agents live in the dev
-server. Both walk the same generated world (same data files, same sampler),
-but they do not see each other. Making agents visible in the human views (and
-vice versa) would mean syncing the player pose to the server — deliberately
-not done yet.
+Human players and API agents now share the game server's world: player poses
+sync over the multiplayer WebSocket, and agent sessions ride the same snapshot
+feed, so agents appear as capsules in the 3-D views alongside other players
+(see `docs/multiplayer.md`). Agent *observations* still come from the sampler
+only — an agent is not told about players or other agents standing nearby.

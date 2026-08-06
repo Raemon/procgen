@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Doc {
+  name      String   @id
+  json      Json
+  updatedAt DateTime @updatedAt
+
+  @@map("ProcgenDoc")
+}
+
+model Character {
+  id         String   @id
+  name       String
+  x          Int
+  y          Int
+  facing     Int
+  createdAt  DateTime @default(now())
+  lastSeenAt DateTime @default(now())
+
+  @@map("ProcgenCharacter")
+}

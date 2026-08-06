@@ -8,7 +8,9 @@
   },
   "scripts": {
     "dev": "bash scripts/killPortThenStartDevServer.sh",
+    "server": "tsx watch server/index.ts",
     "build": "vite build",
+    "start:prod": "sh -c 'if [ -n \"$DATABASE_URL\" ]; then npx prisma db push --skip-generate --accept-data-loss; fi; exec npx tsx server/index.ts'",
     "typecheck": "tsc --noEmit",
     "check": "esbuild scripts/checkProcgenInvariants.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
     "roll": "esbuild scripts/rollAndRankWorlds.ts --bundle --format=esm --platform=node --log-level=error --outfile=dist/rollAndRankWorlds.mjs && node dist/rollAndRankWorlds.mjs",
@@ -16,9 +18,12 @@
     "tiles:preview": "esbuild scripts/renderTilesetPreview.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module"
   },
   "dependencies": {
+    "@prisma/client": "^6.19.3",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "three": "0.185.1"
+    "three": "0.185.1",
+    "tsx": "^4.23.9",
+    "ws": "^8.21.2"
   },
   "devDependencies": {
     "@tailwindcss/vite": "4.3.3",
@@ -26,7 +31,9 @@
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
     "@types/three": "0.185.1",
+    "@types/ws": "^8.18.1",
     "@vitejs/plugin-react": "4.7.0",
+    "prisma": "^6.19.3",
     "tailwindcss": "4.3.3",
     "typescript": "5.9.3",
     "vite": "5.4.21"

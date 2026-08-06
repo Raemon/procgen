@@ -29,6 +29,16 @@ export class World {
     return true;
   }
 
+  snapTo(x: number, y: number, facing: FacingIndex): void {
+    const moved = this.playerX !== x || this.playerY !== y;
+    const turned = this.facing !== facing;
+    this.playerX = x;
+    this.playerY = y;
+    this.facing = facing;
+    if (moved) this.events.emit('player-moved');
+    if (turned) this.events.emit('player-turned');
+  }
+
   ensurePlayerOnWalkableGround(): void {
     if (this.isWalkableAt(this.playerX, this.playerY)) return;
     const spot = nearestWalkable(this.playerX, this.playerY, SNAP_SEARCH_RADIUS, this.isWalkableAt);

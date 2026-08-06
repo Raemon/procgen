@@ -1,4 +1,5 @@
 import { CreatureLibrary } from '../creatures/creatureLibrary';
+import { MultiplayerSession } from '../net/multiplayerSession';
 import { CreatureClock } from '../creatures/sim/creatureClock';
 import { CreatureSim } from '../creatures/sim/creatureSim';
 import { PipelineEvaluator } from '../procgen/eval/evaluator';
@@ -29,6 +30,7 @@ export interface AppRuntime {
   evaluator: PipelineEvaluator;
   sampler: WorldSampler;
   world: World;
+  net: MultiplayerSession;
   sim: CreatureSim;
   clock: CreatureClock;
   capture: CaptureTool;
@@ -50,6 +52,7 @@ export function createAppRuntime(): AppRuntime {
   const sampler = new WorldSampler(store, evaluator, tileset, prefabs);
   const isWalkableAt = (x: number, y: number) => isWalkableTile(tileset, sampler.tileAt(x, y));
   const world = new World(isWalkableAt);
+  const net = new MultiplayerSession(world, store, isWalkableAt);
   const sim = new CreatureSim({ sampler, library: creatures, world, isWalkableAt });
   const clock = new CreatureClock(sim);
   const renderers = new WorldRenderers();
@@ -84,6 +87,7 @@ export function createAppRuntime(): AppRuntime {
     evaluator,
     sampler,
     world,
+    net,
     sim,
     clock,
     capture,

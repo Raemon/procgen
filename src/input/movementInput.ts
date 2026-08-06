@@ -9,6 +9,7 @@ const HOLD_REPEAT_MS = 125;
 
 export interface MovementDeps {
   moveIntent(forwardInput: number, strafeInput: number): void;
+  moveReleased(): void;
   rotate(direction: -1 | 1): void;
 }
 
@@ -50,13 +51,19 @@ export class MovementInput {
     const axis = movementAxisForKey(event.code);
     if (!axis) return;
     this.heldAxes.delete(axis);
-    if (this.heldAxes.size === 0) this.stopRepeating();
+    if (this.heldAxes.size === 0) this.releaseAll();
   };
 
   private onBlur = (): void => {
+    if (this.heldAxes.size === 0) return;
     this.heldAxes.clear();
-    this.stopRepeating();
+    this.releaseAll();
   };
+
+  private releaseAll(): void {
+    this.stopRepeating();
+    this.deps.moveReleased();
+  }
 
   private startRepeating(): void {
     if (this.repeatTimer) return;

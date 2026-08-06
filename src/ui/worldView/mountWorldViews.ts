@@ -1,5 +1,5 @@
 import type { AppRuntime } from '../../app/appRuntime';
-import { cameraRelativeStep, slideAlongEachAxis } from '../../input/cameraRelativeStep';
+import { cameraRelativeStep } from '../../input/cameraRelativeStep';
 import { facingRelativeStep } from '../../input/facingRelativeStep';
 import { MovementInput } from '../../input/movementInput';
 import { AgentTextView } from '../../views/agentText/agentTextView';
@@ -51,11 +51,12 @@ export function mountWorldViews(
 
   const movement = new MovementInput({
     moveIntent: (forwardInput, strafeInput) => {
-      const step = isCharacterControlled(currentMode())
+      const [dx, dy] = isCharacterControlled(currentMode())
         ? facingRelativeStep(world.facing, forwardInput, strafeInput)
         : cameraRelativeStep(godYawQuadrant(currentMode(), view3d), forwardInput, strafeInput);
-      slideAlongEachAxis(step, (dx, dy) => world.tryStep(dx, dy));
+      runtime.net.setMoveIntent(dx, dy);
     },
+    moveReleased: () => runtime.net.clearMoveIntent(),
     rotate: (direction) => {
       if (isCharacterControlled(currentMode())) world.turn(direction);
       else if (currentMode() === '3d-god') view3d.rotate(direction);
@@ -90,5 +91,6 @@ function worldViewDepsOf(runtime: AppRuntime): WorldViewDeps {
     creatures: runtime.creatures,
     sim: runtime.sim,
     capture: runtime.capture,
+    remotePlayers: runtime.net.remotePlayers,
   };
 }

@@ -9,6 +9,8 @@ import { WORLD_CANVAS_CLASSES } from '../worldCanvasClasses';
 import { CharacterCamera } from './characterCamera';
 import { ChunkMeshStreamer } from './chunkMeshStreamer';
 import { CreatureMeshes } from './creatureMeshes';
+import { EasedPoint } from './easedPoint';
+import { RemotePlayerMeshes } from './remotePlayerMeshes';
 import { createDaylitScene, createPlayerMesh } from './daylitScene';
 import { FollowCamera } from './followCamera';
 import { worldCellUnderPointer } from './pointerToWorldCell';
@@ -30,8 +32,10 @@ export class View3D {
   private cameraStyle: CameraStyle = 'god';
   private readonly worldGroup = new THREE.Group();
   private readonly player = createPlayerMesh();
+  private readonly easedPlayer: EasedPoint;
   private readonly streamer: ChunkMeshStreamer;
   private readonly creatureMeshes: CreatureMeshes;
+  private readonly remotePlayerMeshes: RemotePlayerMeshes;
   private readonly selectionBox: SelectionBox;
   private readonly resizeObserver = new ResizeObserver(() => this.resize());
   private animationFrame = 0;
@@ -41,12 +45,14 @@ export class View3D {
     private readonly container: HTMLElement,
     private readonly deps: WorldViewDeps,
   ) {
+    this.easedPlayer = new EasedPoint(deps.world.playerX, deps.world.playerY);
     this.canvas = this.renderer.domElement;
     this.canvas.className = WORLD_CANVAS_CLASSES;
     container.appendChild(this.canvas);
     this.scene.add(this.worldGroup, this.player);
     this.streamer = new ChunkMeshStreamer(this.worldGroup, deps.sampler, deps.tileset);
     this.creatureMeshes = new CreatureMeshes(this.worldGroup, deps.creatures, deps.sampler);
+    this.remotePlayerMeshes = new RemotePlayerMeshes(this.worldGroup, deps.sampler);
     this.selectionBox = new SelectionBox(this.worldGroup);
     this.listenForCameraGestures();
     listenForCaptureDrag(this.canvas, deps.capture, (x, y) => this.cellAtPixel(x, y));
@@ -59,6 +65,7 @@ export class View3D {
     cancelAnimationFrame(this.animationFrame);
     this.resizeObserver.disconnect();
     this.creatureMeshes.dispose();
+    this.remotePlayerMeshes.dispose();
     this.selectionBox.dispose();
     this.streamer.dispose();
     this.renderer.dispose();
@@ -146,8 +153,10 @@ export class View3D {
 
   private renderFrame(dtSeconds: number): void {
     if (isCollapsed(containerSize(this.container))) return;
+    this.easedPlayer.approach(this.deps.world.playerX, this.deps.world.playerY, dtSeconds);
     this.placePlayer();
     this.creatureMeshes.syncTo(this.deps.sim);
+    this.remotePlayerMeshes.syncTo(this.deps.remotePlayers, dtSeconds);
     this.selectionBox.showRegion(this.deps.capture.selectedRegion(), this.focusGroundHeight());
     this.updateActiveCamera(dtSeconds);
     this.streamAroundCameraFocus();
@@ -155,17 +164,17 @@ export class View3D {
   }
 
   private updateActiveCamera(dtSeconds: number): void {
-    const { world } = this.deps;
+    const eased = this.easedPlayer;
     if (this.cameraStyle === 'god') {
-      this.followCamera.update(dtSeconds, world.playerX, world.playerY);
+      this.followCamera.update(dtSeconds, eased.x, eased.y);
       return;
     }
     this.characterCamera.update(
       dtSeconds,
-      world.playerX,
-      world.playerY,
-      this.deps.sampler.elevationAt(world.playerX, world.playerY),
-      facingYawRadians(world.facing),
+      eased.x,
+      eased.y,
+      this.deps.sampler.elevationAt(Math.round(eased.x), Math.round(eased.y)),
+      facingYawRadians(this.deps.world.facing),
     );
   }
 
@@ -179,11 +188,8 @@ export class View3D {
   }
 
   private placePlayer(): void {
-    const elevation = this.deps.sampler.elevationAt(this.deps.world.playerX, this.deps.world.playerY);
-    this.player.position.set(
-      this.deps.world.playerX + 0.5,
-      elevation + PLAYER_HEIGHT,
-      this.deps.world.playerY + 0.5,
-    );
+    const eased = this.easedPlayer;
+    const elevation = this.deps.sampler.elevationAt(Math.round(eased.x), Math.round(eased.y));
+    this.player.position.set(eased.x + 0.5, elevation + PLAYER_HEIGHT, eased.y + 0.5);
   }
 }

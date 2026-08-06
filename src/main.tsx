@@ -1,10 +1,10 @@
 import { createRoot } from 'react-dom/client';
 import './styles/index.css';
 import './procgen/nodes';
-import { attachAgentPipelineSync } from './agent/ui/livePipelineSync';
 import { App } from './app/App';
 import { createAppRuntime } from './app/appRuntime';
 import { AppRuntimeProvider } from './app/appRuntimeContext';
+import { playerName } from './net/playerName';
 import { preloadPersistedFiles } from './persistence/repoFileStore';
 
 void preloadPersistedFiles([
@@ -22,7 +22,7 @@ function startApp(): void {
   const container = document.getElementById('app');
   if (!container) throw new Error('missing #app');
   const runtime = createAppRuntime();
-  attachAgentPipelineSync(runtime.store);
+  runtime.net.connect(playerName());
   createRoot(container).render(
     <AppRuntimeProvider runtime={runtime}>
       <App />
