@@ -3,18 +3,19 @@ const PRIMARY_BUTTON = 0;
 export function listenForDragPan(
   target: HTMLElement,
   onDragPixels: (dxPixels: number, dyPixels: number) => void,
+  isPanningAllowed: () => boolean = () => true,
 ): void {
   let draggingPointerId: number | null = null;
   let lastX = 0;
   let lastY = 0;
 
   target.addEventListener('pointerdown', (event) => {
-    if (event.button !== PRIMARY_BUTTON) return;
+    if (event.button !== PRIMARY_BUTTON || !isPanningAllowed()) return;
     draggingPointerId = event.pointerId;
     lastX = event.clientX;
     lastY = event.clientY;
     target.setPointerCapture(event.pointerId);
-    target.classList.add('grabbing');
+    target.style.cursor = 'grabbing';
   });
 
   target.addEventListener('pointermove', (event) => {
@@ -27,7 +28,7 @@ export function listenForDragPan(
   const endDrag = (event: PointerEvent): void => {
     if (event.pointerId !== draggingPointerId) return;
     draggingPointerId = null;
-    target.classList.remove('grabbing');
+    target.style.cursor = '';
   };
   target.addEventListener('pointerup', endDrag);
   target.addEventListener('pointercancel', endDrag);

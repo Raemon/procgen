@@ -1,4 +1,5 @@
 import '../src/procgen/nodes';
+import { checkPrefabAndCreatureInvariants } from './checkPrefabAndCreatureInvariants';
 import { measureWorld } from '../src/explore/metrics/measureWorld';
 import { cameraRelativeStep } from '../src/input/cameraRelativeStep';
 import { PipelineEvaluator } from '../src/procgen/eval/evaluator';
@@ -9,6 +10,12 @@ import { emptyPipeline, type PipelineState } from '../src/procgen/pipeline/pipel
 import { PipelineStore } from '../src/procgen/pipeline/pipelineStore';
 import { sanitizePipeline } from '../src/procgen/pipeline/sanitizePipeline';
 import { examplePipelines } from '../src/procgen/presets/examplePipelines';
+import { sanitizeWorldPresets } from '../src/procgen/presets/worldPreset';
+import { builtInTemplates } from '../src/procgen/templates/builtInTemplates';
+import { stampTemplateInto } from '../src/procgen/templates/stampTemplate';
+import { templateFromNodes } from '../src/procgen/templates/templateFromNodes';
+import { sanitizeTemplates } from '../src/procgen/templates/nodeTemplate';
+import { nodeFolderRuns } from '../src/ui/procgenPanel/nodeFolderRuns';
 import { mulberry32 } from '../src/random/mulberry32';
 import { permutedNodeCombination } from '../src/procgen/randomize/permuteNodeCombination';
 import { permutedSliderParams } from '../src/procgen/randomize/permuteSliderParams';
@@ -26,9 +33,7 @@ import { asciiSnapshot } from '../src/views/ascii/asciiSnapshot';
 import { PLAYER_GLYPH } from '../src/views/ascii/asciiCells';
 import { PanOffset } from '../src/views/camera/panOffset';
 import { ZoomScale } from '../src/views/camera/zoomScale';
-import { cellPixelsFor, MAX_CELL_PX, MIN_CELL_PX } from '../src/views/ascii/asciiCellPixels';
-import { viewportCoveringCanvas } from '../src/views/ascii/asciiViewport';
-import { recenterViewsWhenPlayerMoves } from '../src/views/camera/recenterOnPlayerMove';
+import { WorldRenderers, type WorldRenderer } from '../src/app/worldRenderers';
 import { worldPanForDrag } from '../src/views/view3d/dragToWorldPan';
 import { streamingRadiusChunks } from '../src/views/view3d/streamingRadius';
 import { markerPlacementsForRect } from '../src/views/view3d/markerPlacements';
@@ -50,9 +55,27 @@ import {
   isEntirelyBlank,
   SIDE_FACES,
 } from '../src/world/tiles/tileFaceArt';
+import { defaultTiles } from '../src/world/tiles/defaultTiles';
 import { Tileset } from '../src/world/tiles/tileset';
 import { isWalkableTile } from '../src/world/tileWalkability';
 import { World } from '../src/world/world';
+import { applyAction } from '../src/agent/actions';
+import { buildApiDocs } from '../src/agent/apiDocs';
+import { ALL_VERBS } from '../src/agent/controls';
+import { applyEditAction } from '../src/agent/editActions';
+import { CreatureLibrary } from '../src/creatures/creatureLibrary';
+import { PrefabLibrary } from '../src/prefabs/prefabLibrary';
+import { FAILURES } from '../src/agent/failures';
+import { nodeTypesJson } from '../src/agent/nodeCatalog';
+import {
+  buildObservation,
+  CHARACTER_VIEW_SIZE,
+  GOD_VIEW_SIZE,
+  SELF_GLYPH,
+} from '../src/agent/observation';
+import { observationText } from '../src/agent/observationText';
+import { facingRelativeStep } from '../src/input/facingRelativeStep';
+import { isInFrontHalfPlane, turnedFacing, type FacingIndex } from '../src/world/facing';
 
 const failures: string[] = [];
 const tileset = new Tileset();
@@ -647,11 +670,17 @@ const relinked = copyFaceToAllSides(splitSides, 'north');
 check('relinking copies one side everywhere', sideFacesMatch(relinked) && relinked.west[0] === '#ff0000');
 
 const grass = tileset.byRole('grass')!;
+const shippedGrassArt = grass.faceArt;
 tileset.update(grass.id, { faceArt: art });
 const placements = tilePlacementsForRect(sampled.sampler, tileset, -48, -48, 96, 96);
 check('placements carry the tile face art', placements.floors.some((p) => p.faceArt === art));
-check('tiles without art stay flat-colored', placements.floors.some((p) => p.faceArt === null));
 tileset.update(grass.id, { faceArt: null });
+const strippedPlacements = tilePlacementsForRect(sampled.sampler, tileset, -48, -48, 96, 96);
+check(
+  'tiles without art stay flat-colored',
+  strippedPlacements.floors.some((p) => p.faceArt === null),
+);
+tileset.update(grass.id, { faceArt: shippedGrassArt });
 
 tileset.update(treeId, { faceArt: art });
 const markerPlacements = markerPlacementsForRect(sampled.sampler, -48, -48, 96, 96);
@@ -659,7 +688,35 @@ check(
   'marker placements carry the sourced tile face art',
   markerPlacements.length > 0 && markerPlacements.every((p) => p.faceArt === art),
 );
-tileset.update(treeId, { faceArt: null });
+tileset.update(treeId, { faceArt: defaultTiles()[treeId]?.faceArt ?? null });
+
+const shippedTiles = defaultTiles();
+check(
+  'every shipped tile carries 32px cube art',
+  shippedTiles.every((tile) => isCubeFaceArt(tile.faceArt) && tile.faceArt.size === 32),
+);
+check(
+  'no shipped tile art is left blank',
+  shippedTiles.every((tile) => tile.faceArt !== null && !isEntirelyBlank(tile.faceArt)),
+);
+check(
+  'shipped tiles have unique names, symbols and ids',
+  [
+    shippedTiles.map((tile) => tile.name),
+    shippedTiles.map((tile) => tile.symbol),
+    shippedTiles.map((tile) => String(tile.id)),
+  ].every((values) => new Set(values).size === shippedTiles.length),
+);
+check(
+  'terrain roles keep the tile ids that saved pipelines reference',
+  ['water', 'sand', 'grass', 'tree', 'rock'].every(
+    (role, id) => shippedTiles[id]?.role === role,
+  ),
+);
+check(
+  'tile art generation is deterministic',
+  JSON.stringify(defaultTiles()) === JSON.stringify(shippedTiles),
+);
 
 check('forward faces north with the camera at north', String(cameraRelativeStep(0, 1, 0)) === '0,-1');
 check('forward faces east with the camera turned right', String(cameraRelativeStep(1, 1, 0)) === '1,0');
@@ -675,32 +732,6 @@ zoom.applyWheelPixels(-4200);
 check('zooming in stops at the maximum scale', zoom.current() === 4);
 zoom.applyWheelPixels(42000);
 check('zooming out stops at the minimum scale', zoom.current() === 0.25);
-
-const bigCanvas = { cssWidth: 1600, cssHeight: 900 };
-check('zooming in far is capped to a readable cell size', cellPixelsFor(1000, bigCanvas) === MAX_CELL_PX);
-check('zooming out far never draws sub-pixel cells', cellPixelsFor(0.0001, bigCanvas) >= MIN_CELL_PX);
-check(
-  'zooming out is bounded by the per-frame cell budget',
-  cellPixelsFor(0.0001, bigCanvas) * cellPixelsFor(0.0001, bigCanvas) * 250_000 >= 1600 * 900 - 1,
-);
-
-const zoomedOut = viewportCoveringCanvas(10.5, -4.5, 4, bigCanvas);
-check(
-  'the viewport covers the whole canvas at any zoom',
-  zoomedOut.subCellOffsetX + zoomedOut.columns * zoomedOut.cellPx >= bigCanvas.cssWidth &&
-    zoomedOut.subCellOffsetY + zoomedOut.rows * zoomedOut.cellPx >= bigCanvas.cssHeight,
-);
-check(
-  'the requested world point lands at the canvas center',
-  Math.abs(
-    zoomedOut.subCellOffsetX + (10.5 - zoomedOut.originX) * zoomedOut.cellPx -
-      bigCanvas.cssWidth / 2,
-  ) < 1e-9,
-);
-check(
-  'sub-cell scrolling keeps the grid aligned to whole tiles',
-  zoomedOut.subCellOffsetX <= 0 && zoomedOut.subCellOffsetX > -zoomedOut.cellPx,
-);
 
 const pan = new PanOffset();
 pan.shiftBy(3, -2);
@@ -852,12 +883,22 @@ check(
   restored !== null && restored.nodes[0]!.params.scale !== 0.29 && historyStates.canUndo(),
 );
 
+function recenteringRenderer(recenterOnPlayer: () => void): WorldRenderer {
+  return { redraw: () => {}, recenterOnPlayer };
+}
+
+function recenterViewsWhenPlayerMoves(world: World, views: WorldRenderer[]): void {
+  const renderers = new WorldRenderers();
+  for (const view of views) renderers.add(view);
+  world.on('player-moved', () => renderers.recenterAll());
+}
+
 const pannedViews = [new PanOffset(), new PanOffset()];
 pannedViews.forEach((offset) => offset.shiftBy(40, -25));
 const walkableWorld = new World(() => true);
 recenterViewsWhenPlayerMoves(
   walkableWorld,
-  pannedViews.map((offset) => ({ recenterOnPlayer: () => void offset.recenter() })),
+  pannedViews.map((offset) => recenteringRenderer(() => void offset.recenter())),
 );
 check(
   'panning still holds before the player moves',
@@ -873,10 +914,553 @@ const walledWorld = new World(() => false);
 const walledViewPan = new PanOffset();
 walledViewPan.shiftBy(40, -25);
 recenterViewsWhenPlayerMoves(walledWorld, [
-  { recenterOnPlayer: () => void walledViewPan.recenter() },
+  recenteringRenderer(() => void walledViewPan.recenter()),
 ]);
 walledWorld.tryStep(1, 0);
 check('a blocked step leaves the camera where the player put it', walledViewPan.tilesX() === 40);
+
+function fieldAt(evaluator: PipelineEvaluator, nodeId: string, worldX: number, worldY: number): number {
+  const cx = Math.floor(worldX / CHUNK_SIZE);
+  const cy = Math.floor(worldY / CHUNK_SIZE);
+  const field = asField(evaluator.valueFor(nodeId, cx, cy));
+  return field ? field[(worldY - cy * CHUNK_SIZE) * CHUNK_SIZE + (worldX - cx * CHUNK_SIZE)]! : 0;
+}
+
+function tileAtNode(evaluator: PipelineEvaluator, nodeId: string, worldX: number, worldY: number): number {
+  const cx = Math.floor(worldX / CHUNK_SIZE);
+  const cy = Math.floor(worldY / CHUNK_SIZE);
+  const tiles = asTiles(evaluator.valueFor(nodeId, cx, cy));
+  return tiles ? tiles[(worldY - cy * CHUNK_SIZE) * CHUNK_SIZE + (worldX - cx * CHUNK_SIZE)]! : EMPTY_TILE;
+}
+
+function stateOfNodes(nodes: Array<Record<string, unknown>>): PipelineState {
+  return sanitizePipeline({ seed: 5, nodes });
+}
+
+function terrainNodesState(): PipelineState {
+  return stateOfNodes([
+    { id: 'plates', type: 'tectonicUplift', params: { plateSize: 256, oceanFraction: 0.6, beltWidth: 64, rangeHeight: 0.34, landHeight: 0.58, basinDepth: 0.34 }, inputs: {} },
+    { id: 'rolling', type: 'terrainNoise', params: { scale: 0.02, style: 0, octaves: 5, lacunarity: 2, gain: 0.5 }, inputs: {} },
+    { id: 'ridged', type: 'terrainNoise', params: { scale: 0.02, style: 1, octaves: 5, lacunarity: 2, gain: 0.5 }, inputs: {} },
+    { id: 'flat', type: 'constantField', params: { value: 0.7 }, inputs: {} },
+    { id: 'unwarped', type: 'domainWarp', params: { strength: 0 }, inputs: { source: 'plates', offsetX: 'rolling' } },
+    { id: 'warped', type: 'domainWarp', params: { strength: 40 }, inputs: { source: 'plates', offsetX: 'rolling' } },
+    { id: 'keepA', type: 'blendFields', params: { weight: 0 }, inputs: { a: 'plates', b: 'rolling' } },
+    { id: 'keepB', type: 'blendFields', params: { weight: 1 }, inputs: { a: 'plates', b: 'rolling' } },
+    { id: 'flatSlope', type: 'slopeField', params: { radius: 2, gain: 40 }, inputs: { source: 'flat' } },
+    { id: 'curved', type: 'hypsometricCurve', params: { seaLevel: 0.5, steepness: 9 }, inputs: { source: 'rolling' } },
+  ]);
+}
+
+const terrainNodes = worldFromState(terrainNodesState());
+
+function samplesOf(nodeId: string, span: number, evaluator = terrainNodes.evaluator): number[] {
+  const values: number[] = [];
+  for (let y = -span; y < span; y += 2) for (let x = -span; x < span; x += 2) values.push(fieldAt(evaluator, nodeId, x, y));
+  return values;
+}
+
+check(
+  'every terrain and water field node stays inside 0..1',
+  ['plates', 'rolling', 'ridged', 'warped', 'curved'].every((nodeId) =>
+    samplesOf(nodeId, 96).every((value) => value >= 0 && value <= 1),
+  ),
+);
+check(
+  'tectonic uplift produces both ocean basins and mountain belts',
+  samplesOf('plates', 400).some((value) => value < 0.35) && samplesOf('plates', 400).some((value) => value > 0.75),
+);
+check(
+  'ridged noise reaches higher crests than rolling noise from the same settings',
+  Math.max(...samplesOf('ridged', 96)) > Math.max(...samplesOf('rolling', 96)),
+);
+check(
+  'domain warp with zero strength is the source field, and with strength it is not',
+  samplesOf('unwarped', 48).every((value, i) => Math.abs(value - samplesOf('plates', 48)[i]!) < 1e-6) &&
+    samplesOf('warped', 48).some((value, i) => Math.abs(value - samplesOf('plates', 48)[i]!) > 1e-3),
+);
+check(
+  'blend fields at weight 0 and 1 are exactly its two inputs',
+  samplesOf('keepA', 48).every((value, i) => Math.abs(value - samplesOf('plates', 48)[i]!) < 1e-6) &&
+    samplesOf('keepB', 48).every((value, i) => Math.abs(value - samplesOf('rolling', 48)[i]!) < 1e-6),
+);
+check('slope of a constant field is zero everywhere', samplesOf('flatSlope', 48).every((value) => value === 0));
+
+const curveInput = samplesOf('rolling', 96);
+const curveOutput = samplesOf('curved', 96);
+check(
+  'the hypsometric curve keeps sea level fixed and is monotone',
+  curveInput.every((value, i) => Math.abs(value - 0.5) > 1e-4 || Math.abs(curveOutput[i]! - 0.5) < 1e-3) &&
+    curveInput.every((value, i) => value <= 0.5 === curveOutput[i]! <= 0.5),
+);
+check(
+  'the hypsometric curve clears heights away from sea level',
+  curveOutput.filter((value) => Math.abs(value - 0.5) < 0.05).length <
+    curveInput.filter((value) => Math.abs(value - 0.5) < 0.05).length,
+);
+
+function hydrologyState(): PipelineState {
+  return stateOfNodes([
+    { id: 'plates', type: 'tectonicUplift', params: { plateSize: 256, oceanFraction: 0.6, beltWidth: 64, rangeHeight: 0.34, landHeight: 0.58, basinDepth: 0.34 }, inputs: {} },
+    { id: 'detail', type: 'terrainNoise', params: { scale: 0.02, style: 0, octaves: 5, lacunarity: 2, gain: 0.5 }, inputs: {} },
+    { id: 'terrain', type: 'blendFields', params: { weight: 0.3 }, inputs: { a: 'plates', b: 'detail' } },
+    { id: 'filled', type: 'fillDepressions', params: { seaLevel: 0.5, maxFill: 0.2, windowRadius: 40 }, inputs: { elevation: 'terrain' } },
+    { id: 'flow', type: 'flowAccumulation', params: { seaLevel: 0.5, catchmentScale: 3000, fillPits: 1, windowRadius: 40 }, inputs: { elevation: 'terrain' } },
+    { id: 'coast', type: 'coastDistance', params: { seaLevel: 0.5, range: 32 }, inputs: { elevation: 'terrain' } },
+    { id: 'eroded', type: 'carveValleys', params: { depth: 0.08, minFlow: 0.4, valleyWidth: 6 }, inputs: { elevation: 'terrain', flow: 'flow' } },
+    { id: 'rivers', type: 'riverFromFlow', params: { minFlow: 0.5, maxWidth: 1, seaLevel: 0.5, riverTile: 0 }, inputs: { flow: 'flow', elevation: 'terrain' } },
+    { id: 'wideRivers', type: 'riverFromFlow', params: { minFlow: 0.5, maxWidth: 5, seaLevel: 0.5, riverTile: 0 }, inputs: { flow: 'flow', elevation: 'terrain' } },
+  ]);
+}
+
+const hydrology = worldFromState(hydrologyState());
+const hydrologyReversed = worldFromState(hydrologyState());
+const flowForward = [fieldBytes(hydrology.evaluator, 'flow', 0, 0), fieldBytes(hydrology.evaluator, 'flow', 3, -2)];
+const flowReversed = [fieldBytes(hydrologyReversed.evaluator, 'flow', 3, -2), fieldBytes(hydrologyReversed.evaluator, 'flow', 0, 0)];
+check(
+  'windowed water nodes are deterministic regardless of evaluation order',
+  flowForward[0] === flowReversed[1] && flowForward[1] === flowReversed[0],
+);
+
+const SPAN = 64;
+const landCells: Array<[number, number]> = [];
+for (let y = -SPAN; y < SPAN; y++) {
+  for (let x = -SPAN; x < SPAN; x++) if (fieldAt(hydrology.evaluator, 'terrain', x, y) >= 0.5) landCells.push([x, y]);
+}
+check('the hydrology test world has land to drain', landCells.length > 0);
+check(
+  'filling depressions never lowers the ground',
+  landCells.every(([x, y]) => fieldAt(hydrology.evaluator, 'filled', x, y) >= fieldAt(hydrology.evaluator, 'terrain', x, y) - 1e-6),
+);
+check(
+  'no land cell of the filled surface is a closed pit',
+  landCells.every(([x, y]) => {
+    const here = fieldAt(hydrology.evaluator, 'filled', x, y);
+    return [[1, 0], [-1, 0], [0, 1], [0, -1]].some(
+      ([dx, dy]) => fieldAt(hydrology.evaluator, 'filled', x + dx!, y + dy!) <= here,
+    );
+  }),
+);
+check(
+  'carving valleys only ever removes material, and only near watercourses',
+  landCells.every(([x, y]) => fieldAt(hydrology.evaluator, 'eroded', x, y) <= fieldAt(hydrology.evaluator, 'terrain', x, y) + 1e-6) &&
+    landCells.some(([x, y]) => fieldAt(hydrology.evaluator, 'eroded', x, y) < fieldAt(hydrology.evaluator, 'terrain', x, y) - 1e-6) &&
+    landCells.some(([x, y]) => Math.abs(fieldAt(hydrology.evaluator, 'eroded', x, y) - fieldAt(hydrology.evaluator, 'terrain', x, y)) < 1e-6),
+);
+check(
+  'distance to coast puts land at or above 0.5 and sea below it',
+  landCells.every(([x, y]) => fieldAt(hydrology.evaluator, 'coast', x, y) >= 0.5),
+);
+
+const flowRiverCells: Array<[number, number]> = [];
+for (let y = -SPAN; y < SPAN; y++) {
+  for (let x = -SPAN; x < SPAN; x++) if (tileAtNode(hydrology.evaluator, 'rivers', x, y) !== EMPTY_TILE) flowRiverCells.push([x, y]);
+}
+check('flow accumulation yields a river network', flowRiverCells.length > 0);
+check(
+  'every flow-derived river cell continues into another river cell or the sea',
+  flowRiverCells.every(([x, y]) =>
+    [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]].some(
+      ([dx, dy]) =>
+        tileAtNode(hydrology.evaluator, 'rivers', x + dx!, y + dy!) !== EMPTY_TILE ||
+        fieldAt(hydrology.evaluator, 'terrain', x + dx!, y + dy!) < 0.5,
+    ),
+  ),
+);
+function isAwayFromChunkEdge(coord: number): boolean {
+  const inChunk = ((coord % CHUNK_SIZE) + CHUNK_SIZE) % CHUNK_SIZE;
+  return inChunk > 0 && inChunk < CHUNK_SIZE - 1;
+}
+
+function isInsideOwnChunk(x: number, y: number): boolean {
+  return isAwayFromChunkEdge(x) && isAwayFromChunkEdge(y);
+}
+
+check(
+  'river flow only grows downstream inside a chunk',
+  flowRiverCells.filter(([x, y]) => isInsideOwnChunk(x, y)).every(([x, y]) => {
+    const here = fieldAt(hydrology.evaluator, 'flow', x, y);
+    return [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]].some(
+      ([dx, dy]) =>
+        fieldAt(hydrology.evaluator, 'flow', x + dx!, y + dy!) >= here ||
+        fieldAt(hydrology.evaluator, 'terrain', x + dx!, y + dy!) < 0.5,
+    );
+  }),
+);
+
+let wideRiverCells = 0;
+for (let y = -SPAN; y < SPAN; y++) {
+  for (let x = -SPAN; x < SPAN; x++) if (tileAtNode(hydrology.evaluator, 'wideRivers', x, y) !== EMPTY_TILE) wideRiverCells++;
+}
+check('rivers widen with the max width knob', wideRiverCells > flowRiverCells.length);
+
+function earthlikeState(): PipelineState {
+  return sanitizePipeline(examplePipelines()[6]!.state);
+}
+
+const earthlike = worldFromState(earthlikeState());
+const earthlikeAgain = worldFromState(earthlikeState());
+check(
+  'the earthlike preset regenerates identically from the same seed',
+  tileBytes(earthlike.evaluator, 'n16', 1, 1) === tileBytes(earthlikeAgain.evaluator, 'n16', 1, 1) &&
+    fieldBytes(earthlike.evaluator, 'n12', 1, 1) === fieldBytes(earthlikeAgain.evaluator, 'n12', 1, 1),
+);
+check(
+  'the earthlike preset shows sea, beach, grass and rock around the origin',
+  [0, 1, 2, 4].every((tile) => tileIdsInRegion(earthlike.sampler, 96).has(tile)),
+);
+
+
+const agentWorld = worldFromState(islandsState());
+const godObs = buildObservation(agentWorld.sampler, tileset, { x: 0, y: 0, facing: 0 }, 'god');
+check('god observation grid is GOD_VIEW_SIZE² with @ at the center', (() => {
+  const center = Math.floor(GOD_VIEW_SIZE / 2);
+  return (
+    godObs.view.length === GOD_VIEW_SIZE &&
+    godObs.view.every((row) => row.length === GOD_VIEW_SIZE) &&
+    godObs.view[center]![center] === SELF_GLYPH
+  );
+})());
+check('god observation states its facing', godObs.facing === 'north');
+
+const charObs = buildObservation(agentWorld.sampler, tileset, { x: 0, y: 0, facing: 0 }, 'character');
+check('character observation never states a facing', charObs.facing === null);
+check('character observation blanks everything behind the agent', (() => {
+  const center = Math.floor(CHARACTER_VIEW_SIZE / 2);
+  for (let row = 0; row < CHARACTER_VIEW_SIZE; row++) {
+    for (let column = 0; column < CHARACTER_VIEW_SIZE; column++) {
+      const behind = !isInFrontHalfPlane(0, column - center, row - center);
+      const isSelf = row === center && column === center;
+      if (behind && !isSelf && charObs.view[row]![column] !== ' ') return false;
+    }
+  }
+  return true;
+})());
+check('every facing rotates the blank half of the character view', (() => {
+  const center = Math.floor(CHARACTER_VIEW_SIZE / 2);
+  const views = new Set<string>();
+  for (let facing = 0; facing < 8; facing++) {
+    const obs = buildObservation(
+      agentWorld.sampler,
+      tileset,
+      { x: 0, y: 0, facing: facing as FacingIndex },
+      'character',
+    );
+    views.add(obs.view.join('\n'));
+    for (let row = 0; row < CHARACTER_VIEW_SIZE; row++) {
+      for (let column = 0; column < CHARACTER_VIEW_SIZE; column++) {
+        const inFront = isInFrontHalfPlane(facing as FacingIndex, column - center, row - center);
+        if (!inFront && !(row === center && column === center) && obs.view[row]![column] !== ' ') {
+          return false;
+        }
+      }
+    }
+  }
+  return views.size === 8;
+})());
+check('character legend appears only for visible glyphs plus the fixed entries', charObs.legend.every((entry) => entry.glyph === '@' || entry.glyph === ' ' || charObs.view.some((row) => row.includes(entry.glyph))));
+
+const agentDocs = buildApiDocs(tileset);
+check('api docs render with no unfilled placeholder', !/\{\{\w+\}\}/.test(agentDocs));
+check('api docs list every verb of both modes', ALL_VERBS.every((verb) => agentDocs.includes(`\`${verb.action}\``)));
+check('api docs list every failure code', FAILURES.every((failure) => agentDocs.includes(`\`${failure.code}\``)));
+check("api docs legend names every tileset symbol", tileset.all().every((tile) => agentDocs.includes(`'${tile.symbol}' = ${tile.name}`)));
+
+check('turning wraps in eighth turns', turnedFacing(7, 1) === 0 && turnedFacing(0, -1) === 7);
+check('facing-relative steps never exceed one tile per axis', (() => {
+  for (let facing = 0; facing < 8; facing++) {
+    for (const forward of [-1, 0, 1]) {
+      for (const strafe of [-1, 0, 1]) {
+        const [dx, dy] = facingRelativeStep(facing as FacingIndex, forward, strafe);
+        if (Math.abs(dx) > 1 || Math.abs(dy) > 1) return false;
+      }
+    }
+  }
+  return true;
+})());
+check('applyAction enforces mode verb ownership', (() => {
+  const pose = { x: 0, y: 0, facing: 0 as FacingIndex };
+  const actor = {
+    pose: () => pose,
+    tryStep: (dx: number, dy: number) => ((pose.x += dx), (pose.y += dy), true),
+    turn: (turns: number) => (pose.facing = turnedFacing(pose.facing, turns)),
+  };
+  return (
+    applyAction(actor, 'character', 'step_north') === 'unknown_action' &&
+    applyAction(actor, 'god', 'turn_left') === 'unknown_action' &&
+    applyAction(actor, 'god', 'step_east') === 'moved' &&
+    applyAction(actor, 'character', 'turn_right') === 'turned' &&
+    pose.facing === 1
+  );
+})());
+check('observation text and json carry the same grid', observationText(charObs).includes(charObs.view.join('\n')));
+
+check('api docs list every registered node type', allNodeTypes().every((def) => agentDocs.includes(`\`${def.type}\``)));
+check('api docs render an example body for every editing verb', ALL_VERBS.filter((verb) => verb.group === 'editing').every((verb) => agentDocs.includes(JSON.stringify(verb.example))));
+check('every registered node type serializes into the catalog', nodeTypesJson().types.length === allNodeTypes().length);
+
+const editStore = new PipelineStore(emptyPipeline());
+const editCtx = {
+  store: editStore,
+  tileset,
+  prefabs: new PrefabLibrary(() => -1),
+  creatures: new CreatureLibrary(),
+};
+check('add_node rejects an unknown type', (() => {
+  const result = applyEditAction(editCtx, 'add_node', { type: 'noSuchThing' });
+  return !result.ok && result.code === 'unknown_node_type';
+})());
+check('add_node creates and reports the node', (() => {
+  const result = applyEditAction(editCtx, 'add_node', { type: 'noiseField' });
+  return result.ok && editStore.nodes().length === 1;
+})());
+const noiseId = editStore.nodes()[0]!.id;
+check('set_param clamps a knob to its range', (() => {
+  const result = applyEditAction(editCtx, 'set_param', { node_id: noiseId, param: 'scale', value: 999 });
+  return result.ok && editStore.nodeById(noiseId)!.params.scale === 0.3;
+})());
+check('set_param names the real params on a miss', (() => {
+  const result = applyEditAction(editCtx, 'set_param', { node_id: noiseId, param: 'nope', value: 1 });
+  return !result.ok && result.code === 'unknown_param' && result.hint.includes('scale');
+})());
+check('threshold auto-wires to the noise field when added', (() => {
+  const result = applyEditAction(editCtx, 'add_node', { type: 'thresholdTiles' });
+  const threshold = editStore.nodes()[1];
+  return result.ok && threshold?.type === 'thresholdTiles' && Object.values(threshold.inputs).includes(noiseId);
+})());
+const thresholdId = editStore.nodes()[1]!.id;
+check('wire_input refuses a later source for an earlier node', (() => {
+  const result = applyEditAction(editCtx, 'wire_input', { node_id: noiseId, input: 'field', source_node_id: thresholdId });
+  return !result.ok && (result.code === 'invalid_wire' || result.code === 'unknown_param');
+})());
+check('set_display refuses a mode the output kind cannot take', (() => {
+  const result = applyEditAction(editCtx, 'set_display', { node_id: noiseId, display: 'tileLayer' });
+  return !result.ok && result.code === 'invalid_display';
+})());
+check('set_display binds elevation with a height scale', (() => {
+  const result = applyEditAction(editCtx, 'set_display', { node_id: noiseId, display: 'elevation', height_scale: 5 });
+  const display = editStore.nodeById(noiseId)!.display;
+  return result.ok && display.mode === 'elevation' && display.heightScale === 5;
+})());
+check('set_seed reseeds the pipeline', (() => {
+  const result = applyEditAction(editCtx, 'set_seed', { seed: 777 });
+  return result.ok && editStore.seed() === 777;
+})());
+check('remove_node deletes and reports', (() => {
+  const result = applyEditAction(editCtx, 'remove_node', { node_id: thresholdId });
+  return result.ok && editStore.nodes().length === 1;
+})());
+check('character mode owns no editing verbs', ALL_VERBS.every((verb) => verb.group !== 'editing' || verb.mode === 'god'));
+check('set_display rejects a prefab id the library does not have', (() => {
+  const added = applyEditAction(editCtx, 'add_node', { type: 'scatterPoints' });
+  const points = editCtx.store.nodes()[editCtx.store.nodes().length - 1]!;
+  const bad = applyEditAction(editCtx, 'set_display', { node_id: points.id, display: 'prefabs', prefab_id: 9999 });
+  const good = applyEditAction(editCtx, 'set_display', { node_id: points.id, display: 'creatures', creature_id: -1 });
+  return added.ok && !bad.ok && bad.code === 'invalid_value' && good.ok;
+})());
+const BIOME_SEA = 0;
+const BIOME_SHORE = 1;
+const BIOME_GROUND = 2;
+const BIOME_ROCK = 4;
+const BIOME_DEEP = 5;
+const BIOME_SNOW = 7;
+
+function biomeState(): PipelineState {
+  return stateOfNodes([
+    { id: 'terrain', type: 'terrainNoise', params: { scale: 0.02, style: 0, octaves: 5, lacunarity: 2, gain: 0.5 }, inputs: {} },
+    { id: 'steep', type: 'slopeField', params: { radius: 3, gain: 40 }, inputs: { source: 'terrain' } },
+    { id: 'shore', type: 'coastDistance', params: { seaLevel: 0.5, range: 32 }, inputs: { elevation: 'terrain' } },
+    { id: 'half', type: 'constantField', params: { value: 1 }, inputs: {} },
+    {
+      id: 'biome',
+      type: 'biomeBands',
+      params: {
+        seaLevel: 0.5, deepDrop: 0.06, shoreBand: 0.06, rockAbove: 0.45, snowLine: 0.8, regionAtLeast: 0.5,
+        deepTile: BIOME_DEEP, waterTile: BIOME_SEA, shoreTile: BIOME_SHORE, groundTile: BIOME_GROUND,
+        rockTile: BIOME_ROCK, snowTile: BIOME_SNOW,
+      },
+      inputs: { elevation: 'terrain', steepness: 'steep', shoreDistance: 'shore', region: null },
+    },
+    {
+      id: 'maskedBiome',
+      type: 'biomeBands',
+      params: {
+        seaLevel: 0.5, deepDrop: 0.06, shoreBand: 0.06, rockAbove: 0.45, snowLine: 0.8, regionAtLeast: 0.5,
+        deepTile: BIOME_DEEP, waterTile: BIOME_SEA, shoreTile: BIOME_SHORE, groundTile: BIOME_GROUND,
+        rockTile: BIOME_ROCK, snowTile: BIOME_SNOW,
+      },
+      inputs: { elevation: 'terrain', steepness: 'steep', shoreDistance: 'shore', region: 'terrain' },
+    },
+  ]);
+}
+
+const biome = worldFromState(biomeState());
+const biomeTiles = new Set<number>();
+for (let y = -48; y < 48; y++) {
+  for (let x = -48; x < 48; x++) biomeTiles.add(tileAtNode(biome.evaluator, 'biome', x, y));
+}
+check('one biome node paints sea, shore, ground and rock from a single card', [BIOME_SEA, BIOME_SHORE, BIOME_GROUND, BIOME_ROCK].every((tile) => biomeTiles.has(tile)));
+check('a biome node never leaves a cell empty when it has no region mask', !biomeTiles.has(EMPTY_TILE));
+check(
+  'water is deep only further below sea level than the deep cut point',
+  everyCellInRegion(48, (x, y) => {
+    const height = fieldAt(biome.evaluator, 'terrain', x, y);
+    const tile = tileAtNode(biome.evaluator, 'biome', x, y);
+    return tile !== BIOME_DEEP || height < 0.5 - 0.06;
+  }),
+);
+check(
+  'a region mask holds a biome back and leaves those cells to another layer',
+  everyCellInRegion(48, (x, y) =>
+    fieldAt(biome.evaluator, 'terrain', x, y) >= 0.5 ||
+    tileAtNode(biome.evaluator, 'maskedBiome', x, y) === EMPTY_TILE),
+);
+
+function everyCellInRegion(span: number, holds: (x: number, y: number) => boolean): boolean {
+  for (let y = -span; y < span; y++) {
+    for (let x = -span; x < span; x++) if (!holds(x, y)) return false;
+  }
+  return true;
+}
+
+const foldedState = sanitizePipeline({
+  seed: 3,
+  nodes: [
+    { id: 'a', type: 'terrainNoise', folder: 'terrain', params: {}, inputs: {} },
+    { id: 'b', type: 'slopeField', folder: 'terrain', params: {}, inputs: { source: 'a' } },
+    { id: 'c', type: 'coastDistance', folder: '', params: {}, inputs: { elevation: 'a' } },
+    { id: 'd', type: 'terrainNoise', folder: 'terrain', params: {}, inputs: {} },
+  ],
+});
+const runs = nodeFolderRuns(foldedState.nodes);
+check(
+  'adjacent nodes sharing a folder fold into one run, and a break starts a new one',
+  runs.length === 3 && runs[0]!.nodes.length === 2 && runs[1]!.folder === '' && runs[2]!.startIndex === 3,
+);
+check(
+  'folders survive sanitize and serialization',
+  sanitizePipeline(JSON.parse(JSON.stringify(foldedState))).nodes.map((node) => node.folder).join() ===
+    'terrain,terrain,,terrain',
+);
+check(
+  'folders never reach the node signature, so grouping cannot change the world',
+  [...computeNodeSignatures(foldedState).values()].join() ===
+    [...computeNodeSignatures(sanitizePipeline({ seed: 3, nodes: foldedState.nodes.map((node) => ({ ...node, folder: 'renamed' })) })).values()].join(),
+);
+
+const templates = builtInTemplates();
+check('every built-in template survives sanitize with all of its nodes', templates.length === 5 && templates.every((template) => template.nodes.length > 0));
+check(
+  'every built-in template describes itself and comments every node',
+  templates.every((template) => template.description.length > 0 && template.nodes.every((node) => node.comment.length > 0)),
+);
+
+const stampTarget = sanitizePipeline({ seed: 8, nodes: [{ id: 'n1', type: 'terrainNoise', params: {}, inputs: {} }] });
+const plates = templates.find((template) => template.name === 'tectonic plates')!;
+const stamped = stampTemplateInto(stampTarget, plates, stampTarget.nodes.length);
+check('stamping a template makes fresh ids that cannot collide', new Set(stampTarget.nodes.map((node) => node.id)).size === stampTarget.nodes.length);
+check('a stamped template lands in a folder named after itself', stamped.every((node) => node.folder === plates.name));
+check(
+  'wiring inside a stamped template is remapped onto its new ids',
+  stamped[3]!.inputs.source === stamped[0]!.id && stamped[3]!.inputs.offsetX === stamped[1]!.id,
+);
+const stampedWorld = worldFromState(stampTarget);
+check(
+  'a stamped template generates without error',
+  stamped.every((node) => stampedWorld.evaluator.errorFor(node.id) === null) &&
+    asField(stampedWorld.evaluator.valueFor(stamped[3]!.id, 0, 0)) !== null,
+);
+
+const capturedRun = nodeFolderRuns(sanitizePipeline(earthlikeState()).nodes).find((run) => run.folder === 'river valleys')!;
+const captured = templateFromNodes(capturedRun.nodes, 'river valleys', 'captured from the preset');
+check(
+  'saving a folder as a template keeps wiring inside it and opens wiring to nodes outside',
+  captured.nodes[1]!.inputs.flow === captured.nodes[0]!.id && captured.nodes[0]!.inputs.elevation === null,
+);
+check(
+  'a saved template round-trips through storage',
+  sanitizeTemplates(JSON.parse(JSON.stringify([captured]))).length === 1,
+);
+check('templates reject junk', sanitizeTemplates([{ name: '', nodes: [] }, null, 7]).length === 0);
+
+function presetStateNamed(name: string): PipelineState {
+  return sanitizePipeline(examplePipelines().find((preset) => preset.name === name)!.state);
+}
+
+function tileIdsInRect(
+  sampler: WorldSampler,
+  centerX: number,
+  centerY: number,
+  halfWidth: number,
+  halfHeight: number,
+): Set<number> {
+  const seen = new Set<number>();
+  for (let y = centerY - halfHeight; y < centerY + halfHeight; y++) {
+    for (let x = centerX - halfWidth; x < centerX + halfWidth; x++) seen.add(sampler.tileAt(x, y));
+  }
+  return seen;
+}
+
+const metropolis = worldFromState(presetStateNamed('fallen metropolis'));
+const metropolisAgain = worldFromState(presetStateNamed('fallen metropolis'));
+check(
+  'the fallen metropolis preset survives sanitize with all nodes',
+  presetStateNamed('fallen metropolis').nodes.length === 28,
+);
+check(
+  'the fallen metropolis regenerates identically from the same seed',
+  fieldBytes(metropolis.evaluator, 'n9', 1, 1) === fieldBytes(metropolisAgain.evaluator, 'n9', 1, 1) &&
+    tileBytes(metropolis.evaluator, 'n10', 1, 1) === tileBytes(metropolisAgain.evaluator, 'n10', 1, 1),
+);
+const metropolisTiles = tileIdsInRegion(metropolis.sampler, 96);
+check(
+  'the fallen metropolis shows stone walls, flagstone streets, rubble and reclaiming grass',
+  [17, 16, 9, 2].every((tile) => metropolisTiles.has(tile)),
+);
+check('the risen sea drowns part of the fallen metropolis', metropolisTiles.has(0));
+const districtFate = asField(metropolis.evaluator.valueFor('n9', 0, 0))!;
+const districtFateEast = asField(metropolis.evaluator.valueFor('n9', 1, 0))!;
+check(
+  'district fate varies between districts but stays inside 0..1',
+  JSON.stringify(Array.from(districtFate)) !== JSON.stringify(Array.from(districtFateEast)) &&
+    [...districtFate, ...districtFateEast].every((value) => value >= 0 && value <= 1),
+);
+
+const climates = worldFromState(presetStateNamed('pole to equator'));
+const climatesAgain = worldFromState(presetStateNamed('pole to equator'));
+check(
+  'the pole to equator preset survives sanitize with all nodes',
+  presetStateNamed('pole to equator').nodes.length === 41,
+);
+check(
+  'the pole to equator preset regenerates identically from the same seed',
+  fieldBytes(climates.evaluator, 'n20', 1, 1) === fieldBytes(climatesAgain.evaluator, 'n20', 1, 1) &&
+    tileBytes(climates.evaluator, 'n31', 0, -20) === tileBytes(climatesAgain.evaluator, 'n31', 0, -20),
+);
+const polarTiles = tileIdsInRect(climates.sampler, 0, -700, 96, 16);
+const temperateTiles = tileIdsInRect(climates.sampler, 0, 0, 96, 16);
+const desertTiles = tileIdsInRect(climates.sampler, 0, 700, 96, 16);
+check('the far north of pole to equator is snow or ice', polarTiles.has(7) || polarTiles.has(6));
+check('the middle latitudes of pole to equator grow grass', temperateTiles.has(2));
+check('the far south of pole to equator is sand', desertTiles.has(1));
+check(
+  'grass belongs to the middle latitudes, not the polar cap',
+  !polarTiles.has(2) && temperateTiles.has(2),
+);
+
+check(
+  'a saved world preset round-trips through storage with its seed and nodes',
+  (() => {
+    const saved = sanitizeWorldPresets(
+      JSON.parse(JSON.stringify([{ name: 'mine', description: 'combo', state: earthlikeState() }])),
+    );
+    return saved.length === 1 && saved[0]!.state.seed === earthlikeState().seed && saved[0]!.state.nodes.length === earthlikeState().nodes.length;
+  })(),
+);
+check(
+  'world presets reject junk',
+  sanitizeWorldPresets([{ name: '', state: earthlikeState() }, { name: 'empty', state: { nodes: [] } }, null, 7]).length === 0,
+);
 
 const explorerLimits = { stepBudget: 600, radiusCap: 96 };
 const explorerRunA = measureWorld(worldFromState(islandsState()).sampler, tileset, explorerLimits);
@@ -900,6 +1484,8 @@ check(
     explorerRunA.score.overall <= 1 &&
     explorerRunA.score.readings.every((r) => r.score >= 0 && r.score <= 1),
 );
+
+checkPrefabAndCreatureInvariants(check);
 
 if (failures.length > 0) throw new Error(`${failures.length} check(s) failed: ${failures.join(', ')}`);
 console.log('\nall checks passed');

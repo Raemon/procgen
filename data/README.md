@@ -4,6 +4,12 @@ Committed save files for the app, written by the dev server.
 
 - `pipeline.json` — the procgen node pipeline shown in the panel.
 - `tileset.json` — the tile definitions from the tile editor, including pixel face art.
+  `npm run tiles:write` regenerates it from the shipped catalog in
+  `src/world/tiles/defaultTiles.ts`, discarding tile edits made in the app
+  (see `docs/authoring-tile-art.md`).
+- `prefabs.json` — the prefab library: voxel stamps painted in the prefabs tab
+  or captured out of the world view.
+- `creatures.json` — the creature library: looks plus behavior knobs.
 
 While `npm run dev` is running, every edit in the app is saved here (via the
 `/persist/*` middleware in `vite.config.ts`); commit these files to keep your

@@ -46,8 +46,13 @@ function tileCell(
   x: number,
   y: number,
 ): AsciiCell | null {
-  const tileId = sampler.tileAt(x, y);
+  const tileId = visibleTileAt(sampler, x, y);
   if (tileId === EMPTY_TILE) return null;
   const tile = tileset.byId(tileId);
   return { glyph: tile?.symbol ?? UNKNOWN_GLYPH, ink: tile?.color ?? UNKNOWN_INK };
+}
+
+function visibleTileAt(sampler: WorldSampler, x: number, y: number): number {
+  const topVoxel = sampler.topVoxelAt(x, y);
+  return topVoxel === EMPTY_TILE ? sampler.tileAt(x, y) : topVoxel;
 }

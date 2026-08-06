@@ -1,3 +1,4 @@
+import { turnedFacing, type FacingIndex } from './facing';
 import { nearestWalkable } from './nearestWalkable';
 import { WorldEvents, type WorldEvent } from './worldEvents';
 
@@ -8,9 +9,15 @@ export type WalkabilityProbe = (x: number, y: number) => boolean;
 export class World {
   playerX = 0;
   playerY = 0;
+  facing: FacingIndex = 0;
   private readonly events = new WorldEvents();
 
   constructor(private readonly isWalkableAt: WalkabilityProbe) {}
+
+  turn(eighthTurns: number): void {
+    this.facing = turnedFacing(this.facing, eighthTurns);
+    this.events.emit('player-turned');
+  }
 
   tryStep(dx: number, dy: number): boolean {
     const nextX = this.playerX + dx;
@@ -31,7 +38,7 @@ export class World {
     this.events.emit('player-moved');
   }
 
-  on(event: WorldEvent, listener: () => void): void {
-    this.events.on(event, listener);
+  on(event: WorldEvent, listener: () => void): () => void {
+    return this.events.on(event, listener);
   }
 }

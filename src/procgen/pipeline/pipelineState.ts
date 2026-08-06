@@ -6,6 +6,7 @@ export interface NodeInstance {
   type: string;
   label: string;
   comment: string;
+  folder: string;
   enabled: boolean;
   params: Record<string, ParamValue>;
   inputs: Record<string, string | null>;

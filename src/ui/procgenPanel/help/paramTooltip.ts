@@ -1,5 +1,5 @@
 import type { ParamSpec } from '../../../procgen/nodeType';
-import type { TooltipContent, TooltipOption } from '../../tooltips/tooltipContentElements';
+import type { TooltipContent, TooltipOption } from '../../tooltips/tooltipContent';
 
 export function paramTooltip(spec: ParamSpec): TooltipContent {
   if (spec.kind === 'choice') return { title: spec.label, body: spec.help, options: choiceOptions(spec) };

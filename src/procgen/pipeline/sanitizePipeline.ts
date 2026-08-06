@@ -1,4 +1,8 @@
-import { isBindingValidForKind, type DisplayBinding } from '../display/displayBinding';
+import {
+  isBindingValidForKind,
+  RANDOM_ROTATION,
+  type DisplayBinding,
+} from '../display/displayBinding';
 import {
   defaultParamValue,
   outputKindOf,
@@ -49,6 +53,7 @@ function sanitizeNode(rawNode: unknown, usedIds: Set<string>): NodeInstance | nu
   const node = createNodeInstance(def, raw.id);
   if (typeof raw.label === 'string' && raw.label.length > 0) node.label = raw.label;
   if (typeof raw.comment === 'string') node.comment = raw.comment;
+  if (typeof raw.folder === 'string') node.folder = raw.folder;
   if (typeof raw.enabled === 'boolean') node.enabled = raw.enabled;
   applyStoredParams(node, def, raw.params);
   applyStoredInputs(node, raw.inputs);
@@ -107,6 +112,16 @@ function normalizedBinding(binding: DisplayBinding): DisplayBinding {
       glyph: typeof binding.glyph === 'string' && binding.glyph ? binding.glyph : '*',
       color: typeof binding.color === 'string' ? binding.color : '#ff5577',
     };
+  }
+  if (binding.mode === 'prefabs') {
+    return {
+      mode: 'prefabs',
+      prefabId: Math.round(finiteOr(binding.prefabId, -1)),
+      rotation: Math.round(finiteOr(binding.rotation, RANDOM_ROTATION)),
+    };
+  }
+  if (binding.mode === 'creatures') {
+    return { mode: 'creatures', creatureId: Math.round(finiteOr(binding.creatureId, -1)) };
   }
   return { mode: binding.mode };
 }
