@@ -14,6 +14,20 @@ Three panels:
    WASD/arrows to walk, Q/E to rotate the 2.5D camera, wheel to zoom.
    Regenerate button re-rolls the world.
 
+## Layout
+
+```
+src/random      seeded streams (hash, mulberry32, per-label streams)
+src/noise       value + fractal noise built on the lattice hash
+src/gen         GenParams, the pass pipeline, and one file per pass
+src/world       Grid, Tileset, walkability, spawn, player state + events
+src/views       ascii (canvas + pure-text form) and view3d (camera, meshes)
+src/input       key tracking and camera-relative step math
+src/ui          panels: tile editor, generation knobs, layout, view toggle
+src/styles      one stylesheet per panel, combined by index.css
+scripts         headless checks over the DOM-free core (`npm run check`)
+```
+
 ## Run
 
 ```

@@ -1,0 +1,85 @@
+import { cameraRelativeStep, slideAlongEachAxis } from './cameraRelativeStep';
+import {
+  hasModifier,
+  isTypingInFormControl,
+  movementAxisForKey,
+  type MovementAxis,
+} from './movementKeys';
+
+const HOLD_REPEAT_MS = 125;
+
+export interface MovementDeps {
+  step(dx: number, dy: number): void;
+  rotate(direction: -1 | 1): void;
+  yawQuadrant(): number;
+}
+
+const ROTATION_KEYS: Readonly<Record<string, -1 | 1>> = { KeyQ: -1, KeyE: 1 };
+
+export class MovementInput {
+  private readonly heldAxes = new Set<MovementAxis>();
+  private repeatTimer = 0;
+
+  constructor(private readonly deps: MovementDeps) {
+    window.addEventListener('keydown', this.onKeyDown);
+    window.addEventListener('keyup', this.onKeyUp);
+    window.addEventListener('blur', this.onBlur);
+  }
+
+  dispose(): void {
+    window.removeEventListener('keydown', this.onKeyDown);
+    window.removeEventListener('keyup', this.onKeyUp);
+    window.removeEventListener('blur', this.onBlur);
+    this.stopRepeating();
+  }
+
+  private onKeyDown = (event: KeyboardEvent): void => {
+    if (event.repeat || isTypingInFormControl(event) || hasModifier(event)) return;
+    const rotation = ROTATION_KEYS[event.code];
+    if (rotation) {
+      this.deps.rotate(rotation);
+      return;
+    }
+    const axis = movementAxisForKey(event.code);
+    if (!axis) return;
+    event.preventDefault();
+    this.heldAxes.add(axis);
+    this.stepOnce();
+    this.startRepeating();
+  };
+
+  private onKeyUp = (event: KeyboardEvent): void => {
+    const axis = movementAxisForKey(event.code);
+    if (!axis) return;
+    this.heldAxes.delete(axis);
+    if (this.heldAxes.size === 0) this.stopRepeating();
+  };
+
+  private onBlur = (): void => {
+    this.heldAxes.clear();
+    this.stopRepeating();
+  };
+
+  private startRepeating(): void {
+    if (this.repeatTimer) return;
+    this.repeatTimer = window.setInterval(() => this.stepOnce(), HOLD_REPEAT_MS);
+  }
+
+  private stopRepeating(): void {
+    clearInterval(this.repeatTimer);
+    this.repeatTimer = 0;
+  }
+
+  private stepOnce(): void {
+    const step = cameraRelativeStep(
+      this.deps.yawQuadrant(),
+      this.axisInput('forward', 'back'),
+      this.axisInput('right', 'left'),
+    );
+    slideAlongEachAxis(step, (dx, dy) => this.deps.step(dx, dy));
+  }
+
+  private axisInput(positive: MovementAxis, negative: MovementAxis): number {
+    return (this.heldAxes.has(positive) ? 1 : 0) - (this.heldAxes.has(negative) ? 1 : 0);
+  }
+}

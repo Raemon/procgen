@@ -1,0 +1,53 @@
+.tile-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.tile-row input[type='color'] {
+  width: 28px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--panel-edge);
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+}
+
+.tile-symbol {
+  width: 26px;
+  text-align: center;
+}
+
+.tile-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.tile-row input[type='text'] {
+  background: #0d1119;
+  color: var(--ink);
+  border: 1px solid var(--panel-edge);
+  border-radius: 4px;
+  padding: 4px 6px;
+  font: inherit;
+  font-size: 12px;
+}
+
+.tile-walk {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--ink-dim);
+  white-space: nowrap;
+}
+
+.tile-del {
+  padding: 2px 8px;
+}
+
+.tile-add {
+  margin-top: 8px;
+}

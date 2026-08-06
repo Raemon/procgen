@@ -25,12 +25,12 @@ function beginHandleDrag(
   handle.setPointerCapture(down.pointerId);
   handle.classList.add('dragging');
   const startX = down.clientX;
-  const startWidth = index === 0 ? widths[0] : widths[1];
-  const onMove = (move: PointerEvent) => {
+  const startWidth = widths[index] ?? MIN_PANEL_WIDTH;
+  const onMove = (move: PointerEvent): void => {
     widths[index] = clampPanelWidth(startWidth + move.clientX - startX);
     applyColumnWidths(app, widths);
   };
-  const onUp = () => {
+  const onUp = (): void => {
     handle.classList.remove('dragging');
     handle.removeEventListener('pointermove', onMove);
     handle.removeEventListener('pointerup', onUp);
