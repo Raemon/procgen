@@ -8,6 +8,7 @@ import { WorldSampler } from './procgen/worldSampler';
 import { elementById, PANEL_START_WIDTHS, renderAppLayout } from './ui/appLayout';
 import { debounce } from './ui/debounce';
 import { enablePanelResizing } from './ui/panelResize';
+import { rerenderOnPanelBlur } from './ui/rerenderOnPanelBlur';
 import { ProcgenPanel } from './ui/procgenPanel/procgenPanel';
 import { TileEditor } from './ui/tileEditor/tileEditor';
 import { ViewModeToggle } from './ui/viewModeToggle';
@@ -30,8 +31,10 @@ const evaluator = new PipelineEvaluator(store);
 const sampler = new WorldSampler(store, evaluator, tileset);
 const world = new World((x, y) => isWalkableTile(tileset, sampler.tileAt(x, y)));
 
-new TileEditor(elementById('tile-panel'), tileset);
-const panel = new ProcgenPanel(elementById('procgen-panel'), { store, tileset, evaluator });
+const tilePanel = elementById('tile-panel');
+const procgenPanel = elementById('procgen-panel');
+new TileEditor(tilePanel, tileset);
+const panel = new ProcgenPanel(procgenPanel, { store, tileset, evaluator });
 
 const asciiView = new AsciiView(elementById('slot-ascii'), world, sampler, tileset);
 const view3d = new View3D(elementById('slot-3d'), world, sampler, tileset);
@@ -47,8 +50,9 @@ const applyAfterTweaks = debounce(applyWorldChange, VALUE_TWEAK_DEBOUNCE_MS);
 
 store.onChange((change) => {
   if (change === 'structure') applyWorldChange();
-  else applyAfterTweaks();
+  else applyAfterTweaks.schedule();
 });
+rerenderOnPanelBlur([tilePanel, procgenPanel], () => applyAfterTweaks.flushIfPending());
 tileset.onChange(() => applyWorldChange());
 world.on('player-moved', () => asciiView.draw());
 
