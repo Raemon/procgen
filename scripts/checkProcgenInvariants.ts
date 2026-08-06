@@ -14,6 +14,7 @@ import { asField, asPoints, asTiles } from '../src/procgen/values/valueAccess';
 import { WorldSampler } from '../src/procgen/worldSampler';
 import { asciiSnapshot } from '../src/views/ascii/asciiSnapshot';
 import { PLAYER_GLYPH } from '../src/views/ascii/asciiCells';
+import { markerPlacementsForRect } from '../src/views/view3d/markerPlacements';
 import { tilePlacementsForRect } from '../src/views/view3d/tilePlacements';
 import { floodFillFacePixels } from '../src/ui/pixelArtEditor/ops/floodFillFacePixels';
 import {
@@ -37,6 +38,7 @@ import { isWalkableTile } from '../src/world/tileWalkability';
 import { World } from '../src/world/world';
 
 const failures: string[] = [];
+const tileset = new Tileset();
 
 function check(name: string, condition: boolean): void {
   if (!condition) failures.push(name);
@@ -50,7 +52,7 @@ function worldFromState(state: PipelineState): {
 } {
   const store = new PipelineStore(state);
   const evaluator = new PipelineEvaluator(store);
-  return { store, evaluator, sampler: new WorldSampler(store, evaluator) };
+  return { store, evaluator, sampler: new WorldSampler(store, evaluator, tileset) };
 }
 
 function islandsState(): PipelineState {
@@ -129,7 +131,19 @@ check('tile layers stack: water, sand, grass and rock all appear', [0, 1, 2, 4].
 check('elevation binding shapes the world', sampled.sampler.elevationAt(0, 0) !== 0 || sampled.sampler.elevationAt(17, -23) !== 0);
 const treeMarkers = sampled.sampler.markersIn(-64, -64, 63, 63);
 check('scatter markers appear with their tag', treeMarkers.length > 0 && treeMarkers.every((m) => m.tag === 'tree'));
-check('markers carry display glyph and color', treeMarkers.every((m) => m.glyph === '♠' && m.color === '#2d6a34'));
+check(
+  'tile-sourced markers take symbol and color from the tileset',
+  treeMarkers.every((m) => m.glyph === '♠' && m.color === '#2d6a34'),
+);
+
+const treeId = tileset.idForRole('tree');
+tileset.update(treeId, { symbol: 'T', color: '#123456' });
+const editedTreeMarker = sampled.sampler.markersIn(-64, -64, 63, 63)[0]!;
+check(
+  'editing a tile restyles the markers that source it',
+  editedTreeMarker.glyph === 'T' && editedTreeMarker.color === '#123456',
+);
+tileset.update(treeId, { symbol: '♠', color: '#2d6a34' });
 
 sampled.store.setEnabled('n3', false);
 check('disabling a node removes its tile layer', !tileIdsInRegion(sampled.sampler, 48).has(2));
@@ -178,11 +192,15 @@ const forwardWire = sanitizePipeline({
 });
 check('wires to later nodes are dropped', forwardWire.nodes[0]!.inputs.source === null);
 
-const tileset = new Tileset();
 check('empty void is walkable', isWalkableTile(tileset, EMPTY_TILE));
 check('water is not walkable', !isWalkableTile(tileset, 0));
 
 const caves = worldFromState(sanitizePipeline(examplePipelines()[1]!.state));
+const monsterMarkers = caves.sampler.markersIn(-64, -64, 63, 63);
+check(
+  'custom markers keep their own glyph and color',
+  monsterMarkers.length > 0 && monsterMarkers.every((m) => m.glyph === 'M' && m.color === '#ff4444'),
+);
 const world = new World((x, y) => isWalkableTile(tileset, caves.sampler.tileAt(x, y)));
 world.ensurePlayerOnWalkableGround();
 check(
@@ -263,6 +281,14 @@ const placements = tilePlacementsForRect(sampled.sampler, tileset, -48, -48, 96,
 check('placements carry the tile face art', placements.floors.some((p) => p.faceArt === art));
 check('tiles without art stay flat-colored', placements.floors.some((p) => p.faceArt === null));
 tileset.update(grass.id, { faceArt: null });
+
+tileset.update(treeId, { faceArt: art });
+const markerPlacements = markerPlacementsForRect(sampled.sampler, -48, -48, 96, 96);
+check(
+  'marker placements carry the sourced tile face art',
+  markerPlacements.length > 0 && markerPlacements.every((p) => p.faceArt === art),
+);
+tileset.update(treeId, { faceArt: null });
 
 check('forward faces north with the camera at north', String(cameraRelativeStep(0, 1, 0)) === '0,-1');
 check('forward faces east with the camera turned right', String(cameraRelativeStep(1, 1, 0)) === '1,0');

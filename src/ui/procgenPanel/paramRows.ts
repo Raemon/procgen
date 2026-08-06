@@ -1,6 +1,7 @@
 import type { ParamSpec, ParamValue } from '../../procgen/nodeType';
 import type { Tileset } from '../../world/tiles/tileset';
 import { formatNumber, labeledRow, rangeInput, selectInput, valueReadout } from './rowElements';
+import { tileSelectOptions } from './tileSelectOptions';
 
 export interface ParamRowDeps {
   tileset: Tileset;
@@ -52,10 +53,7 @@ function selectRow(label: string, options: readonly string[], deps: ParamRowDeps
 }
 
 function tileRow(label: string, deps: ParamRowDeps): HTMLElement {
-  const options = [
-    { value: '-1', text: '(empty)' },
-    ...deps.tileset.all().map((tile) => ({ value: String(tile.id), text: `${tile.symbol} ${tile.name}` })),
-  ];
+  const options = tileSelectOptions(deps.tileset, '(empty)');
   const select = selectInput(options, String(deps.value), (value) => deps.onChange(Number(value)));
   return labeledRow(label, select);
 }

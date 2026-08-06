@@ -4,7 +4,7 @@ export type DisplayBinding =
   | { mode: 'hidden' }
   | { mode: 'tileLayer' }
   | { mode: 'elevation'; heightScale: number }
-  | { mode: 'markers'; glyph: string; color: string };
+  | { mode: 'markers'; tileId: number; glyph: string; color: string };
 
 export type DisplayMode = DisplayBinding['mode'];
 
@@ -16,7 +16,7 @@ export function displayModesForKind(kind: ValueKind): DisplayMode[] {
 
 export function defaultBindingForMode(mode: DisplayMode): DisplayBinding {
   if (mode === 'elevation') return { mode, heightScale: 3 };
-  if (mode === 'markers') return { mode, glyph: '*', color: '#ff5577' };
+  if (mode === 'markers') return { mode, tileId: -1, glyph: '*', color: '#ff5577' };
   return { mode };
 }
 

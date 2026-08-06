@@ -1,4 +1,7 @@
+import type { CubeFaceArt } from '../world/tiles/tileFaceArt';
+import type { Tileset } from '../world/tiles/tileset';
 import { cellIndexInChunk, chunkCoordOfCell } from './chunk';
+import { markerAppearance } from './display/markerAppearance';
 import type { PipelineEvaluator } from './eval/evaluator';
 import type { NodeInstance } from './pipeline/pipelineState';
 import type { PipelineStore } from './pipeline/pipelineStore';
@@ -10,6 +13,7 @@ export interface Marker {
   y: number;
   glyph: string;
   color: string;
+  faceArt: CubeFaceArt | null;
   tag: string;
 }
 
@@ -17,6 +21,7 @@ export class WorldSampler {
   constructor(
     private readonly store: PipelineStore,
     private readonly evaluator: PipelineEvaluator,
+    private readonly tileset: Tileset,
   ) {}
 
   tileAt(x: number, y: number): number {
@@ -66,13 +71,13 @@ export class WorldSampler {
     into: Marker[],
   ): void {
     if (node.display.mode !== 'markers') return;
-    const { glyph, color } = node.display;
+    const look = markerAppearance(this.tileset, node.display);
     for (let chunkY = chunkCoordOfCell(minY); chunkY <= chunkCoordOfCell(maxY); chunkY++) {
       for (let chunkX = chunkCoordOfCell(minX); chunkX <= chunkCoordOfCell(maxX); chunkX++) {
         const points = asPoints(this.evaluator.valueFor(node.id, chunkX, chunkY)) ?? [];
         for (const point of points) {
           if (point.x >= minX && point.x <= maxX && point.y >= minY && point.y <= maxY) {
-            into.push({ x: point.x, y: point.y, glyph, color, tag: point.tag });
+            into.push({ x: point.x, y: point.y, ...look, tag: point.tag });
           }
         }
       }

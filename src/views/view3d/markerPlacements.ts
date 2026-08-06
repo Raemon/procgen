@@ -16,7 +16,7 @@ export function markerPlacementsForRect(
       elevation: sampler.elevationAt(marker.x, marker.y),
       baseColor: marker.color,
       shade: 1,
-      faceArt: null,
+      faceArt: marker.faceArt,
       sunkenAsWater: false,
     }));
 }

@@ -27,7 +27,7 @@ const tileset = new Tileset();
 const store = new PipelineStore(loadStoredPipeline());
 attachPipelinePersistence(store);
 const evaluator = new PipelineEvaluator(store);
-const sampler = new WorldSampler(store, evaluator);
+const sampler = new WorldSampler(store, evaluator, tileset);
 const world = new World((x, y) => isWalkableTile(tileset, sampler.tileAt(x, y)));
 
 new TileEditor(elementById('tile-panel'), tileset);

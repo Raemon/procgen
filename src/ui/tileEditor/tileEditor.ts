@@ -38,7 +38,8 @@ function panelMarkup(): string {
     <h2>tiles</h2>
     <div class="tile-list"></div>
     <button type="button" class="btn tile-add">+ add tile</button>
-    <p class="hint">The generator targets tiles by role (water/sand/grass/tree/rock);
-    added tiles are paintable groundwork for future rules.</p>
+    <p class="hint">Procgen nodes pick from this list: tile params and marker displays
+    reference tiles here, so symbol, color, art and walkability edits apply everywhere
+    a tile is used.</p>
   `;
 }

@@ -22,7 +22,7 @@ export function nodeCard(deps: PanelDeps, node: NodeInstance): HTMLElement {
     errorNote(node.id),
     ...wiringRows(deps, node),
     ...paramRowsFor(deps, node),
-    displaySection(deps.store, node, outputKindOf(def, node.params)),
+    displaySection(deps.store, deps.tileset, node, outputKindOf(def, node.params)),
   );
   return card;
 }

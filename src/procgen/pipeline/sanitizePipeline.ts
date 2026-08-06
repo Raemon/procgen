@@ -99,6 +99,7 @@ function normalizedBinding(binding: DisplayBinding): DisplayBinding {
   if (binding.mode === 'markers') {
     return {
       mode: 'markers',
+      tileId: Math.round(finiteOr(binding.tileId, -1)),
       glyph: typeof binding.glyph === 'string' && binding.glyph ? binding.glyph : '*',
       color: typeof binding.color === 'string' ? binding.color : '#ff5577',
     };
