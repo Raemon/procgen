@@ -13,6 +13,26 @@ export function useRerenderOnTilesetChange(): void {
   useRerenderWhen(useCallback((listener: () => void) => tileset.onChange(listener), [tileset]));
 }
 
+export function useRerenderOnPrefabChange(): void {
+  const { prefabs } = useAppRuntime();
+  useRerenderWhen(useCallback((listener: () => void) => prefabs.onChange(listener), [prefabs]));
+}
+
+export function useRerenderOnCreatureChange(): void {
+  const { creatures } = useAppRuntime();
+  useRerenderWhen(useCallback((listener: () => void) => creatures.onChange(listener), [creatures]));
+}
+
+export function useRerenderOnCaptureChange(): void {
+  const { capture } = useAppRuntime();
+  useRerenderWhen(useCallback((listener: () => void) => capture.onChange(listener), [capture]));
+}
+
+export function useRerenderOnCreatureClockChange(): void {
+  const { clock } = useAppRuntime();
+  useRerenderWhen(useCallback((listener: () => void) => clock.onRunStateChange(listener), [clock]));
+}
+
 export function useRerenderOnWorldChange(): void {
   useRerenderWhen(useAppRuntime().subscribeToWorldChange);
 }

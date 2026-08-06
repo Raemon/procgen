@@ -1,5 +1,6 @@
 import { earthlikeCoastsAndRanges } from './earthlikeCoastsAndRanges';
 import type { ExamplePipeline } from './examplePipeline';
+import { settlementsAndWildlife } from './settlementsAndWildlife';
 
 export type { ExamplePipeline };
 
@@ -12,6 +13,7 @@ export function examplePipelines(): ExamplePipeline[] {
     nestedLabyrinths(),
     riversAndTowns(),
     earthlikeCoastsAndRanges(),
+    settlementsAndWildlife(),
   ];
 }
 

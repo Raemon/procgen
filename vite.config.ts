@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react';
 import { defineConfig, type Connect, type ViteDevServer } from 'vite';
 
 const DATA_DIR = 'data';
-const PERSISTED_FILES = ['pipeline', 'tileset'];
+const PERSISTED_FILES = ['pipeline', 'tileset', 'prefabs', 'creatures'];
 
 export default defineConfig({
   plugins: [react(), tailwindcss(), persistToRepoFiles()],

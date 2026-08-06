@@ -1,4 +1,5 @@
 import '../src/procgen/nodes';
+import { checkPrefabAndCreatureInvariants } from './checkPrefabAndCreatureInvariants';
 import { cameraRelativeStep } from '../src/input/cameraRelativeStep';
 import { PipelineEvaluator } from '../src/procgen/eval/evaluator';
 import { allNodeTypes } from '../src/procgen/nodeRegistry';
@@ -1113,6 +1114,8 @@ check(
   [0, 1, 2, 4].every((tile) => tileIdsInRegion(earthlike.sampler, 96).has(tile)),
 );
 
+
+checkPrefabAndCreatureInvariants(check);
 
 if (failures.length > 0) throw new Error(`${failures.length} check(s) failed: ${failures.join(', ')}`);
 console.log('\nall checks passed');
