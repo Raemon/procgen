@@ -1,3 +1,6 @@
+import { QuestInventory } from '../../quest/questInventory';
+import type { QuestPointsIndex } from '../../quest/questPointsIndex';
+import { collectKeysAt, lockedDoorIdAt } from '../../quest/questRules';
 import type { FacingIndex } from '../../world/facing';
 import type { ActorWorld } from '../actions';
 import type { AgentMode, AgentPose } from '../agentMode';
@@ -12,6 +15,14 @@ export interface AgentSession {
   createdAt: number;
   lastAction: { action: string; outcome: string } | null;
   run: AutopilotRun | null;
+  inventory: QuestInventory;
+  blockedByDoorId: string | null;
+  lastPickups: string[];
+}
+
+export interface SessionWalkWorld {
+  isWalkable(x: number, y: number): boolean;
+  quest: QuestPointsIndex;
 }
 
 export interface TranscriptEntry {
@@ -50,6 +61,9 @@ export function newSession(
     createdAt: Date.now(),
     lastAction: null,
     run: null,
+    inventory: new QuestInventory(),
+    blockedByDoorId: null,
+    lastPickups: [],
   };
 }
 
@@ -57,24 +71,34 @@ export function sessionPose(session: AgentSession): AgentPose {
   return { x: session.x, y: session.y, facing: session.facing };
 }
 
-export function sessionActor(
-  session: AgentSession,
-  isWalkable: (x: number, y: number) => boolean,
-): ActorWorld {
+export function sessionActor(session: AgentSession, world: SessionWalkWorld): ActorWorld {
   return {
     pose: () => sessionPose(session),
-    tryStep: (dx, dy) => {
-      const nextX = session.x + dx;
-      const nextY = session.y + dy;
-      if (!isWalkable(nextX, nextY)) return false;
-      session.x = nextX;
-      session.y = nextY;
-      return true;
-    },
+    tryStep: (dx, dy) => tryQuestAwareStep(session, world, dx, dy),
     turn: (eighthTurns) => {
       session.facing = ((((session.facing + eighthTurns) % 8) + 8) % 8) as FacingIndex;
     },
   };
+}
+
+function tryQuestAwareStep(
+  session: AgentSession,
+  world: SessionWalkWorld,
+  dx: number,
+  dy: number,
+): boolean {
+  const nextX = session.x + dx;
+  const nextY = session.y + dy;
+  if (!world.isWalkable(nextX, nextY)) return false;
+  const lockedDoorId = lockedDoorIdAt(world.quest, session.inventory, nextX, nextY);
+  if (lockedDoorId !== null) {
+    session.blockedByDoorId = lockedDoorId;
+    return false;
+  }
+  session.x = nextX;
+  session.y = nextY;
+  session.lastPickups.push(...collectKeysAt(world.quest, session.inventory, nextX, nextY));
+  return true;
 }
 
 export function appendTranscript(

@@ -3,6 +3,7 @@ import type { ExamplePipeline } from './examplePipeline';
 import { fallenMetropolis } from './fallenMetropolis';
 import { poleToEquator } from './poleToEquator';
 import { settlementsAndWildlife } from './settlementsAndWildlife';
+import { vaultKeepers } from './vaultKeepers';
 
 export type { ExamplePipeline };
 
@@ -18,6 +19,7 @@ export function examplePipelines(): ExamplePipeline[] {
     settlementsAndWildlife(),
     fallenMetropolis(),
     poleToEquator(),
+    vaultKeepers(),
   ];
 }
 

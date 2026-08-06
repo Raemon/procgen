@@ -1,3 +1,4 @@
+import { keyTagFor } from '../../quest/questTags';
 import { applyAction } from '../actions';
 import { verbByAction } from '../controls';
 import { applyEditAction } from '../editActions';
@@ -49,13 +50,35 @@ function perform(
 }
 
 function moveVerb(session: AgentSession, world: ServerWorld, action: string): VerbResult {
-  const outcome = applyAction(sessionActor(session, world.isWalkable), session.mode, action);
+  session.blockedByDoorId = null;
+  session.lastPickups = [];
+  const outcome = applyAction(sessionActor(session, world), session.mode, action);
+  if (outcome === 'blocked' && session.blockedByDoorId !== null) {
+    return lockedDoorResult(session.blockedByDoorId);
+  }
   return {
     outcome,
-    summary: null,
+    summary: pickupSummary(session),
     failure: outcome === 'blocked' ? verbFailure('blocked', null) : null,
     changedPipeline: false,
   };
+}
+
+function lockedDoorResult(doorId: string): VerbResult {
+  return {
+    outcome: 'locked_door',
+    summary: null,
+    failure: verbFailure(
+      'locked_door',
+      `door:${doorId} opens for whoever holds ${keyTagFor(doorId)} — find that key marker and step onto it`,
+    ),
+    changedPipeline: false,
+  };
+}
+
+function pickupSummary(session: AgentSession): string | null {
+  if (session.lastPickups.length === 0) return null;
+  return `picked up ${session.lastPickups.map(keyTagFor).join(', ')}`;
 }
 
 function unknownAction(action: string, session: AgentSession): VerbResult {

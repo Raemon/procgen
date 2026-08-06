@@ -58,6 +58,7 @@ export interface ChunkGenCtx {
   readonly params: Record<string, ParamValue>;
   rng(label: string): RandomStream;
   rngAt(gridX: number, gridY: number, label: string): RandomStream;
+  worldRngAt(gridX: number, gridY: number, label: string): RandomStream;
   hashSeed(label: string): number;
   hash01(worldX: number, worldY: number, label: string): number;
   input(name: string): ChunkValue | null;

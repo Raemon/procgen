@@ -138,6 +138,13 @@ in the panel.
   a chunk stay coherent: every chunk of a maze region calls
   `ctx.rngAt(regionX, regionY, 'carve')` and gets the same stream, so they
   all agree on the same maze (see `mazeChunkNode.ts`).
+- `ctx.worldRngAt(gridX, gridY, label)` — like `ctx.rngAt` but *not* salted
+  with the node id, so **different nodes** get the same stream. Use it only
+  for shared plans that sibling nodes must re-derive identically — the vault
+  nodes all call `worldRngAt(districtX, districtY, 'vault plan')` so walls,
+  doors and keys agree (see `vaultPlan.ts` and docs/quest-mechanics.md).
+  Everything else should stay on `ctx.rngAt`, where two nodes of the same
+  type produce different worlds.
 - `ctx.nodeId` — this node instance's id; generic points nodes use it as the
   point tag.
 - `ctx.hash01(worldX, worldY, label)` — deterministic per-cell value in

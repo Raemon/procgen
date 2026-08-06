@@ -8,6 +8,10 @@ import { WorldPresetLibrary } from '../procgen/presets/worldPresetLibrary';
 import { TemplateLibrary } from '../procgen/templates/templateLibrary';
 import { WorldSampler } from '../procgen/worldSampler';
 import { PrefabLibrary } from '../prefabs/prefabLibrary';
+import { questCreatureHooks } from '../quest/questCreatureHooks';
+import { QuestInventory } from '../quest/questInventory';
+import { QuestPointsIndex } from '../quest/questPointsIndex';
+import { collectKeysAt, creatureWalkability, questWalkability } from '../quest/questRules';
 import { debounce } from '../ui/debounce';
 import { CaptureTool } from '../world/capture/captureTool';
 import { capturePrefabFromWorld } from '../world/capture/capturePrefabFromWorld';
@@ -28,6 +32,8 @@ export interface AppRuntime {
   worldPresets: WorldPresetLibrary;
   evaluator: PipelineEvaluator;
   sampler: WorldSampler;
+  questIndex: QuestPointsIndex;
+  questInventory: QuestInventory;
   world: World;
   sim: CreatureSim;
   clock: CreatureClock;
@@ -49,8 +55,19 @@ export function createAppRuntime(): AppRuntime {
   const evaluator = new PipelineEvaluator(store);
   const sampler = new WorldSampler(store, evaluator, tileset, prefabs);
   const isWalkableAt = (x: number, y: number) => isWalkableTile(tileset, sampler.tileAt(x, y));
-  const world = new World(isWalkableAt);
-  const sim = new CreatureSim({ sampler, library: creatures, world, isWalkableAt });
+  const questIndex = new QuestPointsIndex({
+    nodes: () => store.nodes(),
+    valueFor: (nodeId, chunkX, chunkY) => evaluator.valueFor(nodeId, chunkX, chunkY),
+  });
+  const questInventory = new QuestInventory();
+  const world = new World(questWalkability(isWalkableAt, questIndex, questInventory));
+  const sim = new CreatureSim({
+    sampler,
+    library: creatures,
+    world,
+    isWalkableAt: creatureWalkability(isWalkableAt, questIndex),
+    quest: questCreatureHooks(questInventory),
+  });
   const clock = new CreatureClock(sim);
   const renderers = new WorldRenderers();
   const worldChanged = new ChangeNotifier();
@@ -58,6 +75,8 @@ export function createAppRuntime(): AppRuntime {
 
   function applyWorldChange(): void {
     sampler.invalidatePrefabOverlay();
+    questIndex.invalidate();
+    questInventory.reset();
     sim.forget();
     world.ensurePlayerOnWalkableGround();
     renderers.redrawAll();
@@ -71,6 +90,9 @@ export function createAppRuntime(): AppRuntime {
   tileset.onChange(applyWorldChange);
   prefabs.onChange(applyWorldChange);
   creatures.onChange(applyWorldChange);
+  world.on('player-moved', () =>
+    collectKeysAt(questIndex, questInventory, world.playerX, world.playerY),
+  );
   world.on('player-moved', () => renderers.recenterAll());
   world.on('player-turned', () => renderers.recenterAll());
 
@@ -83,6 +105,8 @@ export function createAppRuntime(): AppRuntime {
     store,
     evaluator,
     sampler,
+    questIndex,
+    questInventory,
     world,
     sim,
     clock,

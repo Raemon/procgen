@@ -24,6 +24,8 @@ export function createChunkGenCtx(args: GenCtxArgs): ChunkGenCtx {
   const input = (name: string): ChunkValue | null => resolveInput(name, chunkX, chunkY);
   const rngAt = (gridX: number, gridY: number, label: string) =>
     mulberry32(hashString(`${seed}:${nodeId}:${gridX},${gridY}:${label}`));
+  const worldRngAt = (gridX: number, gridY: number, label: string) =>
+    mulberry32(hashString(`${seed}:world:${gridX},${gridY}:${label}`));
   return {
     nodeId,
     chunkX,
@@ -34,6 +36,7 @@ export function createChunkGenCtx(args: GenCtxArgs): ChunkGenCtx {
     params,
     rng: (label) => rngAt(chunkX, chunkY, label),
     rngAt,
+    worldRngAt,
     hashSeed: labelSeed,
     hash01: (worldX, worldY, label) => hashLatticePoint(worldX, worldY, labelSeed(label)),
     input,

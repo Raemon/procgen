@@ -1,5 +1,7 @@
 import type { Marker, WorldSampler } from '../procgen/worldSampler';
 import { EMPTY_TILE } from '../procgen/values/chunkValues';
+import type { QuestInventory } from '../quest/questInventory';
+import { doorIdOfTag, keyIdOfTag, keyTagFor } from '../quest/questTags';
 import { markerLookup } from '../views/ascii/asciiCells';
 import { viewportCenteredOn } from '../views/ascii/asciiViewport';
 import type { Tileset } from '../world/tiles/tileset';
@@ -25,6 +27,7 @@ export interface AgentObservation {
   viewSize: number;
   view: string[];
   legend: LegendEntry[];
+  keysHeld: string[];
 }
 
 export function viewSizeFor(mode: AgentMode): number {
@@ -36,6 +39,7 @@ export function buildObservation(
   tileset: Tileset,
   pose: AgentPose,
   mode: AgentMode,
+  inventory?: QuestInventory,
 ): AgentObservation {
   const size = viewSizeFor(mode);
   const viewport = viewportCenteredOn(pose.x, pose.y, size, size);
@@ -48,7 +52,7 @@ export function buildObservation(
     for (let column = 0; column < size; column++) {
       const x = viewport.originX + column;
       const y = viewport.originY + row;
-      line += observedGlyph(sampler, tileset, markers, legend, pose, mode, x, y);
+      line += observedGlyph(sampler, tileset, markers, legend, pose, mode, inventory, x, y);
     }
     view.push(line);
   }
@@ -59,6 +63,7 @@ export function buildObservation(
     viewSize: size,
     view,
     legend: [...legend.values()],
+    keysHeld: inventory?.keysHeld() ?? [],
   };
 }
 
@@ -69,6 +74,7 @@ function observedGlyph(
   legend: Map<string, LegendEntry>,
   pose: AgentPose,
   mode: AgentMode,
+  inventory: QuestInventory | undefined,
   x: number,
   y: number,
 ): string {
@@ -77,8 +83,37 @@ function observedGlyph(
     return BLANK_GLYPH;
   }
   const marker = markers.get(`${x},${y}`);
-  if (marker) return collectLegend(legend, marker.glyph, marker.tag, null);
+  if (marker) {
+    return collectLegend(
+      legend,
+      marker.glyph,
+      questMarkerMeaning(marker.tag, inventory),
+      questMarkerWalkable(marker.tag, inventory),
+    );
+  }
   return tileGlyph(sampler, tileset, legend, x, y);
+}
+
+function questMarkerMeaning(tag: string, inventory: QuestInventory | undefined): string {
+  const doorId = doorIdOfTag(tag);
+  if (doorId !== null) {
+    return inventory?.has(doorId)
+      ? `${tag} — a door, unlocked for you`
+      : `${tag} — a locked door; hold ${keyTagFor(doorId)} to pass`;
+  }
+  const keyId = keyIdOfTag(tag);
+  if (keyId !== null) {
+    return inventory?.has(keyId)
+      ? `${tag} — a key you already took`
+      : `${tag} — a key; step onto it to take it`;
+  }
+  return tag;
+}
+
+function questMarkerWalkable(tag: string, inventory: QuestInventory | undefined): boolean | null {
+  const doorId = doorIdOfTag(tag);
+  if (doorId === null) return null;
+  return inventory?.has(doorId) ? null : false;
 }
 
 function tileGlyph(

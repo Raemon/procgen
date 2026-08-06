@@ -81,7 +81,9 @@ function endRun(run: NonNullable<AgentSession['run']>, status: 'stopped' | 'fini
 
 function observe(session: AgentSession, access: WorldAccess): string {
   const world = access.current();
-  return observationText(buildObservation(world.sampler, world.tileset, sessionPose(session), session.mode));
+  return observationText(
+    buildObservation(world.sampler, world.tileset, sessionPose(session), session.mode, session.inventory),
+  );
 }
 
 interface AnthropicMessage {

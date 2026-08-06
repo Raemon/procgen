@@ -3,6 +3,7 @@ import { hashString } from '../../random/hashString';
 
 export interface CreatureInstance {
   key: string;
+  tag: string;
   creatureId: number;
   homeX: number;
   homeY: number;
@@ -19,9 +20,16 @@ export function spawnKeyOf(tag: string, x: number, y: number): string {
   return `${tag}:${x},${y}`;
 }
 
-export function spawnedCreature(key: string, creatureId: number, x: number, y: number): CreatureInstance {
+export function spawnedCreature(
+  key: string,
+  tag: string,
+  creatureId: number,
+  x: number,
+  y: number,
+): CreatureInstance {
   return {
     key,
+    tag,
     creatureId,
     homeX: x,
     homeY: y,

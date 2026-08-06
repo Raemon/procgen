@@ -77,6 +77,16 @@ import {
 import { observationText } from '../src/agent/observationText';
 import { facingRelativeStep } from '../src/input/facingRelativeStep';
 import { isInFrontHalfPlane, turnedFacing, type FacingIndex } from '../src/world/facing';
+import { questCreatureHooks } from '../src/quest/questCreatureHooks';
+import { QuestInventory } from '../src/quest/questInventory';
+import { QuestPointsIndex } from '../src/quest/questPointsIndex';
+import {
+  collectKeysAt,
+  creatureWalkability,
+  lockedDoorIdAt,
+  questWalkability,
+} from '../src/quest/questRules';
+import { doorIdOfTag, doorTagFor, keyIdOfTag, keyTagFor } from '../src/quest/questTags';
 
 const failures: string[] = [];
 const tileset = new Tileset();
@@ -1487,6 +1497,194 @@ check(
 check(
   'world presets reject junk',
   sanitizeWorldPresets([{ name: '', state: earthlikeState() }, { name: 'empty', state: { nodes: [] } }, null, 7]).length === 0,
+);
+
+check(
+  'quest tags parse and render both ways',
+  keyIdOfTag('key:3,-2') === '3,-2' &&
+    doorIdOfTag('door:3,-2') === '3,-2' &&
+    keyIdOfTag('door:1,1') === null &&
+    doorIdOfTag('town') === null &&
+    keyTagFor('0,0') === 'key:0,0' &&
+    doorTagFor('0,0') === 'door:0,0',
+);
+
+function vaultQuestState(): PipelineState {
+  return sanitizePipeline({
+    seed: 7,
+    nodes: [
+      { id: 'q1', type: 'constantField', label: 'flat', params: { value: 1 }, inputs: {}, display: { mode: 'hidden' } },
+      { id: 'q2', type: 'thresholdTiles', label: 'grass', params: { threshold: 0, belowTile: 2, aboveTile: 2 }, inputs: { source: 'q1' }, display: { mode: 'tileLayer' } },
+      { id: 'q3', type: 'vaultWalls', label: 'vaults', params: { districtSpan: 96, vaultSize: 11, wallTile: 4, floorTile: 1, doorTile: 19 }, inputs: {}, display: { mode: 'tileLayer' } },
+      { id: 'q4', type: 'vaultPoints', label: 'doors', params: { districtSpan: 96, vaultSize: 11, emit: 0 }, inputs: {}, display: { mode: 'markers', tileId: -1, glyph: '+', color: '#e0a03a' } },
+      { id: 'q5', type: 'vaultPoints', label: 'keys', params: { districtSpan: 96, vaultSize: 11, emit: 1 }, inputs: {}, display: { mode: 'markers', tileId: -1, glyph: '⚷', color: '#ffd75e' } },
+      { id: 'q6', type: 'vaultPoints', label: 'treasure', params: { districtSpan: 96, vaultSize: 11, emit: 2 }, inputs: {}, display: { mode: 'markers', tileId: -1, glyph: '$', color: '#ffd75e' } },
+    ],
+  });
+}
+
+function districtPoint(evaluator: PipelineEvaluator, nodeId: string): { x: number; y: number; tag: string } | null {
+  for (let chunkY = 0; chunkY <= 2; chunkY++) {
+    for (let chunkX = 0; chunkX <= 2; chunkX++) {
+      for (const point of asPoints(evaluator.valueFor(nodeId, chunkX, chunkY)) ?? []) {
+        if (point.x >= 0 && point.x < 96 && point.y >= 0 && point.y < 96) return point;
+      }
+    }
+  }
+  return null;
+}
+
+function bfsReachable(
+  probe: (x: number, y: number) => boolean,
+  fromX: number,
+  fromY: number,
+  toX: number,
+  toY: number,
+): boolean {
+  const seen = new Set<string>([`${fromX},${fromY}`]);
+  const queue: [number, number][] = [[fromX, fromY]];
+  while (queue.length > 0) {
+    const [x, y] = queue.shift()!;
+    if (x === toX && y === toY) return true;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+      const nx = x + dx;
+      const ny = y + dy;
+      const cellKey = `${nx},${ny}`;
+      if (nx < 0 || nx >= 96 || ny < 0 || ny >= 96 || seen.has(cellKey)) continue;
+      if (!probe(nx, ny)) continue;
+      seen.add(cellKey);
+      queue.push([nx, ny]);
+    }
+  }
+  return false;
+}
+
+const vaultWorld = worldFromState(vaultQuestState());
+const vaultQuest = new QuestPointsIndex({
+  nodes: () => vaultWorld.store.nodes(),
+  valueFor: (nodeId, chunkX, chunkY) => vaultWorld.evaluator.valueFor(nodeId, chunkX, chunkY),
+});
+const vaultDoor = districtPoint(vaultWorld.evaluator, 'q4')!;
+const vaultKey = districtPoint(vaultWorld.evaluator, 'q5')!;
+const vaultTreasure = districtPoint(vaultWorld.evaluator, 'q6')!;
+check(
+  'district 0,0 has exactly one door, key and treasure point with matching tags',
+  vaultDoor !== null &&
+    vaultKey !== null &&
+    vaultTreasure !== null &&
+    vaultDoor.tag === 'door:0,0' &&
+    vaultKey.tag === 'key:0,0' &&
+    vaultTreasure.tag === 'treasure',
+);
+check(
+  'vault walls and vault points agree: planks under the door, floor under the treasure, open ground under the key',
+  vaultWorld.sampler.tileAt(vaultDoor.x, vaultDoor.y) === 19 &&
+    vaultWorld.sampler.tileAt(vaultTreasure.x, vaultTreasure.y) === 1 &&
+    vaultWorld.sampler.tileAt(vaultKey.x, vaultKey.y) === 2,
+);
+
+const vaultBase = (x: number, y: number) => isWalkableTile(tileset, vaultWorld.sampler.tileAt(x, y));
+const vaultInventory = new QuestInventory();
+const vaultProbe = questWalkability(vaultBase, vaultQuest, vaultInventory);
+check(
+  'a locked door blocks quest walkability even though its tile is walkable',
+  vaultBase(vaultDoor.x, vaultDoor.y) &&
+    !vaultProbe(vaultDoor.x, vaultDoor.y) &&
+    lockedDoorIdAt(vaultQuest, vaultInventory, vaultDoor.x, vaultDoor.y) === '0,0',
+);
+check(
+  'the treasure is unreachable from the key cell while the door is locked',
+  !bfsReachable(vaultProbe, vaultKey.x, vaultKey.y, vaultTreasure.x, vaultTreasure.y),
+);
+check(
+  'stepping on the key cell collects exactly its key',
+  JSON.stringify(collectKeysAt(vaultQuest, vaultInventory, vaultKey.x, vaultKey.y)) === '["0,0"]' &&
+    collectKeysAt(vaultQuest, vaultInventory, vaultKey.x, vaultKey.y).length === 0,
+);
+check(
+  'holding the key unlocks the door and makes the treasure reachable',
+  vaultProbe(vaultDoor.x, vaultDoor.y) &&
+    lockedDoorIdAt(vaultQuest, vaultInventory, vaultDoor.x, vaultDoor.y) === null &&
+    bfsReachable(vaultProbe, vaultKey.x, vaultKey.y, vaultTreasure.x, vaultTreasure.y),
+);
+check(
+  'creatures are blocked by door cells whether or not any player holds the key',
+  !creatureWalkability(vaultBase, vaultQuest)(vaultDoor.x, vaultDoor.y),
+);
+
+const vaultRepeatA = worldFromState(vaultQuestState());
+const vaultRepeatB = worldFromState(vaultQuestState());
+const vaultSeq = [tileBytes(vaultRepeatA.evaluator, 'q3', 0, 0), tileBytes(vaultRepeatA.evaluator, 'q3', 2, 1)];
+const vaultRev = [tileBytes(vaultRepeatB.evaluator, 'q3', 2, 1), tileBytes(vaultRepeatB.evaluator, 'q3', 0, 0)];
+check(
+  'vault walls are chunk-order independent',
+  vaultSeq[0] === vaultRev[1] && vaultSeq[1] === vaultRev[0],
+);
+
+const lockedObs = buildObservation(
+  vaultWorld.sampler,
+  tileset,
+  { x: vaultDoor.x + 1, y: vaultDoor.y, facing: 0 },
+  'god',
+  new QuestInventory(),
+);
+check(
+  'observations name a locked door and list held keys',
+  lockedObs.keysHeld.length === 0 &&
+    observationText(lockedObs).includes('keys held: none') &&
+    lockedObs.legend.some((entry) => entry.meaning.includes('locked door') && entry.walkable === false),
+);
+const unlockedObs = buildObservation(
+  vaultWorld.sampler,
+  tileset,
+  { x: vaultDoor.x + 1, y: vaultDoor.y, facing: 0 },
+  'god',
+  vaultInventory,
+);
+check(
+  'the same door reads as unlocked once its key is held',
+  unlockedObs.keysHeld.includes('0,0') &&
+    observationText(unlockedObs).includes('keys held: key:0,0') &&
+    unlockedObs.legend.some((entry) => entry.meaning.includes('unlocked for you')),
+);
+
+check('keeper contact hands over the key and suppresses the respawn', (() => {
+  const inventory = new QuestInventory();
+  const hooks = questCreatureHooks(inventory);
+  return (
+    !hooks.suppressSpawn('key:5,5') &&
+    hooks.captureOnContact('key:5,5') &&
+    inventory.has('5,5') &&
+    hooks.suppressSpawn('key:5,5') &&
+    !hooks.captureOnContact('door:5,5') &&
+    !hooks.captureOnContact('deer')
+  );
+})());
+
+check(
+  'the vault keepers example ships a solvable district layout',
+  (() => {
+    const preset = examplePipelines().find((example) => example.name === 'vault keepers');
+    if (!preset) return false;
+    const world = worldFromState(sanitizePipeline(preset.state));
+    const quest = new QuestPointsIndex({
+      nodes: () => world.store.nodes(),
+      valueFor: (nodeId, chunkX, chunkY) => world.evaluator.valueFor(nodeId, chunkX, chunkY),
+    });
+    const door = districtPoint(world.evaluator, 'n5');
+    const treasure = districtPoint(world.evaluator, 'n9');
+    const presetKey = districtPoint(world.evaluator, 'n6');
+    if (!door || !treasure || !presetKey) return false;
+    const inventory = new QuestInventory();
+    const probe = questWalkability(
+      (x, y) => isWalkableTile(tileset, world.sampler.tileAt(x, y)),
+      quest,
+      inventory,
+    );
+    if (bfsReachable(probe, presetKey.x, presetKey.y, treasure.x, treasure.y)) return false;
+    collectKeysAt(quest, inventory, presetKey.x, presetKey.y);
+    return bfsReachable(probe, presetKey.x, presetKey.y, treasure.x, treasure.y);
+  })(),
 );
 
 checkPrefabAndCreatureInvariants(check);

@@ -9,6 +9,7 @@ import { PipelineEvaluator } from '../../procgen/eval/evaluator';
 import { PipelineStore } from '../../procgen/pipeline/pipelineStore';
 import { sanitizePipeline } from '../../procgen/pipeline/sanitizePipeline';
 import { WorldSampler } from '../../procgen/worldSampler';
+import { QuestPointsIndex } from '../../quest/questPointsIndex';
 import { nearestWalkable } from '../../world/nearestWalkable';
 import { isWalkableTile } from '../../world/tileWalkability';
 import { Tileset } from '../../world/tiles/tileset';
@@ -23,6 +24,7 @@ export interface ServerWorld {
   store: PipelineStore;
   prefabs: PrefabLibrary;
   creatures: CreatureLibrary;
+  quest: QuestPointsIndex;
   isWalkable(x: number, y: number): boolean;
   spawn(): { x: number; y: number };
 }
@@ -60,6 +62,10 @@ function buildServerWorld(root: string, stamp: string): ServerWorld {
   const evaluator = new PipelineEvaluator(store);
   const sampler = new WorldSampler(store, evaluator, tileset, prefabs);
   const isWalkable = (x: number, y: number) => isWalkableTile(tileset, sampler.tileAt(x, y));
+  const quest = new QuestPointsIndex({
+    nodes: () => store.nodes(),
+    valueFor: (nodeId, chunkX, chunkY) => evaluator.valueFor(nodeId, chunkX, chunkY),
+  });
   return {
     stamp,
     sampler,
@@ -67,6 +73,7 @@ function buildServerWorld(root: string, stamp: string): ServerWorld {
     store,
     prefabs,
     creatures,
+    quest,
     isWalkable,
     spawn: () => nearestWalkable(0, 0, SPAWN_SEARCH_RADIUS, isWalkable) ?? { x: 0, y: 0 },
   };

@@ -13,6 +13,7 @@ function headerLines(obs: AgentObservation): string[] {
   const lines = [
     `mode=${obs.mode} position=(${obs.position.x},${obs.position.y})` +
       (obs.facing ? ` facing=${obs.facing}` : ''),
+    `keys held: ${obs.keysHeld.length > 0 ? obs.keysHeld.map((id) => `key:${id}`).join(', ') : 'none'}`,
     `origin (top-left of grid) = (${originX},${originY}); y increases south (down); north is up.`,
     `grid: row r, col c = world tile (${originX}+c, ${originY}+r). you are '@' at the center.`,
   ];

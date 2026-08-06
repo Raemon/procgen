@@ -127,7 +127,13 @@ function agentResource(
 }
 
 function observe(session: AgentSession, world: ServerWorld, req: ApiRequest): ApiResponse {
-  const observation = buildObservation(world.sampler, world.tileset, sessionPose(session), session.mode);
+  const observation = buildObservation(
+    world.sampler,
+    world.tileset,
+    sessionPose(session),
+    session.mode,
+    session.inventory,
+  );
   if (req.query.get('format') === 'text') {
     return { status: 200, contentType: 'text/plain; charset=utf-8', body: observationText(observation) };
   }
@@ -145,7 +151,13 @@ function act(session: AgentSession, access: WorldAccess, body: unknown): ApiResp
   const result = performVerb(session, world, action, params);
   if (result.changedPipeline) access.persistPipeline(world);
   const fresh = result.changedPipeline ? access.current() : world;
-  const observation = buildObservation(fresh.sampler, fresh.tileset, sessionPose(session), session.mode);
+  const observation = buildObservation(
+    fresh.sampler,
+    fresh.tileset,
+    sessionPose(session),
+    session.mode,
+    session.inventory,
+  );
   return json(result.outcome === 'unknown_action' || result.outcome === 'failed' ? 400 : 200, {
     outcome: result.outcome,
     summary: result.summary,
@@ -200,6 +212,7 @@ function agentJson(session: AgentSession) {
     name: session.name,
     mode: session.mode,
     position: { x: session.x, y: session.y },
+    keys_held: session.inventory.keysHeld(),
     last_action: session.lastAction,
     run_status: session.run?.status ?? 'idle',
     run_goal: session.run?.goal ?? null,
@@ -213,6 +226,7 @@ function observationJson(mode: AgentMode, observation: AgentObservation) {
     mode: observation.mode,
     position: observation.position,
     facing: observation.facing,
+    keys_held: observation.keysHeld.map((id) => `key:${id}`),
     grid_orientation: 'north-up',
     view_size: observation.viewSize,
     view: observation.view,

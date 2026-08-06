@@ -23,14 +23,15 @@ export function mountWorldViews(
   slots: ViewSlots,
   currentMode: () => ViewMode,
 ): MountedWorldViews {
-  const { world, sampler, tileset } = runtime;
+  const { world, sampler, tileset, questInventory } = runtime;
   const view3d = new View3D(slots.view3d, worldViewDepsOf(runtime));
-  const agentGodView = new AgentTextView(slots.agentGod, world, sampler, tileset, 'god');
+  const agentGodView = new AgentTextView(slots.agentGod, world, sampler, tileset, questInventory, 'god');
   const agentCharacterView = new AgentTextView(
     slots.agentCharacter,
     world,
     sampler,
     tileset,
+    questInventory,
     'character',
   );
 

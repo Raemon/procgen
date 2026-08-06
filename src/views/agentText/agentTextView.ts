@@ -2,6 +2,7 @@ import type { AgentMode } from '../../agent/agentMode';
 import { buildObservation } from '../../agent/observation';
 import { observationText } from '../../agent/observationText';
 import type { WorldSampler } from '../../procgen/worldSampler';
+import type { QuestInventory } from '../../quest/questInventory';
 import type { Tileset } from '../../world/tiles/tileset';
 import type { World } from '../../world/world';
 
@@ -16,6 +17,7 @@ export class AgentTextView {
     private readonly world: World,
     private readonly sampler: WorldSampler,
     private readonly tileset: Tileset,
+    private readonly inventory: QuestInventory,
     private readonly mode: AgentMode,
   ) {
     this.pre.className = AGENT_TEXT_CLASSES;
@@ -29,7 +31,7 @@ export class AgentTextView {
   draw(): void {
     const pose = { x: this.world.playerX, y: this.world.playerY, facing: this.world.facing };
     this.pre.textContent = observationText(
-      buildObservation(this.sampler, this.tileset, pose, this.mode),
+      buildObservation(this.sampler, this.tileset, pose, this.mode, this.inventory),
     );
   }
 }

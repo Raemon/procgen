@@ -11,6 +11,11 @@ export const FAILURES: readonly FailureSpec[] = [
     recovery: 'Observe and go a different way.',
   },
   {
+    code: 'locked_door',
+    meaning: 'You stepped into a door cell that is locked for you. Doors stay locked until you hold their matching key.',
+    recovery: 'The failure hint names the key tag. Find that key marker in the world, step onto it to take the key, then walk through the door.',
+  },
+  {
     code: 'unknown_action',
     meaning: "The action name is not one of this mode's verbs.",
     recovery: 'GET /api/v1/docs lists every action for each mode.',

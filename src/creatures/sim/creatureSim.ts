@@ -8,12 +8,19 @@ const ACTIVE_RADIUS_TILES = 40;
 const DESPAWN_MARGIN_TILES = 16;
 const RESPAWN_SCAN_SECONDS = 0.5;
 const MAX_ACTIVE_CREATURES = 400;
+const CONTACT_RADIUS_TILES = 1.2;
+
+export interface CreatureQuestHooks {
+  suppressSpawn(tag: string): boolean;
+  captureOnContact(tag: string): boolean;
+}
 
 export interface CreatureSimDeps {
   sampler: WorldSampler;
   library: CreatureLibrary;
   world: SimWorldView;
   isWalkableAt: WalkabilityProbe;
+  quest?: CreatureQuestHooks;
 }
 
 export class CreatureSim {
@@ -34,6 +41,7 @@ export class CreatureSim {
   step(dtSeconds: number): void {
     this.rescanSpawnsPeriodically(dtSeconds);
     for (const creature of this.creatures.values()) this.stepOne(creature, dtSeconds);
+    this.captureCreaturesTouchingPlayer();
   }
 
   private stepOne(creature: CreatureInstance, dtSeconds: number): void {
@@ -68,7 +76,17 @@ export class CreatureSim {
   private spawnIfNew(spawn: CreatureSpawn): void {
     const key = spawnKeyOf(spawn.tag, spawn.x, spawn.y);
     if (this.creatures.has(key) || !this.deps.library.byId(spawn.creatureId)) return;
-    this.creatures.set(key, spawnedCreature(key, spawn.creatureId, spawn.x, spawn.y));
+    if (this.deps.quest?.suppressSpawn(spawn.tag)) return;
+    this.creatures.set(key, spawnedCreature(key, spawn.tag, spawn.creatureId, spawn.x, spawn.y));
+  }
+
+  private captureCreaturesTouchingPlayer(): void {
+    const quest = this.deps.quest;
+    if (!quest) return;
+    for (const [key, creature] of this.creatures) {
+      if (this.chebyshevFromPlayer(creature.x, creature.y) > CONTACT_RADIUS_TILES) continue;
+      if (quest.captureOnContact(creature.tag)) this.creatures.delete(key);
+    }
   }
 
   private spawnsAroundPlayer(): CreatureSpawn[] {

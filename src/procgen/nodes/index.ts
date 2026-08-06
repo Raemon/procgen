@@ -16,6 +16,8 @@ import './hydrology/flowAccumulationNode';
 import './hydrology/carveValleysNode';
 import './hydrology/riverFromFlowNode';
 import './maze/mazeChunkNode';
+import './vaults/vaultWallsNode';
+import './vaults/vaultPointsNode';
 import './rivers/riverTilesNode';
 import './rivers/riverTownsNode';
 import './customScript/customScriptNode';
