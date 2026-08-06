@@ -1,5 +1,5 @@
 import type { FacingIndex } from '../../world/facing';
-import type { ActionOutcome, ActorWorld } from '../actions';
+import type { ActorWorld } from '../actions';
 import type { AgentMode, AgentPose } from '../agentMode';
 
 export interface AgentSession {
@@ -10,7 +10,7 @@ export interface AgentSession {
   y: number;
   facing: FacingIndex;
   createdAt: number;
-  lastAction: { action: string; outcome: ActionOutcome } | null;
+  lastAction: { action: string; outcome: string } | null;
   run: AutopilotRun | null;
 }
 

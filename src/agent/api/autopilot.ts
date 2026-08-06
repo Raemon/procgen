@@ -1,10 +1,11 @@
-import { applyAction } from '../actions';
 import { buildApiDocs } from '../apiDocs';
 import { verbsForMode } from '../controls';
+import { nodeTypesJson, pipelineJson } from '../nodeCatalog';
 import { buildObservation } from '../observation';
 import { observationText } from '../observationText';
-import type { ServerWorld } from './serverWorld';
-import { appendTranscript, sessionActor, sessionPose, type AgentSession } from './sessions';
+import { performVerb } from './performVerb';
+import type { WorldAccess } from './serverWorld';
+import { appendTranscript, sessionPose, type AgentSession } from './sessions';
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_VERSION = '2023-06-01';
@@ -20,7 +21,7 @@ export interface AutopilotOpts {
 
 export function startAutopilot(
   session: AgentSession,
-  worldProvider: () => ServerWorld,
+  access: WorldAccess,
   opts: AutopilotOpts,
 ): void {
   session.run = {
@@ -32,7 +33,7 @@ export function startAutopilot(
     transcript: [],
     stopRequested: false,
   };
-  void driveAgent(session, worldProvider, opts).catch((error) => {
+  void driveAgent(session, access, opts).catch((error) => {
     if (!session.run) return;
     appendTranscript(session.run, 'error', String(error));
     session.run.status = 'error';
@@ -41,7 +42,7 @@ export function startAutopilot(
 
 async function driveAgent(
   session: AgentSession,
-  worldProvider: () => ServerWorld,
+  access: WorldAccess,
   opts: AutopilotOpts,
 ): Promise<void> {
   const run = session.run!;
@@ -56,19 +57,19 @@ async function driveAgent(
   }
   appendTranscript(run, 'status', `run started: ${opts.goal} (${opts.model}, max ${opts.maxSteps} steps)`);
   const messages: AnthropicMessage[] = [
-    { role: 'user', content: `Your goal: ${opts.goal}\n\nFirst observation:\n${observe(session, worldProvider)}` },
+    { role: 'user', content: `Your goal: ${opts.goal}\n\nFirst observation:\n${observe(session, access)}` },
   ];
   while (run.status === 'running') {
     if (run.stopRequested) return endRun(run, 'stopped', 'stopped by request');
     if (run.steps >= run.maxSteps) return endRun(run, 'finished', 'step budget spent');
-    const reply = await callAnthropic(opts, worldProvider().tileset, session, messages);
+    const reply = await callAnthropic(opts, access, session, messages);
     messages.push({ role: 'assistant', content: reply.content });
     const toolUse = recordReply(run, reply);
     if (!toolUse) return endRun(run, 'finished', 'the model ended its turn');
     if (toolUse.name === 'finish') {
       return endRun(run, 'finished', `finished: ${String((toolUse.input as { summary?: unknown }).summary ?? '')}`);
     }
-    messages.push({ role: 'user', content: [toolResultBlock(session, worldProvider, run, toolUse)] });
+    messages.push({ role: 'user', content: [toolResultBlock(session, access, run, toolUse)] });
     trimHistory(messages);
   }
 }
@@ -78,8 +79,8 @@ function endRun(run: NonNullable<AgentSession['run']>, status: 'stopped' | 'fini
   run.status = status;
 }
 
-function observe(session: AgentSession, worldProvider: () => ServerWorld): string {
-  const world = worldProvider();
+function observe(session: AgentSession, access: WorldAccess): string {
+  const world = access.current();
   return observationText(buildObservation(world.sampler, world.tileset, sessionPose(session), session.mode));
 }
 
@@ -104,7 +105,7 @@ interface AnthropicReply {
 
 async function callAnthropic(
   opts: AutopilotOpts,
-  tileset: ServerWorld['tileset'],
+  access: WorldAccess,
   session: AgentSession,
   messages: AnthropicMessage[],
 ): Promise<AnthropicReply> {
@@ -118,7 +119,7 @@ async function callAnthropic(
     body: JSON.stringify({
       model: opts.model,
       max_tokens: MAX_RESPONSE_TOKENS,
-      system: systemPrompt(tileset, session),
+      system: systemPrompt(access, session),
       tools: toolDefinitions(session),
       messages,
     }),
@@ -127,26 +128,30 @@ async function callAnthropic(
   return (await response.json()) as AnthropicReply;
 }
 
-function systemPrompt(tileset: ServerWorld['tileset'], session: AgentSession): string {
+function systemPrompt(access: WorldAccess, session: AgentSession): string {
   return [
     `You are driving a ${session.mode}-mode agent in a procedurally generated world through the act tool.`,
     'Act one step at a time; every tool result is a fresh observation. Call finish when the goal is done or clearly impossible.',
+    session.mode === 'god'
+      ? 'You can rebuild the world itself with the editing verbs; inspect_pipeline and inspect_node_types show what exists and what you can add.'
+      : '',
     '',
-    buildApiDocs(tileset),
+    buildApiDocs(access.current().tileset),
   ].join('\n');
 }
 
 function toolDefinitions(session: AgentSession) {
-  return [
+  const tools: object[] = [
     {
       name: 'act',
-      description: 'Perform one action in the world.',
+      description: 'Perform one action in the world. Pass the action name plus any params the docs list for it.',
       input_schema: {
         type: 'object',
         properties: {
           action: { type: 'string', enum: verbsForMode(session.mode).map((verb) => verb.action) },
         },
         required: ['action'],
+        additionalProperties: true,
       },
     },
     {
@@ -159,6 +164,21 @@ function toolDefinitions(session: AgentSession) {
       },
     },
   ];
+  if (session.mode === 'god') {
+    tools.push(
+      {
+        name: 'inspect_pipeline',
+        description: 'Read the current node pipeline: every node with its id, type, params, wiring and display.',
+        input_schema: { type: 'object', properties: {} },
+      },
+      {
+        name: 'inspect_node_types',
+        description: 'Read the catalog of node types you can add, with every param and input explained.',
+        input_schema: { type: 'object', properties: {} },
+      },
+    );
+  }
+  return tools;
 }
 
 function recordReply(run: NonNullable<AgentSession['run']>, reply: AnthropicReply): ContentBlock | null {
@@ -176,21 +196,49 @@ function recordReply(run: NonNullable<AgentSession['run']>, reply: AnthropicRepl
 
 function toolResultBlock(
   session: AgentSession,
-  worldProvider: () => ServerWorld,
+  access: WorldAccess,
   run: NonNullable<AgentSession['run']>,
   toolUse: ContentBlock,
 ) {
-  const world = worldProvider();
-  const action = String((toolUse.input as { action?: unknown }).action ?? '');
-  const outcome = applyAction(sessionActor(session, world.isWalkable), session.mode, action);
-  session.lastAction = { action, outcome };
-  run.steps += 1;
-  appendTranscript(run, 'tool_result', `${outcome} at (${session.x},${session.y})`);
   return {
     type: 'tool_result',
     tool_use_id: toolUse.id,
-    content: `outcome: ${outcome}\n\n${observe(session, worldProvider)}`,
+    content: toolResultContent(session, access, run, toolUse),
   };
+}
+
+function toolResultContent(
+  session: AgentSession,
+  access: WorldAccess,
+  run: NonNullable<AgentSession['run']>,
+  toolUse: ContentBlock,
+): string {
+  if (toolUse.name === 'inspect_pipeline') {
+    appendTranscript(run, 'tool_result', 'pipeline inspected');
+    return JSON.stringify(pipelineJson(access.current().store), null, 1);
+  }
+  if (toolUse.name === 'inspect_node_types') {
+    appendTranscript(run, 'tool_result', 'node types inspected');
+    return JSON.stringify(nodeTypesJson(), null, 1);
+  }
+  const input = (toolUse.input ?? {}) as Record<string, unknown>;
+  const { action: rawAction, ...params } = input;
+  const action = String(rawAction ?? '');
+  const world = access.current();
+  const result = performVerb(session, world, action, params);
+  if (result.changedPipeline) access.persistPipeline(world);
+  run.steps += 1;
+  const note = result.summary ?? result.failure?.hint ?? '';
+  appendTranscript(run, 'tool_result', `${result.outcome} at (${session.x},${session.y})${note ? ` — ${note}` : ''}`);
+  return [
+    `outcome: ${result.outcome}`,
+    result.summary ? `summary: ${result.summary}` : '',
+    result.failure ? `failure: ${result.failure.meaning} ${result.failure.hint ?? ''}` : '',
+    '',
+    observe(session, access),
+  ]
+    .filter((line) => line !== '')
+    .join('\n');
 }
 
 function trimHistory(messages: AnthropicMessage[]): void {

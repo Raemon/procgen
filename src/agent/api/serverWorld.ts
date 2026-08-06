@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import '../../procgen/nodes';
 import { PipelineEvaluator } from '../../procgen/eval/evaluator';
@@ -16,8 +16,22 @@ export interface ServerWorld {
   stamp: string;
   sampler: WorldSampler;
   tileset: Tileset;
+  store: PipelineStore;
   isWalkable(x: number, y: number): boolean;
   spawn(): { x: number; y: number };
+}
+
+export interface WorldAccess {
+  current(): ServerWorld;
+  persistPipeline(world: ServerWorld): void;
+}
+
+export function persistPipeline(root: string, world: ServerWorld): void {
+  mkdirSync(join(root, 'data'), { recursive: true });
+  writeFileSync(
+    dataFilePath(root, 'pipeline'),
+    JSON.stringify(world.store.snapshot(), null, 2) + '\n',
+  );
 }
 
 export function currentServerWorld(root: string, previous: ServerWorld | null): ServerWorld {
@@ -36,6 +50,7 @@ function buildServerWorld(root: string, stamp: string): ServerWorld {
     stamp,
     sampler,
     tileset,
+    store,
     isWalkable,
     spawn: () => nearestWalkable(0, 0, SPAWN_SEARCH_RADIUS, isWalkable) ?? { x: 0, y: 0 },
   };

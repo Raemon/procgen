@@ -1,4 +1,3 @@
-import type { ActionOutcome } from '../actions';
 import type { AgentMode } from '../agentMode';
 
 export interface RosterAgent {
@@ -6,7 +5,7 @@ export interface RosterAgent {
   name: string;
   mode: AgentMode;
   position: { x: number; y: number };
-  last_action: { action: string; outcome: ActionOutcome } | null;
+  last_action: { action: string; outcome: string } | null;
   run_status: 'idle' | 'running' | 'stopped' | 'finished' | 'error';
   run_goal: string | null;
   run_steps: number;

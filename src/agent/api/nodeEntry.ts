@@ -1,6 +1,11 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { handleApiRequest } from './handlers';
-import { currentServerWorld, type ServerWorld } from './serverWorld';
+import {
+  currentServerWorld,
+  persistPipeline,
+  type ServerWorld,
+  type WorldAccess,
+} from './serverWorld';
 import type { SessionStore } from './sessions';
 
 export interface AgentApiState {
@@ -17,9 +22,10 @@ export async function serveAgentApi(
   root: string,
   req: IncomingMessage,
   res: ServerResponse,
+  onPipelinePersisted?: () => void,
 ): Promise<void> {
   const url = new URL(req.url ?? '/', 'http://localhost');
-  const response = handleApiRequest(state.sessions, worldProvider(state, root), {
+  const response = handleApiRequest(state.sessions, worldAccess(state, root, onPipelinePersisted), {
     method: req.method ?? 'GET',
     path: url.pathname.replace(/^\/api\/v1/, '') || '/',
     query: url.searchParams,
@@ -30,10 +36,21 @@ export async function serveAgentApi(
   res.end(response.body);
 }
 
-function worldProvider(state: AgentApiState, root: string): () => ServerWorld {
-  return () => {
-    state.world = currentServerWorld(root, state.world);
-    return state.world;
+function worldAccess(
+  state: AgentApiState,
+  root: string,
+  onPipelinePersisted?: () => void,
+): WorldAccess {
+  return {
+    current: () => {
+      state.world = currentServerWorld(root, state.world);
+      return state.world;
+    },
+    persistPipeline: (world) => {
+      persistPipeline(root, world);
+      state.world = null;
+      onPipelinePersisted?.();
+    },
   };
 }
 

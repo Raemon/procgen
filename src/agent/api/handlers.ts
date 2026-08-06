@@ -1,19 +1,14 @@
-import { applyAction } from '../actions';
 import { isAgentMode, type AgentMode } from '../agentMode';
 import { buildApiDocs } from '../apiDocs';
 import { verbsForMode } from '../controls';
 import { failureByCode } from '../failures';
+import { nodeTypesJson, pipelineJson } from '../nodeCatalog';
 import { buildObservation, type AgentObservation } from '../observation';
 import { observationText } from '../observationText';
 import { startAutopilot } from './autopilot';
-import type { ServerWorld } from './serverWorld';
-import {
-  newSession,
-  sessionActor,
-  sessionPose,
-  type AgentSession,
-  type SessionStore,
-} from './sessions';
+import { performVerb } from './performVerb';
+import type { ServerWorld, WorldAccess } from './serverWorld';
+import { newSession, sessionPose, type AgentSession, type SessionStore } from './sessions';
 
 export interface ApiRequest {
   method: string;
@@ -30,16 +25,22 @@ export interface ApiResponse {
 
 export function handleApiRequest(
   sessions: SessionStore,
-  worldProvider: () => ServerWorld,
+  access: WorldAccess,
   req: ApiRequest,
 ): ApiResponse {
-  const world = worldProvider();
+  const world = access.current();
   if (req.path === '/docs' && req.method === 'GET') {
     return { status: 200, contentType: 'text/markdown', body: buildApiDocs(world.tileset) };
   }
+  if (req.path === '/pipeline' && req.method === 'GET') {
+    return json(200, { pipeline: pipelineJson(world.store) });
+  }
+  if (req.path === '/node-types' && req.method === 'GET') {
+    return json(200, nodeTypesJson());
+  }
   if (req.path === '/agents') return agentCollection(sessions, world, req);
   const match = req.path.match(/^\/agents\/([^/]+)(\/[a-z]+)?$/);
-  if (match) return agentResource(sessions, world, worldProvider, req, match[1]!, match[2] ?? '');
+  if (match) return agentResource(sessions, access, req, match[1]!, match[2] ?? '');
   return failure(404, 'bad_request', `no route for ${req.method} ${req.path}`);
 }
 
@@ -66,6 +67,8 @@ function createAgent(sessions: SessionStore, world: ServerWorld, body: unknown):
       docs: '/api/v1/docs',
       observe: `/api/v1/agents/${id}/observe`,
       act: `/api/v1/agents/${id}/act`,
+      pipeline: '/api/v1/pipeline',
+      node_types: '/api/v1/node-types',
     },
   });
 }
@@ -77,8 +80,7 @@ function readName(body: unknown): string | null {
 
 function agentResource(
   sessions: SessionStore,
-  world: ServerWorld,
-  worldProvider: () => ServerWorld,
+  access: WorldAccess,
   req: ApiRequest,
   id: string,
   sub: string,
@@ -91,11 +93,9 @@ function agentResource(
     sessions.delete(id);
     return json(200, { deleted: true, id });
   }
-  if (sub === '/observe' && req.method === 'GET') return observe(session, world, req);
-  if (sub === '/act' && req.method === 'POST') return act(session, world, req.body);
-  if (sub === '/run' && req.method === 'POST') {
-    return run(session, worldProvider, req.body);
-  }
+  if (sub === '/observe' && req.method === 'GET') return observe(session, access.current(), req);
+  if (sub === '/act' && req.method === 'POST') return act(session, access, req.body);
+  if (sub === '/run' && req.method === 'POST') return run(session, access, req.body);
   if (sub === '/stop' && req.method === 'POST') {
     stopRun(session);
     return json(200, { agent: agentJson(session) });
@@ -112,26 +112,28 @@ function observe(session: AgentSession, world: ServerWorld, req: ApiRequest): Ap
   return json(200, { observation: observationJson(session.mode, observation) });
 }
 
-function act(session: AgentSession, world: ServerWorld, body: unknown): ApiResponse {
-  const action = (body as { action?: unknown } | null)?.action;
+function act(session: AgentSession, access: WorldAccess, body: unknown): ApiResponse {
+  const record = body as Record<string, unknown> | null;
+  const action = record?.action;
   if (typeof action !== 'string') {
-    return failure(400, 'bad_request', 'body must be {"action": "..."}');
+    return failure(400, 'bad_request', 'body must be {"action": "...", ...params}');
   }
-  const outcome = applyAction(sessionActor(session, world.isWalkable), session.mode, action);
-  session.lastAction = { action, outcome };
-  const observation = buildObservation(world.sampler, world.tileset, sessionPose(session), session.mode);
-  return json(outcome === 'unknown_action' ? 400 : 200, {
-    outcome,
-    failure: outcome === 'blocked' || outcome === 'unknown_action' ? failureByCode(outcome) : null,
+  const { action: _dropped, ...params } = record!;
+  const world = access.current();
+  const result = performVerb(session, world, action, params);
+  if (result.changedPipeline) access.persistPipeline(world);
+  const fresh = result.changedPipeline ? access.current() : world;
+  const observation = buildObservation(fresh.sampler, fresh.tileset, sessionPose(session), session.mode);
+  return json(result.outcome === 'unknown_action' || result.outcome === 'failed' ? 400 : 200, {
+    outcome: result.outcome,
+    summary: result.summary,
+    failure: result.failure,
+    pipeline: result.changedPipeline ? pipelineJson(fresh.store) : undefined,
     observation: observationJson(session.mode, observation),
   });
 }
 
-function run(
-  session: AgentSession,
-  worldProvider: () => ServerWorld,
-  body: unknown,
-): ApiResponse {
+function run(session: AgentSession, access: WorldAccess, body: unknown): ApiResponse {
   if (session.run?.status === 'running') {
     return failure(409, 'agent_busy', 'stop the current run first');
   }
@@ -143,7 +145,7 @@ function run(
   } | null;
   const goal = typeof opts?.goal === 'string' && opts.goal.trim() !== '' ? opts.goal.trim() : null;
   if (!goal) return failure(400, 'bad_request', 'body must include a "goal" string');
-  startAutopilot(session, worldProvider, {
+  startAutopilot(session, access, {
     goal,
     model: typeof opts?.model === 'string' ? opts.model : 'claude-sonnet-5',
     maxSteps: clampSteps(opts?.max_steps),
@@ -195,6 +197,7 @@ function observationJson(mode: AgentMode, observation: AgentObservation) {
     legend: observation.legend,
     available_actions: verbsForMode(mode).map((verb) => ({
       action: verb.action,
+      params: verb.params,
       description: verb.description,
     })),
   };

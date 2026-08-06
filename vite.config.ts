@@ -22,7 +22,9 @@ function agentApi() {
           .ssrLoadModule('/src/agent/api/nodeEntry.ts')
           .then((entry) => {
             state ??= entry.newAgentApiState();
-            return entry.serveAgentApi(state, server.config.root, req, res);
+            return entry.serveAgentApi(state, server.config.root, req, res, () =>
+              server.ws.send({ type: 'custom', event: 'agent-pipeline-changed' }),
+            );
           })
           .catch((error: unknown) => {
             res.statusCode = 500;

@@ -44,7 +44,26 @@ local dev tool.
 Autopilot (`src/agent/api/autopilot.ts`) drives an agent with the Anthropic
 API — key from the run request or `ANTHROPIC_API_KEY` — one `act` tool call per
 step, transcript readable at `.../transcript` and streamed into the agent log
-panel.
+panel. God-mode runs also get `inspect_pipeline` and `inspect_node_types`
+tools.
+
+## God agents build the world
+
+God mode's verb table has a second group: editing verbs (`add_node`,
+`set_param`, `wire_input`, `set_display`, `move_node`, `set_seed`, …) that
+manipulate the same procgen node pipeline the human edits in the panel — the
+whole app is LLM-first. `GET /api/v1/pipeline` lists every node;
+`GET /api/v1/node-types` renders the registry (descriptions, param ranges,
+choices, input kinds) straight from `registerNodeType` metadata. Validation
+lives in `src/agent/editActions.ts` and every failure hint names the real
+options so an agent can self-correct. Character agents own no editing verbs.
+
+A successful edit persists to `data/pipeline.json`, rebuilds the server world
+(so the next observation shows the new terrain), and pushes an
+`agent-pipeline-changed` event over the vite websocket — the browser reloads
+the pipeline into its store live, so you can watch an agent terraform in any
+view mode. Concurrent human + agent edits are last-writer-wins; there is no
+merge.
 
 ## Known asymmetry
 

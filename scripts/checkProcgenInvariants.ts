@@ -56,7 +56,9 @@ import { World } from '../src/world/world';
 import { applyAction } from '../src/agent/actions';
 import { buildApiDocs } from '../src/agent/apiDocs';
 import { ALL_VERBS } from '../src/agent/controls';
+import { applyEditAction } from '../src/agent/editActions';
 import { FAILURES } from '../src/agent/failures';
+import { nodeTypesJson } from '../src/agent/nodeCatalog';
 import {
   buildObservation,
   CHARACTER_VIEW_SIZE,
@@ -1210,6 +1212,57 @@ check('applyAction enforces mode verb ownership', (() => {
   );
 })());
 check('observation text and json carry the same grid', observationText(charObs).includes(charObs.view.join('\n')));
+
+check('api docs list every registered node type', allNodeTypes().every((def) => agentDocs.includes(`\`${def.type}\``)));
+check('api docs render an example body for every editing verb', ALL_VERBS.filter((verb) => verb.group === 'editing').every((verb) => agentDocs.includes(JSON.stringify(verb.example))));
+check('every registered node type serializes into the catalog', nodeTypesJson().types.length === allNodeTypes().length);
+
+const editStore = new PipelineStore(emptyPipeline());
+check('add_node rejects an unknown type', (() => {
+  const result = applyEditAction(editStore, tileset, 'add_node', { type: 'noSuchThing' });
+  return !result.ok && result.code === 'unknown_node_type';
+})());
+check('add_node creates and reports the node', (() => {
+  const result = applyEditAction(editStore, tileset, 'add_node', { type: 'noiseField' });
+  return result.ok && editStore.nodes().length === 1;
+})());
+const noiseId = editStore.nodes()[0]!.id;
+check('set_param clamps a knob to its range', (() => {
+  const result = applyEditAction(editStore, tileset, 'set_param', { node_id: noiseId, param: 'scale', value: 999 });
+  return result.ok && editStore.nodeById(noiseId)!.params.scale === 0.3;
+})());
+check('set_param names the real params on a miss', (() => {
+  const result = applyEditAction(editStore, tileset, 'set_param', { node_id: noiseId, param: 'nope', value: 1 });
+  return !result.ok && result.code === 'unknown_param' && result.hint.includes('scale');
+})());
+check('threshold auto-wires to the noise field when added', (() => {
+  const result = applyEditAction(editStore, tileset, 'add_node', { type: 'thresholdTiles' });
+  const threshold = editStore.nodes()[1];
+  return result.ok && threshold?.type === 'thresholdTiles' && Object.values(threshold.inputs).includes(noiseId);
+})());
+const thresholdId = editStore.nodes()[1]!.id;
+check('wire_input refuses a later source for an earlier node', (() => {
+  const result = applyEditAction(editStore, tileset, 'wire_input', { node_id: noiseId, input: 'field', source_node_id: thresholdId });
+  return !result.ok && (result.code === 'invalid_wire' || result.code === 'unknown_param');
+})());
+check('set_display refuses a mode the output kind cannot take', (() => {
+  const result = applyEditAction(editStore, tileset, 'set_display', { node_id: noiseId, display: 'tileLayer' });
+  return !result.ok && result.code === 'invalid_display';
+})());
+check('set_display binds elevation with a height scale', (() => {
+  const result = applyEditAction(editStore, tileset, 'set_display', { node_id: noiseId, display: 'elevation', height_scale: 5 });
+  const display = editStore.nodeById(noiseId)!.display;
+  return result.ok && display.mode === 'elevation' && display.heightScale === 5;
+})());
+check('set_seed reseeds the pipeline', (() => {
+  const result = applyEditAction(editStore, tileset, 'set_seed', { seed: 777 });
+  return result.ok && editStore.seed() === 777;
+})());
+check('remove_node deletes and reports', (() => {
+  const result = applyEditAction(editStore, tileset, 'remove_node', { node_id: thresholdId });
+  return result.ok && editStore.nodes().length === 1;
+})());
+check('character mode owns no editing verbs', ALL_VERBS.every((verb) => verb.group !== 'editing' || verb.mode === 'god'));
 
 if (failures.length > 0) throw new Error(`${failures.length} check(s) failed: ${failures.join(', ')}`);
 console.log('\nall checks passed');
