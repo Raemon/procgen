@@ -18,7 +18,8 @@ export function TilesTab() {
       </Button>
       <p className={classes(HINT_CLASSES, 'mt-2')}>
         Procgen nodes pick from this list: tile params and marker displays reference tiles here, so
-        symbol, color, art and walkability edits apply everywhere a tile is used.
+        symbol, art and walkability edits apply everywhere a tile is used. Colour comes from the
+        art — paint the cube faces and the flat views follow.
       </p>
     </>
   );

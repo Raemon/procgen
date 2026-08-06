@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '../../ui/controls/Button';
 import { Select } from '../../ui/controls/Select';
-import { FIELD_CLASSES, HINT_CLASSES, PANEL_HEADING_CLASSES } from '../../ui/controls/fieldClasses';
+import { FIELD_CLASSES, HINT_CLASSES } from '../../ui/controls/fieldClasses';
 import type { AgentMode } from '../agentMode';
 import { createAgent, deleteAgent, startRun, stopRun, type RosterAgent } from './agentsApiClient';
 import { AgentCard } from './AgentCard';
@@ -46,7 +46,6 @@ export function AgentsPanel({
 
   return (
     <>
-      <h2 className={PANEL_HEADING_CLASSES}>agents</h2>
       <div className="flex flex-col gap-1.5">
         <input
           type="password"
@@ -102,7 +101,7 @@ export function AgentsPanel({
             key={agent.id}
             agent={agent}
             selected={agent.id === selectedId}
-            onSelect={() => onSelect(agent.id)}
+            onSelect={() => onSelect(agent.id === selectedId ? null : agent.id)}
             onRun={() => void run(agent)}
             onStop={() => void stopRun(agent.id).then(refresh)}
             onDelete={() =>
