@@ -160,3 +160,48 @@ Almost everything needed already has a home. The mapping:
 Each phase lands as: node files under `src/procgen/nodes/<center>/`, a
 built-in template, a randomize recipe, and invariant checks — no changes to
 the evaluator, cache, wiring, or panel.
+
+## Revisions after merging the agents & view-modes work
+
+Main landed the agent API, the four view modes, world presets, and two big
+example worlds (`poleToEquator`, `fallenMetropolis`). Four things change:
+
+1. **Two proposed nodes already exist as custom scripts — promote them.**
+   `poleToEquator` hand-rolls a latitude gradient (`LATITUDE_SCRIPT`) and
+   `fallenMetropolis` hand-rolls per-district latent history
+   (`DISTRICT_FATE_SCRIPT`). Per the promote-stable-scripts rule these
+   become the first two center nodes, generalized:
+   - `gradientField` — one coordinate-gradient node with a `direction`
+     choice (*distance from origin* / *north→south* / *west→east*), `range`,
+     `invert`, and center offset ints. The radial mode is `journeyField`
+     from the preset designs; the linear mode retro-serves `poleToEquator`.
+   - `regionFate` — per-region hash blended with per-cell wear (`span`,
+     `blend` knobs), i.e. latent history as a **field**. This is simpler
+     than the points-based `ruinSites` sketch: fate-as-field feeds ordinary
+     thresholds and masks, so the narrative phase gets cheaper.
+2. **Agents are now players, and the tag channel is literally readable.**
+   Marker points render into agent observations as glyph + tag in the
+   legend (`observation.ts` → `collectLegend(legend, marker.glyph,
+   marker.tag, …)`), so `key:2` or `landmark` is text an LLM character
+   agent is sent. Creatures are the opposite — browser-only, invisible to
+   the API and both agent views — so **a preset's payoff must be carried by
+   tiles, prefabs, and tagged markers**; creatures are human-view garnish,
+   never the load-bearing challenge.
+3. **Node metadata is now functional, not documentation.** God agents build
+   pipelines by reading `GET /api/v1/node-types`, rendered straight from
+   `registerNodeType` metadata, and `editActions` failure hints are how
+   they self-correct. `description`/`whenToUse`/`help` on the new nodes are
+   part of the agent-facing API surface and should be written as such.
+4. **Quest state got more expensive, which vindicates deferring it.** The
+   parity rule means anything affecting movement must exist identically in
+   the browser and the dev-server world. Creatures dodge this by being
+   excluded from both agent paths, but an openable door blocks walking —
+   it cannot be excluded. Key-pickup/door state therefore has to be a
+   shared module used by both `serverWorld` and the browser walkability
+   probe. The walkable-gate v0 of the puzzle preset stands as the right
+   first ship; blocking gates wait for that shared layer.
+
+Unchanged: the phasing order, the region-keyed-rng idiom, tags as the
+semantics channel (now strengthened), and `checkProcgenInvariants.ts` as
+the home for solvability — it now exists on main with maze determinism
+checks to build on.

@@ -6,11 +6,21 @@ spawns at world origin `(0, 0)` (snapped to the nearest walkable cell within
 64 tiles), so every preset is built outward from the origin: the payoff must
 be standing at `(0, 0)` looking around, not somewhere the player has to find.
 
-The shared trick is a tiny new node, **`journeyField`** — a field that is 0
-at the origin and rises to 1 at `range` tiles out (params: `range` int,
-`invert` toggle; a pure function of coordinates, no inputs, no windowing).
-Two of the three presets pace everything with it: it is the "how far into
-the world are you" signal that masks, rings, and story gradients all read.
+The shared trick is a tiny new node, **`gradientField`** (see the revisions
+section of `generation-centers.md`) in its radial mode — called *journey*
+below: a field that is 0 at the origin and rises to 1 at `range` tiles out;
+a pure function of coordinates, no inputs, no windowing. `poleToEquator`
+already hand-rolls this node's linear mode as a custom script, which is the
+proof it earns promotion. Two of the three presets pace everything with the
+radial mode: it is the "how far into the world are you" signal that masks,
+rings, and story gradients all read.
+
+Since the agents merge there are two kinds of new character: the human in
+the 2.5D character view and an LLM autopilot reading text observations.
+Tiles, prefabs, and tagged markers appear in both (markers arrive as
+glyph + tag in the agent's legend); **creatures appear only in the human
+views**, so each preset's payoff below is carried by the former and merely
+garnished by the latter.
 
 Tile ids referenced below are the default tileset (0 water, 2 grass, 4 rock,
 10 marsh, 12 flowers, 13 bush, 14 pine, 16 flagstone, 17 stone wall, 18
@@ -29,13 +39,13 @@ Past the towers, sentries stand over treasure markers. The preset teaches
 the game's core promise wordlessly: home is behind you, reward is out there,
 and distance *is* difficulty.
 
-**Pipeline** (all existing nodes except `journeyField`):
+**Pipeline** (all existing nodes except `gradientField`):
 
 | node | type | purpose |
 | --- | --- | --- |
 | terrain | `noiseField` scale 0.045, oct 5 | elevation display; the land's shape |
-| journey | `journeyField` range 220 | hidden; the pacing signal |
-| home | `journeyField` range 220, invert | hidden; 1 at spawn falling to 0 |
+| journey | `gradientField` radial, range 220 | hidden; the pacing signal |
+| home | `gradientField` radial, range 220, invert | hidden; 1 at spawn falling to 0 |
 | safe ground | `combineFields` max(terrain, home × ~0.6) | guarantees the origin sits at meadow height — the spawn is never underwater |
 | land | `thresholdTiles` on safe ground: water < 0.45, grass above | base coat |
 | flower ring | `thresholdTiles` on journey: flowers ≥ 0.28 | painted over by the next layer beyond 0.33, leaving a ring |
@@ -47,7 +57,10 @@ and distance *is* difficulty.
 | wolves | `scatterPoints` mask journey 0.45–1, creature 2 | danger arrives on schedule |
 | hoards | `scatterPoints` very sparse, mask journey 0.75–1, gold `$` markers with sentries (creature 3) via a twin node on the same mask | the reason to go |
 
-**Needs building:** `journeyField` only. Everything else ships today.
+**Needs building:** `gradientField` only. Everything else ships today. For
+an API agent the wolves and deer are invisible; the pacing it reads is the
+flower ring, the pine belt, and the towers — which is why those are tiles
+and prefabs, not creatures.
 
 **Ring trick, for the record:** a band of tiles between two journey values is
 two stacked thresholds — paint the band tile from the inner cut outward,
@@ -85,13 +98,19 @@ five nodes with matching params.
 **Payoff before interactivity exists:** gate 1 is `wood planks` — walkable —
 and gates 2–3 are painted walkable door tiles too in v0, so the vault is
 traversable and reads as a sequence of thresholds guarded by sentries
-(dodging a `guard`-behavior sentry is already a real game). When the thin
-quest-state layer lands (key pickup toggles a door overlay, same sanctioned
-impurity as creature time), the same preset flips its gate tiles to blocking
-walls and becomes a true lock-and-key crawl with zero other changes.
+(dodging a `guard`-behavior sentry is already a real game for the human
+player). The three gate tiles have distinct symbols (`≡` `█` `▓`), so an
+API agent reads the gate sequence and the tagged `⚷` key markers directly
+from its observation legend — the vault is a legible text puzzle before it
+is an interactive one. When the quest-state layer lands, the same preset
+flips its gate tiles to blocking walls and becomes a true lock-and-key
+crawl with zero other changes.
 
 **Needs building:** `gateMaze` + `gateKeys`, plus the solvability check in
-`checkProcgenInvariants.ts`. Quest state is a later, separable upgrade.
+`checkProcgenInvariants.ts`. Quest state is a later, separable upgrade —
+and since the agents merge it must be a shared module (browser walkability
+*and* `serverWorld`, per the parity rule), which is exactly why v0 does not
+wait for it.
 
 ---
 
@@ -111,10 +130,10 @@ my village is next.*
 | node | type | purpose |
 | --- | --- | --- |
 | terrain | `noiseField` scale 0.05, oct 5 | elevation |
-| journey | `journeyField` range 300 | hidden; here it is decay-distance, not danger |
+| journey | `gradientField` radial, range 300 | hidden; here it is decay-distance, not danger |
 | land | `thresholdTiles` water < 0.45, grass | base coat (seed picked so the origin is a riverbank; the adventure preset's home-lift combine works here too) |
 | rivers | `riverTiles` on terrain, water tile | the spine the story hangs on |
-| blight | `combineFields` multiply(journey, terrain) → `thresholdTiles` marsh ≥ 0.5 | corruption that creeps in patchily with distance |
+| blight | `combineFields` multiply(journey, `regionFate`) → `thresholdTiles` marsh ≥ 0.5 | corruption that creeps in patchily with distance — fate gives it district-sized clumps, journey gives it a direction |
 | living towns | `riverTowns` mask journey ≤ 0.35, prefab cottage | home and its neighbors |
 | ruined towns | `riverTowns` mask journey > 0.35, prefab **ruined cottage** | the same settlement logic, decayed — the story *is* this one mask |
 | wards | `scatterPoints` very sparse, mask journey 0.4–0.5, prefab standing stones | the boundary made visible |
@@ -126,7 +145,13 @@ The load-bearing move: **living and ruined towns come from the same
 connects them), sequence (decay grows with distance), and stakes (you are at
 the end of the line) from pure placement.
 
-**Needs building:** `journeyField`, an optional `mask` field input +
+`fallenMetropolis` (new on main) already tells a decay story with a hashed
+per-district fate — that script is what `regionFate` promotes. The
+difference here is direction: the metropolis's ruin is statistically the
+same everywhere, while the dying river anchors the gradient at the spawn,
+so the new character has a *place* in the story rather than a tour of one.
+
+**Needs building:** `gradientField`, an optional `mask` field input +
 `maskAtLeast`/`maskAtMost` knobs on `riverTowns` (mirroring
 `scatterPoints`), and one new default prefab: a *ruined cottage* (the
 cottage with broken wall stubs and no roof).
@@ -135,11 +160,13 @@ cottage with broken wall stubs and no roof).
 
 ## Build order
 
-`journeyField` unlocks two of the three presets by itself and is an
-afternoon's node. The order that pays off fastest:
+`gradientField` unlocks two of the three presets by itself and is an
+afternoon's node (its linear mode also retires `poleToEquator`'s latitude
+script). The order that pays off fastest:
 
-1. `journeyField` → ship **the frontier** (rest is existing nodes).
-2. `riverTowns` mask + ruined-cottage prefab → ship **the dying river**.
+1. `gradientField` → ship **the frontier** (rest is existing nodes).
+2. `regionFate` + `riverTowns` mask + ruined-cottage prefab → ship
+   **the dying river**.
 3. `gateMaze`/`gateKeys` + solvability check → ship **the sealed vaults**
    (walkable-gate v0), then flip to blocking gates when quest state lands.
 
