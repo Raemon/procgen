@@ -1,10 +1,14 @@
+import { RandomizeHistory } from '../../procgen/randomize/randomizeHistory';
 import { addNodeMenu } from './addNodeMenu';
 import { nodeCard, refreshCardError } from './nodeCard';
 import type { PanelDeps } from './panelDeps';
 import { presetsRow } from './presetsRow';
+import { randomizeRow } from './randomizeRow';
 import { worldSeedRow } from './worldSeedRow';
 
 export class ProcgenPanel {
+  private readonly randomizeHistory = new RandomizeHistory();
+
   constructor(
     private readonly container: HTMLElement,
     private readonly deps: PanelDeps,
@@ -22,6 +26,7 @@ export class ProcgenPanel {
       panelTitle(),
       worldSeedRow(this.deps.store.seed(), (seed) => this.deps.store.setSeed(seed)),
       presetsRow(this.deps.store),
+      randomizeRow(this.deps, this.randomizeHistory),
       this.nodeList(),
       addNodeMenu((type) => this.deps.store.addNode(type)),
       pipelineHint(),

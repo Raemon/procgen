@@ -38,6 +38,22 @@
   width: 100%;
 }
 
+.randomize-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.randomize-row .btn {
+  flex: 1;
+  white-space: nowrap;
+}
+
+.randomize-row .btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 .dice {
   padding: 3px 8px;
 }
