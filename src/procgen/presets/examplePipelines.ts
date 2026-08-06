@@ -1,5 +1,6 @@
 export interface ExamplePipeline {
   name: string;
+  description: string;
   state: unknown;
 }
 
@@ -10,6 +11,8 @@ export function examplePipelines(): ExamplePipeline[] {
 function islandsAndForests(): ExamplePipeline {
   return {
     name: 'islands & forests',
+    description:
+      'One noise field drives everything: elevation, three stacked biome thresholds, and masked tree scatter.',
     state: {
       seed: 1234,
       nodes: [
@@ -17,6 +20,8 @@ function islandsAndForests(): ExamplePipeline {
           id: 'n1',
           type: 'noiseField',
           label: 'height noise',
+          comment:
+            'The single source of truth for this world: every other node reads it, so biomes and trees automatically agree with the terrain shape. Low scale + 5 octaves = continent-sized islands with rough coastlines.',
           enabled: true,
           params: { scale: 0.05, octaves: 5 },
           inputs: {},
@@ -26,6 +31,8 @@ function islandsAndForests(): ExamplePipeline {
           id: 'n2',
           type: 'thresholdTiles',
           label: 'ocean & sand',
+          comment:
+            'The base layer, so it paints every cell: water below 0.45, sand above. The two layers after this only override parts of it.',
           enabled: true,
           params: { threshold: 0.45, belowTile: 0, aboveTile: 1 },
           inputs: { source: 'n1' },
@@ -35,6 +42,8 @@ function islandsAndForests(): ExamplePipeline {
           id: 'n3',
           type: 'thresholdTiles',
           label: 'grassland',
+          comment:
+            'Below is "(empty)" so the sand layer shows through near the coast; only cells above 0.52 get grass. Stacking thresholds this way is cheaper to tune than one node with many bands.',
           enabled: true,
           params: { threshold: 0.52, belowTile: -1, aboveTile: 2 },
           inputs: { source: 'n1' },
@@ -44,6 +53,8 @@ function islandsAndForests(): ExamplePipeline {
           id: 'n4',
           type: 'thresholdTiles',
           label: 'peaks',
+          comment:
+            'Same trick one band higher: rock only above 0.68, everything else left empty so grass shows through.',
           enabled: true,
           params: { threshold: 0.68, belowTile: -1, aboveTile: 4 },
           inputs: { source: 'n1' },
@@ -53,6 +64,8 @@ function islandsAndForests(): ExamplePipeline {
           id: 'n5',
           type: 'scatterPoints',
           label: 'trees',
+          comment:
+            'Masked to the 0.54–0.66 height band so trees only grow on grassland — above the coast, below the peaks. Styled from the tree tile so tile edits restyle the forest.',
           enabled: true,
           params: { density: 0.08, maskAtLeast: 0.54, maskAtMost: 0.66, tag: 'tree' },
           inputs: { mask: 'n1' },
@@ -66,6 +79,8 @@ function islandsAndForests(): ExamplePipeline {
 function cavesAndMonsters(): ExamplePipeline {
   return {
     name: 'caves & monsters',
+    description:
+      'A cave crawl: noise thresholded into floor vs wall, monsters scattered only in the open low areas.',
     state: {
       seed: 99,
       nodes: [
@@ -73,6 +88,8 @@ function cavesAndMonsters(): ExamplePipeline {
           id: 'n1',
           type: 'noiseField',
           label: 'cave noise',
+          comment:
+            'Hidden because it is raw material, not terrain: higher scale than the islands example so caves read as winding tunnels rather than continents.',
           enabled: true,
           params: { scale: 0.09, octaves: 5 },
           inputs: {},
@@ -82,6 +99,8 @@ function cavesAndMonsters(): ExamplePipeline {
           id: 'n2',
           type: 'thresholdTiles',
           label: 'floor & walls',
+          comment:
+            'One threshold is the whole cave: sand floor below 0.52, rock walls above. No empty tiles — a cave should have no gaps.',
           enabled: true,
           params: { threshold: 0.52, belowTile: 1, aboveTile: 4 },
           inputs: { source: 'n1' },
@@ -91,6 +110,8 @@ function cavesAndMonsters(): ExamplePipeline {
           id: 'n3',
           type: 'scatterPoints',
           label: 'monsters',
+          comment:
+            'Mask ≤ 0.45 keeps monsters strictly inside open floor (walls start at 0.52), and the sparse density makes each encounter matter. Custom glyph instead of a tile because no tileset tile means "monster".',
           enabled: true,
           params: { density: 0.012, maskAtLeast: 0, maskAtMost: 0.45, tag: 'monster' },
           inputs: { mask: 'n1' },
@@ -104,6 +125,8 @@ function cavesAndMonsters(): ExamplePipeline {
 function customScriptDemo(): ExamplePipeline {
   return {
     name: 'custom script demo',
+    description:
+      'Shows the in-browser script node: a noise field turned into contour bands with a few lines of code.',
     state: {
       seed: 7,
       nodes: [
@@ -111,6 +134,8 @@ function customScriptDemo(): ExamplePipeline {
           id: 'n1',
           type: 'noiseField',
           label: 'base noise',
+          comment:
+            "Kept visible as elevation so you can see the script's bands follow the height contours exactly — both read the same field.",
           enabled: true,
           params: { scale: 0.04, octaves: 4 },
           inputs: {},
@@ -120,6 +145,8 @@ function customScriptDemo(): ExamplePipeline {
           id: 'n2',
           type: 'customScript',
           label: 'script: contour bands',
+          comment:
+            'Something no built-in node does: quantize a field into N tile bands. Edit the code, hit apply, and the world updates — the point of the script node.',
           enabled: true,
           params: { outputKind: 'tiles', code: CONTOUR_BANDS_SCRIPT },
           inputs: { a: 'n1' },

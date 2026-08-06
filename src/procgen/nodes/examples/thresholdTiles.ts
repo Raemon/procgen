@@ -7,13 +7,31 @@ registerNodeType({
   title: 'threshold → tiles',
   category: 'examples',
   description: 'Splits a field at a threshold and paints a tile on each side. Pick "empty" to leave cells for lower layers.',
+  whenToUse:
+    'The main way fields become visible terrain. Stack several of these on one noise field, each with a higher threshold and "(empty)" below, to get biome bands like ocean → sand → grass → peaks.',
   inputs: {
-    source: { kind: 'field', label: 'source' },
+    source: { kind: 'field', label: 'source', help: 'The field to split — usually a noise field, or a combine of several.' },
   },
   params: {
-    threshold: { kind: 'number', label: 'threshold', min: 0, max: 1, step: 0.01, default: 0.5 },
-    belowTile: { kind: 'tile', label: 'below' },
-    aboveTile: { kind: 'tile', label: 'above' },
+    threshold: {
+      kind: 'number',
+      label: 'threshold',
+      help: 'The cut point in 0..1. Cells at or above it get the "above" tile, the rest get "below".',
+      min: 0,
+      max: 1,
+      step: 0.01,
+      default: 0.5,
+    },
+    belowTile: {
+      kind: 'tile',
+      label: 'below',
+      help: 'Tile painted where the field is under the threshold.',
+    },
+    aboveTile: {
+      kind: 'tile',
+      label: 'above',
+      help: 'Tile painted where the field reaches the threshold.',
+    },
   },
   output: 'tiles',
   generateChunk: thresholdChunk,

@@ -2,12 +2,16 @@ import { examplePipelines } from '../../procgen/presets/examplePipelines';
 import { emptyPipeline } from '../../procgen/pipeline/pipelineState';
 import { sanitizePipeline } from '../../procgen/pipeline/sanitizePipeline';
 import type { PipelineStore } from '../../procgen/pipeline/pipelineStore';
+import { attachTooltip } from '../tooltips/floatingTooltip';
+import { examplesTooltip } from './help/examplesTooltip';
 import { labeledRow, selectInput } from './rowElements';
 
 const PLACEHOLDER = '';
 
 export function presetsRow(store: PipelineStore): HTMLElement {
-  return labeledRow('examples', presetSelect(store), clearButton(store));
+  const row = labeledRow('examples', presetSelect(store), clearButton(store));
+  attachTooltip(row, examplesTooltip(examplePipelines()));
+  return row;
 }
 
 function presetSelect(store: PipelineStore): HTMLSelectElement {

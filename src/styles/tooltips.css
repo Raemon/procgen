@@ -1,0 +1,51 @@
+.floating-tip {
+  position: fixed;
+  z-index: 1000;
+  max-width: 300px;
+  background: #141b28;
+  border: 1px solid #2a3a55;
+  border-radius: 6px;
+  padding: 9px 11px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--ink);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+.floating-tip.hidden {
+  display: none;
+}
+
+.tip-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 3px;
+}
+
+.tip-options {
+  margin-top: 6px;
+  border-top: 1px dashed var(--panel-edge);
+  padding-top: 5px;
+}
+
+.tip-option {
+  margin-top: 3px;
+  color: var(--ink-dim);
+}
+
+.tip-option-name {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.tip-when {
+  margin-top: 6px;
+  color: var(--ink-dim);
+}
+
+.tip-when-label {
+  color: var(--accent);
+  font-style: italic;
+}

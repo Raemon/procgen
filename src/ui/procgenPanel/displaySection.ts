@@ -8,15 +8,10 @@ import type { NodeInstance } from '../../procgen/pipeline/pipelineState';
 import type { PipelineStore } from '../../procgen/pipeline/pipelineStore';
 import type { ValueKind } from '../../procgen/values/chunkValues';
 import type { Tileset } from '../../world/tiles/tileset';
+import { attachTooltip } from '../tooltips/floatingTooltip';
+import { displayModeTooltip, markerTileTooltip, MODE_LABELS } from './help/displayModeHelp';
 import { formatNumber, labeledRow, rangeInput, selectInput, valueReadout } from './rowElements';
 import { tileSelectOptions } from './tileSelectOptions';
-
-const MODE_LABELS: Record<DisplayMode, string> = {
-  hidden: 'hidden',
-  tileLayer: 'tile layer',
-  elevation: 'elevation',
-  markers: 'markers',
-};
 
 export function displaySection(
   store: PipelineStore,
@@ -36,7 +31,9 @@ function modeRow(store: PipelineStore, node: NodeInstance, kind: ValueKind): HTM
     node.display.mode,
     (mode) => store.setDisplay(node.id, defaultBindingForMode(mode as DisplayMode)),
   );
-  return labeledRow('display', select);
+  const row = labeledRow('display', select);
+  attachTooltip(row, displayModeTooltip(kind));
+  return row;
 }
 
 function bindingControlRows(
@@ -80,7 +77,9 @@ function markerTileRow(
     String(binding.tileId),
     (value) => store.setDisplay(node.id, { ...binding, tileId: Number(value) }),
   );
-  return labeledRow('tile', select);
+  const row = labeledRow('tile', select);
+  attachTooltip(row, markerTileTooltip());
+  return row;
 }
 
 function glyphRow(store: PipelineStore, node: NodeInstance, glyph: string): HTMLElement {

@@ -1,5 +1,7 @@
 import { nodeTypesByCategory } from '../../procgen/nodeRegistry';
 import type { NodeTypeDef } from '../../procgen/nodeType';
+import { attachTooltip } from '../tooltips/floatingTooltip';
+import { nodeTypeTooltip } from './help/nodeTypeTooltip';
 
 export function addNodeMenu(onPick: (type: string) => void): HTMLElement {
   const wrap = document.createElement('div');
@@ -40,7 +42,7 @@ function menuItem(def: NodeTypeDef, onPick: (type: string) => void): HTMLElement
   item.type = 'button';
   item.className = 'add-node-item';
   item.textContent = def.title;
-  item.title = def.description;
+  attachTooltip(item, nodeTypeTooltip(def));
   item.addEventListener('click', () => onPick(def.type));
   return item;
 }

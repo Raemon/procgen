@@ -10,17 +10,25 @@ import type {
 export type ParamValue = number | string | boolean;
 
 export type ParamSpec =
-  | { kind: 'number'; label: string; min: number; max: number; step: number; default: number }
-  | { kind: 'int'; label: string; min: number; max: number; default: number }
-  | { kind: 'boolean'; label: string; default: boolean }
-  | { kind: 'select'; label: string; options: readonly string[]; default: string }
-  | { kind: 'tile'; label: string }
-  | { kind: 'text'; label: string; default: string }
-  | { kind: 'code'; label: string; default: string };
+  | { kind: 'number'; label: string; help: string; min: number; max: number; step: number; default: number }
+  | { kind: 'int'; label: string; help: string; min: number; max: number; default: number }
+  | { kind: 'boolean'; label: string; help: string; default: boolean }
+  | {
+      kind: 'select';
+      label: string;
+      help: string;
+      options: readonly string[];
+      optionHelp: Record<string, string>;
+      default: string;
+    }
+  | { kind: 'tile'; label: string; help: string }
+  | { kind: 'text'; label: string; help: string; default: string }
+  | { kind: 'code'; label: string; help: string; default: string };
 
 export interface InputSpec {
   kind: ValueKind | 'any';
   label: string;
+  help: string;
   optional?: boolean;
 }
 
@@ -48,6 +56,7 @@ export interface NodeTypeDef {
   title: string;
   category: string;
   description: string;
+  whenToUse: string;
   inputs: Record<string, InputSpec>;
   params: Record<string, ParamSpec>;
   output: ValueKind | ((params: Record<string, ParamValue>) => ValueKind);
