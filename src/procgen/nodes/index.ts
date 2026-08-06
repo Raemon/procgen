@@ -3,4 +3,5 @@ import './examples/noiseField';
 import './examples/combineFields';
 import './examples/thresholdTiles';
 import './examples/scatterPoints';
+import './maze/mazeChunkNode';
 import './customScript/customScriptNode';
