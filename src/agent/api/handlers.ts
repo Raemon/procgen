@@ -38,6 +38,28 @@ export function handleApiRequest(
   if (req.path === '/node-types' && req.method === 'GET') {
     return json(200, nodeTypesJson());
   }
+  if (req.path === '/prefabs' && req.method === 'GET') {
+    return json(200, {
+      prefabs: world.prefabs.all().map((prefab) => ({
+        id: prefab.id,
+        name: prefab.name,
+        width: prefab.width,
+        depth: prefab.depth,
+        layers: prefab.layers,
+      })),
+    });
+  }
+  if (req.path === '/creatures' && req.method === 'GET') {
+    return json(200, {
+      creatures: world.creatures.all().map((creature) => ({
+        id: creature.id,
+        name: creature.name,
+        symbol: creature.symbol,
+        speed: creature.speed,
+        size: creature.size,
+      })),
+    });
+  }
   if (req.path === '/agents') return agentCollection(sessions, world, req);
   const match = req.path.match(/^\/agents\/([^/]+)(\/[a-z]+)?$/);
   if (match) return agentResource(sessions, access, req, match[1]!, match[2] ?? '');

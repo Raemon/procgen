@@ -67,6 +67,13 @@ merge.
 
 ## Known asymmetry
 
+Prefab stamps are part of the generated terrain, so the server loads
+`data/prefabs.json` and agents see them like any tile. Creatures are not:
+their simulation (`CreatureClock`/`CreatureSim`) runs only in the browser, so
+neither the API nor the UI agent views show creature positions — the parity
+rule (UI agent text ≡ API payload) is kept by leaving them out of both. Giving
+agents creatures means simulating server-side, which is future work.
+
 The human player's pose lives in the browser; API agents live in the dev
 server. Both walk the same generated world (same data files, same sampler),
 but they do not see each other. Making agents visible in the human views (and

@@ -10,6 +10,7 @@ import './terrain/hypsometricCurveNode';
 import './terrain/blendFieldsNode';
 import './terrain/slopeFieldNode';
 import './coast/coastDistanceNode';
+import './biome/biomeBandsNode';
 import './hydrology/fillDepressionsNode';
 import './hydrology/flowAccumulationNode';
 import './hydrology/carveValleysNode';

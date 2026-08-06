@@ -39,7 +39,11 @@ function perform(
   params: Record<string, unknown>,
 ): VerbResult {
   if (group === 'movement') return moveVerb(session, world, action);
-  const edit = applyEditAction(world.store, world.tileset, action, params);
+  const edit = applyEditAction(
+    { store: world.store, tileset: world.tileset, prefabs: world.prefabs, creatures: world.creatures },
+    action,
+    params,
+  );
   if (edit.ok) return { outcome: 'edited', summary: edit.summary, failure: null, changedPipeline: true };
   return { outcome: 'failed', summary: null, failure: verbFailure(edit.code, edit.hint), changedPipeline: false };
 }

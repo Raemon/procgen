@@ -1,16 +1,18 @@
 import * as THREE from 'three';
 import { facingYawRadians } from '../../world/facing';
-import type { WorldSampler } from '../../procgen/worldSampler';
-import type { Tileset } from '../../world/tiles/tileset';
-import type { World } from '../../world/world';
+import { listenForCaptureDrag } from '../../world/capture/listenForCaptureDrag';
 import { listenForDragPan } from '../camera/dragPanListener';
 import { listenForWheelZoom } from '../camera/wheelZoomListener';
 import { containerSize, devicePixelRatioCapped, isCollapsed } from '../canvasSurface';
+import type { WorldViewDeps } from '../worldViewDeps';
 import { WORLD_CANVAS_CLASSES } from '../worldCanvasClasses';
 import { CharacterCamera } from './characterCamera';
 import { ChunkMeshStreamer } from './chunkMeshStreamer';
+import { CreatureMeshes } from './creatureMeshes';
 import { createDaylitScene, createPlayerMesh } from './daylitScene';
 import { FollowCamera } from './followCamera';
+import { worldCellUnderPointer } from './pointerToWorldCell';
+import { SelectionBox } from './selectionBox';
 import { streamingRadiusChunks } from './streamingRadius';
 
 const MAX_FRAME_MS = 100;
@@ -29,22 +31,25 @@ export class View3D {
   private readonly worldGroup = new THREE.Group();
   private readonly player = createPlayerMesh();
   private readonly streamer: ChunkMeshStreamer;
+  private readonly creatureMeshes: CreatureMeshes;
+  private readonly selectionBox: SelectionBox;
   private readonly resizeObserver = new ResizeObserver(() => this.resize());
   private animationFrame = 0;
   private lastFrameTime = 0;
 
   constructor(
     private readonly container: HTMLElement,
-    private readonly world: World,
-    private readonly sampler: WorldSampler,
-    tileset: Tileset,
+    private readonly deps: WorldViewDeps,
   ) {
     this.canvas = this.renderer.domElement;
     this.canvas.className = WORLD_CANVAS_CLASSES;
     container.appendChild(this.canvas);
     this.scene.add(this.worldGroup, this.player);
-    this.streamer = new ChunkMeshStreamer(this.worldGroup, this.sampler, tileset);
+    this.streamer = new ChunkMeshStreamer(this.worldGroup, deps.sampler, deps.tileset);
+    this.creatureMeshes = new CreatureMeshes(this.worldGroup, deps.creatures, deps.sampler);
+    this.selectionBox = new SelectionBox(this.worldGroup);
     this.listenForCameraGestures();
+    listenForCaptureDrag(this.canvas, deps.capture, (x, y) => this.cellAtPixel(x, y));
     this.resizeObserver.observe(container);
     this.resize();
     this.animationFrame = requestAnimationFrame(this.onFrame);
@@ -53,6 +58,8 @@ export class View3D {
   dispose(): void {
     cancelAnimationFrame(this.animationFrame);
     this.resizeObserver.disconnect();
+    this.creatureMeshes.dispose();
+    this.selectionBox.dispose();
     this.streamer.dispose();
     this.renderer.dispose();
     this.canvas.remove();
@@ -82,14 +89,43 @@ export class View3D {
     this.streamer.invalidateAll();
   }
 
+  private activeCamera(): THREE.PerspectiveCamera {
+    return this.cameraStyle === 'god' ? this.followCamera.camera : this.characterCamera.camera;
+  }
+
+  private cellAtPixel(offsetX: number, offsetY: number) {
+    return worldCellUnderPointer(
+      this.activeCamera(),
+      this.canvas,
+      offsetX,
+      offsetY,
+      this.focusGroundHeight(),
+    );
+  }
+
+  private focusPoint(): { x: number; y: number } {
+    return this.cameraStyle === 'god'
+      ? this.followCamera.focusPoint()
+      : this.characterCamera.focusPoint();
+  }
+
+  private focusGroundHeight(): number {
+    const focus = this.focusPoint();
+    return this.deps.sampler.elevationAt(Math.floor(focus.x), Math.floor(focus.y));
+  }
+
   private listenForCameraGestures(): void {
     listenForWheelZoom(this.canvas, (wheelPixelsY) => {
       if (this.cameraStyle === 'god') this.followCamera.zoomByWheelPixels(wheelPixelsY);
       else this.characterCamera.zoomByWheelPixels(wheelPixelsY);
     });
-    listenForDragPan(this.canvas, (dxPixels, dyPixels) => {
-      if (this.cameraStyle === 'god') this.followCamera.panByDragPixels(dxPixels, dyPixels);
-    });
+    listenForDragPan(
+      this.canvas,
+      (dxPixels, dyPixels) => {
+        if (this.cameraStyle === 'god') this.followCamera.panByDragPixels(dxPixels, dyPixels);
+      },
+      () => !this.deps.capture.isActive(),
+    );
     this.canvas.addEventListener('dblclick', () => this.recenterOnPlayer());
   }
 
@@ -111,41 +147,43 @@ export class View3D {
   private renderFrame(dtSeconds: number): void {
     if (isCollapsed(containerSize(this.container))) return;
     this.placePlayer();
-    this.renderer.render(this.scene, this.updateActiveCamera(dtSeconds));
+    this.creatureMeshes.syncTo(this.deps.sim);
+    this.selectionBox.showRegion(this.deps.capture.selectedRegion(), this.focusGroundHeight());
+    this.updateActiveCamera(dtSeconds);
+    this.streamAroundCameraFocus();
+    this.renderer.render(this.scene, this.activeCamera());
   }
 
-  private updateActiveCamera(dtSeconds: number): THREE.PerspectiveCamera {
+  private updateActiveCamera(dtSeconds: number): void {
+    const { world } = this.deps;
     if (this.cameraStyle === 'god') {
-      this.followCamera.update(dtSeconds, this.world.playerX, this.world.playerY);
-      const focus = this.followCamera.focusPoint();
-      this.streamAround(focus.x, focus.y, this.followCamera.visibleGroundRadiusTiles());
-      return this.followCamera.camera;
+      this.followCamera.update(dtSeconds, world.playerX, world.playerY);
+      return;
     }
     this.characterCamera.update(
       dtSeconds,
-      this.world.playerX,
-      this.world.playerY,
-      this.playerElevation(),
-      facingYawRadians(this.world.facing),
+      world.playerX,
+      world.playerY,
+      this.deps.sampler.elevationAt(world.playerX, world.playerY),
+      facingYawRadians(world.facing),
     );
-    const focus = this.characterCamera.focusPoint();
-    this.streamAround(focus.x, focus.y, this.characterCamera.visibleGroundRadiusTiles());
-    return this.characterCamera.camera;
   }
 
-  private streamAround(x: number, y: number, visibleRadiusTiles: number): void {
-    this.streamer.streamAround(x, y, streamingRadiusChunks(visibleRadiusTiles));
-  }
-
-  private playerElevation(): number {
-    return this.sampler.elevationAt(this.world.playerX, this.world.playerY);
+  private streamAroundCameraFocus(): void {
+    const focus = this.focusPoint();
+    const radiusTiles =
+      this.cameraStyle === 'god'
+        ? this.followCamera.visibleGroundRadiusTiles()
+        : this.characterCamera.visibleGroundRadiusTiles();
+    this.streamer.streamAround(focus.x, focus.y, streamingRadiusChunks(radiusTiles));
   }
 
   private placePlayer(): void {
+    const elevation = this.deps.sampler.elevationAt(this.deps.world.playerX, this.deps.world.playerY);
     this.player.position.set(
-      this.world.playerX + 0.5,
-      this.playerElevation() + PLAYER_HEIGHT,
-      this.world.playerY + 0.5,
+      this.deps.world.playerX + 0.5,
+      elevation + PLAYER_HEIGHT,
+      this.deps.world.playerY + 0.5,
     );
   }
 }

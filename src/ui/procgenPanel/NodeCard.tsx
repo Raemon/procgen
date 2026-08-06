@@ -7,6 +7,8 @@ import { classes } from '../controls/classes';
 import { DisplaySection } from './DisplaySection';
 import { NodeCardHeader } from './NodeCardHeader';
 import { NodeCommentRow } from './NodeCommentRow';
+import { NodeFolderRow } from './NodeFolderRow';
+import { DROP_INDEX_ATTRIBUTE } from './nodeInsertionIndex';
 import { ErrorNote, NodeError } from './NodeError';
 import { ParamRow } from './ParamRow';
 import { highlightedWireSource, subscribeToWireHighlight } from './wireHighlight';
@@ -14,7 +16,15 @@ import { WiringRow } from './WiringRow';
 
 export type DropMarker = 'before' | 'after' | null;
 
-export function NodeCard({ node, dropMarker }: { node: NodeInstance; dropMarker: DropMarker }) {
+export function NodeCard({
+  node,
+  index,
+  dropMarker,
+}: {
+  node: NodeInstance;
+  index: number;
+  dropMarker: DropMarker;
+}) {
   const { store, tileset } = useAppRuntime();
   const [collapsed, setCollapsed] = useState(false);
   const def = nodeTypeOf(node.type);
@@ -23,6 +33,7 @@ export function NodeCard({ node, dropMarker }: { node: NodeInstance; dropMarker:
   return (
     <section
       data-node-id={node.id}
+      {...{ [DROP_INDEX_ATTRIBUTE]: index }}
       className={classes(
         'rounded-md border bg-field p-2',
         highlighted === node.id ? 'border-accent' : 'border-panel-edge',
@@ -44,6 +55,7 @@ export function NodeCard({ node, dropMarker }: { node: NodeInstance; dropMarker:
           {!collapsed && (
             <>
               <NodeCommentRow node={node} />
+              <NodeFolderRow node={node} />
               {Object.entries(def.inputs).map(([name, spec]) => (
                 <WiringRow key={name} node={node} inputName={name} spec={spec} />
               ))}

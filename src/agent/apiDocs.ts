@@ -47,6 +47,8 @@ An agent is created in one of two modes and stays in it for life.
 | POST /api/v1/agents/{id}/act | {"action": "...", ...params} | perform one action; responds with the outcome and a fresh observation |
 | GET /api/v1/pipeline | — | the current node pipeline: every node with id, type, params, wiring, display |
 | GET /api/v1/node-types | — | the catalog of node types god agents can add, every param and input explained |
+| GET /api/v1/prefabs | — | the prefab library: structures a points node can stamp into the world via set_display |
+| GET /api/v1/creatures | — | the creature library: creatures a points node can spawn via set_display |
 | POST /api/v1/agents/{id}/run | {"goal": "...", "model": optional, "max_steps": optional, "anthropic_api_key": optional} | start an autopilot run that drives this agent with an LLM |
 | POST /api/v1/agents/{id}/stop | — | stop the autopilot run |
 | GET /api/v1/agents/{id}/transcript?after=seq | — | the autopilot transcript |

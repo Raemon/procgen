@@ -1,6 +1,10 @@
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import '../../procgen/nodes';
+import { CreatureLibrary } from '../../creatures/creatureLibrary';
+import { creaturesFromStoredJson } from '../../creatures/creatureStorage';
+import { PrefabLibrary } from '../../prefabs/prefabLibrary';
+import { prefabsFromStoredJson } from '../../prefabs/prefabStorage';
 import { PipelineEvaluator } from '../../procgen/eval/evaluator';
 import { PipelineStore } from '../../procgen/pipeline/pipelineStore';
 import { sanitizePipeline } from '../../procgen/pipeline/sanitizePipeline';
@@ -17,6 +21,8 @@ export interface ServerWorld {
   sampler: WorldSampler;
   tileset: Tileset;
   store: PipelineStore;
+  prefabs: PrefabLibrary;
+  creatures: CreatureLibrary;
   isWalkable(x: number, y: number): boolean;
   spawn(): { x: number; y: number };
 }
@@ -42,22 +48,32 @@ export function currentServerWorld(root: string, previous: ServerWorld | null): 
 
 function buildServerWorld(root: string, stamp: string): ServerWorld {
   const tileset = new Tileset(tilesFromStoredJson(dataFileJson(root, 'tileset')) ?? undefined);
+  const tileIdByName = (name: string) => tileset.all().find((tile) => tile.name === name)?.id ?? -1;
+  const prefabs = new PrefabLibrary(
+    tileIdByName,
+    prefabsFromStoredJson(dataFileJson(root, 'prefabs')) ?? undefined,
+  );
+  const creatures = new CreatureLibrary(
+    creaturesFromStoredJson(dataFileJson(root, 'creatures')) ?? undefined,
+  );
   const store = new PipelineStore(sanitizePipeline(dataFileJson(root, 'pipeline')));
   const evaluator = new PipelineEvaluator(store);
-  const sampler = new WorldSampler(store, evaluator, tileset);
+  const sampler = new WorldSampler(store, evaluator, tileset, prefabs);
   const isWalkable = (x: number, y: number) => isWalkableTile(tileset, sampler.tileAt(x, y));
   return {
     stamp,
     sampler,
     tileset,
     store,
+    prefabs,
+    creatures,
     isWalkable,
     spawn: () => nearestWalkable(0, 0, SPAWN_SEARCH_RADIUS, isWalkable) ?? { x: 0, y: 0 },
   };
 }
 
 function dataFileStamp(root: string): string {
-  return ['pipeline', 'tileset'].map((name) => String(dataFileMtime(root, name))).join('|');
+  return ['pipeline', 'tileset', 'prefabs', 'creatures'].map((name) => String(dataFileMtime(root, name))).join('|');
 }
 
 function dataFileMtime(root: string, name: string): number {

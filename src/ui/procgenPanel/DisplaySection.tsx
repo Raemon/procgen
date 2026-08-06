@@ -1,7 +1,13 @@
 import { useAppRuntime } from '../../app/appRuntimeContext';
 import {
+  useRerenderOnCreatureChange,
+  useRerenderOnPrefabChange,
+} from '../../app/rerenderHooks';
+import {
   defaultBindingForMode,
   displayModesForKind,
+  RANDOM_ROTATION,
+  type DisplayBinding,
   type DisplayMode,
 } from '../../procgen/display/displayBinding';
 import type { MarkerBinding } from '../../procgen/display/markerAppearance';
@@ -13,8 +19,21 @@ import { KnobRow } from '../controls/KnobRow';
 import { Select } from '../controls/Select';
 import { Slider } from '../controls/Slider';
 import { ValueReadout } from '../controls/ValueReadout';
-import { displayModeTooltip, markerTileTooltip, MODE_LABELS } from './help/displayModeHelp';
+import {
+  displayModeTooltip,
+  markerTileTooltip,
+  prefabRotationTooltip,
+  MODE_LABELS,
+} from './help/displayModeHelp';
 import { tileSelectOptions } from './tileSelectOptions';
+
+const ROTATION_OPTIONS = [
+  { value: String(RANDOM_ROTATION), text: 'random' },
+  { value: '0', text: '0°' },
+  { value: '1', text: '90°' },
+  { value: '2', text: '180°' },
+  { value: '3', text: '270°' },
+];
 
 export function DisplaySection({ node, kind }: { node: NodeInstance; kind: ValueKind }) {
   const { store } = useAppRuntime();
@@ -34,8 +53,69 @@ export function DisplaySection({ node, kind }: { node: NodeInstance; kind: Value
         <HeightScaleRow node={node} heightScale={node.display.heightScale} />
       )}
       {node.display.mode === 'markers' && <MarkerRows node={node} binding={node.display} />}
+      {node.display.mode === 'prefabs' && <PrefabRows node={node} binding={node.display} />}
+      {node.display.mode === 'creatures' && <CreatureRows node={node} binding={node.display} />}
     </div>
   );
+}
+
+function PrefabRows({
+  node,
+  binding,
+}: {
+  node: NodeInstance;
+  binding: Extract<DisplayBinding, { mode: 'prefabs' }>;
+}) {
+  const { store, prefabs } = useAppRuntime();
+  useRerenderOnPrefabChange();
+  return (
+    <>
+      <KnobRow label="prefab">
+        <Select
+          value={String(binding.prefabId)}
+          options={libraryOptions('(none)', prefabs.all())}
+          onChange={(value) => store.setDisplay(node.id, { ...binding, prefabId: Number(value) })}
+        />
+      </KnobRow>
+      <KnobRow label="rotation" tooltip={prefabRotationTooltip()}>
+        <Select
+          value={String(binding.rotation)}
+          options={ROTATION_OPTIONS}
+          onChange={(value) => store.setDisplay(node.id, { ...binding, rotation: Number(value) })}
+        />
+      </KnobRow>
+    </>
+  );
+}
+
+function CreatureRows({
+  node,
+  binding,
+}: {
+  node: NodeInstance;
+  binding: Extract<DisplayBinding, { mode: 'creatures' }>;
+}) {
+  const { store, creatures } = useAppRuntime();
+  useRerenderOnCreatureChange();
+  return (
+    <KnobRow label="creature">
+      <Select
+        value={String(binding.creatureId)}
+        options={libraryOptions('(none)', creatures.all())}
+        onChange={(value) => store.setDisplay(node.id, { ...binding, creatureId: Number(value) })}
+      />
+    </KnobRow>
+  );
+}
+
+function libraryOptions(
+  noneText: string,
+  entries: readonly { id: number; name: string }[],
+): { value: string; text: string }[] {
+  return [
+    { value: '-1', text: noneText },
+    ...entries.map((entry) => ({ value: String(entry.id), text: entry.name })),
+  ];
 }
 
 function HeightScaleRow({ node, heightScale }: { node: NodeInstance; heightScale: number }) {

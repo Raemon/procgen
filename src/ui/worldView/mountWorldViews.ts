@@ -4,6 +4,7 @@ import { facingRelativeStep } from '../../input/facingRelativeStep';
 import { MovementInput } from '../../input/movementInput';
 import { AgentTextView } from '../../views/agentText/agentTextView';
 import { View3D } from '../../views/view3d/view3d';
+import type { WorldViewDeps } from '../../views/worldViewDeps';
 import { isCharacterControlled, type ViewMode } from './viewMode';
 
 export interface ViewSlots {
@@ -23,7 +24,7 @@ export function mountWorldViews(
   currentMode: () => ViewMode,
 ): MountedWorldViews {
   const { world, sampler, tileset } = runtime;
-  const view3d = new View3D(slots.view3d, world, sampler, tileset);
+  const view3d = new View3D(slots.view3d, worldViewDepsOf(runtime));
   const agentGodView = new AgentTextView(slots.agentGod, world, sampler, tileset, 'god');
   const agentCharacterView = new AgentTextView(
     slots.agentCharacter,
@@ -79,4 +80,15 @@ export function mountWorldViews(
 
 function godYawQuadrant(mode: ViewMode, view3d: View3D): number {
   return mode === '3d-god' ? view3d.yawQuadrant() : 0;
+}
+
+function worldViewDepsOf(runtime: AppRuntime): WorldViewDeps {
+  return {
+    world: runtime.world,
+    sampler: runtime.sampler,
+    tileset: runtime.tileset,
+    creatures: runtime.creatures,
+    sim: runtime.sim,
+    capture: runtime.capture,
+  };
 }

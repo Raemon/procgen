@@ -1,21 +1,25 @@
 import { useRef, useState, type DragEvent } from 'react';
 import { useAppRuntime } from '../../app/appRuntimeContext';
 import { HINT_CLASSES } from '../controls/fieldClasses';
-import { insertionIndexAt } from './nodeInsertionIndex';
+import { DROP_INDEX_ATTRIBUTE, insertionIndexAt } from './nodeInsertionIndex';
 import { carriesNodeId, draggedNodeId } from './nodeDragTransfer';
 import { NodeCard, type DropMarker } from './NodeCard';
+import { NodeFolderBand } from './NodeFolderBand';
+import { nodeFolderRuns, type NodeRun } from './nodeFolderRuns';
 
 export function NodeList() {
   const { store } = useAppRuntime();
   const list = useRef<HTMLDivElement>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
+  const [collapsedFolders, setCollapsedFolders] = useState<ReadonlySet<string>>(new Set());
   const nodes = store.nodes();
+  const runs = nodeFolderRuns(nodes);
 
   function showDropTarget(event: DragEvent<HTMLDivElement>): void {
     if (!carriesNodeId(event.dataTransfer)) return;
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
-    setDropIndex(insertionIndexAt(list.current, event.clientY));
+    setDropIndex(insertionIndexAt(list.current, event.clientY, nodes.length));
   }
 
   function dropCard(event: DragEvent<HTMLDivElement>): void {
@@ -23,7 +27,7 @@ export function NodeList() {
     if (!nodeId) return;
     event.preventDefault();
     setDropIndex(null);
-    store.moveNodeToIndex(nodeId, insertionIndexAt(list.current, event.clientY));
+    store.moveNodeToIndex(nodeId, insertionIndexAt(list.current, event.clientY, nodes.length));
   }
 
   return (
@@ -34,11 +38,14 @@ export function NodeList() {
       onDragLeave={(event) => clearMarkerWhenLeavingList(event, list.current, setDropIndex)}
       onDrop={dropCard}
     >
-      {nodes.map((node, index) => (
-        <NodeCard
-          key={node.id}
-          node={node}
-          dropMarker={dropMarkerFor(index, nodes.length, dropIndex)}
+      {runs.map((run) => (
+        <RunView
+          key={`${run.folder}@${run.startIndex}`}
+          run={run}
+          nodeCount={nodes.length}
+          dropIndex={dropIndex}
+          collapsed={collapsedFolders.has(run.folder)}
+          onToggleCollapsed={() => setCollapsedFolders(toggled(collapsedFolders, run.folder))}
         />
       ))}
       {nodes.length === 0 && (
@@ -48,6 +55,66 @@ export function NodeList() {
       )}
     </div>
   );
+}
+
+function RunView({
+  run,
+  nodeCount,
+  dropIndex,
+  collapsed,
+  onToggleCollapsed,
+}: {
+  run: NodeRun;
+  nodeCount: number;
+  dropIndex: number | null;
+  collapsed: boolean;
+  onToggleCollapsed(): void;
+}) {
+  if (run.folder === '') {
+    return <CardInRun run={run} offset={0} nodeCount={nodeCount} dropIndex={dropIndex} />;
+  }
+  return (
+    <div {...(collapsed ? { [DROP_INDEX_ATTRIBUTE]: run.startIndex } : {})}>
+      <NodeFolderBand run={run} collapsed={collapsed} onToggleCollapsed={onToggleCollapsed}>
+        {run.nodes.map((_, offset) => (
+          <CardInRun
+            key={run.nodes[offset]!.id}
+            run={run}
+            offset={offset}
+            nodeCount={nodeCount}
+            dropIndex={dropIndex}
+          />
+        ))}
+      </NodeFolderBand>
+    </div>
+  );
+}
+
+function CardInRun({
+  run,
+  offset,
+  nodeCount,
+  dropIndex,
+}: {
+  run: NodeRun;
+  offset: number;
+  nodeCount: number;
+  dropIndex: number | null;
+}) {
+  const index = run.startIndex + offset;
+  return (
+    <NodeCard
+      node={run.nodes[offset]!}
+      index={index}
+      dropMarker={dropMarkerFor(index, nodeCount, dropIndex)}
+    />
+  );
+}
+
+function toggled(collapsed: ReadonlySet<string>, folder: string): ReadonlySet<string> {
+  const next = new Set(collapsed);
+  if (!next.delete(folder)) next.add(folder);
+  return next;
 }
 
 function clearMarkerWhenLeavingList(

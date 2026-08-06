@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { AgentLogPanel } from '../agent/ui/AgentLogPanel';
 import { AgentsPanel } from '../agent/ui/AgentsPanel';
 import { ProcgenPanel } from '../ui/procgenPanel/ProcgenPanel';
-import { TileEditorPanel } from '../ui/tileEditor/TileEditorPanel';
+import { LibraryPanel } from '../ui/libraryPanel/LibraryPanel';
 import { FloatingTooltip } from '../ui/tooltips/FloatingTooltip';
 import { WorldPanel } from '../ui/worldView/WorldPanel';
 import { Panel } from './Panel';
@@ -16,7 +16,7 @@ export function App() {
     <>
       <div className="grid h-full" style={{ gridTemplateColumns }}>
         <Panel className="bg-panel">
-          <TileEditorPanel />
+          <LibraryPanel />
         </Panel>
         <PanelResizer width={widths[0]!} onResize={(width) => resizePanel(0, width)} />
         <Panel className="bg-procgen">

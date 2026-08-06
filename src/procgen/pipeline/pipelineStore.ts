@@ -4,6 +4,8 @@ import { outputKindOf, type ParamValue } from '../nodeType';
 import { autoWireInputsToNearestSources } from './autoWireNewNode';
 import { createNodeInstance, nextNodeId } from './createNodeInstance';
 import { nodeIndexById, type NodeInstance, type PipelineState } from './pipelineState';
+import type { NodeTemplate } from '../templates/nodeTemplate';
+import { stampTemplateInto } from '../templates/stampTemplate';
 import { dropInvalidWires, isWireValid } from './wiringRules';
 
 export type PipelineChange = 'structure' | 'values';
@@ -55,6 +57,12 @@ export class PipelineStore {
     return node;
   }
 
+  addTemplate(template: NodeTemplate): NodeInstance[] {
+    const stamped = stampTemplateInto(this.state, template, this.state.nodes.length);
+    this.emit('structure');
+    return stamped;
+  }
+
   duplicateNode(nodeId: string): NodeInstance | null {
     const index = nodeIndexById(this.state, nodeId);
     const original = this.state.nodes[index];
@@ -104,6 +112,20 @@ export class PipelineStore {
     this.updateNode(nodeId, 'values', (node) => {
       node.comment = comment;
     });
+  }
+
+  setFolder(nodeId: string, folder: string): void {
+    this.updateNode(nodeId, 'values', (node) => {
+      node.folder = folder;
+    });
+  }
+
+  setFolderOfNodes(nodeIds: readonly string[], folder: string): void {
+    for (const nodeId of nodeIds) {
+      const node = this.nodeById(nodeId);
+      if (node) node.folder = folder;
+    }
+    this.emit('values');
   }
 
   setParam(nodeId: string, name: string, value: ParamValue): void {

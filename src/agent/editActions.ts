@@ -1,7 +1,10 @@
+import type { CreatureLibrary } from '../creatures/creatureLibrary';
+import type { PrefabLibrary } from '../prefabs/prefabLibrary';
 import {
   defaultBindingForMode,
   displayModesForKind,
   isBindingValidForKind,
+  RANDOM_ROTATION,
   type DisplayBinding,
   type DisplayMode,
 } from '../procgen/display/displayBinding';
@@ -14,12 +17,19 @@ import type { Tileset } from '../world/tiles/tileset';
 
 export type EditResult = { ok: true; summary: string } | { ok: false; code: string; hint: string };
 
+export interface EditContext {
+  store: PipelineStore;
+  tileset: Tileset;
+  prefabs: PrefabLibrary;
+  creatures: CreatureLibrary;
+}
+
 export function applyEditAction(
-  store: PipelineStore,
-  tileset: Tileset,
+  ctx: EditContext,
   action: string,
   params: Record<string, unknown>,
 ): EditResult {
+  const { store, tileset } = ctx;
   if (action === 'add_node') return addNode(store, params);
   if (action === 'set_seed') return setSeed(store, params);
   const target = requireNode(store, params.node_id);
@@ -36,7 +46,7 @@ export function applyEditAction(
   if (action === 'comment_node') return commentNode(store, node, params);
   if (action === 'set_param') return setParam(store, tileset, node, def, params);
   if (action === 'wire_input') return wireInput(store, node, def, params);
-  if (action === 'set_display') return setDisplay(store, node, def, params);
+  if (action === 'set_display') return setDisplay(ctx, node, def, params);
   return fail('unknown_action', `no editing verb named ${action}`);
 }
 
@@ -203,14 +213,17 @@ function wireInput(
 }
 
 function setDisplay(
-  store: PipelineStore,
+  ctx: EditContext,
   node: NodeInstance,
   def: NodeTypeDef,
   params: Record<string, unknown>,
 ): EditResult {
   const mode = params.display;
   if (!isDisplayMode(mode)) {
-    return fail('invalid_value', "display must be 'hidden', 'tileLayer', 'elevation' or 'markers'");
+    return fail(
+      'invalid_value',
+      "display must be 'hidden', 'tileLayer', 'elevation', 'markers', 'prefabs' or 'creatures'",
+    );
   }
   const kind = outputKindOf(def, node.params);
   const binding = bindingFrom(mode, params);
@@ -220,12 +233,21 @@ function setDisplay(
       `${node.id} outputs '${kind}' — its display modes: ${displayModesForKind(kind).join(', ')}`,
     );
   }
-  store.setDisplay(node.id, binding);
+  const reference = checkBindingReferences(ctx, binding);
+  if (reference) return reference;
+  ctx.store.setDisplay(node.id, binding);
   return { ok: true, summary: `${node.id} display = ${mode}` };
 }
 
 function isDisplayMode(value: unknown): value is DisplayMode {
-  return value === 'hidden' || value === 'tileLayer' || value === 'elevation' || value === 'markers';
+  return (
+    value === 'hidden' ||
+    value === 'tileLayer' ||
+    value === 'elevation' ||
+    value === 'markers' ||
+    value === 'prefabs' ||
+    value === 'creatures'
+  );
 }
 
 function bindingFrom(mode: DisplayMode, params: Record<string, unknown>): DisplayBinding {
@@ -241,7 +263,33 @@ function bindingFrom(mode: DisplayMode, params: Record<string, unknown>): Displa
       color: typeof params.color === 'string' ? params.color : base.color,
     };
   }
+  if (base.mode === 'prefabs') {
+    return {
+      ...base,
+      prefabId: typeof params.prefab_id === 'number' ? params.prefab_id : base.prefabId,
+      rotation: typeof params.rotation === 'number' ? params.rotation : RANDOM_ROTATION,
+    };
+  }
+  if (base.mode === 'creatures') {
+    return { ...base, creatureId: typeof params.creature_id === 'number' ? params.creature_id : base.creatureId };
+  }
   return base;
+}
+
+function checkBindingReferences(ctx: EditContext, binding: DisplayBinding): EditResult | null {
+  if (binding.mode === 'prefabs' && binding.prefabId !== -1 && !ctx.prefabs.byId(binding.prefabId)) {
+    return fail(
+      'invalid_value',
+      `prefab_id must be -1 or one of: ${ctx.prefabs.all().map((prefab) => prefab.id).join(', ')} — see GET /api/v1/prefabs`,
+    );
+  }
+  if (binding.mode === 'creatures' && binding.creatureId !== -1 && !ctx.creatures.byId(binding.creatureId)) {
+    return fail(
+      'invalid_value',
+      `creature_id must be -1 or one of: ${ctx.creatures.all().map((creature) => creature.id).join(', ')} — see GET /api/v1/creatures`,
+    );
+  }
+  return null;
 }
 
 function setSeed(store: PipelineStore, params: Record<string, unknown>): EditResult {
