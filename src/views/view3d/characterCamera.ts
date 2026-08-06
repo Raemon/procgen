@@ -1,12 +1,16 @@
 import * as THREE from 'three';
 import { ZoomScale } from '../camera/zoomScale';
+import {
+  CHARACTER_SIGHT_RADIUS_TILES,
+  groundRadiusToStreamTiles,
+} from '../../world/vision/characterSight';
 import { easeFraction, shortestArc } from './cameraEase';
 
 const FIELD_OF_VIEW_DEG = 60;
 const PITCH_DEG = 28;
 const DISTANCE_AT_UNIT_ZOOM = 9;
 const CLOSEST_DISTANCE = 2.5;
-const FARTHEST_DISTANCE = 40;
+const FARTHEST_DISTANCE = CHARACTER_SIGHT_RADIUS_TILES;
 const MIN_MAGNIFICATION = DISTANCE_AT_UNIT_ZOOM / FARTHEST_DISTANCE;
 const MAX_MAGNIFICATION = DISTANCE_AT_UNIT_ZOOM / CLOSEST_DISTANCE;
 const TURN_SMOOTHING_RATE = 12;
@@ -14,7 +18,7 @@ const FOLLOW_SMOOTHING_RATE = 10;
 const EYE_HEIGHT = 1.1;
 
 export class CharacterCamera {
-  readonly camera = new THREE.PerspectiveCamera(FIELD_OF_VIEW_DEG, 1, 0.1, 600);
+  readonly camera = new THREE.PerspectiveCamera(FIELD_OF_VIEW_DEG, 1, 0.1, 1);
 
   private readonly zoom = new ZoomScale(1, MIN_MAGNIFICATION, MAX_MAGNIFICATION);
   private yaw = 0;
@@ -39,8 +43,18 @@ export class CharacterCamera {
     return { x: this.followX, y: this.followY };
   }
 
-  visibleGroundRadiusTiles(): number {
-    return this.distance() * 2;
+  distanceToPlayer(): number {
+    return DISTANCE_AT_UNIT_ZOOM / this.zoom.current();
+  }
+
+  groundRadiusToStreamTiles(): number {
+    return groundRadiusToStreamTiles(this.distanceToPlayer());
+  }
+
+  seeNoFurtherThan(opaqueDistance: number): void {
+    if (this.camera.far === opaqueDistance) return;
+    this.camera.far = opaqueDistance;
+    this.camera.updateProjectionMatrix();
   }
 
   update(
@@ -70,7 +84,7 @@ export class CharacterCamera {
   }
 
   private placeBehindPlayer(targetElevation: number): void {
-    const distance = this.distance();
+    const distance = this.distanceToPlayer();
     const pitch = (PITCH_DEG * Math.PI) / 180;
     const back = distance * Math.cos(pitch);
     const up = distance * Math.sin(pitch);
@@ -83,9 +97,5 @@ export class CharacterCamera {
       centerZ + Math.cos(this.yaw) * back,
     );
     this.camera.lookAt(centerX, eyeY, centerZ);
-  }
-
-  private distance(): number {
-    return DISTANCE_AT_UNIT_ZOOM / this.zoom.current();
   }
 }

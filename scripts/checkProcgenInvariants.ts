@@ -69,15 +69,18 @@ import { CreatureLibrary } from '../src/creatures/creatureLibrary';
 import { PrefabLibrary } from '../src/prefabs/prefabLibrary';
 import { FAILURES } from '../src/agent/failures';
 import { nodeTypesJson } from '../src/agent/nodeCatalog';
-import {
-  buildObservation,
-  CHARACTER_VIEW_SIZE,
-  GOD_VIEW_SIZE,
-  SELF_GLYPH,
-} from '../src/agent/observation';
+import { buildObservation, GOD_VIEW_SIZE, SELF_GLYPH } from '../src/agent/observation';
 import { observationText } from '../src/agent/observationText';
 import { facingRelativeStep } from '../src/input/facingRelativeStep';
 import { isInFrontHalfPlane, turnedFacing, type FacingIndex } from '../src/world/facing';
+import {
+  CHARACTER_SIGHT_RADIUS_TILES,
+  CHARACTER_HAZE_START_TILES,
+  CHARACTER_VIEW_SIZE,
+  fogDistancesFromCamera,
+  groundRadiusToStreamTiles,
+  isWithinCharacterSight,
+} from '../src/world/vision/characterSight';
 
 const failures: string[] = [];
 const tileset = new Tileset();
@@ -1138,6 +1141,46 @@ check('character observation blanks everything behind the agent', (() => {
   }
   return true;
 })());
+check('the character view grid is exactly wide enough to hold the sight radius', CHARACTER_VIEW_SIZE === CHARACTER_SIGHT_RADIUS_TILES * 2 + 1);
+check('the character view spans the same tiles the 2.5D fog leaves visible', (() => {
+  for (const cameraDistance of [2.5, 6, 9, CHARACTER_SIGHT_RADIUS_TILES]) {
+    const fog = fogDistancesFromCamera(cameraDistance);
+    if (fog.opaque - cameraDistance !== CHARACTER_SIGHT_RADIUS_TILES) return false;
+    if (fog.haze - cameraDistance !== CHARACTER_HAZE_START_TILES) return false;
+    if (!(fog.haze < fog.opaque)) return false;
+    if (groundRadiusToStreamTiles(cameraDistance) < fog.opaque - cameraDistance) return false;
+  }
+  return true;
+})());
+check('character observation blanks every tile the fog would swallow', (() => {
+  const center = Math.floor(CHARACTER_VIEW_SIZE / 2);
+  for (let row = 0; row < CHARACTER_VIEW_SIZE; row++) {
+    for (let column = 0; column < CHARACTER_VIEW_SIZE; column++) {
+      const dx = column - center;
+      const dy = row - center;
+      const isSelf = dx === 0 && dy === 0;
+      const fogged = dx * dx + dy * dy > CHARACTER_SIGHT_RADIUS_TILES * CHARACTER_SIGHT_RADIUS_TILES;
+      if (fogged && !isSelf && charObs.view[row]![column] !== ' ') return false;
+    }
+  }
+  return true;
+})());
+check('the character sight test is the half-plane test bounded by the sight radius', (() => {
+  for (let facing = 0; facing < 8; facing++) {
+    for (let dy = -CHARACTER_VIEW_SIZE; dy <= CHARACTER_VIEW_SIZE; dy++) {
+      for (let dx = -CHARACTER_VIEW_SIZE; dx <= CHARACTER_VIEW_SIZE; dx++) {
+        const expected =
+          isInFrontHalfPlane(facing as FacingIndex, dx, dy) &&
+          dx * dx + dy * dy <= CHARACTER_SIGHT_RADIUS_TILES * CHARACTER_SIGHT_RADIUS_TILES;
+        if (isWithinCharacterSight(facing as FacingIndex, dx, dy) !== expected) return false;
+      }
+    }
+  }
+  return true;
+})());
+check('a character observation stays smaller to read than a god observation', CHARACTER_VIEW_SIZE < GOD_VIEW_SIZE);
+check('the character observation states its sight radius, the god one has none', charObs.sightRadiusTiles === CHARACTER_SIGHT_RADIUS_TILES && godObs.sightRadiusTiles === null);
+check('the character observation text names the sight radius', observationText(charObs).includes(`${CHARACTER_SIGHT_RADIUS_TILES} tiles`));
 check('every facing rotates the blank half of the character view', (() => {
   const center = Math.floor(CHARACTER_VIEW_SIZE / 2);
   const views = new Set<string>();
@@ -1151,8 +1194,8 @@ check('every facing rotates the blank half of the character view', (() => {
     views.add(obs.view.join('\n'));
     for (let row = 0; row < CHARACTER_VIEW_SIZE; row++) {
       for (let column = 0; column < CHARACTER_VIEW_SIZE; column++) {
-        const inFront = isInFrontHalfPlane(facing as FacingIndex, column - center, row - center);
-        if (!inFront && !(row === center && column === center) && obs.view[row]![column] !== ' ') {
+        const visible = isWithinCharacterSight(facing as FacingIndex, column - center, row - center);
+        if (!visible && !(row === center && column === center) && obs.view[row]![column] !== ' ') {
           return false;
         }
       }
@@ -1163,6 +1206,7 @@ check('every facing rotates the blank half of the character view', (() => {
 check('character legend appears only for visible glyphs plus the fixed entries', charObs.legend.every((entry) => entry.glyph === '@' || entry.glyph === ' ' || charObs.view.some((row) => row.includes(entry.glyph))));
 
 const agentDocs = buildApiDocs(tileset);
+check('api docs state the character sight radius and grid size', agentDocs.includes(`${CHARACTER_SIGHT_RADIUS_TILES}-tile sight radius`) && agentDocs.includes(`${CHARACTER_VIEW_SIZE}x${CHARACTER_VIEW_SIZE}`));
 check('api docs render with no unfilled placeholder', !/\{\{\w+\}\}/.test(agentDocs));
 check('api docs list every ability of both modes', everyAbility().every((spec) => agentDocs.includes(`\`${spec.action}\``)));
 check('api docs list every failure code', FAILURES.every((failure) => agentDocs.includes(`\`${failure.code}\``)));

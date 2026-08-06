@@ -3,7 +3,11 @@ import { abilitiesForMode } from '../abilities/abilityRegistry';
 import type { AbilityGroup, AbilityMode, AbilitySpec } from '../abilities/ability';
 import { allNodeTypes } from '../procgen/nodeRegistry';
 import type { ReadOnlyTileset } from '../app/readOnlyLibraries';
-import { CHARACTER_VIEW_SIZE, GOD_VIEW_SIZE } from './observation';
+import {
+  CHARACTER_SIGHT_RADIUS_TILES,
+  CHARACTER_VIEW_SIZE,
+} from '../world/vision/characterSight';
+import { GOD_VIEW_SIZE } from './observation';
 import { FAILURES } from './failures';
 
 const TEMPLATE = `# Procgen world — agent API
@@ -35,10 +39,14 @@ An agent is created in one of two modes and stays in it for life.
   You move by absolute compass steps, and you can REBUILD THE WORLD: the
   pipeline, library and world actions below are the whole world editor.
 - **character** — a {{CHARACTER_SIZE}}x{{CHARACTER_SIZE}} window centered on
-  you, but only the tiles IN FRONT of you are drawn; the half of the grid
-  behind you is blank. The blank side is how you know which way you face — the
-  observation never states it. You move relative to your facing and turn in
-  45-degree steps. Characters can only move.
+  you, but you only see the half-disc in front of you: tiles behind you are
+  blank, and so is everything past your {{SIGHT_RADIUS}}-tile sight radius,
+  which is why the corners of the grid are blank too. The blank half is how you
+  know which way you face — the observation never states it. That half-disc is
+  exactly the ground the 2.5D character view renders before its fog closes in,
+  so a human playing that view knows no more of the world than you do. You move
+  relative to your facing and turn in 45-degree steps. Characters can only
+  move.
 
 ## Endpoints
 
@@ -152,6 +160,7 @@ export function everyAbility(): AbilitySpec[] {
 function placeholderValue(tileset: ReadOnlyTileset, key: string): string {
   if (key === 'GOD_SIZE') return String(GOD_VIEW_SIZE);
   if (key === 'CHARACTER_SIZE') return String(CHARACTER_VIEW_SIZE);
+  if (key === 'SIGHT_RADIUS') return String(CHARACTER_SIGHT_RADIUS_TILES);
   if (key === 'EXAMPLES') return examples();
   if (key === 'FAILURES') return failuresTable();
   if (key === 'NODE_TYPES') return nodeTypesTable();
@@ -220,7 +229,7 @@ function legendBlock(tileset: ReadOnlyTileset): string {
     );
   return [
     "- '@' = you",
-    "- ' ' = nothing generated here (in character mode, also: behind you)",
+    "- ' ' = nothing generated here (in character mode, also: behind you, or fogged out past your sight radius)",
     "- '?' = unrecognized tile",
     ...tiles,
   ].join('\n');

@@ -7,7 +7,7 @@ the agent API rather than renderings of the world:
 | --- | --- | --- |
 | 3-D God | Three.js follow camera, free pan/zoom, Q/E rotates the camera in quarter turns | WASD camera-relative |
 | Agent God | the literal text a god-mode API agent receives for the player's position | WASD compass |
-| 2.5D Character | Three.js camera locked behind the player's facing, Q/E turns the player in 45° steps | W/S forward/back, A/D strafe |
+| 2.5D Character | Three.js camera locked behind the player's facing, fogged out at the sight radius, Q/E turns the player in 45° steps | W/S forward/back, A/D strafe |
 | Agent Character | the literal text a character-mode API agent receives for the player's pose | same as 2.5D Character |
 
 ## Parity rule
@@ -17,14 +17,36 @@ renders it to text. The UI agent views and the HTTP API both call those same
 two functions, so what a human reads in an agent mode is byte-identical to what
 an LLM is sent. Never render agent-mode information through any other path.
 
-## The blank back
+## The blank back and the fog
 
-Character-mode observations only draw tiles in the front half-plane of the
-agent's facing (`isInFrontHalfPlane` in `src/world/facing.ts`); everything
-behind is the blank glyph, and the observation deliberately never states the
-facing — the rotating blank half is the only way an agent knows which way it
-points. God mode sees the full window and is told its facing. `npm run check`
-enforces both.
+A character sees the half-disc in front of it, and nothing else. Both halves of
+that rule live in `src/world/vision/characterSight.ts`, which is the single
+place either view learns how far a character can see:
+
+- the front half-plane of the facing (`isInFrontHalfPlane` in
+  `src/world/facing.ts`) — everything behind is the blank glyph, and the
+  observation deliberately never states the facing, so the rotating blank half
+  is the only way an agent knows which way it points;
+- `CHARACTER_SIGHT_RADIUS_TILES` — beyond it the tile is blank too, which is
+  why a character grid has blank corners. The agent grid is sized
+  `2 * radius + 1` from the same constant, so it is exactly wide enough to hold
+  what can be seen and no wider.
+
+God mode sees its full window and is told its facing.
+
+The 2.5D character view spends that same constant on `THREE.Fog`:
+`fogDistancesFromCamera` turns the camera's current distance to the player into
+the fog's near and far planes, so the wall of fog stays anchored to the player
+rather than to the camera as the wheel zooms, and it turns opaque at the ring
+where the agent grid runs out of glyphs. The camera's far plane is pinned to
+that same opaque distance — geometry is culled exactly where it would have been
+painted pure fog anyway — and the chunk streamer is asked only for
+`groundRadiusToStreamTiles`, which is why character mode streams a couple of
+chunks instead of the dozens the old zoom-derived radius asked for.
+
+Changing what a character can see therefore means changing one constant.
+`npm run check` asserts the grid size, the fog distances, the streaming radius
+and the blanked tiles all still agree with it.
 
 ## The API
 

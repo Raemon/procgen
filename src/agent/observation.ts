@@ -3,11 +3,15 @@ import { EMPTY_TILE } from '../procgen/values/chunkValues';
 import { markerLookup } from '../views/ascii/asciiCells';
 import { viewportCenteredOn } from '../views/ascii/asciiViewport';
 import type { ReadOnlyTileset } from '../app/readOnlyLibraries';
-import { FACING_NAMES, isInFrontHalfPlane } from '../world/facing';
+import { FACING_NAMES } from '../world/facing';
+import {
+  CHARACTER_SIGHT_RADIUS_TILES,
+  CHARACTER_VIEW_SIZE,
+  isWithinCharacterSight,
+} from '../world/vision/characterSight';
 import type { AgentMode, AgentPose } from './agentMode';
 
 export const GOD_VIEW_SIZE = 33;
-export const CHARACTER_VIEW_SIZE = 15;
 export const SELF_GLYPH = '@';
 export const BLANK_GLYPH = ' ';
 export const UNKNOWN_TILE_GLYPH = '?';
@@ -23,6 +27,7 @@ export interface AgentObservation {
   position: { x: number; y: number };
   facing: (typeof FACING_NAMES)[number] | null;
   viewSize: number;
+  sightRadiusTiles: number | null;
   view: string[];
   legend: LegendEntry[];
 }
@@ -57,6 +62,7 @@ export function buildObservation(
     position: { x: pose.x, y: pose.y },
     facing: mode === 'god' ? FACING_NAMES[pose.facing] : null,
     viewSize: size,
+    sightRadiusTiles: mode === 'character' ? CHARACTER_SIGHT_RADIUS_TILES : null,
     view,
     legend: [...legend.values()],
   };
@@ -73,7 +79,7 @@ function observedGlyph(
   y: number,
 ): string {
   if (x === pose.x && y === pose.y) return SELF_GLYPH;
-  if (mode === 'character' && !isInFrontHalfPlane(pose.facing, x - pose.x, y - pose.y)) {
+  if (mode === 'character' && !isWithinCharacterSight(pose.facing, x - pose.x, y - pose.y)) {
     return BLANK_GLYPH;
   }
   const marker = markers.get(`${x},${y}`);
@@ -115,7 +121,7 @@ function addFixedLegendEntries(legend: Map<string, LegendEntry>, mode: AgentMode
     glyph: BLANK_GLYPH,
     meaning:
       mode === 'character'
-        ? 'nothing generated here, or behind you (out of view)'
+        ? `nothing generated here, or unseen: behind you, or past your ${CHARACTER_SIGHT_RADIUS_TILES}-tile sight radius (fog)`
         : 'nothing generated here',
     walkable: null,
   });

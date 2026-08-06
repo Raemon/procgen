@@ -7,6 +7,7 @@ import { containerSize, devicePixelRatioCapped, isCollapsed } from '../canvasSur
 import type { WorldViewDeps } from '../worldViewDeps';
 import { WORLD_CANVAS_CLASSES } from '../worldCanvasClasses';
 import { CharacterCamera } from './characterCamera';
+import { CharacterFog } from './characterFog';
 import { ChunkMeshStreamer } from './chunkMeshStreamer';
 import { CreatureMeshes } from './creatureMeshes';
 import { createDaylitScene, createPlayerMesh } from './daylitScene';
@@ -27,6 +28,7 @@ export class View3D {
   private readonly scene = createDaylitScene();
   private readonly followCamera = new FollowCamera();
   private readonly characterCamera = new CharacterCamera();
+  private readonly characterFog = new CharacterFog();
   private cameraStyle: CameraStyle = 'god';
   private readonly worldGroup = new THREE.Group();
   private readonly player = createPlayerMesh();
@@ -68,6 +70,7 @@ export class View3D {
   setCameraStyle(style: CameraStyle): void {
     if (this.cameraStyle === style) return;
     this.cameraStyle = style;
+    this.scene.fog = style === 'character' ? this.characterFog.fog : null;
     this.characterCamera.snapOnNextFrame();
     this.followCamera.snapToFocusOnNextUpdate();
     this.resize();
@@ -167,6 +170,12 @@ export class View3D {
       this.deps.sampler.elevationAt(world.playerX, world.playerY),
       facingYawRadians(world.facing),
     );
+    this.hideEverythingBeyondTheFog();
+  }
+
+  private hideEverythingBeyondTheFog(): void {
+    this.characterFog.settleAroundPlayer(this.characterCamera.distanceToPlayer());
+    this.characterCamera.seeNoFurtherThan(this.characterFog.opaqueDistance());
   }
 
   private streamAroundCameraFocus(): void {
@@ -174,7 +183,7 @@ export class View3D {
     const radiusTiles =
       this.cameraStyle === 'god'
         ? this.followCamera.visibleGroundRadiusTiles()
-        : this.characterCamera.visibleGroundRadiusTiles();
+        : this.characterCamera.groundRadiusToStreamTiles();
     this.streamer.streamAround(focus.x, focus.y, streamingRadiusChunks(radiusTiles));
   }
 

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-const SKY_INK = '#0a0d13';
+export const SKY_INK = '#0a0d13';
 const PLAYER_INK = 0xffd86a;
 
 export function createDaylitScene(): THREE.Scene {

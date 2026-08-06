@@ -19,6 +19,7 @@ function headerLines(obs: AgentObservation): string[] {
   if (obs.mode === 'character') {
     lines.push(
       'you only see what is in front of you; the blank side of the grid is behind you, and it tells you which way you face.',
+      `your sight fades into fog at ${obs.sightRadiusTiles} tiles, so the corners of the grid are blank too: what you see is the half-disc in front of you, exactly what the 2.5D character view renders.`,
     );
   }
   return lines;
