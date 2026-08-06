@@ -1,4 +1,3 @@
-import { cameraRelativeStep, slideAlongEachAxis } from './cameraRelativeStep';
 import {
   hasModifier,
   isTypingInFormControl,
@@ -9,9 +8,8 @@ import {
 const HOLD_REPEAT_MS = 125;
 
 export interface MovementDeps {
-  step(dx: number, dy: number): void;
+  moveIntent(forwardInput: number, strafeInput: number): void;
   rotate(direction: -1 | 1): void;
-  yawQuadrant(): number;
 }
 
 const ROTATION_KEYS: Readonly<Record<string, -1 | 1>> = { KeyQ: -1, KeyE: 1 };
@@ -71,12 +69,7 @@ export class MovementInput {
   }
 
   private stepOnce(): void {
-    const step = cameraRelativeStep(
-      this.deps.yawQuadrant(),
-      this.axisInput('forward', 'back'),
-      this.axisInput('right', 'left'),
-    );
-    slideAlongEachAxis(step, (dx, dy) => this.deps.step(dx, dy));
+    this.deps.moveIntent(this.axisInput('forward', 'back'), this.axisInput('right', 'left'));
   }
 
   private axisInput(positive: MovementAxis, negative: MovementAxis): number {

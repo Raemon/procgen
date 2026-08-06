@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { PanOffset } from '../camera/panOffset';
 import { ZoomScale } from '../camera/zoomScale';
+import { easeFraction, shortestArc } from './cameraEase';
 import { worldPanForDrag } from './dragToWorldPan';
 
 const TURN_SMOOTHING_RATE = 14;
@@ -13,7 +14,6 @@ const CLOSEST_CAMERA_DISTANCE = 1.2;
 const MIN_MAGNIFICATION = DISTANCE_AT_UNIT_ZOOM / FARTHEST_CAMERA_DISTANCE;
 const MAX_MAGNIFICATION = DISTANCE_AT_UNIT_ZOOM / CLOSEST_CAMERA_DISTANCE;
 const QUARTER_TURN = Math.PI / 2;
-const TAU = Math.PI * 2;
 
 export interface FocusPoint {
   x: number;
@@ -128,13 +128,3 @@ function halfFieldOfViewRadians(): number {
   return (FIELD_OF_VIEW_DEG / 2) * (Math.PI / 180);
 }
 
-function easeFraction(rate: number, dtSeconds: number): number {
-  return 1 - Math.exp(-rate * dtSeconds);
-}
-
-function shortestArc(from: number, to: number): number {
-  let delta = (to - from) % TAU;
-  if (delta > Math.PI) delta -= TAU;
-  if (delta <= -Math.PI) delta += TAU;
-  return delta;
-}

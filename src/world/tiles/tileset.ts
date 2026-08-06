@@ -5,9 +5,14 @@ import { loadStoredTiles, storeTiles } from './tilesetStorage';
 export type EditableTileFields = Partial<Omit<TileDef, 'id' | 'role'>>;
 
 export class Tileset {
-  private tiles: TileDef[] = loadStoredTiles() ?? defaultTiles();
-  private nextId = this.tiles.reduce((highest, tile) => Math.max(highest, tile.id + 1), 0);
+  private tiles: TileDef[];
+  private nextId: number;
   private readonly listeners = new Set<() => void>();
+
+  constructor(initialTiles?: TileDef[]) {
+    this.tiles = initialTiles ?? loadStoredTiles() ?? defaultTiles();
+    this.nextId = this.tiles.reduce((highest, tile) => Math.max(highest, tile.id + 1), 0);
+  }
 
   all(): readonly TileDef[] {
     return this.tiles;
