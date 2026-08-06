@@ -1,4 +1,4 @@
-export type WorldEvent = 'generated' | 'player-moved';
+export type WorldEvent = 'player-moved';
 
 export class WorldEvents {
   private readonly listeners = new Map<WorldEvent, Set<() => void>>();

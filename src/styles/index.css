@@ -1,4 +1,5 @@
 @import './theme.css';
 @import './tileEditor.css';
-@import './genPanel.css';
+@import './pixelArtEditor.css';
+@import './procgenPanel.css';
 @import './worldView.css';

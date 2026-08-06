@@ -1,10 +1,12 @@
 import * as THREE from 'three';
-import type { Grid } from '../../world/grid';
+import { CHUNK_SIZE, chunkOrigin } from '../../procgen/chunk';
+import type { WorldSampler } from '../../procgen/worldSampler';
 import type { CubeFaceArt } from '../../world/tiles/tileFaceArt';
 import type { Tileset } from '../../world/tiles/tileset';
 import { cubeFaceMaterials, sideFaceMaterial } from './faceArtMaterials';
 import { instancedTileMesh, type PlacementPosition } from './instancedTileMesh';
-import { tilePlacementsByShape, type TilePlacement } from './tilePlacements';
+import { markerPlacementsForRect } from './markerPlacements';
+import { tilePlacementsForRect, type TilePlacement } from './tilePlacements';
 
 export { disposeMeshChildren } from './disposeMeshResources';
 
@@ -12,6 +14,7 @@ const FLOOR_THICKNESS = 0.1;
 const WATER_DROP = 0.22;
 const BLOCK_HEIGHT = 1;
 const TREE_HEIGHT = 1.4;
+const MARKER_HEIGHT = 0.7;
 
 interface ShapeSpec {
   geometry(): THREE.BufferGeometry;
@@ -25,13 +28,31 @@ interface FaceArtGroup {
   placements: TilePlacement[];
 }
 
-export function buildWorldMeshes(grid: Grid, tileset: Tileset): THREE.InstancedMesh[] {
-  const { floors, blocks, trees } = tilePlacementsByShape(grid, tileset);
-  return [
+export function buildChunkMeshGroup(
+  sampler: WorldSampler,
+  tileset: Tileset,
+  chunkX: number,
+  chunkY: number,
+): THREE.Group {
+  const minX = chunkOrigin(chunkX);
+  const minY = chunkOrigin(chunkY);
+  const { floors, blocks, trees } = tilePlacementsForRect(
+    sampler,
+    tileset,
+    minX,
+    minY,
+    CHUNK_SIZE,
+    CHUNK_SIZE,
+  );
+  const markers = markerPlacementsForRect(sampler, minX, minY, CHUNK_SIZE, CHUNK_SIZE);
+  const group = new THREE.Group();
+  group.add(
     ...meshesForShape(floors, floorShape()),
     ...meshesForShape(blocks, blockShape()),
     ...meshesForShape(trees, treeShape()),
-  ];
+    ...meshesForShape(markers, markerShape()),
+  );
+  return group;
 }
 
 function floorShape(): ShapeSpec {
@@ -40,7 +61,7 @@ function floorShape(): ShapeSpec {
     artMaterials: cubeFaceMaterials,
     positionOf: (p) => [
       p.x + 0.5,
-      (p.sunkenAsWater ? -WATER_DROP : 0) - FLOOR_THICKNESS / 2,
+      p.elevation + (p.sunkenAsWater ? -WATER_DROP : 0) - FLOOR_THICKNESS / 2,
       p.y + 0.5,
     ],
   };
@@ -50,7 +71,7 @@ function blockShape(): ShapeSpec {
   return {
     geometry: () => new THREE.BoxGeometry(0.95, BLOCK_HEIGHT, 0.95),
     artMaterials: cubeFaceMaterials,
-    positionOf: (p) => [p.x + 0.5, BLOCK_HEIGHT / 2, p.y + 0.5],
+    positionOf: (p) => [p.x + 0.5, p.elevation + BLOCK_HEIGHT / 2, p.y + 0.5],
   };
 }
 
@@ -58,7 +79,15 @@ function treeShape(): ShapeSpec {
   return {
     geometry: () => new THREE.ConeGeometry(0.42, TREE_HEIGHT, 7),
     artMaterials: sideFaceMaterial,
-    positionOf: (p) => [p.x + 0.5, TREE_HEIGHT / 2, p.y + 0.5],
+    positionOf: (p) => [p.x + 0.5, p.elevation + TREE_HEIGHT / 2, p.y + 0.5],
+  };
+}
+
+function markerShape(): ShapeSpec {
+  return {
+    geometry: () => new THREE.ConeGeometry(0.24, MARKER_HEIGHT, 5),
+    artMaterials: sideFaceMaterial,
+    positionOf: (p) => [p.x + 0.5, p.elevation + MARKER_HEIGHT / 2, p.y + 0.5],
   };
 }
 

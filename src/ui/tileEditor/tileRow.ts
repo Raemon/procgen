@@ -1,8 +1,8 @@
 import type { TileDef } from '../../world/tiles/tileDef';
-import { blankFacePixels, FACE_ART_SIZE } from '../../world/tiles/tileFaceArt';
+import { blankFacePixels, faceGridSize } from '../../world/tiles/tileFaceArt';
 import type { EditableTileFields } from '../../world/tiles/tileset';
 import { paintFacePixels } from '../../views/paintFacePixels';
-import { pixelArtEditor, type PixelArtEditor } from './pixelArtEditor';
+import { pixelArtEditor, type PixelArtEditor } from '../pixelArtEditor/pixelArtEditor';
 import { attachSymbolPicker } from './symbolPicker';
 
 export type TileRowCallbacks = {
@@ -20,7 +20,11 @@ export function tileRow(tile: TileDef, callbacks: TileRowCallbacks): HTMLElement
     callbacks.onEdit(patch);
     for (const refresh of refreshers) refresh();
   };
-  const editor = pixelArtEditor(tile, onEdit);
+  const editor = pixelArtEditor({
+    art: () => tile.faceArt,
+    baseColor: () => tile.color,
+    onChange: (faceArt) => onEdit({ faceArt }),
+  });
   editor.root.classList.add('hidden');
   const artToggle = faceArtToggleButton(tile, editor);
   refreshers.push(editor.refresh, artToggle.refreshPreview);
@@ -54,9 +58,8 @@ function faceArtToggleButton(
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'btn tile-art';
-  button.title = 'pixel art (top/sides/bottom)';
+  button.title = 'pixel art (per cube face)';
   const preview = document.createElement('canvas');
-  preview.width = preview.height = FACE_ART_SIZE;
   button.appendChild(preview);
   const refreshPreview = () => drawTopFacePreview(preview, tile);
   button.addEventListener('click', () => toggleEditor(button, editor));
@@ -65,7 +68,9 @@ function faceArtToggleButton(
 }
 
 function drawTopFacePreview(preview: HTMLCanvasElement, tile: TileDef): void {
-  paintFacePixels(preview.getContext('2d')!, tile.faceArt?.top ?? blankFacePixels(), tile.color, 1);
+  const pixels = tile.faceArt?.top ?? blankFacePixels();
+  preview.width = preview.height = faceGridSize(pixels);
+  paintFacePixels(preview.getContext('2d')!, pixels, tile.color, 1);
 }
 
 function toggleEditor(button: HTMLButtonElement, editor: PixelArtEditor): void {
