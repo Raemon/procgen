@@ -9,6 +9,8 @@ export interface RosterAgent {
   run_status: 'idle' | 'running' | 'stopped' | 'finished' | 'error';
   run_goal: string | null;
   run_steps: number;
+  run_budget_usd: number | null;
+  run_spent_usd: number | null;
   created_at: number;
 }
 
@@ -22,6 +24,7 @@ export interface RunRequest {
   goal: string;
   model: string;
   maxSteps: number;
+  budgetUsd: number;
   apiKey: string | null;
 }
 
@@ -51,6 +54,7 @@ export async function startRun(id: string, run: RunRequest): Promise<void> {
       goal: run.goal,
       model: run.model,
       max_steps: run.maxSteps,
+      budget_usd: run.budgetUsd,
       anthropic_api_key: run.apiKey ?? undefined,
     }),
   });

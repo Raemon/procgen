@@ -66,7 +66,7 @@ An agent is created in one of two modes and stays in it for life.
 | GET /api/v1/creatures | — | the creature library: creatures a points node can spawn |
 | GET /api/v1/templates | — | saved groups of wired nodes you can stamp in |
 | GET /api/v1/presets | — | whole worlds you can load |
-| POST /api/v1/agents/{id}/run | {"goal": "...", "model": optional, "max_steps": optional, "anthropic_api_key": optional} | start an autopilot run that drives this agent with an LLM |
+| POST /api/v1/agents/{id}/run | {"goal": "...", "model": optional, "max_steps": optional, "budget_usd": optional, "anthropic_api_key": optional} | start an autopilot run that drives this agent with an LLM. budget_usd (default 1, max 100) caps what the run may spend at list prices; the run stops before the first turn that would start over budget, so its final turn can carry it slightly past |
 | POST /api/v1/agents/{id}/stop | — | stop the autopilot run |
 | GET /api/v1/agents/{id}/transcript?after=seq | — | the autopilot transcript |
 

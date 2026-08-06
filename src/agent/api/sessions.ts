@@ -28,6 +28,8 @@ export interface AutopilotRun {
   status: RunStatus;
   steps: number;
   maxSteps: number;
+  budgetUsd: number;
+  spentUsd: number;
   transcript: TranscriptEntry[];
   stopRequested: boolean;
 }

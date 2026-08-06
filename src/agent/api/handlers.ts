@@ -202,6 +202,7 @@ function run(session: AgentSession, access: WorldAccess, body: unknown): ApiResp
     goal?: unknown;
     model?: unknown;
     max_steps?: unknown;
+    budget_usd?: unknown;
     anthropic_api_key?: unknown;
   } | null;
   const goal = typeof opts?.goal === 'string' && opts.goal.trim() !== '' ? opts.goal.trim() : null;
@@ -210,6 +211,7 @@ function run(session: AgentSession, access: WorldAccess, body: unknown): ApiResp
     goal,
     model: typeof opts?.model === 'string' ? opts.model : 'claude-sonnet-5',
     maxSteps: clampSteps(opts?.max_steps),
+    budgetUsd: clampBudget(opts?.budget_usd),
     apiKey:
       typeof opts?.anthropic_api_key === 'string' && opts.anthropic_api_key !== ''
         ? opts.anthropic_api_key
@@ -221,6 +223,11 @@ function run(session: AgentSession, access: WorldAccess, body: unknown): ApiResp
 function clampSteps(raw: unknown): number {
   const steps = typeof raw === 'number' && Number.isFinite(raw) ? Math.floor(raw) : 30;
   return Math.max(1, Math.min(200, steps));
+}
+
+function clampBudget(raw: unknown): number {
+  const usd = typeof raw === 'number' && Number.isFinite(raw) ? raw : 1;
+  return Math.max(0.01, Math.min(100, usd));
 }
 
 function stopRun(session: AgentSession): void {
@@ -243,6 +250,8 @@ function agentJson(session: AgentSession) {
     run_status: session.run?.status ?? 'idle',
     run_goal: session.run?.goal ?? null,
     run_steps: session.run?.steps ?? 0,
+    run_budget_usd: session.run?.budgetUsd ?? null,
+    run_spent_usd: session.run?.spentUsd ?? null,
     created_at: session.createdAt,
   };
 }

@@ -4,6 +4,7 @@ import { nodeTypesJson, pipelineJson } from '../nodeCatalog';
 import { buildObservation } from '../observation';
 import { observationText } from '../observationText';
 import { performVerb } from './performVerb';
+import { formatUsd, modelIsPriced, usageCostUsd, type TokenUsage } from '../pricing';
 import type { WorldAccess } from './serverWorld';
 import { appendTranscript, sessionPose, type AgentSession } from './sessions';
 
@@ -16,6 +17,7 @@ export interface AutopilotOpts {
   goal: string;
   model: string;
   maxSteps: number;
+  budgetUsd: number;
   apiKey: string | null;
 }
 
@@ -30,6 +32,8 @@ export function startAutopilot(
     status: 'running',
     steps: 0,
     maxSteps: opts.maxSteps,
+    budgetUsd: opts.budgetUsd,
+    spentUsd: 0,
     transcript: [],
     stopRequested: false,
   };
@@ -55,14 +59,31 @@ async function driveAgent(
     run.status = 'error';
     return;
   }
-  appendTranscript(run, 'status', `run started: ${opts.goal} (${opts.model}, max ${opts.maxSteps} steps)`);
+  appendTranscript(
+    run,
+    'status',
+    `run started: ${opts.goal} (${opts.model}, max ${opts.maxSteps} steps, budget ${formatUsd(run.budgetUsd)})`,
+  );
+  if (!modelIsPriced(opts.model)) {
+    appendTranscript(
+      run,
+      'status',
+      `no list price known for ${opts.model}; billing this run at the highest known rate, so the budget stops it early rather than late`,
+    );
+  }
   const messages: AnthropicMessage[] = [
     { role: 'user', content: `Your goal: ${opts.goal}\n\nFirst observation:\n${observe(session, access)}` },
   ];
   while (run.status === 'running') {
     if (run.stopRequested) return endRun(run, 'stopped', 'stopped by request');
     if (run.steps >= run.maxSteps) return endRun(run, 'finished', 'step budget spent');
+    // Checked before the call, so the last turn can carry the run just past the
+    // budget: the cap bounds what a run starts, not what it has already spent.
+    if (run.spentUsd >= run.budgetUsd) {
+      return endRun(run, 'finished', `dollar budget spent: ${formatUsd(run.spentUsd)} of ${formatUsd(run.budgetUsd)}`);
+    }
     const reply = await callAnthropic(opts, access, session, messages);
+    chargeReply(run, reply);
     messages.push({ role: 'assistant', content: reply.content });
     const toolUses = recordReply(run, reply);
     if (toolUses.length === 0) return endRun(run, 'finished', 'the model ended its turn');
@@ -82,7 +103,7 @@ async function driveAgent(
 }
 
 function endRun(run: NonNullable<AgentSession['run']>, status: 'stopped' | 'finished', note: string): void {
-  appendTranscript(run, 'status', note);
+  appendTranscript(run, 'status', `${note} — spent ${formatUsd(run.spentUsd)} of ${formatUsd(run.budgetUsd)}`);
   run.status = status;
 }
 
@@ -108,6 +129,11 @@ interface ContentBlock {
 interface AnthropicReply {
   content: ContentBlock[];
   stop_reason: string;
+  usage?: TokenUsage;
+}
+
+function chargeReply(run: NonNullable<AgentSession['run']>, reply: AnthropicReply): void {
+  run.spentUsd += usageCostUsd(run.model, reply.usage);
 }
 
 async function callAnthropic(

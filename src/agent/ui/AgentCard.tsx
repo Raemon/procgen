@@ -1,4 +1,5 @@
 import { classes } from '../../ui/controls/classes';
+import { formatUsd } from '../pricing';
 import type { RosterAgent } from './agentsApiClient';
 
 const CARD_CLASSES =
@@ -45,6 +46,11 @@ export function AgentCard({
         {agent.last_action && (
           <span className="truncate">
             {agent.last_action.action} → {agent.last_action.outcome}
+          </span>
+        )}
+        {agent.run_spent_usd !== null && agent.run_budget_usd !== null && (
+          <span>
+            {formatUsd(agent.run_spent_usd)}/{formatUsd(agent.run_budget_usd)}
           </span>
         )}
         <span className="ml-auto flex gap-1">

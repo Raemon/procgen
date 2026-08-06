@@ -38,6 +38,7 @@ export function AgentsPanel({
       goal: settings.goal,
       model: settings.model,
       maxSteps: settings.maxSteps,
+      budgetUsd: settings.budgetUsd,
       apiKey: apiKey.trim() === '' ? null : apiKey.trim(),
     });
     onSelect(agent.id);
@@ -83,17 +84,31 @@ export function AgentsPanel({
           value={settings.goal}
           onChange={(event) => setSettings({ ...settings, goal: event.target.value })}
         />
-        <label className={`${HINT_CLASSES} flex items-center gap-1.5`}>
-          max steps
-          <input
-            type="number"
-            min={1}
-            max={200}
-            className={`${FIELD_CLASSES} w-16`}
-            value={settings.maxSteps}
-            onChange={(event) => setSettings({ ...settings, maxSteps: Number(event.target.value) })}
-          />
-        </label>
+        <div className={`${HINT_CLASSES} flex items-center gap-3`}>
+          <label className="flex items-center gap-1.5">
+            max steps
+            <input
+              type="number"
+              min={1}
+              max={200}
+              className={`${FIELD_CLASSES} w-16`}
+              value={settings.maxSteps}
+              onChange={(event) => setSettings({ ...settings, maxSteps: Number(event.target.value) })}
+            />
+          </label>
+          <label className="flex items-center gap-1.5">
+            budget $
+            <input
+              type="number"
+              min={0.01}
+              max={100}
+              step={0.25}
+              className={`${FIELD_CLASSES} w-16`}
+              value={settings.budgetUsd}
+              onChange={(event) => setSettings({ ...settings, budgetUsd: Number(event.target.value) })}
+            />
+          </label>
+        </div>
       </div>
       <div className="mt-2.5 flex flex-col gap-1.5">
         {agents.map((agent) => (
