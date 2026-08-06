@@ -205,3 +205,49 @@ Unchanged: the phasing order, the region-keyed-rng idiom, tags as the
 semantics channel (now strengthened), and `checkProcgenInvariants.ts` as
 the home for solvability — it now exists on main with maze determinism
 checks to build on.
+
+## Agent-API mechanics actually required
+
+Measured against the API as merged (verb tables in `controls.ts`, pose-only
+sessions in `sessions.ts`, stateless walkability in `serverWorld.ts`,
+observations in `observation.ts`):
+
+**Shipping all three v0 presets needs zero new API mechanics.** New node
+types self-describe into `GET /api/v1/node-types`, their tiles and tagged
+markers render into observations through the existing paths, and
+solvability checks run offline. The API only changes when the payoffs
+deepen:
+
+1. **Quest state (puzzle, the one hard requirement).** Lock-and-key with
+   blocking gates needs four coordinated pieces, all downstream of one new
+   sampler capability:
+   - `tagsAt(x, y)` on the sampler — look up tagged points at a cell, so a
+     door cell is *known* to be `door:2` from pipeline data, not inferred
+     from its tile id. This is the semantic bridge everything else uses.
+   - An inventory on the actor: a `keys` set on `AgentSession` server-side
+     and on the browser player. Ephemeral, like creature positions —
+     resets on reload, no persistence machinery.
+   - Pickup as a movement side-effect, not a verb: stepping onto a
+     `key:N` cell collects it and says so in the action outcome. The verb
+     table stays untouched.
+   - Stateful walkability: `isWalkable(x, y)` grows an inventory argument —
+     a `door:N` cell is walkable iff `key:N` is held — implemented once in
+     a shared module used by both the browser probe and `serverWorld`, per
+     the parity rule. Observations gain a `keys held` line and
+     locked/open wording in the legend (both agent views + API together).
+2. **Landmark sensing (adventure, optional but high-value).** The
+   character observation is a 15×15 front half-plane, so a watchtower "on
+   the horizon" — which the human 2.5D view sells — is invisible to an API
+   agent until it is ~7 tiles away. A `landmarks` section in the
+   observation ("watchtower 42 tiles northeast"), built from tagged points
+   within a radius via the sampler, restores the beckoning payoff for
+   agents. Pure observation extension; no verbs, rendered through the one
+   shared observation path.
+3. **Template stamping (authoring, optional).** God agents can build
+   node-by-node but cannot stamp templates or load presets — the
+   assemblies these centers ship as. One editing verb (`stamp_template`,
+   params: template name) puts the new content on the god-agent's palette.
+4. **Explicitly not needed:** an `examine` verb (the legend already names
+   what markers and tiles are), server-side creatures (presets treat
+   creatures as human-view garnish), and any new value kind or endpoint
+   for the presets themselves.
