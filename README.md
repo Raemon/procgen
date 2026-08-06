@@ -28,7 +28,38 @@ Three panels:
 
 ## Layout
 
+`src/panels` mirrors what you see on screen: one folder per column panel, one
+folder per section inside it, and each section's non-React code sits beside the
+component that uses it. Everything under `src/panels` is app-specific; the
+folders outside it are the shared core the panels are built on.
+
 ```
+src/panels        one folder per column panel, sections nested inside:
+  tiles/            TileEditorPanel — the tile list
+    tileRow/          one row per tile: symbol, color, walkability
+      symbolPicker/     glyph search popup
+      pixelArtEditor/   cube-face art painting (ops/ = pure pixel edits)
+  procgen/          ProcgenPanel — the pipeline editor
+    worldSeed/        world seed row
+    presets/          examples dropdown + the example pipelines it loads
+    randomize/        randomize/permute buttons + the pipeline generators
+                      they run (recipes/ = whole-world recipes)
+    nodeList/         drag-ordered node list
+      nodeCard/         one card per node: header, comment, error
+        params/           knob/tile/code param rows
+        wiring/           input (←) dropdowns + wire highlighting
+        display/          display binding editor (tiles/elevation/markers)
+    addNode/          add-node menu
+  world/            WorldPanel — the world viewport
+    toolbar/          ASCII / 2.5D view-mode buttons
+    stage/            canvas slots + view mounting/teardown
+    ascii/            canvas glyph view + pure-text snapshot
+    view3d/           three.js chunk-mesh streamer, camera, face-art materials
+    camera/           shared pan offset, zoom scale, drag/wheel listeners
+    movement/         key tracking and camera-relative step math
+src/app           React shell: app runtime (core objects + world-change wiring),
+                  runtime context, re-render hooks, resizable panel layout
+src/ui            cross-panel React pieces: shared controls, floating tooltips
 src/random        seeded streams (hash, mulberry32, per-label streams)
 src/noise         value, gradient and fractal noise built on the lattice hash
 src/procgen       the node framework:
@@ -43,16 +74,8 @@ src/procgen       the node framework:
   nodes/            node types: examples/ primitives, terrain/ (plates, ridged
                     noise, warp, curves), hydrology/ (drainage, erosion,
                     rivers), coast/, maze/, rivers/ + the custom script node
-  presets/          example pipelines for the panel dropdown
-src/world         Tileset, walkability, infinite-world player state
-src/views         ascii (canvas + pure-text snapshot) and view3d (chunk-mesh
-                  streamer, camera, face-art materials)
-src/input         key tracking and camera-relative step math
-src/app           React shell: app runtime (core objects + world-change wiring),
-                  runtime context, re-render hooks, resizable panel layout
-src/ui            React panels: tile editor, procgen pipeline, world view,
-                  shared controls, floating tooltips, plus a self-contained
-                  PixelArtEditor ({art, baseColor, onChange})
+src/world         Tileset, tile art, walkability, infinite-world player state
+src/persistence   repo-file + localStorage backed JSON stores
 src/styles        index.css — the only stylesheet: Tailwind plus the @theme
                   color tokens. All other styling is utility classes.
 scripts           headless checks over the DOM-free core (`npm run check`)

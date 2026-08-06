@@ -1,5 +1,5 @@
 import '../src/procgen/nodes';
-import { cameraRelativeStep } from '../src/input/cameraRelativeStep';
+import { cameraRelativeStep } from '../src/panels/world/movement/cameraRelativeStep';
 import { PipelineEvaluator } from '../src/procgen/eval/evaluator';
 import { allNodeTypes } from '../src/procgen/nodeRegistry';
 import { defaultParams, isKnobParamSpec, outputKindOf } from '../src/procgen/nodeType';
@@ -7,12 +7,12 @@ import { computeNodeSignatures } from '../src/procgen/pipeline/nodeSignatures';
 import { emptyPipeline, type PipelineState } from '../src/procgen/pipeline/pipelineState';
 import { PipelineStore } from '../src/procgen/pipeline/pipelineStore';
 import { sanitizePipeline } from '../src/procgen/pipeline/sanitizePipeline';
-import { examplePipelines } from '../src/procgen/presets/examplePipelines';
+import { examplePipelines } from '../src/panels/procgen/presets/examplePipelines';
 import { mulberry32 } from '../src/random/mulberry32';
-import { permutedNodeCombination } from '../src/procgen/randomize/permuteNodeCombination';
-import { permutedSliderParams } from '../src/procgen/randomize/permuteSliderParams';
-import { RandomizeHistory } from '../src/procgen/randomize/randomizeHistory';
-import { randomWorldPipeline } from '../src/procgen/randomize/randomWorldPipeline';
+import { permutedNodeCombination } from '../src/panels/procgen/randomize/permuteNodeCombination';
+import { permutedSliderParams } from '../src/panels/procgen/randomize/permuteSliderParams';
+import { RandomizeHistory } from '../src/panels/procgen/randomize/randomizeHistory';
+import { randomWorldPipeline } from '../src/panels/procgen/randomize/recipes/randomWorldPipeline';
 import { nodeTypeOf } from '../src/procgen/nodeRegistry';
 import { CHUNK_SIZE } from '../src/procgen/chunk';
 import { CARVER_CHOICES } from '../src/procgen/nodes/maze/mazeCarvers';
@@ -21,25 +21,25 @@ import { hashLatticePoint } from '../src/noise/hashLatticePoint';
 import { EMPTY_TILE } from '../src/procgen/values/chunkValues';
 import { asField, asPoints, asTiles } from '../src/procgen/values/valueAccess';
 import { WorldSampler } from '../src/procgen/worldSampler';
-import { asciiSnapshot } from '../src/views/ascii/asciiSnapshot';
-import { PLAYER_GLYPH } from '../src/views/ascii/asciiCells';
-import { PanOffset } from '../src/views/camera/panOffset';
-import { ZoomScale } from '../src/views/camera/zoomScale';
-import { cellPixelsFor, MAX_CELL_PX, MIN_CELL_PX } from '../src/views/ascii/asciiCellPixels';
-import { viewportCoveringCanvas } from '../src/views/ascii/asciiViewport';
+import { asciiSnapshot } from '../src/panels/world/ascii/asciiSnapshot';
+import { PLAYER_GLYPH } from '../src/panels/world/ascii/asciiCells';
+import { PanOffset } from '../src/panels/world/camera/panOffset';
+import { ZoomScale } from '../src/panels/world/camera/zoomScale';
+import { cellPixelsFor, MAX_CELL_PX, MIN_CELL_PX } from '../src/panels/world/ascii/asciiCellPixels';
+import { viewportCoveringCanvas } from '../src/panels/world/ascii/asciiViewport';
 import { WorldRenderers, type WorldRenderer } from '../src/app/worldRenderers';
-import { worldPanForDrag } from '../src/views/view3d/dragToWorldPan';
-import { streamingRadiusChunks } from '../src/views/view3d/streamingRadius';
-import { markerPlacementsForRect } from '../src/views/view3d/markerPlacements';
-import { tilePlacementsForRect } from '../src/views/view3d/tilePlacements';
-import { floodFillFacePixels } from '../src/ui/pixelArtEditor/ops/floodFillFacePixels';
+import { worldPanForDrag } from '../src/panels/world/view3d/dragToWorldPan';
+import { streamingRadiusChunks } from '../src/panels/world/view3d/streamingRadius';
+import { markerPlacementsForRect } from '../src/panels/world/view3d/markerPlacements';
+import { tilePlacementsForRect } from '../src/panels/world/view3d/tilePlacements';
+import { floodFillFacePixels } from '../src/panels/tiles/tileRow/pixelArtEditor/ops/floodFillFacePixels';
 import {
   copyFaceToAllSides,
   sideFacesMatch,
-} from '../src/ui/pixelArtEditor/ops/linkedSideFaces';
-import { mirroredPixelIndices } from '../src/ui/pixelArtEditor/ops/mirroredPixelIndices';
-import { resizeCubeFaceArt } from '../src/ui/pixelArtEditor/ops/resizeFaceArt';
-import { shiftFacePixelsWithWrap } from '../src/ui/pixelArtEditor/ops/shiftFacePixelsWithWrap';
+} from '../src/panels/tiles/tileRow/pixelArtEditor/ops/linkedSideFaces';
+import { mirroredPixelIndices } from '../src/panels/tiles/tileRow/pixelArtEditor/ops/mirroredPixelIndices';
+import { resizeCubeFaceArt } from '../src/panels/tiles/tileRow/pixelArtEditor/ops/resizeFaceArt';
+import { shiftFacePixelsWithWrap } from '../src/panels/tiles/tileRow/pixelArtEditor/ops/shiftFacePixelsWithWrap';
 import { upgradeStoredFaceArt } from '../src/world/tiles/legacyFaceArt';
 import {
   blankCubeFaceArt,

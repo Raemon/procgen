@@ -1,7 +1,7 @@
-import { ProcgenPanel } from '../ui/procgenPanel/ProcgenPanel';
-import { TileEditorPanel } from '../ui/tileEditor/TileEditorPanel';
+import { ProcgenPanel } from '../panels/procgen/ProcgenPanel';
+import { TileEditorPanel } from '../panels/tiles/TileEditorPanel';
+import { WorldPanel } from '../panels/world/WorldPanel';
 import { FloatingTooltip } from '../ui/tooltips/FloatingTooltip';
-import { WorldPanel } from '../ui/worldView/WorldPanel';
 import { Panel } from './Panel';
 import { PanelResizer } from './PanelResizer';
 import { usePanelWidths } from './usePanelWidths';

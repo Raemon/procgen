@@ -2,7 +2,7 @@ import { PipelineEvaluator } from '../procgen/eval/evaluator';
 import { attachPipelinePersistence, loadStoredPipeline } from '../procgen/pipeline/pipelineStorage';
 import { PipelineStore } from '../procgen/pipeline/pipelineStore';
 import { WorldSampler } from '../procgen/worldSampler';
-import { debounce } from '../ui/debounce';
+import { debounce } from './debounce';
 import { isWalkableTile } from '../world/tileWalkability';
 import { Tileset } from '../world/tiles/tileset';
 import { World } from '../world/world';

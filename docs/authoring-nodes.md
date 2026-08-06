@@ -242,7 +242,7 @@ polyline paths or region graphs):
 
 ## Example pipelines
 
-`src/procgen/presets/examplePipelines.ts` holds the presets in the panel's
+`src/panels/procgen/presets/examplePipelines.ts` holds the presets in the panel's
 *examples* dropdown. They are plain serialized pipelines built only from the
 example nodes — read them to see how primitives compose into something bigger,
 and add your own the same way. Each example has a `description` (shown in the
