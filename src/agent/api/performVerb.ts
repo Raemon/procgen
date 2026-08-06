@@ -35,6 +35,8 @@ export function performVerb(
       worldPresets: world.worldPresets,
       randomizeHistory: world.randomizeHistory,
       regionSampler: world.sampler,
+      spokenWorld: world.spokenWorld,
+      placesNear: (minX, minY, maxX, maxY) => world.sampler.markersIn(minX, minY, maxX, maxY),
       actor: sessionActor(session, world.isWalkable),
     },
     session.mode,

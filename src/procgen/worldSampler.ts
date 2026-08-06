@@ -10,6 +10,7 @@ import { PrefabOverlay, NO_PREFABS, type PrefabSource } from './prefabOverlay/pr
 import type { PrefabPlacement } from './prefabOverlay/prefabPlacement';
 import { EMPTY_TILE } from './values/chunkValues';
 import { asField, asPoints, asTiles } from './values/valueAccess';
+import { vaultCellAt, VAULT_WALL_RADIUS } from '../spokenWorld/vaultLayout';
 
 export interface Marker {
   x: number;
@@ -37,6 +38,7 @@ export class WorldSampler {
     private readonly evaluator: PipelineEvaluator,
     private readonly tileset: Tileset,
     prefabs: PrefabSource = NO_PREFABS,
+    private readonly isVaultOpen: (x: number, y: number) => boolean = () => false,
   ) {
     this.prefabOverlay = new PrefabOverlay(prefabs, (chunkX, chunkY) =>
       this.prefabPlacementsInChunk(chunkX, chunkY),
@@ -49,7 +51,9 @@ export class WorldSampler {
 
   tileAt(x: number, y: number): number {
     const ground = groundVoxelOf(this.voxelColumnAt(x, y));
-    return ground === EMPTY_TILE ? this.tileFromLayers(x, y) : ground;
+    if (ground !== EMPTY_TILE) return ground;
+    const vaultTile = this.vaultShellTileAt(x, y);
+    return vaultTile === EMPTY_TILE ? this.tileFromLayers(x, y) : vaultTile;
   }
 
   voxelColumnAt(x: number, y: number): VoxelColumn | null {
@@ -115,6 +119,27 @@ export class WorldSampler {
   private tileFromNode(node: NodeInstance, x: number, y: number): number {
     const tiles = asTiles(this.chunkValueAt(node, x, y));
     return tiles?.[cellIndexInChunk(x, y)] ?? EMPTY_TILE;
+  }
+
+  private vaultShellTileAt(x: number, y: number): number {
+    for (const node of this.displayedNodes('markers')) {
+      if (node.type !== 'wordVaults') continue;
+      const wallTile = node.params.wallTile as number;
+      if (wallTile < 0) continue;
+      const shellTile = this.shellTileFromVaultsOf(node, wallTile, x, y);
+      if (shellTile !== EMPTY_TILE) return shellTile;
+    }
+    return EMPTY_TILE;
+  }
+
+  private shellTileFromVaultsOf(node: NodeInstance, wallTile: number, x: number, y: number): number {
+    const reach = VAULT_WALL_RADIUS;
+    for (const vault of this.pointsInRect(node, x - reach, y - reach, x + reach, y + reach)) {
+      const cell = vaultCellAt(vault.x, vault.y, x, y);
+      if (cell === 'wall') return wallTile;
+      if (cell === 'door' && !this.isVaultOpen(vault.x, vault.y)) return wallTile;
+    }
+    return EMPTY_TILE;
   }
 
   private chunkValueAt(node: NodeInstance, x: number, y: number) {

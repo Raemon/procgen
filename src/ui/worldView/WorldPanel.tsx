@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '../controls/Button';
 import { HINT_CLASSES } from '../controls/fieldClasses';
 import { WorldIcon } from '../icons/panelIcons';
+import { SpeakBar } from './SpeakBar';
 import { WorldStage } from './WorldStage';
 import { WorldToolbar } from './WorldToolbar';
 import { MODE_HINTS, VIEW_MODES, type ViewMode } from './viewMode';
@@ -23,6 +24,7 @@ export function WorldPanel() {
         <p className={`${HINT_CLASSES} ml-auto`}>{MODE_HINTS[mode]}</p>
       </div>
       <WorldStage mode={mode} />
+      <SpeakBar />
     </div>
   );
 }

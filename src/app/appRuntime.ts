@@ -13,6 +13,7 @@ import { RandomizeHistory } from '../procgen/randomize/randomizeHistory';
 import { TemplateLibrary } from '../procgen/templates/templateLibrary';
 import { WorldSampler } from '../procgen/worldSampler';
 import { PrefabLibrary } from '../prefabs/prefabLibrary';
+import { SpokenWorldLedger } from '../spokenWorld/spokenWorldLedger';
 import { debounce } from '../ui/debounce';
 import { CaptureTool } from '../world/capture/captureTool';
 import { isWalkableTile } from '../world/tileWalkability';
@@ -63,7 +64,10 @@ export function createAppRuntime(): AppRuntime {
   const store = new PipelineStore(loadStoredPipeline());
   attachPipelinePersistence(store);
   const evaluator = new PipelineEvaluator(store);
-  const sampler = new WorldSampler(store, evaluator, tileset, prefabs);
+  const spokenWorld = new SpokenWorldLedger();
+  const sampler = new WorldSampler(store, evaluator, tileset, prefabs, (x, y) =>
+    spokenWorld.isVaultOpen(x, y),
+  );
   const isWalkableAt = (x: number, y: number) => isWalkableTile(tileset, sampler.tileAt(x, y));
   const world = new World(isWalkableAt);
   const sim = new CreatureSim({ sampler, library: creatures, world, isWalkableAt });
@@ -93,6 +97,8 @@ export function createAppRuntime(): AppRuntime {
         worldPresets,
         randomizeHistory,
         regionSampler: sampler,
+        spokenWorld,
+        placesNear: (minX, minY, maxX, maxY) => sampler.markersIn(minX, minY, maxX, maxY),
         actor: {
           pose: () => ({ x: world.playerX, y: world.playerY, facing: world.facing }),
           tryStep: (dx, dy) => world.tryStep(dx, dy),
@@ -106,6 +112,7 @@ export function createAppRuntime(): AppRuntime {
   }
 
   function abilityModeFor(action: string): AbilityMode {
+    if (action === 'speak') return 'character';
     return action.startsWith('step_') || action.startsWith('turn_') || action.startsWith('strafe_')
       ? playerMode
       : 'god';
@@ -126,6 +133,7 @@ export function createAppRuntime(): AppRuntime {
   tileset.onChange(applyWorldChange);
   prefabs.onChange(applyWorldChange);
   creatures.onChange(applyWorldChange);
+  spokenWorld.onChange(applyWorldChange);
   world.on('player-moved', () => renderers.recenterAll());
   world.on('player-turned', () => renderers.recenterAll());
   attachAgentPipelineSync(store);

@@ -4,6 +4,7 @@ import './worldAbilities';
 import './tileAbilities';
 import './prefabAbilities';
 import './creatureAbilities';
+import './speakAbilities';
 
 export { performAbility, abilityChangesWorld } from './performAbility';
 export { abilitiesForMode, abilityFor, allAbilities } from './abilityRegistry';

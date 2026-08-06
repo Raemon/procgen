@@ -26,6 +26,7 @@ export function createChunkGenCtx(args: GenCtxArgs): ChunkGenCtx {
     mulberry32(hashString(`${seed}:${nodeId}:${gridX},${gridY}:${label}`));
   return {
     nodeId,
+    worldSeed: seed,
     chunkX,
     chunkY,
     originX: chunkOrigin(chunkX),

@@ -18,4 +18,7 @@ import './hydrology/riverFromFlowNode';
 import './maze/mazeChunkNode';
 import './rivers/riverTilesNode';
 import './rivers/riverTownsNode';
+import './language/namePlacesNode';
+import './language/standingStonesNode';
+import './language/wordVaultsNode';
 import './customScript/customScriptNode';

@@ -1,5 +1,7 @@
 import '../src/procgen/nodes';
 import { checkPrefabAndCreatureInvariants } from './checkPrefabAndCreatureInvariants';
+import { checkSpokenWorldInvariants } from './checkSpokenWorldInvariants';
+import { SpokenWorldLedger } from '../src/spokenWorld/spokenWorldLedger';
 import { cameraRelativeStep } from '../src/input/cameraRelativeStep';
 import { PipelineEvaluator } from '../src/procgen/eval/evaluator';
 import { allNodeTypes } from '../src/procgen/nodeRegistry';
@@ -1284,6 +1286,8 @@ function abilityWorld() {
       elevationAt: () => 0,
       voxelColumnAt: () => null,
     },
+    spokenWorld: new SpokenWorldLedger(),
+    placesNear: () => [],
     actor: {
       pose: () => pose,
       tryStep: (dx: number, dy: number) => ((pose.x += dx), (pose.y += dy), true),
@@ -1645,6 +1649,7 @@ check(
 );
 
 checkPrefabAndCreatureInvariants(check);
+checkSpokenWorldInvariants(check);
 
 if (failures.length > 0) throw new Error(`${failures.length} check(s) failed: ${failures.join(', ')}`);
 console.log('\nall checks passed');

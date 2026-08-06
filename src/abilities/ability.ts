@@ -5,6 +5,7 @@ import type { PipelineStore } from '../procgen/pipeline/pipelineStore';
 import type { WorldPresetLibrary } from '../procgen/presets/worldPresetLibrary';
 import type { RandomizeHistory } from '../procgen/randomize/randomizeHistory';
 import type { TemplateLibrary } from '../procgen/templates/templateLibrary';
+import type { SpokenWorldLedger } from '../spokenWorld/spokenWorldLedger';
 import type { Tileset } from '../world/tiles/tileset';
 import type { FacingIndex } from '../world/facing';
 
@@ -26,6 +27,8 @@ export interface AbilityContext {
   worldPresets: WorldPresetLibrary;
   randomizeHistory: RandomizeHistory;
   regionSampler: RegionSampler;
+  spokenWorld: SpokenWorldLedger;
+  placesNear(minX: number, minY: number, maxX: number, maxY: number): { x: number; y: number; tag: string }[];
   actor: AbilityActor;
 }
 

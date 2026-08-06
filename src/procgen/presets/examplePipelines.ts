@@ -14,6 +14,7 @@ export function examplePipelines(): ExamplePipeline[] {
     endlessLabyrinth(),
     nestedLabyrinths(),
     riversAndTowns(),
+    theSpokenWorld(),
     earthlikeCoastsAndRanges(),
     settlementsAndWildlife(),
     fallenMetropolis(),
@@ -314,6 +315,114 @@ function riversAndTowns(): ExamplePipeline {
           params: { seaLevel: 0.45, spacing: 14 },
           inputs: { rivers: 'n3', elevation: 'n1' },
           display: { mode: 'markers', tileId: -1, glyph: '⌂', color: '#e0b06a' },
+        },
+      ],
+    },
+  };
+}
+
+function theSpokenWorld(): ExamplePipeline {
+  return {
+    name: 'the spoken world',
+    description:
+      'Rivers, towns and standing stones named in a language the world generates from its seed, and sealed vaults that only open when the true name of the land around them is spoken in the speak bar.',
+    state: {
+      seed: 20,
+      nodes: [
+        {
+          id: 'n1',
+          type: 'noiseField',
+          label: 'terrain',
+          comment:
+            'One elevation field drives everything: land, rivers, towns, stones and vault sites all read this node, so every named thing agrees with the ground it is named for.',
+          enabled: true,
+          params: { scale: 0.05, octaves: 5 },
+          inputs: {},
+          display: { mode: 'elevation', heightScale: 3 },
+        },
+        {
+          id: 'n2',
+          type: 'thresholdTiles',
+          label: 'sea & land',
+          comment:
+            'Base layer painting every cell: ocean below 0.45, grass above. The rivers node uses the same 0.45 so mouths land exactly on this coastline.',
+          enabled: true,
+          params: { threshold: 0.45, belowTile: 0, aboveTile: 2 },
+          inputs: { source: 'n1' },
+          display: { mode: 'tileLayer' },
+        },
+        {
+          id: 'n3',
+          type: 'riverTiles',
+          label: 'rivers',
+          comment:
+            'Springs above 0.62 flow downhill to the sea. Rivers are what the naming nodes treat as water, so river places get water names.',
+          enabled: true,
+          params: {
+            sourceDensity: 0.003,
+            minSourceHeight: 0.62,
+            seaLevel: 0.45,
+            maxLength: 80,
+            meander: 0.04,
+            riverTile: 0,
+          },
+          inputs: { elevation: 'n1' },
+          display: { mode: 'tileLayer' },
+        },
+        {
+          id: 'n4',
+          type: 'riverTowns',
+          label: 'towns',
+          comment:
+            'Town candidates at river mouths and junctions, hidden here because the named copy of these points is what gets displayed.',
+          enabled: true,
+          params: { seaLevel: 0.45, spacing: 14 },
+          inputs: { rivers: 'n3', elevation: 'n1' },
+          display: { mode: 'hidden' },
+        },
+        {
+          id: 'n5',
+          type: 'standingStones',
+          label: 'stones',
+          comment:
+            'Mute stones on open ground, hidden for the same reason: the named copy below is the displayed one.',
+          enabled: true,
+          params: { spacing: 20, minHeight: 0.5, maxHeight: 0.85 },
+          inputs: { terrain: 'n1' },
+          display: { mode: 'hidden' },
+        },
+        {
+          id: 'n6',
+          type: 'namePlaces',
+          label: 'named towns',
+          comment:
+            'Every town gains a name in the world tongue built from its actual site, so a confluence town is literally called meet-water in the local language.',
+          enabled: true,
+          params: {},
+          inputs: { places: 'n4', terrain: 'n1', water: 'n3' },
+          display: { mode: 'markers', tileId: -1, glyph: '⌂', color: '#e0b06a' },
+        },
+        {
+          id: 'n7',
+          type: 'namePlaces',
+          label: 'inscribed stones',
+          comment:
+            'The stones get inscriptions from the same lexicon. Comparing a stone word with the land around it is how the language is learned.',
+          enabled: true,
+          params: {},
+          inputs: { places: 'n5', terrain: 'n1', water: 'n3' },
+          display: { mode: 'markers', tileId: -1, glyph: 'ᛟ', color: '#9ac2d0' },
+        },
+        {
+          id: 'n8',
+          type: 'wordVaults',
+          label: 'sealed vaults',
+          comment:
+            'Walled vaults with no keyhole. Stand near one and speak the true name of the land it sits in — learned from the stones and town names — and its door opens for good.',
+          enabled: true,
+          params: { spacing: 44, minHeight: 0.5, maxHeight: 0.8, wallTile: 17 },
+          inputs: { terrain: 'n1' },
+          display: { mode: 'markers', tileId: -1, glyph: '✶', color: '#e8c26a' },
         },
       ],
     },

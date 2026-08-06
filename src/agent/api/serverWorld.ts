@@ -7,6 +7,7 @@ import { PrefabLibrary } from '../../prefabs/prefabLibrary';
 import { prefabsFromStoredJson } from '../../prefabs/prefabStorage';
 import { PipelineEvaluator } from '../../procgen/eval/evaluator';
 import { PipelineStore } from '../../procgen/pipeline/pipelineStore';
+import { SpokenWorldLedger } from '../../spokenWorld/spokenWorldLedger';
 import { WorldPresetLibrary } from '../../procgen/presets/worldPresetLibrary';
 import { RandomizeHistory } from '../../procgen/randomize/randomizeHistory';
 import { TemplateLibrary } from '../../procgen/templates/templateLibrary';
@@ -24,6 +25,7 @@ const SPAWN_SEARCH_RADIUS = 128;
 export interface ServerWorld {
   stamp: string;
   sampler: WorldSampler;
+  spokenWorld: SpokenWorldLedger;
   tileset: Tileset;
   store: PipelineStore;
   prefabs: PrefabLibrary;
@@ -78,11 +80,15 @@ function buildServerWorld(
   const worldPresets = new WorldPresetLibrary(sanitizeWorldPresets(dataFileJson(root, 'worldPresets')));
   const store = new PipelineStore(sanitizePipeline(dataFileJson(root, 'pipeline')));
   const evaluator = new PipelineEvaluator(store);
-  const sampler = new WorldSampler(store, evaluator, tileset, prefabs);
+  const spokenWorld = new SpokenWorldLedger();
+  const sampler = new WorldSampler(store, evaluator, tileset, prefabs, (x, y) =>
+    spokenWorld.isVaultOpen(x, y),
+  );
   const isWalkable = (x: number, y: number) => isWalkableTile(tileset, sampler.tileAt(x, y));
   return {
     stamp,
     sampler,
+    spokenWorld,
     tileset,
     store,
     prefabs,

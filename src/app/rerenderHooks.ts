@@ -37,6 +37,11 @@ export function useRerenderOnWorldChange(): void {
   useRerenderWhen(useAppRuntime().subscribeToWorldChange);
 }
 
+export function useRerenderOnPlayerMove(): void {
+  const { world } = useAppRuntime();
+  useRerenderWhen(useCallback((listener: () => void) => world.on('player-moved', listener), [world]));
+}
+
 function useRerenderWhen(subscribe: Subscribe): void {
   const [, rerender] = useReducer((count: number) => count + 1, 0);
   useEffect(() => subscribe(rerender), [subscribe]);

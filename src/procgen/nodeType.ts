@@ -50,6 +50,7 @@ export interface InputSpec {
 
 export interface ChunkGenCtx {
   readonly nodeId: string;
+  readonly worldSeed: number;
   readonly chunkX: number;
   readonly chunkY: number;
   readonly originX: number;
