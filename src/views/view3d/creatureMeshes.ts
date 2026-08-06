@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { CreatureLibrary } from '../../creatures/creatureLibrary';
+import type { ReadOnlyCreatureLibrary } from '../../app/readOnlyLibraries';
 import type { CreatureDef } from '../../creatures/creatureDef';
 import type { CreatureInstance } from '../../creatures/sim/creatureInstance';
 import type { CreatureSim } from '../../creatures/sim/creatureSim';
@@ -13,7 +13,7 @@ export class CreatureMeshes {
 
   constructor(
     root: THREE.Group,
-    private readonly library: CreatureLibrary,
+    private readonly library: ReadOnlyCreatureLibrary,
     private readonly sampler: WorldSampler,
   ) {
     root.add(this.group);

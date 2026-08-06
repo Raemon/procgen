@@ -23,7 +23,7 @@ function nearestUnclaimedSource(
   spec: InputSpec,
   claimed: Set<string>,
 ): NodeInstance | null {
-  const candidates = wiringCandidates(state, nodeId, spec);
+  const candidates = wiringCandidates(state.nodes, nodeId, spec);
   const nearestFirst = [...candidates].reverse();
   return nearestFirst.find((source) => !claimed.has(source.id)) ?? nearestFirst[0] ?? null;
 }

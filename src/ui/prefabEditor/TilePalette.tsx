@@ -1,5 +1,5 @@
 import { EMPTY_VOXEL } from '../../prefabs/prefabDef';
-import type { Tileset } from '../../world/tiles/tileset';
+import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
 import { classes } from '../controls/classes';
 
 const SWATCH_CLASSES = 'h-5 w-5 cursor-pointer rounded-[3px] border text-[10px] leading-none';
@@ -9,7 +9,7 @@ export function TilePalette({
   tileId,
   onPick,
 }: {
-  tileset: Tileset;
+  tileset: ReadOnlyTileset;
   tileId: number;
   onPick(tileId: number): void;
 }) {

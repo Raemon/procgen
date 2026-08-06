@@ -1,5 +1,5 @@
 import { buildApiDocs } from '../apiDocs';
-import { verbsForMode } from '../controls';
+import { abilitiesForMode } from '../../abilities/abilityRegistry';
 import { nodeTypesJson, pipelineJson } from '../nodeCatalog';
 import { buildObservation } from '../observation';
 import { observationText } from '../observationText';
@@ -148,7 +148,7 @@ function toolDefinitions(session: AgentSession) {
       input_schema: {
         type: 'object',
         properties: {
-          action: { type: 'string', enum: verbsForMode(session.mode).map((verb) => verb.action) },
+          action: { type: 'string', enum: abilitiesForMode(session.mode).map((spec) => spec.action) },
         },
         required: ['action'],
         additionalProperties: true,
@@ -226,7 +226,7 @@ function toolResultContent(
   const action = String(rawAction ?? '');
   const world = access.current();
   const result = performVerb(session, world, action, params);
-  if (result.changedPipeline) access.persistPipeline(world);
+  if (result.changedPipeline) access.persistWorld(world);
   run.steps += 1;
   const note = result.summary ?? result.failure?.hint ?? '';
   appendTranscript(run, 'tool_result', `${result.outcome} at (${session.x},${session.y})${note ? ` — ${note}` : ''}`);

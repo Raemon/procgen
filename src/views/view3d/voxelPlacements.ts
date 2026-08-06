@@ -1,11 +1,11 @@
 import { EMPTY_TILE } from '../../procgen/values/chunkValues';
 import type { WorldSampler } from '../../procgen/worldSampler';
-import type { Tileset } from '../../world/tiles/tileset';
+import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
 import { tileStandsAsSolidBlock, type TilePlacement } from './tilePlacements';
 
 export function voxelPlacementsForRect(
   sampler: WorldSampler,
-  tileset: Tileset,
+  tileset: ReadOnlyTileset,
   minX: number,
   minY: number,
   width: number,
@@ -23,7 +23,7 @@ export function voxelPlacementsForRect(
 function collectColumn(
   into: TilePlacement[],
   sampler: WorldSampler,
-  tileset: Tileset,
+  tileset: ReadOnlyTileset,
   x: number,
   y: number,
 ): void {
@@ -47,7 +47,7 @@ function collectColumn(
 
 function standingHeightOfGround(
   sampler: WorldSampler,
-  tileset: Tileset,
+  tileset: ReadOnlyTileset,
   x: number,
   y: number,
 ): number {

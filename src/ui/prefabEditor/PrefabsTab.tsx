@@ -7,7 +7,7 @@ import { HINT_CLASSES } from '../controls/fieldClasses';
 import { PrefabRow } from './PrefabRow';
 
 export function PrefabsTab() {
-  const { prefabs } = useAppRuntime();
+  const { prefabs, perform } = useAppRuntime();
   const [openId, setOpenId] = useState<number | null>(null);
   useRerenderOnPrefabChange();
   useEffect(() => prefabs.onPrefabAdded((prefab) => setOpenId(prefab.id)), [prefabs]);
@@ -21,7 +21,7 @@ export function PrefabsTab() {
           onToggle={() => setOpenId(openId === prefab.id ? null : prefab.id)}
         />
       ))}
-      <Button className="mt-2" onClick={() => prefabs.add()}>
+      <Button className="mt-2" onClick={() => perform('add_prefab')}>
         + add prefab
       </Button>
       <p className={classes(HINT_CLASSES, 'mt-2')}>

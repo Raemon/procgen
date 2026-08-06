@@ -9,8 +9,8 @@ import { usePrefabEditor } from './usePrefabEditor';
 import { VoxelLayerCanvas } from './VoxelLayerCanvas';
 
 export function PrefabEditorBody({ prefab }: { prefab: Prefab }) {
-  const { prefabs, tileset } = useAppRuntime();
-  const editor = usePrefabEditor(prefab, prefabs);
+  const { tileset } = useAppRuntime();
+  const editor = usePrefabEditor(prefab);
   return (
     <div className="mt-1.5 rounded border border-art-edge bg-art-panel p-2">
       <LayerStepper editor={editor} />

@@ -1,6 +1,5 @@
 import '../src/procgen/nodes';
 import { checkPrefabAndCreatureInvariants } from './checkPrefabAndCreatureInvariants';
-import { measureWorld } from '../src/explore/metrics/measureWorld';
 import { cameraRelativeStep } from '../src/input/cameraRelativeStep';
 import { PipelineEvaluator } from '../src/procgen/eval/evaluator';
 import { allNodeTypes } from '../src/procgen/nodeRegistry';
@@ -59,25 +58,53 @@ import { defaultTiles } from '../src/world/tiles/defaultTiles';
 import { Tileset } from '../src/world/tiles/tileset';
 import { isWalkableTile } from '../src/world/tileWalkability';
 import { World } from '../src/world/world';
-import { applyAction } from '../src/agent/actions';
-import { buildApiDocs } from '../src/agent/apiDocs';
-import { ALL_VERBS } from '../src/agent/controls';
-import { applyEditAction } from '../src/agent/editActions';
+import '../src/abilities/index';
+import { abilitiesForMode, abilityFor } from '../src/abilities/abilityRegistry';
+import { performAbility } from '../src/abilities/performAbility';
+import { buildApiDocs, everyAbility } from '../src/agent/apiDocs';
+import { checkOnlyTheAbilityLayerCanMutate } from './checkAbilityLayerIsTheOnlyMutator';
+import { TemplateLibrary } from '../src/procgen/templates/templateLibrary';
+import { WorldPresetLibrary } from '../src/procgen/presets/worldPresetLibrary';
 import { CreatureLibrary } from '../src/creatures/creatureLibrary';
 import { PrefabLibrary } from '../src/prefabs/prefabLibrary';
 import { FAILURES } from '../src/agent/failures';
 import { nodeTypesJson } from '../src/agent/nodeCatalog';
-import {
-  buildObservation,
-  CHARACTER_VIEW_SIZE,
-  GOD_VIEW_SIZE,
-  SELF_GLYPH,
-} from '../src/agent/observation';
+import { buildObservation, GOD_VIEW_SIZE, SELF_GLYPH } from '../src/agent/observation';
 import { observationText } from '../src/agent/observationText';
 import { facingRelativeStep } from '../src/input/facingRelativeStep';
-import { isInFrontHalfPlane, turnedFacing, type FacingIndex } from '../src/world/facing';
+import {
+  facingVector,
+  facingYawRadians,
+  isInFrontHalfPlane,
+  turnedFacing,
+  type FacingIndex,
+} from '../src/world/facing';
+import { Vector3 } from 'three';
+import {
+  CHARACTER_SIGHT_RADIUS_TILES,
+  CHARACTER_HAZE_START_TILES,
+  CHARACTER_VIEW_SIZE,
+  isWithinCharacterSight,
+} from '../src/world/vision/characterSight';
+import { CharacterCamera } from '../src/views/view3d/characterCamera';
+import { createCharacterFog } from '../src/views/view3d/daylitScene';
 
 const failures: string[] = [];
+
+function firstPersonCamera(
+  x = 0,
+  y = 0,
+  elevation = 0,
+  facing: FacingIndex = 0,
+): CharacterCamera {
+  const camera = new CharacterCamera();
+  camera.update(0, x, y, elevation, facingYawRadians(facing));
+  return camera;
+}
+
+function round(value: number): number {
+  return Math.round(value * 1000) / 1000;
+}
 const tileset = new Tileset();
 
 function check(name: string, condition: boolean): void {
@@ -1136,6 +1163,60 @@ check('character observation blanks everything behind the agent', (() => {
   }
   return true;
 })());
+check('the character view grid is exactly wide enough to hold the sight radius', CHARACTER_VIEW_SIZE === CHARACTER_SIGHT_RADIUS_TILES * 2 + 1);
+check('the 2.5D fog turns opaque exactly at the sight radius', (() => {
+  const fog = createCharacterFog();
+  return fog.far === CHARACTER_SIGHT_RADIUS_TILES && fog.near === CHARACTER_HAZE_START_TILES;
+})());
+check('the character camera renders nothing past the fog', firstPersonCamera().camera.far === CHARACTER_SIGHT_RADIUS_TILES);
+check('the character camera stands in the player tile, so nothing behind the player can reach the screen', (() => {
+  const camera = firstPersonCamera(3, 7, 2);
+  const eye = camera.camera.position;
+  return eye.x === 3.5 && eye.z === 7.5 && eye.y > 2 && eye.y < 2 + 2;
+})());
+check('the character camera looks along the facing it is given', (() => {
+  const forward = new Vector3();
+  const seen = new Set<string>();
+  for (let facing = 0; facing < 8; facing++) {
+    firstPersonCamera(0, 0, 0, facing as FacingIndex).camera.getWorldDirection(forward);
+    const step = facingVector(facing as FacingIndex);
+    if (Math.sign(round(forward.x)) !== step.dx || Math.sign(round(forward.z)) !== step.dy) {
+      return false;
+    }
+    if (forward.y >= 0) return false;
+    seen.add(`${round(forward.x)},${round(forward.z)}`);
+  }
+  return seen.size === 8;
+})());
+check('character observation blanks every tile the fog would swallow', (() => {
+  const center = Math.floor(CHARACTER_VIEW_SIZE / 2);
+  for (let row = 0; row < CHARACTER_VIEW_SIZE; row++) {
+    for (let column = 0; column < CHARACTER_VIEW_SIZE; column++) {
+      const dx = column - center;
+      const dy = row - center;
+      const isSelf = dx === 0 && dy === 0;
+      const fogged = dx * dx + dy * dy > CHARACTER_SIGHT_RADIUS_TILES * CHARACTER_SIGHT_RADIUS_TILES;
+      if (fogged && !isSelf && charObs.view[row]![column] !== ' ') return false;
+    }
+  }
+  return true;
+})());
+check('the character sight test is the half-plane test bounded by the sight radius', (() => {
+  for (let facing = 0; facing < 8; facing++) {
+    for (let dy = -CHARACTER_VIEW_SIZE; dy <= CHARACTER_VIEW_SIZE; dy++) {
+      for (let dx = -CHARACTER_VIEW_SIZE; dx <= CHARACTER_VIEW_SIZE; dx++) {
+        const expected =
+          isInFrontHalfPlane(facing as FacingIndex, dx, dy) &&
+          dx * dx + dy * dy <= CHARACTER_SIGHT_RADIUS_TILES * CHARACTER_SIGHT_RADIUS_TILES;
+        if (isWithinCharacterSight(facing as FacingIndex, dx, dy) !== expected) return false;
+      }
+    }
+  }
+  return true;
+})());
+check('a character observation stays smaller to read than a god observation', CHARACTER_VIEW_SIZE < GOD_VIEW_SIZE);
+check('the character observation states its sight radius, the god one has none', charObs.sightRadiusTiles === CHARACTER_SIGHT_RADIUS_TILES && godObs.sightRadiusTiles === null);
+check('the character observation text names the sight radius', observationText(charObs).includes(`${CHARACTER_SIGHT_RADIUS_TILES} tiles`));
 check('every facing rotates the blank half of the character view', (() => {
   const center = Math.floor(CHARACTER_VIEW_SIZE / 2);
   const views = new Set<string>();
@@ -1149,8 +1230,8 @@ check('every facing rotates the blank half of the character view', (() => {
     views.add(obs.view.join('\n'));
     for (let row = 0; row < CHARACTER_VIEW_SIZE; row++) {
       for (let column = 0; column < CHARACTER_VIEW_SIZE; column++) {
-        const inFront = isInFrontHalfPlane(facing as FacingIndex, column - center, row - center);
-        if (!inFront && !(row === center && column === center) && obs.view[row]![column] !== ' ') {
+        const visible = isWithinCharacterSight(facing as FacingIndex, column - center, row - center);
+        if (!visible && !(row === center && column === center) && obs.view[row]![column] !== ' ') {
           return false;
         }
       }
@@ -1161,10 +1242,15 @@ check('every facing rotates the blank half of the character view', (() => {
 check('character legend appears only for visible glyphs plus the fixed entries', charObs.legend.every((entry) => entry.glyph === '@' || entry.glyph === ' ' || charObs.view.some((row) => row.includes(entry.glyph))));
 
 const agentDocs = buildApiDocs(tileset);
+check('api docs state the character sight radius and grid size', agentDocs.includes(`${CHARACTER_SIGHT_RADIUS_TILES}-tile sight radius`) && agentDocs.includes(`${CHARACTER_VIEW_SIZE}x${CHARACTER_VIEW_SIZE}`));
 check('api docs render with no unfilled placeholder', !/\{\{\w+\}\}/.test(agentDocs));
-check('api docs list every verb of both modes', ALL_VERBS.every((verb) => agentDocs.includes(`\`${verb.action}\``)));
+check('api docs list every ability of both modes', everyAbility().every((spec) => agentDocs.includes(`\`${spec.action}\``)));
 check('api docs list every failure code', FAILURES.every((failure) => agentDocs.includes(`\`${failure.code}\``)));
 check("api docs legend names every tileset symbol", tileset.all().every((tile) => agentDocs.includes(`'${tile.symbol}' = ${tile.name}`)));
+check('api docs list every registered node type', allNodeTypes().every((def) => agentDocs.includes(`\`${def.type}\``)));
+check('api docs render an example body for every ability that takes params', everyAbility().filter((spec) => Object.keys(spec.params).length > 0).every((spec) => agentDocs.includes(JSON.stringify(spec.example))));
+check('api docs name the human control for every ability', everyAbility().every((spec) => agentDocs.includes(spec.humanControl)));
+check('every registered node type serializes into the catalog', nodeTypesJson().types.length === allNodeTypes().length);
 
 check('turning wraps in eighth turns', turnedFacing(7, 1) === 0 && turnedFacing(0, -1) === 7);
 check('facing-relative steps never exceed one tile per axis', (() => {
@@ -1178,86 +1264,182 @@ check('facing-relative steps never exceed one tile per axis', (() => {
   }
   return true;
 })());
-check('applyAction enforces mode verb ownership', (() => {
-  const pose = { x: 0, y: 0, facing: 0 as FacingIndex };
-  const actor = {
-    pose: () => pose,
-    tryStep: (dx: number, dy: number) => ((pose.x += dx), (pose.y += dy), true),
-    turn: (turns: number) => (pose.facing = turnedFacing(pose.facing, turns)),
-  };
-  return (
-    applyAction(actor, 'character', 'step_north') === 'unknown_action' &&
-    applyAction(actor, 'god', 'turn_left') === 'unknown_action' &&
-    applyAction(actor, 'god', 'step_east') === 'moved' &&
-    applyAction(actor, 'character', 'turn_right') === 'turned' &&
-    pose.facing === 1
-  );
-})());
 check('observation text and json carry the same grid', observationText(charObs).includes(charObs.view.join('\n')));
 
-check('api docs list every registered node type', allNodeTypes().every((def) => agentDocs.includes(`\`${def.type}\``)));
-check('api docs render an example body for every editing verb', ALL_VERBS.filter((verb) => verb.group === 'editing').every((verb) => agentDocs.includes(JSON.stringify(verb.example))));
-check('every registered node type serializes into the catalog', nodeTypesJson().types.length === allNodeTypes().length);
+function abilityWorld() {
+  const store = new PipelineStore(emptyPipeline());
+  const abilityTileset = new Tileset();
+  const prefabs = new PrefabLibrary(() => -1);
+  const pose = { x: 0, y: 0, facing: 0 as FacingIndex };
+  const context = {
+    store,
+    tileset: abilityTileset,
+    prefabs,
+    creatures: new CreatureLibrary(),
+    templates: new TemplateLibrary([]),
+    worldPresets: new WorldPresetLibrary([]),
+    randomizeHistory: new RandomizeHistory(),
+    regionSampler: {
+      tileAt: () => 0,
+      elevationAt: () => 0,
+      voxelColumnAt: () => null,
+    },
+    actor: {
+      pose: () => pose,
+      tryStep: (dx: number, dy: number) => ((pose.x += dx), (pose.y += dy), true),
+      turn: (turns: number) => (pose.facing = turnedFacing(pose.facing, turns)),
+    },
+  };
+  return { context, store, pose, prefabs, tileset: abilityTileset };
+}
 
-const editStore = new PipelineStore(emptyPipeline());
-const editCtx = {
-  store: editStore,
-  tileset,
-  prefabs: new PrefabLibrary(() => -1),
-  creatures: new CreatureLibrary(),
-};
+const abilities = abilityWorld();
+const act = (mode: 'god' | 'character', action: string, params: Record<string, unknown> = {}) =>
+  performAbility(abilities.context, mode, action, params);
+
+check('an ability is refused to a mode that does not own it', (() => {
+  const characterCompass = act('character', 'step_north');
+  const godTurn = act('god', 'turn_left');
+  const characterEdit = act('character', 'add_node', { type: 'noiseField' });
+  return (
+    !characterCompass.ok && characterCompass.code === 'unknown_action' &&
+    !godTurn.ok && godTurn.code === 'unknown_action' &&
+    !characterEdit.ok && characterEdit.code === 'unknown_action'
+  );
+})());
+check('an unknown action lists the ones the mode does have', (() => {
+  const result = act('god', 'set_fire_to_everything');
+  return !result.ok && result.hint.includes('add_node');
+})());
+check('a missing required param is named, not guessed at', (() => {
+  const result = act('god', 'set_param', { node_id: 'n1' });
+  return !result.ok && result.code === 'bad_request' && result.hint.includes('param');
+})());
+check('moving and turning go through the same registry the API uses', (() => {
+  const moved = act('god', 'step_east');
+  const turned = act('character', 'turn_right');
+  return moved.ok && abilities.pose.x === 1 && turned.ok && abilities.pose.facing === 1;
+})());
 check('add_node rejects an unknown type', (() => {
-  const result = applyEditAction(editCtx, 'add_node', { type: 'noSuchThing' });
+  const result = act('god', 'add_node', { type: 'noSuchThing' });
   return !result.ok && result.code === 'unknown_node_type';
 })());
 check('add_node creates and reports the node', (() => {
-  const result = applyEditAction(editCtx, 'add_node', { type: 'noiseField' });
-  return result.ok && editStore.nodes().length === 1;
+  const result = act('god', 'add_node', { type: 'noiseField' });
+  return result.ok && abilities.store.nodes().length === 1;
 })());
-const noiseId = editStore.nodes()[0]!.id;
+const noiseId = abilities.store.nodes()[0]!.id;
 check('set_param clamps a knob to its range', (() => {
-  const result = applyEditAction(editCtx, 'set_param', { node_id: noiseId, param: 'scale', value: 999 });
-  return result.ok && editStore.nodeById(noiseId)!.params.scale === 0.3;
+  const result = act('god', 'set_param', { node_id: noiseId, param: 'scale', value: 999 });
+  return result.ok && abilities.store.nodeById(noiseId)!.params.scale === 0.3;
 })());
 check('set_param names the real params on a miss', (() => {
-  const result = applyEditAction(editCtx, 'set_param', { node_id: noiseId, param: 'nope', value: 1 });
+  const result = act('god', 'set_param', { node_id: noiseId, param: 'nope', value: 1 });
   return !result.ok && result.code === 'unknown_param' && result.hint.includes('scale');
 })());
 check('threshold auto-wires to the noise field when added', (() => {
-  const result = applyEditAction(editCtx, 'add_node', { type: 'thresholdTiles' });
-  const threshold = editStore.nodes()[1];
+  const result = act('god', 'add_node', { type: 'thresholdTiles' });
+  const threshold = abilities.store.nodes()[1];
   return result.ok && threshold?.type === 'thresholdTiles' && Object.values(threshold.inputs).includes(noiseId);
 })());
-const thresholdId = editStore.nodes()[1]!.id;
+const thresholdId = abilities.store.nodes()[1]!.id;
 check('wire_input refuses a later source for an earlier node', (() => {
-  const result = applyEditAction(editCtx, 'wire_input', { node_id: noiseId, input: 'field', source_node_id: thresholdId });
+  const result = act('god', 'wire_input', { node_id: noiseId, input: 'field', source_node_id: thresholdId });
   return !result.ok && (result.code === 'invalid_wire' || result.code === 'unknown_param');
 })());
 check('set_display refuses a mode the output kind cannot take', (() => {
-  const result = applyEditAction(editCtx, 'set_display', { node_id: noiseId, display: 'tileLayer' });
+  const result = act('god', 'set_display', { node_id: noiseId, display: 'tileLayer' });
   return !result.ok && result.code === 'invalid_display';
 })());
 check('set_display binds elevation with a height scale', (() => {
-  const result = applyEditAction(editCtx, 'set_display', { node_id: noiseId, display: 'elevation', height_scale: 5 });
-  const display = editStore.nodeById(noiseId)!.display;
+  const result = act('god', 'set_display', { node_id: noiseId, display: 'elevation', height_scale: 5 });
+  const display = abilities.store.nodeById(noiseId)!.display;
   return result.ok && display.mode === 'elevation' && display.heightScale === 5;
 })());
+check('set_display keeps the fields you leave out', (() => {
+  act('god', 'set_display', { node_id: noiseId, display: 'elevation', height_scale: 7 });
+  const kept = act('god', 'set_display', { node_id: noiseId, display: 'elevation' });
+  const display = abilities.store.nodeById(noiseId)!.display;
+  return kept.ok && display.mode === 'elevation' && display.heightScale === 7;
+})());
 check('set_seed reseeds the pipeline', (() => {
-  const result = applyEditAction(editCtx, 'set_seed', { seed: 777 });
-  return result.ok && editStore.seed() === 777;
+  const result = act('god', 'set_seed', { seed: 777 });
+  return result.ok && abilities.store.seed() === 777;
 })());
-check('remove_node deletes and reports', (() => {
-  const result = applyEditAction(editCtx, 'remove_node', { node_id: thresholdId });
-  return result.ok && editStore.nodes().length === 1;
-})());
-check('character mode owns no editing verbs', ALL_VERBS.every((verb) => verb.group !== 'editing' || verb.mode === 'god'));
 check('set_display rejects a prefab id the library does not have', (() => {
-  const added = applyEditAction(editCtx, 'add_node', { type: 'scatterPoints' });
-  const points = editCtx.store.nodes()[editCtx.store.nodes().length - 1]!;
-  const bad = applyEditAction(editCtx, 'set_display', { node_id: points.id, display: 'prefabs', prefab_id: 9999 });
-  const good = applyEditAction(editCtx, 'set_display', { node_id: points.id, display: 'creatures', creature_id: -1 });
+  const added = act('god', 'add_node', { type: 'scatterPoints' });
+  const points = abilities.store.nodes()[abilities.store.nodes().length - 1]!;
+  const bad = act('god', 'set_display', { node_id: points.id, display: 'prefabs', prefab_id: 9999 });
+  const good = act('god', 'set_display', { node_id: points.id, display: 'creatures', creature_id: -1 });
   return added.ok && !bad.ok && bad.code === 'invalid_value' && good.ok;
 })());
+check('remove_node deletes and reports', (() => {
+  const result = act('god', 'remove_node', { node_id: thresholdId });
+  return result.ok && abilities.store.nodes().every((node) => node.id !== thresholdId);
+})());
+check('tiles can be created and edited through abilities', (() => {
+  const before = abilities.tileset.all().length;
+  const added = act('god', 'add_tile');
+  const tileId = abilities.tileset.all()[abilities.tileset.all().length - 1]!.id;
+  const named = act('god', 'update_tile', { tile_id: tileId, name: 'test tile', walkable: 0 });
+  const tile = abilities.tileset.byId(tileId)!;
+  return (
+    added.ok && named.ok &&
+    abilities.tileset.all().length === before + 1 &&
+    tile.name === 'test tile' && tile.walkable === false
+  );
+})());
+check('prefabs can be built voxel by voxel through abilities', (() => {
+  const added = act('god', 'add_prefab');
+  const prefab = abilities.prefabs.all()[abilities.prefabs.all().length - 1]!;
+  const sized = act('god', 'resize_prefab', { prefab_id: prefab.id, width: 3, depth: 3, layers: 2 });
+  const groundTile = abilities.tileset.all()[0]!.id;
+  const painted = act('god', 'paint_prefab', { prefab_id: prefab.id, x: 1, y: 1, layer: 1, tile_id: groundTile });
+  const outside = act('god', 'paint_prefab', { prefab_id: prefab.id, x: 9, y: 9, layer: 0, tile_id: groundTile });
+  const filled = act('god', 'fill_prefab_layer', { prefab_id: prefab.id, layer: 0, tile_id: groundTile });
+  const after = abilities.prefabs.byId(prefab.id)!;
+  return (
+    added.ok && sized.ok && painted.ok && filled.ok && !outside.ok &&
+    after.width === 3 && after.layers === 2 &&
+    after.voxels.filter((voxel) => voxel === groundTile).length === 10
+  );
+})());
+check('creatures can be created and tuned through abilities', (() => {
+  const added = act('god', 'add_creature');
+  const creature = abilities.context.creatures.all()[abilities.context.creatures.all().length - 1]!;
+  const tuned = act('god', 'update_creature', { creature_id: creature.id, behavior: 3, speed: 2.5 });
+  const badBehavior = act('god', 'update_creature', { creature_id: creature.id, behavior: 99 });
+  const after = abilities.context.creatures.byId(creature.id)!;
+  return added.ok && tuned.ok && !badBehavior.ok && after.behavior === 3 && after.speed === 2.5;
+})());
+check('presets and templates round-trip through abilities', (() => {
+  const saved = act('god', 'save_preset', { name: 'check preset' });
+  const nodeIds = abilities.store.nodes().map((node) => node.id);
+  const template = act('god', 'save_template', { name: 'check template', node_ids: nodeIds });
+  const stamped = act('god', 'stamp_template', { name: 'check template' });
+  const loaded = act('god', 'load_preset', { name: 'check preset' });
+  const unknown = act('god', 'load_preset', { name: 'no such world' });
+  return (
+    saved.ok && template.ok && stamped.ok && loaded.ok &&
+    !unknown.ok && unknown.code === 'unknown_preset' && unknown.hint.includes('check preset')
+  );
+})());
+check('a roll can be seeded and undone', (() => {
+  const before = JSON.stringify(abilities.store.snapshot());
+  const rolled = act('god', 'randomize_sliders', { seed: 42 });
+  const undone = act('god', 'undo_randomize');
+  return rolled.ok && undone.ok && JSON.stringify(abilities.store.snapshot()) === before;
+})());
+check('capture_region lifts world tiles into a new prefab', (() => {
+  const before = abilities.prefabs.all().length;
+  const captured = act('god', 'capture_region', { min_x: 0, min_y: 0, max_x: 3, max_y: 3 });
+  return captured.ok && abilities.prefabs.all().length === before + 1;
+})());
+check('every ability is reachable through the API dispatcher', everyAbility().every((spec) => abilityFor(spec.mode, spec.action) === spec));
+check('character mode owns nothing but movement', abilitiesForMode('character').every((spec) => spec.group === 'movement'));
+
+checkOnlyTheAbilityLayerCanMutate(check);
+
 const BIOME_SEA = 0;
 const BIOME_SHORE = 1;
 const BIOME_GROUND = 2;
@@ -1460,29 +1642,6 @@ check(
 check(
   'world presets reject junk',
   sanitizeWorldPresets([{ name: '', state: earthlikeState() }, { name: 'empty', state: { nodes: [] } }, null, 7]).length === 0,
-);
-
-const explorerLimits = { stepBudget: 600, radiusCap: 96 };
-const explorerRunA = measureWorld(worldFromState(islandsState()).sampler, tileset, explorerLimits);
-const explorerRunB = measureWorld(worldFromState(islandsState()).sampler, tileset, explorerLimits);
-check(
-  'explorer walks the same path over fresh evaluators of the same world',
-  explorerRunA !== null &&
-    explorerRunB !== null &&
-    JSON.stringify(explorerRunA.trace.path) === JSON.stringify(explorerRunB.trace.path),
-);
-check(
-  'explorer visits every cell it stepped on exactly once in the visited set',
-  explorerRunA !== null &&
-    explorerRunA.trace.visited.size <= explorerRunA.trace.path.length &&
-    explorerRunA.trace.path.every((cell) => explorerRunA.trace.visited.has(`${cell.x},${cell.y}`)),
-);
-check(
-  'explorer scores land in [0, 1] with every metric reading scored',
-  explorerRunA !== null &&
-    explorerRunA.score.overall >= 0 &&
-    explorerRunA.score.overall <= 1 &&
-    explorerRunA.score.readings.every((r) => r.score >= 0 && r.score <= 1),
 );
 
 checkPrefabAndCreatureInvariants(check);

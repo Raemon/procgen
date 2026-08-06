@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { chunkCoordOfCell, chunkKey } from '../../procgen/chunk';
 import type { WorldSampler } from '../../procgen/worldSampler';
-import type { Tileset } from '../../world/tiles/tileset';
+import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
 import { disposeMeshChildren } from './disposeMeshResources';
 import { buildChunkMeshGroup } from './worldMeshes';
 
@@ -19,7 +19,7 @@ export class ChunkMeshStreamer {
   constructor(
     private readonly root: THREE.Group,
     private readonly sampler: WorldSampler,
-    private readonly tileset: Tileset,
+    private readonly tileset: ReadOnlyTileset,
   ) {}
 
   invalidateAll(): void {

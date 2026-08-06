@@ -1,15 +1,26 @@
+import '../abilities/index';
+import { abilitiesForMode } from '../abilities/abilityRegistry';
+import type { AbilityGroup, AbilityMode, AbilitySpec } from '../abilities/ability';
 import { allNodeTypes } from '../procgen/nodeRegistry';
-import type { Tileset } from '../world/tiles/tileset';
-import { CHARACTER_VIEW_SIZE, GOD_VIEW_SIZE } from './observation';
+import type { ReadOnlyTileset } from '../app/readOnlyLibraries';
+import {
+  CHARACTER_SIGHT_RADIUS_TILES,
+  CHARACTER_VIEW_SIZE,
+} from '../world/vision/characterSight';
+import { GOD_VIEW_SIZE } from './observation';
 import { FAILURES } from './failures';
-import { verbsForMode, type VerbSpec } from './controls';
 
 const TEMPLATE = `# Procgen world — agent API
 
 You are an agent in an infinite, procedurally generated world. Everything you
 can know about the world arrives as an ASCII grid plus a legend; everything you
-can do goes through one action verb per request. A human playing this world in
-agent mode sees exactly the text you receive — nothing more.
+can do goes through one action per request.
+
+**Every ability in this application is one of the actions below.** The human
+sitting at the browser has no powers you lack: their buttons, knobs and drags
+call exactly the same actions with the same validation, and each action's row
+names the control they would use. A human in an agent view mode reads exactly
+the text you receive — nothing more.
 
 ## Coordinate system (read this first)
 
@@ -26,13 +37,16 @@ An agent is created in one of two modes and stays in it for life.
 - **god** — a {{GOD_SIZE}}x{{GOD_SIZE}} window centered on you. You see every
   generated tile in the window, and your facing is stated in the observation.
   You move by absolute compass steps, and you can REBUILD THE WORLD: the
-  editing verbs below create and manipulate the procgen node pipeline that
-  generates every tile everyone sees.
+  pipeline, library and world actions below are the whole world editor.
 - **character** — a {{CHARACTER_SIZE}}x{{CHARACTER_SIZE}} window centered on
-  you, but only the tiles IN FRONT of you are drawn; the half of the grid
-  behind you is blank. The blank side is how you know which way you face — the
-  observation never states it. You move relative to your facing and turn in
-  45-degree steps. Characters cannot edit the world.
+  you, but you only see the half-disc in front of you: tiles behind you are
+  blank, and so is everything past your {{SIGHT_RADIUS}}-tile sight radius,
+  which is why the corners of the grid are blank too. The blank half is how you
+  know which way you face — the observation never states it. That half-disc is
+  exactly the ground the 2.5D character view renders before its fog closes in,
+  which is first person and shows no more of the world than you are told. You move
+  relative to your facing and turn in 45-degree steps. Characters can only
+  move.
 
 ## Endpoints
 
@@ -46,44 +60,60 @@ An agent is created in one of two modes and stays in it for life.
 | GET /api/v1/agents/{id}/observe?format=json or text | — | a fresh observation |
 | POST /api/v1/agents/{id}/act | {"action": "...", ...params} | perform one action; responds with the outcome and a fresh observation |
 | GET /api/v1/pipeline | — | the current node pipeline: every node with id, type, params, wiring, display |
-| GET /api/v1/node-types | — | the catalog of node types god agents can add, every param and input explained |
-| GET /api/v1/prefabs | — | the prefab library: structures a points node can stamp into the world via set_display |
-| GET /api/v1/creatures | — | the creature library: creatures a points node can spawn via set_display |
+| GET /api/v1/node-types | — | the catalog of node types you can add, every param and input explained |
+| GET /api/v1/tiles | — | the tileset: what every glyph in an observation means |
+| GET /api/v1/prefabs | — | the prefab library: structures a points node can stamp |
+| GET /api/v1/creatures | — | the creature library: creatures a points node can spawn |
+| GET /api/v1/templates | — | saved groups of wired nodes you can stamp in |
+| GET /api/v1/presets | — | whole worlds you can load |
 | POST /api/v1/agents/{id}/run | {"goal": "...", "model": optional, "max_steps": optional, "anthropic_api_key": optional} | start an autopilot run that drives this agent with an LLM |
 | POST /api/v1/agents/{id}/stop | — | stop the autopilot run |
 | GET /api/v1/agents/{id}/transcript?after=seq | — | the autopilot transcript |
 
-## Actions — god mode, moving
+## Actions — moving
 
-| action | params | human control | what it does |
-| --- | --- | --- | --- |
-{{GOD_MOVE_ACTIONS}}
-
+God mode moves by compass; character mode moves relative to its facing.
 Diagonal steps slide: if the diagonal is blocked on one axis, you still move
 along the other.
 
-## Actions — god mode, building the world
+| action | params | the human control | what it does |
+| --- | --- | --- | --- |
+{{MOVEMENT_ACTIONS}}
+
+## Actions — building the world (god mode)
 
 The world is generated by an ordered pipeline of nodes. Each node outputs a
 field (numbers per tile), tiles (a tile id per cell), or points (tagged
 markers); a node may consume the outputs of EARLIER nodes only. A display
 binding maps a node into the world: tile layers stack in list order, elevation
-shapes the ground, markers draw glyphs. Every act that edits echoes the full
-pipeline back, and the world in every later observation is regenerated from it.
+shapes the ground, markers draw glyphs, prefabs stamp structures, creatures
+spawn life. Every act that edits echoes the full pipeline back, and every later
+observation is regenerated from it.
 
-| action | params | human control | what it does |
+| action | params | the human control | what it does |
 | --- | --- | --- | --- |
-{{GOD_EDIT_ACTIONS}}
+{{PIPELINE_ACTIONS}}
 
-Example bodies, one per verb:
+## Actions — the libraries (god mode)
 
-{{EDIT_EXAMPLES}}
+Tiles, prefabs and creatures are the vocabulary the pipeline draws from. A node
+references them by id, so create the definition first, then point a node at it.
 
-## Actions — character mode
-
-| action | params | human control | what it does |
+| action | params | the human control | what it does |
 | --- | --- | --- | --- |
-{{CHARACTER_ACTIONS}}
+{{LIBRARY_ACTIONS}}
+
+## Actions — whole worlds (god mode)
+
+| action | params | the human control | what it does |
+| --- | --- | --- | --- |
+{{WORLD_ACTIONS}}
+
+## Example bodies
+
+One per action that takes params:
+
+{{EXAMPLES}}
 
 ## Failure codes
 
@@ -110,51 +140,68 @@ legend names every glyph visible in that observation.
 
 Observe, decide, act, repeat. Every act response carries a fresh observation,
 so a simple loop needs only POST .../act. Nothing moves while you think: the
-world only changes when someone acts on it — or when a god rebuilds it.
+world only changes when someone acts on it.
 `;
 
-export function buildApiDocs(tileset: Tileset): string {
-  const filled = TEMPLATE.replace(/\{\{(\w+)\}\}/g, (_, key: string) => placeholderValue(tileset, key));
+export function buildApiDocs(tileset: ReadOnlyTileset): string {
+  const filled = TEMPLATE.replace(/\{\{(\w+)\}\}/g, (_, key: string) =>
+    placeholderValue(tileset, key),
+  );
   const unfilled = filled.match(/\{\{\w+\}\}/);
   if (unfilled) throw new Error(`unfilled docs placeholder ${unfilled[0]}`);
   return filled;
 }
 
-function placeholderValue(tileset: Tileset, key: string): string {
+export function everyAbility(): AbilitySpec[] {
+  const modes: AbilityMode[] = ['god', 'character'];
+  return modes.flatMap((mode) => abilitiesForMode(mode));
+}
+
+function placeholderValue(tileset: ReadOnlyTileset, key: string): string {
   if (key === 'GOD_SIZE') return String(GOD_VIEW_SIZE);
   if (key === 'CHARACTER_SIZE') return String(CHARACTER_VIEW_SIZE);
-  if (key === 'GOD_MOVE_ACTIONS') return actionsTable(godVerbs('movement'));
-  if (key === 'GOD_EDIT_ACTIONS') return actionsTable(godVerbs('editing'));
-  if (key === 'EDIT_EXAMPLES') return editExamples();
-  if (key === 'CHARACTER_ACTIONS') return actionsTable(verbsForMode('character'));
+  if (key === 'SIGHT_RADIUS') return String(CHARACTER_SIGHT_RADIUS_TILES);
+  if (key === 'EXAMPLES') return examples();
   if (key === 'FAILURES') return failuresTable();
   if (key === 'NODE_TYPES') return nodeTypesTable();
   if (key === 'LEGEND') return legendBlock(tileset);
-  throw new Error(`unknown docs placeholder ${key}`);
+  return actionsTableFor(key);
 }
 
-function godVerbs(group: 'movement' | 'editing'): readonly VerbSpec[] {
-  return verbsForMode('god').filter((verb) => verb.group === group);
+const GROUP_OF_PLACEHOLDER: Readonly<Record<string, AbilityGroup>> = {
+  MOVEMENT_ACTIONS: 'movement',
+  PIPELINE_ACTIONS: 'pipeline',
+  LIBRARY_ACTIONS: 'library',
+  WORLD_ACTIONS: 'world',
+};
+
+function actionsTableFor(key: string): string {
+  const group = GROUP_OF_PLACEHOLDER[key];
+  if (!group) throw new Error(`unknown docs placeholder ${key}`);
+  return actionsTable(everyAbility().filter((spec) => spec.group === group));
 }
 
-function actionsTable(verbs: readonly VerbSpec[]): string {
-  return verbs
+function actionsTable(specs: readonly AbilitySpec[]): string {
+  return specs
     .map(
-      (verb) =>
-        `| \`${verb.action}\` | ${paramsCell(verb)} | ${verb.humanControl} | ${verb.description} |`,
+      (spec) =>
+        `| \`${spec.action}\` | ${paramsCell(spec)} | ${spec.humanControl} | ${spec.description} |`,
     )
     .join('\n');
 }
 
-function paramsCell(verb: VerbSpec): string {
-  const entries = Object.entries(verb.params);
+function paramsCell(spec: AbilitySpec): string {
+  const entries = Object.entries(spec.params);
   if (entries.length === 0) return '—';
-  return entries.map(([name, description]) => `\`${name}\`: ${description}`).join('; ');
+  return entries
+    .map(([name, param]) => `\`${name}\`${param.optional ? ' (optional)' : ''}: ${param.help}`)
+    .join('; ');
 }
 
-function editExamples(): string {
-  return godVerbs('editing')
-    .map((verb) => `    ${JSON.stringify(verb.example)}`)
+function examples(): string {
+  return everyAbility()
+    .filter((spec) => Object.keys(spec.params).length > 0)
+    .map((spec) => `    ${JSON.stringify(spec.example)}`)
     .join('\n');
 }
 
@@ -173,7 +220,7 @@ function nodeTypesTable(): string {
     .join('\n');
 }
 
-function legendBlock(tileset: Tileset): string {
+function legendBlock(tileset: ReadOnlyTileset): string {
   const tiles = tileset
     .all()
     .map(
@@ -182,7 +229,7 @@ function legendBlock(tileset: Tileset): string {
     );
   return [
     "- '@' = you",
-    "- ' ' = nothing generated here (in character mode, also: behind you)",
+    "- ' ' = nothing generated here (in character mode, also: behind you, or fogged out past your sight radius)",
     "- '?' = unrecognized tile",
     ...tiles,
   ].join('\n');

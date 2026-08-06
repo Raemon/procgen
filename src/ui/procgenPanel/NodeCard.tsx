@@ -25,7 +25,7 @@ export function NodeCard({
   index: number;
   dropMarker: DropMarker;
 }) {
-  const { store, tileset } = useAppRuntime();
+  const { perform, tileset } = useAppRuntime();
   const [collapsed, setCollapsed] = useState(false);
   const def = nodeTypeOf(node.type);
   const highlighted = useSyncExternalStore(subscribeToWireHighlight, highlightedWireSource);
@@ -35,7 +35,8 @@ export function NodeCard({
       data-node-id={node.id}
       {...{ [DROP_INDEX_ATTRIBUTE]: index }}
       className={classes(
-        'rounded-md border bg-field p-2',
+        'rounded-md border bg-field',
+        collapsed ? 'w-fit p-1' : 'p-2',
         highlighted === node.id ? 'border-accent' : 'border-panel-edge',
         !node.enabled && 'opacity-45',
         dropMarkerClasses(dropMarker),
@@ -65,7 +66,7 @@ export function NodeCard({
                   spec={spec}
                   tileset={tileset}
                   value={node.params[name]!}
-                  onChange={(value) => store.setParam(node.id, name, value)}
+                  onChange={(value) => perform('set_param', { node_id: node.id, param: name, value })}
                 />
               ))}
               <DisplaySection node={node} kind={outputKindOf(def, node.params)} />

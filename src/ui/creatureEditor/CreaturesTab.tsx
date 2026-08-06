@@ -6,14 +6,14 @@ import { HINT_CLASSES } from '../controls/fieldClasses';
 import { CreatureRow } from './CreatureRow';
 
 export function CreaturesTab() {
-  const { creatures } = useAppRuntime();
+  const { creatures, perform } = useAppRuntime();
   useRerenderOnCreatureChange();
   return (
     <>
       {creatures.all().map((creature) => (
         <CreatureRow key={creature.id} creature={creature} />
       ))}
-      <Button className="mt-2" onClick={() => creatures.add()}>
+      <Button className="mt-2" onClick={() => perform('add_creature')}>
         + add creature
       </Button>
       <p className={classes(HINT_CLASSES, 'mt-2')}>

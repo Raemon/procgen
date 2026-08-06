@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { newAgentApiState } from '../src/agent/api/nodeEntry';
 import { loadServerConfig } from './config';
 import { AgentEntitySync } from './game/agentEntitySync';
-import { afterPipelinePersistedByAgent, type DocSyncDeps } from './game/docSync';
+import { afterWorldPersistedByAgent, type DocSyncDeps } from './game/docSync';
 import { EntityRegistry } from './game/entities';
 import { GameLoop } from './game/gameLoop';
 import { SnapshotFeed } from './game/snapshotFeed';
@@ -35,7 +35,7 @@ async function main(): Promise<void> {
 
   const router = new Router();
   mountPersistRoutes(router, docSyncDeps);
-  mountAgentApi(router, agentState, config.root, () => afterPipelinePersistedByAgent(docSyncDeps));
+  mountAgentApi(router, agentState, config.root, () => afterWorldPersistedByAgent(docSyncDeps));
   router.get('/healthz', (_req, res) =>
     sendJson(res, 200, {
       ok: true,

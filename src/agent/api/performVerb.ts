@@ -1,6 +1,6 @@
-import { applyAction } from '../actions';
-import { verbByAction } from '../controls';
-import { applyEditAction } from '../editActions';
+import '../../abilities/index';
+import { performAbility } from '../../abilities/performAbility';
+import { abilityFor } from '../../abilities/abilityRegistry';
 import { failureByCode } from '../failures';
 import type { ServerWorld } from './serverWorld';
 import { sessionActor, type AgentSession } from './sessions';
@@ -25,47 +25,38 @@ export function performVerb(
   action: string,
   params: Record<string, unknown>,
 ): VerbResult {
-  const verb = verbByAction(session.mode, action);
-  const result = verb ? perform(session, world, verb.group, action, params) : unknownAction(action, session);
-  session.lastAction = { action, outcome: result.outcome };
-  return result;
-}
-
-function perform(
-  session: AgentSession,
-  world: ServerWorld,
-  group: 'movement' | 'editing',
-  action: string,
-  params: Record<string, unknown>,
-): VerbResult {
-  if (group === 'movement') return moveVerb(session, world, action);
-  const edit = applyEditAction(
-    { store: world.store, tileset: world.tileset, prefabs: world.prefabs, creatures: world.creatures },
+  const result = performAbility(
+    {
+      store: world.store,
+      tileset: world.tileset,
+      prefabs: world.prefabs,
+      creatures: world.creatures,
+      templates: world.templates,
+      worldPresets: world.worldPresets,
+      randomizeHistory: world.randomizeHistory,
+      regionSampler: world.sampler,
+      actor: sessionActor(session, world.isWalkable),
+    },
+    session.mode,
     action,
     params,
   );
-  if (edit.ok) return { outcome: 'edited', summary: edit.summary, failure: null, changedPipeline: true };
-  return { outcome: 'failed', summary: null, failure: verbFailure(edit.code, edit.hint), changedPipeline: false };
-}
-
-function moveVerb(session: AgentSession, world: ServerWorld, action: string): VerbResult {
-  const outcome = applyAction(sessionActor(session, world.isWalkable), session.mode, action);
+  const outcome = outcomeOf(action, session.mode, result.ok);
+  session.lastAction = { action, outcome };
   return {
     outcome,
-    summary: null,
-    failure: outcome === 'blocked' ? verbFailure('blocked', null) : null,
-    changedPipeline: false,
+    summary: result.ok ? result.summary : null,
+    failure: result.ok ? null : verbFailure(result.code, result.hint),
+    changedPipeline: result.ok && (abilityFor(session.mode, action)?.changesWorld ?? false),
   };
 }
 
-function unknownAction(action: string, session: AgentSession): VerbResult {
-  return {
-    outcome: 'unknown_action',
-    summary: null,
-    failure: verbFailure('unknown_action', `'${action}' is not a ${session.mode}-mode verb`),
-    changedPipeline: false,
-  };
+function outcomeOf(action: string, mode: AgentSessionMode, ok: boolean): string {
+  if (ok) return abilityFor(mode, action)?.changesWorld ? 'edited' : 'moved';
+  return 'failed';
 }
+
+type AgentSessionMode = AgentSession['mode'];
 
 function verbFailure(code: string, hint: string | null): VerbFailure {
   const spec = failureByCode(code);

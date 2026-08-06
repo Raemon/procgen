@@ -3,8 +3,12 @@ import type { NodeTemplate } from './nodeTemplate';
 import { loadSavedTemplates, storeSavedTemplates } from './templateStorage';
 
 export class TemplateLibrary {
-  private saved: NodeTemplate[] = loadSavedTemplates();
+  private saved: NodeTemplate[];
   private readonly listeners = new Set<() => void>();
+
+  constructor(initialTemplates?: NodeTemplate[]) {
+    this.saved = initialTemplates ?? loadSavedTemplates();
+  }
 
   builtIn(): readonly NodeTemplate[] {
     return builtInTemplates();

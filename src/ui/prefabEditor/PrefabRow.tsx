@@ -14,7 +14,7 @@ export function PrefabRow({
   open: boolean;
   onToggle(): void;
 }) {
-  const { prefabs } = useAppRuntime();
+  const { perform } = useAppRuntime();
   return (
     <div className="mb-1.5">
       <div className="flex items-center gap-1.5">
@@ -23,7 +23,7 @@ export function PrefabRow({
           title="name"
           className={classes(FIELD_CLASSES, 'min-w-0 flex-1')}
           value={prefab.name}
-          onChange={(event) => prefabs.update(prefab.id, { name: event.target.value })}
+          onChange={(event) => perform('rename_prefab', { prefab_id: prefab.id, name: event.target.value })}
         />
         <span className="shrink-0 text-[11px] whitespace-nowrap text-ink-dim">
           {prefab.width}×{prefab.depth}×{prefab.layers}
@@ -39,14 +39,14 @@ export function PrefabRow({
         <Button
           className="px-2 py-0.5"
           title="duplicate prefab"
-          onClick={() => prefabs.duplicate(prefab.id)}
+          onClick={() => perform('duplicate_prefab', { prefab_id: prefab.id })}
         >
           ⧉
         </Button>
         <Button
           className="px-2 py-0.5 hover:border-danger-edge hover:text-danger-ink"
           title="delete prefab"
-          onClick={() => prefabs.remove(prefab.id)}
+          onClick={() => perform('remove_prefab', { prefab_id: prefab.id })}
         >
           ×
         </Button>

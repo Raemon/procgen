@@ -1,7 +1,6 @@
 import { useAppRuntime } from '../../app/appRuntimeContext';
 import type { InputSpec } from '../../procgen/nodeType';
 import type { NodeInstance } from '../../procgen/pipeline/pipelineState';
-import type { PipelineStore } from '../../procgen/pipeline/pipelineStore';
 import { wiringCandidates } from '../../procgen/pipeline/wiringRules';
 import { KnobRow } from '../controls/KnobRow';
 import { Select } from '../controls/Select';
@@ -19,7 +18,7 @@ export function WiringRow({
   inputName: string;
   spec: InputSpec;
 }) {
-  const { store } = useAppRuntime();
+  const { store, perform } = useAppRuntime();
   const wiredTo = node.inputs[inputName] ?? UNWIRED;
   return (
     <div
@@ -30,9 +29,9 @@ export function WiringRow({
         <Select
           warn={missingWire(node, inputName, spec)}
           value={wiredTo}
-          options={wiringOptions(store, node, spec)}
+          options={wiringOptions(store.nodes(), node, spec)}
           onChange={(value) =>
-            store.wireInput(node.id, inputName, value === UNWIRED ? null : value)
+            perform('wire_input', { node_id: node.id, input: inputName, source_node_id: value === UNWIRED ? null : value })
           }
         />
       </KnobRow>
@@ -44,10 +43,10 @@ function missingWire(node: NodeInstance, inputName: string, spec: InputSpec): bo
   return !spec.optional && !node.inputs[inputName];
 }
 
-function wiringOptions(store: PipelineStore, node: NodeInstance, spec: InputSpec) {
+function wiringOptions(nodes: readonly NodeInstance[], node: NodeInstance, spec: InputSpec) {
   return [
     { value: UNWIRED, text: spec.optional ? '(none)' : '(required)' },
-    ...wiringCandidates(store.snapshot(), node.id, spec).map((source) => ({
+    ...wiringCandidates(nodes, node.id, spec).map((source) => ({
       value: source.id,
       text: source.label,
     })),

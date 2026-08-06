@@ -1,7 +1,7 @@
-import type { Tileset } from '../../world/tiles/tileset';
+import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
 
 export function tileSelectOptions(
-  tileset: Tileset,
+  tileset: ReadOnlyTileset,
   noTileText: string,
 ): { value: string; text: string }[] {
   return [

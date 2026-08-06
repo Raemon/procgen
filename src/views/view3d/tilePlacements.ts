@@ -2,7 +2,7 @@ import { EMPTY_TILE } from '../../procgen/values/chunkValues';
 import type { WorldSampler } from '../../procgen/worldSampler';
 import type { TileDef } from '../../world/tiles/tileDef';
 import type { CubeFaceArt } from '../../world/tiles/tileFaceArt';
-import type { Tileset } from '../../world/tiles/tileset';
+import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
 
 export interface TilePlacement {
   x: number;
@@ -26,7 +26,7 @@ const FALLBACK_TREE_GROUND = '#3c5a34';
 
 export function tilePlacementsForRect(
   sampler: WorldSampler,
-  tileset: Tileset,
+  tileset: ReadOnlyTileset,
   minX: number,
   minY: number,
   width: number,
@@ -44,7 +44,7 @@ export function tilePlacementsForRect(
 function addCellToShapes(
   shapes: TilePlacementsByShape,
   sampler: WorldSampler,
-  tileset: Tileset,
+  tileset: ReadOnlyTileset,
   x: number,
   y: number,
 ): void {
@@ -57,7 +57,7 @@ function addCellToShapes(
 function addTileToShapes(
   shapes: TilePlacementsByShape,
   tile: TileDef,
-  tileset: Tileset,
+  tileset: ReadOnlyTileset,
   x: number,
   y: number,
   elevation: number,
@@ -80,7 +80,7 @@ export function tileStandsAsSolidBlock(tile: TileDef): boolean {
 }
 
 function groundUnderTree(
-  tileset: Tileset,
+  tileset: ReadOnlyTileset,
   x: number,
   y: number,
   elevation: number,

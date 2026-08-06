@@ -1,11 +1,11 @@
 import type { Marker, WorldSampler } from '../../procgen/worldSampler';
-import type { Tileset } from '../../world/tiles/tileset';
+import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
 import { asciiCellAt, markerLookup, EMPTY_GLYPH } from './asciiCells';
 import { viewportCenteredOn, type AsciiViewport } from './asciiViewport';
 
 export function asciiSnapshot(
   sampler: WorldSampler,
-  tileset: Tileset,
+  tileset: ReadOnlyTileset,
   playerX: number,
   playerY: number,
   columns: number,
@@ -22,7 +22,7 @@ export function asciiSnapshot(
 
 function snapshotRow(
   sampler: WorldSampler,
-  tileset: Tileset,
+  tileset: ReadOnlyTileset,
   markers: Map<string, Marker>,
   viewport: AsciiViewport,
   playerX: number,

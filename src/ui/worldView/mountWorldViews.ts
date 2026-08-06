@@ -23,7 +23,7 @@ export function mountWorldViews(
   slots: ViewSlots,
   currentMode: () => ViewMode,
 ): MountedWorldViews {
-  const { world, sampler, tileset } = runtime;
+  const { world, sampler, tileset, perform } = runtime;
   const view3d = new View3D(slots.view3d, worldViewDepsOf(runtime));
   const agentGodView = new AgentTextView(slots.agentGod, world, sampler, tileset, 'god');
   const agentCharacterView = new AgentTextView(
@@ -53,12 +53,12 @@ export function mountWorldViews(
     moveIntent: (forwardInput, strafeInput) => {
       const [dx, dy] = isCharacterControlled(currentMode())
         ? facingRelativeStep(world.facing, forwardInput, strafeInput)
-        : cameraRelativeStep(godYawQuadrant(currentMode(), view3d), forwardInput, strafeInput);
+        : cameraRelativeStep(currentMode() === '3d-god' ? view3d.yawQuadrant() : 0, forwardInput, strafeInput);
       runtime.net.setMoveIntent(dx, dy);
     },
     moveReleased: () => runtime.net.clearMoveIntent(),
     rotate: (direction) => {
-      if (isCharacterControlled(currentMode())) world.turn(direction);
+      if (isCharacterControlled(currentMode())) perform(direction === -1 ? 'turn_left' : 'turn_right');
       else if (currentMode() === '3d-god') view3d.rotate(direction);
     },
   });
@@ -74,13 +74,10 @@ export function mountWorldViews(
       agentCharacterView.dispose();
     },
     onModeChanged: (mode) => {
+      runtime.setPlayerMode(isCharacterControlled(mode) ? 'character' : 'god');
       view3d.setCameraStyle(mode === 'character' ? 'character' : 'god');
     },
   };
-}
-
-function godYawQuadrant(mode: ViewMode, view3d: View3D): number {
-  return mode === '3d-god' ? view3d.yawQuadrant() : 0;
 }
 
 function worldViewDepsOf(runtime: AppRuntime): WorldViewDeps {

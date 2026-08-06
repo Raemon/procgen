@@ -2,8 +2,12 @@ import { loadSavedWorldPresets, storeSavedWorldPresets } from './worldPresetStor
 import type { WorldPreset } from './worldPreset';
 
 export class WorldPresetLibrary {
-  private saved: WorldPreset[] = loadSavedWorldPresets();
+  private saved: WorldPreset[];
   private readonly listeners = new Set<() => void>();
+
+  constructor(initialPresets?: WorldPreset[]) {
+    this.saved = initialPresets ?? loadSavedWorldPresets();
+  }
 
   savedPresets(): readonly WorldPreset[] {
     return this.saved;

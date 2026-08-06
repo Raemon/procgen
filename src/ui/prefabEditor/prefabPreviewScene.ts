@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { EMPTY_VOXEL, voxelAt, type Prefab } from '../../prefabs/prefabDef';
-import type { Tileset } from '../../world/tiles/tileset';
+import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
 
 const BACKGROUND_INK = '#0d1119';
 const ORBIT_PIXELS_PER_RADIAN = 140;
@@ -28,7 +28,7 @@ export class PrefabPreviewScene {
     this.renderer.dispose();
   }
 
-  showPrefab(prefab: Prefab, tileset: Tileset): void {
+  showPrefab(prefab: Prefab, tileset: ReadOnlyTileset): void {
     this.clearVoxels();
     this.voxelGroup.add(...voxelMeshes(prefab, tileset));
     this.voxelGroup.position.set(-prefab.width / 2, 0, -prefab.depth / 2);
@@ -103,7 +103,7 @@ export class PrefabPreviewScene {
   }
 }
 
-function voxelMeshes(prefab: Prefab, tileset: Tileset): THREE.Mesh[] {
+function voxelMeshes(prefab: Prefab, tileset: ReadOnlyTileset): THREE.Mesh[] {
   const byColor = new Map<string, THREE.Vector3[]>();
   for (let layer = 0; layer < prefab.layers; layer++) {
     for (let y = 0; y < prefab.depth; y++) {
@@ -118,7 +118,7 @@ function voxelMeshes(prefab: Prefab, tileset: Tileset): THREE.Mesh[] {
 function collectVoxel(
   byColor: Map<string, THREE.Vector3[]>,
   prefab: Prefab,
-  tileset: Tileset,
+  tileset: ReadOnlyTileset,
   x: number,
   y: number,
   layer: number,

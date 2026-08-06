@@ -4,6 +4,7 @@ import type { NodeInstance } from '../../procgen/pipeline/pipelineState';
 import { Button } from '../controls/Button';
 import { classes } from '../controls/classes';
 import { NODE_ID_MIME } from './nodeDragTransfer';
+import { NodeTypeIcon } from './nodeTypeIcon';
 
 export function NodeCardHeader({
   node,
@@ -16,42 +17,81 @@ export function NodeCardHeader({
   collapsed: boolean;
   onToggleCollapsed(): void;
 }) {
-  const { store } = useAppRuntime();
+  const { perform } = useAppRuntime();
+  if (collapsed) {
+    return (
+      <div className="flex items-center gap-[5px]">
+        <DragHandle nodeId={node.id} />
+        <TypeIconButton
+          node={node}
+          typeTitle={typeTitle}
+          collapsed
+          onToggleCollapsed={onToggleCollapsed}
+        />
+      </div>
+    );
+  }
   return (
-    <div className={classes('flex items-center gap-[5px]', collapsed ? '' : 'mb-2')}>
+    <div className="mb-2 flex items-center gap-[5px]">
       <DragHandle nodeId={node.id} />
-      <button
-        type="button"
-        className="cursor-pointer border-none bg-transparent p-0.5 text-[11px] text-ink-dim hover:text-ink"
-        title="collapse / expand"
-        onClick={onToggleCollapsed}
-      >
-        {collapsed ? '▸' : '▾'}
-      </button>
+      <TypeIconButton
+        node={node}
+        typeTitle={typeTitle}
+        collapsed={false}
+        onToggleCollapsed={onToggleCollapsed}
+      />
       <input
         type="checkbox"
         className="accent-accent"
         title="enabled"
         checked={node.enabled}
-        onChange={(event) => store.setEnabled(node.id, event.target.checked)}
+        onChange={(event) => perform(event.target.checked ? 'enable_node' : 'disable_node', { node_id: node.id })}
       />
       <NodeLabelInput node={node} />
       <span className="text-[10px] whitespace-nowrap text-ink-dim">{typeTitle}</span>
       <Button
         className="px-1.5 py-0.5 text-[11px]"
         title="duplicate node"
-        onClick={() => store.duplicateNode(node.id)}
+        onClick={() => perform('duplicate_node', { node_id: node.id })}
       >
         ⧉
       </Button>
       <Button
         className="px-1.5 py-0.5 text-[11px] hover:border-danger-edge hover:text-danger-ink"
         title="delete node"
-        onClick={() => store.removeNode(node.id)}
+        onClick={() => perform('remove_node', { node_id: node.id })}
       >
         ✕
       </Button>
     </div>
+  );
+}
+
+function TypeIconButton({
+  node,
+  typeTitle,
+  collapsed,
+  onToggleCollapsed,
+}: {
+  node: NodeInstance;
+  typeTitle: string;
+  collapsed: boolean;
+  onToggleCollapsed(): void;
+}) {
+  return (
+    <button
+      type="button"
+      className={classes(
+        'cursor-pointer rounded border border-transparent p-1 hover:border-panel-edge hover:text-ink',
+        collapsed ? 'text-ink' : 'text-ink-dim',
+      )}
+      title={
+        collapsed ? `${node.label} · ${typeTitle} — click to expand` : `${typeTitle} — click to collapse`
+      }
+      onClick={onToggleCollapsed}
+    >
+      <NodeTypeIcon type={node.type} size={16} />
+    </button>
   );
 }
 
@@ -76,9 +116,9 @@ function startCardDrag(event: DragEvent<HTMLElement>, nodeId: string): void {
 }
 
 function NodeLabelInput({ node }: { node: NodeInstance }) {
-  const { store } = useAppRuntime();
+  const { perform } = useAppRuntime();
   const [draft, setDraft] = useState(node.label);
-  const commit = () => draft.trim() && store.setLabel(node.id, draft.trim());
+  const commit = () => draft.trim() && perform('rename_node', { node_id: node.id, label: draft.trim() });
   return (
     <input
       type="text"

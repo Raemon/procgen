@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { classes } from '../../ui/controls/classes';
-import { HINT_CLASSES, PANEL_HEADING_CLASSES } from '../../ui/controls/fieldClasses';
+import { HINT_CLASSES } from '../../ui/controls/fieldClasses';
 import { fetchTranscript, type WireTranscriptEntry } from './agentsApiClient';
 
 const TRANSCRIPT_POLL_MS = 1000;
@@ -13,16 +13,14 @@ const ENTRY_INKS: Readonly<Record<WireTranscriptEntry['type'], string>> = {
   error: 'text-amber-400',
 };
 
-export function AgentLogPanel({ selectedId }: { selectedId: string | null }) {
+export function AgentLogPanel({ selectedId }: { selectedId: string }) {
   const { entries, runStatus } = useTranscript(selectedId);
   const bottom = useRef<HTMLDivElement>(null);
   useEffect(() => bottom.current?.scrollIntoView({ block: 'nearest' }), [entries.length]);
   return (
     <>
-      <h2 className={PANEL_HEADING_CLASSES}>agent log {runStatus && `· ${runStatus}`}</h2>
-      {selectedId === null ? (
-        <p className={HINT_CLASSES}>Select an agent to follow its autopilot transcript.</p>
-      ) : entries.length === 0 ? (
+      {runStatus && <p className={`${HINT_CLASSES} mb-1.5`}>run · {runStatus}</p>}
+      {entries.length === 0 ? (
         <p className={HINT_CLASSES}>No transcript yet — start a run.</p>
       ) : (
         <div className="flex flex-col gap-1 text-xs">
@@ -38,7 +36,7 @@ export function AgentLogPanel({ selectedId }: { selectedId: string | null }) {
   );
 }
 
-function useTranscript(selectedId: string | null): {
+function useTranscript(selectedId: string): {
   entries: WireTranscriptEntry[];
   runStatus: string | null;
 } {
@@ -47,12 +45,11 @@ function useTranscript(selectedId: string | null): {
   useEffect(() => {
     setEntries([]);
     setRunStatus(null);
-    if (selectedId === null) return;
     let collected: WireTranscriptEntry[] = [];
     let disposed = false;
     async function poll(): Promise<void> {
       const after = collected[collected.length - 1]?.seq ?? 0;
-      const update = await fetchTranscript(selectedId!, after);
+      const update = await fetchTranscript(selectedId, after);
       if (disposed || !update) return;
       if (update.entries.length > 0) {
         collected = [...collected, ...update.entries];

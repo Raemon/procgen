@@ -1,6 +1,6 @@
 import { nearestWalkable } from '../../src/world/nearestWalkable';
 import type { Connection } from '../net/connection';
-import { readDocFile, saveDoc } from '../persist/docsRepo';
+import { PERSISTED_DOC_NAMES, readDocFile, saveDoc } from '../persist/docsRepo';
 import type { Store } from '../persist/db';
 import type { EntityRegistry } from './entities';
 import type { WorldHost } from './worldHost';
@@ -21,9 +21,16 @@ export function afterDocChanged(deps: DocSyncDeps, name: string, json: unknown):
   snapEntitiesToWalkableGround(deps);
 }
 
-export function afterPipelinePersistedByAgent(deps: DocSyncDeps): void {
-  const raw = readDocFile(deps.root, 'pipeline');
-  if (raw !== null) afterDocChanged(deps, 'pipeline', JSON.parse(raw));
+export function afterWorldPersistedByAgent(deps: DocSyncDeps): void {
+  for (const name of PERSISTED_DOC_NAMES) {
+    const raw = readDocFile(deps.root, name);
+    if (raw === null) continue;
+    void saveDoc(deps.store, name, JSON.parse(raw)).catch((err) =>
+      console.warn(`[persist] doc ${name} failed`, err),
+    );
+    broadcastDocChanged(deps.connections, name);
+  }
+  snapEntitiesToWalkableGround(deps);
 }
 
 function broadcastDocChanged(connections: Set<Connection>, name: string): void {

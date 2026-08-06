@@ -2,7 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { handleApiRequest } from './handlers';
 import {
   currentServerWorld,
-  persistPipeline,
+  persistWorld,
   type ServerWorld,
   type WorldAccess,
 } from './serverWorld';
@@ -46,9 +46,8 @@ function worldAccess(
       state.world = currentServerWorld(root, state.world);
       return state.world;
     },
-    persistPipeline: (world) => {
-      persistPipeline(root, world);
-      state.world = null;
+    persistWorld: (world) => {
+      persistWorld(root, world);
       onPipelinePersisted?.();
     },
   };
