@@ -32,6 +32,10 @@ function migrateLocalStorageToFile(name: string): void {
   if (stored !== null) pushToServer(name, stored);
 }
 
+export function seedPersistedFile(name: string, value: unknown): void {
+  preloaded.set(name, value);
+}
+
 export function readPersistedFile<T>(name: string): T | null {
   if (preloaded.has(name)) return preloaded.get(name) as T;
   return readJson<T>(localStorageKeyOf(name));

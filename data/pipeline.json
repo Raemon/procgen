@@ -1,31 +1,30 @@
 {
-  "seed": 20,
+  "seed": 654539,
   "nodes": [
     {
       "id": "n1",
       "type": "noiseField",
-      "label": "terrain",
-      "comment": "One elevation field drives everything downstream: the land layer, the river courses, and where towns can appear all read this same node, so they always agree.",
+      "label": "base noise",
+      "comment": "",
       "enabled": true,
       "params": {
-        "scale": 0.05,
-        "octaves": 5
+        "scale": 0.11,
+        "octaves": 4
       },
       "inputs": {},
       "display": {
-        "mode": "elevation",
-        "heightScale": 3
+        "mode": "hidden"
       }
     },
     {
       "id": "n2",
       "type": "thresholdTiles",
-      "label": "sea & land",
-      "comment": "Base layer painting every cell: ocean below 0.45, grass above. The rivers node uses the same 0.45 as its sea level so river mouths land exactly on this coastline.",
+      "label": "band 1",
+      "comment": "",
       "enabled": true,
       "params": {
-        "threshold": 0.45,
-        "belowTile": 0,
+        "threshold": 0.49,
+        "belowTile": 1,
         "aboveTile": 2
       },
       "inputs": {
@@ -37,20 +36,17 @@
     },
     {
       "id": "n3",
-      "type": "riverTiles",
-      "label": "rivers",
-      "comment": "Springs on ground above 0.62 flow down the steepest path with a little meander until they hit sea level. Painted with the water tile so rivers and ocean read as one body of water.",
+      "type": "thresholdTiles",
+      "label": "band 2",
+      "comment": "",
       "enabled": true,
       "params": {
-        "sourceDensity": 0.0185,
-        "minSourceHeight": 0.62,
-        "seaLevel": 0.45,
-        "maxLength": 80,
-        "meander": 0.12,
-        "riverTile": 0
+        "threshold": 0.6,
+        "belowTile": -1,
+        "aboveTile": 3
       },
       "inputs": {
-        "elevation": "n1"
+        "source": "n1"
       },
       "display": {
         "mode": "tileLayer"
@@ -58,23 +54,38 @@
     },
     {
       "id": "n4",
-      "type": "riverTowns",
-      "label": "towns",
-      "comment": "Reads the rivers and the same terrain: a town candidate is any river cell touching the sea (a mouth) or with three river neighbors (a junction), thinned to one town per 14 tiles.",
+      "type": "thresholdTiles",
+      "label": "band 3",
+      "comment": "",
       "enabled": true,
       "params": {
-        "seaLevel": 0.45,
-        "spacing": 14
+        "threshold": 0.69,
+        "belowTile": -1,
+        "aboveTile": 4
       },
       "inputs": {
-        "rivers": "n3",
-        "elevation": "n1"
+        "source": "n1"
       },
       "display": {
-        "mode": "markers",
-        "tileId": -1,
-        "glyph": "⌂",
-        "color": "#e0b06a"
+        "mode": "tileLayer"
+      }
+    },
+    {
+      "id": "n5",
+      "type": "thresholdTiles",
+      "label": "band 4",
+      "comment": "",
+      "enabled": true,
+      "params": {
+        "threshold": 0.8,
+        "belowTile": -1,
+        "aboveTile": 0
+      },
+      "inputs": {
+        "source": "n1"
+      },
+      "display": {
+        "mode": "tileLayer"
       }
     }
   ]
