@@ -1,6 +1,6 @@
 import type { FacingIndex } from '../world/facing';
 
-export const PROTOCOL_VERSION = 2;
+export const PROTOCOL_VERSION = 3;
 
 export const Op = {
   Order: 1,
@@ -40,6 +40,17 @@ export interface EntityMetaMsg {
   kind: EntityKind;
 }
 
+export interface SayMsg {
+  t: 'say';
+  text: string;
+}
+
+export interface SaidMsg {
+  t: 'said';
+  id: number;
+  text: string;
+}
+
 export interface DocChangedMsg {
   t: 'docChanged';
   name: string;
@@ -51,5 +62,5 @@ export interface KickMsg {
   message: string;
 }
 
-export type ClientMsg = HelloMsg | OrderMsg | TurnMsg;
-export type ServerMsg = WelcomeMsg | EntityMetaMsg | DocChangedMsg | KickMsg | SnapshotMsg;
+export type ClientMsg = HelloMsg | SayMsg | OrderMsg | TurnMsg;
+export type ServerMsg = WelcomeMsg | EntityMetaMsg | SaidMsg | DocChangedMsg | KickMsg | SnapshotMsg;

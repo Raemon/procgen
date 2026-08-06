@@ -1,7 +1,14 @@
 import type { Server } from 'node:http';
 import { WebSocketServer, type RawData, type WebSocket } from 'ws';
 import { decodeClient } from '../../src/net/codec';
-import { Op, PROTOCOL_VERSION, type ClientMsg, type HelloMsg } from '../../src/net/protocol';
+import {
+  Op,
+  PROTOCOL_VERSION,
+  type ClientMsg,
+  type HelloMsg,
+  type SayMsg,
+} from '../../src/net/protocol';
+import { sanitizeChatText } from '../../src/chat/sanitizeChatText';
 import {
   ORDER_DIR,
   ORDER_NONE,
@@ -12,6 +19,7 @@ import {
 import { turnedFacing } from '../../src/world/facing';
 import { joinConnection, leaveConnection } from '../game/joins';
 import { Connection } from './connection';
+import { takeSayAllowance } from './sayAllowance';
 import type { WsDeps } from './wsDeps';
 
 const HELLO_TIMEOUT_MS = 5000;
@@ -58,6 +66,7 @@ function handleMessage(conn: Connection, msg: ClientMsg, deps: WsDeps): void {
     return;
   }
   if (msg.t === 'hello' && conn.state === 'AWAITING_HELLO') handleHello(conn, msg, deps);
+  if (msg.t === 'say' && conn.state === 'PLAYING' && conn.entity) handleSay(conn, msg, deps);
 }
 
 function handleHello(conn: Connection, hello: HelloMsg, deps: WsDeps): void {
@@ -70,6 +79,13 @@ function handleHello(conn: Connection, hello: HelloMsg, deps: WsDeps): void {
     console.error('[ws] join failed', err);
     conn.kick('abuse', 'join failed');
   });
+}
+
+function handleSay(conn: Connection, msg: SayMsg, deps: WsDeps): void {
+  const text = sanitizeChatText(msg.text);
+  if (text === '') return;
+  if (!takeSayAllowance(conn.sayAllowance, Date.now())) return;
+  deps.chat.broadcastSaid(conn.entity!.id, text);
 }
 
 function handleAction(conn: Connection, msg: number[], deps: WsDeps): void {

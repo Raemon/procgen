@@ -52,12 +52,12 @@ Hot messages are positional arrays with an opcode at index 0; rare messages
 are `{t: ...}` objects. All (de)serialization goes through the codec file.
 
 - client → server: `hello {v, name, token?}`, `[Order, kind, dir]`,
-  `[Turn, ±1]` (turns are free and instant)
+  `[Turn, ±1]` (turns are free and instant), `say {text}`
 - server → client: `welcome {id, x, y, facing, token}`,
   `[Snapshot, tick, rows]` every tick (full roster, rows
   `[id, x, y, facing, cooldown, moveDir]` so a client can re-project an
   in-flight hop), `entityMeta {id, name, kind}` (once per entity per
-  connection), `docChanged {name}`, `kick {code}`
+  connection), `said {id, text}`, `docChanged {name}`, `kick {code}`
 
 Online there is **zero client prediction**: the local player's tile position
 comes from snapshots, exactly like every other entity (chunkmaze's rule). The
@@ -65,6 +65,55 @@ views ease all meshes — own player included — between tiles at the hop rate
 (`src/views/view3d/easedPoint.ts`), so 20Hz tile updates render as smooth
 walking. The only local echo is facing, which is applied immediately and
 shielded from snapshot overwrite for a short quiet window.
+
+## Chat: speech over the speaker's head, not a log
+
+Chat is rare, so it rides the object half of the protocol rather than the
+snapshot rows: a client sends `say {text}` and the server broadcasts
+`said {id, text}` keyed by **entity id**, the same id the snapshot rows use.
+Nothing about chat touches the tick.
+
+The multiplayer rules shape it in five places:
+
+- **No client prediction, chat included.** Your own line appears when the
+  server echoes it back, exactly like everyone else's — the client never
+  renders a bubble it hasn't been told about. The single exception is the
+  offline fallback: when no server is reachable (`localMovementSim` is
+  driving), `say` writes straight into the local bubble store, so a
+  server-less world still talks.
+- **The server owns the text.** `sanitizeChatText` (shared by client and
+  server, but authoritative on the server) strips control characters,
+  collapses whitespace and cuts to 140 characters; empty results are
+  dropped. Bubbles are written with `textContent`, so a line is never markup.
+- **Flooding throttles, it does not kick.** Each connection carries a token
+  bucket (3 lines burst, one refilled every 1.5s). Over-budget lines are
+  dropped silently — they are not counted as input violations, because a
+  human typing fast is not an abuser.
+- **Bubbles live and die with entities.** They are keyed by entity id, so
+  every snapshot prunes speakers that left the roster, and `welcome` clears
+  the store on reconnect (ids are minted per process, never reused). A
+  duplicate login adopts the same entity, so its bubbles survive the swap.
+- **Lines expire on their own**, 3s plus 45ms per character, capped at 9s,
+  with the last three lines per speaker stacked over their head.
+
+Rendering is a DOM overlay in the 3-D view (`speechBubbleLabels.ts`) that
+projects each speaker's *eased* mesh position — the same eased point the
+mesh uses, so bubbles ride along with the walk animation instead of
+snapping at 20Hz. In first person your own bubble would sit inside the
+camera, so it is pinned to the bottom of the viewport instead, and other
+players' bubbles are culled past the sight radius, where the fog has
+already hidden the speaker.
+
+Input lives in `ChatComposer`: return opens the composer, return sends and
+keeps it open for the next line, return on an empty box closes it, escape
+closes it. While it is open movement input is suspended and any held
+movement keys are released, so you never walk away mid-sentence — with
+standing orders a held direction would otherwise keep walking the whole
+time you typed.
+
+`npm run check:chat` covers both halves headlessly: the bubble store and
+sanitizer as pure functions, then two real WebSocket clients against a
+booted server for the round trip, scrubbing and throttle.
 
 ## Identity
 
