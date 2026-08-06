@@ -49,6 +49,7 @@ function sanitizeNode(rawNode: unknown, usedIds: Set<string>): NodeInstance | nu
   const node = createNodeInstance(def, raw.id);
   if (typeof raw.label === 'string' && raw.label.length > 0) node.label = raw.label;
   if (typeof raw.comment === 'string') node.comment = raw.comment;
+  if (typeof raw.folder === 'string') node.folder = raw.folder;
   if (typeof raw.enabled === 'boolean') node.enabled = raw.enabled;
   applyStoredParams(node, def, raw.params);
   applyStoredInputs(node, raw.inputs);

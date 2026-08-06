@@ -9,6 +9,7 @@ export function createNodeInstance(def: NodeTypeDef, id: string): NodeInstance {
     type: def.type,
     label: def.title,
     comment: '',
+    folder: '',
     enabled: true,
     params,
     inputs: unwiredInputs(def),

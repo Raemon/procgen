@@ -47,6 +47,7 @@ src/procgen       the node framework:
                     noise, warp, curves), hydrology/ (drainage, erosion,
                     rivers), coast/, maze/, rivers/ + the custom script node
   presets/          example pipelines for the panel dropdown
+  templates/        saved subgraphs stamped in as named, folder-tagged groups
 src/world         Tileset, walkability, infinite-world player state
   tiles/art/        code-generated 32×32 face art for the shipped tiles
 src/views         ascii (canvas + pure-text snapshot) and view3d (chunk-mesh

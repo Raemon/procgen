@@ -1,6 +1,7 @@
 import { PipelineEvaluator } from '../procgen/eval/evaluator';
 import { attachPipelinePersistence, loadStoredPipeline } from '../procgen/pipeline/pipelineStorage';
 import { PipelineStore } from '../procgen/pipeline/pipelineStore';
+import { TemplateLibrary } from '../procgen/templates/templateLibrary';
 import { WorldSampler } from '../procgen/worldSampler';
 import { debounce } from '../ui/debounce';
 import { isWalkableTile } from '../world/tileWalkability';
@@ -14,6 +15,7 @@ const VALUE_TWEAK_DEBOUNCE_MS = 150;
 export interface AppRuntime {
   tileset: Tileset;
   store: PipelineStore;
+  templates: TemplateLibrary;
   evaluator: PipelineEvaluator;
   sampler: WorldSampler;
   world: World;
@@ -25,6 +27,7 @@ export interface AppRuntime {
 
 export function createAppRuntime(): AppRuntime {
   const tileset = new Tileset();
+  const templates = new TemplateLibrary();
   const store = new PipelineStore(loadStoredPipeline());
   attachPipelinePersistence(store);
   const evaluator = new PipelineEvaluator(store);
@@ -48,6 +51,7 @@ export function createAppRuntime(): AppRuntime {
 
   return {
     tileset,
+    templates,
     store,
     evaluator,
     sampler,

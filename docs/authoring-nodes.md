@@ -240,6 +240,28 @@ polyline paths or region graphs):
 3. The pipeline, wiring, caching, and panel need no changes — they treat
    kinds as opaque strings.
 
+## Folders and templates
+
+Two panel-level ideas sit above node types, and neither one can change what is
+generated:
+
+- **Folders** are visual only. `NodeInstance.folder` is a free string; adjacent
+  nodes sharing one fold into a single collapsible band. `computeNodeSignatures`
+  never reads it, so renaming a folder cannot invalidate a cache or move a tile
+  — `npm run check` asserts exactly that. Folders are authoring metadata, like
+  `comment`.
+- **Templates** are saved subgraphs: `{ name, description, nodes }` in
+  `src/procgen/templates/`. Stamping one clones its nodes with fresh ids, remaps
+  the wiring *inside* the template, and leaves wiring that pointed outside it
+  unwired for you to connect. The stamped nodes land in a folder named after the
+  template. Built-ins live in `builtInTemplates.ts`; user templates are saved
+  from a folder in the panel into `data/templates.json`.
+
+Templates are where geologic names belong. A node type should be named for the
+operation it performs; the recognisable landform is the *assembly*, so ship it
+as a template — "tectonic plates" is a template over uplift, noise and warp
+nodes, not a node called Andes.
+
 ## Example pipelines
 
 `src/procgen/presets/examplePipelines.ts` holds the presets in the panel's

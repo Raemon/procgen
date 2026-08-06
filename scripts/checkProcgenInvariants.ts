@@ -8,6 +8,11 @@ import { emptyPipeline, type PipelineState } from '../src/procgen/pipeline/pipel
 import { PipelineStore } from '../src/procgen/pipeline/pipelineStore';
 import { sanitizePipeline } from '../src/procgen/pipeline/sanitizePipeline';
 import { examplePipelines } from '../src/procgen/presets/examplePipelines';
+import { builtInTemplates } from '../src/procgen/templates/builtInTemplates';
+import { stampTemplateInto } from '../src/procgen/templates/stampTemplate';
+import { templateFromNodes } from '../src/procgen/templates/templateFromNodes';
+import { sanitizeTemplates } from '../src/procgen/templates/nodeTemplate';
+import { nodeFolderRuns } from '../src/ui/procgenPanel/nodeFolderRuns';
 import { mulberry32 } from '../src/random/mulberry32';
 import { permutedNodeCombination } from '../src/procgen/randomize/permuteNodeCombination';
 import { permutedSliderParams } from '../src/procgen/randomize/permuteSliderParams';
@@ -1105,13 +1110,139 @@ const earthlike = worldFromState(earthlikeState());
 const earthlikeAgain = worldFromState(earthlikeState());
 check(
   'the earthlike preset regenerates identically from the same seed',
-  tileBytes(earthlike.evaluator, 'n20', 1, 1) === tileBytes(earthlikeAgain.evaluator, 'n20', 1, 1) &&
+  tileBytes(earthlike.evaluator, 'n16', 1, 1) === tileBytes(earthlikeAgain.evaluator, 'n16', 1, 1) &&
     fieldBytes(earthlike.evaluator, 'n12', 1, 1) === fieldBytes(earthlikeAgain.evaluator, 'n12', 1, 1),
 );
 check(
   'the earthlike preset shows sea, beach, grass and rock around the origin',
   [0, 1, 2, 4].every((tile) => tileIdsInRegion(earthlike.sampler, 96).has(tile)),
 );
+
+
+const BIOME_SEA = 0;
+const BIOME_SHORE = 1;
+const BIOME_GROUND = 2;
+const BIOME_ROCK = 4;
+const BIOME_DEEP = 5;
+const BIOME_SNOW = 7;
+
+function biomeState(): PipelineState {
+  return stateOfNodes([
+    { id: 'terrain', type: 'terrainNoise', params: { scale: 0.02, style: 0, octaves: 5, lacunarity: 2, gain: 0.5 }, inputs: {} },
+    { id: 'steep', type: 'slopeField', params: { radius: 3, gain: 40 }, inputs: { source: 'terrain' } },
+    { id: 'shore', type: 'coastDistance', params: { seaLevel: 0.5, range: 32 }, inputs: { elevation: 'terrain' } },
+    { id: 'half', type: 'constantField', params: { value: 1 }, inputs: {} },
+    {
+      id: 'biome',
+      type: 'biomeBands',
+      params: {
+        seaLevel: 0.5, deepDrop: 0.06, shoreBand: 0.06, rockAbove: 0.45, snowLine: 0.8, regionAtLeast: 0.5,
+        deepTile: BIOME_DEEP, waterTile: BIOME_SEA, shoreTile: BIOME_SHORE, groundTile: BIOME_GROUND,
+        rockTile: BIOME_ROCK, snowTile: BIOME_SNOW,
+      },
+      inputs: { elevation: 'terrain', steepness: 'steep', shoreDistance: 'shore', region: null },
+    },
+    {
+      id: 'maskedBiome',
+      type: 'biomeBands',
+      params: {
+        seaLevel: 0.5, deepDrop: 0.06, shoreBand: 0.06, rockAbove: 0.45, snowLine: 0.8, regionAtLeast: 0.5,
+        deepTile: BIOME_DEEP, waterTile: BIOME_SEA, shoreTile: BIOME_SHORE, groundTile: BIOME_GROUND,
+        rockTile: BIOME_ROCK, snowTile: BIOME_SNOW,
+      },
+      inputs: { elevation: 'terrain', steepness: 'steep', shoreDistance: 'shore', region: 'terrain' },
+    },
+  ]);
+}
+
+const biome = worldFromState(biomeState());
+const biomeTiles = new Set<number>();
+for (let y = -48; y < 48; y++) {
+  for (let x = -48; x < 48; x++) biomeTiles.add(tileAtNode(biome.evaluator, 'biome', x, y));
+}
+check('one biome node paints sea, shore, ground and rock from a single card', [BIOME_SEA, BIOME_SHORE, BIOME_GROUND, BIOME_ROCK].every((tile) => biomeTiles.has(tile)));
+check('a biome node never leaves a cell empty when it has no region mask', !biomeTiles.has(EMPTY_TILE));
+check(
+  'water is deep only further below sea level than the deep cut point',
+  everyCellInRegion(48, (x, y) => {
+    const height = fieldAt(biome.evaluator, 'terrain', x, y);
+    const tile = tileAtNode(biome.evaluator, 'biome', x, y);
+    return tile !== BIOME_DEEP || height < 0.5 - 0.06;
+  }),
+);
+check(
+  'a region mask holds a biome back and leaves those cells to another layer',
+  everyCellInRegion(48, (x, y) =>
+    fieldAt(biome.evaluator, 'terrain', x, y) >= 0.5 ||
+    tileAtNode(biome.evaluator, 'maskedBiome', x, y) === EMPTY_TILE),
+);
+
+function everyCellInRegion(span: number, holds: (x: number, y: number) => boolean): boolean {
+  for (let y = -span; y < span; y++) {
+    for (let x = -span; x < span; x++) if (!holds(x, y)) return false;
+  }
+  return true;
+}
+
+const foldedState = sanitizePipeline({
+  seed: 3,
+  nodes: [
+    { id: 'a', type: 'terrainNoise', folder: 'terrain', params: {}, inputs: {} },
+    { id: 'b', type: 'slopeField', folder: 'terrain', params: {}, inputs: { source: 'a' } },
+    { id: 'c', type: 'coastDistance', folder: '', params: {}, inputs: { elevation: 'a' } },
+    { id: 'd', type: 'terrainNoise', folder: 'terrain', params: {}, inputs: {} },
+  ],
+});
+const runs = nodeFolderRuns(foldedState.nodes);
+check(
+  'adjacent nodes sharing a folder fold into one run, and a break starts a new one',
+  runs.length === 3 && runs[0]!.nodes.length === 2 && runs[1]!.folder === '' && runs[2]!.startIndex === 3,
+);
+check(
+  'folders survive sanitize and serialization',
+  sanitizePipeline(JSON.parse(JSON.stringify(foldedState))).nodes.map((node) => node.folder).join() ===
+    'terrain,terrain,,terrain',
+);
+check(
+  'folders never reach the node signature, so grouping cannot change the world',
+  [...computeNodeSignatures(foldedState).values()].join() ===
+    [...computeNodeSignatures(sanitizePipeline({ seed: 3, nodes: foldedState.nodes.map((node) => ({ ...node, folder: 'renamed' })) })).values()].join(),
+);
+
+const templates = builtInTemplates();
+check('every built-in template survives sanitize with all of its nodes', templates.length === 5 && templates.every((template) => template.nodes.length > 0));
+check(
+  'every built-in template describes itself and comments every node',
+  templates.every((template) => template.description.length > 0 && template.nodes.every((node) => node.comment.length > 0)),
+);
+
+const stampTarget = sanitizePipeline({ seed: 8, nodes: [{ id: 'n1', type: 'terrainNoise', params: {}, inputs: {} }] });
+const plates = templates.find((template) => template.name === 'tectonic plates')!;
+const stamped = stampTemplateInto(stampTarget, plates, stampTarget.nodes.length);
+check('stamping a template makes fresh ids that cannot collide', new Set(stampTarget.nodes.map((node) => node.id)).size === stampTarget.nodes.length);
+check('a stamped template lands in a folder named after itself', stamped.every((node) => node.folder === plates.name));
+check(
+  'wiring inside a stamped template is remapped onto its new ids',
+  stamped[3]!.inputs.source === stamped[0]!.id && stamped[3]!.inputs.offsetX === stamped[1]!.id,
+);
+const stampedWorld = worldFromState(stampTarget);
+check(
+  'a stamped template generates without error',
+  stamped.every((node) => stampedWorld.evaluator.errorFor(node.id) === null) &&
+    asField(stampedWorld.evaluator.valueFor(stamped[3]!.id, 0, 0)) !== null,
+);
+
+const capturedRun = nodeFolderRuns(sanitizePipeline(earthlikeState()).nodes).find((run) => run.folder === 'river valleys')!;
+const captured = templateFromNodes(capturedRun.nodes, 'river valleys', 'captured from the preset');
+check(
+  'saving a folder as a template keeps wiring inside it and opens wiring to nodes outside',
+  captured.nodes[1]!.inputs.flow === captured.nodes[0]!.id && captured.nodes[0]!.inputs.elevation === null,
+);
+check(
+  'a saved template round-trips through storage',
+  sanitizeTemplates(JSON.parse(JSON.stringify([captured]))).length === 1,
+);
+check('templates reject junk', sanitizeTemplates([{ name: '', nodes: [] }, null, 7]).length === 0);
 
 
 if (failures.length > 0) throw new Error(`${failures.length} check(s) failed: ${failures.join(', ')}`);
