@@ -13,6 +13,7 @@ import { ProcgenPanel } from './ui/procgenPanel/procgenPanel';
 import { TileEditor } from './ui/tileEditor/tileEditor';
 import { ViewModeToggle } from './ui/viewModeToggle';
 import { AsciiView } from './views/ascii/asciiView';
+import { recenterViewsWhenPlayerMoves } from './views/camera/recenterOnPlayerMove';
 import { View3D } from './views/view3d/view3d';
 import { isWalkableTile } from './world/tileWalkability';
 import { Tileset } from './world/tiles/tileset';
@@ -54,7 +55,7 @@ store.onChange((change) => {
 });
 rerenderOnPanelBlur([tilePanel, procgenPanel], () => applyAfterTweaks.flushIfPending());
 tileset.onChange(() => applyWorldChange());
-world.on('player-moved', () => asciiView.draw());
+recenterViewsWhenPlayerMoves(world, [asciiView, view3d]);
 
 const viewMode = new ViewModeToggle(
   { ascii: elementById('slot-ascii'), view3d: elementById('slot-3d') },

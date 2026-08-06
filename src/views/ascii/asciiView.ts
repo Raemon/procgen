@@ -42,6 +42,11 @@ export class AsciiView {
     this.canvas.remove();
   }
 
+  recenterOnPlayer(): void {
+    this.camera.recenter();
+    this.draw();
+  }
+
   draw(): void {
     const size = containerSize(this.container);
     if (isCollapsed(size)) return;
@@ -59,9 +64,7 @@ export class AsciiView {
       this.camera.dragByPixels(dxPixels, dyPixels, containerSize(this.container));
       this.draw();
     });
-    this.canvas.addEventListener('dblclick', () => {
-      if (this.camera.recenter()) this.draw();
-    });
+    this.canvas.addEventListener('dblclick', () => this.recenterOnPlayer());
   }
 
   private startFrame(size: CanvasSize): void {

@@ -59,6 +59,10 @@ export class View3D {
     this.followCamera.rotate(direction);
   }
 
+  recenterOnPlayer(): void {
+    this.followCamera.recenterOnPlayer();
+  }
+
   onWorldChanged(): void {
     this.streamer.invalidateAll();
   }
@@ -70,7 +74,7 @@ export class View3D {
     listenForDragPan(this.canvas, (dxPixels, dyPixels) =>
       this.followCamera.panByDragPixels(dxPixels, dyPixels),
     );
-    this.canvas.addEventListener('dblclick', () => this.followCamera.recenterOnPlayer());
+    this.canvas.addEventListener('dblclick', () => this.recenterOnPlayer());
   }
 
   private resize(): void {

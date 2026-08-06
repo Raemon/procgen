@@ -11,7 +11,7 @@ export function renderAppLayout(app: HTMLElement): void {
         <button type="button" class="btn" id="btn-ascii">ASCII</button>
         <button type="button" class="btn" id="btn-3d">2.5D</button>
         <div class="spacer"></div>
-        <p class="hint">WASD/arrows move · Q/E rotate camera · wheel zoom · drag to pan · double-click to recenter</p>
+        <p class="hint">WASD/arrows move (recenters the camera) · Q/E rotate camera · wheel zoom · drag to pan · double-click to recenter</p>
       </div>
       <div class="world-stage" tabindex="0">
         <div class="view-slot" id="slot-ascii"></div>
