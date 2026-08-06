@@ -1,16 +1,20 @@
 {
-  "seed": 187404,
+  "seed": 4801,
   "nodes": [
     {
       "id": "n1",
-      "type": "noiseField",
-      "label": "base noise",
-      "comment": "",
-      "folder": "",
+      "type": "tectonicUplift",
+      "label": "plates",
+      "comment": "The continent the city was built on. Modest range height keeps the uplands low enough that streets running over them stay believable, and a thin land margin lets the sea reach deep into the street grid as bays.",
+      "folder": "old continent",
       "enabled": true,
       "params": {
-        "scale": 0.085,
-        "octaves": 6
+        "plateSize": 320,
+        "oceanFraction": 0.55,
+        "beltWidth": 56,
+        "rangeHeight": 0.26,
+        "landHeight": 0.6,
+        "basinDepth": 0.32
       },
       "inputs": {},
       "display": {
@@ -19,14 +23,17 @@
     },
     {
       "id": "n2",
-      "type": "noiseField",
-      "label": "detail noise",
-      "comment": "",
-      "folder": "",
+      "type": "terrainNoise",
+      "label": "warp x",
+      "comment": "Plumbing for the warp below: a continent-scale noise that says how far east or west to displace the plate field.",
+      "folder": "old continent",
       "enabled": true,
       "params": {
-        "scale": 0.07,
-        "octaves": 3
+        "scale": 0.004,
+        "style": 0,
+        "octaves": 4,
+        "lacunarity": 2,
+        "gain": 0.5
       },
       "inputs": {},
       "display": {
@@ -35,123 +42,524 @@
     },
     {
       "id": "n3",
-      "type": "combineFields",
-      "label": "blend",
-      "comment": "",
-      "folder": "",
+      "type": "terrainNoise",
+      "label": "warp y",
+      "comment": "The north-south half of the displacement, at a slightly different scale so the two axes never align into a diagonal grain.",
+      "folder": "old continent",
       "enabled": true,
       "params": {
-        "operation": 4,
-        "clamp": 1
+        "scale": 0.0045,
+        "style": 0,
+        "octaves": 4,
+        "lacunarity": 2,
+        "gain": 0.5
       },
-      "inputs": {
-        "a": "n1",
-        "b": "n2"
-      },
+      "inputs": {},
       "display": {
-        "mode": "elevation",
-        "heightScale": 1
+        "mode": "hidden"
       }
     },
     {
       "id": "n4",
-      "type": "thresholdTiles",
-      "label": "band 1",
-      "comment": "",
-      "folder": "",
+      "type": "domainWarp",
+      "label": "warped plates",
+      "comment": "Bends the straight plate boundaries into headlands and bays. The contrast is the point of this world: nature curves, but the street grid stamped on top refuses to.",
+      "folder": "old continent",
       "enabled": true,
       "params": {
-        "threshold": 0.42,
-        "belowTile": 4,
-        "aboveTile": 16
+        "strength": 90
       },
       "inputs": {
-        "source": "n3"
+        "source": "n1",
+        "offsetX": "n2",
+        "offsetY": "n3"
       },
       "display": {
-        "mode": "tileLayer"
+        "mode": "hidden"
       }
     },
     {
       "id": "n5",
-      "type": "thresholdTiles",
-      "label": "band 2",
-      "comment": "",
-      "folder": "",
+      "type": "terrainNoise",
+      "label": "rolling detail",
+      "comment": "Hills and coastal wobble so the ground under the pavement is not billiard-flat.",
+      "folder": "old continent",
       "enabled": true,
       "params": {
-        "threshold": 0.53,
-        "belowTile": -1,
-        "aboveTile": 18
+        "scale": 0.022,
+        "style": 0,
+        "octaves": 5,
+        "lacunarity": 2,
+        "gain": 0.5
       },
-      "inputs": {
-        "source": "n1"
-      },
+      "inputs": {},
       "display": {
-        "mode": "tileLayer"
+        "mode": "hidden"
       }
     },
     {
       "id": "n6",
-      "type": "thresholdTiles",
-      "label": "band 3",
-      "comment": "",
-      "folder": "",
+      "type": "blendFields",
+      "label": "blended terrain",
+      "comment": "A light pass of the rolling noise over the warped plates — texture, not competition.",
+      "folder": "old continent",
       "enabled": true,
       "params": {
-        "threshold": 0.65,
-        "belowTile": -1,
-        "aboveTile": 6
+        "weight": 0.18
       },
       "inputs": {
-        "source": "n3"
+        "a": "n4",
+        "b": "n5",
+        "mask": null
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n7",
+      "type": "hypsometricCurve",
+      "label": "basins & platform",
+      "comment": "Pushes the blend into deep basins and a low land platform. Every layer after this reads the same field — the sea, the marsh line and the creature masks all agree because they share it.",
+      "folder": "old continent",
+      "enabled": true,
+      "params": {
+        "seaLevel": 0.5,
+        "steepness": 9
+      },
+      "inputs": {
+        "source": "n6"
+      },
+      "display": {
+        "mode": "elevation",
+        "heightScale": 6
+      }
+    },
+    {
+      "id": "n8",
+      "type": "biomeBands",
+      "label": "wild ground",
+      "comment": "The land as it was before the builders came: sea, sand shores, grass. Almost all of it gets buried under the city — it only shows through again where the layers above choose to leave gaps.",
+      "folder": "old continent",
+      "enabled": true,
+      "params": {
+        "seaLevel": 0.5,
+        "deepDrop": 0.06,
+        "shoreBand": 0.05,
+        "rockAbove": 0.45,
+        "snowLine": 1,
+        "regionAtLeast": 0.5,
+        "deepTile": 5,
+        "waterTile": 0,
+        "shoreTile": 1,
+        "groundTile": 2,
+        "rockTile": 4,
+        "snowTile": 7
+      },
+      "inputs": {
+        "elevation": "n7",
+        "steepness": null,
+        "shoreDistance": null,
+        "region": null
       },
       "display": {
         "mode": "tileLayer"
       }
     },
     {
-      "id": "n7",
-      "type": "scatterPoints",
-      "label": "monster scatter",
-      "comment": "",
-      "folder": "",
+      "id": "n9",
+      "type": "customScript",
+      "label": "script: district fate",
+      "comment": "The idea no built-in node can express: the city decays by district, not by noise blob. Each 48-tile block hashes one fate, mixed with per-cell wear so district edges crumble raggedly instead of snapping along block lines. Everything downstream — rubble, forest, sentries, wolves — reads this one field.",
+      "folder": "the city",
       "enabled": true,
       "params": {
-        "density": 0.045,
-        "maskAtLeast": 0.65,
-        "maskAtMost": 0.78
+        "outputKind": "field",
+        "code": "const field = ctx.newField();\nconst districtSpan = 48;\nfor (let y = 0; y < ctx.size; y++) {\n  for (let x = 0; x < ctx.size; x++) {\n    const worldX = ctx.originX + x;\n    const worldY = ctx.originY + y;\n    const districtX = Math.floor(worldX / districtSpan);\n    const districtY = Math.floor(worldY / districtSpan);\n    const fate = ctx.hash01(districtX, districtY, 'district fate');\n    const wear = ctx.hash01(worldX, worldY, 'street wear');\n    field[y * ctx.size + x] = Math.min(1, fate * 0.75 + wear * 0.25);\n  }\n}\nreturn field;"
       },
       "inputs": {
-        "mask": "n2"
+        "a": null,
+        "b": null
       },
       "display": {
-        "mode": "markers",
-        "tileId": -1,
-        "glyph": "▲",
-        "color": "#3fbf9f"
+        "mode": "hidden"
       }
     },
     {
-      "id": "n8",
-      "type": "scatterPoints",
-      "label": "ghost scatter",
-      "comment": "",
-      "folder": "",
+      "id": "n10",
+      "type": "mazeChunk",
+      "label": "city streets",
+      "comment": "The metropolis itself, drawn by the maze node: sidewinder carving gives long straight avenues, and heavy braiding turns dead ends into the loops a street grid actually has. Stone walls, flagstone streets, spanning 2×2 chunks per ward — it paves everything, even the sea floor, where the drowning layers below will bury it.",
+      "folder": "the city",
       "enabled": true,
       "params": {
-        "density": 0.025,
-        "maskAtLeast": 0.67,
-        "maskAtMost": 0.96
+        "corridor": 4,
+        "wall": 1,
+        "mazeChunks": 2,
+        "carver": 2,
+        "braid": 0.5,
+        "doorsPerEdge": 3,
+        "wallTile": 17,
+        "floorTile": 16
+      },
+      "inputs": {},
+      "display": {
+        "mode": "tileLayer"
+      }
+    },
+    {
+      "id": "n11",
+      "type": "thresholdTiles",
+      "label": "rubble districts",
+      "comment": "Where fate passes 0.55 the masonry comes down: gravel paints over walls and streets alike. The per-cell wear in the fate field makes the edge of each ruined district a speckled crumble rather than a clean cut.",
+      "folder": "ruin & reclaim",
+      "enabled": true,
+      "params": {
+        "threshold": 0.55,
+        "belowTile": -1,
+        "aboveTile": 9
       },
       "inputs": {
-        "mask": "n3"
+        "source": "n9"
       },
       "display": {
-        "mode": "markers",
-        "tileId": -1,
-        "glyph": "☗",
-        "color": "#d268d2"
+        "mode": "tileLayer"
+      }
+    },
+    {
+      "id": "n12",
+      "type": "thresholdTiles",
+      "label": "reclaimed ground",
+      "comment": "The oldest ruins are not rubble any more — grass has closed over them. Painting grass above 0.72, on top of the gravel layer, gives the full gradient: intact stone, then rubble, then meadow.",
+      "folder": "ruin & reclaim",
+      "enabled": true,
+      "params": {
+        "threshold": 0.72,
+        "belowTile": -1,
+        "aboveTile": 2
+      },
+      "inputs": {
+        "source": "n9"
+      },
+      "display": {
+        "mode": "tileLayer"
+      }
+    },
+    {
+      "id": "n13",
+      "type": "terrainNoise",
+      "label": "thicket noise",
+      "comment": "Billowed noise reads as clumps, which is how young woodland actually spreads — copses, not even stubble.",
+      "folder": "ruin & reclaim",
+      "enabled": true,
+      "params": {
+        "scale": 0.06,
+        "style": 2,
+        "octaves": 4,
+        "lacunarity": 2,
+        "gain": 0.5
+      },
+      "inputs": {},
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n14",
+      "type": "combineFields",
+      "label": "overgrowth",
+      "comment": "Multiply is a mask: thicket clumps survive only where district fate is high, so the forest grows out of the worst ruins and never breaches an intact ward.",
+      "folder": "ruin & reclaim",
+      "enabled": true,
+      "params": {
+        "operation": 2,
+        "clamp": 1
+      },
+      "inputs": {
+        "a": "n9",
+        "b": "n13"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n15",
+      "type": "thresholdTiles",
+      "label": "thickets",
+      "comment": "Trees over the reclaimed meadows. The multiply upstream means a district must be both far gone and inside a clump for a tree to stand here.",
+      "folder": "ruin & reclaim",
+      "enabled": true,
+      "params": {
+        "threshold": 0.5,
+        "belowTile": -1,
+        "aboveTile": 3
+      },
+      "inputs": {
+        "source": "n14"
+      },
+      "display": {
+        "mode": "tileLayer"
+      }
+    },
+    {
+      "id": "n16",
+      "type": "coastDistance",
+      "label": "coast distance",
+      "comment": "How far each street is from the risen sea. The marsh below cuts its band from this, so the flooded quarter follows the coastline at an even depth instead of following height contours.",
+      "folder": "sunken quarter",
+      "enabled": true,
+      "params": {
+        "seaLevel": 0.5,
+        "range": 48
+      },
+      "inputs": {
+        "elevation": "n7"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n17",
+      "type": "biomeBands",
+      "label": "sunken quarter",
+      "comment": "A biome node used as a single-band painter: every tile is (empty) except the shore, so the only thing it paints is a marsh strip along the waterline — the quarter the sea is still claiming, drowning the streets it touches.",
+      "folder": "sunken quarter",
+      "enabled": true,
+      "params": {
+        "seaLevel": 0.5,
+        "deepDrop": 0,
+        "shoreBand": 0.1,
+        "rockAbove": 1,
+        "snowLine": 1,
+        "regionAtLeast": 0.5,
+        "deepTile": -1,
+        "waterTile": -1,
+        "shoreTile": 10,
+        "groundTile": -1,
+        "rockTile": -1,
+        "snowTile": -1
+      },
+      "inputs": {
+        "elevation": "n7",
+        "steepness": null,
+        "shoreDistance": "n16",
+        "region": null
+      },
+      "display": {
+        "mode": "tileLayer"
+      }
+    },
+    {
+      "id": "n18",
+      "type": "thresholdTiles",
+      "label": "the risen sea",
+      "comment": "Painted after the city on purpose: the flood is younger than the streets. Everything the water covers is still down there — walls, plazas and all.",
+      "folder": "the sea",
+      "enabled": true,
+      "params": {
+        "threshold": 0.5,
+        "belowTile": 0,
+        "aboveTile": -1
+      },
+      "inputs": {
+        "source": "n7"
+      },
+      "display": {
+        "mode": "tileLayer"
+      }
+    },
+    {
+      "id": "n19",
+      "type": "thresholdTiles",
+      "label": "the deep",
+      "comment": "Deep water over the old basins, so the drowned margin still reads as a shelf.",
+      "folder": "the sea",
+      "enabled": true,
+      "params": {
+        "threshold": 0.42,
+        "belowTile": 5,
+        "aboveTile": -1
+      },
+      "inputs": {
+        "source": "n7"
+      },
+      "display": {
+        "mode": "tileLayer"
+      }
+    },
+    {
+      "id": "n20",
+      "type": "constantField",
+      "label": "one",
+      "comment": "A constant 1, so the subtract below can invert district fate into district integrity.",
+      "folder": "what remains",
+      "enabled": true,
+      "params": {
+        "value": 1
+      },
+      "inputs": {},
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n21",
+      "type": "hypsometricCurve",
+      "label": "land switch",
+      "comment": "The curve used as a switch: pivoted just above sea level with a steep slope, it is near 1 on land and near 0 at sea. Multiplied into the mask below, it keeps sentries and wolves out of the water.",
+      "folder": "what remains",
+      "enabled": true,
+      "params": {
+        "seaLevel": 0.52,
+        "steepness": 30
+      },
+      "inputs": {
+        "source": "n7"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n22",
+      "type": "combineFields",
+      "label": "integrity",
+      "comment": "1 minus fate: high where the district still stands.",
+      "folder": "what remains",
+      "enabled": true,
+      "params": {
+        "operation": 1,
+        "clamp": 1
+      },
+      "inputs": {
+        "a": "n20",
+        "b": "n9"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n23",
+      "type": "combineFields",
+      "label": "civic order",
+      "comment": "Integrity gated to dry land — one field that says how much of the old order survives at each cell. Every marker below is a band of it: high is the patrolled core, low-but-not-zero is the wild ruins, zero is the sea.",
+      "folder": "what remains",
+      "enabled": true,
+      "params": {
+        "operation": 2,
+        "clamp": 1
+      },
+      "inputs": {
+        "a": "n22",
+        "b": "n21"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n24",
+      "type": "scatterPoints",
+      "label": "watchtowers",
+      "comment": "Towers only where civic order held — the skyline of the districts that never fell.",
+      "folder": "what remains",
+      "enabled": true,
+      "params": {
+        "density": 0.0012,
+        "maskAtLeast": 0.8,
+        "maskAtMost": 1
+      },
+      "inputs": {
+        "mask": "n23"
+      },
+      "display": {
+        "mode": "prefabs",
+        "prefabId": 1,
+        "rotation": 0
+      }
+    },
+    {
+      "id": "n25",
+      "type": "scatterPoints",
+      "label": "sentries",
+      "comment": "The last garrison, still walking the intact wards. Same band as the towers they guard.",
+      "folder": "what remains",
+      "enabled": true,
+      "params": {
+        "density": 0.0025,
+        "maskAtLeast": 0.8,
+        "maskAtMost": 1
+      },
+      "inputs": {
+        "mask": "n23"
+      },
+      "display": {
+        "mode": "creatures",
+        "creatureId": 3
+      }
+    },
+    {
+      "id": "n26",
+      "type": "scatterPoints",
+      "label": "old plazas",
+      "comment": "Standing stones in the half-fallen middle band — monuments outlasting the buildings around them.",
+      "folder": "what remains",
+      "enabled": true,
+      "params": {
+        "density": 0.0008,
+        "maskAtLeast": 0.35,
+        "maskAtMost": 0.6
+      },
+      "inputs": {
+        "mask": "n23"
+      },
+      "display": {
+        "mode": "prefabs",
+        "prefabId": 2,
+        "rotation": -1
+      }
+    },
+    {
+      "id": "n27",
+      "type": "scatterPoints",
+      "label": "wolves in the ruins",
+      "comment": "Where civic order is nearly gone but not zero — dry land, dead districts. The lower bound keeps them out of the sea, which the land switch pushed to 0.",
+      "folder": "what remains",
+      "enabled": true,
+      "params": {
+        "density": 0.002,
+        "maskAtLeast": 0.05,
+        "maskAtMost": 0.3
+      },
+      "inputs": {
+        "mask": "n23"
+      },
+      "display": {
+        "mode": "creatures",
+        "creatureId": 2
+      }
+    },
+    {
+      "id": "n28",
+      "type": "scatterPoints",
+      "label": "deer",
+      "comment": "Grazing the reclaimed meadows, one band above the wolves that hunt them.",
+      "folder": "what remains",
+      "enabled": true,
+      "params": {
+        "density": 0.006,
+        "maskAtLeast": 0.08,
+        "maskAtMost": 0.35
+      },
+      "inputs": {
+        "mask": "n23"
+      },
+      "display": {
+        "mode": "creatures",
+        "creatureId": 0
       }
     }
   ]
