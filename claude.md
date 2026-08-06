@@ -6,5 +6,7 @@ If a function is more than 5 lines and definitely if it's more than 10, see if y
 
 Whenever you report back to a user, always end with a direct link to a running server
 
+When adding or changing procgen node types, follow docs/authoring-nodes.md and keep the determinism rules; extend scripts/checkProcgenInvariants.ts with checks for new nodes.
+
 Do NOT attempt to test code in browser. As much as possible, design the code such that you can test as much as you can via scripting or API. Once you've tested everything you can quickly test via API and just reading the code and thinking about it, show it to me.
 

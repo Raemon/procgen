@@ -1,7 +1,7 @@
-import { EMPTY } from './grid';
+import { EMPTY_TILE } from '../procgen/values/chunkValues';
 import type { Tileset } from './tiles/tileset';
 
 export function isWalkableTile(tileset: Tileset, tileId: number): boolean {
-  if (tileId === EMPTY) return false;
-  return tileset.byId(tileId)?.walkable ?? false;
+  if (tileId === EMPTY_TILE) return true;
+  return tileset.byId(tileId)?.walkable ?? true;
 }

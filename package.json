@@ -10,7 +10,7 @@
     "dev": "bash scripts/killPortThenStartDevServer.sh",
     "build": "vite build",
     "typecheck": "tsc --noEmit",
-    "check": "esbuild scripts/checkGeneratorInvariants.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module"
+    "check": "esbuild scripts/checkProcgenInvariants.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module"
   },
   "dependencies": {
     "three": "0.185.1"
