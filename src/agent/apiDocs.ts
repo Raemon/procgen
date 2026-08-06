@@ -66,7 +66,7 @@ An agent is created in one of two modes and stays in it for life.
 | GET /api/v1/creatures | — | the creature library: creatures a points node can spawn |
 | GET /api/v1/templates | — | saved groups of wired nodes you can stamp in |
 | GET /api/v1/presets | — | whole worlds you can load |
-| POST /api/v1/agents/{id}/run | {"goal": "...", "model": optional, "max_steps": optional, "anthropic_api_key": optional} | start an autopilot run that drives this agent with an LLM |
+| POST /api/v1/agents/{id}/run | {"goal": "...", "model": optional, "budget_usd": optional, "anthropic_api_key": optional} | start an autopilot run that drives this agent with an LLM. budget_usd (default 1, max 100) is the only ceiling: it caps what the run may spend at list prices, and the run stops before the first turn that would start over budget, so its final turn can carry it slightly past |
 | POST /api/v1/agents/{id}/stop | — | stop the autopilot run |
 | GET /api/v1/agents/{id}/transcript?after=seq | — | the autopilot transcript |
 
@@ -141,6 +141,27 @@ legend names every glyph visible in that observation.
 Observe, decide, act, repeat. Every act response carries a fresh observation,
 so a simple loop needs only POST .../act. Nothing moves while you think: the
 world only changes when someone acts on it.
+
+## Autopilot runs
+
+A run started through POST .../run drives the agent with an LLM. It gets one tool
+per action above, plus six of its own:
+
+| tool | what it does |
+| --- | --- |
+| remember | save a note to memory |
+| forget | delete a memory note |
+| write_script | save a named script, replacing one of the same name |
+| run_script | run a saved script |
+| delete_script | delete a saved script |
+| finish | end the run with a summary |
+
+Notes and scripts outlive the run, and both are repeated back in every
+observation the model sees, along with what is left of the run's dollar budget.
+A script is a list of these same actions — one per line, params as key=value,
+optionally prefixed with "repeat N" — so it can do nothing an agent could not do
+a step at a time. Scripts are checked against this mode's actions and their
+params when they are written, not when they are run.
 `;
 
 export function buildApiDocs(tileset: ReadOnlyTileset): string {

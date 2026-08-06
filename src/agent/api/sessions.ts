@@ -1,6 +1,7 @@
 import type { FacingIndex } from '../../world/facing';
 import type { AbilityActor } from '../../abilities/ability';
 import type { AgentMode, AgentPose } from '../agentMode';
+import { newNotebook, type AgentNotebook } from './agentNotebook';
 
 export interface AgentSession {
   id: string;
@@ -11,6 +12,7 @@ export interface AgentSession {
   facing: FacingIndex;
   createdAt: number;
   lastAction: { action: string; outcome: string } | null;
+  notebook: AgentNotebook;
   run: AutopilotRun | null;
 }
 
@@ -27,7 +29,8 @@ export interface AutopilotRun {
   model: string;
   status: RunStatus;
   steps: number;
-  maxSteps: number;
+  budgetUsd: number;
+  spentUsd: number;
   transcript: TranscriptEntry[];
   stopRequested: boolean;
 }
@@ -49,6 +52,7 @@ export function newSession(
     facing: 0,
     createdAt: Date.now(),
     lastAction: null,
+    notebook: newNotebook(),
     run: null,
   };
 }

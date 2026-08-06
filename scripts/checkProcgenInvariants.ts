@@ -1630,6 +1630,41 @@ check(
   !polarTiles.has(2) && temperateTiles.has(2),
 );
 
+const marches = worldFromState(presetStateNamed('the ember marches'));
+const marchesAgain = worldFromState(presetStateNamed('the ember marches'));
+check(
+  'the ember marches preset survives sanitize with all nodes',
+  presetStateNamed('the ember marches').nodes.length === 51,
+);
+check(
+  'the ember marches regenerates identically from the same seed',
+  fieldBytes(marches.evaluator, 'n14', 1, 1) === fieldBytes(marchesAgain.evaluator, 'n14', 1, 1) &&
+    tileBytes(marches.evaluator, 'n23', 15, -3) === tileBytes(marchesAgain.evaluator, 'n23', 15, -3),
+);
+const greenMarchTiles = tileIdsInRect(marches.sampler, -600, 0, 48, 32);
+const ashfallTiles = tileIdsInRect(marches.sampler, 600, 0, 96, 64);
+check('the green west of the ember marches grows grass', greenMarchTiles.has(2));
+check(
+  'the eastern ashfall is ash and lava, and grass does not grow there',
+  ashfallTiles.has(22) && ashfallTiles.has(21) && !ashfallTiles.has(2),
+);
+const greenWardTiles = tileIdsInRect(marches.sampler, -480, -288, 24, 24);
+check(
+  'a western ward is a hedge labyrinth over worn paths',
+  greenWardTiles.has(24) && greenWardTiles.has(8),
+);
+const fallenWardTiles = tileIdsInRect(marches.sampler, 480, 288, 24, 24);
+check(
+  'an eastern ward is scorched stone with ash-filled breaches, its hedges burnt away',
+  fallenWardTiles.has(23) && fallenWardTiles.has(22) && !fallenWardTiles.has(24),
+);
+check(
+  'the ember marches spawns every creature in its own country',
+  ['n43', 'n47', 'n48', 'n49', 'n51'].every((nodeId) =>
+    marches.store.nodes().some((node) => node.id === nodeId && node.display.mode === 'creatures'),
+  ),
+);
+
 check(
   'a saved world preset round-trips through storage with its seed and nodes',
   (() => {
