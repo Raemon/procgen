@@ -21,8 +21,19 @@ export function wiringRow(
   );
   const row = labeledRow(`← ${spec.label}`, select);
   if (!spec.optional && !node.inputs[inputName]) row.classList.add('wire-missing');
+  highlightSourceCardOnHover(row, select);
   attachTooltip(row, wiringTooltip(spec));
   return row;
+}
+
+function highlightSourceCardOnHover(row: HTMLElement, select: HTMLSelectElement): void {
+  row.addEventListener('mouseenter', () => sourceCardOf(select)?.classList.add('wire-source'));
+  row.addEventListener('mouseleave', () => sourceCardOf(select)?.classList.remove('wire-source'));
+}
+
+function sourceCardOf(select: HTMLSelectElement): HTMLElement | null {
+  if (!select.value) return null;
+  return document.querySelector<HTMLElement>(`.node-card[data-node-id="${select.value}"]`);
 }
 
 function wiringOptions(

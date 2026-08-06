@@ -1,6 +1,7 @@
 import { nodeTypeOf } from '../../procgen/nodeRegistry';
 import { outputKindOf } from '../../procgen/nodeType';
 import type { NodeInstance } from '../../procgen/pipeline/pipelineState';
+import { isNodeCollapsed } from './collapsedNodeIds';
 import { displaySection } from './displaySection';
 import { nodeCardHeader } from './nodeCardHeader';
 import { nodeCommentRow } from './nodeCommentRow';
@@ -14,6 +15,7 @@ export function nodeCard(deps: PanelDeps, node: NodeInstance): HTMLElement {
   card.className = 'node-card';
   card.dataset.nodeId = node.id;
   if (!node.enabled) card.classList.add('node-disabled');
+  if (isNodeCollapsed(node.id)) card.classList.add('node-collapsed');
   if (!def) {
     card.append(unknownTypeNote(node.type));
     return card;

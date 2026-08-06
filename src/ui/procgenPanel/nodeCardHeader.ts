@@ -1,5 +1,7 @@
 import type { NodeInstance } from '../../procgen/pipeline/pipelineState';
 import type { PipelineStore } from '../../procgen/pipeline/pipelineStore';
+import { isNodeCollapsed, toggleNodeCollapsed } from './collapsedNodeIds';
+import { nodeDragHandle } from './nodeDragReorder';
 
 export function nodeCardHeader(
   store: PipelineStore,
@@ -9,14 +11,29 @@ export function nodeCardHeader(
   const header = document.createElement('div');
   header.className = 'node-header';
   header.append(
+    nodeDragHandle(),
+    collapseToggle(node),
     enabledToggle(store, node),
     labelInput(store, node),
     typeTag(typeTitle),
-    moveButton(store, node, -1, '↑'),
-    moveButton(store, node, 1, '↓'),
+    duplicateButton(store, node),
     deleteButton(store, node),
   );
   return header;
+}
+
+function collapseToggle(node: NodeInstance): HTMLElement {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'node-collapse-toggle';
+  button.textContent = isNodeCollapsed(node.id) ? '▸' : '▾';
+  button.title = 'collapse / expand';
+  button.addEventListener('click', () => {
+    const collapsed = toggleNodeCollapsed(node.id);
+    button.textContent = collapsed ? '▸' : '▾';
+    button.closest('.node-card')?.classList.toggle('node-collapsed', collapsed);
+  });
+  return button;
 }
 
 function enabledToggle(store: PipelineStore, node: NodeInstance): HTMLElement {
@@ -46,18 +63,13 @@ function typeTag(typeTitle: string): HTMLElement {
   return tag;
 }
 
-function moveButton(
-  store: PipelineStore,
-  node: NodeInstance,
-  delta: -1 | 1,
-  arrow: string,
-): HTMLElement {
+function duplicateButton(store: PipelineStore, node: NodeInstance): HTMLElement {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'btn node-btn';
-  button.textContent = arrow;
-  button.title = delta < 0 ? 'move up' : 'move down';
-  button.addEventListener('click', () => store.moveNode(node.id, delta));
+  button.textContent = '⧉';
+  button.title = 'duplicate node';
+  button.addEventListener('click', () => store.duplicateNode(node.id));
   return button;
 }
 

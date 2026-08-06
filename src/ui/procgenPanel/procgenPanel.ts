@@ -1,5 +1,6 @@
 import { addNodeMenu } from './addNodeMenu';
 import { nodeCard, refreshCardError } from './nodeCard';
+import { enableNodeDropReorder } from './nodeDragReorder';
 import type { PanelDeps } from './panelDeps';
 import { presetsRow } from './presetsRow';
 import { worldSeedRow } from './worldSeedRow';
@@ -23,7 +24,7 @@ export class ProcgenPanel {
       worldSeedRow(this.deps.store.seed(), (seed) => this.deps.store.setSeed(seed)),
       presetsRow(this.deps.store),
       this.nodeList(),
-      addNodeMenu((type) => this.deps.store.addNode(type)),
+      addNodeMenu((type) => this.addNodeAndReveal(type)),
       pipelineHint(),
     );
   }
@@ -40,7 +41,19 @@ export class ProcgenPanel {
     list.className = 'pipeline-nodes';
     for (const node of this.deps.store.nodes()) list.appendChild(nodeCard(this.deps, node));
     if (this.deps.store.nodes().length === 0) list.appendChild(emptyPipelineNote());
+    enableNodeDropReorder(list, this.deps.store);
     return list;
+  }
+
+  private addNodeAndReveal(type: string): void {
+    const node = this.deps.store.addNode(type);
+    if (node) this.scrollToCard(node.id);
+  }
+
+  private scrollToCard(nodeId: string): void {
+    this.container
+      .querySelector(`.node-card[data-node-id="${nodeId}"]`)
+      ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 }
 
@@ -61,6 +74,6 @@ function pipelineHint(): HTMLElement {
   const hint = document.createElement('p');
   hint.className = 'hint';
   hint.textContent =
-    'Nodes run top to bottom. Wire inputs (←) to earlier nodes. Display maps a node into the world: tile layers stack in list order, elevation shapes the 2.5D ground, markers draw tagged points.';
+    'Nodes run top to bottom — drag ⠿ to reorder. New nodes wire themselves to the nearest matching source; rewire with the input (←) dropdowns. Display maps a node into the world: tile layers stack in list order, elevation shapes the 2.5D ground, markers draw tagged points.';
   return hint;
 }
