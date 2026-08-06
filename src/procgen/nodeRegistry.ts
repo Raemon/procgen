@@ -1,10 +1,27 @@
-import type { NodeTypeDef } from './nodeType';
+import { isKnobParamSpec, type NodeTypeDef, type StandardNodeTypeDef } from './nodeType';
 
 const registry = new Map<string, NodeTypeDef>();
 
-export function registerNodeType(def: NodeTypeDef): NodeTypeDef {
+export function registerNodeType(def: StandardNodeTypeDef): NodeTypeDef {
+  rejectNonKnobParams(def);
   registry.set(def.type, def);
   return def;
+}
+
+export function registerScriptNodeType(def: NodeTypeDef): NodeTypeDef {
+  registry.set(def.type, def);
+  return def;
+}
+
+function rejectNonKnobParams(def: StandardNodeTypeDef): void {
+  for (const [name, spec] of Object.entries(def.params)) {
+    if (!isKnobParamSpec(spec)) {
+      throw new Error(
+        `node type '${def.type}' param '${name}' has kind '${(spec as { kind: string }).kind}' — ` +
+          `node knobs must be numbers (number/int/choice/toggle) or tile links (tile); see docs/authoring-nodes.md`,
+      );
+    }
+  }
 }
 
 export function nodeTypeOf(type: string): NodeTypeDef | undefined {

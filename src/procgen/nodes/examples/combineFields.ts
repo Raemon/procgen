@@ -2,9 +2,21 @@ import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { fieldValue, newFieldChunk, type ChunkValue } from '../../values/chunkValues';
 
-const OPERATIONS = ['add', 'subtract', 'multiply', 'min', 'max', 'average'] as const;
+export const COMBINE_ADD = 0;
+export const COMBINE_SUBTRACT = 1;
+export const COMBINE_MULTIPLY = 2;
+export const COMBINE_MIN = 3;
+export const COMBINE_MAX = 4;
+export const COMBINE_AVERAGE = 5;
 
-type Operation = (typeof OPERATIONS)[number];
+const OPERATION_CHOICES = [
+  { value: COMBINE_ADD, label: 'add', help: 'a + b. Raises a by b — stack bumps onto a base.' },
+  { value: COMBINE_SUBTRACT, label: 'subtract', help: 'a − b. Carves b out of a.' },
+  { value: COMBINE_MULTIPLY, label: 'multiply', help: 'a × b. Acts as masking: wherever b is 0, the result is 0.' },
+  { value: COMBINE_MIN, label: 'min', help: 'Lower of the two. Intersection-like: keeps only what both fields allow.' },
+  { value: COMBINE_MAX, label: 'max', help: 'Higher of the two. Union-like: merges the raised areas of both.' },
+  { value: COMBINE_AVERAGE, label: 'average', help: '(a + b) / 2. A soft 50/50 blend.' },
+] as const;
 
 registerNodeType({
   type: 'combineFields',
@@ -19,25 +31,17 @@ registerNodeType({
   },
   params: {
     operation: {
-      kind: 'select',
+      kind: 'choice',
       label: 'operation',
       help: 'How each pair of cells is merged into one value.',
-      options: OPERATIONS,
-      optionHelp: {
-        add: 'a + b. Raises a by b — stack bumps onto a base.',
-        subtract: 'a − b. Carves b out of a.',
-        multiply: 'a × b. Acts as masking: wherever b is 0, the result is 0.',
-        min: 'Lower of the two. Intersection-like: keeps only what both fields allow.',
-        max: 'Higher of the two. Union-like: merges the raised areas of both.',
-        average: '(a + b) / 2. A soft 50/50 blend.',
-      },
-      default: 'add',
+      options: OPERATION_CHOICES,
+      default: COMBINE_ADD,
     },
     clamp: {
-      kind: 'boolean',
+      kind: 'toggle',
       label: 'clamp to 0..1',
       help: 'Keep results inside 0..1 so downstream thresholds and elevation behave predictably.',
-      default: true,
+      default: 1,
     },
   },
   output: 'field',
@@ -48,22 +52,22 @@ function combineChunk(ctx: ChunkGenCtx): ChunkValue {
   const a = ctx.fieldInput('a') ?? newFieldChunk();
   const b = ctx.fieldInput('b') ?? newFieldChunk();
   const out = ctx.newField();
-  const operation = ctx.params.operation as Operation;
-  const clamp = ctx.params.clamp as boolean;
+  const operation = ctx.params.operation as number;
+  const clamp = ctx.params.clamp === 1;
   for (let i = 0; i < out.length; i++) out[i] = combined(operation, clamp, a[i]!, b[i]!);
   return fieldValue(out);
 }
 
-function combined(operation: Operation, clamp: boolean, a: number, b: number): number {
+function combined(operation: number, clamp: boolean, a: number, b: number): number {
   const result = applyOperation(operation, a, b);
   return clamp ? Math.max(0, Math.min(1, result)) : result;
 }
 
-function applyOperation(operation: Operation, a: number, b: number): number {
-  if (operation === 'add') return a + b;
-  if (operation === 'subtract') return a - b;
-  if (operation === 'multiply') return a * b;
-  if (operation === 'min') return Math.min(a, b);
-  if (operation === 'max') return Math.max(a, b);
+function applyOperation(operation: number, a: number, b: number): number {
+  if (operation === COMBINE_ADD) return a + b;
+  if (operation === COMBINE_SUBTRACT) return a - b;
+  if (operation === COMBINE_MULTIPLY) return a * b;
+  if (operation === COMBINE_MIN) return Math.min(a, b);
+  if (operation === COMBINE_MAX) return Math.max(a, b);
   return (a + b) / 2;
 }

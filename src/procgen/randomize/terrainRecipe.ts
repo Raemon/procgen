@@ -1,10 +1,15 @@
 import type { RandomStream } from '../../random/mulberry32';
+import {
+  COMBINE_AVERAGE,
+  COMBINE_MAX,
+  COMBINE_MIN,
+} from '../nodes/examples/combineFields';
 import type { NodeInstance } from '../pipeline/pipelineState';
 import { randomMarkerDisplay, randomMarkerTag } from './markerPalette';
 import { chance, pick, rollBetween, rollInt, shuffled, snappedToStep } from './randomRolls';
 import { nextRecipeId, recipeNode } from './recipeNode';
 
-const BLEND_OPERATIONS = ['average', 'min', 'max'] as const;
+const BLEND_OPERATIONS = [COMBINE_AVERAGE, COMBINE_MIN, COMBINE_MAX] as const;
 
 export function terrainRecipeNodes(rng: RandomStream, tileIds: readonly number[]): NodeInstance[] {
   const nodes: NodeInstance[] = [];
@@ -46,7 +51,7 @@ function appendBlend(nodes: NodeInstance[], rng: RandomStream, aId: string, bId:
       id,
       type: 'combineFields',
       label: 'blend',
-      params: { operation: pick(rng, BLEND_OPERATIONS), clamp: true },
+      params: { operation: pick(rng, BLEND_OPERATIONS), clamp: 1 },
       inputs: { a: aId, b: bId },
     }),
   );
@@ -129,7 +134,6 @@ function appendScatter(
         density: snappedToStep(rollBetween(rng, 0.01, 0.09), 0, 1, 0.005),
         maskAtLeast,
         maskAtMost: snappedToStep(maskAtLeast + rollBetween(rng, 0.08, 0.3), 0, 1, 0.01),
-        tag,
       },
       inputs: { mask: maskId },
       display: randomMarkerDisplay(rng, tileIds),

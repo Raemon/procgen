@@ -2,7 +2,7 @@ import '../src/procgen/nodes';
 import { cameraRelativeStep } from '../src/input/cameraRelativeStep';
 import { PipelineEvaluator } from '../src/procgen/eval/evaluator';
 import { allNodeTypes } from '../src/procgen/nodeRegistry';
-import { defaultParams, outputKindOf } from '../src/procgen/nodeType';
+import { defaultParams, isKnobParamSpec, outputKindOf } from '../src/procgen/nodeType';
 import { computeNodeSignatures } from '../src/procgen/pipeline/nodeSignatures';
 import { emptyPipeline, type PipelineState } from '../src/procgen/pipeline/pipelineState';
 import { PipelineStore } from '../src/procgen/pipeline/pipelineStore';
@@ -15,8 +15,9 @@ import { RandomizeHistory } from '../src/procgen/randomize/randomizeHistory';
 import { randomWorldPipeline } from '../src/procgen/randomize/randomWorldPipeline';
 import { nodeTypeOf } from '../src/procgen/nodeRegistry';
 import { CHUNK_SIZE } from '../src/procgen/chunk';
-import { CARVER_NAMES } from '../src/procgen/nodes/maze/mazeCarvers';
-import { LATTICE_NAMES } from '../src/procgen/nodes/maze/mazeLattices';
+import { CARVER_CHOICES } from '../src/procgen/nodes/maze/mazeCarvers';
+import { traceRiverDownhill } from '../src/procgen/nodes/rivers/traceRiverDownhill';
+import { hashLatticePoint } from '../src/noise/hashLatticePoint';
 import { EMPTY_TILE } from '../src/procgen/values/chunkValues';
 import { asField, asPoints, asTiles } from '../src/procgen/values/valueAccess';
 import { WorldSampler } from '../src/procgen/worldSampler';
@@ -90,7 +91,26 @@ function tileIdsInRegion(sampler: WorldSampler, span: number): Set<number> {
   return seen;
 }
 
-check('node registry has example and custom nodes', allNodeTypes().length >= 6);
+check('node registry has example, maze, river and custom nodes', allNodeTypes().length >= 9);
+check(
+  'every node type except custom script is built only from numeric knobs and tile links',
+  allNodeTypes().every(
+    (def) => def.type === 'customScript' || Object.values(def.params).every(isKnobParamSpec),
+  ),
+);
+check(
+  'every choice knob stores numbers and explains every option',
+  allNodeTypes().every((def) =>
+    Object.values(def.params).every(
+      (spec) =>
+        spec.kind !== 'choice' ||
+        spec.options.every(
+          (option) =>
+            typeof option.value === 'number' && option.label.length > 0 && option.help.length > 0,
+        ),
+    ),
+  ),
+);
 check(
   'every node type explains what it does and when to use it',
   allNodeTypes().every((def) => def.description.length > 0 && def.whenToUse.length > 0),
@@ -173,7 +193,10 @@ const seenTiles = tileIdsInRegion(sampled.sampler, 48);
 check('tile layers stack: water, sand, grass and rock all appear', [0, 1, 2, 4].every((id) => seenTiles.has(id)));
 check('elevation binding shapes the world', sampled.sampler.elevationAt(0, 0) !== 0 || sampled.sampler.elevationAt(17, -23) !== 0);
 const treeMarkers = sampled.sampler.markersIn(-64, -64, 63, 63);
-check('scatter markers appear with their tag', treeMarkers.length > 0 && treeMarkers.every((m) => m.tag === 'tree'));
+check(
+  'scatter markers carry their node id as tag',
+  treeMarkers.length > 0 && treeMarkers.every((m) => m.tag === 'n5'),
+);
 check(
   'tile-sourced markers take symbol and color from the tileset',
   treeMarkers.every((m) => m.glyph === '♠' && m.color === '#2d6a34'),
@@ -203,7 +226,7 @@ check(
 
 const MAZE_FLOOR = 1;
 
-function labyrinthVariant(params: Record<string, number | string>): PipelineState {
+function labyrinthVariant(params: Record<string, number>): PipelineState {
   const state = sanitizePipeline(examplePipelines()[3]!.state);
   Object.assign(state.nodes[0]!.params, params);
   return state;
@@ -289,11 +312,19 @@ check(
   mazeSeq[0] === mazeRev[1] && mazeSeq[1] === mazeRev[0],
 );
 
-for (const lattice of LATTICE_NAMES) {
-  for (const carver of CARVER_NAMES) {
-    const combo = worldFromState(labyrinthVariant({ lattice, carver }));
+const MAZE_SHAPES = [
+  { corridor: 1, wall: 1 },
+  { corridor: 2, wall: 2 },
+  { corridor: 3, wall: 1 },
+  { corridor: 5, wall: 2 },
+  { corridor: 6, wall: 2 },
+  { corridor: 7, wall: 1 },
+];
+for (const shape of MAZE_SHAPES) {
+  for (const carver of CARVER_CHOICES) {
+    const combo = worldFromState(labyrinthVariant({ ...shape, carver: carver.value }));
     check(
-      `labyrinth ${lattice}+${carver} stays connected across all chunks and seams`,
+      `labyrinth corridor ${shape.corridor} wall ${shape.wall} + ${carver.label} stays connected across all chunks and seams`,
       allSeamsCrossable(combo.sampler, 2) && regionFloorsConnected(combo.sampler, -CHUNK_SIZE, -CHUNK_SIZE, 3 * CHUNK_SIZE),
     );
   }
@@ -306,9 +337,145 @@ check(
 );
 
 check(
-  'lattice choice reshapes the labyrinth',
-  tileBytes(worldFromState(labyrinthVariant({ lattice: 'cathedral' })).evaluator, 'n1', 0, 0) !==
+  'corridor width knob reshapes the labyrinth',
+  tileBytes(worldFromState(labyrinthVariant({ corridor: 7 })).evaluator, 'n1', 0, 0) !==
     tileBytes(mazeA.evaluator, 'n1', 0, 0),
+);
+
+const bigMazeA = worldFromState(labyrinthVariant({ mazeChunks: 2, corridor: 5, wall: 3 }));
+const bigMazeB = worldFromState(labyrinthVariant({ mazeChunks: 2, corridor: 5, wall: 3 }));
+const bigSeq = [tileBytes(bigMazeA.evaluator, 'n1', 0, 0), tileBytes(bigMazeA.evaluator, 'n1', 1, 1)];
+const bigRev = [tileBytes(bigMazeB.evaluator, 'n1', 1, 1), tileBytes(bigMazeB.evaluator, 'n1', 0, 0)];
+check(
+  'chunks of one multi-chunk maze agree regardless of which is generated first',
+  bigSeq[0] === bigRev[1] && bigSeq[1] === bigRev[0],
+);
+check(
+  'a maze spanning multiple chunks stays one connected labyrinth across regions',
+  regionFloorsConnected(bigMazeA.sampler, -2 * CHUNK_SIZE, -2 * CHUNK_SIZE, 4 * CHUNK_SIZE),
+);
+
+const nested = worldFromState(sanitizePipeline(examplePipelines()[4]!.state));
+const nestedTiles = tileIdsInRegion(nested.sampler, 128);
+check(
+  'nested labyrinths preset shows the inner hedge maze through the outer maze corridors',
+  [2, 3, 4].every((id) => nestedTiles.has(id)),
+);
+
+const rampElevation = (x: number): number => Math.max(0, Math.min(1, 0.9 - 0.005 * (x + 40)));
+const rampHash = (x: number, y: number): number => hashLatticePoint(x, y, 7);
+const straightRiver = traceRiverDownhill(
+  (x) => rampElevation(x),
+  rampHash,
+  { seaLevel: 0.4, maxLength: 300, meander: 0 },
+  0,
+  0,
+);
+check(
+  'a river on a slope flows straight downhill and stops at the sea',
+  straightRiver.length === 61 &&
+    straightRiver.every((cell, i) => cell.x === i && cell.y === 0),
+);
+const meanderingRiver = traceRiverDownhill(
+  (x) => rampElevation(x),
+  rampHash,
+  { seaLevel: 0.4, maxLength: 300, meander: 0.05 },
+  0,
+  0,
+);
+check(
+  'meander makes rivers wander but never uphill',
+  meanderingRiver.some((cell) => cell.y !== 0) &&
+    meanderingRiver.every(
+      (cell, i) => i === 0 || rampElevation(cell.x) <= rampElevation(meanderingRiver[i - 1]!.x),
+    ),
+);
+
+function riversExampleState(): PipelineState {
+  return sanitizePipeline(examplePipelines()[5]!.state);
+}
+
+function riverCellAt(evaluator: PipelineEvaluator, worldX: number, worldY: number): boolean {
+  const cx = Math.floor(worldX / CHUNK_SIZE);
+  const cy = Math.floor(worldY / CHUNK_SIZE);
+  const tiles = asTiles(evaluator.valueFor('n3', cx, cy));
+  if (!tiles) return false;
+  return tiles[(worldY - cy * CHUNK_SIZE) * CHUNK_SIZE + (worldX - cx * CHUNK_SIZE)] !== EMPTY_TILE;
+}
+
+function terrainAt(evaluator: PipelineEvaluator, worldX: number, worldY: number): number {
+  const cx = Math.floor(worldX / CHUNK_SIZE);
+  const cy = Math.floor(worldY / CHUNK_SIZE);
+  const field = asField(evaluator.valueFor('n1', cx, cy));
+  return field ? field[(worldY - cy * CHUNK_SIZE) * CHUNK_SIZE + (worldX - cx * CHUNK_SIZE)]! : 0;
+}
+
+const riversA = worldFromState(riversExampleState());
+const riversB = worldFromState(riversExampleState());
+const riverSeq = [tileBytes(riversA.evaluator, 'n3', 0, 0), tileBytes(riversA.evaluator, 'n3', 2, -2)];
+const riverRev = [tileBytes(riversB.evaluator, 'n3', 2, -2), tileBytes(riversB.evaluator, 'n3', 0, 0)];
+check(
+  'river chunks are deterministic regardless of evaluation order',
+  riverSeq[0] === riverRev[1] && riverSeq[1] === riverRev[0],
+);
+
+const riverCells: Array<[number, number]> = [];
+for (let y = -64; y < 64; y++) {
+  for (let x = -64; x < 64; x++) {
+    if (riverCellAt(riversA.evaluator, x, y)) riverCells.push([x, y]);
+  }
+}
+const flowsSomewhere = (x: number, y: number): boolean =>
+  [
+    [1, 0],
+    [-1, 0],
+    [0, 1],
+    [0, -1],
+  ].some(
+    ([dx, dy]) =>
+      riverCellAt(riversA.evaluator, x + dx!, y + dy!) ||
+      terrainAt(riversA.evaluator, x + dx!, y + dy!) < 0.45,
+  );
+check('rivers appear in the rivers & towns preset', riverCells.length > 0);
+check(
+  'every river cell continues into another river cell or the sea',
+  riverCells.every(([x, y]) => flowsSomewhere(x, y)),
+);
+
+const towns = riversA.sampler.markersIn(-96, -96, 95, 95);
+check(
+  'towns appear and are tagged as towns',
+  towns.length > 0 && towns.every((m) => m.tag === 'town' && m.glyph === '⌂'),
+);
+check(
+  'every town sits on a river',
+  towns.every((m) => riverCellAt(riversA.evaluator, m.x, m.y)),
+);
+check(
+  'every town qualifies as a river mouth or river junction',
+  towns.every(
+    (m) =>
+      [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1],
+      ].filter(([dx, dy]) => riverCellAt(riversA.evaluator, m.x + dx!, m.y + dy!)).length >= 3 ||
+      [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1],
+      ].some(([dx, dy]) => terrainAt(riversA.evaluator, m.x + dx!, m.y + dy!) < 0.45),
+  ),
+);
+check(
+  'towns keep their configured spacing from each other',
+  towns.every((a, i) =>
+    towns.every(
+      (b, j) => i === j || (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) > 14 * 14,
+    ),
+  ),
 );
 
 const scriptState = sanitizePipeline(examplePipelines()[2]!.state);

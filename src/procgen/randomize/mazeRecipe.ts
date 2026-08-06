@@ -1,6 +1,5 @@
 import type { RandomStream } from '../../random/mulberry32';
-import { CARVER_NAMES } from '../nodes/maze/mazeCarvers';
-import { LATTICE_NAMES } from '../nodes/maze/mazeLattices';
+import { CARVER_CHOICES } from '../nodes/maze/mazeCarvers';
 import type { NodeInstance } from '../pipeline/pipelineState';
 import { randomMarkerDisplay, randomMarkerTag } from './markerPalette';
 import { chance, pick, rollBetween, rollInt, shuffled, snappedToStep } from './randomRolls';
@@ -21,8 +20,10 @@ function appendMaze(nodes: NodeInstance[], rng: RandomStream, tileIds: readonly 
       type: 'mazeChunk',
       label: 'labyrinth',
       params: {
-        lattice: pick(rng, LATTICE_NAMES),
-        carver: pick(rng, CARVER_NAMES),
+        corridor: rollInt(rng, 1, 8),
+        wall: rollInt(rng, 1, 3),
+        mazeChunks: chance(rng, 0.25) ? rollInt(rng, 2, 4) : 1,
+        carver: pick(rng, CARVER_CHOICES).value,
         braid: snappedToStep(rollBetween(rng, 0, 0.6), 0, 1, 0.05),
         doorsPerEdge: rollInt(rng, 1, 3),
         wallTile,
@@ -49,7 +50,6 @@ function appendDwellers(nodes: NodeInstance[], rng: RandomStream, tileIds: reado
         density: snappedToStep(rollBetween(rng, 0.005, 0.02), 0, 1, 0.005),
         maskAtLeast: 0,
         maskAtMost: 1,
-        tag,
       },
       display: randomMarkerDisplay(rng, tileIds),
     }),
