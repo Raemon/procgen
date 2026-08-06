@@ -1,0 +1,22 @@
+{
+  "name": "procgen",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "vite --port 5174 --strictPort",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "three": "0.185.1"
+  },
+  "devDependencies": {
+    "@types/three": "0.185.1",
+    "typescript": "5.9.3",
+    "vite": "5.4.21"
+  }
+}
