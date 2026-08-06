@@ -29,7 +29,9 @@ src/gen         GenParams, the pass pipeline, and one file per pass
 src/world       Grid, Tileset, walkability, spawn, player state + events
 src/views       ascii (canvas + pure-text form) and view3d (camera, meshes)
 src/input       key tracking and camera-relative step math
-src/ui          panels: tile editor, generation knobs, layout, view toggle
+src/ui          panels: tile editor, generation knobs, layout, view toggle,
+                plus a self-contained pixelArtEditor module (single entry:
+                pixelArtEditor({art, baseColor, onChange}))
 src/styles      one stylesheet per panel, combined by index.css
 scripts         headless checks over the DOM-free core (`npm run check`)
 ```

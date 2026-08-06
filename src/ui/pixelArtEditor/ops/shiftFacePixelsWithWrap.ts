@@ -1,4 +1,4 @@
-import type { FacePixels } from '../tileFaceArt';
+import type { FacePixels } from '../../../world/tiles/tileFaceArt';
 
 export function shiftFacePixelsWithWrap(
   pixels: FacePixels,

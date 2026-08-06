@@ -1,4 +1,4 @@
-import { CUBE_FACES, type CubeFaceArt, type FacePixels } from '../tileFaceArt';
+import { CUBE_FACES, type CubeFaceArt, type FacePixels } from '../../../world/tiles/tileFaceArt';
 
 export function resizeCubeFaceArt(art: CubeFaceArt, size: number): CubeFaceArt {
   const resized = { size } as CubeFaceArt;

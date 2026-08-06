@@ -1,10 +1,10 @@
-import { sideFacesMatch } from '../../world/tiles/faceArtOps/linkedSideFaces';
-import type { TileDef } from '../../world/tiles/tileDef';
 import {
   DEFAULT_FACE_ART_SIZE,
   SIDE_FACES,
   type CubeFace,
+  type CubeFaceArt,
 } from '../../world/tiles/tileFaceArt';
+import { sideFacesMatch } from './ops/linkedSideFaces';
 
 export type FaceTab = CubeFace | 'sides';
 export type PaintTool = 'draw' | 'erase' | 'fill' | 'pick';
@@ -19,15 +19,15 @@ export interface PaintState {
   size: number;
 }
 
-export function initialPaintState(tile: TileDef): PaintState {
+export function initialPaintState(art: CubeFaceArt | null, baseColor: string): PaintState {
   return {
     faceTab: 'top',
     tool: 'draw',
-    paintColor: tile.color,
+    paintColor: baseColor,
     mirrorX: false,
     mirrorY: false,
-    linkedSides: tile.faceArt ? sideFacesMatch(tile.faceArt) : true,
-    size: tile.faceArt?.size ?? DEFAULT_FACE_ART_SIZE,
+    linkedSides: art ? sideFacesMatch(art) : true,
+    size: art?.size ?? DEFAULT_FACE_ART_SIZE,
   };
 }
 

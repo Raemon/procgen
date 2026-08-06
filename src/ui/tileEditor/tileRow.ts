@@ -2,7 +2,7 @@ import type { TileDef } from '../../world/tiles/tileDef';
 import { blankFacePixels, faceGridSize } from '../../world/tiles/tileFaceArt';
 import type { EditableTileFields } from '../../world/tiles/tileset';
 import { paintFacePixels } from '../../views/paintFacePixels';
-import { pixelArtEditor, type PixelArtEditor } from './pixelArtEditor';
+import { pixelArtEditor, type PixelArtEditor } from '../pixelArtEditor/pixelArtEditor';
 
 export type TileRowCallbacks = {
   onEdit(patch: EditableTileFields): void;
@@ -19,7 +19,11 @@ export function tileRow(tile: TileDef, callbacks: TileRowCallbacks): HTMLElement
     callbacks.onEdit(patch);
     for (const refresh of refreshers) refresh();
   };
-  const editor = pixelArtEditor(tile, onEdit);
+  const editor = pixelArtEditor({
+    art: () => tile.faceArt,
+    baseColor: () => tile.color,
+    onChange: (faceArt) => onEdit({ faceArt }),
+  });
   editor.root.classList.add('hidden');
   const artToggle = faceArtToggleButton(tile, editor);
   refreshers.push(editor.refresh, artToggle.refreshPreview);

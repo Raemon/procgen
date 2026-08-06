@@ -4,7 +4,7 @@ import {
   type CubeFace,
   type CubeFaceArt,
   type FacePixels,
-} from '../tileFaceArt';
+} from '../../../world/tiles/tileFaceArt';
 
 export function sideFacesMatch(art: CubeFaceArt): boolean {
   const [first, ...rest] = SIDE_FACES;

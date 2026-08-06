@@ -1,6 +1,5 @@
-import type { TileDef } from '../../world/tiles/tileDef';
 import { isEntirelyBlank, type CubeFaceArt } from '../../world/tiles/tileFaceArt';
-import type { EditableTileFields } from '../../world/tiles/tileset';
+import type { PixelArtSource } from './pixelArtEditor';
 
 const HISTORY_LIMIT = 100;
 
@@ -9,20 +8,17 @@ export interface FaceArtHistory {
   undo(): boolean;
 }
 
-export function faceArtHistory(
-  tile: TileDef,
-  onEdit: (patch: EditableTileFields) => void,
-): FaceArtHistory {
+export function faceArtHistory(source: PixelArtSource): FaceArtHistory {
   const past: (CubeFaceArt | null)[] = [];
   return {
     commit(art) {
-      past.push(tile.faceArt);
+      past.push(source.art());
       if (past.length > HISTORY_LIMIT) past.shift();
-      onEdit({ faceArt: isEntirelyBlank(art) ? null : art });
+      source.onChange(isEntirelyBlank(art) ? null : art);
     },
     undo() {
       if (past.length === 0) return false;
-      onEdit({ faceArt: past.pop() ?? null });
+      source.onChange(past.pop() ?? null);
       return true;
     },
   };

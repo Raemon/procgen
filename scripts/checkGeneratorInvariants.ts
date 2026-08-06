@@ -5,14 +5,14 @@ import { cameraRelativeStep } from '../src/input/cameraRelativeStep';
 import { PLAYER_GLYPH, worldToAscii } from '../src/views/ascii/worldToAscii';
 import { tilePlacementsByShape } from '../src/views/view3d/tilePlacements';
 import { spawnPointForSeed } from '../src/world/spawnPoint';
-import { floodFillFacePixels } from '../src/world/tiles/faceArtOps/floodFillFacePixels';
+import { floodFillFacePixels } from '../src/ui/pixelArtEditor/ops/floodFillFacePixels';
 import {
   copyFaceToAllSides,
   sideFacesMatch,
-} from '../src/world/tiles/faceArtOps/linkedSideFaces';
-import { mirroredPixelIndices } from '../src/world/tiles/faceArtOps/mirroredPixelIndices';
-import { resizeCubeFaceArt } from '../src/world/tiles/faceArtOps/resizeFaceArt';
-import { shiftFacePixelsWithWrap } from '../src/world/tiles/faceArtOps/shiftFacePixelsWithWrap';
+} from '../src/ui/pixelArtEditor/ops/linkedSideFaces';
+import { mirroredPixelIndices } from '../src/ui/pixelArtEditor/ops/mirroredPixelIndices';
+import { resizeCubeFaceArt } from '../src/ui/pixelArtEditor/ops/resizeFaceArt';
+import { shiftFacePixelsWithWrap } from '../src/ui/pixelArtEditor/ops/shiftFacePixelsWithWrap';
 import { upgradeStoredFaceArt } from '../src/world/tiles/legacyFaceArt';
 import {
   blankCubeFaceArt,
