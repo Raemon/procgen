@@ -32,6 +32,7 @@ export function checkPrefabAndCreatureInvariants(check: CheckReporter): void {
   checkPrefabStamping(check, tileset, prefabs, cottage);
   checkCaptureRoundTrip(check, tileset, prefabs, cottage);
   checkCreatureSim(check, tileset, prefabs);
+  checkEmberMarchesLibraryEntries(check, tileset);
   check(
     'points nodes can be displayed as markers, prefabs or creatures',
     ['markers', 'prefabs', 'creatures'].every((mode) =>
@@ -156,6 +157,26 @@ function checkCaptureRoundTrip(
         voxelAt(captured as Prefab, x, y, layer) === original
       );
     }),
+  );
+}
+
+function checkEmberMarchesLibraryEntries(check: CheckReporter, tileset: Tileset): void {
+  const walkableByName = (name: string) =>
+    tileset.all().find((tile) => tile.name === name)?.walkable;
+  check(
+    'the ember tiles ship with the tileset: walkable ash, blocking hedge, scorched stone and charred tree',
+    walkableByName('ash') === true &&
+      walkableByName('scorched stone') === false &&
+      walkableByName('hedge') === false &&
+      walkableByName('charred tree') === false,
+  );
+  const creatures = new CreatureLibrary();
+  const byName = (name: string) => creatures.all().find((creature) => creature.name === name);
+  check(
+    'the ember marches creatures ship with the library, and only the wisp phases',
+    byName('ash hound')?.phasing === 0 &&
+      byName('fen heron')?.phasing === 0 &&
+      byName('ember wisp')?.phasing === 1,
   );
 }
 

@@ -1,16 +1,20 @@
 {
-  "seed": 187404,
+  "seed": 4242,
   "nodes": [
     {
       "id": "n1",
-      "type": "noiseField",
-      "label": "base noise",
-      "comment": "",
-      "folder": "",
+      "type": "tectonicUplift",
+      "label": "plates",
+      "comment": "One set of continents under both countries — the point of this world is that the land is the same on either side of the emberline; only what happened to it differs.",
+      "folder": "bones of the land",
       "enabled": true,
       "params": {
-        "scale": 0.085,
-        "octaves": 6
+        "plateSize": 288,
+        "oceanFraction": 0.5,
+        "beltWidth": 56,
+        "rangeHeight": 0.3,
+        "landHeight": 0.58,
+        "basinDepth": 0.32
       },
       "inputs": {},
       "display": {
@@ -19,14 +23,17 @@
     },
     {
       "id": "n2",
-      "type": "noiseField",
-      "label": "detail noise",
-      "comment": "",
-      "folder": "",
+      "type": "terrainNoise",
+      "label": "warp x",
+      "comment": "East-west displacement for the warp that bends plate edges into coastlines.",
+      "folder": "bones of the land",
       "enabled": true,
       "params": {
-        "scale": 0.07,
-        "octaves": 3
+        "scale": 0.004,
+        "style": 0,
+        "octaves": 4,
+        "lacunarity": 2,
+        "gain": 0.5
       },
       "inputs": {},
       "display": {
@@ -35,123 +42,988 @@
     },
     {
       "id": "n3",
-      "type": "combineFields",
-      "label": "blend",
-      "comment": "",
-      "folder": "",
+      "type": "terrainNoise",
+      "label": "warp y",
+      "comment": "The north-south half of the displacement, at a slightly different scale so the axes stay independent.",
+      "folder": "bones of the land",
       "enabled": true,
       "params": {
-        "operation": 4,
-        "clamp": 1
+        "scale": 0.0045,
+        "style": 0,
+        "octaves": 4,
+        "lacunarity": 2,
+        "gain": 0.5
       },
-      "inputs": {
-        "a": "n1",
-        "b": "n2"
-      },
+      "inputs": {},
       "display": {
-        "mode": "elevation",
-        "heightScale": 1
+        "mode": "hidden"
       }
     },
     {
       "id": "n4",
-      "type": "thresholdTiles",
-      "label": "band 1",
-      "comment": "",
-      "folder": "",
+      "type": "domainWarp",
+      "label": "warped plates",
+      "comment": "Straight plate bisectors become headlands, bays and island arcs.",
+      "folder": "bones of the land",
       "enabled": true,
       "params": {
-        "threshold": 0.42,
-        "belowTile": 4,
-        "aboveTile": 16
+        "strength": 90
       },
       "inputs": {
-        "source": "n3"
+        "source": "n1",
+        "offsetX": "n2",
+        "offsetY": "n3"
       },
       "display": {
-        "mode": "tileLayer"
+        "mode": "hidden"
       }
     },
     {
       "id": "n5",
-      "type": "thresholdTiles",
-      "label": "band 2",
-      "comment": "",
-      "folder": "",
+      "type": "terrainNoise",
+      "label": "rolling detail",
+      "comment": "Hills and coastal wobble so the marches are not billiard-flat.",
+      "folder": "bones of the land",
       "enabled": true,
       "params": {
-        "threshold": 0.53,
-        "belowTile": -1,
-        "aboveTile": 18
+        "scale": 0.02,
+        "style": 0,
+        "octaves": 5,
+        "lacunarity": 2,
+        "gain": 0.5
       },
-      "inputs": {
-        "source": "n1"
-      },
+      "inputs": {},
       "display": {
-        "mode": "tileLayer"
+        "mode": "hidden"
       }
     },
     {
       "id": "n6",
-      "type": "thresholdTiles",
-      "label": "band 3",
-      "comment": "",
-      "folder": "",
+      "type": "blendFields",
+      "label": "rolling relief",
+      "comment": "A light pass of hills over the warped plates — texture, not competition.",
+      "folder": "bones of the land",
       "enabled": true,
       "params": {
-        "threshold": 0.65,
-        "belowTile": -1,
-        "aboveTile": 6
+        "weight": 0.18
       },
       "inputs": {
-        "source": "n3"
+        "a": "n4",
+        "b": "n5",
+        "mask": null
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n7",
+      "type": "hypsometricCurve",
+      "label": "basins & platform",
+      "comment": "Deep basins and a low land platform. This uneroded field is the reference the lava rivers later measure carving against, so it must stay untouched by erosion.",
+      "folder": "bones of the land",
+      "enabled": true,
+      "params": {
+        "seaLevel": 0.5,
+        "steepness": 9
+      },
+      "inputs": {
+        "source": "n6"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n8",
+      "type": "flowAccumulation",
+      "label": "drainage",
+      "comment": "One drainage network for the whole world. West of the emberline it will be dressed as water, east as lava — the river remembers its course even after it catches fire.",
+      "folder": "water that remembers",
+      "enabled": true,
+      "params": {
+        "seaLevel": 0.5,
+        "catchmentScale": 3000,
+        "fillPits": 1,
+        "windowRadius": 40
+      },
+      "inputs": {
+        "elevation": "n7"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n9",
+      "type": "carveValleys",
+      "label": "eroded terrain",
+      "comment": "The terrain everything stands on: valleys cut in proportion to the water they carry. The taper also digs the banks the lava rivers will glow through.",
+      "folder": "water that remembers",
+      "enabled": true,
+      "params": {
+        "depth": 0.08,
+        "minFlow": 0.4,
+        "valleyWidth": 6
+      },
+      "inputs": {
+        "elevation": "n7",
+        "flow": "n8"
+      },
+      "display": {
+        "mode": "elevation",
+        "heightScale": 7
+      }
+    },
+    {
+      "id": "n10",
+      "type": "slopeField",
+      "label": "steepness",
+      "comment": "Grade of the hillsides, so both countries trade soil for bare rock on their cliffs.",
+      "folder": "water that remembers",
+      "enabled": true,
+      "params": {
+        "radius": 3,
+        "gain": 12
+      },
+      "inputs": {
+        "source": "n9"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n11",
+      "type": "coastDistance",
+      "label": "coast distance",
+      "comment": "Shoreline distance for even-width beaches, and later the band the fens are cut from.",
+      "folder": "water that remembers",
+      "enabled": true,
+      "params": {
+        "seaLevel": 0.5,
+        "range": 32
+      },
+      "inputs": {
+        "elevation": "n7"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n12",
+      "type": "customScript",
+      "label": "script: emberline",
+      "comment": "The gradient this world hinges on: char as a function of world X alone. Fully green west of x = −768, fully burnt east of x = +768, so walking east is walking into the fire that took half the marches.",
+      "folder": "the emberline",
+      "enabled": true,
+      "params": {
+        "outputKind": "field",
+        "code": "const field = ctx.newField();\nconst greenEdgeX = -768;\nconst ashEdgeX = 768;\nfor (let y = 0; y < ctx.size; y++) {\n  for (let x = 0; x < ctx.size; x++) {\n    const eastwardness = (ctx.originX + x - greenEdgeX) / (ashEdgeX - greenEdgeX);\n    field[y * ctx.size + x] = Math.max(0, Math.min(1, eastwardness));\n  }\n}\nreturn field;"
+      },
+      "inputs": {
+        "a": null,
+        "b": null
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n13",
+      "type": "terrainNoise",
+      "label": "ember wobble",
+      "comment": "Fire is not a ruler: this bends the frontier so the burnt edge meanders and bulges.",
+      "folder": "the emberline",
+      "enabled": true,
+      "params": {
+        "scale": 0.012,
+        "style": 0,
+        "octaves": 3,
+        "lacunarity": 2,
+        "gain": 0.5
+      },
+      "inputs": {},
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n14",
+      "type": "blendFields",
+      "label": "wobbled emberline",
+      "comment": "A fifth of wobble is enough — the gradient must stay in charge or the two countries dissolve into each other.",
+      "folder": "the emberline",
+      "enabled": true,
+      "params": {
+        "weight": 0.22
+      },
+      "inputs": {
+        "a": "n12",
+        "b": "n13",
+        "mask": null
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n15",
+      "type": "hypsometricCurve",
+      "label": "ash switch",
+      "comment": "The curve as a switch: near 1 where char passes 0.62, near 0 in the green — the single line the ashfall biome, the lava and the hounds all obey.",
+      "folder": "the emberline",
+      "enabled": true,
+      "params": {
+        "seaLevel": 0.62,
+        "steepness": 30
+      },
+      "inputs": {
+        "source": "n14"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n16",
+      "type": "hypsometricCurve",
+      "label": "land switch",
+      "comment": "Near 1 on dry ground, near 0 at sea — the sea never burns, and nothing spawns in the water.",
+      "folder": "the emberline",
+      "enabled": true,
+      "params": {
+        "seaLevel": 0.52,
+        "steepness": 30
+      },
+      "inputs": {
+        "source": "n9"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n17",
+      "type": "constantField",
+      "label": "one",
+      "comment": "A constant 1, so the subtractions below can flip switches the other way around.",
+      "folder": "the emberline",
+      "enabled": true,
+      "params": {
+        "value": 1
+      },
+      "inputs": {},
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n18",
+      "type": "combineFields",
+      "label": "green switch",
+      "comment": "1 minus the ash switch: high wherever the fire never reached.",
+      "folder": "the emberline",
+      "enabled": true,
+      "params": {
+        "operation": 1,
+        "clamp": 1
+      },
+      "inputs": {
+        "a": "n17",
+        "b": "n15"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n19",
+      "type": "customScript",
+      "label": "script: ward lots",
+      "comment": "Which 192-tile lots hold a ward. The span matches the labyrinth below exactly — 6 chunks of 32 — so every warded lot contains one complete self-contained maze, never a fragment of a neighboring one.",
+      "folder": "the wards",
+      "enabled": true,
+      "params": {
+        "outputKind": "field",
+        "code": "const field = ctx.newField();\nconst lotSpan = 192;\nfor (let y = 0; y < ctx.size; y++) {\n  for (let x = 0; x < ctx.size; x++) {\n    const lotX = Math.floor((ctx.originX + x) / lotSpan);\n    const lotY = Math.floor((ctx.originY + y) / lotSpan);\n    const warded = ctx.hash01(lotX, lotY, 'ward lot') < 0.28;\n    field[y * ctx.size + x] = warded ? 1 : 0;\n  }\n}\nreturn field;"
+      },
+      "inputs": {
+        "a": null,
+        "b": null
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n20",
+      "type": "combineFields",
+      "label": "wards on land",
+      "comment": "Ward lots gated to dry ground — where a lot runs into the sea, the water keeps its claim and the maze drowns.",
+      "folder": "the wards",
+      "enabled": true,
+      "params": {
+        "operation": 2,
+        "clamp": 1
+      },
+      "inputs": {
+        "a": "n19",
+        "b": "n16"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n21",
+      "type": "combineFields",
+      "label": "the open wilds",
+      "comment": "1 minus the wards: the region every biome paints. Inside warded land the biomes leave the cells empty, which is exactly where the maze below shows through.",
+      "folder": "the wards",
+      "enabled": true,
+      "params": {
+        "operation": 1,
+        "clamp": 1
+      },
+      "inputs": {
+        "a": "n17",
+        "b": "n20"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n22",
+      "type": "mazeChunk",
+      "label": "the wards",
+      "comment": "The labyrinth itself, hedge walls over worn processional paths, one maze spanning each 6-chunk lot. It carves everywhere, but the biomes above bury it outside the warded lots. Two doors per edge and a little braid keep every ward walkable from the wilds.",
+      "folder": "the wards",
+      "enabled": true,
+      "params": {
+        "corridor": 3,
+        "wall": 1,
+        "mazeChunks": 6,
+        "carver": 0,
+        "braid": 0.25,
+        "doorsPerEdge": 2,
+        "wallTile": 24,
+        "floorTile": 8
+      },
+      "inputs": {},
+      "display": {
+        "mode": "tileLayer"
+      }
+    },
+    {
+      "id": "n23",
+      "type": "customScript",
+      "label": "script: scorch & breach",
+      "comment": "What the fire did to the eastern wards: hedges become scorched stone, a third of every wall crumbles into ash-filled breaches, and the old paths vanish under ash. West of the emberline it paints nothing, leaving the hedges green.",
+      "folder": "the wards",
+      "enabled": true,
+      "params": {
+        "outputKind": "tiles",
+        "code": "const maze = ctx.tilesInput('a');\nconst char = ctx.fieldInput('b');\nconst tiles = ctx.newTiles();\nif (!maze || !char) return tiles;\nconst hedgeWall = 24;\nconst wardPath = 8;\nconst scorchedWall = 23;\nconst ashGround = 22;\nfor (let y = 0; y < ctx.size; y++) {\n  for (let x = 0; x < ctx.size; x++) {\n    const i = y * ctx.size + x;\n    tiles[i] = -1;\n    if (char[i] < 0.62) continue;\n    const ruin = ctx.hash01(ctx.originX + x, ctx.originY + y, 'scorch');\n    if (maze[i] === hedgeWall) tiles[i] = ruin < 0.3 ? ashGround : scorchedWall;\n    if (maze[i] === wardPath) tiles[i] = ashGround;\n  }\n}\nreturn tiles;"
+      },
+      "inputs": {
+        "a": "n22",
+        "b": "n14"
       },
       "display": {
         "mode": "tileLayer"
       }
     },
     {
-      "id": "n7",
-      "type": "scatterPoints",
-      "label": "monster scatter",
-      "comment": "",
-      "folder": "",
+      "id": "n24",
+      "type": "biomeBands",
+      "label": "the green march",
+      "comment": "The unburnt world and the base coat: sea, sand shores, grass, bare rock on the steeps. It paints every cell outside warded land — including the whole ashfall, which the next biome overpaints.",
+      "folder": "two countries",
       "enabled": true,
       "params": {
-        "density": 0.045,
-        "maskAtLeast": 0.65,
-        "maskAtMost": 0.78
+        "seaLevel": 0.5,
+        "deepDrop": 0.06,
+        "shoreBand": 0.05,
+        "rockAbove": 0.45,
+        "snowLine": 1,
+        "regionAtLeast": 0.5,
+        "deepTile": 5,
+        "waterTile": 0,
+        "shoreTile": 1,
+        "groundTile": 2,
+        "rockTile": 4,
+        "snowTile": 7
       },
       "inputs": {
-        "mask": "n2"
+        "elevation": "n9",
+        "steepness": "n10",
+        "shoreDistance": "n11",
+        "region": "n21"
       },
       "display": {
-        "mode": "markers",
-        "tileId": -1,
-        "glyph": "▲",
-        "color": "#3fbf9f"
+        "mode": "tileLayer"
       }
     },
     {
-      "id": "n8",
-      "type": "scatterPoints",
-      "label": "ghost scatter",
-      "comment": "",
-      "folder": "",
+      "id": "n25",
+      "type": "combineFields",
+      "label": "ash & open",
+      "comment": "The ashfall claims cells that are both east of the emberline and outside warded land.",
+      "folder": "two countries",
       "enabled": true,
       "params": {
-        "density": 0.025,
-        "maskAtLeast": 0.67,
-        "maskAtMost": 0.96
+        "operation": 2,
+        "clamp": 1
       },
       "inputs": {
-        "mask": "n3"
+        "a": "n15",
+        "b": "n21"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n26",
+      "type": "biomeBands",
+      "label": "the ashfall",
+      "comment": "The same land after the fire: ash where grass would grow, gravel where beaches would lie, and the sea kept as water — the one thing on this side that did not burn. The region cut sits a little under the green march's so the ash wins the fractional slivers along drowned ward edges.",
+      "folder": "two countries",
+      "enabled": true,
+      "params": {
+        "seaLevel": 0.5,
+        "deepDrop": 0.06,
+        "shoreBand": 0.04,
+        "rockAbove": 0.5,
+        "snowLine": 1,
+        "regionAtLeast": 0.45,
+        "deepTile": 5,
+        "waterTile": 0,
+        "shoreTile": 9,
+        "groundTile": 22,
+        "rockTile": 4,
+        "snowTile": 7
+      },
+      "inputs": {
+        "elevation": "n9",
+        "steepness": "n10",
+        "shoreDistance": "n11",
+        "region": "n25"
+      },
+      "display": {
+        "mode": "tileLayer"
+      }
+    },
+    {
+      "id": "n27",
+      "type": "terrainNoise",
+      "label": "fen clumps",
+      "comment": "Billowed continental-scale blobs deciding which stretches of the green coast drown into fen instead of keeping their beaches.",
+      "folder": "two countries",
+      "enabled": true,
+      "params": {
+        "scale": 0.008,
+        "style": 2,
+        "octaves": 3,
+        "lacunarity": 2,
+        "gain": 0.5
+      },
+      "inputs": {},
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n28",
+      "type": "combineFields",
+      "label": "green fens",
+      "comment": "Fen clumps gated to the green side — the ashfall coast is gravel, never marsh.",
+      "folder": "two countries",
+      "enabled": true,
+      "params": {
+        "operation": 2,
+        "clamp": 1
+      },
+      "inputs": {
+        "a": "n27",
+        "b": "n18"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n29",
+      "type": "combineFields",
+      "label": "fen country",
+      "comment": "And gated outside the wards, so no marsh creeps over a ward that runs down to the sea.",
+      "folder": "two countries",
+      "enabled": true,
+      "params": {
+        "operation": 2,
+        "clamp": 1
+      },
+      "inputs": {
+        "a": "n28",
+        "b": "n21"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n30",
+      "type": "biomeBands",
+      "label": "the drowning fens",
+      "comment": "A biome used as a single-band painter: every tile empty except the shore, so all it paints is a wide marsh strip along the fen-country coastline, cut from coast distance so it keeps an even depth.",
+      "folder": "two countries",
+      "enabled": true,
+      "params": {
+        "seaLevel": 0.5,
+        "deepDrop": 0,
+        "shoreBand": 0.1,
+        "rockAbove": 1,
+        "snowLine": 1,
+        "regionAtLeast": 0.42,
+        "deepTile": -1,
+        "waterTile": -1,
+        "shoreTile": 10,
+        "groundTile": -1,
+        "rockTile": -1,
+        "snowTile": -1
+      },
+      "inputs": {
+        "elevation": "n9",
+        "steepness": null,
+        "shoreDistance": "n11",
+        "region": "n29"
+      },
+      "display": {
+        "mode": "tileLayer"
+      }
+    },
+    {
+      "id": "n31",
+      "type": "riverFromFlow",
+      "label": "rivers of water",
+      "comment": "The drainage dressed as water, painted over both countries — streams run freely through the hedge wards, and in the east the molten layer above will swallow all but the youngest trickles.",
+      "folder": "rivers of water & fire",
+      "enabled": true,
+      "params": {
+        "minFlow": 0.55,
+        "maxWidth": 4,
+        "seaLevel": 0.5,
+        "riverTile": 0
+      },
+      "inputs": {
+        "flow": "n8",
+        "elevation": "n9"
+      },
+      "display": {
+        "mode": "tileLayer"
+      }
+    },
+    {
+      "id": "n32",
+      "type": "combineFields",
+      "label": "carved depth",
+      "comment": "Uneroded minus eroded terrain: nonzero exactly where the rivers dug their valleys.",
+      "folder": "rivers of water & fire",
+      "enabled": true,
+      "params": {
+        "operation": 1,
+        "clamp": 1
+      },
+      "inputs": {
+        "a": "n7",
+        "b": "n9"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n33",
+      "type": "combineFields",
+      "label": "molten carve",
+      "comment": "The carved band gated east of the emberline — the stretch of every valley that runs molten.",
+      "folder": "rivers of water & fire",
+      "enabled": true,
+      "params": {
+        "operation": 2,
+        "clamp": 1
+      },
+      "inputs": {
+        "a": "n32",
+        "b": "n15"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n34",
+      "type": "thresholdTiles",
+      "label": "rivers of fire",
+      "comment": "Lava wherever the eastern valleys are carved deep enough, overpainting the water below it. The same channel crosses the frontier and changes state — follow any river east and watch it catch.",
+      "folder": "rivers of water & fire",
+      "enabled": true,
+      "params": {
+        "threshold": 0.03,
+        "belowTile": -1,
+        "aboveTile": 21
+      },
+      "inputs": {
+        "source": "n33"
+      },
+      "display": {
+        "mode": "tileLayer"
+      }
+    },
+    {
+      "id": "n35",
+      "type": "combineFields",
+      "label": "char on land",
+      "comment": "The emberline gradient gated to dry ground — its bands are the frontier habitats.",
+      "folder": "the frontier",
+      "enabled": true,
+      "params": {
+        "operation": 2,
+        "clamp": 1
+      },
+      "inputs": {
+        "a": "n14",
+        "b": "n16"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n36",
+      "type": "scatterPoints",
+      "label": "the burnt forest",
+      "comment": "A strip of dead trees where the fire stopped — the woods that burned standing and never fell. Cross it and you know which country you are entering.",
+      "folder": "the frontier",
+      "enabled": true,
+      "params": {
+        "density": 0.04,
+        "maskAtLeast": 0.55,
+        "maskAtMost": 0.68
+      },
+      "inputs": {
+        "mask": "n35"
       },
       "display": {
         "mode": "markers",
-        "tileId": -1,
-        "glyph": "☗",
-        "color": "#d268d2"
+        "tileId": 25,
+        "glyph": "†",
+        "color": "#342d28"
+      }
+    },
+    {
+      "id": "n37",
+      "type": "scatterPoints",
+      "label": "the warding stones",
+      "comment": "Stone circles in a dotted line exactly along the char 0.5 contour: the line someone once held, and the fire respected — mostly. They are the oldest things in the marches.",
+      "folder": "the frontier",
+      "enabled": true,
+      "params": {
+        "density": 0.0005,
+        "maskAtLeast": 0.5,
+        "maskAtMost": 0.56
+      },
+      "inputs": {
+        "mask": "n35"
+      },
+      "display": {
+        "mode": "prefabs",
+        "prefabId": 2,
+        "rotation": -1
+      }
+    },
+    {
+      "id": "n38",
+      "type": "combineFields",
+      "label": "green heights",
+      "comment": "Eroded terrain gated to the green side: one field whose high band is the unburnt ridges and whose middle bands are the living lowlands. Every green settlement and creature below is a band of it.",
+      "folder": "the frontier",
+      "enabled": true,
+      "params": {
+        "operation": 2,
+        "clamp": 1
+      },
+      "inputs": {
+        "a": "n9",
+        "b": "n18"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n39",
+      "type": "scatterPoints",
+      "label": "watch outposts",
+      "comment": "Rare towers on the green ridges, looking east. There are none in the ashfall — the eastern watch is what the scorched wards used to be.",
+      "folder": "the frontier",
+      "enabled": true,
+      "params": {
+        "density": 0.0006,
+        "maskAtLeast": 0.68,
+        "maskAtMost": 1
+      },
+      "inputs": {
+        "mask": "n38"
+      },
+      "display": {
+        "mode": "prefabs",
+        "prefabId": 1,
+        "rotation": 0
+      }
+    },
+    {
+      "id": "n40",
+      "type": "scatterPoints",
+      "label": "outpost watch",
+      "comment": "Sentries holding the same high band as their towers, walking back to their posts when you leave.",
+      "folder": "the frontier",
+      "enabled": true,
+      "params": {
+        "density": 0.0012,
+        "maskAtLeast": 0.68,
+        "maskAtMost": 1
+      },
+      "inputs": {
+        "mask": "n38"
+      },
+      "display": {
+        "mode": "creatures",
+        "creatureId": 3
+      }
+    },
+    {
+      "id": "n41",
+      "type": "scatterPoints",
+      "label": "cottages",
+      "comment": "Farmsteads across the mild green lowlands, and nowhere east of the stones — nobody rebuilds on ash.",
+      "folder": "the frontier",
+      "enabled": true,
+      "params": {
+        "density": 0.0015,
+        "maskAtLeast": 0.55,
+        "maskAtMost": 0.64
+      },
+      "inputs": {
+        "mask": "n38"
+      },
+      "display": {
+        "mode": "prefabs",
+        "prefabId": 0,
+        "rotation": -1
+      }
+    },
+    {
+      "id": "n42",
+      "type": "scatterPoints",
+      "label": "the greenwood",
+      "comment": "The living forest of the west, on the same band its burnt twin occupies at the frontier.",
+      "folder": "who lives where",
+      "enabled": true,
+      "params": {
+        "density": 0.07,
+        "maskAtLeast": 0.56,
+        "maskAtMost": 0.66
+      },
+      "inputs": {
+        "mask": "n38"
+      },
+      "display": {
+        "mode": "markers",
+        "tileId": 3,
+        "glyph": "♠",
+        "color": "#2d6a34"
+      }
+    },
+    {
+      "id": "n43",
+      "type": "scatterPoints",
+      "label": "deer",
+      "comment": "Meadow herds whose band overlaps the warded lots — deer graze inside the overgrown hedge mazes, which is the closest thing the wards still have to a keeper.",
+      "folder": "who lives where",
+      "enabled": true,
+      "params": {
+        "density": 0.006,
+        "maskAtLeast": 0.54,
+        "maskAtMost": 0.68
+      },
+      "inputs": {
+        "mask": "n38"
+      },
+      "display": {
+        "mode": "creatures",
+        "creatureId": 0
+      }
+    },
+    {
+      "id": "n44",
+      "type": "scatterPoints",
+      "label": "rabbits",
+      "comment": "The low meadows near the coast, one band under the deer.",
+      "folder": "who lives where",
+      "enabled": true,
+      "params": {
+        "density": 0.006,
+        "maskAtLeast": 0.52,
+        "maskAtMost": 0.6
+      },
+      "inputs": {
+        "mask": "n38"
+      },
+      "display": {
+        "mode": "creatures",
+        "creatureId": 1
+      }
+    },
+    {
+      "id": "n45",
+      "type": "scatterPoints",
+      "label": "wolves",
+      "comment": "Hunting the greenwood band and a little above it — between the deer and the outposts.",
+      "folder": "who lives where",
+      "enabled": true,
+      "params": {
+        "density": 0.0018,
+        "maskAtLeast": 0.6,
+        "maskAtMost": 0.72
+      },
+      "inputs": {
+        "mask": "n38"
+      },
+      "display": {
+        "mode": "creatures",
+        "creatureId": 2
+      }
+    },
+    {
+      "id": "n46",
+      "type": "combineFields",
+      "label": "fen strip",
+      "comment": "Coast distance gated to the green side: its just-above-0.5 band is the marshy waterline itself.",
+      "folder": "who lives where",
+      "enabled": true,
+      "params": {
+        "operation": 2,
+        "clamp": 1
+      },
+      "inputs": {
+        "a": "n11",
+        "b": "n18"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n47",
+      "type": "scatterPoints",
+      "label": "fen herons",
+      "comment": "Stalking the first few tiles inland along the green coasts, quick to startle.",
+      "folder": "who lives where",
+      "enabled": true,
+      "params": {
+        "density": 0.004,
+        "maskAtLeast": 0.52,
+        "maskAtMost": 0.58
+      },
+      "inputs": {
+        "mask": "n46"
+      },
+      "display": {
+        "mode": "creatures",
+        "creatureId": 6
+      }
+    },
+    {
+      "id": "n48",
+      "type": "scatterPoints",
+      "label": "ash hounds",
+      "comment": "The deep east belongs to the hounds: fast, far-sighted, and the reason to keep moving out there.",
+      "folder": "who lives where",
+      "enabled": true,
+      "params": {
+        "density": 0.002,
+        "maskAtLeast": 0.68,
+        "maskAtMost": 1
+      },
+      "inputs": {
+        "mask": "n35"
+      },
+      "display": {
+        "mode": "creatures",
+        "creatureId": 4
+      }
+    },
+    {
+      "id": "n49",
+      "type": "scatterPoints",
+      "label": "ember wisps",
+      "comment": "Spawned from the molten carve field, so they drift along the rivers of fire — phasing through lava and ward walls alike, the only gentle things left in the east.",
+      "folder": "who lives where",
+      "enabled": true,
+      "params": {
+        "density": 0.02,
+        "maskAtLeast": 0.02,
+        "maskAtMost": 1
+      },
+      "inputs": {
+        "mask": "n33"
+      },
+      "display": {
+        "mode": "creatures",
+        "creatureId": 5
+      }
+    },
+    {
+      "id": "n50",
+      "type": "combineFields",
+      "label": "fallen wards",
+      "comment": "Warded land east of the emberline — the scorched mazes.",
+      "folder": "who lives where",
+      "enabled": true,
+      "params": {
+        "operation": 2,
+        "clamp": 1
+      },
+      "inputs": {
+        "a": "n20",
+        "b": "n15"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "n51",
+      "type": "scatterPoints",
+      "label": "ward sentries",
+      "comment": "The garrison of the fallen wards, still walking the scorched corridors. They guard their spawn corridor and return to it — the last order they were given.",
+      "folder": "who lives where",
+      "enabled": true,
+      "params": {
+        "density": 0.004,
+        "maskAtLeast": 0.5,
+        "maskAtMost": 1
+      },
+      "inputs": {
+        "mask": "n50"
+      },
+      "display": {
+        "mode": "creatures",
+        "creatureId": 3
       }
     }
   ]
