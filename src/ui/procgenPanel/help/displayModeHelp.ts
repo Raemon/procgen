@@ -1,7 +1,7 @@
 import type { DisplayMode } from '../../../procgen/display/displayBinding';
 import { displayModesForKind } from '../../../procgen/display/displayBinding';
 import type { ValueKind } from '../../../procgen/values/chunkValues';
-import type { TooltipContent } from '../../tooltips/tooltipContentElements';
+import type { TooltipContent } from '../../tooltips/tooltipContent';
 
 export const MODE_LABELS: Record<DisplayMode, string> = {
   hidden: 'hidden',

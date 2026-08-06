@@ -1,5 +1,5 @@
 import type { ExamplePipeline } from '../../../procgen/presets/examplePipelines';
-import type { TooltipContent } from '../../tooltips/tooltipContentElements';
+import type { TooltipContent } from '../../tooltips/tooltipContent';
 
 export function examplesTooltip(examples: ExamplePipeline[]): TooltipContent {
   return {

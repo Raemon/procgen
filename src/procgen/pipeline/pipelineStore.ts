@@ -30,8 +30,9 @@ export class PipelineStore {
     return this.state.nodes[nodeIndexById(this.state, nodeId)];
   }
 
-  onChange(listener: PipelineListener): void {
+  onChange(listener: PipelineListener): () => void {
     this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
   }
 
   setSeed(seed: number): void {

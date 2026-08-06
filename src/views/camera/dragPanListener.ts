@@ -14,7 +14,7 @@ export function listenForDragPan(
     lastX = event.clientX;
     lastY = event.clientY;
     target.setPointerCapture(event.pointerId);
-    target.classList.add('grabbing');
+    target.style.cursor = 'grabbing';
   });
 
   target.addEventListener('pointermove', (event) => {
@@ -27,7 +27,7 @@ export function listenForDragPan(
   const endDrag = (event: PointerEvent): void => {
     if (event.pointerId !== draggingPointerId) return;
     draggingPointerId = null;
-    target.classList.remove('grabbing');
+    target.style.cursor = '';
   };
   target.addEventListener('pointerup', endDrag);
   target.addEventListener('pointercancel', endDrag);

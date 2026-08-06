@@ -1,6 +1,31 @@
-@import './theme.css';
-@import './tileEditor.css';
-@import './pixelArtEditor.css';
-@import './procgenPanel.css';
-@import './tooltips.css';
-@import './worldView.css';
+@import 'tailwindcss';
+
+@theme {
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --color-bg: #0a0d13;
+  --color-panel: #10151f;
+  --color-panel-edge: #1d2635;
+  --color-ink: #cdd6e4;
+  --color-ink-dim: #7a8698;
+  --color-accent: #ffd86a;
+
+  --color-field: #0d1119;
+  --color-procgen: #1a2333;
+  --color-btn: #1a2333;
+  --color-btn-edge: #2a3a55;
+  --color-btn-hover: #223050;
+  --color-btn-active: #2c4066;
+
+  --color-art-panel: #263145;
+  --color-art-edge: #3a4a66;
+
+  --color-warn-edge: #7a6030;
+  --color-danger-edge: #a04040;
+  --color-danger-ink: #ff8080;
+
+  --color-tip: #141b28;
+  --color-error-edge: #7a3030;
+  --color-error-bg: #2a1414;
+  --color-error-ink: #ff9d9d;
+}

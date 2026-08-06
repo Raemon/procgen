@@ -31,7 +31,7 @@ export class World {
     this.events.emit('player-moved');
   }
 
-  on(event: WorldEvent, listener: () => void): void {
-    this.events.on(event, listener);
+  on(event: WorldEvent, listener: () => void): () => void {
+    return this.events.on(event, listener);
   }
 }
