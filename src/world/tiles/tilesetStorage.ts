@@ -1,6 +1,6 @@
 import { readJson, writeJson } from '../../persistence/localJsonStore';
+import { upgradeStoredFaceArt } from './legacyFaceArt';
 import type { TileDef } from './tileDef';
-import { isCubeFaceArt } from './tileFaceArt';
 
 const STORAGE_KEY = 'procgen.tileset.v1';
 
@@ -12,7 +12,7 @@ export function loadStoredTiles(): TileDef[] | null {
 }
 
 function withValidatedFaceArt(tile: TileDef): TileDef {
-  return { ...tile, faceArt: isCubeFaceArt(tile.faceArt) ? tile.faceArt : null };
+  return { ...tile, faceArt: upgradeStoredFaceArt(tile.faceArt) };
 }
 
 export function storeTiles(tiles: readonly TileDef[]): void {

@@ -6,8 +6,13 @@ three.js, no server.
 Three panels:
 
 1. **Tile editor** — create/edit tile types (name, ascii symbol, color,
-   walkable), plus optional 8×8 pixel art per cube face (top/sides/bottom)
-   painted in an inline editor. Persisted to localStorage.
+   walkable), plus optional pixel art per cube face painted in an inline
+   editor: top/bottom plus either linked sides or each of N/E/S/W separately,
+   draw/erase/flood-fill/color-pick tools with mirror-X/Y, undo, and
+   copy/paste between faces, tiling helpers (live 3×3 seam preview and
+   wrap-around shift), and a selectable resolution (4×4 to 32×32, art is
+   rescaled on change). Persisted to localStorage; older top/sides/bottom
+   art is migrated automatically.
 2. **Generation panel** — knobs feeding a pass pipeline (seeded noise →
    terrain thresholds → cellular-automata smoothing → tree scatter).
 3. **World view** — toggle between ASCII (one colored glyph per tile, `@` is

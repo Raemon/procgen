@@ -1,153 +1,192 @@
+import { floodFillFacePixels } from '../../world/tiles/faceArtOps/floodFillFacePixels';
+import {
+  copyFaceToAllSides,
+  sideFacesMatch,
+} from '../../world/tiles/faceArtOps/linkedSideFaces';
+import { mirroredPixelIndices } from '../../world/tiles/faceArtOps/mirroredPixelIndices';
+import {
+  resampleFacePixels,
+  resizeCubeFaceArt,
+} from '../../world/tiles/faceArtOps/resizeFaceArt';
+import { shiftFacePixelsWithWrap } from '../../world/tiles/faceArtOps/shiftFacePixelsWithWrap';
 import type { TileDef } from '../../world/tiles/tileDef';
 import {
   blankCubeFaceArt,
   blankFacePixels,
   cloneCubeFaceArt,
-  CUBE_FACES,
-  isEntirelyBlank,
-  type CubeFace,
+  faceGridSize,
   type CubeFaceArt,
+  type FacePixels,
 } from '../../world/tiles/tileFaceArt';
 import type { EditableTileFields } from '../../world/tiles/tileset';
-import { pixelPaintCanvas } from './pixelPaintCanvas';
+import { faceArtHistory } from './faceArtHistory';
+import { faceTabs } from './faceTabs';
+import {
+  activeFace,
+  initialPaintState,
+  isSideTab,
+  targetFaces,
+  type FaceTab,
+} from './paintState';
+import { paintToolbar } from './paintToolbar';
+import { pixelPaintCanvas, type StrokePhase } from './pixelPaintCanvas';
+import { resolutionSelect } from './resolutionSelect';
+import { tilingTools } from './tilingTools';
 
 export interface PixelArtEditor {
   root: HTMLElement;
   refresh(): void;
 }
 
-interface PaintState {
-  face: CubeFace;
-  paintColor: string;
-  erasing: boolean;
-  strokeArt: CubeFaceArt | null;
-}
-
 export function pixelArtEditor(
   tile: TileDef,
   onEdit: (patch: EditableTileFields) => void,
 ): PixelArtEditor {
-  const state: PaintState = {
-    face: 'top',
-    paintColor: tile.color,
-    erasing: false,
-    strokeArt: null,
-  };
+  const state = initialPaintState(tile);
+  const history = faceArtHistory(tile, onEdit);
+  let strokeArt: CubeFaceArt | null = null;
+  let clipboard: FacePixels | null = null;
 
-  const canvas = pixelPaintCanvas({ onPaintPixel: paintPixel, onStrokeEnd: commitStroke });
-  const tabs = faceTabs(selectFace);
-  const root = document.createElement('div');
-  root.className = 'pixel-editor';
-  root.append(tabs.root, canvas.canvas, paintTools(state, clearActiveFace));
+  const canvas = pixelPaintCanvas({ onPaintPixel: handlePaint, onStrokeEnd: commitStroke });
+  const tabs = faceTabs(state, { onSelect: selectFace, onToggleLink: toggleLinkedSides });
+  const toolbar = paintToolbar(state, {
+    onStateChange: refresh,
+    onUndo: undo,
+    onCopyFace: copyFace,
+    onPasteFace: pasteFace,
+    onClearFace: clearFace,
+  });
+  const tiling = tilingTools(shiftFace);
+  const resolution = resolutionSelect(changeResolution);
+  const root = assembleEditorPanel(tabs.root, canvas.canvas, toolbar.root, resolution.root, tiling.root);
 
   function refresh(): void {
-    tabs.setActive(state.face);
-    const art = state.strokeArt ?? tile.faceArt;
-    canvas.redraw(art?.[state.face] ?? blankFacePixels(), tile.color);
+    state.size = strokeArt?.size ?? tile.faceArt?.size ?? state.size;
+    tabs.refresh();
+    toolbar.refresh();
+    resolution.refresh(state.size);
+    const pixels = activeFacePixels();
+    canvas.redraw(pixels, tile.color);
+    tiling.refreshPreview(pixels, tile.color);
   }
 
-  function selectFace(face: CubeFace): void {
-    state.face = face;
+  function activeFacePixels(): FacePixels {
+    const art = strokeArt ?? tile.faceArt;
+    return art ? art[activeFace(state)] : blankFacePixels(state.size);
+  }
+
+  function editableArt(): CubeFaceArt {
+    return tile.faceArt ? cloneCubeFaceArt(tile.faceArt) : blankCubeFaceArt(state.size);
+  }
+
+  function selectFace(tab: FaceTab): void {
+    state.faceTab = tab;
     refresh();
   }
 
-  function paintPixel(index: number): void {
-    state.strokeArt ??= editableCopyOfArt(tile);
-    state.strokeArt[state.face][index] = state.erasing ? null : state.paintColor;
+  function toggleLinkedSides(): void {
+    state.linkedSides = !state.linkedSides;
+    if (state.linkedSides) relinkSides();
+    else if (state.faceTab === 'sides') state.faceTab = 'north';
+    refresh();
+  }
+
+  function relinkSides(): void {
+    const source = isSideTab(state.faceTab) ? activeFace(state) : 'north';
+    if (isSideTab(state.faceTab)) state.faceTab = 'sides';
+    if (tile.faceArt && !sideFacesMatch(tile.faceArt)) {
+      history.commit(copyFaceToAllSides(tile.faceArt, source));
+    }
+  }
+
+  function handlePaint(index: number, phase: StrokePhase): void {
+    if (state.tool === 'pick') return void (phase === 'start' && pickColorAt(index));
+    if (state.tool === 'fill') return void (phase === 'start' && fillAt(index));
+    strokePaintAt(index);
+  }
+
+  function strokePaintAt(index: number): void {
+    strokeArt ??= editableArt();
+    const value = state.tool === 'erase' ? null : state.paintColor;
+    for (const face of targetFaces(state))
+      for (const mirrored of mirroredPixelIndices(index, state.size, state.mirrorX, state.mirrorY))
+        strokeArt[face][mirrored] = value;
     refresh();
   }
 
   function commitStroke(): void {
-    if (!state.strokeArt) return;
-    commitArt(state.strokeArt);
-    state.strokeArt = null;
-  }
-
-  function clearActiveFace(): void {
-    const art = editableCopyOfArt(tile);
-    art[state.face] = blankFacePixels();
-    commitArt(art);
+    if (!strokeArt) return;
+    const stroked = strokeArt;
+    strokeArt = null;
+    history.commit(stroked);
     refresh();
   }
 
-  function commitArt(art: CubeFaceArt): void {
-    onEdit({ faceArt: isEntirelyBlank(art) ? null : art });
+  function pickColorAt(index: number): void {
+    state.paintColor = tile.faceArt?.[activeFace(state)][index] ?? tile.color;
+    state.tool = 'draw';
+    refresh();
+  }
+
+  function fillAt(index: number): void {
+    commitToTargetFaces((pixels) =>
+      floodFillFacePixels(pixels, state.size, index, state.paintColor),
+    );
+  }
+
+  function clearFace(): void {
+    commitToTargetFaces(() => blankFacePixels(state.size));
+  }
+
+  function shiftFace(dx: number, dy: number): void {
+    if (!tile.faceArt) return;
+    commitToTargetFaces((pixels) => shiftFacePixelsWithWrap(pixels, state.size, dx, dy));
+  }
+
+  function copyFace(): void {
+    clipboard = [...activeFacePixels()];
+  }
+
+  function pasteFace(): void {
+    if (!clipboard) return;
+    const pixels = resampleFacePixels(clipboard, faceGridSize(clipboard), state.size);
+    commitToTargetFaces(() => [...pixels]);
+  }
+
+  function commitToTargetFaces(transform: (pixels: FacePixels) => FacePixels): void {
+    const art = editableArt();
+    for (const face of targetFaces(state)) art[face] = transform(art[face]);
+    history.commit(art);
+    refresh();
+  }
+
+  function changeResolution(size: number): void {
+    if (tile.faceArt) history.commit(resizeCubeFaceArt(tile.faceArt, size));
+    state.size = size;
+    refresh();
+  }
+
+  function undo(): void {
+    history.undo();
+    refresh();
   }
 
   refresh();
   return { root, refresh };
 }
 
-function editableCopyOfArt(tile: TileDef): CubeFaceArt {
-  return tile.faceArt ? cloneCubeFaceArt(tile.faceArt) : blankCubeFaceArt();
-}
-
-function faceTabs(onSelect: (face: CubeFace) => void): {
-  root: HTMLElement;
-  setActive(face: CubeFace): void;
-} {
+function assembleEditorPanel(
+  tabs: HTMLElement,
+  canvas: HTMLElement,
+  toolbar: HTMLElement,
+  resolution: HTMLElement,
+  tiling: HTMLElement,
+): HTMLElement {
   const root = document.createElement('div');
-  root.className = 'pixel-tabs';
-  const buttons = new Map<CubeFace, HTMLButtonElement>();
-  for (const face of CUBE_FACES) {
-    const button = faceTabButton(face, onSelect);
-    buttons.set(face, button);
-    root.appendChild(button);
-  }
-  return {
-    root,
-    setActive(face) {
-      for (const [tabFace, button] of buttons) button.classList.toggle('active', tabFace === face);
-    },
-  };
-}
-
-function faceTabButton(face: CubeFace, onSelect: (face: CubeFace) => void): HTMLButtonElement {
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'btn pixel-tab';
-  button.textContent = face;
-  button.addEventListener('click', () => onSelect(face));
-  return button;
-}
-
-function paintTools(state: PaintState, onClearFace: () => void): HTMLElement {
-  const root = document.createElement('div');
-  root.className = 'pixel-tools';
-  root.append(paintColorInput(state), eraseToggle(state), clearFaceButton(onClearFace));
+  root.className = 'pixel-editor';
+  const footer = document.createElement('div');
+  footer.className = 'pixel-footer';
+  footer.append(resolution, tiling);
+  root.append(tabs, canvas, toolbar, footer);
   return root;
-}
-
-function paintColorInput(state: PaintState): HTMLElement {
-  const input = document.createElement('input');
-  input.type = 'color';
-  input.value = state.paintColor;
-  input.title = 'paint color';
-  input.addEventListener('input', () => {
-    state.paintColor = input.value;
-  });
-  return input;
-}
-
-function eraseToggle(state: PaintState): HTMLElement {
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'btn';
-  button.textContent = 'erase';
-  button.title = 'paint pixels back to the base color';
-  button.addEventListener('click', () => {
-    state.erasing = !state.erasing;
-    button.classList.toggle('active', state.erasing);
-  });
-  return button;
-}
-
-function clearFaceButton(onClearFace: () => void): HTMLElement {
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'btn';
-  button.textContent = 'clear';
-  button.title = 'reset this face to the base color';
-  button.addEventListener('click', onClearFace);
-  return button;
 }

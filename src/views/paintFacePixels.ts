@@ -1,4 +1,4 @@
-import { FACE_ART_SIZE, type FacePixels } from '../world/tiles/tileFaceArt';
+import { faceGridSize, type FacePixels } from '../world/tiles/tileFaceArt';
 
 export function paintFacePixels(
   ctx: CanvasRenderingContext2D,
@@ -6,11 +6,12 @@ export function paintFacePixels(
   baseColor: string,
   pixelSize: number,
 ): void {
+  const size = faceGridSize(pixels);
   pixels.forEach((pixel, index) => {
     ctx.fillStyle = pixel ?? baseColor;
     ctx.fillRect(
-      (index % FACE_ART_SIZE) * pixelSize,
-      Math.floor(index / FACE_ART_SIZE) * pixelSize,
+      (index % size) * pixelSize,
+      Math.floor(index / size) * pixelSize,
       pixelSize,
       pixelSize,
     );

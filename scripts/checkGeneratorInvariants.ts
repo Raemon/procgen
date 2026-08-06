@@ -5,11 +5,22 @@ import { cameraRelativeStep } from '../src/input/cameraRelativeStep';
 import { PLAYER_GLYPH, worldToAscii } from '../src/views/ascii/worldToAscii';
 import { tilePlacementsByShape } from '../src/views/view3d/tilePlacements';
 import { spawnPointForSeed } from '../src/world/spawnPoint';
+import { floodFillFacePixels } from '../src/world/tiles/faceArtOps/floodFillFacePixels';
+import {
+  copyFaceToAllSides,
+  sideFacesMatch,
+} from '../src/world/tiles/faceArtOps/linkedSideFaces';
+import { mirroredPixelIndices } from '../src/world/tiles/faceArtOps/mirroredPixelIndices';
+import { resizeCubeFaceArt } from '../src/world/tiles/faceArtOps/resizeFaceArt';
+import { shiftFacePixelsWithWrap } from '../src/world/tiles/faceArtOps/shiftFacePixelsWithWrap';
+import { upgradeStoredFaceArt } from '../src/world/tiles/legacyFaceArt';
 import {
   blankCubeFaceArt,
+  blankFacePixels,
   cloneCubeFaceArt,
   isCubeFaceArt,
   isEntirelyBlank,
+  SIDE_FACES,
 } from '../src/world/tiles/tileFaceArt';
 import { isWalkableTile } from '../src/world/tileWalkability';
 import { Tileset } from '../src/world/tiles/tileset';
@@ -77,6 +88,56 @@ art.top[0] = '#ff0000';
 check('painting a pixel makes face art non-blank', !isEntirelyBlank(art));
 check('cloned face art does not share pixel arrays', cloneCubeFaceArt(art).top !== art.top);
 check('malformed face art is rejected', !isCubeFaceArt({ top: [], sides: [], bottom: [] }));
+
+const legacySides = blankFacePixels(8);
+legacySides[1] = '#00ff00';
+const upgraded = upgradeStoredFaceArt({
+  top: blankFacePixels(8),
+  sides: legacySides,
+  bottom: blankFacePixels(8),
+});
+check('legacy top/sides/bottom art upgrades to six faces', isCubeFaceArt(upgraded) && upgraded!.size === 8);
+check(
+  'legacy sides spread to all four compass faces',
+  SIDE_FACES.every((face) => upgraded![face][1] === '#00ff00'),
+);
+check('garbage stored art is dropped', upgradeStoredFaceArt({ top: [] }) === null);
+
+const grown = resizeCubeFaceArt(art, 16);
+check(
+  'resizing up rescales painted pixels',
+  grown.size === 16 && grown.top[0] === '#ff0000' && grown.top[1] === '#ff0000' && grown.top[16] === '#ff0000' && grown.top[2] === null,
+);
+check('resizing back down keeps the art', resizeCubeFaceArt(grown, 8).top[0] === '#ff0000');
+
+const edgePixels = blankFacePixels(4);
+edgePixels[3] = '#0000ff';
+check('shifting wraps pixels around the edge', shiftFacePixelsWithWrap(edgePixels, 4, 1, 0)[0] === '#0000ff');
+check('shifting down moves rows', shiftFacePixelsWithWrap(edgePixels, 4, 0, 1)[7] === '#0000ff');
+
+const walledFace = blankFacePixels(4);
+for (let col = 0; col < 4; col++) walledFace[4 + col] = '#ffffff';
+const filled = floodFillFacePixels(walledFace, 4, 0, '#00ff00');
+check(
+  'flood fill stops at other colors',
+  filled.slice(0, 4).every((p) => p === '#00ff00') && filled.slice(8).every((p) => p === null),
+);
+
+check(
+  'mirrored painting hits both columns',
+  String([...mirroredPixelIndices(0, 8, true, false)].sort((a, b) => a - b)) === '0,7',
+);
+check(
+  'double mirror paints four corners',
+  mirroredPixelIndices(0, 8, true, true).length === 4,
+);
+
+const splitSides = blankCubeFaceArt();
+check('blank art has matching sides', sideFacesMatch(splitSides));
+splitSides.north[0] = '#ff0000';
+check('painting one side unmatches the sides', !sideFacesMatch(splitSides));
+const relinked = copyFaceToAllSides(splitSides, 'north');
+check('relinking copies one side everywhere', sideFacesMatch(relinked) && relinked.west[0] === '#ff0000');
 
 const grass = tileset.byRole('grass')!;
 tileset.update(grass.id, { faceArt: art });
