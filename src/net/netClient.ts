@@ -6,6 +6,7 @@ import {
   type EntityMetaMsg,
   type HelloMsg,
   type KickMsg,
+  type SaidMsg,
   type ServerMsg,
   type SnapshotRow,
   type WelcomeMsg,
@@ -21,6 +22,7 @@ export interface NetHandlers {
   onWelcome(msg: WelcomeMsg): void;
   onSnapshot(tick: number, rows: SnapshotRow[]): void;
   onEntityMeta(msg: EntityMetaMsg): void;
+  onSaid(msg: SaidMsg): void;
   onDocChanged(name: string): void;
   onKick(msg: KickMsg): void;
 }
@@ -55,6 +57,10 @@ export class NetClient {
 
   sendTurn(eighthTurns: number): void {
     this.send([Op.Turn, eighthTurns]);
+  }
+
+  sendSay(text: string): void {
+    this.send({ t: 'say', text });
   }
 
   private open(): void {
@@ -96,6 +102,7 @@ export class NetClient {
     }
     if (msg.t === 'welcome') return this.acceptWelcome(msg);
     if (msg.t === 'entityMeta') return this.handlers.onEntityMeta(msg);
+    if (msg.t === 'said') return this.handlers.onSaid(msg);
     if (msg.t === 'docChanged') return this.handlers.onDocChanged(msg.name);
     if (msg.t === 'kick') return this.acceptKick(msg);
   }

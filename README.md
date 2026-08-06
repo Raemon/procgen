@@ -54,7 +54,9 @@ Five panels:
    agent grid covers. **Agent God** and **Agent Character** render the exact
    observation text the API sends an agent, so you can read what an LLM is
    working from. WASD/arrows to walk, Q/E to rotate the god camera or turn the
-   character 45°, wheel to zoom. `capture` lifts a dragged rectangle into a
+   character 45°, wheel to zoom. Return opens chat; what you send floats over
+   your character's head for a few seconds and over the heads of everyone
+   else's (docs/multiplayer.md). `capture` lifts a dragged rectangle into a
    prefab; `life` pauses or runs the creature simulation.
 
 ## Agents
@@ -111,6 +113,8 @@ src/views         agentText (the observation as an agent receives it), ascii
                   (pure-text snapshot used by the checks) and view3d (chunk-mesh
                   streamer, god + character cameras, face-art materials)
 src/input         key tracking, camera-relative and facing-relative step math
+src/chat          speech bubbles: text sanitizer shared with the server, the
+                  per-speaker line store with lifetimes, composer open state
 src/net           multiplayer client: wire protocol + codec (shared with the
                   server), WebSocket client with backoff, remote-entity
                   registry, session glue (docs/multiplayer.md)
@@ -126,6 +130,8 @@ src/ui            React panels: library (tiles / prefabs / creatures), procgen
 src/styles        index.css — the only stylesheet: Tailwind plus the @theme
                   color tokens. All other styling is utility classes.
 scripts           headless checks over the DOM-free core (`npm run check`),
+                  the chat round trip against a booted server
+                  (`npm run check:chat`),
                   plus the tileset bake (`npm run tiles:write`) and its PNG
                   contact sheet (`npm run tiles:preview`)
 ```

@@ -34,6 +34,10 @@ export class RemotePlayerMeshes {
     for (const id of [...this.meshes.keys()]) if (!live.has(id)) this.dropMesh(id);
   }
 
+  headPointOf(entityId: number): THREE.Vector3 | null {
+    return this.meshes.get(entityId)?.position ?? null;
+  }
+
   private placeMesh(entity: RemoteEntity, dtSeconds: number): void {
     const mesh = this.meshes.get(entity.id) ?? this.addMesh(entity);
     const eased = this.easedPositions.get(entity.id) ?? this.addEasedPosition(entity);

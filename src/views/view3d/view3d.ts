@@ -15,8 +15,13 @@ import { createCharacterFog, createDaylitScene, createPlayerMesh } from './dayli
 import { FollowCamera } from './followCamera';
 import { worldCellUnderPointer } from './pointerToWorldCell';
 import { SelectionBox } from './selectionBox';
+import { speechBubbleAnchors } from './speechBubbleAnchors';
+import { SpeechBubbleLabels } from './speechBubbleLabels';
 import { streamingRadiusChunks } from './streamingRadius';
-import { CHARACTER_SIGHT_RADIUS_TILES } from '../../world/vision/characterSight';
+import {
+  CHARACTER_SIGHT_RADIUS_TILES,
+  isWithinSightRadius,
+} from '../../world/vision/characterSight';
 
 const MAX_FRAME_MS = 100;
 const PLAYER_HEIGHT = 0.55;
@@ -39,6 +44,7 @@ export class View3D {
   private readonly creatureMeshes: CreatureMeshes;
   private readonly remotePlayerMeshes: RemotePlayerMeshes;
   private readonly selectionBox: SelectionBox;
+  private readonly speechLabels: SpeechBubbleLabels;
   private readonly resizeObserver = new ResizeObserver(() => this.resize());
   private animationFrame = 0;
   private lastFrameTime = 0;
@@ -56,6 +62,7 @@ export class View3D {
     this.creatureMeshes = new CreatureMeshes(this.worldGroup, deps.creatures, deps.sampler);
     this.remotePlayerMeshes = new RemotePlayerMeshes(this.worldGroup, deps.sampler);
     this.selectionBox = new SelectionBox(this.worldGroup);
+    this.speechLabels = new SpeechBubbleLabels(container);
     this.listenForCameraGestures();
     listenForCaptureDrag(this.canvas, deps.capture, (x, y) => this.cellAtPixel(x, y));
     this.resizeObserver.observe(container);
@@ -69,6 +76,7 @@ export class View3D {
     this.creatureMeshes.dispose();
     this.remotePlayerMeshes.dispose();
     this.selectionBox.dispose();
+    this.speechLabels.dispose();
     this.streamer.dispose();
     this.renderer.dispose();
     this.canvas.remove();
@@ -164,7 +172,35 @@ export class View3D {
     this.selectionBox.showRegion(this.deps.capture.selectedRegion(), this.focusGroundHeight());
     this.updateActiveCamera(dtSeconds);
     this.streamAroundCameraFocus();
+    this.showSpeechBubbles();
     this.renderer.render(this.scene, this.activeCamera());
+  }
+
+  private showSpeechBubbles(): void {
+    const firstPerson = this.cameraStyle === 'character';
+    const selfId = this.deps.remotePlayers.selfId;
+    this.speechLabels.showPinned(firstPerson ? this.deps.speech.linesFor(selfId) : []);
+    this.speechLabels.showAnchored(
+      speechBubbleAnchors(this.deps.speech, (speakerId) =>
+        this.speakerHeadPoint(speakerId, selfId, firstPerson),
+      ),
+      this.activeCamera(),
+    );
+  }
+
+  private speakerHeadPoint(
+    speakerId: number,
+    selfId: number,
+    firstPerson: boolean,
+  ): THREE.Vector3 | null {
+    if (speakerId === selfId) return firstPerson ? null : this.player.position;
+    const head = this.remotePlayerMeshes.headPointOf(speakerId);
+    if (!head) return null;
+    return firstPerson && !this.isWithinCharacterSight(head) ? null : head;
+  }
+
+  private isWithinCharacterSight(head: THREE.Vector3): boolean {
+    return isWithinSightRadius(head.x - (this.easedPlayer.x + 0.5), head.z - (this.easedPlayer.y + 0.5));
   }
 
   private updateActiveCamera(dtSeconds: number): void {

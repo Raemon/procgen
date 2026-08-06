@@ -1,6 +1,7 @@
 import '../abilities/index';
 import { performAbility } from '../abilities/performAbility';
 import type { AbilityMode, AbilityResult } from '../abilities/ability';
+import { ChatComposerState } from '../chat/chatComposerState';
 import { CreatureLibrary } from '../creatures/creatureLibrary';
 import { MultiplayerSession } from '../net/multiplayerSession';
 import { CreatureClock } from '../creatures/sim/creatureClock';
@@ -43,6 +44,7 @@ export interface AppRuntime {
   sampler: WorldSampler;
   world: ReadOnlyWorld;
   net: MultiplayerSession;
+  chatComposer: ChatComposerState;
   sim: CreatureSim;
   clock: CreatureClock;
   capture: CaptureTool;
@@ -68,6 +70,7 @@ export function createAppRuntime(): AppRuntime {
   const isWalkableAt = (x: number, y: number) => isWalkableTile(tileset, sampler.tileAt(x, y));
   const world = new World(isWalkableAt);
   const net = new MultiplayerSession(world, store, isWalkableAt);
+  const chatComposer = new ChatComposerState();
   const sim = new CreatureSim({ sampler, library: creatures, world, isWalkableAt });
   const clock = new CreatureClock(sim);
   const renderers = new WorldRenderers();
@@ -142,6 +145,7 @@ export function createAppRuntime(): AppRuntime {
     sampler,
     world,
     net,
+    chatComposer,
     sim,
     clock,
     capture,
