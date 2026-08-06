@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react';
 import { defineConfig, type Connect, type ViteDevServer } from 'vite';
 
 const DATA_DIR = 'data';
-const PERSISTED_FILES = ['pipeline', 'tileset', 'templates', 'prefabs', 'creatures'];
+const PERSISTED_FILES = ['pipeline', 'tileset', 'templates', 'worldPresets', 'prefabs', 'creatures'];
 
 export default defineConfig({
   plugins: [react(), tailwindcss(), persistToRepoFiles(), agentApi()],
@@ -56,7 +56,7 @@ function persistMiddleware(root: string): Connect.NextHandleFunction {
 }
 
 function persistedNameOf(url: string | undefined): string | null {
-  const match = url?.match(/^\/persist\/([a-z]+)$/);
+  const match = url?.match(/^\/persist\/([a-zA-Z]+)$/);
   const name = match?.[1];
   return name && PERSISTED_FILES.includes(name) ? name : null;
 }

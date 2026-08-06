@@ -1,19 +1,21 @@
 {
-  "seed": 654539,
+  "seed": 856865,
   "nodes": [
     {
       "id": "n1",
       "type": "noiseField",
       "label": "base noise",
       "comment": "",
+      "folder": "",
       "enabled": true,
       "params": {
-        "scale": 0.11,
-        "octaves": 4
+        "scale": 0.07,
+        "octaves": 5
       },
       "inputs": {},
       "display": {
-        "mode": "hidden"
+        "mode": "elevation",
+        "heightScale": 3.5
       }
     },
     {
@@ -21,11 +23,12 @@
       "type": "thresholdTiles",
       "label": "band 1",
       "comment": "",
+      "folder": "",
       "enabled": true,
       "params": {
-        "threshold": 0.49,
-        "belowTile": 1,
-        "aboveTile": 2
+        "threshold": 0.4,
+        "belowTile": 5,
+        "aboveTile": 8
       },
       "inputs": {
         "source": "n1"
@@ -39,27 +42,10 @@
       "type": "thresholdTiles",
       "label": "band 2",
       "comment": "",
+      "folder": "",
       "enabled": true,
       "params": {
-        "threshold": 0.6,
-        "belowTile": -1,
-        "aboveTile": 3
-      },
-      "inputs": {
-        "source": "n1"
-      },
-      "display": {
-        "mode": "tileLayer"
-      }
-    },
-    {
-      "id": "n4",
-      "type": "thresholdTiles",
-      "label": "band 3",
-      "comment": "",
-      "enabled": true,
-      "params": {
-        "threshold": 0.69,
+        "threshold": 0.55,
         "belowTile": -1,
         "aboveTile": 4
       },
@@ -71,21 +57,47 @@
       }
     },
     {
-      "id": "n5",
-      "type": "thresholdTiles",
-      "label": "band 4",
+      "id": "n4",
+      "type": "scatterPoints",
+      "label": "crystal scatter",
       "comment": "",
+      "folder": "",
       "enabled": true,
       "params": {
-        "threshold": 0.8,
-        "belowTile": -1,
-        "aboveTile": 0
+        "density": 0.065,
+        "maskAtLeast": 0.62,
+        "maskAtMost": 0.91
       },
       "inputs": {
-        "source": "n1"
+        "mask": "n1"
       },
       "display": {
-        "mode": "tileLayer"
+        "mode": "markers",
+        "tileId": -1,
+        "glyph": "⚑",
+        "color": "#3fbf9f"
+      }
+    },
+    {
+      "id": "n5",
+      "type": "scatterPoints",
+      "label": "ruin scatter",
+      "comment": "",
+      "folder": "",
+      "enabled": true,
+      "params": {
+        "density": 0.065,
+        "maskAtLeast": 0.37,
+        "maskAtMost": 0.47
+      },
+      "inputs": {
+        "mask": "n1"
+      },
+      "display": {
+        "mode": "markers",
+        "tileId": 10,
+        "glyph": "✶",
+        "color": "#e0b040"
       }
     }
   ]

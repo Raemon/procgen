@@ -1,0 +1,398 @@
+[
+  {
+    "name": "crystal steppes (auto-rolled #1)",
+    "description": "Top explorer-scored roll (0.865, rank 1 of 49; npm run roll -- 48, rng seed 20260806, roll 40). Two noise bands with crystal and ruin scatters — high encounter density, steady novelty.",
+    "state": {
+      "seed": 856865,
+      "nodes": [
+        {
+          "id": "n1",
+          "type": "noiseField",
+          "label": "base noise",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "scale": 0.07,
+            "octaves": 5
+          },
+          "inputs": {},
+          "display": {
+            "mode": "elevation",
+            "heightScale": 3.5
+          }
+        },
+        {
+          "id": "n2",
+          "type": "thresholdTiles",
+          "label": "band 1",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.4,
+            "belowTile": 5,
+            "aboveTile": 8
+          },
+          "inputs": {
+            "source": "n1"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n3",
+          "type": "thresholdTiles",
+          "label": "band 2",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.55,
+            "belowTile": -1,
+            "aboveTile": 4
+          },
+          "inputs": {
+            "source": "n1"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n4",
+          "type": "scatterPoints",
+          "label": "crystal scatter",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "density": 0.065,
+            "maskAtLeast": 0.62,
+            "maskAtMost": 0.91
+          },
+          "inputs": {
+            "mask": "n1"
+          },
+          "display": {
+            "mode": "markers",
+            "tileId": -1,
+            "glyph": "⚑",
+            "color": "#3fbf9f"
+          }
+        },
+        {
+          "id": "n5",
+          "type": "scatterPoints",
+          "label": "ruin scatter",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "density": 0.065,
+            "maskAtLeast": 0.37,
+            "maskAtMost": 0.47
+          },
+          "inputs": {
+            "mask": "n1"
+          },
+          "display": {
+            "mode": "markers",
+            "tileId": 10,
+            "glyph": "✶",
+            "color": "#e0b040"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "ruined badlands (auto-rolled #3)",
+    "description": "Explorer score 0.848 (rank 3 of 49; npm run roll -- 48, rng seed 20260806, roll 26). Four terrain bands plus ruin and monster scatters — the most varied biome banding in the top ranks.",
+    "state": {
+      "seed": 153765,
+      "nodes": [
+        {
+          "id": "n1",
+          "type": "noiseField",
+          "label": "base noise",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "scale": 0.09,
+            "octaves": 5
+          },
+          "inputs": {},
+          "display": {
+            "mode": "elevation",
+            "heightScale": 4.5
+          }
+        },
+        {
+          "id": "n2",
+          "type": "thresholdTiles",
+          "label": "band 1",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.35,
+            "belowTile": 12,
+            "aboveTile": 19
+          },
+          "inputs": {
+            "source": "n1"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n3",
+          "type": "thresholdTiles",
+          "label": "band 2",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.51,
+            "belowTile": -1,
+            "aboveTile": 18
+          },
+          "inputs": {
+            "source": "n1"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n4",
+          "type": "thresholdTiles",
+          "label": "band 3",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.61,
+            "belowTile": -1,
+            "aboveTile": 4
+          },
+          "inputs": {
+            "source": "n1"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n5",
+          "type": "thresholdTiles",
+          "label": "band 4",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.76,
+            "belowTile": -1,
+            "aboveTile": 14
+          },
+          "inputs": {
+            "source": "n1"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n6",
+          "type": "scatterPoints",
+          "label": "ruin scatter",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "density": 0.02,
+            "maskAtLeast": 0.45,
+            "maskAtMost": 0.61
+          },
+          "inputs": {
+            "mask": "n1"
+          },
+          "display": {
+            "mode": "markers",
+            "tileId": 11,
+            "glyph": "✶",
+            "color": "#c2c2c2"
+          }
+        },
+        {
+          "id": "n7",
+          "type": "scatterPoints",
+          "label": "monster scatter",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "density": 0.085,
+            "maskAtLeast": 0.61,
+            "maskAtMost": 0.75
+          },
+          "inputs": {
+            "mask": "n1"
+          },
+          "display": {
+            "mode": "markers",
+            "tileId": 6,
+            "glyph": "✿",
+            "color": "#ff4444"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "crystal springs (auto-rolled #5)",
+    "description": "Explorer score 0.827 (rank 5 of 49; npm run roll -- 48, rng seed 20260806, roll 46). Two blended noise fields under crystal and spring scatters — softer terrain transitions than the pure-band rolls.",
+    "state": {
+      "seed": 294623,
+      "nodes": [
+        {
+          "id": "n1",
+          "type": "noiseField",
+          "label": "base noise",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "scale": 0.095,
+            "octaves": 5
+          },
+          "inputs": {},
+          "display": {
+            "mode": "hidden"
+          }
+        },
+        {
+          "id": "n2",
+          "type": "noiseField",
+          "label": "detail noise",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "scale": 0.05,
+            "octaves": 3
+          },
+          "inputs": {},
+          "display": {
+            "mode": "hidden"
+          }
+        },
+        {
+          "id": "n3",
+          "type": "combineFields",
+          "label": "blend",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "operation": 3,
+            "clamp": 1
+          },
+          "inputs": {
+            "a": "n1",
+            "b": "n2"
+          },
+          "display": {
+            "mode": "hidden"
+          }
+        },
+        {
+          "id": "n4",
+          "type": "thresholdTiles",
+          "label": "band 1",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.38,
+            "belowTile": 12,
+            "aboveTile": 7
+          },
+          "inputs": {
+            "source": "n3"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n5",
+          "type": "thresholdTiles",
+          "label": "band 2",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.52,
+            "belowTile": -1,
+            "aboveTile": 8
+          },
+          "inputs": {
+            "source": "n3"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n6",
+          "type": "scatterPoints",
+          "label": "crystal scatter",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "density": 0.045,
+            "maskAtLeast": 0.32,
+            "maskAtMost": 0.48
+          },
+          "inputs": {
+            "mask": "n3"
+          },
+          "display": {
+            "mode": "markers",
+            "tileId": -1,
+            "glyph": "☗",
+            "color": "#ff4444"
+          }
+        },
+        {
+          "id": "n7",
+          "type": "scatterPoints",
+          "label": "spring scatter",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "density": 0.02,
+            "maskAtLeast": 0.53,
+            "maskAtMost": 0.74
+          },
+          "inputs": {
+            "mask": "n3"
+          },
+          "display": {
+            "mode": "markers",
+            "tileId": -1,
+            "glyph": "⚑",
+            "color": "#ff4444"
+          }
+        }
+      ]
+    }
+  }
+]
