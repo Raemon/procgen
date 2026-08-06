@@ -49,6 +49,7 @@ import {
   isEntirelyBlank,
   SIDE_FACES,
 } from '../src/world/tiles/tileFaceArt';
+import { defaultTiles } from '../src/world/tiles/defaultTiles';
 import { Tileset } from '../src/world/tiles/tileset';
 import { isWalkableTile } from '../src/world/tileWalkability';
 import { World } from '../src/world/world';
@@ -646,11 +647,17 @@ const relinked = copyFaceToAllSides(splitSides, 'north');
 check('relinking copies one side everywhere', sideFacesMatch(relinked) && relinked.west[0] === '#ff0000');
 
 const grass = tileset.byRole('grass')!;
+const shippedGrassArt = grass.faceArt;
 tileset.update(grass.id, { faceArt: art });
 const placements = tilePlacementsForRect(sampled.sampler, tileset, -48, -48, 96, 96);
 check('placements carry the tile face art', placements.floors.some((p) => p.faceArt === art));
-check('tiles without art stay flat-colored', placements.floors.some((p) => p.faceArt === null));
 tileset.update(grass.id, { faceArt: null });
+const strippedPlacements = tilePlacementsForRect(sampled.sampler, tileset, -48, -48, 96, 96);
+check(
+  'tiles without art stay flat-colored',
+  strippedPlacements.floors.some((p) => p.faceArt === null),
+);
+tileset.update(grass.id, { faceArt: shippedGrassArt });
 
 tileset.update(treeId, { faceArt: art });
 const markerPlacements = markerPlacementsForRect(sampled.sampler, -48, -48, 96, 96);
@@ -658,7 +665,35 @@ check(
   'marker placements carry the sourced tile face art',
   markerPlacements.length > 0 && markerPlacements.every((p) => p.faceArt === art),
 );
-tileset.update(treeId, { faceArt: null });
+tileset.update(treeId, { faceArt: defaultTiles()[treeId]?.faceArt ?? null });
+
+const shippedTiles = defaultTiles();
+check(
+  'every shipped tile carries 32px cube art',
+  shippedTiles.every((tile) => isCubeFaceArt(tile.faceArt) && tile.faceArt.size === 32),
+);
+check(
+  'no shipped tile art is left blank',
+  shippedTiles.every((tile) => tile.faceArt !== null && !isEntirelyBlank(tile.faceArt)),
+);
+check(
+  'shipped tiles have unique names, symbols and ids',
+  [
+    shippedTiles.map((tile) => tile.name),
+    shippedTiles.map((tile) => tile.symbol),
+    shippedTiles.map((tile) => String(tile.id)),
+  ].every((values) => new Set(values).size === shippedTiles.length),
+);
+check(
+  'terrain roles keep the tile ids that saved pipelines reference',
+  ['water', 'sand', 'grass', 'tree', 'rock'].every(
+    (role, id) => shippedTiles[id]?.role === role,
+  ),
+);
+check(
+  'tile art generation is deterministic',
+  JSON.stringify(defaultTiles()) === JSON.stringify(shippedTiles),
+);
 
 check('forward faces north with the camera at north', String(cameraRelativeStep(0, 1, 0)) === '0,-1');
 check('forward faces east with the camera turned right', String(cameraRelativeStep(1, 1, 0)) === '1,0');

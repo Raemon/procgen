@@ -10,12 +10,15 @@
     "dev": "bash scripts/killPortThenStartDevServer.sh",
     "build": "vite build",
     "typecheck": "tsc --noEmit",
-    "check": "esbuild scripts/checkProcgenInvariants.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module"
+    "check": "esbuild scripts/checkProcgenInvariants.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
+    "tiles:write": "esbuild scripts/writeTilesetDataFile.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
+    "tiles:preview": "esbuild scripts/renderTilesetPreview.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module"
   },
   "dependencies": {
     "three": "0.185.1"
   },
   "devDependencies": {
+    "@types/node": "^22.20.1",
     "@types/three": "0.185.1",
     "typescript": "5.9.3",
     "vite": "5.4.21"

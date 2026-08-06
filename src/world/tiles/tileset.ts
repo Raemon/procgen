@@ -1,4 +1,5 @@
-import { defaultTiles, newTileWithId, type TileDef, type TileRole } from './tileDef';
+import { defaultTiles } from './defaultTiles';
+import { newTileWithId, type TileDef, type TileRole } from './tileDef';
 import { loadStoredTiles, storeTiles } from './tilesetStorage';
 
 export type EditableTileFields = Partial<Omit<TileDef, 'id' | 'role'>>;
