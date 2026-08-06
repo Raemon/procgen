@@ -1,7 +1,7 @@
 # procgen
 
-A playground for procedurally generated worlds. Vanilla TypeScript + Vite +
-three.js, no server. The world is infinite, chunked, and fully determined by a
+A playground for procedurally generated worlds. React + TypeScript + Tailwind +
+Vite + three.js, no server. The world is infinite, chunked, and fully determined by a
 seed — walk in any direction forever and the same seed always gives the same
 world.
 
@@ -50,10 +50,13 @@ src/world         Tileset, walkability, infinite-world player state
 src/views         ascii (canvas + pure-text snapshot) and view3d (chunk-mesh
                   streamer, camera, face-art materials)
 src/input         key tracking and camera-relative step math
-src/ui            panels: tile editor, procgen pipeline, layout, view toggle,
-                  plus a self-contained pixelArtEditor module (single entry:
-                  pixelArtEditor({art, baseColor, onChange}))
-src/styles        one stylesheet per panel, combined by index.css
+src/app           React shell: app runtime (core objects + world-change wiring),
+                  runtime context, re-render hooks, resizable panel layout
+src/ui            React panels: tile editor, procgen pipeline, world view,
+                  shared controls, floating tooltips, plus a self-contained
+                  PixelArtEditor ({art, baseColor, onChange})
+src/styles        index.css — the only stylesheet: Tailwind plus the @theme
+                  color tokens. All other styling is utility classes.
 scripts           headless checks over the DOM-free core (`npm run check`),
                   plus the tileset bake (`npm run tiles:write`) and its PNG
                   contact sheet (`npm run tiles:preview`)

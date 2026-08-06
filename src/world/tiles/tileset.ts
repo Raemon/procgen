@@ -44,8 +44,9 @@ export class Tileset {
     this.persistAndNotify();
   }
 
-  onChange(listener: () => void): void {
+  onChange(listener: () => void): () => void {
     this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
   }
 
   private persistAndNotify(): void {

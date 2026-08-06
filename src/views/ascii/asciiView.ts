@@ -9,6 +9,7 @@ import {
   sizeCanvasToContainer,
   type CanvasSize,
 } from '../canvasSurface';
+import { WORLD_CANVAS_CLASSES } from '../worldCanvasClasses';
 import { AsciiCamera } from './asciiCamera';
 import { GLYPH_LEGIBLE_CELL_PX } from './asciiCellPixels';
 import { asciiCellAt, markerLookup } from './asciiCells';
@@ -30,7 +31,7 @@ export class AsciiView {
     private readonly sampler: WorldSampler,
     private readonly tileset: Tileset,
   ) {
-    this.canvas.className = 'ascii-canvas pannable';
+    this.canvas.className = WORLD_CANVAS_CLASSES;
     container.appendChild(this.canvas);
     this.ctx = get2dContext(this.canvas);
     this.listenForCameraGestures();
