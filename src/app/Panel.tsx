@@ -5,13 +5,15 @@ import { CollapseIcon } from '../ui/icons/panelIcons';
 import type { TooltipContent } from '../ui/tooltips/tooltipContent';
 import { tooltipHandlers } from '../ui/tooltips/tooltipHandlers';
 import { useAppRuntime } from './appRuntimeContext';
-import { collapsePanelTip, expandPanelTip } from './help/panelTips';
+import { CollapsedRail } from './CollapsedRail';
+import { collapsePanelTip } from './help/panelTips';
 
 export interface PanelChrome {
   title: string;
   tip: TooltipContent;
   icon: ReactNode;
   tone: string;
+  rail: ReactNode;
   collapsed: boolean;
   onToggleCollapsed(): void;
 }
@@ -54,25 +56,5 @@ function PanelHeader({ chrome }: { chrome: PanelChrome }) {
         <CollapseIcon />
       </button>
     </div>
-  );
-}
-
-function CollapsedRail({ chrome }: { chrome: PanelChrome }) {
-  return (
-    <button
-      type="button"
-      aria-label={`expand ${chrome.title}`}
-      onClick={chrome.onToggleCollapsed}
-      className={classes(
-        'flex cursor-pointer flex-col items-center gap-2 overflow-hidden border-r border-panel-edge py-2.5 text-ink-dim hover:text-ink',
-        chrome.tone,
-      )}
-      {...tooltipHandlers(expandPanelTip(chrome.title))}
-    >
-      {chrome.icon}
-      <span className="text-[11px] tracking-[0.12em] uppercase [writing-mode:vertical-rl]">
-        {chrome.title}
-      </span>
-    </button>
   );
 }

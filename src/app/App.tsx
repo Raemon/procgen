@@ -1,8 +1,12 @@
 import { Fragment, useState, type ReactNode } from 'react';
 import { AgentLogPanel } from '../agent/ui/AgentLogPanel';
+import { AgentLogRail } from '../agent/ui/AgentLogRail';
 import { AgentsPanel } from '../agent/ui/AgentsPanel';
+import { AgentsRail } from '../agent/ui/AgentsRail';
 import { ProcgenPanel } from '../ui/procgenPanel/ProcgenPanel';
+import { ProcgenRail } from '../ui/procgenPanel/ProcgenRail';
 import { LibraryPanel } from '../ui/libraryPanel/LibraryPanel';
+import { LibraryRail } from '../ui/libraryPanel/LibraryRail';
 import {
   AgentLogIcon,
   AgentsIcon,
@@ -24,6 +28,7 @@ interface Column {
   icon: ReactNode;
   tone: string;
   body: ReactNode;
+  rail: ReactNode;
 }
 
 export function App() {
@@ -41,6 +46,7 @@ export function App() {
                 tip: column.tip,
                 icon: column.icon,
                 tone: column.tone,
+                rail: column.rail,
                 collapsed: layout.isCollapsed(column.key),
                 onToggleCollapsed: () => layout.toggleCollapsed(column.key),
               }}
@@ -74,6 +80,7 @@ function visibleColumns(
       icon: <LibraryIcon />,
       tone: 'bg-panel',
       body: <LibraryPanel />,
+      rail: <LibraryRail />,
     },
     {
       key: 'procgen',
@@ -82,6 +89,7 @@ function visibleColumns(
       icon: <ProcgenIcon />,
       tone: 'bg-procgen',
       body: <ProcgenPanel />,
+      rail: <ProcgenRail />,
     },
     {
       key: 'agents',
@@ -90,6 +98,7 @@ function visibleColumns(
       icon: <AgentsIcon />,
       tone: 'bg-panel',
       body: <AgentsPanel selectedId={selectedAgentId} onSelect={onSelectAgent} />,
+      rail: <AgentsRail />,
     },
   ];
   // The log has nothing to show without a selection, so it only claims a column once one exists.
@@ -101,6 +110,7 @@ function visibleColumns(
       icon: <AgentLogIcon />,
       tone: 'bg-procgen',
       body: <AgentLogPanel selectedId={selectedAgentId} />,
+      rail: <AgentLogRail selectedId={selectedAgentId} />,
     });
   }
   return columns;
