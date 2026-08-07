@@ -19,7 +19,8 @@
     "tiles:write": "esbuild scripts/writeTilesetDataFile.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
     "pipeline:write": "esbuild scripts/writePipelineDataFile.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
     "tiles:preview": "esbuild scripts/renderTilesetPreview.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
-    "characters:preview": "esbuild scripts/renderCharacterSheet.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module"
+    "characters:preview": "esbuild scripts/renderCharacterSheet.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
+    "perf": "esbuild scripts/benchmarkWorldPerf.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

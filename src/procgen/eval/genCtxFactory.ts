@@ -7,6 +7,7 @@ import { newFieldChunk, newTilesChunk, type ChunkValue } from '../values/chunkVa
 import { asField, asPoints, asTiles } from '../values/valueAccess';
 
 export type InputResolver = (name: string, chunkX: number, chunkY: number) => ChunkValue | null;
+export type RegionMemo = <Value>(key: string, compute: () => Value) => Value;
 
 export interface GenCtxArgs {
   seed: number;
@@ -15,10 +16,11 @@ export interface GenCtxArgs {
   chunkX: number;
   chunkY: number;
   resolveInput: InputResolver;
+  memo: RegionMemo;
 }
 
 export function createChunkGenCtx(args: GenCtxArgs): ChunkGenCtx {
-  const { seed, nodeId, params, chunkX, chunkY, resolveInput } = args;
+  const { seed, nodeId, params, chunkX, chunkY, resolveInput, memo } = args;
   const labelSeeds = new Map<string, number>();
   const labelSeed = (label: string): number => seedForLabel(labelSeeds, seed, nodeId, label);
   const input = (name: string): ChunkValue | null => resolveInput(name, chunkX, chunkY);
@@ -43,6 +45,7 @@ export function createChunkGenCtx(args: GenCtxArgs): ChunkGenCtx {
     pointsInput: (name) => asPoints(input(name)),
     newField: newFieldChunk,
     newTiles: newTilesChunk,
+    memo,
   };
 }
 

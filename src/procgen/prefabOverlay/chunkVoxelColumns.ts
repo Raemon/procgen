@@ -16,6 +16,13 @@ export class ChunkVoxelColumns {
     return this.columns.get(cellIndex) ?? null;
   }
 
+  forEachGroundVoxel(apply: (cellIndex: number, tileId: number) => void): void {
+    for (const [cellIndex, column] of this.columns) {
+      const ground = column[0] ?? EMPTY_VOXEL;
+      if (ground !== EMPTY_VOXEL) apply(cellIndex, ground);
+    }
+  }
+
   isEmpty(): boolean {
     return this.columns.size === 0;
   }

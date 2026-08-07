@@ -45,39 +45,31 @@ export function platesOverlapping(
 }
 
 export function plateContactAt(plates: readonly Plate[], worldX: number, worldY: number): PlateContact {
-  const [nearest, second] = twoNearestPlates(plates, worldX, worldY);
+  let nearest = plates[0]!;
+  let second = plates[0]!;
+  let nearestSquared = Infinity;
+  let secondSquared = Infinity;
+  for (const plate of plates) {
+    const dx = plate.siteX - worldX;
+    const dy = plate.siteY - worldY;
+    const squared = dx * dx + dy * dy;
+    if (squared < nearestSquared) {
+      second = nearest;
+      secondSquared = nearestSquared;
+      nearest = plate;
+      nearestSquared = squared;
+    } else if (squared < secondSquared) {
+      second = plate;
+      secondSquared = squared;
+    }
+  }
   return {
-    plate: nearest.plate,
-    neighbor: second.plate,
-    boundaryDistance: (second.distance - nearest.distance) / 2,
-    convergence: convergenceOf(nearest.plate, second.plate),
+    plate: nearest,
+    neighbor: second,
+    boundaryDistance: (Math.sqrt(secondSquared) - Math.sqrt(nearestSquared)) / 2,
+    convergence: convergenceOf(nearest, second),
   };
 }
-
-interface RankedPlate {
-  plate: Plate;
-  distance: number;
-}
-
-function twoNearestPlates(
-  plates: readonly Plate[],
-  worldX: number,
-  worldY: number,
-): [RankedPlate, RankedPlate] {
-  let nearest = FAR_PLATE;
-  let second = FAR_PLATE;
-  for (const plate of plates) {
-    const distance = Math.hypot(plate.siteX - worldX, plate.siteY - worldY);
-    if (distance < nearest.distance) [nearest, second] = [{ plate, distance }, nearest];
-    else if (distance < second.distance) second = { plate, distance };
-  }
-  return [nearest, second];
-}
-
-const FAR_PLATE: RankedPlate = {
-  plate: { siteX: 0, siteY: 0, oceanic: true, driftX: 0, driftY: 0 },
-  distance: Infinity,
-};
 
 function plateOfCell(cellX: number, cellY: number, spec: PlateLatticeSpec): Plate {
   const driftAngle = hashLatticePoint(cellX, cellY, spec.seed ^ DRIFT_SALT) * TAU;
@@ -103,7 +95,7 @@ function jitteredSite(
 function convergenceOf(plate: Plate, neighbor: Plate): number {
   const dx = neighbor.siteX - plate.siteX;
   const dy = neighbor.siteY - plate.siteY;
-  const length = Math.hypot(dx, dy);
+  const length = Math.sqrt(dx * dx + dy * dy);
   if (length === 0) return 0;
   const relativeX = plate.driftX - neighbor.driftX;
   const relativeY = plate.driftY - neighbor.driftY;

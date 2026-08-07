@@ -5,7 +5,7 @@ import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
 import { disposeMeshChildren } from './disposeMeshResources';
 import { buildChunkMeshGroup } from './worldMeshes';
 
-const CHUNK_BUILDS_PER_FRAME = 3;
+const CHUNK_BUILD_BUDGET_MS_PER_FRAME = 8;
 
 interface BuiltChunk {
   version: number;
@@ -54,10 +54,10 @@ export class ChunkMeshStreamer {
     centerChunkY: number,
     radiusChunks: number,
   ): void {
-    let buildsLeft = CHUNK_BUILDS_PER_FRAME;
+    const deadline = performance.now() + CHUNK_BUILD_BUDGET_MS_PER_FRAME;
     for (const [chunkX, chunkY] of spiralOffsets(centerChunkX, centerChunkY, radiusChunks)) {
-      if (buildsLeft === 0) return;
-      if (this.rebuildIfStale(chunkX, chunkY)) buildsLeft--;
+      if (performance.now() >= deadline) return;
+      this.rebuildIfStale(chunkX, chunkY);
     }
   }
 
