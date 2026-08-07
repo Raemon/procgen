@@ -1,4 +1,8 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
+import { isNumber, isRecordOf } from '../ui/uiState/persistedUiGuards';
+import { PERSISTED_UI_KEYS } from '../ui/uiState/persistedUiKeys';
+import { usePersistedUiSet } from '../ui/uiState/usePersistedUiSet';
+import { usePersistedUiValue } from '../ui/uiState/usePersistedUiValue';
 import { panelWidthsThatLeaveRoomForWorld } from './panelWidthBudget';
 import { useWindowWidth } from './useWindowWidth';
 
@@ -25,20 +29,22 @@ export interface PanelLayout {
 }
 
 export function usePanelLayout(visible: readonly PanelKey[]): PanelLayout {
-  const [widths, setWidths] = useState<Readonly<Record<PanelKey, number>>>(START_WIDTHS);
-  const [collapsed, setCollapsed] = useState<ReadonlySet<PanelKey>>(new Set());
+  const [widths, setWidths] = usePersistedUiValue<Partial<Record<PanelKey, number>>>(
+    PERSISTED_UI_KEYS.panelWidths,
+    START_WIDTHS,
+    isRecordOf(isNumber),
+  );
+  const collapsed = usePersistedUiSet(PERSISTED_UI_KEYS.collapsedPanels);
   const windowWidth = useWindowWidth();
 
-  const resizePanel = useCallback((key: PanelKey, width: number) => {
-    setWidths((current) => ({ ...current, [key]: clamped(width) }));
-  }, []);
-  const toggleCollapsed = useCallback((key: PanelKey) => {
-    setCollapsed((current) => toggled(current, key));
-  }, []);
+  const resizePanel = useCallback(
+    (key: PanelKey, width: number) => setWidths({ ...widths, [key]: clamped(width) }),
+    [widths, setWidths],
+  );
 
   const isCollapsed = (key: PanelKey) => collapsed.has(key);
   const requestedWidthOf = (key: PanelKey) =>
-    isCollapsed(key) ? COLLAPSED_PANEL_WIDTH : (widths[key] ?? MIN_PANEL_WIDTH);
+    isCollapsed(key) ? COLLAPSED_PANEL_WIDTH : (widths[key] ?? START_WIDTHS[key]);
 
   const fitted = panelWidthsThatLeaveRoomForWorld(
     visible.map(requestedWidthOf),
@@ -53,7 +59,7 @@ export function usePanelLayout(visible: readonly PanelKey[]): PanelLayout {
     widthOf,
     isCollapsed,
     resizePanel,
-    toggleCollapsed,
+    toggleCollapsed: (key) => collapsed.toggle(key),
   };
 }
 
@@ -64,10 +70,4 @@ function columnTemplate(widths: readonly number[]): string {
 
 function clamped(width: number): number {
   return Math.min(MAX_PANEL_WIDTH, Math.max(MIN_PANEL_WIDTH, width));
-}
-
-function toggled(keys: ReadonlySet<PanelKey>, key: PanelKey): ReadonlySet<PanelKey> {
-  const next = new Set(keys);
-  if (!next.delete(key)) next.add(key);
-  return next;
 }
