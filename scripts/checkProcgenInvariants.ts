@@ -3,6 +3,7 @@ import { checkCharacterBillboardInvariants } from './checkCharacterBillboardInva
 import { checkItemAndInventoryInvariants } from './checkItemAndInventoryInvariants';
 import { checkPlayerCharacterInvariants } from './checkPlayerCharacterInvariants';
 import { checkPrefabAndCreatureInvariants } from './checkPrefabAndCreatureInvariants';
+import { checkTileHeightInvariants } from './checkTileHeightInvariants';
 import { cameraRelativeStep } from '../src/input/cameraRelativeStep';
 import { PipelineEvaluator } from '../src/procgen/eval/evaluator';
 import { allNodeTypes } from '../src/procgen/nodeRegistry';

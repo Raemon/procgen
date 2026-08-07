@@ -66,3 +66,12 @@ with the north face, anything non-walkable stands as a full block (top + four
 sides + bottom all visible), and everything else is a floor slab where only the
 top face is normally seen. Paint accordingly: walls deserve real side art,
 floors deserve a convincing cross-section, trees only need a good side face.
+
+How tall a tile stands is the tile's own `height`, in tiles. Blocking tiles
+default to 2 — a character is 2 tall, so anything that stops them is something
+they cannot see over — and walkable tiles are 1 whatever the field says, since
+they are drawn flat. The shipped exceptions are the pools (water, deep water,
+lava), which block movement at height 1. A block is drawn as `height` stacked
+cubes so the side art repeats per tile instead of stretching; a tree is one cone
+scaled to `height`, which is why trees carry fractional heights (2.6 for the
+broadleaf, 3.2 for the pine) and blocks do not.
