@@ -4,6 +4,7 @@ import { PanelHint } from '../help/PanelHint';
 import { AddNodeMenu } from './AddNodeMenu';
 import { AddTemplateMenu } from './AddTemplateMenu';
 import { NodeList } from './NodeList';
+import { NodeListToolbar } from './NodeListToolbar';
 import { PresetsRow } from './PresetsRow';
 import { RandomizeRow } from './RandomizeRow';
 import { scrollNodeCardIntoView } from './scrollNodeCardIntoView';
@@ -25,6 +26,7 @@ export function ProcgenPanel() {
       <WorldSeedRow />
       <PresetsRow />
       <RandomizeRow />
+      <NodeListToolbar />
       <NodeList />
       <div className="flex flex-col gap-1.5">
         <AddNodeMenu onPick={addNodeAndReveal} />

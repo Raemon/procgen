@@ -1,27 +1,65 @@
-import { useState } from 'react';
-import { nodeTypesByCategory } from '../../procgen/nodeRegistry';
+import { useState, type KeyboardEvent } from 'react';
 import type { NodeTypeDef } from '../../procgen/nodeType';
 import { Button } from '../controls/Button';
+import { classes } from '../controls/classes';
+import { FIELD_CLASSES } from '../controls/fieldClasses';
 import { tooltipHandlers } from '../tooltips/tooltipHandlers';
 import { nodeTypeTooltip } from './help/nodeTypeTooltip';
-import { ADD_NODE_TIP } from './help/pipelineTips';
+import { ADD_NODE_TIP, NODE_TYPE_FILTER_TIP } from './help/pipelineTips';
+import { firstNodeTypeIn, nodeTypesMatching } from './nodeTypeSearch';
 
 export function AddNodeMenu({ onPick }: { onPick(type: string): void }) {
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+
+  function close(): void {
+    setOpen(false);
+    setQuery('');
+  }
+
+  function pickAndClose(type: string): void {
+    onPick(type);
+    close();
+  }
+
   return (
     <div>
-      <Button className="w-full" tip={ADD_NODE_TIP} onClick={() => setOpen(!open)}>
+      <Button className="w-full" tip={ADD_NODE_TIP} onClick={() => (open ? close() : setOpen(true))}>
         + add node
       </Button>
-      {open && <NodeTypeList onPick={onPick} />}
+      {open && (
+        <NodeTypeList query={query} onQuery={setQuery} onPick={pickAndClose} onClose={close} />
+      )}
     </div>
   );
 }
 
-function NodeTypeList({ onPick }: { onPick(type: string): void }) {
+function NodeTypeList({
+  query,
+  onQuery,
+  onPick,
+  onClose,
+}: {
+  query: string;
+  onQuery(query: string): void;
+  onPick(type: string): void;
+  onClose(): void;
+}) {
+  const matches = nodeTypesMatching(query);
   return (
     <div className="mt-1.5 rounded-md border border-panel-edge bg-field p-1.5">
-      {[...nodeTypesByCategory()].map(([category, defs]) => (
+      <input
+        autoFocus
+        type="text"
+        placeholder="filter: noise, points, tiles…"
+        aria-label="filter node types"
+        className={classes(FIELD_CLASSES, 'mb-1.5 w-full')}
+        value={query}
+        onChange={(event) => onQuery(event.target.value)}
+        onKeyDown={(event) => steerFromFilter(event, matches, onPick, onClose)}
+        {...tooltipHandlers(NODE_TYPE_FILTER_TIP)}
+      />
+      {[...matches].map(([category, defs]) => (
         <div key={category}>
           <div className="mx-1 mt-1.5 mb-[3px] text-[10px] tracking-[0.1em] uppercase text-ink-dim">
             {category}
@@ -31,8 +69,23 @@ function NodeTypeList({ onPick }: { onPick(type: string): void }) {
           ))}
         </div>
       ))}
+      {matches.size === 0 && (
+        <p className="px-2 py-1 text-[11px] text-ink-dim italic">nothing matches “{query}”</p>
+      )}
     </div>
   );
+}
+
+function steerFromFilter(
+  event: KeyboardEvent<HTMLInputElement>,
+  matches: Map<string, NodeTypeDef[]>,
+  onPick: (type: string) => void,
+  onClose: () => void,
+): void {
+  if (event.key === 'Escape') return onClose();
+  if (event.key !== 'Enter') return;
+  const first = firstNodeTypeIn(matches);
+  if (first) onPick(first.type);
 }
 
 function NodeTypeItem({ def, onPick }: { def: NodeTypeDef; onPick(type: string): void }) {

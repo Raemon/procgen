@@ -51,6 +51,7 @@ export function App() {
               width={layout.widthOf(column.key)}
               disabled={layout.isCollapsed(column.key)}
               onResize={(width) => layout.resizePanel(column.key, width)}
+              onResetWidth={() => layout.resetPanelWidth(column.key)}
             />
           </Fragment>
         ))}

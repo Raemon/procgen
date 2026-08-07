@@ -42,6 +42,21 @@ export const RANDOMIZE_TIPS = {
   },
 } as const satisfies Record<string, TooltipContent>;
 
+export const COLLAPSE_ALL_TIP: TooltipContent = {
+  title: 'collapse all',
+  body: 'Folds every node down to its icon row, so a long pipeline reads as a list of steps rather than a wall of knobs.',
+};
+
+export const EXPAND_ALL_TIP: TooltipContent = {
+  title: 'expand all',
+  body: 'Opens every node card back up.',
+};
+
+export const NODE_TYPE_FILTER_TIP: TooltipContent = {
+  title: 'filter node types',
+  body: 'Narrows the catalogue by name or category as you type. Enter adds the first match, Esc closes the menu.',
+};
+
 export const ADD_NODE_TIP: TooltipContent = {
   title: 'add node',
   body: 'Opens the catalogue of node types, grouped by what they produce. A new node lands at the end and wires itself to the nearest matching source.',
