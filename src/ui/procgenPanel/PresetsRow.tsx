@@ -6,6 +6,7 @@ import type { WorldPreset } from '../../procgen/presets/worldPreset';
 import { Button } from '../controls/Button';
 import { KnobRow } from '../controls/KnobRow';
 import { Select, type SelectOption } from '../controls/Select';
+import { CLEAR_PIPELINE_TIP, SAVE_PRESET_TIP } from './help/pipelineTips';
 import { presetsTooltip } from './help/presetsTooltip';
 
 const PLACEHOLDER = '';
@@ -20,7 +21,7 @@ export function PresetsRow() {
     () => worldPresets.savedPresets(),
   );
   return (
-    <KnobRow label="presets" tooltip={presetsTooltip(examplePipelines(), saved)}>
+    <KnobRow label="presets" tip={presetsTooltip(examplePipelines(), saved)}>
       <Select
         value={PLACEHOLDER}
         options={presetOptions(saved)}
@@ -28,12 +29,12 @@ export function PresetsRow() {
       />
       <div className="flex gap-1.5">
         <Button
-          title="save the whole current pipeline as a named preset"
+          tip={SAVE_PRESET_TIP}
           onClick={() => saveCurrentPipeline(perform, store, worldPresets)}
         >
           save
         </Button>
-        <Button title="remove all nodes" onClick={() => clearPipeline(perform)}>
+        <Button tip={CLEAR_PIPELINE_TIP} onClick={() => clearPipeline(perform)}>
           clear
         </Button>
       </div>

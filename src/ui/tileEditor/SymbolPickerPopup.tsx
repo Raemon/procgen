@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { classes } from '../controls/classes';
+import { tooltipHandlers } from '../tooltips/tooltipHandlers';
 import { FIELD_CLASSES } from '../controls/fieldClasses';
 import { bestMatchingGlyph, filteredGlyphGroups } from './glyphFilter';
 import { useDismissOnOutsideInteraction } from './useDismissOnOutsideInteraction';
@@ -51,7 +52,7 @@ export function SymbolPickerPopup({
         {groups.map((group) => (
           <GlyphGroupGrid
             key={group.title}
-            title={group.title}
+            heading={group.title}
             glyphs={group.glyphs}
             currentSymbol={currentSymbol}
             onPick={onPick}
@@ -79,19 +80,19 @@ function pickBestMatch(
 }
 
 function GlyphGroupGrid({
-  title,
+  heading,
   glyphs,
   currentSymbol,
   onPick,
 }: {
-  title: string;
+  heading: string;
   glyphs: Glyph[];
   currentSymbol: string;
   onPick(symbol: string): void;
 }) {
   return (
     <div className="mt-2 first:mt-0">
-      <div className="mb-[3px] text-[10px] tracking-[0.1em] uppercase text-ink-dim">{title}</div>
+      <div className="mb-[3px] text-[10px] tracking-[0.1em] uppercase text-ink-dim">{heading}</div>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(24px,1fr))] gap-0.5">
         {glyphs.map((glyph) => (
           <GlyphCell
@@ -118,12 +119,13 @@ function GlyphCell({
   return (
     <button
       type="button"
-      title={glyph.name}
+      aria-label={glyph.name}
       className={classes(
         'flex h-6 cursor-pointer items-center justify-center rounded-[3px] border p-0 text-sm hover:bg-btn-hover',
         selected ? 'border-accent text-accent' : 'border-transparent text-ink hover:border-btn-edge',
       )}
       onClick={() => onPick(glyph.char)}
+      {...tooltipHandlers({ title: glyph.name, body: `Uses ${glyph.char} as the symbol.` })}
     >
       {glyph.char}
     </button>

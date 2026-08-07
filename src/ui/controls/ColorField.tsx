@@ -1,4 +1,6 @@
 import { isTransparentInk, opaqueInk, withTransparency } from '../../world/tiles/inkColor';
+import type { TooltipContent } from '../tooltips/tooltipContent';
+import { tooltipHandlers } from '../tooltips/tooltipHandlers';
 import { IconButton } from './IconButton';
 import { classes } from './classes';
 import { COLOR_INPUT_CLASSES } from './fieldClasses';
@@ -15,11 +17,11 @@ const TRANSPARENT_SWATCH = {
 
 export function ColorField({
   ink,
-  title,
+  tip,
   onChange,
 }: {
   ink: string;
-  title: string;
+  tip: TooltipContent;
   onChange(ink: string): void;
 }) {
   const transparent = isTransparentInk(ink);
@@ -27,14 +29,15 @@ export function ColorField({
     <span className="inline-flex items-center gap-1">
       <input
         type="color"
+        aria-label={tip.title}
         className={classes(COLOR_INPUT_CLASSES, transparent ? 'opacity-40' : '')}
-        title={title}
         value={opaqueInk(ink)}
         onChange={(event) => onChange(event.target.value)}
+        {...tooltipHandlers(tip)}
       />
       <IconButton
         className="h-6 w-6"
-        title={transparent ? 'transparent — click for solid color' : 'click for transparent'}
+        tip={transparencyTip(transparent)}
         active={transparent}
         onClick={() => onChange(withTransparency(ink, !transparent))}
       >
@@ -42,4 +45,13 @@ export function ColorField({
       </IconButton>
     </span>
   );
+}
+
+function transparencyTip(transparent: boolean): TooltipContent {
+  return {
+    title: transparent ? 'transparent' : 'solid colour',
+    body: transparent
+      ? 'Nothing is drawn here — whatever sits behind shows through. Click for a solid colour again.'
+      : 'Click to make this colour transparent, so it paints holes rather than pixels.',
+  };
 }

@@ -11,6 +11,8 @@ import { WalkIcon } from '../icons/panelIcons';
 import { PixelArtEditor } from '../pixelArtEditor/PixelArtEditor';
 import { PERSISTED_UI_KEYS } from '../uiState/persistedUiKeys';
 import { usePersistedUiSet } from '../uiState/usePersistedUiSet';
+import { tooltipHandlers } from '../tooltips/tooltipHandlers';
+import { deleteTileTip, TILE_NAME_TIP, walkableTip } from './help/tileTips';
 import { FaceArtToggle } from './FaceArtToggle';
 import { SymbolInput } from './SymbolInput';
 
@@ -27,9 +29,10 @@ export function TileRow({ tile }: { tile: TileDef }) {
         <input
           type="text"
           className={classes(FIELD_CLASSES, 'min-w-0 flex-1')}
-          title="name"
+          aria-label="tile name"
           value={tile.name}
           onChange={(event) => editTile({ name: event.target.value })}
+          {...tooltipHandlers(TILE_NAME_TIP)}
         />
         <WalkableToggle tile={tile} onToggle={(walkable) => editTile({ walkable })} />
         <Button
@@ -37,7 +40,7 @@ export function TileRow({ tile }: { tile: TileDef }) {
             REVEALED_ON_ROW_HOVER,
             'px-2 py-0.5 hover:border-danger-edge hover:text-danger-ink',
           )}
-          title="delete tile"
+          tip={deleteTileTip(tile)}
           onClick={() => perform('remove_tile', { tile_id: tile.id })}
         >
           ×
@@ -59,7 +62,7 @@ export function TileRow({ tile }: { tile: TileDef }) {
 function WalkableToggle({ tile, onToggle }: { tile: TileDef; onToggle(walkable: boolean): void }) {
   return (
     <IconButton
-      title={tile.walkable ? 'walkable — click to block' : 'blocks movement — click to allow walking'}
+      tip={walkableTip(tile)}
       active={tile.walkable}
       onClick={() => onToggle(!tile.walkable)}
     >

@@ -1,6 +1,9 @@
 import { EMPTY_VOXEL } from '../../prefabs/prefabDef';
 import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
 import { classes } from '../controls/classes';
+import type { TooltipContent } from '../tooltips/tooltipContent';
+import { tooltipHandlers } from '../tooltips/tooltipHandlers';
+import { EMPTY_VOXEL_TIP, paletteTileTip } from './help/prefabTips';
 
 const SWATCH_CLASSES = 'h-5 w-5 cursor-pointer rounded-[3px] border text-[10px] leading-none';
 
@@ -16,7 +19,7 @@ export function TilePalette({
   return (
     <div className="mt-1.5 flex max-h-16 flex-wrap gap-1 overflow-y-auto">
       <Swatch
-        title="empty"
+        tip={EMPTY_VOXEL_TIP}
         color="transparent"
         selected={tileId === EMPTY_VOXEL}
         onPick={() => onPick(EMPTY_VOXEL)}
@@ -24,7 +27,7 @@ export function TilePalette({
       {tileset.all().map((tile) => (
         <Swatch
           key={tile.id}
-          title={tile.name}
+          tip={paletteTileTip(tile.name)}
           color={tile.color}
           selected={tileId === tile.id}
           onPick={() => onPick(tile.id)}
@@ -35,12 +38,12 @@ export function TilePalette({
 }
 
 function Swatch({
-  title,
+  tip,
   color,
   selected,
   onPick,
 }: {
-  title: string;
+  tip: TooltipContent;
   color: string;
   selected: boolean;
   onPick(): void;
@@ -48,10 +51,11 @@ function Swatch({
   return (
     <button
       type="button"
-      title={title}
+      aria-label={tip.title}
       style={{ backgroundColor: color }}
       className={classes(SWATCH_CLASSES, selected ? 'border-accent' : 'border-art-edge')}
       onClick={onPick}
+      {...tooltipHandlers(tip)}
     />
   );
 }

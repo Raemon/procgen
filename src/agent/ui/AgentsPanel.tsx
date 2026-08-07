@@ -5,6 +5,16 @@ import { FIELD_CLASSES, HINT_CLASSES } from '../../ui/controls/fieldClasses';
 import { PanelHint } from '../../ui/help/PanelHint';
 import type { AgentMode } from '../agentMode';
 import { createAgent, deleteAgent, startRun, stopRun, type RosterAgent } from './agentsApiClient';
+import { tooltipHandlers } from '../../ui/tooltips/tooltipHandlers';
+import {
+  AGENT_MODE_TIP,
+  AGENT_NAME_TIP,
+  API_KEY_TIP,
+  BUDGET_TIP,
+  CREATE_AGENT_TIP,
+  GOAL_TIP,
+  MODEL_TIP,
+} from './help/agentTips';
 import { AgentCard } from './AgentCard';
 import { storeAnthropicKey, storedAnthropicKey } from './anthropicKeyStore';
 import { defaultRunSettings, MODEL_OPTIONS, type RunSettings } from './runSettings';
@@ -54,6 +64,7 @@ export function AgentsPanel({
           placeholder="Anthropic API key (stored in this browser)"
           value={apiKey}
           onChange={(event) => saveKey(event.target.value)}
+          {...tooltipHandlers(API_KEY_TIP)}
         />
         <div className="flex gap-1.5">
           <input
@@ -61,6 +72,7 @@ export function AgentsPanel({
             placeholder="name (optional)"
             value={name}
             onChange={(event) => setName(event.target.value)}
+            {...tooltipHandlers(AGENT_NAME_TIP)}
           />
           <Select
             fullWidth={false}
@@ -69,13 +81,17 @@ export function AgentsPanel({
               { value: 'god', text: 'god' },
             ]}
             value={mode}
+            tip={AGENT_MODE_TIP}
             onChange={(value) => setMode(value as AgentMode)}
           />
-          <Button onClick={() => void create()}>+ agent</Button>
+          <Button tip={CREATE_AGENT_TIP} onClick={() => void create()}>
+            + agent
+          </Button>
         </div>
         <Select
           options={[...MODEL_OPTIONS]}
           value={settings.model}
+          tip={MODEL_TIP}
           onChange={(model) => setSettings({ ...settings, model })}
         />
         <textarea
@@ -83,6 +99,7 @@ export function AgentsPanel({
           placeholder="run goal"
           value={settings.goal}
           onChange={(event) => setSettings({ ...settings, goal: event.target.value })}
+          {...tooltipHandlers(GOAL_TIP)}
         />
         <div className={`${HINT_CLASSES} flex items-center gap-1.5`}>
           <label className="flex items-center gap-1.5">
@@ -95,6 +112,7 @@ export function AgentsPanel({
               className={`${FIELD_CLASSES} w-16`}
               value={settings.budgetUsd}
               onChange={(event) => setSettings({ ...settings, budgetUsd: Number(event.target.value) })}
+              {...tooltipHandlers(BUDGET_TIP)}
             />
           </label>
           <span>at list prices; the run stops when it runs out</span>

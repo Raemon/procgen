@@ -3,6 +3,8 @@ import { paintSpritePixels } from '../../views/paintSpritePixels';
 import { spriteGridSize, type SpriteArt } from '../../world/tiles/spriteArt';
 import { Button } from '../controls/Button';
 import { classes } from '../controls/classes';
+import { tooltipHandlers } from '../tooltips/tooltipHandlers';
+import { ADD_FRAME_TIP, dropFrameTip, frameTip } from './help/spriteTips';
 
 export function SpriteFrameStrip({
   frames,
@@ -29,7 +31,7 @@ export function SpriteFrameStrip({
           onRemove={() => onRemove(index)}
         />
       ))}
-      <Button className="px-2 py-0.5 text-[11px]" title="add a frame to this animation" onClick={onAdd}>
+      <Button className="px-2 py-0.5 text-[11px]" tip={ADD_FRAME_TIP} onClick={onAdd}>
         + frame
       </Button>
     </div>
@@ -53,8 +55,9 @@ function FrameThumb({
     <span className="relative inline-flex">
       <button
         type="button"
-        title={`frame ${index}`}
+        aria-label={`frame ${index}`}
         onClick={onSelect}
+        {...tooltipHandlers(frameTip(index))}
         className={classes(
           'h-8 w-8 rounded-[2px] border bg-black/40',
           isSelected ? 'border-accent' : 'border-panel-edge',
@@ -64,8 +67,9 @@ function FrameThumb({
       </button>
       <button
         type="button"
-        title={`drop frame ${index}`}
+        aria-label={`drop frame ${index}`}
         onClick={onRemove}
+        {...tooltipHandlers(dropFrameTip(index))}
         className="absolute -right-1 -top-1 rounded-full bg-field px-1 text-[9px] leading-none text-ink-dim hover:text-danger-ink"
       >
         ×
