@@ -15,7 +15,7 @@ FACING_NAMES.forEach((name, compass) => {
     action: `step_${name}`,
     mode: 'god',
     group: 'movement',
-    humanControl: 'WASD/arrows, camera-relative',
+    humanControl: 'W/S/Q/E or ↑/↓, camera-relative',
     description: `Step one tile ${name}.`,
     params: {},
     example: { action: `step_${name}` },
@@ -47,14 +47,14 @@ const CHARACTER_STEPS: readonly {
   },
   {
     action: 'strafe_left',
-    humanControl: 'A / ←',
+    humanControl: 'Q',
     description: 'Step one tile to your left without turning.',
     forward: 0,
     strafe: -1,
   },
   {
     action: 'strafe_right',
-    humanControl: 'D / →',
+    humanControl: 'E',
     description: 'Step one tile to your right without turning.',
     forward: 0,
     strafe: 1,
@@ -77,8 +77,8 @@ for (const step of CHARACTER_STEPS) {
 }
 
 const TURNS: readonly { action: string; humanControl: string; eighths: -1 | 1 }[] = [
-  { action: 'turn_left', humanControl: 'Q', eighths: -1 },
-  { action: 'turn_right', humanControl: 'E', eighths: 1 },
+  { action: 'turn_left', humanControl: 'A / ←', eighths: -1 },
+  { action: 'turn_right', humanControl: 'D / →', eighths: 1 },
 ];
 
 for (const turn of TURNS) {
