@@ -2115,6 +2115,11 @@
     "held": true
   },
   {
+    "claim": "every top-level folder is named by this check, so none can drift out of its coverage",
+    "topic": "the dom boundary",
+    "held": true
+  },
+  {
     "claim": "documentation is rendered from the code, so no prose file has grown back beside it",
     "topic": "documentation",
     "held": true
@@ -2130,12 +2135,17 @@
     "held": true
   },
   {
+    "claim": "the wire protocol still declares fields this check can read, so it cannot pass by finding nothing",
+    "topic": "the design bets",
+    "held": true
+  },
+  {
     "claim": "the wire carries poses and speech, never terrain, because both ends regenerate the world from its seed",
     "topic": "the design bets",
     "held": true
   },
   {
-    "claim": "a snapshot row is six numbers, so its cost is per player rather than per tile",
+    "claim": "a snapshot row survives the wire as six numbers, so its cost is per player rather than per tile",
     "topic": "the design bets",
     "held": true
   },

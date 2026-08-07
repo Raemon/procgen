@@ -1,5 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { allAbilities } from '../abilities/abilityRegistry';
+import { decodeServer, encodeServer } from '../multiplayer/client/codec';
+import { Op, type SnapshotMsg } from '../multiplayer/client/protocol';
 import {
   MAX_CHARACTER_SIGHT_RADIUS_TILES,
   MIN_CHARACTER_SIGHT_RADIUS_TILES,
@@ -17,8 +19,11 @@ export function checkDesignBetsStillHold(check: (name: string, condition: boolea
 }
 
 function checkTerrainNeverCrossesTheWire(check: (name: string, condition: boolean) => void): void {
-  const source = readFileSync(PROTOCOL_SOURCE, 'utf8');
-  const messageFields = fieldNamesOfMessageTypes(source);
+  const messageFields = fieldNamesOfMessageTypes(readFileSync(PROTOCOL_SOURCE, 'utf8'));
+  check(
+    'the wire protocol still declares fields this check can read, so it cannot pass by finding nothing',
+    messageFields.length >= 10,
+  );
   check(
     'the wire carries poses and speech, never terrain, because both ends regenerate the world from its seed',
     messageFields.every(
@@ -26,8 +31,8 @@ function checkTerrainNeverCrossesTheWire(check: (name: string, condition: boolea
     ),
   );
   check(
-    'a snapshot row is six numbers, so its cost is per player rather than per tile',
-    /export type SnapshotRow = \[number, number, number, number, number, number\]/.test(source),
+    'a snapshot row survives the wire as six numbers, so its cost is per player rather than per tile',
+    everyRowOfARoundTrippedSnapshotIsSixNumbers(),
   );
 }
 
@@ -64,6 +69,15 @@ function everyRadiusInRange(): number[] {
     radii.push(radius);
   }
   return radii;
+}
+
+function everyRowOfARoundTrippedSnapshotIsSixNumbers(): boolean {
+  const sent: SnapshotMsg = [Op.Snapshot, 7, [[1, 2, 3, 4, 5, 6]]];
+  const received = decodeServer(encodeServer(sent));
+  if (!Array.isArray(received) || received[0] !== Op.Snapshot) return false;
+  return received[2].every(
+    (row) => row.length === 6 && row.every((value) => typeof value === 'number'),
+  );
 }
 
 function fieldNamesOfMessageTypes(source: string): string[] {

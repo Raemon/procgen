@@ -3,6 +3,7 @@ import { join } from 'node:path';
 
 const PANEL_ROOTS = ['agents', 'library', 'procgen', 'world'];
 const HEADLESS_ROOTS = ['abilities', 'api', 'multiplayer', 'server'];
+const EVERY_ROOT = [...PANEL_ROOTS, ...HEADLESS_ROOTS, 'frontend', 'checks', 'tools'];
 const PRESENTATION_FOLDER_NAMES = ['panel', 'ui', 'view3d'];
 const BROWSER_PACKAGES = /from '(three|react|react-dom)(\/[^']*)?'/;
 
@@ -24,6 +25,19 @@ export function checkPresentationFoldersAreTheOnlyDomCode(
     'the ability layer, the api, the wire and the server never reach for react or three',
     headlessStrays.length === 0,
   );
+
+  check(
+    'every top-level folder is named by this check, so none can drift out of its coverage',
+    EVERY_ROOT.every(existsAsDirectory) && EVERY_ROOT.length === 11,
+  );
+}
+
+function existsAsDirectory(root: string): boolean {
+  try {
+    return statSync(root).isDirectory();
+  } catch {
+    return false;
+  }
 }
 
 function isInsideAPresentationFolder(path: string): boolean {
