@@ -25,6 +25,7 @@ export interface PanelLayout {
   widthOf(key: PanelKey): number;
   isCollapsed(key: PanelKey): boolean;
   resizePanel(key: PanelKey, width: number): void;
+  resetPanelWidth(key: PanelKey): void;
   toggleCollapsed(key: PanelKey): void;
 }
 
@@ -39,6 +40,11 @@ export function usePanelLayout(visible: readonly PanelKey[]): PanelLayout {
 
   const resizePanel = useCallback(
     (key: PanelKey, width: number) => setWidths({ ...widths, [key]: clamped(width) }),
+    [widths, setWidths],
+  );
+
+  const resetPanelWidth = useCallback(
+    (key: PanelKey) => setWidths({ ...widths, [key]: START_WIDTHS[key] }),
     [widths, setWidths],
   );
 
@@ -59,6 +65,7 @@ export function usePanelLayout(visible: readonly PanelKey[]): PanelLayout {
     widthOf,
     isCollapsed,
     resizePanel,
+    resetPanelWidth,
     toggleCollapsed: (key) => collapsed.toggle(key),
   };
 }

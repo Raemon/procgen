@@ -20,6 +20,11 @@ export const PANEL_TIPS: Readonly<Record<PanelKey, TooltipContent>> = {
   },
 };
 
+export const RESIZER_TIP: TooltipContent = {
+  title: 'resize',
+  body: 'Drag to give the column more or less room. Double-click to put it back to its starting width.',
+};
+
 export function collapsePanelTip(title: string): TooltipContent {
   return {
     title: `collapse ${title}`,
