@@ -1,4 +1,3 @@
-import { cameraRelativeStep, slideAlongEachAxis } from './cameraRelativeStep';
 import {
   hasModifier,
   isTypingInFormControl,
@@ -9,12 +8,18 @@ import {
 const HOLD_REPEAT_MS = 125;
 
 export interface MovementDeps {
-  step(dx: number, dy: number): void;
+  moveIntent(forwardInput: number, strafeInput: number): void;
+  moveReleased(): void;
   rotate(direction: -1 | 1): void;
-  yawQuadrant(): number;
+  isSuspended(): boolean;
 }
 
-const ROTATION_KEYS: Readonly<Record<string, -1 | 1>> = { KeyQ: -1, KeyE: 1 };
+const ROTATION_KEYS: Readonly<Record<string, -1 | 1>> = {
+  KeyA: -1,
+  ArrowLeft: -1,
+  KeyD: 1,
+  ArrowRight: 1,
+};
 
 export class MovementInput {
   private readonly heldAxes = new Set<MovementAxis>();
@@ -26,6 +31,12 @@ export class MovementInput {
     window.addEventListener('blur', this.onBlur);
   }
 
+  releaseHeldKeys(): void {
+    if (this.heldAxes.size === 0) return;
+    this.heldAxes.clear();
+    this.releaseAll();
+  }
+
   dispose(): void {
     window.removeEventListener('keydown', this.onKeyDown);
     window.removeEventListener('keyup', this.onKeyUp);
@@ -35,8 +46,10 @@ export class MovementInput {
 
   private onKeyDown = (event: KeyboardEvent): void => {
     if (event.repeat || isTypingInFormControl(event) || hasModifier(event)) return;
+    if (this.deps.isSuspended()) return;
     const rotation = ROTATION_KEYS[event.code];
     if (rotation) {
+      event.preventDefault();
       this.deps.rotate(rotation);
       return;
     }
@@ -52,13 +65,17 @@ export class MovementInput {
     const axis = movementAxisForKey(event.code);
     if (!axis) return;
     this.heldAxes.delete(axis);
-    if (this.heldAxes.size === 0) this.stopRepeating();
+    if (this.heldAxes.size === 0) this.releaseAll();
   };
 
   private onBlur = (): void => {
-    this.heldAxes.clear();
-    this.stopRepeating();
+    this.releaseHeldKeys();
   };
+
+  private releaseAll(): void {
+    this.stopRepeating();
+    this.deps.moveReleased();
+  }
 
   private startRepeating(): void {
     if (this.repeatTimer) return;
@@ -71,12 +88,7 @@ export class MovementInput {
   }
 
   private stepOnce(): void {
-    const step = cameraRelativeStep(
-      this.deps.yawQuadrant(),
-      this.axisInput('forward', 'back'),
-      this.axisInput('right', 'left'),
-    );
-    slideAlongEachAxis(step, (dx, dy) => this.deps.step(dx, dy));
+    this.deps.moveIntent(this.axisInput('forward', 'back'), this.axisInput('right', 'left'));
   }
 
   private axisInput(positive: MovementAxis, negative: MovementAxis): number {

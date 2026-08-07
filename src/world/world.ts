@@ -1,48 +1,54 @@
-import { generate } from '../gen/generate';
-import type { ElevationField } from '../gen/genPass';
-import type { GenParams } from '../gen/genParams';
-import { Grid } from './grid';
-import { spawnPointForSeed } from './spawnPoint';
-import type { Tileset } from './tiles/tileset';
-import { isWalkableTile } from './tileWalkability';
+import { turnedFacing, type FacingIndex } from './facing';
+import { nearestWalkable } from './nearestWalkable';
 import { WorldEvents, type WorldEvent } from './worldEvents';
 
+const SNAP_SEARCH_RADIUS = 64;
+
+export type WalkabilityProbe = (x: number, y: number) => boolean;
+
 export class World {
-  grid = new Grid(1, 1);
-  elevation: ElevationField = new Float32Array(1);
   playerX = 0;
   playerY = 0;
+  facing: FacingIndex = 0;
   private readonly events = new WorldEvents();
 
-  constructor(private readonly tileset: Tileset) {}
+  constructor(private readonly isWalkableAt: WalkabilityProbe) {}
 
-  regenerate(params: GenParams): void {
-    const { grid, elevation } = generate(params, this.tileset);
-    this.grid = grid;
-    this.elevation = elevation;
-    this.movePlayerTo(spawnPointForSeed(grid, params.seed, (id) => this.canStandOnTile(id)));
-    this.events.emit('generated');
+  turn(eighthTurns: number): void {
+    this.facing = turnedFacing(this.facing, eighthTurns);
+    this.events.emit('player-turned');
   }
 
   tryStep(dx: number, dy: number): boolean {
     const nextX = this.playerX + dx;
     const nextY = this.playerY + dy;
-    if (!this.canStandOnTile(this.grid.get(nextX, nextY))) return false;
-    this.movePlayerTo({ x: nextX, y: nextY });
+    if (!this.isWalkableAt(nextX, nextY)) return false;
+    this.playerX = nextX;
+    this.playerY = nextY;
     this.events.emit('player-moved');
     return true;
   }
 
-  on(event: WorldEvent, listener: () => void): void {
-    this.events.on(event, listener);
-  }
-
-  private movePlayerTo({ x, y }: { x: number; y: number }): void {
+  snapTo(x: number, y: number, facing: FacingIndex): void {
+    const moved = this.playerX !== x || this.playerY !== y;
+    const turned = this.facing !== facing;
     this.playerX = x;
     this.playerY = y;
+    this.facing = facing;
+    if (moved) this.events.emit('player-moved');
+    if (turned) this.events.emit('player-turned');
   }
 
-  private canStandOnTile(tileId: number): boolean {
-    return isWalkableTile(this.tileset, tileId);
+  ensurePlayerOnWalkableGround(): void {
+    if (this.isWalkableAt(this.playerX, this.playerY)) return;
+    const spot = nearestWalkable(this.playerX, this.playerY, SNAP_SEARCH_RADIUS, this.isWalkableAt);
+    if (!spot) return;
+    this.playerX = spot.x;
+    this.playerY = spot.y;
+    this.events.emit('player-moved');
+  }
+
+  on(event: WorldEvent, listener: () => void): () => void {
+    return this.events.on(event, listener);
   }
 }

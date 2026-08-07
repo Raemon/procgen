@@ -1,44 +1,144 @@
 import * as THREE from 'three';
-import type { Grid } from '../../world/grid';
-import type { Tileset } from '../../world/tiles/tileset';
-import { instancedTileMesh } from './instancedTileMesh';
-import { tilePlacementsByShape } from './tilePlacements';
+import { CHUNK_SIZE, chunkOrigin } from '../../procgen/chunk';
+import type { WorldSampler } from '../../procgen/worldSampler';
+import type { CubeFaceArt } from '../../world/tiles/tileFaceArt';
+import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
+import { cubeFaceMaterials, sideFaceMaterial } from './faceArtMaterials';
+import { instancedTileMesh, type PlacementPosition } from './instancedTileMesh';
+import { markerPlacementsForRect } from './markerPlacements';
+import { tilePlacementsForRect, type TilePlacement } from './tilePlacements';
+import { voxelPlacementsForRect } from './voxelPlacements';
+
+export { disposeMeshChildren } from './disposeMeshResources';
 
 const FLOOR_THICKNESS = 0.1;
 const WATER_DROP = 0.22;
 const BLOCK_HEIGHT = 1;
 const TREE_HEIGHT = 1.4;
+const MARKER_HEIGHT = 0.7;
 
-export function buildWorldMeshes(grid: Grid, tileset: Tileset): THREE.InstancedMesh[] {
-  const { floors, blocks, trees } = tilePlacementsByShape(grid, tileset);
-  return [
-    instancedTileMesh(new THREE.BoxGeometry(1, FLOOR_THICKNESS, 1), floors, (p) => [
-      p.x + 0.5,
-      (p.sunkenAsWater ? -WATER_DROP : 0) - FLOOR_THICKNESS / 2,
-      p.y + 0.5,
-    ]),
-    instancedTileMesh(new THREE.BoxGeometry(0.95, BLOCK_HEIGHT, 0.95), blocks, (p) => [
-      p.x + 0.5,
-      BLOCK_HEIGHT / 2,
-      p.y + 0.5,
-    ]),
-    instancedTileMesh(new THREE.ConeGeometry(0.42, TREE_HEIGHT, 7), trees, (p) => [
-      p.x + 0.5,
-      TREE_HEIGHT / 2,
-      p.y + 0.5,
-    ]),
-  ].filter((mesh): mesh is THREE.InstancedMesh => mesh !== null);
+interface ShapeSpec {
+  geometry(): THREE.BufferGeometry;
+  artMaterials(art: CubeFaceArt, baseColor: string): THREE.Material | THREE.Material[];
+  positionOf: PlacementPosition;
 }
 
-export function disposeMeshChildren(group: THREE.Group): void {
-  for (const child of [...group.children]) {
-    group.remove(child);
-    if (child instanceof THREE.Mesh) disposeMesh(child);
+interface FaceArtGroup {
+  art: CubeFaceArt;
+  baseColor: string;
+  placements: TilePlacement[];
+}
+
+export function buildChunkMeshGroup(
+  sampler: WorldSampler,
+  tileset: ReadOnlyTileset,
+  chunkX: number,
+  chunkY: number,
+): THREE.Group {
+  const minX = chunkOrigin(chunkX);
+  const minY = chunkOrigin(chunkY);
+  const { floors, blocks, trees } = tilePlacementsForRect(
+    sampler,
+    tileset,
+    minX,
+    minY,
+    CHUNK_SIZE,
+    CHUNK_SIZE,
+  );
+  const markers = markerPlacementsForRect(sampler, minX, minY, CHUNK_SIZE, CHUNK_SIZE);
+  const voxels = voxelPlacementsForRect(sampler, tileset, minX, minY, CHUNK_SIZE, CHUNK_SIZE);
+  const group = new THREE.Group();
+  group.add(
+    ...meshesForShape(floors, floorShape()),
+    ...meshesForShape(blocks, blockShape()),
+    ...meshesForShape(voxels, voxelShape()),
+    ...meshesForShape(trees, treeShape()),
+    ...meshesForShape(markers, markerShape()),
+  );
+  return group;
+}
+
+function voxelShape(): ShapeSpec {
+  return {
+    geometry: () => new THREE.BoxGeometry(1, BLOCK_HEIGHT, 1),
+    artMaterials: cubeFaceMaterials,
+    positionOf: (p) => [p.x + 0.5, p.elevation + BLOCK_HEIGHT / 2, p.y + 0.5],
+  };
+}
+
+function floorShape(): ShapeSpec {
+  return {
+    geometry: () => new THREE.BoxGeometry(1, FLOOR_THICKNESS, 1),
+    artMaterials: cubeFaceMaterials,
+    positionOf: (p) => [
+      p.x + 0.5,
+      p.elevation + (p.sunkenAsWater ? -WATER_DROP : 0) - FLOOR_THICKNESS / 2,
+      p.y + 0.5,
+    ],
+  };
+}
+
+function blockShape(): ShapeSpec {
+  return {
+    geometry: () => new THREE.BoxGeometry(0.95, BLOCK_HEIGHT, 0.95),
+    artMaterials: cubeFaceMaterials,
+    positionOf: (p) => [p.x + 0.5, p.elevation + BLOCK_HEIGHT / 2, p.y + 0.5],
+  };
+}
+
+function treeShape(): ShapeSpec {
+  return {
+    geometry: () => new THREE.ConeGeometry(0.42, TREE_HEIGHT, 7),
+    artMaterials: sideFaceMaterial,
+    positionOf: (p) => [p.x + 0.5, p.elevation + TREE_HEIGHT / 2, p.y + 0.5],
+  };
+}
+
+function markerShape(): ShapeSpec {
+  return {
+    geometry: () => new THREE.ConeGeometry(0.24, MARKER_HEIGHT, 5),
+    artMaterials: sideFaceMaterial,
+    positionOf: (p) => [p.x + 0.5, p.elevation + MARKER_HEIGHT / 2, p.y + 0.5],
+  };
+}
+
+function meshesForShape(placements: TilePlacement[], shape: ShapeSpec): THREE.InstancedMesh[] {
+  const { flat, artGroups } = splitByFaceArt(placements);
+  const meshes = [
+    instancedTileMesh(shape.geometry(), new THREE.MeshLambertMaterial(), flat, shape.positionOf),
+    ...artGroups.map((group) => artGroupMesh(group, shape)),
+  ];
+  return meshes.filter((mesh): mesh is THREE.InstancedMesh => mesh !== null);
+}
+
+function artGroupMesh(group: FaceArtGroup, shape: ShapeSpec): THREE.InstancedMesh | null {
+  return instancedTileMesh(
+    shape.geometry(),
+    shape.artMaterials(group.art, group.baseColor),
+    group.placements,
+    shape.positionOf,
+  );
+}
+
+function splitByFaceArt(placements: TilePlacement[]): {
+  flat: TilePlacement[];
+  artGroups: FaceArtGroup[];
+} {
+  const flat: TilePlacement[] = [];
+  const groups = new Map<CubeFaceArt, FaceArtGroup>();
+  for (const placement of placements) {
+    if (placement.faceArt) addToArtGroup(groups, placement, placement.faceArt);
+    else flat.push(placement);
   }
+  return { flat, artGroups: [...groups.values()] };
 }
 
-function disposeMesh(mesh: THREE.Mesh): void {
-  mesh.geometry.dispose();
-  const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-  for (const material of materials) material.dispose();
+function addToArtGroup(
+  groups: Map<CubeFaceArt, FaceArtGroup>,
+  placement: TilePlacement,
+  art: CubeFaceArt,
+): void {
+  const group = groups.get(art) ?? { art, baseColor: placement.baseColor, placements: [] };
+  groups.set(art, group);
+  group.placements.push(placement);
 }

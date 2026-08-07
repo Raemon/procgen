@@ -1,7 +1,17 @@
 services:
   - type: web
-    runtime: static
     name: procgen
-    buildCommand: npm ci --ignore-scripts && npm run build
-    staticPublishPath: dist
+    runtime: node
+    plan: free
+    buildCommand: npm ci --ignore-scripts && npx prisma generate && npm run build
+    startCommand: npm run start:prod
+    healthCheckPath: /healthz
+    numInstances: 1
     pullRequestPreviewsEnabled: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: SERVER_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
