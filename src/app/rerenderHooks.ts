@@ -23,6 +23,11 @@ export function useRerenderOnCreatureChange(): void {
   useRerenderWhen(useCallback((listener: () => void) => creatures.onChange(listener), [creatures]));
 }
 
+export function useRerenderOnItemChange(): void {
+  const { items } = useAppRuntime();
+  useRerenderWhen(useCallback((listener: () => void) => items.onChange(listener), [items]));
+}
+
 export function useRerenderOnCaptureChange(): void {
   const { capture } = useAppRuntime();
   useRerenderWhen(useCallback((listener: () => void) => capture.onChange(listener), [capture]));

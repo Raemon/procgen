@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { opaqueInk } from '../../world/tiles/inkColor';
 import { disposeMaterials } from './disposeMeshResources';
 import type { TilePlacement } from './tilePlacements';
 
@@ -36,6 +37,6 @@ function writeInstance(
 function instanceTint(placement: TilePlacement): THREE.Color {
   const tint = placement.faceArt
     ? new THREE.Color('#ffffff')
-    : new THREE.Color(placement.baseColor);
+    : new THREE.Color(opaqueInk(placement.baseColor));
   return tint.multiplyScalar(placement.shade);
 }

@@ -1,7 +1,7 @@
 import type { Marker, WorldSampler } from '../../procgen/worldSampler';
 import type { CellPoint } from '../../world/nearestWalkable';
 import type { Tileset } from '../../world/tiles/tileset';
-import { asciiCellAt, markerLookup, type AsciiCell } from '../../views/ascii/asciiCells';
+import { asciiCellAt, pointOverlayLookup, type AsciiCell } from '../../views/ascii/asciiCells';
 import { viewportCenteredOn, type AsciiViewport } from '../../views/ascii/asciiViewport';
 
 const THUMB_COLUMNS = 110;
@@ -13,7 +13,7 @@ export function thumbnailHtml(
   center: CellPoint,
 ): string {
   const viewport = viewportCenteredOn(center.x, center.y, THUMB_COLUMNS, THUMB_ROWS);
-  const markers = markerLookup(sampler, viewport);
+  const markers = pointOverlayLookup(sampler, viewport);
   const rows: string[] = [];
   for (let row = 0; row < viewport.rows; row++) {
     rows.push(thumbnailRow(sampler, tileset, markers, viewport, center, row));

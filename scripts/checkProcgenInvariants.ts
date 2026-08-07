@@ -1,4 +1,6 @@
 import '../src/procgen/nodes';
+import { checkCharacterBillboardInvariants } from './checkCharacterBillboardInvariants';
+import { checkItemAndInventoryInvariants } from './checkItemAndInventoryInvariants';
 import { checkPrefabAndCreatureInvariants } from './checkPrefabAndCreatureInvariants';
 import { cameraRelativeStep } from '../src/input/cameraRelativeStep';
 import { PipelineEvaluator } from '../src/procgen/eval/evaluator';
@@ -47,6 +49,12 @@ import { resizeCubeFaceArt } from '../src/ui/pixelArtEditor/ops/resizeFaceArt';
 import { shiftFacePixelsWithWrap } from '../src/ui/pixelArtEditor/ops/shiftFacePixelsWithWrap';
 import { upgradeStoredFaceArt } from '../src/world/tiles/legacyFaceArt';
 import {
+  isTransparentInk,
+  opaqueInk,
+  TRANSPARENT_INK,
+  withTransparency,
+} from '../src/world/tiles/inkColor';
+import {
   blankCubeFaceArt,
   blankFacePixels,
   cloneCubeFaceArt,
@@ -66,6 +74,7 @@ import { checkOnlyTheAbilityLayerCanMutate } from './checkAbilityLayerIsTheOnlyM
 import { TemplateLibrary } from '../src/procgen/templates/templateLibrary';
 import { WorldPresetLibrary } from '../src/procgen/presets/worldPresetLibrary';
 import { CreatureLibrary } from '../src/creatures/creatureLibrary';
+import { ItemLibrary } from '../src/items/itemLibrary';
 import { PrefabLibrary } from '../src/prefabs/prefabLibrary';
 import { FAILURES } from '../src/agent/failures';
 import { nodeTypesJson } from '../src/agent/nodeCatalog';
@@ -1276,6 +1285,7 @@ function abilityWorld() {
     tileset: abilityTileset,
     prefabs,
     creatures: new CreatureLibrary(),
+    items: new ItemLibrary(),
     templates: new TemplateLibrary([]),
     worldPresets: new WorldPresetLibrary([]),
     randomizeHistory: new RandomizeHistory(),
@@ -1679,7 +1689,36 @@ check(
   sanitizeWorldPresets([{ name: '', state: earthlikeState() }, { name: 'empty', state: { nodes: [] } }, null, 7]).length === 0,
 );
 
+check(
+  'a color is transparent only when its alpha byte is zero',
+  isTransparentInk('#00000000') &&
+    isTransparentInk('#7bbf5a00') &&
+    !isTransparentInk('#7bbf5a') &&
+    !isTransparentInk('#7bbf5aff'),
+);
+check(
+  'every color reaches three.js as six opaque digits',
+  opaqueInk('#7bbf5aff') === '#7bbf5a' &&
+    opaqueInk('#7bbf5a') === '#7bbf5a' &&
+    opaqueInk(TRANSPARENT_INK) === '#000000',
+);
+check(
+  'a color editor toggles transparency without losing the hue it had',
+  withTransparency('#7bbf5a', true) === '#7bbf5a00' &&
+    withTransparency(withTransparency('#7bbf5a', true), false) === '#7bbf5a' &&
+    withTransparency(TRANSPARENT_INK, false) === '#000000',
+);
+check(
+  'painting with a transparent color punches a hole rather than storing a color',
+  (() => {
+    const painted = floodFillFacePixels(blankFacePixels(4).fill('#ffffff'), 4, 0, null);
+    return painted.every((pixel) => pixel === null);
+  })(),
+);
+
 checkPrefabAndCreatureInvariants(check);
+checkItemAndInventoryInvariants(check);
+checkCharacterBillboardInvariants(check);
 
 if (failures.length > 0) throw new Error(`${failures.length} check(s) failed: ${failures.join(', ')}`);
 console.log('\nall checks passed');

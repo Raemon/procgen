@@ -8,6 +8,7 @@ const MUTABLE_LIBRARIES = [
   'Tileset',
   'PrefabLibrary',
   'CreatureLibrary',
+  'ItemLibrary',
   'TemplateLibrary',
   'WorldPresetLibrary',
   'World',
@@ -22,6 +23,7 @@ const MAY_HOLD_A_MUTABLE_LIBRARY = [
   'src/world/',
   'src/prefabs/',
   'src/creatures/',
+  'src/items/',
 ];
 
 export function checkOnlyTheAbilityLayerCanMutate(

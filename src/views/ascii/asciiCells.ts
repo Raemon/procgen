@@ -14,15 +14,19 @@ export interface AsciiCell {
   ink: string;
 }
 
-export function markerLookup(sampler: WorldSampler, viewport: AsciiViewport): Map<string, Marker> {
+export function pointOverlayLookup(
+  sampler: WorldSampler,
+  viewport: AsciiViewport,
+): Map<string, Marker> {
+  const maxX = viewport.originX + viewport.columns - 1;
+  const maxY = viewport.originY + viewport.rows - 1;
   const lookup = new Map<string, Marker>();
-  const markers = sampler.markersIn(
-    viewport.originX,
-    viewport.originY,
-    viewport.originX + viewport.columns - 1,
-    viewport.originY + viewport.rows - 1,
-  );
-  for (const marker of markers) lookup.set(`${marker.x},${marker.y}`, marker);
+  for (const marker of sampler.markersIn(viewport.originX, viewport.originY, maxX, maxY)) {
+    lookup.set(`${marker.x},${marker.y}`, marker);
+  }
+  for (const spawn of sampler.itemSpawnsIn(viewport.originX, viewport.originY, maxX, maxY)) {
+    lookup.set(`${spawn.x},${spawn.y}`, { ...spawn, faceArt: null, tag: spawn.name });
+  }
   return lookup;
 }
 

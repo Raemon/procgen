@@ -4,6 +4,16 @@ import { faceGridSize, type FacePixels } from '../../world/tiles/tileFaceArt';
 
 const CANVAS_TARGET_PIXELS = 160;
 
+const CHECKER_SQUARES =
+  'linear-gradient(45deg, #2b2b2b 25%, transparent 25%, transparent 75%, #2b2b2b 75%)';
+
+const TRANSPARENCY_CHECKER = {
+  backgroundImage: `${CHECKER_SQUARES}, ${CHECKER_SQUARES}`,
+  backgroundSize: '12px 12px',
+  backgroundPosition: '0 0, 6px 6px',
+  backgroundColor: '#1e1e1e',
+};
+
 export type StrokePhase = 'start' | 'drag';
 
 export function PixelPaintCanvas({
@@ -45,6 +55,7 @@ export function PixelPaintCanvas({
     <canvas
       ref={canvas}
       className="block w-full cursor-crosshair touch-none rounded-[3px] border border-art-edge [image-rendering:pixelated]"
+      style={TRANSPARENCY_CHECKER}
       onPointerDown={beginStroke}
       onPointerMove={continueStroke}
       onPointerUp={finishStroke}

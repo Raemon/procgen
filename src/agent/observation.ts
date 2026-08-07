@@ -1,6 +1,6 @@
 import type { Marker, WorldSampler } from '../procgen/worldSampler';
 import { EMPTY_TILE } from '../procgen/values/chunkValues';
-import { markerLookup } from '../views/ascii/asciiCells';
+import { pointOverlayLookup } from '../views/ascii/asciiCells';
 import { viewportCenteredOn } from '../views/ascii/asciiViewport';
 import type { ReadOnlyTileset } from '../app/readOnlyLibraries';
 import { FACING_NAMES } from '../world/facing';
@@ -44,7 +44,7 @@ export function buildObservation(
 ): AgentObservation {
   const size = viewSizeFor(mode);
   const viewport = viewportCenteredOn(pose.x, pose.y, size, size);
-  const markers = markerLookup(sampler, viewport);
+  const markers = pointOverlayLookup(sampler, viewport);
   const legend = new Map<string, LegendEntry>();
   addFixedLegendEntries(legend, mode);
   const view: string[] = [];

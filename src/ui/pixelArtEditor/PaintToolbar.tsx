@@ -1,10 +1,9 @@
 import type { ReactNode } from 'react';
 import { Button } from '../controls/Button';
-import { COLOR_INPUT_CLASSES } from '../controls/fieldClasses';
+import { ColorField } from '../controls/ColorField';
 import type { PaintTool } from './paintSettings';
 import type { FaceArtEditor } from './useFaceArtEditor';
 import { PAINT_COLOR_TIP, PAINT_EDIT_TIPS, PAINT_TOOL_TIPS } from './help/paintTips';
-import { tooltipHandlers } from '../tooltips/tooltipHandlers';
 
 const TOOLS: { tool: PaintTool; label: string }[] = [
   { tool: 'draw', label: 'draw' },
@@ -20,13 +19,10 @@ export function PaintToolbar({ editor }: { editor: FaceArtEditor }) {
   return (
     <>
       <ToolRow>
-        <input
-          type="color"
-          className={COLOR_INPUT_CLASSES}
-          aria-label="paint colour"
-          value={settings.paintColor}
-          onChange={(event) => updateSettings({ paintColor: event.target.value })}
-          {...tooltipHandlers(PAINT_COLOR_TIP)}
+        <ColorField
+          ink={settings.paintColor}
+          tip={PAINT_COLOR_TIP}
+          onChange={(paintColor) => updateSettings({ paintColor })}
         />
         {TOOLS.map((spec) => (
           <Button

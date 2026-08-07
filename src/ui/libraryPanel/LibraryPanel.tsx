@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { useAppRuntime } from '../../app/appRuntimeContext';
+import { CharactersTab } from '../characterEditor/CharactersTab';
 import { CreaturesTab } from '../creatureEditor/CreaturesTab';
+import { ItemsTab } from '../itemEditor/ItemsTab';
 import { PrefabsTab } from '../prefabEditor/PrefabsTab';
 import { TilesTab } from '../tileEditor/TilesTab';
 import { isOneOf } from '../uiState/persistedUiGuards';
@@ -20,8 +22,10 @@ export function LibraryPanel() {
     <>
       <LibraryTabs tab={tab} onSelect={setTab} />
       {tab === 'tiles' && <TilesTab />}
+      {tab === 'items' && <ItemsTab />}
       {tab === 'prefabs' && <PrefabsTab />}
       {tab === 'creatures' && <CreaturesTab />}
+      {tab === 'characters' && <CharactersTab />}
     </>
   );
 }
