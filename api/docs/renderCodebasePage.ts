@@ -4,7 +4,6 @@ import { allAbilities } from '../../abilities/abilityRegistry';
 import { allNodeTypes } from '../../procgen/nodeRegistry';
 import { allRoutes } from '../agent/routeRegistry';
 import { folderMap, TOP_LEVEL_FOLDERS, type FolderEntry } from './folderMap';
-import { claimsByTopic, type ClaimTopic } from './provenClaims';
 import { PAGE_STYLE } from './pageStyle';
 
 export function renderCodebasePage(): string {
@@ -14,9 +13,8 @@ export function renderCodebasePage(): string {
     '<title>procgen — how the codebase is put together</title>',
     `<style>${PAGE_STYLE}</style></head><body>`,
     '<h1>procgen</h1>',
-    '<p class="lede">Every word below is read out of the code at request time — the folder tree, the exported names, the registries, and the claims the check suite proves on every run. Nothing here is written twice.</p>',
+    '<p class="lede">Every word below is read out of the code at request time — the folder tree, the exported names, and the ability, route and node-type registries. Nothing here is written twice, and nothing here is prose someone remembered to update.</p>',
     section('The eleven folders', topLevelTable()),
-    section('What the checks prove', claimsList(claimsByTopic())),
     section('Abilities', abilitiesTable()),
     section('Endpoints', routesTable()),
     section('Node types', nodeTypesTable()),
@@ -34,17 +32,6 @@ function topLevelTable(): string {
     (folder) => `<tr><td><code>${folder.name}/</code></td><td>${escapeHtml(folder.role)}</td></tr>`,
   );
   return table(['folder', 'what lives here'], rows);
-}
-
-function claimsList(groups: readonly ClaimTopic[]): string {
-  const blocks = groups.map(
-    (group) =>
-      `<details open><summary>${escapeHtml(group.topic)} <span class="count">${group.claims.length}</span></summary><ul>${group.claims
-        .map((claim) => `<li>${escapeHtml(claim)}</li>`)
-        .join('')}</ul></details>`,
-  );
-  const total = groups.reduce((sum, group) => sum + group.claims.length, 0);
-  return `<p class="note">${total} claims, each one an assertion <code>npm run check</code> re-proves.</p>${blocks.join('')}`;
 }
 
 function abilitiesTable(): string {

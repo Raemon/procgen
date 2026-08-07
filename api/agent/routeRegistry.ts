@@ -1,3 +1,4 @@
+import type { AbilityParamSpec } from '../../abilities/ability';
 import type { ApiRequest, ApiResponse } from './apiMessages';
 import type { WorldAccess } from './serverWorld';
 import type { SessionStore } from './sessions';
@@ -13,7 +14,8 @@ export interface RouteSpec {
   method: string;
   path: string;
   summary: string;
-  body: string;
+  body: Record<string, AbilityParamSpec>;
+  query: Record<string, AbilityParamSpec>;
   handle(context: RouteContext): ApiResponse;
 }
 
@@ -75,7 +77,9 @@ function rejectUndocumented(spec: RouteSpec): void {
   if (spec.summary.trim() === '') {
     throw new Error(`route '${spec.method} ${spec.path}' needs a summary — it is rendered into GET /api/v1/docs`);
   }
-  if (spec.body.trim() === '') {
-    throw new Error(`route '${spec.method} ${spec.path}' needs body text — use '—' when it takes no body`);
+  for (const [name, param] of Object.entries({ ...spec.body, ...spec.query })) {
+    if (param.help.trim() === '') {
+      throw new Error(`route '${spec.method} ${spec.path}' param '${name}' needs help text — it is rendered into the docs and the OpenAPI schema`);
+    }
   }
 }

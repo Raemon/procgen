@@ -9,7 +9,8 @@ registerRoute({
   method: 'GET',
   path: '/pipeline',
   summary: 'the current node pipeline: every node with id, type, params, wiring, display',
-  body: '—',
+  body: {},
+  query: {},
   handle: ({ access }) => json(200, { pipeline: pipelineJson(access.current().store) }),
 });
 
@@ -17,7 +18,8 @@ registerRoute({
   method: 'GET',
   path: '/node-types',
   summary: 'the catalog of node types you can add, every param and input explained',
-  body: '—',
+  body: {},
+  query: {},
   handle: () => json(200, nodeTypesJson()),
 });
 
@@ -25,7 +27,8 @@ registerRoute({
   method: 'GET',
   path: '/tiles',
   summary: 'the tileset: what every glyph in an observation means',
-  body: '—',
+  body: {},
+  query: {},
   handle: ({ access }) => json(200, { tiles: access.current().tileset.all().map(tileJson) }),
 });
 
@@ -33,7 +36,8 @@ registerRoute({
   method: 'GET',
   path: '/templates',
   summary: 'saved groups of wired nodes you can stamp in',
-  body: '—',
+  body: {},
+  query: {},
   handle: ({ access }) => json(200, { templates: templatesJson(access.current()) }),
 });
 
@@ -41,7 +45,8 @@ registerRoute({
   method: 'GET',
   path: '/presets',
   summary: 'whole worlds you can load',
-  body: '—',
+  body: {},
+  query: {},
   handle: ({ access }) => json(200, { presets: presetsJson(access.current()) }),
 });
 
@@ -49,7 +54,8 @@ registerRoute({
   method: 'GET',
   path: '/prefabs',
   summary: 'the prefab library: structures a points node can stamp',
-  body: '—',
+  body: {},
+  query: {},
   handle: ({ access }) => json(200, { prefabs: access.current().prefabs.all().map(prefabJson) }),
 });
 
@@ -58,7 +64,8 @@ registerRoute({
   path: '/creatures',
   summary:
     'the creature library: creatures and characters a points node can spawn, and whether each carries an inventory',
-  body: '—',
+  body: {},
+  query: {},
   handle: ({ access }) => json(200, { creatures: access.current().creatures.all().map(creatureJson) }),
 });
 
@@ -66,7 +73,8 @@ registerRoute({
   method: 'GET',
   path: '/items',
   summary: 'the item library: items a points node can scatter and a character can carry',
-  body: '—',
+  body: {},
+  query: {},
   handle: ({ access }) => json(200, { items: access.current().items.all().map(itemJson) }),
 });
 
@@ -75,7 +83,8 @@ registerRoute({
   path: '/creatures/{id}/inventory',
   summary:
     "one character's inventory grid: every slot with its usable flag and tags, and every item placed in it",
-  body: '—',
+  body: {},
+  query: {},
   handle: ({ access, params }) => creatureInventory(access.current(), Number(params.id)),
 });
 

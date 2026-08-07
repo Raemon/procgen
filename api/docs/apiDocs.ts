@@ -1,6 +1,6 @@
 import '../../abilities/index';
 import { abilitiesForMode } from '../../abilities/abilityRegistry';
-import type { AbilityGroup, AbilityMode, AbilitySpec } from '../../abilities/ability';
+import type { AbilityGroup, AbilityMode, AbilityParamSpec, AbilitySpec } from '../../abilities/ability';
 import { allNodeTypes } from '../../procgen/nodeRegistry';
 import type { ReadOnlyTileset } from '../../frontend/readOnlyLibraries';
 import {
@@ -79,8 +79,8 @@ narrow it again and travel cheaply on what you learned.
 
 ## Endpoints
 
-| method and path | body | what it does |
-| --- | --- | --- |
+| method and path | body | query | what it does |
+| --- | --- | --- | --- |
 {{ENDPOINTS}}
 
 ## Actions — moving
@@ -261,8 +261,19 @@ function firstSentenceOf(description: string): string {
 
 function endpointsTable(): string {
   return allRoutes()
-    .map((route) => `| ${route.method} /api/v1${route.path} | ${route.body} | ${route.summary} |`)
+    .map(
+      (route) =>
+        `| ${route.method} /api/v1${route.path} | ${paramsCellOf(route.body)} | ${paramsCellOf(route.query)} | ${route.summary} |`,
+    )
     .join('\n');
+}
+
+function paramsCellOf(params: Record<string, AbilityParamSpec>): string {
+  const entries = Object.entries(params);
+  if (entries.length === 0) return '—';
+  return entries
+    .map(([name, param]) => `\`${name}\`${param.optional ? ' (optional)' : ''}: ${param.help}`)
+    .join('; ');
 }
 
 function examples(): string {

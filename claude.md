@@ -18,3 +18,5 @@ Node types follow the knob typology: every field is either a numeric knob (numbe
 
 Do NOT attempt to test code in browser. As much as possible, design the code such that you can test as much as you can via scripting or API. Once you've tested everything you can quickly test via API and just reading the code and thinking about it, show it to me.
 
+
+A test earns its place by failing on a mistake someone could plausibly make. Documentation value is a byproduct, never a justification — if a test exists only to state something true, delete it.

@@ -1,3 +1,5 @@
+import { describe, test } from 'node:test';
+import assert from 'node:assert';
 import '../procgen/nodes';
 import { checkCharacterBillboardInvariants } from './checkCharacterBillboardInvariants';
 import { checkItemAndInventoryInvariants } from './checkItemAndInventoryInvariants';
@@ -8,8 +10,7 @@ import { checkPrefabAndCreatureInvariants } from './checkPrefabAndCreatureInvari
 import { checkTileHeightInvariants } from './checkTileHeightInvariants';
 import { checkPresentationFoldersAreTheOnlyDomCode } from './checkPresentationFoldersAreTheOnlyDomCode';
 import { checkDesignBetsStillHold } from './checkDesignBetsStillHold';
-import { recordClaim, underTopic } from './claimRegistry';
-import { writeProvenClaims } from './writeProvenClaims';
+import { checkEveryApiSurfaceIsDescribed } from './checkEveryApiSurfaceIsDescribed';
 import { checkDocumentationHasNotRegrown } from './checkDocumentationHasNotRegrown';
 import { cameraRelativeStep } from '../world/input/cameraRelativeStep';
 import { PipelineEvaluator } from '../procgen/eval/evaluator';
@@ -127,7 +128,6 @@ import { createCharacterFog } from '../world/render/view3d/worldScene';
 
 const CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT = characterViewSize();
 
-const failures: string[] = [];
 
 function firstPersonCamera(
   x = 0,
@@ -146,9 +146,7 @@ function round(value: number): number {
 const tileset = new Tileset();
 
 function check(name: string, condition: boolean): void {
-  recordClaim(name, condition);
-  if (!condition) failures.push(name);
-  console.log(`${condition ? 'ok  ' : 'FAIL'} ${name}`);
+  test(name, () => assert.ok(condition));
 }
 
 function worldFromState(state: PipelineState): {
@@ -1974,28 +1972,16 @@ check(
   })(),
 );
 
-underTopic('prefabs and creatures');
-checkPrefabAndCreatureInvariants(check);
-underTopic('items and inventories');
-checkItemAndInventoryInvariants(check);
-underTopic('character billboards');
-checkCharacterBillboardInvariants(check);
-underTopic('the player character');
-checkPlayerCharacterInvariants(check);
-underTopic('tile heights');
-checkTileHeightInvariants(check);
-underTopic('the dom boundary');
-checkPresentationFoldersAreTheOnlyDomCode(check);
-underTopic('documentation');
-checkDocumentationHasNotRegrown(check);
-underTopic('the design bets');
-checkDesignBetsStillHold(check);
-underTopic('landmarks and ceilings');
-checkLandmarkAndCeilingInvariants(check);
-underTopic('underground light');
-checkUndergroundLightInvariants(check);
+describe('prefabs and creatures', () => checkPrefabAndCreatureInvariants(check));
+describe('items and inventories', () => checkItemAndInventoryInvariants(check));
+describe('character billboards', () => checkCharacterBillboardInvariants(check));
+describe('the player character', () => checkPlayerCharacterInvariants(check));
+describe('tile heights', () => checkTileHeightInvariants(check));
+describe('the dom boundary', () => checkPresentationFoldersAreTheOnlyDomCode(check));
+describe('documentation', () => checkDocumentationHasNotRegrown(check));
+describe('the design bets', () => checkDesignBetsStillHold(check));
+describe('the api surface', () => checkEveryApiSurfaceIsDescribed(check));
+describe('landmarks and ceilings', () => checkLandmarkAndCeilingInvariants(check));
+describe('underground light', () => checkUndergroundLightInvariants(check));
 
-writeProvenClaims();
 
-if (failures.length > 0) throw new Error(`${failures.length} check(s) failed: ${failures.join(', ')}`);
-console.log('\nall checks passed');

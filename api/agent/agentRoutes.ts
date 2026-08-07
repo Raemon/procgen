@@ -20,7 +20,8 @@ registerRoute({
   method: 'GET',
   path: '/agents',
   summary: 'list agents',
-  body: '—',
+  body: {},
+  query: {},
   handle: ({ sessions }) => json(200, { agents: [...sessions.values()].map(agentJson) }),
 });
 
@@ -28,7 +29,16 @@ registerRoute({
   method: 'POST',
   path: '/agents',
   summary: 'create an agent; responds with its id and urls',
-  body: '{"mode": "god" or "character", "name": optional, "sight_radius_tiles": optional}',
+  body: {
+    mode: { kind: 'text', help: '"god" or "character" — an agent keeps its mode for life' },
+    name: { kind: 'text', help: 'what to call it in listings; defaults to its id', optional: true },
+    sight_radius_tiles: {
+      kind: 'int',
+      help: 'how far a character sees, clamped to the supported range',
+      optional: true,
+    },
+  },
+  query: {},
   handle: ({ sessions, access, req }) => createAgent(sessions, access.current(), req.body),
 });
 
@@ -36,7 +46,8 @@ registerRoute({
   method: 'GET',
   path: '/agents/{id}',
   summary: "the agent's current state",
-  body: '—',
+  body: {},
+  query: {},
   handle: (context) => withSession(context, (session) => json(200, { agent: agentJson(session) })),
 });
 
@@ -44,7 +55,8 @@ registerRoute({
   method: 'DELETE',
   path: '/agents/{id}',
   summary: 'remove the agent',
-  body: '—',
+  body: {},
+  query: {},
   handle: (context) =>
     withSession(context, (session) => {
       stopRun(session);
@@ -56,9 +68,16 @@ registerRoute({
 registerRoute({
   method: 'GET',
   path: '/agents/{id}/observe',
-  summary:
-    'a fresh observation. add &sight_radius_tiles=N to widen or narrow the character\'s sight first (clamped); the new radius sticks. format=json or text',
-  body: '—',
+  summary: 'a fresh observation, regenerated from the world as it stands right now',
+  body: {},
+  query: {
+    format: { kind: 'text', help: '"json" or "text"; text is the grid an agent view renders', optional: true },
+    sight_radius_tiles: {
+      kind: 'int',
+      help: "widen or narrow the character's sight before looking; the new radius sticks",
+      optional: true,
+    },
+  },
   handle: (context) =>
     withSession(context, (session) => observe(session, context.access.current(), context.req)),
 });
@@ -67,7 +86,11 @@ registerRoute({
   method: 'POST',
   path: '/agents/{id}/act',
   summary: 'perform one action; responds with the outcome and a fresh observation',
-  body: '{"action": "...", ...params}',
+  body: {
+    action: { kind: 'text', help: 'the name of one action from the tables below' },
+    params: { kind: 'json', help: "that action's own params, spread alongside \"action\"", optional: true },
+  },
+  query: {},
   handle: (context) =>
     withSession(context, (session) => act(session, context.access, context.req.body)),
 });
@@ -77,7 +100,21 @@ registerRoute({
   path: '/agents/{id}/run',
   summary:
     'start an autopilot run that drives this agent with an LLM. budget_usd (default 1, max 100) caps what the run may spend at list prices, and the run stops before the first turn that would start over budget, so its final turn can carry it slightly past',
-  body: '{"goal": "...", "model": optional, "budget_usd": optional, "anthropic_api_key": optional}',
+  body: {
+    goal: { kind: 'text', help: 'what the run should achieve, in a sentence' },
+    model: { kind: 'text', help: 'the model to drive it; defaults to claude-sonnet-5', optional: true },
+    budget_usd: {
+      kind: 'number',
+      help: 'what the run may spend at list prices, default 1 and capped at 100',
+      optional: true,
+    },
+    anthropic_api_key: {
+      kind: 'text',
+      help: 'falls back to the ANTHROPIC_API_KEY environment variable',
+      optional: true,
+    },
+  },
+  query: {},
   handle: (context) =>
     withSession(context, (session) => run(session, context.access, context.req.body)),
 });
@@ -86,7 +123,8 @@ registerRoute({
   method: 'POST',
   path: '/agents/{id}/stop',
   summary: 'stop the autopilot run',
-  body: '—',
+  body: {},
+  query: {},
   handle: (context) =>
     withSession(context, (session) => {
       stopRun(session);
@@ -98,7 +136,8 @@ registerRoute({
   method: 'GET',
   path: '/agents/{id}/transcript',
   summary: 'the autopilot transcript',
-  body: '—',
+  body: {},
+  query: { after: { kind: 'int', help: 'return only entries after this seq', optional: true } },
   handle: (context) => withSession(context, (session) => transcript(session, context.req)),
 });
 
