@@ -5,9 +5,11 @@ import {
   useRerenderOnCreatureClockChange,
 } from '../../app/rerenderHooks';
 import { Button } from '../controls/Button';
+import { SightRangeControl } from './SightRangeControl';
 import { CAPTURE_TIP, LIFE_TIP } from './help/worldTips';
+import { isCharacterControlled, type ViewMode } from './viewMode';
 
-export function WorldToolbar() {
+export function WorldToolbar({ mode }: { mode: ViewMode }) {
   const { capture, clock } = useAppRuntime();
   useRerenderOnCaptureChange();
   useRerenderOnCreatureClockChange();
@@ -28,6 +30,7 @@ export function WorldToolbar() {
       >
         life
       </Button>
+      {isCharacterControlled(mode) && <SightRangeControl />}
     </>
   );
 }

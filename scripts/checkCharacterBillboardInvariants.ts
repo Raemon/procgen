@@ -1,5 +1,6 @@
 import '../src/abilities/index';
 import { performAbility } from '../src/abilities/performAbility';
+import { DEFAULT_CHARACTER_SIGHT_RADIUS_TILES } from '../src/world/vision/characterSight';
 import type { AbilityContext, AbilityResult } from '../src/abilities/ability';
 import { humanoidBillboard } from '../src/creatures/art/humanoidBillboard';
 import { WANDERING_TRADER_PALETTE } from '../src/creatures/art/humanoidPalette';
@@ -319,7 +320,13 @@ function abilityWorld() {
     worldPresets: new WorldPresetLibrary([]),
     randomizeHistory: new RandomizeHistory(),
     regionSampler: { tileAt: () => 0, elevationAt: () => 0, voxelColumnAt: () => null },
-    actor: { pose: () => ({ x: 0, y: 0, facing: 0 }), tryStep: () => true, turn: () => undefined },
+    actor: {
+      pose: () => ({ x: 0, y: 0, facing: 0 }),
+      tryStep: () => true,
+      turn: () => undefined,
+      sightRadiusTiles: () => DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
+      setSightRadiusTiles: () => undefined,
+    },
   };
   return { context, creatures };
 }

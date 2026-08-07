@@ -53,8 +53,10 @@ export function performVerb(
 }
 
 function outcomeOf(action: string, mode: AgentSessionMode, ok: boolean): string {
-  if (ok) return abilityFor(mode, action)?.changesWorld ? 'edited' : 'moved';
-  return 'failed';
+  if (!ok) return 'failed';
+  const spec = abilityFor(mode, action);
+  if (spec?.changesWorld) return 'edited';
+  return spec?.group === 'senses' ? 'sensed' : 'moved';
 }
 
 type AgentSessionMode = AgentSession['mode'];

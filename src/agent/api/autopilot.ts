@@ -173,7 +173,15 @@ function endRun(run: AutopilotRun, status: 'stopped' | 'finished' | 'error', not
 
 function observe(session: AgentSession, access: WorldAccess): string {
   const world = access.current();
-  return observationText(buildObservation(world.sampler, world.tileset, sessionPose(session), session.mode));
+  return observationText(
+    buildObservation(
+      world.sampler,
+      world.tileset,
+      sessionPose(session),
+      session.mode,
+      session.sightRadiusTiles,
+    ),
+  );
 }
 
 function systemPrompt(access: WorldAccess, session: AgentSession): string {

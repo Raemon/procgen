@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { ZoomScale } from '../camera/zoomScale';
-import { CHARACTER_SIGHT_RADIUS_TILES } from '../../world/vision/characterSight';
+import { DEFAULT_CHARACTER_SIGHT_RADIUS_TILES } from '../../world/vision/characterSight';
 import { easeFraction, shortestArc } from './cameraEase';
 
 const FIELD_OF_VIEW_AT_UNIT_ZOOM_DEG = 70;
@@ -19,7 +19,7 @@ export class CharacterCamera {
     FIELD_OF_VIEW_AT_UNIT_ZOOM_DEG,
     1,
     NEAR_PLANE,
-    CHARACTER_SIGHT_RADIUS_TILES,
+    DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
   );
 
   private readonly zoom = new ZoomScale(1, MIN_MAGNIFICATION, MAX_MAGNIFICATION);
@@ -35,6 +35,13 @@ export class CharacterCamera {
 
   snapOnNextFrame(): void {
     this.snapOnNextUpdate = true;
+  }
+
+  /** The far plane sits exactly at the fog, so nothing past sight ever reaches the screen. */
+  setSightRadiusTiles(sightRadiusTiles: number): void {
+    if (this.camera.far === sightRadiusTiles) return;
+    this.camera.far = sightRadiusTiles;
+    this.camera.updateProjectionMatrix();
   }
 
   setAspect(aspect: number): void {

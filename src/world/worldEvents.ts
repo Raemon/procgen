@@ -1,4 +1,4 @@
-export type WorldEvent = 'player-moved' | 'player-turned';
+export type WorldEvent = 'player-moved' | 'player-turned' | 'sight-changed';
 
 export class WorldEvents {
   private readonly listeners = new Map<WorldEvent, Set<() => void>>();

@@ -77,7 +77,10 @@ Five panels:
    the god camera or turn the character 45°, wheel to zoom. Return opens chat; what you send floats over
    your character's head for a few seconds and over the heads of everyone
    else's (docs/multiplayer.md). `capture` lifts a dragged rectangle into a
-   prefab; `life` pauses or runs the creature simulation.
+   prefab; `life` pauses or runs the creature simulation; on the character
+   modes, the `sight` slider sets how far you see (3-40 tiles, 12 by default) —
+   the same knob an agent turns with `set_sight_radius` or `sight_radius_tiles`,
+   and the same trade, since the tiles drawn and read grow with its square.
 
 ## Agents
 

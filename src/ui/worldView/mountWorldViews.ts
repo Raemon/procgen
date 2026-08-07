@@ -64,6 +64,12 @@ export function mountWorldViews(
     isSuspended: () => runtime.chatComposer.isOpen(),
   });
 
+  // The 2.5D view re-reads the sight radius every frame; the ASCII views only redraw when asked.
+  const redrawOnSightChange = world.on('sight-changed', () => {
+    agentGodView.draw();
+    agentCharacterView.draw();
+  });
+
   const stopWalkingWhileTyping = runtime.chatComposer.subscribe(() => {
     if (runtime.chatComposer.isOpen()) movement.releaseHeldKeys();
   });
@@ -72,6 +78,7 @@ export function mountWorldViews(
 
   return {
     dispose: () => {
+      redrawOnSightChange();
       stopWalkingWhileTyping();
       movement.dispose();
       for (const remove of unregister) remove();
