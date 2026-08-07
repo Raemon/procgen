@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { isTransparentInk } from '../../world/tiles/inkColor';
 import { faceGridSize, type CubeFaceArt, type FacePixels } from '../../world/tiles/tileFaceArt';
 import { paintFacePixels } from '../paintFacePixels';
 
@@ -13,7 +14,13 @@ export function sideFaceMaterial(art: CubeFaceArt, baseColor: string): THREE.Mat
 }
 
 function faceMaterial(pixels: FacePixels, baseColor: string): THREE.MeshLambertMaterial {
-  return new THREE.MeshLambertMaterial({ map: facePixelsTexture(pixels, baseColor) });
+  const seeThrough = isTransparentInk(baseColor);
+  return new THREE.MeshLambertMaterial({
+    map: facePixelsTexture(pixels, baseColor),
+    transparent: seeThrough,
+    alphaTest: seeThrough ? 0.5 : 0,
+    side: seeThrough ? THREE.DoubleSide : THREE.FrontSide,
+  });
 }
 
 function facePixelsTexture(pixels: FacePixels, baseColor: string): THREE.CanvasTexture {

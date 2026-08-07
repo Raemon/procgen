@@ -10,6 +10,7 @@ export const MODE_LABELS: Record<DisplayMode, string> = {
   markers: 'markers',
   prefabs: 'prefabs',
   creatures: 'creatures',
+  items: 'items',
 };
 
 const MODE_HELP: Record<DisplayMode, string> = {
@@ -24,6 +25,8 @@ const MODE_HELP: Record<DisplayMode, string> = {
     'Stamps a prefab from the library at every point, anchored on its centre cell. Voxels above ground stack into the world and block movement like any other tile.',
   creatures:
     'Spawns a creature from the library at every point near the player. Creatures move by their behaviour instead of being baked into the map.',
+  items:
+    'Floats an item from the library above every point: a thickened billboard or a cube, drawn from the item art and never blocking movement.',
 };
 
 export function displayModeTooltip(kind: ValueKind): TooltipContent {

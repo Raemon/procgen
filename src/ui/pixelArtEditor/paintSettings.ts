@@ -19,9 +19,13 @@ export interface PaintSettings {
   size: number;
 }
 
-export function initialPaintSettings(art: CubeFaceArt | null, baseColor: string): PaintSettings {
+export function initialPaintSettings(
+  art: CubeFaceArt | null,
+  baseColor: string,
+  lockedFace?: CubeFace,
+): PaintSettings {
   return {
-    faceTab: 'top',
+    faceTab: lockedFace ?? 'top',
     tool: 'draw',
     paintColor: baseColor,
     mirrorX: false,

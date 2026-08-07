@@ -26,7 +26,7 @@ export class FollowCamera {
   private readonly zoom = new ZoomScale(1, MIN_MAGNIFICATION, MAX_MAGNIFICATION);
   private readonly pan = new PanOffset();
   private quadrant = 0;
-  private yaw = 0;
+  private currentYaw = 0;
   private yawTarget = 0;
   private followX = 0;
   private followY = 0;
@@ -35,6 +35,10 @@ export class FollowCamera {
 
   yawQuadrant(): number {
     return this.quadrant;
+  }
+
+  yaw(): number {
+    return this.currentYaw;
   }
 
   rotate(direction: -1 | 1): void {
@@ -49,7 +53,7 @@ export class FollowCamera {
   panByDragPixels(dxPixels: number, dyPixels: number): void {
     const delta = worldPanForDrag(
       { dxPixels, dyPixels },
-      { yaw: this.yaw, worldPerPixel: this.worldPerPixel(), pitchRadians: pitchRadians() },
+      { yaw: this.currentYaw, worldPerPixel: this.worldPerPixel(), pitchRadians: pitchRadians() },
     );
     this.pan.shiftBy(delta.dx, delta.dy);
   }
@@ -94,7 +98,7 @@ export class FollowCamera {
   private snapTo(targetX: number, targetY: number): void {
     this.followX = targetX;
     this.followY = targetY;
-    this.yaw = this.yawTarget;
+    this.currentYaw = this.yawTarget;
     this.snapOnNextUpdate = false;
   }
 
@@ -102,7 +106,7 @@ export class FollowCamera {
     const focusStep = easeFraction(FOCUS_SMOOTHING_RATE, dtSeconds);
     this.followX += (targetX - this.followX) * focusStep;
     this.followY += (targetY - this.followY) * focusStep;
-    this.yaw += shortestArc(this.yaw, this.yawTarget) * easeFraction(TURN_SMOOTHING_RATE, dtSeconds);
+    this.currentYaw += shortestArc(this.currentYaw, this.yawTarget) * easeFraction(TURN_SMOOTHING_RATE, dtSeconds);
   }
 
   private placeCameraBehindFocus(): void {
@@ -112,9 +116,9 @@ export class FollowCamera {
     const centerX = focus.x + 0.5;
     const centerZ = focus.y + 0.5;
     this.camera.position.set(
-      centerX - Math.sin(this.yaw) * distanceBehind,
+      centerX - Math.sin(this.currentYaw) * distanceBehind,
       distance * Math.sin(pitchRadians()),
-      centerZ + Math.cos(this.yaw) * distanceBehind,
+      centerZ + Math.cos(this.currentYaw) * distanceBehind,
     );
     this.camera.lookAt(centerX, 0, centerZ);
   }

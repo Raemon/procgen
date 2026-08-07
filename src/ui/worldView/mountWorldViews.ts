@@ -92,6 +92,7 @@ function worldViewDepsOf(runtime: AppRuntime): WorldViewDeps {
     sampler: runtime.sampler,
     tileset: runtime.tileset,
     creatures: runtime.creatures,
+    items: runtime.items,
     sim: runtime.sim,
     capture: runtime.capture,
     remotePlayers: runtime.net.remotePlayers,

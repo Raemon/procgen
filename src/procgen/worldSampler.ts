@@ -1,3 +1,4 @@
+import { NO_ITEMS, type ItemSource } from '../items/itemLibrary';
 import type { CubeFaceArt } from '../world/tiles/tileFaceArt';
 import type { Tileset } from '../world/tiles/tileset';
 import { cellIndexInChunk, chunkCoordOfCell } from './chunk';
@@ -27,7 +28,17 @@ export interface CreatureSpawn {
   tag: string;
 }
 
-type DisplayedMode = 'tileLayer' | 'elevation' | 'markers' | 'prefabs' | 'creatures';
+export interface ItemSpawn {
+  x: number;
+  y: number;
+  itemId: number;
+  name: string;
+  glyph: string;
+  color: string;
+  tag: string;
+}
+
+type DisplayedMode = 'tileLayer' | 'elevation' | 'markers' | 'prefabs' | 'creatures' | 'items';
 
 export class WorldSampler {
   private readonly prefabOverlay: PrefabOverlay;
@@ -37,6 +48,7 @@ export class WorldSampler {
     private readonly evaluator: PipelineEvaluator,
     private readonly tileset: Tileset,
     prefabs: PrefabSource = NO_PREFABS,
+    private readonly items: ItemSource = NO_ITEMS,
   ) {
     this.prefabOverlay = new PrefabOverlay(prefabs, (chunkX, chunkY) =>
       this.prefabPlacementsInChunk(chunkX, chunkY),
@@ -83,6 +95,27 @@ export class WorldSampler {
       const creatureId = node.display.creatureId;
       for (const point of this.pointsInRect(node, minX, minY, maxX, maxY)) {
         spawns.push({ x: point.x, y: point.y, creatureId, tag: point.tag });
+      }
+    }
+    return spawns;
+  }
+
+  itemSpawnsIn(minX: number, minY: number, maxX: number, maxY: number): ItemSpawn[] {
+    const spawns: ItemSpawn[] = [];
+    for (const node of this.displayedNodes('items')) {
+      if (node.display.mode !== 'items') continue;
+      const item = this.items.byId(node.display.itemId);
+      if (!item) continue;
+      for (const point of this.pointsInRect(node, minX, minY, maxX, maxY)) {
+        spawns.push({
+          x: point.x,
+          y: point.y,
+          itemId: item.id,
+          name: item.name,
+          glyph: item.symbol,
+          color: item.color,
+          tag: point.tag,
+        });
       }
     }
     return spawns;
