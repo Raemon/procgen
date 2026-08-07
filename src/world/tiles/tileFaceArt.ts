@@ -1,4 +1,6 @@
-export const FACE_ART_SIZES = [4, 8, 16, 32] as const;
+export const FACE_ART_SIZES = [4, 8, 16, 32, 64, 128, 256, 512, 1024] as const;
+export const MIN_FACE_ART_SIZE = 2;
+export const MAX_FACE_ART_SIZE = 1024;
 export const DEFAULT_FACE_ART_SIZE = 8;
 export const CUBE_FACES = ['top', 'north', 'east', 'south', 'west', 'bottom'] as const;
 export const SIDE_FACES = ['north', 'east', 'south', 'west'] as const;
@@ -40,7 +42,12 @@ export function isCubeFaceArt(value: unknown): value is CubeFaceArt {
 }
 
 function isValidFaceArtSize(size: unknown): size is number {
-  return typeof size === 'number' && Number.isInteger(size) && size >= 2 && size <= 64;
+  return (
+    typeof size === 'number' &&
+    Number.isInteger(size) &&
+    size >= MIN_FACE_ART_SIZE &&
+    size <= MAX_FACE_ART_SIZE
+  );
 }
 
 export function isFacePixels(value: unknown, size: number): value is FacePixels {

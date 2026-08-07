@@ -3,7 +3,7 @@ import { BILLBOARD, LYING_FLAT, type ItemDef } from '../../items/itemDef';
 import type { SpriteArt } from '../../world/tiles/spriteArt';
 import { cubeFaceMaterials } from './faceArtMaterials';
 import { lambertFromInk } from './inkMaterial';
-import { spriteMaterial } from './spriteMaterial';
+import { spriteMaterial, spriteTexture } from './spriteMaterial';
 
 const TOP = 2;
 const BOTTOM = 3;
@@ -41,7 +41,7 @@ export function itemMaterials(item: ItemDef): THREE.Material | THREE.Material[] 
 
 function billboardMaterials(item: ItemDef, sprite: SpriteArt): THREE.Material[] {
   const rim = lambertFromInk(item.edgeColor);
-  const art = spriteMaterial(sprite);
+  const art = spriteMaterial(spriteTexture(sprite));
   const faces: THREE.Material[] = [rim, rim, rim, rim, rim, rim];
   if (isLyingFlat(item)) {
     faces[TOP] = art;

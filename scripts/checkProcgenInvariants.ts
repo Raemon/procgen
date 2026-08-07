@@ -1,6 +1,7 @@
 import '../src/procgen/nodes';
 import { checkCharacterBillboardInvariants } from './checkCharacterBillboardInvariants';
 import { checkItemAndInventoryInvariants } from './checkItemAndInventoryInvariants';
+import { checkPlayerCharacterInvariants } from './checkPlayerCharacterInvariants';
 import { checkPrefabAndCreatureInvariants } from './checkPrefabAndCreatureInvariants';
 import { cameraRelativeStep } from '../src/input/cameraRelativeStep';
 import { PipelineEvaluator } from '../src/procgen/eval/evaluator';
@@ -1731,6 +1732,7 @@ check(
 checkPrefabAndCreatureInvariants(check);
 checkItemAndInventoryInvariants(check);
 checkCharacterBillboardInvariants(check);
+checkPlayerCharacterInvariants(check);
 
 if (failures.length > 0) throw new Error(`${failures.length} check(s) failed: ${failures.join(', ')}`);
 console.log('\nall checks passed');

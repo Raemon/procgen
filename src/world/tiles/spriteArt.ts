@@ -2,6 +2,8 @@ import {
   blankFacePixels,
   DEFAULT_FACE_ART_SIZE,
   faceGridSize,
+  MAX_FACE_ART_SIZE,
+  MIN_FACE_ART_SIZE,
   type FacePixels,
 } from './tileFaceArt';
 
@@ -18,7 +20,7 @@ export function spriteGridSize(sprite: SpriteArt): number {
 export function isSpriteArt(value: unknown): value is SpriteArt {
   if (!Array.isArray(value)) return false;
   const size = faceGridSize(value as SpriteArt);
-  if (size < 2 || size > 64 || size * size !== value.length) return false;
+  if (size < MIN_FACE_ART_SIZE || size > MAX_FACE_ART_SIZE || size * size !== value.length) return false;
   return value.every((pixel) => pixel === null || typeof pixel === 'string');
 }
 

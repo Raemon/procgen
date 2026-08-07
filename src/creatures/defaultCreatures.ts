@@ -1,6 +1,10 @@
 import { blankInventory } from '../items/inventory/inventoryDef';
-import { humanoidBillboard } from './art/humanoidBillboard';
-import { WANDERING_TRADER_PALETTE } from './art/humanoidPalette';
+import { PLAYER_CHARACTER_ID } from './playerCharacter';
+import {
+  builtInBillboard,
+  MOONLIT_DWARF_ART,
+  WANDERING_TRADER_ART,
+} from './art/builtInBillboards';
 import { CHASE, FLEE, GUARD, WANDER } from './behaviorKinds';
 import type { CreatureDef } from './creatureDef';
 import { newCharacterWithId } from './creatureDef';
@@ -16,6 +20,7 @@ export function defaultCreatures(): CreatureDef[] {
     creature(5, 'ember wisp', '✦', '#ffb347', WANDER, { speed: 1.1, sight: 6, roam: 8, size: 0.35, phasing: 1 }),
     creature(6, 'fen heron', 'y', '#a8bfb2', FLEE, { speed: 2.4, sight: 8, roam: 6, size: 0.6 }),
     wanderingTrader(7),
+    moonlitDwarf(PLAYER_CHARACTER_ID),
   ];
 }
 
@@ -29,7 +34,8 @@ function wanderingTrader(id: number): CreatureDef {
     speed: 1.2,
     sight: 10,
     roam: 12,
-    billboard: humanoidBillboard(WANDERING_TRADER_PALETTE),
+    billboardArt: WANDERING_TRADER_ART,
+    billboard: builtInBillboard(WANDERING_TRADER_ART),
     inventory: {
       ...blankInventory(6, 4),
       placements: [
@@ -38,6 +44,23 @@ function wanderingTrader(id: number): CreatureDef {
         { itemId: 3, x: 1, y: 1 },
       ],
     },
+  };
+}
+
+function moonlitDwarf(id: number): CreatureDef {
+  return {
+    ...newCharacterWithId(id),
+    name: 'lanternbearer',
+    symbol: '@',
+    color: '#c3b8ad',
+    behavior: WANDER,
+    speed: 1.6,
+    sight: 12,
+    roam: 8,
+    size: 1.4,
+    billboardArt: MOONLIT_DWARF_ART,
+    billboard: builtInBillboard(MOONLIT_DWARF_ART),
+    inventory: blankInventory(8, 5),
   };
 }
 
@@ -59,6 +82,7 @@ function creature(
     phasing: 0,
     kind: CREATURE,
     inventory: null,
+    billboardArt: null,
     billboard: null,
     ...motion,
   };

@@ -2,7 +2,7 @@ import type { SpriteArt } from '../../world/tiles/spriteArt';
 import type { CharacterRotation } from '../character/characterBillboard';
 import type { HumanoidPalette } from './humanoidPalette';
 import { humanoidView, type HumanoidView } from './humanoidView';
-import { blankSpriteCanvas, paintPixel, paintRect, type SpriteCanvas } from './spriteCanvas';
+import { blankSpriteCanvas, paintPixel, paintRect, spriteArtOf, type SpriteCanvas } from './paint/spriteCanvas';
 
 export const HUMANOID_SPRITE_SIZE = 16;
 
@@ -27,7 +27,7 @@ export function humanoidSprite(pose: HumanoidPose, palette: HumanoidPalette): Sp
   paintTorso(canvas, view, palette, pose.bob);
   paintArms(canvas, view, palette, pose.stride, pose.bob);
   paintHead(canvas, view, palette, pose.bob);
-  return canvas.pixels;
+  return spriteArtOf(canvas);
 }
 
 function paintHead(

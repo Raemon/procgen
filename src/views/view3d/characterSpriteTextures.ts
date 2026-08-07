@@ -1,23 +1,34 @@
-import type * as THREE from 'three';
+import * as THREE from 'three';
 import type { SpriteArt } from '../../world/tiles/spriteArt';
-import { spriteMaterial } from './spriteMaterial';
+import { spriteMaterial, spriteTexture } from './spriteMaterial';
+
+const UNTINTED = 0xffffff;
 
 export class CharacterSpriteTextures {
+  private readonly textures = new Map<string, THREE.CanvasTexture>();
   private readonly materials = new Map<string, THREE.MeshLambertMaterial>();
 
-  materialFor(key: string, sprite: SpriteArt): THREE.MeshLambertMaterial {
-    const cached = this.materials.get(key);
+  materialFor(key: string, sprite: SpriteArt, tint = UNTINTED): THREE.MeshLambertMaterial {
+    const tintedKey = `${key}@${tint}`;
+    const cached = this.materials.get(tintedKey);
     if (cached) return cached;
-    const material = spriteMaterial(sprite);
-    this.materials.set(key, material);
+    const material = spriteMaterial(this.textureFor(key, sprite), tint);
+    this.materials.set(tintedKey, material);
     return material;
   }
 
   dispose(): void {
-    for (const material of this.materials.values()) {
-      material.map?.dispose();
-      material.dispose();
-    }
+    for (const material of this.materials.values()) material.dispose();
+    for (const texture of this.textures.values()) texture.dispose();
     this.materials.clear();
+    this.textures.clear();
+  }
+
+  private textureFor(key: string, sprite: SpriteArt): THREE.CanvasTexture {
+    const cached = this.textures.get(key);
+    if (cached) return cached;
+    const texture = spriteTexture(sprite);
+    this.textures.set(key, texture);
+    return texture;
   }
 }

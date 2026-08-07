@@ -1,6 +1,7 @@
 import { sanitizeInventory } from '../items/inventory/sanitizeInventory';
 import { readPersistedFile, writePersistedFile } from '../persistence/repoFileStore';
 import { upgradeStoredFaceArt } from '../world/tiles/legacyFaceArt';
+import { builtInBillboard, isBuiltInBillboardArt } from './art/builtInBillboards';
 import { sanitizeCharacterBillboard } from './character/sanitizeCharacterBillboard';
 import type { CreatureDef } from './creatureDef';
 import { CREATURE, isEntityKind } from './entityKinds';
@@ -18,16 +19,29 @@ export function creaturesFromStoredJson(parsed: unknown): CreatureDef[] | null {
 }
 
 export function storeCreatures(creatures: readonly CreatureDef[]): void {
-  writePersistedFile(FILE_NAME, creatures);
+  writePersistedFile(FILE_NAME, creaturesAsStoredJson(creatures));
+}
+
+export function creaturesAsStoredJson(creatures: readonly CreatureDef[]): CreatureDef[] {
+  return creatures.map(withoutGeneratedFrames);
+}
+
+function withoutGeneratedFrames(creature: CreatureDef): CreatureDef {
+  if (!isBuiltInBillboardArt(creature.billboardArt)) return creature;
+  return { ...creature, billboard: null };
 }
 
 function withValidatedArt(creature: CreatureDef): CreatureDef {
+  const billboardArt = isBuiltInBillboardArt(creature.billboardArt) ? creature.billboardArt : null;
   return {
     ...creature,
     faceArt: upgradeStoredFaceArt(creature.faceArt),
     kind: isEntityKind(creature.kind) ? creature.kind : CREATURE,
     inventory: sanitizeInventory(creature.inventory),
-    billboard: sanitizeCharacterBillboard(creature.billboard),
+    billboardArt,
+    billboard: billboardArt
+      ? builtInBillboard(billboardArt)
+      : sanitizeCharacterBillboard(creature.billboard),
   };
 }
 

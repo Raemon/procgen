@@ -104,7 +104,7 @@ registerCharacterArtAbility({
   example: { action: 'clear_character_billboard', creature_id: 7 },
   apply: (context, params) =>
     withCreature(context, params, (creatureId) => {
-      context.creatures.update(creatureId, { billboard: null });
+      context.creatures.update(creatureId, { billboardArt: null, billboard: null });
       return abilitySucceeded(`creature ${creatureId} has no billboard sprites`);
     }),
 });
@@ -256,7 +256,7 @@ function saveBillboard(
   creatureId: number,
   billboard: CharacterBillboard | null,
 ): void {
-  context.creatures.update(creatureId, { billboard, kind: CHARACTER });
+  context.creatures.update(creatureId, { billboardArt: null, billboard, kind: CHARACTER });
 }
 
 function noBillboard(creatureId: number): AbilityResult {
