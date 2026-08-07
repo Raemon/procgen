@@ -1,6 +1,7 @@
 import { EMPTY_TILE } from '../../procgen/values/chunkValues';
 import type { WorldSampler } from '../../procgen/worldSampler';
 import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
+import { glowOfEmitter } from './selfLitGlow';
 import type { TilePlacement } from './tilePlacements';
 
 export function ceilingPlacementsForRect(
@@ -38,6 +39,7 @@ function addCeilingCell(
     baseColor: tile.color,
     shade: 1,
     faceArt: tile.faceArt,
+    glow: glowOfEmitter(tile),
     sunkenAsWater: false,
   });
 }

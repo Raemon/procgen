@@ -1,5 +1,6 @@
 import { EMPTY_TILE } from '../../procgen/values/chunkValues';
 import type { WorldSampler } from '../../procgen/worldSampler';
+import { glowOfEmitter } from './selfLitGlow';
 import type { TileDef } from '../../world/tiles/tileDef';
 import type { CubeFaceArt } from '../../world/tiles/tileFaceArt';
 import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
@@ -11,6 +12,7 @@ export interface TilePlacement {
   baseColor: string;
   shade: number;
   faceArt: CubeFaceArt | null;
+  glow: number;
   sunkenAsWater: boolean;
 }
 
@@ -93,6 +95,7 @@ function groundUnderTree(
     baseColor: grass?.color ?? FALLBACK_TREE_GROUND,
     shade: 1,
     faceArt: grass?.faceArt ?? null,
+    glow: glowOfEmitter(grass),
     sunkenAsWater: false,
   };
 }
@@ -105,5 +108,14 @@ function placement(
   shade: number,
   sunkenAsWater: boolean,
 ): TilePlacement {
-  return { x, y, elevation, baseColor: tile.color, shade, faceArt: tile.faceArt, sunkenAsWater };
+  return {
+    x,
+    y,
+    elevation,
+    baseColor: tile.color,
+    shade,
+    faceArt: tile.faceArt,
+    glow: glowOfEmitter(tile),
+    sunkenAsWater,
+  };
 }

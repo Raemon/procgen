@@ -3,6 +3,7 @@ import { BILLBOARD, LYING_FLAT, type ItemDef } from '../../items/itemDef';
 import type { SpriteArt } from '../../world/tiles/spriteArt';
 import { cubeFaceMaterials } from './faceArtMaterials';
 import { lambertFromInk } from './inkMaterial';
+import { glowOfEmitter, glowSelfLit } from './selfLitGlow';
 import { spriteMaterial, spriteTexture } from './spriteMaterial';
 
 const TOP = 2;
@@ -30,6 +31,12 @@ export function itemHalfHeight(item: ItemDef): number {
 }
 
 export function itemMaterials(item: ItemDef): THREE.Material | THREE.Material[] {
+  const surfaces = itemSurfaces(item);
+  glowSelfLit(surfaces, glowOfEmitter(item));
+  return surfaces;
+}
+
+function itemSurfaces(item: ItemDef): THREE.Material | THREE.Material[] {
   if (!isBillboard(item)) {
     return item.faceArt
       ? cubeFaceMaterials(item.faceArt, item.color)

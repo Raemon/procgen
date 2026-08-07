@@ -47,4 +47,5 @@ function showFrame(animation: PlayingFaceArt, index: number): void {
   animation.shownFrame = index;
   animation.material.map = frame.map;
   animation.material.normalMap = frame.normalMap;
+  if (animation.material.emissiveMap) animation.material.emissiveMap = frame.map;
 }

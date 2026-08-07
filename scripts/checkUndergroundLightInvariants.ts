@@ -20,6 +20,8 @@ import { WorldPresetLibrary } from '../src/procgen/presets/worldPresetLibrary';
 import { EMPTY_TILE } from '../src/procgen/values/chunkValues';
 import { WorldSampler } from '../src/procgen/worldSampler';
 import { ceilingPlacementsForRect } from '../src/views/view3d/ceilingPlacements';
+import { glowOfEmitter } from '../src/views/view3d/selfLitGlow';
+import { tilePlacementsForRect } from '../src/views/view3d/tilePlacements';
 import { itemLightSourcesInRect } from '../src/world/light/itemLightSources';
 import { clampLightRadius, emitsLight, MAX_LIGHT_RADIUS } from '../src/world/light/lightEmission';
 import { tileLightSourcesInRect } from '../src/world/light/tileLightSources';
@@ -63,6 +65,20 @@ function checkLightIsAKnobOnBlocksAndItems(check: CheckReporter): void {
     })(),
   );
   check(
+    'whatever emits light glows in its own right, since its light sits inside it',
+    (() => {
+      const torch = new ItemLibrary().byId(TORCH_ITEM_ID)!;
+      const lava = defaultTiles().find(emitsLight)!;
+      const dullStone = defaultTiles().find((tile) => !emitsLight(tile))!;
+      return glowOfEmitter(torch) > 0 && glowOfEmitter(lava) > 0 && glowOfEmitter(dullStone) === 0;
+    })(),
+  );
+  check(
+    'a brighter emitter glows harder, and none of them glow past full',
+    glowOfEmitter({ light: 2, lightInk: '#fff' }) < glowOfEmitter({ light: 8, lightInk: '#fff' }) &&
+      glowOfEmitter({ light: MAX_LIGHT_RADIUS, lightInk: '#fff' }) === 1,
+  );
+  check(
     'stored tiles and items without a light field load as dark rather than broken',
     (() => {
       const tile = tilesFromStoredJson([
@@ -76,6 +92,20 @@ function checkLightIsAKnobOnBlocksAndItems(check: CheckReporter): void {
 
 function checkTheUndergroundWorldIsRoofedAndConnected(check: CheckReporter): void {
   const { state, sampler, tileset } = undergroundWorld();
+  const lavaBlocks = tilePlacementsForRect(
+    sampler,
+    tileset,
+    -LIGHT_SCAN_SPAN,
+    -LIGHT_SCAN_SPAN,
+    LIGHT_SCAN_SPAN * 2,
+    LIGHT_SCAN_SPAN * 2,
+  ).blocks.filter(
+    (placement) => placement.faceArt === tileset.byId(LAVA_TILE)?.faceArt,
+  );
+  check(
+    'the lava seams lighting the delve are placed as glowing surfaces, not dark ones',
+    lavaBlocks.length > 0 && lavaBlocks.every((placement) => placement.glow > 0),
+  );
   check('the underground world turns the sky off entirely', state.daylight === 0);
   check(
     'every cell of the underground world has a ceiling over it',

@@ -17,6 +17,7 @@ export function markerPlacementsForRect(
       baseColor: marker.color,
       shade: 1,
       faceArt: marker.faceArt,
+      glow: 0,
       sunkenAsWater: false,
     }));
 }

@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 import { CHUNK_SIZE, chunkOrigin } from '../../procgen/chunk';
 import type { WorldSampler } from '../../procgen/worldSampler';
-import { isTransparentInk } from '../../world/tiles/inkColor';
+import { isTransparentInk, opaqueInk } from '../../world/tiles/inkColor';
 import type { CubeFaceArt } from '../../world/tiles/tileFaceArt';
 import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
 import { cubeFaceMaterials, sideFaceMaterial } from './faceArtMaterials';
 import { tileBoxGeometry } from './tileBoxGeometry';
 import { instancedTileMesh, type PlacementPosition } from './instancedTileMesh';
+import { glowSelfLit } from './selfLitGlow';
 import { ceilingPlacementsForRect } from './ceilingPlacements';
 import { markerPlacementsForRect } from './markerPlacements';
 import { tilePlacementsForRect, type TilePlacement } from './tilePlacements';
@@ -27,9 +28,10 @@ interface ShapeSpec {
   positionOf: PlacementPosition;
 }
 
-interface FaceArtGroup {
-  art: CubeFaceArt;
+interface PlacementGroup {
+  art: CubeFaceArt | null;
   baseColor: string;
+  glow: number;
   placements: TilePlacement[];
 }
 
@@ -129,43 +131,44 @@ function markerShape(): ShapeSpec {
 }
 
 function meshesForShape(placements: TilePlacement[], shape: ShapeSpec): THREE.InstancedMesh[] {
-  const { flat, artGroups } = splitByFaceArt(placements);
-  const meshes = [
-    instancedTileMesh(shape.geometry(), new THREE.MeshLambertMaterial(), flat, shape.positionOf),
-    ...artGroups.map((group) => artGroupMesh(group, shape)),
-  ];
-  return meshes.filter((mesh): mesh is THREE.InstancedMesh => mesh !== null);
+  return groupsOfLikeSurface(placements)
+    .map((group) => groupMesh(group, shape))
+    .filter((mesh): mesh is THREE.InstancedMesh => mesh !== null);
 }
 
-function artGroupMesh(group: FaceArtGroup, shape: ShapeSpec): THREE.InstancedMesh | null {
-  return instancedTileMesh(
-    shape.geometry(),
-    shape.artMaterials(group.art, group.baseColor),
-    group.placements,
-    shape.positionOf,
-  );
+function groupMesh(group: PlacementGroup, shape: ShapeSpec): THREE.InstancedMesh | null {
+  const materials = group.art
+    ? shape.artMaterials(group.art, group.baseColor)
+    : new THREE.MeshLambertMaterial();
+  glowSelfLit(materials, group.glow, opaqueInk(group.baseColor));
+  return instancedTileMesh(shape.geometry(), materials, group.placements, shape.positionOf);
 }
 
-function splitByFaceArt(placements: TilePlacement[]): {
-  flat: TilePlacement[];
-  artGroups: FaceArtGroup[];
-} {
-  const flat: TilePlacement[] = [];
-  const groups = new Map<CubeFaceArt, FaceArtGroup>();
+/** One mesh per drawing, and glowing tiles keep their own so their glow is their own. */
+function groupsOfLikeSurface(placements: TilePlacement[]): PlacementGroup[] {
+  const groups = new Map<CubeFaceArt | string, PlacementGroup>();
   for (const placement of placements) {
     if (!placement.faceArt && isTransparentInk(placement.baseColor)) continue;
-    if (placement.faceArt) addToArtGroup(groups, placement, placement.faceArt);
-    else flat.push(placement);
+    addToGroup(groups, placement);
   }
-  return { flat, artGroups: [...groups.values()] };
+  return [...groups.values()];
 }
 
-function addToArtGroup(
-  groups: Map<CubeFaceArt, FaceArtGroup>,
+function addToGroup(
+  groups: Map<CubeFaceArt | string, PlacementGroup>,
   placement: TilePlacement,
-  art: CubeFaceArt,
 ): void {
-  const group = groups.get(art) ?? { art, baseColor: placement.baseColor, placements: [] };
-  groups.set(art, group);
+  const key = placement.faceArt ?? flatSurfaceKey(placement);
+  const group = groups.get(key) ?? {
+    art: placement.faceArt,
+    baseColor: placement.baseColor,
+    glow: placement.glow,
+    placements: [],
+  };
+  groups.set(key, group);
   group.placements.push(placement);
+}
+
+function flatSurfaceKey(placement: TilePlacement): string {
+  return placement.glow > 0 ? `glowing:${placement.baseColor}:${placement.glow}` : 'unlit';
 }

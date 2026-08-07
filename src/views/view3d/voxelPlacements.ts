@@ -1,6 +1,7 @@
 import { EMPTY_TILE } from '../../procgen/values/chunkValues';
 import type { WorldSampler } from '../../procgen/worldSampler';
 import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
+import { glowOfEmitter } from './selfLitGlow';
 import { tileStandsAsSolidBlock, type TilePlacement } from './tilePlacements';
 
 export function voxelPlacementsForRect(
@@ -40,6 +41,7 @@ function collectColumn(
       baseColor: tile.color,
       shade: 1,
       faceArt: tile.faceArt,
+      glow: glowOfEmitter(tile),
       sunkenAsWater: false,
     });
   }
