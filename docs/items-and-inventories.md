@@ -113,6 +113,19 @@ off the grid, land on a dead slot, land on a slot that does not accept its tags,
 or overlap an item already placed. Resizing keeps the slot flags and tags that
 still fit and drops the items that no longer do.
 
+## Picking things up
+
+Walking onto a tile stows every item lying on it in the player character's bag —
+there is no key to press, and no way to walk past a thing and miss it. A line in
+the bottom-left corner of the world says what was picked up, or why it was not:
+a bag with no room for the item leaves it on the ground and says so. `G` runs
+the same pickup by hand, which only matters for an item a full bag refused
+earlier.
+
+`E` opens the player character's bag over the world — the same grid the editor
+draws, read-only, with everything she carries in it. `E` again or `Esc` closes
+it, and walking is suspended while it is open.
+
 ## Editing an inventory
 
 Open a character's `bag`. The grid has three modes:
@@ -149,7 +162,7 @@ The actions, all god mode:
 | `set_inventory_background` | the sprite under the grid |
 | `place_inventory_item`, `remove_inventory_item` | put items in and take them out |
 | `set_display` with `display: "items"` | scatter an item through the world from a points node |
-| `pick_up_item` (god) / `pick_up` (character) | take the item under the player into the player character's bag |
+| `pick_up_item` (god) / `pick_up` (character) | take the item under the player into the player character's bag, for anything a full bag left behind |
 
 A refused placement comes back as `placement_refused` with a hint naming which
 of the four rules stopped it.

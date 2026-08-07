@@ -8,7 +8,7 @@ import { ValueReadout } from '../controls/ValueReadout';
 import type { TooltipContent } from '../tooltips/tooltipContent';
 
 interface MotionKnob {
-  field: 'speed' | 'sight' | 'roam' | 'size';
+  field: 'speed' | 'sight' | 'roam' | 'bodyWidth' | 'bodyHeight';
   label: string;
   min: number;
   max: number;
@@ -35,12 +35,20 @@ const MOTION_KNOBS: readonly MotionKnob[] = [
     help: 'How far from its spawn cell it will stray — the wander radius, the patrol half-length, and the leash a guard returns to.',
   },
   {
-    field: 'size',
-    label: 'size',
+    field: 'bodyWidth',
+    label: 'body width',
     min: 0.2,
-    max: 2,
+    max: 4,
     step: 0.05,
-    help: 'Cube size in the 2.5D view. ASCII always draws one glyph per cell.',
+    help: 'How wide the body is, in tiles, in the 2.5D view. ASCII always draws one glyph per cell.',
+  },
+  {
+    field: 'bodyHeight',
+    label: 'body height',
+    min: 0.2,
+    max: 4,
+    step: 0.05,
+    help: 'How tall the body is, in tiles. Characters default to 2 so they stand as tall as a blocking tile. A billboard sprite is scaled uniformly to fill the body box, so it is never squashed.',
   },
 ];
 

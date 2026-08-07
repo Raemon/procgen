@@ -43,6 +43,11 @@ registerTileAbility({
     symbol: { kind: 'text', help: 'the single character this tile draws as in an observation', optional: true },
     color: { kind: 'text', help: 'a #rrggbb color, or #rrggbbaa with aa=00 for transparent', optional: true },
     walkable: { kind: 'int', help: '1 if anyone may stand on this tile, 0 if it blocks', optional: true },
+    height: {
+      kind: 'number',
+      help: 'how tall a blocking tile stands in the 3-D view, in tiles — blockers default to 2, walkable tiles are always drawn flat',
+      optional: true,
+    },
     light: {
       kind: 'number',
       help: `how far the tile lights the dark around it, in tiles (0-${MAX_LIGHT_RADIUS}); 0 means it emits no light`,
@@ -109,6 +114,8 @@ function tilePatchFrom(params: Record<string, unknown>): TilePatch {
   if (symbol !== null) patch.symbol = symbol;
   const walkable = readInt(params, 'walkable');
   if (walkable.ok) patch.walkable = walkable.value !== 0;
+  const height = readNumber(params, 'height');
+  if (height.ok && height.value > 0) patch.height = height.value;
   const light = readNumber(params, 'light');
   if (light.ok) patch.light = clampLightRadius(light.value);
   const lightInk = readText(params, 'light_ink');

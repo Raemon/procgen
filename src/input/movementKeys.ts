@@ -6,7 +6,7 @@ const MOVEMENT_KEYS: Readonly<Record<string, MovementAxis>> = {
   KeyS: 'back',
   ArrowDown: 'back',
   KeyQ: 'left',
-  KeyE: 'right',
+  KeyC: 'right',
 };
 
 export function movementAxisForKey(code: string): MovementAxis | undefined {

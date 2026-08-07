@@ -60,14 +60,21 @@ and 24 layers tall are supported.
 ## Creatures
 
 A creature definition is a look (symbol, color, optional cube art painted in the
-same pixel editor tiles use) plus a behavior and four numbers:
+same pixel editor tiles use) plus a behavior and five numbers:
 
 | knob | meaning |
 | --- | --- |
 | speed | tiles per second while moving |
 | sight | how far it notices the player |
 | roam | how far it strays from its spawn cell |
-| size | cube size in the 2.5D view |
+| body width | how wide the body is, in tiles |
+| body height | how tall the body is, in tiles |
+
+Bodies are a box, not a square: creatures default to 0.7 × 0.7 and characters to
+1 wide × 2 tall, so a character stands as tall as a blocking tile. A creature
+with no billboard is drawn as a cube of exactly that box. A billboard character
+is drawn from its sprite, scaled uniformly — never squashed — until the painted
+figure fills the body box, with its feet on the ground.
 
 `phasing` lets it ignore walls and water; otherwise creatures are blocked by
 anything the player cannot walk on, including prefab walls.

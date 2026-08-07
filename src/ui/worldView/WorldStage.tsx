@@ -3,6 +3,8 @@ import { useAppRuntime } from '../../app/appRuntimeContext';
 import { ChatComposer } from '../chat/ChatComposer';
 import { classes } from '../controls/classes';
 import { mountWorldViews, type MountedWorldViews } from './mountWorldViews';
+import { PickupNotices } from './PickupNotices';
+import { PlayerInventoryOverlay } from './PlayerInventoryOverlay';
 import { usesView3d, type ViewMode } from './viewMode';
 
 export function WorldStage({ mode }: { mode: ViewMode }) {
@@ -44,6 +46,8 @@ export function WorldStage({ mode }: { mode: ViewMode }) {
         ref={agentCharacterSlot}
         className={classes('absolute inset-0', mode !== 'agent-character' && 'hidden')}
       />
+      <PickupNotices />
+      <PlayerInventoryOverlay />
       <ChatComposer />
     </div>
   );

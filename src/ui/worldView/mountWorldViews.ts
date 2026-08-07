@@ -62,12 +62,12 @@ export function mountWorldViews(
       if (isCharacterControlled(currentMode())) perform(direction === -1 ? 'turn_left' : 'turn_right');
       else if (currentMode() === '3d-god') view3d.rotate(direction);
     },
-    isSuspended: () => runtime.chatComposer.isOpen(),
+    isSuspended: () => inputIsSuspended(runtime),
   });
 
   const pickUp = new PickUpInput({
     pickUp: () => perform(isCharacterControlled(currentMode()) ? 'pick_up' : 'pick_up_item'),
-    isSuspended: () => runtime.chatComposer.isOpen(),
+    isSuspended: () => inputIsSuspended(runtime),
   });
 
   // The 2.5D view re-reads the sight radius every frame; the ASCII views only redraw when asked.
@@ -80,12 +80,17 @@ export function mountWorldViews(
     if (runtime.chatComposer.isOpen()) movement.releaseHeldKeys();
   });
 
+  const stopWalkingWhileBagIsOpen = runtime.playerInventoryPanel.subscribe(() => {
+    if (runtime.playerInventoryPanel.isOpen()) movement.releaseHeldKeys();
+  });
+
   runtime.applyWorldChange();
 
   return {
     dispose: () => {
       redrawOnSightChange();
       stopWalkingWhileTyping();
+      stopWalkingWhileBagIsOpen();
       movement.dispose();
       pickUp.dispose();
       for (const remove of unregister) remove();
@@ -98,6 +103,10 @@ export function mountWorldViews(
       view3d.setCameraStyle(mode === 'character' ? 'character' : 'god');
     },
   };
+}
+
+function inputIsSuspended(runtime: AppRuntime): boolean {
+  return runtime.chatComposer.isOpen() || runtime.playerInventoryPanel.isOpen();
 }
 
 function worldViewDepsOf(runtime: AppRuntime): WorldViewDeps {

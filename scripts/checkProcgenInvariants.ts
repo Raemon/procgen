@@ -5,6 +5,7 @@ import { checkPlayerCharacterInvariants } from './checkPlayerCharacterInvariants
 import { checkLandmarkAndCeilingInvariants } from './checkLandmarkAndCeilingInvariants';
 import { checkUndergroundLightInvariants } from './checkUndergroundLightInvariants';
 import { checkPrefabAndCreatureInvariants } from './checkPrefabAndCreatureInvariants';
+import { checkTileHeightInvariants } from './checkTileHeightInvariants';
 import { cameraRelativeStep } from '../src/input/cameraRelativeStep';
 import { PipelineEvaluator } from '../src/procgen/eval/evaluator';
 import { allNodeTypes } from '../src/procgen/nodeRegistry';
@@ -1972,6 +1973,7 @@ checkPrefabAndCreatureInvariants(check);
 checkItemAndInventoryInvariants(check);
 checkCharacterBillboardInvariants(check);
 checkPlayerCharacterInvariants(check);
+checkTileHeightInvariants(check);
 checkLandmarkAndCeilingInvariants(check);
 checkUndergroundLightInvariants(check);
 

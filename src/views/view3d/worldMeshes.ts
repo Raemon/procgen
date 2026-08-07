@@ -5,9 +5,13 @@ import { isTransparentInk, opaqueInk } from '../../world/tiles/inkColor';
 import type { CubeFaceArt } from '../../world/tiles/tileFaceArt';
 import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
 import { cubeFaceMaterials, sideFaceMaterial } from './faceArtMaterials';
-import { tileBoxGeometry } from './tileBoxGeometry';
-import { instancedTileMesh, type PlacementPosition } from './instancedTileMesh';
+import {
+  instancedTileMesh,
+  type PlacementPosition,
+  type PlacementVerticalScale,
+} from './instancedTileMesh';
 import { glowSelfLit } from './selfLitGlow';
+import { tileBoxGeometry } from './tileBoxGeometry';
 import { ceilingPlacementsForRect } from './ceilingPlacements';
 import { markerPlacementsForRect } from './markerPlacements';
 import { tilePlacementsForRect, type TilePlacement } from './tilePlacements';
@@ -17,8 +21,7 @@ export { disposeMeshChildren } from './disposeMeshResources';
 
 const FLOOR_THICKNESS = 0.1;
 const WATER_DROP = 0.22;
-const BLOCK_HEIGHT = 1;
-const TREE_HEIGHT = 1.4;
+const BLOCK_LAYER_HEIGHT = 1;
 const MARKER_HEIGHT = 0.7;
 export const CEILING_GROUP_NAME = 'ceiling';
 
@@ -26,6 +29,7 @@ interface ShapeSpec {
   geometry(): THREE.BufferGeometry;
   artMaterials(art: CubeFaceArt, baseColor: string): THREE.Material | THREE.Material[];
   positionOf: PlacementPosition;
+  verticalScaleOf?: PlacementVerticalScale;
 }
 
 interface PlacementGroup {
@@ -80,17 +84,17 @@ function ceilingGroup(
 
 function ceilingShape(): ShapeSpec {
   return {
-    geometry: () => tileBoxGeometry(1, BLOCK_HEIGHT, 1),
+    geometry: () => tileBoxGeometry(1, BLOCK_LAYER_HEIGHT, 1),
     artMaterials: cubeFaceMaterials,
-    positionOf: (p) => [p.x + 0.5, p.elevation + BLOCK_HEIGHT / 2, p.y + 0.5],
+    positionOf: (p) => [p.x + 0.5, p.elevation + BLOCK_LAYER_HEIGHT / 2, p.y + 0.5],
   };
 }
 
 function voxelShape(): ShapeSpec {
   return {
-    geometry: () => tileBoxGeometry(1, BLOCK_HEIGHT, 1),
+    geometry: () => tileBoxGeometry(1, BLOCK_LAYER_HEIGHT, 1),
     artMaterials: cubeFaceMaterials,
-    positionOf: (p) => [p.x + 0.5, p.elevation + BLOCK_HEIGHT / 2, p.y + 0.5],
+    positionOf: (p) => [p.x + 0.5, p.elevation + BLOCK_LAYER_HEIGHT / 2, p.y + 0.5],
   };
 }
 
@@ -108,17 +112,18 @@ function floorShape(): ShapeSpec {
 
 function blockShape(): ShapeSpec {
   return {
-    geometry: () => tileBoxGeometry(0.95, BLOCK_HEIGHT, 0.95),
+    geometry: () => tileBoxGeometry(0.95, BLOCK_LAYER_HEIGHT, 0.95),
     artMaterials: cubeFaceMaterials,
-    positionOf: (p) => [p.x + 0.5, p.elevation + BLOCK_HEIGHT / 2, p.y + 0.5],
+    positionOf: (p) => [p.x + 0.5, p.elevation + BLOCK_LAYER_HEIGHT / 2, p.y + 0.5],
   };
 }
 
 function treeShape(): ShapeSpec {
   return {
-    geometry: () => new THREE.ConeGeometry(0.42, TREE_HEIGHT, 7),
+    geometry: () => new THREE.ConeGeometry(0.42, 1, 7),
     artMaterials: sideFaceMaterial,
-    positionOf: (p) => [p.x + 0.5, p.elevation + TREE_HEIGHT / 2, p.y + 0.5],
+    positionOf: (p) => [p.x + 0.5, p.elevation + p.height / 2, p.y + 0.5],
+    verticalScaleOf: (p) => p.height,
   };
 }
 
@@ -141,7 +146,13 @@ function groupMesh(group: PlacementGroup, shape: ShapeSpec): THREE.InstancedMesh
     ? shape.artMaterials(group.art, group.baseColor)
     : new THREE.MeshLambertMaterial();
   glowSelfLit(materials, group.glow, opaqueInk(group.baseColor));
-  return instancedTileMesh(shape.geometry(), materials, group.placements, shape.positionOf);
+  return instancedTileMesh(
+    shape.geometry(),
+    materials,
+    group.placements,
+    shape.positionOf,
+    shape.verticalScaleOf,
+  );
 }
 
 /** One mesh per drawing, and glowing tiles keep their own so their glow is their own. */

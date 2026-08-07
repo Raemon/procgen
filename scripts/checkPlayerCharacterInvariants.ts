@@ -14,10 +14,13 @@ import {
   CHARACTER_ROTATIONS,
   framesOf,
 } from '../src/creatures/character/characterBillboard';
+import { billboardFigureExtent } from '../src/creatures/character/billboardFigureExtent';
+import { CHARACTER_BODY, type CreatureDef } from '../src/creatures/creatureDef';
 import { CreatureLibrary } from '../src/creatures/creatureLibrary';
 import { creaturesAsStoredJson, creaturesFromStoredJson } from '../src/creatures/creatureStorage';
 import { CHARACTER } from '../src/creatures/entityKinds';
 import { playerCharacterDef, PLAYER_CHARACTER_ID } from '../src/creatures/playerCharacter';
+import { characterQuadFit } from '../src/views/view3d/characterQuadFit';
 import { isSpriteArt, spriteGridSize } from '../src/world/tiles/spriteArt';
 import { FACE_ART_SIZES, isCubeFaceArt, MAX_FACE_ART_SIZE } from '../src/world/tiles/tileFaceArt';
 import type { CheckReporter } from './checkCharacterBillboardInvariants';
@@ -127,7 +130,15 @@ function checkPlayersAreDrawnAsACharacter(check: CheckReporter): void {
   );
   check(
     'the player character has sprites to draw, so no capsule is needed',
-    player.billboard !== null && player.size > 1,
+    player.billboard !== null && player.bodyHeight > 1,
+  );
+  check(
+    'the player character stands two tiles tall, as tall as a blocking tile',
+    player.bodyHeight === CHARACTER_BODY.height && player.bodyWidth === CHARACTER_BODY.width,
+  );
+  check(
+    'the dwarf sprite is drawn body-height tall, undistorted, feet on the ground',
+    playerFigureFillsItsBodyBox(player),
   );
   check(
     'a library with no dwarf still resolves some character for the player',
@@ -136,6 +147,21 @@ function checkPlayersAreDrawnAsACharacter(check: CheckReporter): void {
         creatures.all().filter((creature) => creature.billboardArt !== MOONLIT_DWARF_ART),
       ),
     )?.kind === CHARACTER,
+  );
+}
+
+function playerFigureFillsItsBodyBox(player: CreatureDef): boolean {
+  const billboard = player.billboard;
+  const extent = billboard && billboardFigureExtent(billboard);
+  if (!billboard || !extent) return false;
+  const fit = characterQuadFit(player, billboard);
+  const unitsPerCell = fit.quadHeight / extent.gridSize;
+  const feetHeight =
+    fit.centerHeightAboveFeet - fit.quadHeight / 2 + extent.cellsBelowFeet * unitsPerCell;
+  return (
+    fit.quadWidth === fit.quadHeight &&
+    Math.abs(extent.heightCells * unitsPerCell - player.bodyHeight) < 1e-9 &&
+    Math.abs(feetHeight) < 1e-9
   );
 }
 

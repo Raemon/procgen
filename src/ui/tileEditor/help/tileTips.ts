@@ -28,6 +28,11 @@ export function walkableTip(tile: TileDef): TooltipContent {
   };
 }
 
+export const TILE_HEIGHT_TIP: TooltipContent = {
+  title: 'height',
+  body: 'How tall the tile stands in the 3-D view, in tiles. Only blocking tiles stand up — walkable tiles are drawn as floor whatever this says. Blockers default to 2 so a character cannot see over them.',
+};
+
 export function deleteTileTip(tile: TileDef): TooltipContent {
   return {
     title: `delete ${tile.name}`,

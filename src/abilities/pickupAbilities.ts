@@ -1,7 +1,4 @@
-import { playerCharacterDef } from '../creatures/playerCharacter';
-import { firstOpenPlacement } from '../items/inventory/firstOpenPlacement';
-import { withItemPlaced } from '../items/inventory/inventoryPlacement';
-import type { ItemSpawn } from '../procgen/worldSampler';
+import { stowSpawnedItem } from '../items/pickups/stowItems';
 import {
   abilityFailed,
   abilitySucceeded,
@@ -12,11 +9,11 @@ import {
 import { registerAbility } from './abilityRegistry';
 
 const PICK_UP_DESCRIPTION =
-  'Pick up the item lying on the tile you stand on and put it in the player character\'s bag. Carrying an item that emits light lights the way wherever you walk.';
+  'Pick up the item lying on the tile you stand on and put it in the player character\'s bag. Walking onto a tile already stows whatever lies there, so this only matters for an item the bag had no room for earlier. Carrying an item that emits light lights the way wherever you walk.';
 
 const PICK_UP_ACTIONS: readonly { action: string; mode: AbilityMode; humanControl: string }[] = [
-  { action: 'pick_up_item', mode: 'god', humanControl: 'G, while driving the world camera' },
-  { action: 'pick_up', mode: 'character', humanControl: 'G' },
+  { action: 'pick_up_item', mode: 'god', humanControl: 'automatic on walking over it, or G' },
+  { action: 'pick_up', mode: 'character', humanControl: 'automatic on walking over it, or G' },
 ];
 
 for (const spec of PICK_UP_ACTIONS) {
@@ -39,22 +36,8 @@ function pickUpItemUnderActor(context: AbilityContext): AbilityResult {
   if (!spawn) {
     return abilityFailed('nothing_to_pick_up', `no item lies at (${pose.x},${pose.y})`);
   }
-  return stowSpawnedItem(context, spawn);
-}
-
-function stowSpawnedItem(context: AbilityContext, spawn: ItemSpawn): AbilityResult {
-  const carrier = playerCharacterDef(context.creatures);
-  const item = context.items.byId(spawn.itemId);
-  if (!carrier?.inventory || !item) {
-    return abilityFailed('no_inventory', 'the player character has no bag to put an item in');
-  }
-  const slot = firstOpenPlacement(carrier.inventory, context.items, item);
-  if (!slot) {
-    return abilityFailed('placement_refused', `no free slot in the bag fits ${item.name}`);
-  }
-  context.creatures.update(carrier.id, {
-    inventory: withItemPlaced(carrier.inventory, item, slot.x, slot.y),
-  });
-  context.groundItems.take(spawn);
-  return abilitySucceeded(`picked up ${item.name} into slot ${slot.x},${slot.y}`);
+  const outcome = stowSpawnedItem(context, spawn);
+  return outcome.ok
+    ? abilitySucceeded(`picked up ${outcome.itemName} into slot ${outcome.slotX},${outcome.slotY}`)
+    : abilityFailed(outcome.code, outcome.hint);
 }

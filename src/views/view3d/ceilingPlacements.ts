@@ -4,6 +4,8 @@ import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
 import { glowOfEmitter } from './selfLitGlow';
 import type { TilePlacement } from './tilePlacements';
 
+const CEILING_LAYER_HEIGHT = 1;
+
 export function ceilingPlacementsForRect(
   sampler: WorldSampler,
   tileset: ReadOnlyTileset,
@@ -36,6 +38,7 @@ function addCeilingCell(
     x,
     y,
     elevation: sampler.elevationAt(x, y) + sampler.ceilingHeightAt(x, y),
+    height: CEILING_LAYER_HEIGHT,
     baseColor: tile.color,
     shade: 1,
     faceArt: tile.faceArt,

@@ -28,6 +28,10 @@ export function slotTip(x: number, y: number, usable: boolean, tags: readonly st
   };
 }
 
+export function carriedItemTip(name: string, width: number, height: number): TooltipContent {
+  return { title: name, body: `Takes ${width}×${height} slots of the bag.` };
+}
+
 export function placedItemTip(name: string, width: number, height: number): TooltipContent {
   return { title: name, body: `Takes ${width}×${height} slots. Click to take it back out.` };
 }

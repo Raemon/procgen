@@ -5,6 +5,9 @@ import type { CubeFaceArt } from '../world/tiles/tileFaceArt';
 import { WANDER } from './behaviorKinds';
 import { CHARACTER, CREATURE } from './entityKinds';
 
+export const CREATURE_BODY = { width: 0.7, height: 0.7 };
+export const CHARACTER_BODY = { width: 1, height: 2 };
+
 export interface CreatureDef {
   id: number;
   name: string;
@@ -15,7 +18,8 @@ export interface CreatureDef {
   speed: number;
   sight: number;
   roam: number;
-  size: number;
+  bodyWidth: number;
+  bodyHeight: number;
   phasing: 0 | 1;
   kind: number;
   inventory: InventoryDef | null;
@@ -34,7 +38,8 @@ export function newCreatureWithId(id: number): CreatureDef {
     speed: 1.5,
     sight: 8,
     roam: 6,
-    size: 0.7,
+    bodyWidth: CREATURE_BODY.width,
+    bodyHeight: CREATURE_BODY.height,
     phasing: 0,
     kind: CREATURE,
     inventory: null,
@@ -49,7 +54,8 @@ export function newCharacterWithId(id: number): CreatureDef {
     name: `character ${id}`,
     symbol: 'C',
     color: '#8ab4e8',
-    size: 0.8,
+    bodyWidth: CHARACTER_BODY.width,
+    bodyHeight: CHARACTER_BODY.height,
     kind: CHARACTER,
     inventory: blankInventory(),
     billboardArt: BLANK_CHARACTER_ART,

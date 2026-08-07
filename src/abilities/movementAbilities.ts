@@ -15,7 +15,7 @@ FACING_NAMES.forEach((name, compass) => {
     action: `step_${name}`,
     mode: 'god',
     group: 'movement',
-    humanControl: 'W/S/Q/E or ↑/↓, camera-relative',
+    humanControl: 'W/S/Q/C or ↑/↓, camera-relative',
     description: `Step one tile ${name}.`,
     params: {},
     example: { action: `step_${name}` },
@@ -54,7 +54,7 @@ const CHARACTER_STEPS: readonly {
   },
   {
     action: 'strafe_right',
-    humanControl: 'E',
+    humanControl: 'C',
     description: 'Step one tile to your right without turning.',
     forward: 0,
     strafe: 1,

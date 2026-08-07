@@ -3,8 +3,8 @@ import { readPersistedFile, writePersistedFile } from '../persistence/repoFileSt
 import { upgradeStoredFaceArt } from '../world/tiles/legacyFaceArt';
 import { builtInBillboard, isBuiltInBillboardArt } from './art/builtInBillboards';
 import { sanitizeCharacterBillboard } from './character/sanitizeCharacterBillboard';
-import type { CreatureDef } from './creatureDef';
-import { CREATURE, isEntityKind } from './entityKinds';
+import { CHARACTER_BODY, CREATURE_BODY, type CreatureDef } from './creatureDef';
+import { CHARACTER, CREATURE, isEntityKind } from './entityKinds';
 
 const FILE_NAME = 'creatures';
 
@@ -31,18 +31,38 @@ function withoutGeneratedFrames(creature: CreatureDef): CreatureDef {
   return { ...creature, billboard: null };
 }
 
-function withValidatedArt(creature: CreatureDef): CreatureDef {
+function withValidatedArt(stored: CreatureDef): CreatureDef {
+  const { size, ...creature } = stored as CreatureDef & { size?: unknown };
   const billboardArt = isBuiltInBillboardArt(creature.billboardArt) ? creature.billboardArt : null;
+  const kind = isEntityKind(creature.kind) ? creature.kind : CREATURE;
   return {
     ...creature,
+    ...bodySizeOfStoredCreature(creature, kind, size),
     faceArt: upgradeStoredFaceArt(creature.faceArt),
-    kind: isEntityKind(creature.kind) ? creature.kind : CREATURE,
+    kind,
     inventory: sanitizeInventory(creature.inventory),
     billboardArt,
     billboard: billboardArt
       ? builtInBillboard(billboardArt)
       : sanitizeCharacterBillboard(creature.billboard),
   };
+}
+
+function bodySizeOfStoredCreature(
+  creature: CreatureDef,
+  kind: number,
+  legacySize: unknown,
+): { bodyWidth: number; bodyHeight: number } {
+  const body = kind === CHARACTER ? CHARACTER_BODY : CREATURE_BODY;
+  const legacyCube = kind === CHARACTER ? null : positiveNumber(legacySize);
+  return {
+    bodyWidth: positiveNumber(creature.bodyWidth) ?? legacyCube ?? body.width,
+    bodyHeight: positiveNumber(creature.bodyHeight) ?? legacyCube ?? body.height,
+  };
+}
+
+function positiveNumber(value: unknown): number | null {
+  return typeof value === 'number' && value > 0 ? value : null;
 }
 
 function isCreatureDef(value: unknown): value is CreatureDef {
