@@ -5,11 +5,12 @@ import { markerAppearance } from './display/markerAppearance';
 import type { PipelineEvaluator } from './eval/evaluator';
 import type { NodeInstance } from './pipeline/pipelineState';
 import type { PipelineStore } from './pipeline/pipelineStore';
-import { groundVoxelOf, topVoxelOf, type VoxelColumn } from './prefabOverlay/chunkVoxelColumns';
+import { topVoxelOf, type VoxelColumn } from './prefabOverlay/chunkVoxelColumns';
 import { PrefabOverlay, NO_PREFABS, type PrefabSource } from './prefabOverlay/prefabOverlay';
 import type { PrefabPlacement } from './prefabOverlay/prefabPlacement';
-import { EMPTY_TILE } from './values/chunkValues';
-import { asField, asPoints, asTiles } from './values/valueAccess';
+import { buildSampledChunk } from './sampling/buildSampledChunk';
+import { SampledChunkCache, type SampledChunk } from './sampling/sampledChunkCache';
+import { asPoints } from './values/valueAccess';
 
 export interface Marker {
   x: number;
@@ -29,8 +30,12 @@ export interface CreatureSpawn {
 
 type DisplayedMode = 'tileLayer' | 'elevation' | 'markers' | 'prefabs' | 'creatures';
 
+const SAMPLED_CHUNKS_KEPT = 512;
+
 export class WorldSampler {
   private readonly prefabOverlay: PrefabOverlay;
+  private readonly sampledChunks = new SampledChunkCache(SAMPLED_CHUNKS_KEPT);
+  private readonly displayedByMode = new Map<DisplayedMode, NodeInstance[]>();
 
   constructor(
     private readonly store: PipelineStore,
@@ -41,19 +46,20 @@ export class WorldSampler {
     this.prefabOverlay = new PrefabOverlay(prefabs, (chunkX, chunkY) =>
       this.prefabPlacementsInChunk(chunkX, chunkY),
     );
+    store.onChange(() => this.dropSampledState());
   }
 
   invalidatePrefabOverlay(): void {
     this.prefabOverlay.invalidate();
+    this.sampledChunks.clear();
   }
 
   tileAt(x: number, y: number): number {
-    const ground = groundVoxelOf(this.voxelColumnAt(x, y));
-    return ground === EMPTY_TILE ? this.tileFromLayers(x, y) : ground;
+    return this.sampledChunkOfCell(x, y).tiles[cellIndexInChunk(x, y)]!;
   }
 
   voxelColumnAt(x: number, y: number): VoxelColumn | null {
-    return this.prefabOverlay.columnAt(x, y);
+    return this.sampledChunkOfCell(x, y).columns.columnAt(cellIndexInChunk(x, y));
   }
 
   topVoxelAt(x: number, y: number): number {
@@ -61,11 +67,7 @@ export class WorldSampler {
   }
 
   elevationAt(x: number, y: number): number {
-    const bound = this.displayedNodes('elevation');
-    const node = bound[bound.length - 1];
-    if (!node || node.display.mode !== 'elevation') return 0;
-    const field = asField(this.chunkValueAt(node, x, y));
-    return (field?.[cellIndexInChunk(x, y)] ?? 0) * node.display.heightScale;
+    return this.sampledChunkOfCell(x, y).elevation[cellIndexInChunk(x, y)]!;
   }
 
   markersIn(minX: number, minY: number, maxX: number, maxY: number): Marker[] {
@@ -88,13 +90,29 @@ export class WorldSampler {
     return spawns;
   }
 
-  private tileFromLayers(x: number, y: number): number {
-    let tile = EMPTY_TILE;
-    for (const node of this.displayedNodes('tileLayer')) {
-      const layerTile = this.tileFromNode(node, x, y);
-      if (layerTile !== EMPTY_TILE) tile = layerTile;
-    }
-    return tile;
+  private sampledChunkOfCell(x: number, y: number): SampledChunk {
+    const chunkX = chunkCoordOfCell(x);
+    const chunkY = chunkCoordOfCell(y);
+    return this.sampledChunks.at(chunkX, chunkY, () =>
+      buildSampledChunk(
+        this.evaluator,
+        this.displayedNodes('tileLayer'),
+        this.lastElevationNode(),
+        this.prefabOverlay.columnsForChunk(chunkX, chunkY),
+        chunkX,
+        chunkY,
+      ),
+    );
+  }
+
+  private lastElevationNode(): NodeInstance | undefined {
+    const bound = this.displayedNodes('elevation');
+    return bound[bound.length - 1];
+  }
+
+  private dropSampledState(): void {
+    this.sampledChunks.clear();
+    this.displayedByMode.clear();
   }
 
   private prefabPlacementsInChunk(chunkX: number, chunkY: number): PrefabPlacement[] {
@@ -109,16 +127,13 @@ export class WorldSampler {
   }
 
   private displayedNodes(mode: DisplayedMode): NodeInstance[] {
-    return this.store.nodes().filter((node) => node.enabled && node.display.mode === mode);
-  }
-
-  private tileFromNode(node: NodeInstance, x: number, y: number): number {
-    const tiles = asTiles(this.chunkValueAt(node, x, y));
-    return tiles?.[cellIndexInChunk(x, y)] ?? EMPTY_TILE;
-  }
-
-  private chunkValueAt(node: NodeInstance, x: number, y: number) {
-    return this.evaluator.valueFor(node.id, chunkCoordOfCell(x), chunkCoordOfCell(y));
+    const memoized = this.displayedByMode.get(mode);
+    if (memoized) return memoized;
+    const nodes = this.store
+      .nodes()
+      .filter((node) => node.enabled && node.display.mode === mode);
+    this.displayedByMode.set(mode, nodes);
+    return nodes;
   }
 
   private pointsInRect(

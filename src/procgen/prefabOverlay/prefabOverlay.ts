@@ -38,7 +38,7 @@ export class PrefabOverlay {
     return this.columnsForChunk(chunkX, chunkY).columnAt(cellY * CHUNK_SIZE + cellX);
   }
 
-  private columnsForChunk(chunkX: number, chunkY: number): ChunkVoxelColumns {
+  columnsForChunk(chunkX: number, chunkY: number): ChunkVoxelColumns {
     const key = chunkKey(chunkX, chunkY);
     const cached = this.cache.get(key);
     if (cached) return cached;
