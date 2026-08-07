@@ -1,5 +1,3 @@
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
 import '../../procgen/nodes';
 import { CreatureLibrary } from '../../creatures/creatureLibrary';
 import { creaturesFromStoredJson } from '../../creatures/creatureStorage';
@@ -43,45 +41,50 @@ export interface WorldAccess {
   persistWorld(world: ServerWorld): void;
 }
 
-export function persistWorld(root: string, world: ServerWorld): void {
-  mkdirSync(join(root, 'data'), { recursive: true });
-  writeDataFile(root, 'pipeline', world.store.snapshot());
-  writeDataFile(root, 'tileset', world.tileset.all());
-  writeDataFile(root, 'prefabs', world.prefabs.all());
-  writeDataFile(root, 'creatures', world.creatures.all());
-  writeDataFile(root, 'items', world.items.all());
-  writeDataFile(root, 'templates', world.templates.savedTemplates());
-  writeDataFile(root, 'worldPresets', world.worldPresets.savedPresets());
+/** Reads persisted docs. `stamp` changes whenever any doc does, so a cached world knows to rebuild. */
+export interface DocSource {
+  read(name: string): unknown;
+  stamp(): string;
 }
 
-function writeDataFile(root: string, name: string, value: unknown): void {
-  writeFileSync(dataFilePath(root, name), JSON.stringify(value, null, 2) + '\n');
+export interface DocSink {
+  write(name: string, json: unknown): void;
 }
 
-export function currentServerWorld(root: string, previous: ServerWorld | null): ServerWorld {
-  const stamp = dataFileStamp(root);
+export function persistWorld(docs: DocSink, world: ServerWorld): void {
+  docs.write('pipeline', world.store.snapshot());
+  docs.write('tileset', world.tileset.all());
+  docs.write('prefabs', world.prefabs.all());
+  docs.write('creatures', world.creatures.all());
+  docs.write('items', world.items.all());
+  docs.write('templates', world.templates.savedTemplates());
+  docs.write('worldPresets', world.worldPresets.savedPresets());
+}
+
+export function currentServerWorld(docs: DocSource, previous: ServerWorld | null): ServerWorld {
+  const stamp = docs.stamp();
   if (previous && previous.stamp === stamp) return previous;
-  return buildServerWorld(root, stamp, previous?.randomizeHistory ?? new RandomizeHistory());
+  return buildServerWorld(docs, stamp, previous?.randomizeHistory ?? new RandomizeHistory());
 }
 
 function buildServerWorld(
-  root: string,
+  docs: DocSource,
   stamp: string,
   randomizeHistory: RandomizeHistory,
 ): ServerWorld {
-  const tileset = new Tileset(tilesFromStoredJson(dataFileJson(root, 'tileset')) ?? undefined);
+  const tileset = new Tileset(tilesFromStoredJson(docs.read('tileset')) ?? undefined);
   const tileIdByName = (name: string) => tileset.all().find((tile) => tile.name === name)?.id ?? -1;
   const prefabs = new PrefabLibrary(
     tileIdByName,
-    prefabsFromStoredJson(dataFileJson(root, 'prefabs')) ?? undefined,
+    prefabsFromStoredJson(docs.read('prefabs')) ?? undefined,
   );
   const creatures = new CreatureLibrary(
-    creaturesFromStoredJson(dataFileJson(root, 'creatures')) ?? undefined,
+    creaturesFromStoredJson(docs.read('creatures')) ?? undefined,
   );
-  const items = new ItemLibrary(itemsFromStoredJson(dataFileJson(root, 'items')) ?? undefined);
-  const templates = new TemplateLibrary(sanitizeTemplates(dataFileJson(root, 'templates')));
-  const worldPresets = new WorldPresetLibrary(sanitizeWorldPresets(dataFileJson(root, 'worldPresets')));
-  const store = new PipelineStore(sanitizePipeline(dataFileJson(root, 'pipeline')));
+  const items = new ItemLibrary(itemsFromStoredJson(docs.read('items')) ?? undefined);
+  const templates = new TemplateLibrary(sanitizeTemplates(docs.read('templates')));
+  const worldPresets = new WorldPresetLibrary(sanitizeWorldPresets(docs.read('worldPresets')));
+  const store = new PipelineStore(sanitizePipeline(docs.read('pipeline')));
   const evaluator = new PipelineEvaluator(store);
   const sampler = new WorldSampler(store, evaluator, tileset, prefabs, items);
   const isWalkable = (x: number, y: number) => isWalkableTile(tileset, sampler.tileAt(x, y));
@@ -101,27 +104,3 @@ function buildServerWorld(
   };
 }
 
-function dataFileStamp(root: string): string {
-  return ['pipeline', 'tileset', 'prefabs', 'creatures', 'items', 'templates', 'worldPresets']
-    .map((name) => String(dataFileMtime(root, name)))
-    .join('|');
-}
-
-function dataFileMtime(root: string, name: string): number {
-  const path = dataFilePath(root, name);
-  return existsSync(path) ? statSync(path).mtimeMs : 0;
-}
-
-function dataFileJson(root: string, name: string): unknown {
-  const path = dataFilePath(root, name);
-  if (!existsSync(path)) return null;
-  try {
-    return JSON.parse(readFileSync(path, 'utf8'));
-  } catch {
-    return null;
-  }
-}
-
-function dataFilePath(root: string, name: string): string {
-  return join(root, 'data', `${name}.json`);
-}

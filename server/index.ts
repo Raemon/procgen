@@ -16,16 +16,16 @@ import { serveStatic } from './http/staticFiles';
 import type { Connection } from './net/connection';
 import { attachWebSocket } from './net/wsServer';
 import { initStore } from './persist/db';
-import { materializeDocsFromDb } from './persist/docsRepo';
+import { createDocStore } from './persist/docsRepo';
 import { WriteBehind } from './persist/writeBehind';
 
 async function main(): Promise<void> {
   const config = loadServerConfig();
   const store = await initStore(config.databaseUrl);
-  await materializeDocsFromDb(store, config.root);
+  const docs = await createDocStore(store, config.root);
 
   const agentState = newAgentApiState();
-  const worldHost = createWorldHost(agentState, config.root);
+  const worldHost = createWorldHost(agentState, docs);
   const registry = new EntityRegistry();
   const connections = new Set<Connection>();
   const feed = new SnapshotFeed(connections, registry);
@@ -33,11 +33,11 @@ async function main(): Promise<void> {
   const writeBehind = new WriteBehind(store, registry);
   const agentSync = new AgentEntitySync(agentState.sessions, registry);
   const loop = new GameLoop(registry, worldHost, feed, agentSync);
-  const docSyncDeps: DocSyncDeps = { store, root: config.root, connections, registry, worldHost };
+  const docSyncDeps: DocSyncDeps = { connections, registry, worldHost };
 
   const router = new Router();
-  mountPersistRoutes(router, docSyncDeps);
-  mountAgentApi(router, agentState, config.root, () => afterWorldPersistedByAgent(docSyncDeps));
+  mountPersistRoutes(router, docs, docSyncDeps);
+  mountAgentApi(router, agentState, docs, () => afterWorldPersistedByAgent(docSyncDeps));
   router.get('/healthz', (_req, res) =>
     sendJson(res, 200, {
       ok: true,

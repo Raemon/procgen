@@ -3,6 +3,8 @@ import { handleApiRequest } from './handlers';
 import {
   currentServerWorld,
   persistWorld,
+  type DocSink,
+  type DocSource,
   type ServerWorld,
   type WorldAccess,
 } from './serverWorld';
@@ -19,13 +21,13 @@ export function newAgentApiState(): AgentApiState {
 
 export async function serveAgentApi(
   state: AgentApiState,
-  root: string,
+  docs: DocSource & DocSink,
   req: IncomingMessage,
   res: ServerResponse,
   onPipelinePersisted?: () => void,
 ): Promise<void> {
   const url = new URL(req.url ?? '/', 'http://localhost');
-  const response = handleApiRequest(state.sessions, worldAccess(state, root, onPipelinePersisted), {
+  const response = handleApiRequest(state.sessions, worldAccess(state, docs, onPipelinePersisted), {
     method: req.method ?? 'GET',
     path: url.pathname.replace(/^\/api\/v1/, '') || '/',
     query: url.searchParams,
@@ -38,16 +40,16 @@ export async function serveAgentApi(
 
 function worldAccess(
   state: AgentApiState,
-  root: string,
+  docs: DocSource & DocSink,
   onPipelinePersisted?: () => void,
 ): WorldAccess {
   return {
     current: () => {
-      state.world = currentServerWorld(root, state.world);
+      state.world = currentServerWorld(docs, state.world);
       return state.world;
     },
     persistWorld: (world) => {
-      persistWorld(root, world);
+      persistWorld(docs, world);
       onPipelinePersisted?.();
     },
   };
