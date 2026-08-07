@@ -14,7 +14,10 @@ export function disposeMaterials(material: THREE.Material | THREE.Material[]): v
   }
 }
 
-export function disposeMeshResources(mesh: THREE.Mesh): void {
+export function disposeMeshResources(
+  mesh: THREE.Mesh,
+  options: { keepMaterials?: boolean } = {},
+): void {
   mesh.geometry.dispose();
-  disposeMaterials(mesh.material);
+  if (!options.keepMaterials) disposeMaterials(mesh.material);
 }

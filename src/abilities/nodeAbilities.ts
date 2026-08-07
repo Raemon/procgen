@@ -208,7 +208,7 @@ registerNodeAbility({
     height_scale: { kind: 'number', help: 'elevation only: world height per field unit', optional: true },
     tile_id: { kind: 'int', help: 'markers only: a tileset id to draw, or -1 for the glyph', optional: true },
     glyph: { kind: 'text', help: 'markers only: a single character', optional: true },
-    color: { kind: 'text', help: 'markers only: a #rrggbb color', optional: true },
+    color: { kind: 'text', help: 'markers only: a #rrggbb color, or #rrggbbaa with aa=00 for transparent', optional: true },
     prefab_id: {
       kind: 'int',
       help: 'prefabs only: a prefab id to stamp at each point — see GET /api/v1/prefabs',

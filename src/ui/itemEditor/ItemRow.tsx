@@ -4,7 +4,8 @@ import { BILLBOARD, renderLabel, type ItemDef } from '../../items/itemDef';
 import { Button } from '../controls/Button';
 import { IconButton } from '../controls/IconButton';
 import { classes } from '../controls/classes';
-import { COLOR_INPUT_CLASSES, FIELD_CLASSES } from '../controls/fieldClasses';
+import { ColorField } from '../controls/ColorField';
+import { FIELD_CLASSES } from '../controls/fieldClasses';
 import { PixelArtEditor } from '../pixelArtEditor/PixelArtEditor';
 import { SpriteArtEditor } from '../pixelArtEditor/SpriteArtEditor';
 import { SymbolInput } from '../tileEditor/SymbolInput';
@@ -25,12 +26,10 @@ export function ItemRow({ item }: { item: ItemDef }) {
         <IconButton title="pixel art" active={openPanel === 'art'} onClick={() => toggle('art')}>
           <ItemSpritePreview item={item} />
         </IconButton>
-        <input
-          type="color"
-          className={COLOR_INPUT_CLASSES}
+        <ColorField
+          ink={item.color}
           title="color — the ascii ink, and the fallback where there is no art"
-          value={item.color}
-          onChange={(event) => edit({ color: event.target.value })}
+          onChange={(color) => edit({ color })}
         />
         <SymbolInput symbol={item.symbol} onPick={(symbol) => edit({ symbol })} />
         <input

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { TRANSPARENT_INK, type SpriteArt } from '../../world/tiles/spriteArt';
+import { TRANSPARENT_INK } from '../../world/tiles/inkColor';
+import type { SpriteArt } from '../../world/tiles/spriteArt';
 import {
   blankCubeFaceArt,
   faceGridSize,

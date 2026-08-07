@@ -7,8 +7,6 @@ import {
 
 export type SpriteArt = FacePixels;
 
-export const TRANSPARENT_INK = '#00000000';
-
 export function blankSpriteArt(size: number = DEFAULT_FACE_ART_SIZE): SpriteArt {
   return blankFacePixels(size);
 }

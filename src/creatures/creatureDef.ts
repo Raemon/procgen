@@ -1,4 +1,7 @@
 import { blankInventory, type InventoryDef } from '../items/inventory/inventoryDef';
+import { humanoidBillboard } from './art/humanoidBillboard';
+import { BLANK_CHARACTER_PALETTE } from './art/humanoidPalette';
+import type { CharacterBillboard } from './character/characterBillboard';
 import type { CubeFaceArt } from '../world/tiles/tileFaceArt';
 import { WANDER } from './behaviorKinds';
 import { CHARACTER, CREATURE } from './entityKinds';
@@ -17,6 +20,7 @@ export interface CreatureDef {
   phasing: 0 | 1;
   kind: number;
   inventory: InventoryDef | null;
+  billboard: CharacterBillboard | null;
 }
 
 export function newCreatureWithId(id: number): CreatureDef {
@@ -34,6 +38,7 @@ export function newCreatureWithId(id: number): CreatureDef {
     phasing: 0,
     kind: CREATURE,
     inventory: null,
+    billboard: null,
   };
 }
 
@@ -46,6 +51,7 @@ export function newCharacterWithId(id: number): CreatureDef {
     size: 0.8,
     kind: CHARACTER,
     inventory: blankInventory(),
+    billboard: humanoidBillboard(BLANK_CHARACTER_PALETTE),
   };
 }
 

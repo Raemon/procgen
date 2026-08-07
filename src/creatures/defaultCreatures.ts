@@ -1,4 +1,6 @@
 import { blankInventory } from '../items/inventory/inventoryDef';
+import { humanoidBillboard } from './art/humanoidBillboard';
+import { WANDERING_TRADER_PALETTE } from './art/humanoidPalette';
 import { CHASE, FLEE, GUARD, WANDER } from './behaviorKinds';
 import type { CreatureDef } from './creatureDef';
 import { newCharacterWithId } from './creatureDef';
@@ -27,6 +29,7 @@ function wanderingTrader(id: number): CreatureDef {
     speed: 1.2,
     sight: 10,
     roam: 12,
+    billboard: humanoidBillboard(WANDERING_TRADER_PALETTE),
     inventory: {
       ...blankInventory(6, 4),
       placements: [
@@ -56,6 +59,7 @@ function creature(
     phasing: 0,
     kind: CREATURE,
     inventory: null,
+    billboard: null,
     ...motion,
   };
 }

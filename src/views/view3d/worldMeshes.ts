@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { CHUNK_SIZE, chunkOrigin } from '../../procgen/chunk';
 import type { WorldSampler } from '../../procgen/worldSampler';
+import { isTransparentInk } from '../../world/tiles/inkColor';
 import type { CubeFaceArt } from '../../world/tiles/tileFaceArt';
 import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
 import { cubeFaceMaterials, sideFaceMaterial } from './faceArtMaterials';
@@ -127,6 +128,7 @@ function splitByFaceArt(placements: TilePlacement[]): {
   const flat: TilePlacement[] = [];
   const groups = new Map<CubeFaceArt, FaceArtGroup>();
   for (const placement of placements) {
+    if (!placement.faceArt && isTransparentInk(placement.baseColor)) continue;
     if (placement.faceArt) addToArtGroup(groups, placement, placement.faceArt);
     else flat.push(placement);
   }

@@ -12,6 +12,7 @@ import { copyFaceToAllSides, sideFacesMatch } from './ops/linkedSideFaces';
 import { mirroredPixelIndices } from './ops/mirroredPixelIndices';
 import { resampleFacePixels, resizeCubeFaceArt } from './ops/resizeFaceArt';
 import { shiftFacePixelsWithWrap } from './ops/shiftFacePixelsWithWrap';
+import { isTransparentInk, TRANSPARENT_INK } from '../../world/tiles/inkColor';
 import type { CubeFace } from '../../world/tiles/tileFaceArt';
 import {
   activeFace,
@@ -48,6 +49,11 @@ export interface FaceArtEditor {
   clearFace(): void;
   shiftFace(dx: number, dy: number): void;
   changeResolution(size: number): void;
+}
+
+function paintedInk(settings: PaintSettings): string | null {
+  if (settings.tool === 'erase' || isTransparentInk(settings.paintColor)) return null;
+  return settings.paintColor;
 }
 
 export function useFaceArtEditor({
@@ -100,18 +106,19 @@ export function useFaceArtEditor({
     if (settings.tool === 'fill')
       return void (phase === 'start' &&
         commitToTargetFaces((pixels) =>
-          floodFillFacePixels(pixels, size, index, settings.paintColor),
+          floodFillFacePixels(pixels, size, index, paintedInk(settings)),
         ));
     strokePaintAt(index);
   }
 
   function pickColorAt(index: number): void {
-    updateSettings({ paintColor: art?.[activeFace(settings)][index] ?? baseColor, tool: 'draw' });
+    const picked = art?.[activeFace(settings)][index] ?? null;
+    updateSettings({ paintColor: picked ?? TRANSPARENT_INK, tool: 'draw' });
   }
 
   function strokePaintAt(index: number): void {
     const next = strokeArt ? cloneCubeFaceArt(strokeArt) : editableArt();
-    const value = settings.tool === 'erase' ? null : settings.paintColor;
+    const value = paintedInk(settings);
     for (const face of targetFaces(settings))
       for (const mirrored of mirroredPixelIndices(index, size, settings.mirrorX, settings.mirrorY))
         next[face][mirrored] = value;

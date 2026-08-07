@@ -11,7 +11,7 @@ import { Select } from '../controls/Select';
 import { Slider } from '../controls/Slider';
 import { TagsInput } from '../controls/TagsInput';
 import { ValueReadout } from '../controls/ValueReadout';
-import { COLOR_INPUT_CLASSES } from '../controls/fieldClasses';
+import { ColorField } from '../controls/ColorField';
 import type { TooltipContent } from '../tooltips/tooltipContent';
 
 interface SizeKnob {
@@ -83,11 +83,10 @@ export function ItemRenderKnobs({ item }: { item: ItemDef }) {
               body: 'The colour of the extruded rim — the part of a billboard you see from the side.',
             }}
           >
-            <input
-              type="color"
-              className={COLOR_INPUT_CLASSES}
-              value={item.edgeColor}
-              onChange={(event) => edit({ edge_color: event.target.value })}
+            <ColorField
+              ink={item.edgeColor}
+              title="edge color"
+              onChange={(edgeColor) => edit({ edge_color: edgeColor })}
             />
           </KnobRow>
         </>

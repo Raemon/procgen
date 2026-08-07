@@ -5,13 +5,15 @@ import { isCharacter, type CreatureDef } from '../../creatures/creatureDef';
 import { CHARACTER, CREATURE } from '../../creatures/entityKinds';
 import { Button } from '../controls/Button';
 import { classes } from '../controls/classes';
-import { COLOR_INPUT_CLASSES, FIELD_CLASSES } from '../controls/fieldClasses';
+import { ColorField } from '../controls/ColorField';
+import { FIELD_CLASSES } from '../controls/fieldClasses';
+import { CharacterSpritesEditor } from '../characterEditor/CharacterSpritesEditor';
 import { InventoryEditor } from '../inventoryEditor/InventoryEditor';
 import { PixelArtEditor } from '../pixelArtEditor/PixelArtEditor';
 import { SymbolInput } from '../tileEditor/SymbolInput';
 import { CreatureBehaviorKnobs } from './CreatureBehaviorKnobs';
 
-type OpenPanel = 'none' | 'behavior' | 'art' | 'inventory';
+type OpenPanel = 'none' | 'behavior' | 'art' | 'inventory' | 'sprites';
 
 export function CreatureRow({ creature }: { creature: CreatureDef }) {
   const { perform } = useAppRuntime();
@@ -23,13 +25,7 @@ export function CreatureRow({ creature }: { creature: CreatureDef }) {
   return (
     <div className="mb-1.5">
       <div className="flex items-center gap-1.5">
-        <input
-          type="color"
-          className={COLOR_INPUT_CLASSES}
-          title="color"
-          value={creature.color}
-          onChange={(event) => edit({ color: event.target.value })}
-        />
+        <ColorField ink={creature.color} title="color" onChange={(color) => edit({ color })} />
         <SymbolInput symbol={creature.symbol} onPick={(symbol) => edit({ symbol })} />
         <input
           type="text"
@@ -48,21 +44,31 @@ export function CreatureRow({ creature }: { creature: CreatureDef }) {
         </Button>
         <Button
           className="px-2 py-0.5"
-          title="cube art"
+          title="cube art (used when a character has no sprites)"
           active={openPanel === 'art'}
           onClick={() => toggle('art')}
         >
           art
         </Button>
         {isCharacter(creature) ? (
-          <Button
-            className="px-2 py-0.5 text-[11px]"
-            title="inventory grid"
-            active={openPanel === 'inventory'}
-            onClick={() => toggle('inventory')}
-          >
-            bag
-          </Button>
+          <>
+            <Button
+              className="px-2 py-0.5 text-[11px]"
+              title="billboard sprites: five rotations, each with an idle and a moving animation"
+              active={openPanel === 'sprites'}
+              onClick={() => toggle('sprites')}
+            >
+              sprites
+            </Button>
+            <Button
+              className="px-2 py-0.5 text-[11px]"
+              title="inventory grid"
+              active={openPanel === 'inventory'}
+              onClick={() => toggle('inventory')}
+            >
+              bag
+            </Button>
+          </>
         ) : (
           <Button
             className="px-2 py-0.5 text-[11px]"
@@ -87,6 +93,9 @@ export function CreatureRow({ creature }: { creature: CreatureDef }) {
           ×
         </Button>
       </div>
+      {openPanel === 'sprites' && isCharacter(creature) && (
+        <CharacterSpritesEditor character={creature} />
+      )}
       {openPanel === 'behavior' && <CreatureBehaviorKnobs creature={creature} />}
       {openPanel === 'art' && (
         <PixelArtEditor

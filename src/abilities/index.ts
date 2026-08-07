@@ -6,6 +6,7 @@ import './prefabAbilities';
 import './creatureAbilities';
 import './itemAbilities';
 import './inventoryAbilities';
+import './characterArtAbilities';
 
 export { performAbility, abilityChangesWorld } from './performAbility';
 export { abilitiesForMode, abilityFor, allAbilities } from './abilityRegistry';

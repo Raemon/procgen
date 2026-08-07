@@ -1,3 +1,9 @@
+import {
+  CHARACTER_ANIMATIONS,
+  CHARACTER_ROTATIONS,
+  framesOf,
+  type CharacterBillboard,
+} from '../../creatures/character/characterBillboard';
 import type { CreatureDef } from '../../creatures/creatureDef';
 import { entityKindLabel } from '../../creatures/entityKinds';
 import type { InventoryDef } from '../../items/inventory/inventoryDef';
@@ -34,6 +40,25 @@ export function creatureJson(creature: CreatureDef) {
     inventory: creature.inventory
       ? { width: creature.inventory.width, height: creature.inventory.height }
       : null,
+    billboard: creature.billboard ? billboardJson(creature.billboard) : null,
+  };
+}
+
+export function billboardJson(billboard: CharacterBillboard) {
+  return {
+    idle_fps: billboard.idleFps,
+    moving_fps: billboard.movingFps,
+    frame_counts: Object.fromEntries(
+      CHARACTER_ROTATIONS.map((rotation) => [
+        rotation,
+        Object.fromEntries(
+          CHARACTER_ANIMATIONS.map((animation) => [
+            animation,
+            framesOf(billboard, rotation, animation).length,
+          ]),
+        ),
+      ]),
+    ),
   };
 }
 

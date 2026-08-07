@@ -26,18 +26,70 @@ The art lives in two fields, and the editor shows whichever the render mode
 uses: `sprite` is a single square grid of colors and nulls (null is
 transparent), `face_art` is the same six-face cube art tiles and creatures use.
 
+## Transparent colors
+
+Every color control in the app — tile, creature, item, edge, marker and the
+paint color itself — has a checkerboard toggle beside its swatch that makes the
+color transparent, written as `#rrggbbaa` with `aa` = `00`. Toggling back
+restores the hue you had.
+
+What transparent means depends on where the color is used:
+
+- **the paint color** — the stroke punches a hole instead of storing a color,
+  the same thing `erase` does. Picking a hole with the eyedropper hands you the
+  transparent color back.
+- **a tile, creature or item color** — the flat color under the art. Transparent
+  makes the art's empty pixels see-through, and a tile with no art at all is
+  simply not drawn.
+- **an item's edge color** — the extruded rim of a billboard disappears, leaving
+  the sprite alone.
+
 ### Putting items in the world
 
 Bind a `points` node to display `items` and pick one, exactly as you would bind
 prefabs or creatures. Every point floats a copy. In the ASCII and agent views an
 item draws its symbol in its own color, and the observation legend names it.
 
-## Inventories
+## Characters
 
-A character is a creature in every respect — same look, same behavior, same
-spawning from a points node — that additionally carries an inventory. Any
-creature can be promoted with `+bag` on its row, or created directly with
-`+ add character`.
+A character is a creature in every respect — same behavior, same spawning from a
+points node — that additionally renders as a billboard and carries an
+inventory. Any creature can be promoted with `+bag` on its row, or created
+directly with `+ add character`.
+
+### Billboard sprites
+
+A character's quad turns to face the camera every frame; which sprite it wears
+depends on the angle between the way it is walking and the way the camera looks.
+There are **five rotations**:
+
+| rotation | what you see |
+| --- | --- |
+| `front` | walking toward the viewer |
+| `frontQuarter` | 45° off, turned toward the viewer |
+| `side` | in profile, crossing the view |
+| `backQuarter` | 45° off, turned away |
+| `back` | walking away from the viewer |
+
+Those five cover all eight compass facings: the far half of the turn reuses the
+same sprites flipped, so you only ever paint one side. Turning the god camera
+turns every character with it.
+
+**Each rotation has two animations**: `idle`, played while the character stands
+still, and `moving`, played while it walks — each its own list of frames with
+its own frames-per-second. A rotation or animation with no frames falls back to
+one that has them, so a single front-facing idle frame is a valid character.
+Characters start their animations at staggered phases so a crowd does not march
+in lockstep, and a character with no sprites at all falls back to the cube art
+creatures use.
+
+Open `sprites` on a character row: pick a rotation, pick idle or moving, then
+add, select, paint and drop frames. New characters ship with a generated
+humanoid — five rotations, a two-frame idle and a four-frame walk cycle — as a
+starting point to paint over (`npm run characters:preview` renders the sheet to
+`docs/character-sheet-preview.png`).
+
+## Inventories
 
 An inventory is a `width × height` grid, up to 16 on a side.
 
@@ -71,8 +123,8 @@ Open a character's `bag`. The grid has three modes:
 ## From the API
 
 `GET /api/v1/items` lists every item with its render mode, footprint and tags.
-`GET /api/v1/creatures` says which creatures are characters and how big their
-grids are; `GET /api/v1/creatures/{id}/inventory` returns the grid itself —
+`GET /api/v1/creatures` says which creatures are characters, how big their grids
+are, and how many frames each rotation and animation holds; `GET /api/v1/creatures/{id}/inventory` returns the grid itself —
 every slot with its usable flag and tags, and every placement.
 
 The actions, all god mode:
@@ -81,7 +133,11 @@ The actions, all god mode:
 | --- | --- |
 | `add_item`, `duplicate_item`, `remove_item` | manage definitions |
 | `update_item` | name, symbol, color, render, orientation, thickness, edge_color, size, hover, sprite, face_art, grid_width, grid_height, tags |
-| `add_character` | a creature that starts with a 6×4 inventory |
+| `add_character` | a creature that starts with a 6×4 inventory and a generated humanoid billboard |
+| `set_character_frame` | paint one frame of one animation of one rotation; the frame after the last one appends |
+| `remove_character_frame` | drop one frame; dropping the last one anywhere removes the billboard |
+| `set_character_animation_fps` | how fast `idle` or `moving` plays, 0-30 |
+| `clear_character_billboard` | back to cube art |
 | `update_creature` with `kind` | promote a creature to a character (it gains an empty grid) or demote it |
 | `set_inventory` | create or resize the grid |
 | `update_inventory_slot` | one slot's usable flag and tags |

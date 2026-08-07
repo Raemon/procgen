@@ -64,11 +64,11 @@ registerItemAbility({
     item_id: { kind: 'int', help: ITEM_ID_HELP },
     name: { kind: 'text', help: 'the item name', optional: true },
     symbol: { kind: 'text', help: 'the single character it draws as in an observation', optional: true },
-    color: { kind: 'text', help: 'a #rrggbb color — the ascii ink and the fallback when there is no art', optional: true },
+    color: { kind: 'text', help: 'a #rrggbb color, or #rrggbbaa with aa=00 for transparent — the ascii ink and the fallback when there is no art', optional: true },
     render: { kind: 'int', help: renderHelp(), optional: true },
     orientation: { kind: 'int', help: orientationHelp(), optional: true },
     thickness: { kind: 'number', help: 'billboard only: how thick the extruded sprite is, in tiles', optional: true },
-    edge_color: { kind: 'text', help: 'billboard only: a #rrggbb color for the extruded rim', optional: true },
+    edge_color: { kind: 'text', help: 'billboard only: a #rrggbb color, or #rrggbbaa with aa=00 for transparent for the extruded rim', optional: true },
     size: { kind: 'number', help: 'how large it is drawn in the world, in tiles', optional: true },
     hover: { kind: 'number', help: 'how far above the ground it floats, in tiles', optional: true },
     sprite: {

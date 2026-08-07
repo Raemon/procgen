@@ -13,7 +13,8 @@ import type { MarkerBinding } from '../../procgen/display/markerAppearance';
 import type { NodeInstance } from '../../procgen/pipeline/pipelineState';
 import type { ValueKind } from '../../procgen/values/chunkValues';
 import { classes } from '../controls/classes';
-import { COLOR_INPUT_CLASSES, FIELD_CLASSES } from '../controls/fieldClasses';
+import { ColorField } from '../controls/ColorField';
+import { FIELD_CLASSES } from '../controls/fieldClasses';
 import { KnobRow } from '../controls/KnobRow';
 import { Select } from '../controls/Select';
 import { Slider } from '../controls/Slider';
@@ -179,11 +180,10 @@ function MarkerRows({ node, binding }: { node: NodeInstance; binding: MarkerBind
             />
           </KnobRow>
           <KnobRow label="color">
-            <input
-              type="color"
-              className={COLOR_INPUT_CLASSES}
-              value={binding.color}
-              onChange={(event) => perform('set_display', { node_id: node.id, display: 'markers', color: event.target.value })}
+            <ColorField
+              ink={binding.color}
+              title="marker color"
+              onChange={(color) => perform('set_display', { node_id: node.id, display: 'markers', color })}
             />
           </KnobRow>
         </>

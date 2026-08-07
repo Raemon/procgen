@@ -73,7 +73,7 @@ registerCreatureAbility({
     creature_id: { kind: 'int', help: CREATURE_ID_HELP },
     name: { kind: 'text', help: 'the creature name', optional: true },
     symbol: { kind: 'text', help: 'the single character it draws as', optional: true },
-    color: { kind: 'text', help: 'a #rrggbb color', optional: true },
+    color: { kind: 'text', help: 'a #rrggbb color, or #rrggbbaa with aa=00 for transparent', optional: true },
     behavior: { kind: 'int', help: behaviorHelp(), optional: true },
     speed: { kind: 'number', help: 'tiles per second', optional: true },
     sight: { kind: 'number', help: 'how many tiles away it notices the player', optional: true },

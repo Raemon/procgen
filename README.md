@@ -41,9 +41,13 @@ Five panels:
      Each item takes a Diablo-style block of inventory cells — `1×1`, `1×2`,
      `2×2`, up to `8×8` — and carries tags. Bind one to a `points` node to
      scatter it through the world.
-   - **characters** — creatures that carry things: every creature rule plus an
-     inventory grid whose slots can each be switched off or tagged so only
-     matching items fit, with pixel art layered underneath.
+   - **characters** — creatures that carry things and render as sprites: every
+     creature rule, plus a billboard that faces the camera in five rotations
+     (facing you, 45° either way toward you, in profile, 45° away, facing away
+     — the mirrored half reuses the same art flipped), each rotation with its
+     own idle and moving animation, plus an inventory grid whose slots can each
+     be switched off or tagged so only matching items fit, with pixel art
+     layered underneath.
 
    See `docs/prefabs-and-creatures.md` and `docs/items-and-inventories.md`.
 2. **Procgen panel** — a layered pipeline of generator nodes. Each node

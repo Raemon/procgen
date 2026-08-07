@@ -61,6 +61,11 @@ export const FAILURES: readonly FailureSpec[] = [
     recovery: 'set_inventory gives it one; GET /api/v1/creatures reports who has one.',
   },
   {
+    code: 'no_billboard',
+    meaning: 'That character has no billboard sprites yet.',
+    recovery: 'set_character_frame paints the first one and creates the billboard.',
+  },
+  {
     code: 'placement_refused',
     meaning:
       'The item does not fit there: it would hang off the grid, cover an unusable slot, cover a slot whose tags it does not carry, or overlap an item already placed.',

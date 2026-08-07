@@ -50,6 +50,7 @@ export class View3D {
   private readonly resizeObserver = new ResizeObserver(() => this.resize());
   private animationFrame = 0;
   private lastFrameTime = 0;
+  private elapsedSeconds = 0;
 
   constructor(
     private readonly container: HTMLElement,
@@ -111,6 +112,13 @@ export class View3D {
   onWorldChanged(): void {
     this.streamer.invalidateAll();
     this.itemMeshes.invalidate();
+    this.creatureMeshes.forgetSprites();
+  }
+
+  private viewYaw(): number {
+    return this.cameraStyle === 'god'
+      ? this.followCamera.yaw()
+      : facingYawRadians(this.deps.world.facing);
   }
 
   private activeCamera(): THREE.PerspectiveCamera {
@@ -172,7 +180,11 @@ export class View3D {
     if (isCollapsed(containerSize(this.container))) return;
     this.easedPlayer.approach(this.deps.world.playerX, this.deps.world.playerY, dtSeconds);
     this.placePlayer();
-    this.creatureMeshes.syncTo(this.deps.sim);
+    this.elapsedSeconds += dtSeconds;
+    this.creatureMeshes.syncTo(this.deps.sim, {
+      yaw: this.viewYaw(),
+      seconds: this.elapsedSeconds,
+    });
     this.remotePlayerMeshes.syncTo(this.deps.remotePlayers, dtSeconds);
     this.selectionBox.showRegion(this.deps.capture.selectedRegion(), this.focusGroundHeight());
     this.updateActiveCamera(dtSeconds);
