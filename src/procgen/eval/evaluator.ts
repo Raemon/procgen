@@ -8,9 +8,13 @@ import { emptyValueOfKind, type ChunkValue } from '../values/chunkValues';
 import { cacheCapacityForPipeline } from './cacheCapacity';
 import { ChunkValueCache } from './chunkValueCache';
 import { createChunkGenCtx } from './genCtxFactory';
+import { RegionMemoCache } from './regionMemoCache';
+
+const REGION_MEMOS_KEPT = 64;
 
 export class PipelineEvaluator {
   private readonly cache = new ChunkValueCache(0);
+  private readonly regionMemos = new RegionMemoCache(REGION_MEMOS_KEPT);
   private readonly runtimeErrors = new Map<string, string>();
   private signatures = new Map<string, string>();
 
@@ -64,6 +68,8 @@ export class PipelineEvaluator {
       chunkY,
       resolveInput: (name, atChunkX, atChunkY) =>
         this.resolveInput(node, name, atChunkX, atChunkY),
+      memo: (key, compute) =>
+        this.regionMemos.at(`${this.signatures.get(node.id)}|${key}`, compute),
     });
     try {
       const value = def.generateChunk(ctx);

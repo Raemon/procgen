@@ -1049,6 +1049,18 @@ check(
   flowForward[0] === flowReversed[1] && flowForward[1] === flowReversed[0],
 );
 
+const hydrologyLoneChunk = worldFromState(hydrologyState());
+check(
+  'flow accumulation gives a chunk the same answer alone or beside its region neighbors',
+  fieldBytes(hydrologyLoneChunk.evaluator, 'flow', 1, 1) ===
+    fieldBytes(hydrology.evaluator, 'flow', 1, 1),
+);
+check(
+  'coast distance gives a chunk the same answer alone or beside its region neighbors',
+  fieldBytes(hydrologyLoneChunk.evaluator, 'coast', 2, 1) ===
+    fieldBytes(hydrology.evaluator, 'coast', 2, 1),
+);
+
 const SPAN = 64;
 const landCells: Array<[number, number]> = [];
 for (let y = -SPAN; y < SPAN; y++) {

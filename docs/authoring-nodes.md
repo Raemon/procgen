@@ -131,6 +131,17 @@ in the panel.
   tiles on every side. Use it instead of per-cell `inputAt` whenever an
   algorithm sweeps the halo (flood fill, distance transform, flow routing):
   it reads each upstream chunk once instead of once per cell.
+  `gatherFieldWindowRect(ctx, name, originX, originY, width, height)` gathers
+  an arbitrary rect instead — gather only the cells the algorithm will
+  actually read (see `domainWarpNode.ts`, which bounds the rect by the real
+  offsets instead of the worst-case strength).
+- `ctx.memo(key, compute)` — a cache shared by every chunk of this node
+  instance, invalidated whenever the node's params, inputs, or seed change.
+  `compute` must be a pure function of `(key, params, inputs, seed)` — never
+  of the calling chunk — so any chunk may fill it and every chunk reads the
+  same value. This is how windowed nodes share one expensive whole-array
+  computation across a region of chunks instead of redoing it per chunk
+  (see `flowAccumulationNode.ts` and `coastDistanceNode.ts`).
 - `ctx.rng(label)` — a seeded random stream unique to (seed, node, chunk,
   label). Use for anything "random"; same seed ⇒ same world.
 - `ctx.rngAt(gridX, gridY, label)` — like `ctx.rng` but keyed to coordinates
@@ -154,10 +165,18 @@ whole-array algorithm on it — priority flood in `fillDepressions`, a chamfer
 distance transform in `coastDistance`, a sorted downhill sweep in
 `flowAccumulation`.
 
+`flowAccumulation` and `coastDistance` share one window per aligned 4×4-chunk
+region through `ctx.memo`: the first chunk of a region runs the whole-array
+algorithm on a window covering the region plus the radius, and the other 15
+chunks slice their cells out of the cached result. That makes the window
+~5-15× cheaper at streaming scale and keeps the answer seam-free inside each
+region. Prefer this pattern for any new windowed node.
+
 Two rules keep that honest:
 
 - **The window is a pure function of the chunk.** Every chunk computes its own
-  window from its own coordinates, so the result is still deterministic and
+  window from its own coordinates (for region-shared windows, from its
+  region's coordinates), so the result is still deterministic and
   order-independent, which is what `npm run check` verifies.
 - **The window radius is a knob, and it is the cost knob.** The answer is only
   correct out to the radius: a catchment wider than the window is truncated at

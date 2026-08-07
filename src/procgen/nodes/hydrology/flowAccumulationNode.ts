@@ -1,9 +1,17 @@
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
+import { chunkOrigin, CHUNK_SIZE } from '../../chunk';
 import { fieldValue, type ChunkValue } from '../../values/chunkValues';
-import { gatherFieldWindow, windowIndexAt, type FieldWindow } from '../../values/fieldWindow';
+import {
+  clampedWindowRadius,
+  gatherFieldWindowRect,
+  windowIndexAt,
+  type FieldWindow,
+} from '../../values/fieldWindow';
 import { accumulatedFlow } from './accumulateFlow';
 import { drainableSurface } from './drainableSurface';
+
+const SHARED_WINDOW_CHUNKS = 4;
 
 registerNodeType({
   type: 'flowAccumulation',
@@ -43,7 +51,7 @@ registerNodeType({
     windowRadius: {
       kind: 'int',
       label: 'window radius',
-      help: 'How far upstream the chunk looks for water, in tiles. This caps how large a catchment can be seen, and is the main cost knob.',
+      help: 'How far upstream to look for water, in tiles, beyond the shared 4x4-chunk routing region. This caps how large a catchment can be seen, and is the main cost knob.',
       min: 16,
       max: 128,
       default: 40,
@@ -55,12 +63,47 @@ registerNodeType({
 
 function flowAccumulationChunk(ctx: ChunkGenCtx): ChunkValue {
   const out = ctx.newField();
-  const window = gatherFieldWindow(ctx, 'elevation', ctx.params.windowRadius as number);
-  if (!window) return fieldValue(out);
-  const seaLevel = ctx.params.seaLevel as number;
-  const flow = accumulatedFlow(routingSurface(ctx, window, seaLevel), window, seaLevel);
-  writeNormalizedFlow(ctx, window, flow, out);
+  const shared = sharedRegionFlow(ctx);
+  if (!shared) return fieldValue(out);
+  writeNormalizedFlow(ctx, shared.window, shared.flow, out);
   return fieldValue(out);
+}
+
+interface RegionFlow {
+  window: FieldWindow;
+  flow: Float32Array;
+}
+
+function sharedRegionFlow(ctx: ChunkGenCtx): RegionFlow | null {
+  const regionChunkX = alignedRegionStart(ctx.chunkX);
+  const regionChunkY = alignedRegionStart(ctx.chunkY);
+  return ctx.memo(`flow|${regionChunkX},${regionChunkY}`, () =>
+    computeRegionFlow(ctx, regionChunkX, regionChunkY),
+  );
+}
+
+function alignedRegionStart(chunkCoord: number): number {
+  return Math.floor(chunkCoord / SHARED_WINDOW_CHUNKS) * SHARED_WINDOW_CHUNKS;
+}
+
+function computeRegionFlow(
+  ctx: ChunkGenCtx,
+  regionChunkX: number,
+  regionChunkY: number,
+): RegionFlow | null {
+  const radius = clampedWindowRadius(ctx.params.windowRadius as number);
+  const regionSpan = SHARED_WINDOW_CHUNKS * CHUNK_SIZE;
+  const window = gatherFieldWindowRect(
+    ctx,
+    'elevation',
+    chunkOrigin(regionChunkX) - radius,
+    chunkOrigin(regionChunkY) - radius,
+    regionSpan + radius * 2,
+    regionSpan + radius * 2,
+  );
+  if (!window) return null;
+  const seaLevel = ctx.params.seaLevel as number;
+  return { window, flow: accumulatedFlow(routingSurface(ctx, window, seaLevel), window, seaLevel) };
 }
 
 function routingSurface(ctx: ChunkGenCtx, window: FieldWindow, seaLevel: number): Float32Array {

@@ -20,8 +20,33 @@ export function gatherFieldWindow(
   inputName: string,
   radius: number,
 ): FieldWindow | null {
+  const clamped = clampedWindowRadius(radius);
+  return gatherFieldWindowRect(
+    ctx,
+    inputName,
+    ctx.originX - clamped,
+    ctx.originY - clamped,
+    ctx.size + clamped * 2,
+    ctx.size + clamped * 2,
+  );
+}
+
+export function gatherFieldWindowRect(
+  ctx: ChunkGenCtx,
+  inputName: string,
+  originX: number,
+  originY: number,
+  width: number,
+  height: number,
+): FieldWindow | null {
   if (!ctx.fieldInput(inputName)) return null;
-  const window = blankWindowAround(ctx, clampedWindowRadius(radius));
+  const window: FieldWindow = {
+    originX,
+    originY,
+    width,
+    height,
+    data: new Float32Array(width * height),
+  };
   for (const [chunkX, chunkY] of chunksCovering(window, ctx.size)) {
     copyChunkIntoWindow(ctx, inputName, window, chunkX, chunkY);
   }
@@ -46,17 +71,6 @@ export function windowWorldX(window: FieldWindow, index: number): number {
 
 export function windowWorldY(window: FieldWindow, index: number): number {
   return window.originY + Math.floor(index / window.width);
-}
-
-function blankWindowAround(ctx: ChunkGenCtx, radius: number): FieldWindow {
-  const side = ctx.size + radius * 2;
-  return {
-    originX: ctx.originX - radius,
-    originY: ctx.originY - radius,
-    width: side,
-    height: side,
-    data: new Float32Array(side * side),
-  };
 }
 
 function chunksCovering(window: FieldWindow, size: number): [number, number][] {

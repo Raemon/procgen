@@ -67,6 +67,7 @@ export interface ChunkGenCtx {
   pointsInput(name: string): PointsChunk | null;
   newField(): FieldChunk;
   newTiles(): TilesChunk;
+  memo<Value>(key: string, compute: () => Value): Value;
 }
 
 export interface NodeTypeDef {

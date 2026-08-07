@@ -1,7 +1,7 @@
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
-import { fieldValue, type ChunkValue } from '../../values/chunkValues';
-import { gatherFieldWindow, windowValueAt, type FieldWindow } from '../../values/fieldWindow';
+import { fieldValue, type ChunkValue, type FieldChunk } from '../../values/chunkValues';
+import { gatherFieldWindowRect, windowValueAt, type FieldWindow } from '../../values/fieldWindow';
 
 registerNodeType({
   type: 'domainWarp',
@@ -47,14 +47,52 @@ registerNodeType({
 function domainWarpChunk(ctx: ChunkGenCtx): ChunkValue {
   const out = ctx.newField();
   const strength = ctx.params.strength as number;
-  const source = gatherFieldWindow(ctx, 'source', Math.ceil(strength) + 1);
   const offsetX = ctx.fieldInput('offsetX');
   const offsetY = ctx.fieldInput('offsetY');
-  if (!source || !offsetX) return fieldValue(out);
+  if (!offsetX) return fieldValue(out);
+  const source = gatherOnlyReadCells(ctx, strength, offsetX, offsetY);
+  if (!source) return fieldValue(out);
   for (let i = 0; i < out.length; i++) {
     out[i] = warpedSample(ctx, source, strength, i, offsetX[i]!, offsetY?.[i] ?? 0.5);
   }
   return fieldValue(out);
+}
+
+function gatherOnlyReadCells(
+  ctx: ChunkGenCtx,
+  strength: number,
+  offsetX: FieldChunk,
+  offsetY: FieldChunk | null,
+): FieldWindow | null {
+  const across = displacedRange(ctx.originX, ctx.size, strength, offsetX);
+  const down = displacedRange(ctx.originY, ctx.size, strength, offsetY);
+  return gatherFieldWindowRect(
+    ctx,
+    'source',
+    across.first,
+    down.first,
+    across.count,
+    down.count,
+  );
+}
+
+function displacedRange(
+  origin: number,
+  size: number,
+  strength: number,
+  offsets: FieldChunk | null,
+): { first: number; count: number } {
+  if (!offsets) return { first: origin, count: size };
+  let min = Infinity;
+  let max = -Infinity;
+  for (let i = 0; i < offsets.length; i++) {
+    const displacement = (offsets[i]! - 0.5) * 2 * strength;
+    if (displacement < min) min = displacement;
+    if (displacement > max) max = displacement;
+  }
+  const first = Math.floor(min);
+  const last = Math.floor(size - 1 + max) + 1;
+  return { first: origin + first, count: last - first + 1 };
 }
 
 function warpedSample(

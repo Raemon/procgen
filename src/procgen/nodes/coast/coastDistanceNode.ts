@@ -1,8 +1,16 @@
+import { chunkOrigin, CHUNK_SIZE } from '../../chunk';
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { fieldValue, type ChunkValue } from '../../values/chunkValues';
-import { gatherFieldWindow, windowIndexAt, type FieldWindow } from '../../values/fieldWindow';
+import {
+  clampedWindowRadius,
+  gatherFieldWindowRect,
+  windowIndexAt,
+  type FieldWindow,
+} from '../../values/fieldWindow';
 import { chamferDistanceFromSeeds } from './chamferDistance';
+
+const SHARED_WINDOW_CHUNKS = 4;
 
 registerNodeType({
   type: 'coastDistance',
@@ -28,7 +36,7 @@ registerNodeType({
     range: {
       kind: 'int',
       label: 'range',
-      help: 'The distance in tiles that maps to fully inland or fully offshore. It also sets how far past the chunk the coastline is searched for, so it is the cost knob.',
+      help: 'The distance in tiles that maps to fully inland or fully offshore. It also sets how far past the shared 4x4-chunk window the coastline is searched for, so it is the cost knob.',
       min: 4,
       max: 128,
       default: 32,
@@ -41,13 +49,60 @@ registerNodeType({
 function coastDistanceChunk(ctx: ChunkGenCtx): ChunkValue {
   const out = ctx.newField();
   const range = ctx.params.range as number;
-  const window = gatherFieldWindow(ctx, 'elevation', range);
-  if (!window) return fieldValue(out);
-  const seaLevel = ctx.params.seaLevel as number;
-  const toSea = distanceToCells(window, (height) => height < seaLevel);
-  const toLand = distanceToCells(window, (height) => height >= seaLevel);
-  writeSignedDistance(ctx, window, toSea, toLand, seaLevel, range, out);
+  const shared = sharedRegionDistances(ctx);
+  if (!shared) return fieldValue(out);
+  writeSignedDistance(
+    ctx,
+    shared.window,
+    shared.toSea,
+    shared.toLand,
+    ctx.params.seaLevel as number,
+    range,
+    out,
+  );
   return fieldValue(out);
+}
+
+interface RegionDistances {
+  window: FieldWindow;
+  toSea: Float32Array;
+  toLand: Float32Array;
+}
+
+function sharedRegionDistances(ctx: ChunkGenCtx): RegionDistances | null {
+  const regionChunkX = alignedRegionStart(ctx.chunkX);
+  const regionChunkY = alignedRegionStart(ctx.chunkY);
+  return ctx.memo(`coast|${regionChunkX},${regionChunkY}`, () =>
+    computeRegionDistances(ctx, regionChunkX, regionChunkY),
+  );
+}
+
+function alignedRegionStart(chunkCoord: number): number {
+  return Math.floor(chunkCoord / SHARED_WINDOW_CHUNKS) * SHARED_WINDOW_CHUNKS;
+}
+
+function computeRegionDistances(
+  ctx: ChunkGenCtx,
+  regionChunkX: number,
+  regionChunkY: number,
+): RegionDistances | null {
+  const range = clampedWindowRadius(ctx.params.range as number);
+  const regionSpan = SHARED_WINDOW_CHUNKS * CHUNK_SIZE;
+  const window = gatherFieldWindowRect(
+    ctx,
+    'elevation',
+    chunkOrigin(regionChunkX) - range,
+    chunkOrigin(regionChunkY) - range,
+    regionSpan + range * 2,
+    regionSpan + range * 2,
+  );
+  if (!window) return null;
+  const seaLevel = ctx.params.seaLevel as number;
+  return {
+    window,
+    toSea: distanceToCells(window, (height) => height < seaLevel),
+    toLand: distanceToCells(window, (height) => height >= seaLevel),
+  };
 }
 
 function distanceToCells(window: FieldWindow, isSeed: (height: number) => boolean): Float32Array {
