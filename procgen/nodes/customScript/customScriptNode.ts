@@ -13,7 +13,7 @@ registerScriptNodeType({
   category: 'custom',
   description: 'Write generateChunk(ctx) right here in the browser. Return a field array, tile array, or point list matching the chosen output.',
   whenToUse:
-    'Experiments the built-in nodes cannot express. Iterate in the browser; when a script stabilizes, promote it to a TypeScript node file (see docs/authoring-nodes.md).',
+    'Experiments the built-in nodes cannot express. Iterate in the browser; when a script stabilizes, promote it to a TypeScript node file that calls registerNodeType.',
   inputs: {
     a: {
       kind: 'any',

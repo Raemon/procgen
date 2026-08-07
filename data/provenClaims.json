@@ -1,0 +1,2342 @@
+[
+  {
+    "claim": "node registry has example, maze, river and custom nodes",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "every node type except custom script is built only from numeric knobs and tile links",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "every choice knob stores numbers and explains every option",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "every node type explains what it does and when to use it",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "every param and input carries help text for its tooltip",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "every select param explains each of its options",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "every example pipeline describes itself and comments every node",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "every node type declares a resolvable output kind",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "example pipeline survives sanitize with all nodes",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "same seed generates identical chunks across fresh evaluators",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "chunk evaluation order never changes results",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "different seeds generate different worlds",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "param change invalidates that node and downstream signatures",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "downstream param change leaves upstream signature cached",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "tile layers stack: water, sand, grass and rock all appear",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "elevation binding shapes the world",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "scatter markers carry their node id as tag",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "tile-sourced markers take symbol and color from the tileset",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "editing a tile restyles the markers that source it",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "disabling a node removes its tile layer",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "scattered points stay inside their own chunk",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "labyrinth chunks are deterministic regardless of evaluation order",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "labyrinth corridor 1 wall 1 + dfs stays connected across all chunks and seams",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "labyrinth corridor 1 wall 1 + prim stays connected across all chunks and seams",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "labyrinth corridor 1 wall 1 + sidewinder stays connected across all chunks and seams",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "labyrinth corridor 2 wall 2 + dfs stays connected across all chunks and seams",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "labyrinth corridor 2 wall 2 + prim stays connected across all chunks and seams",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "labyrinth corridor 2 wall 2 + sidewinder stays connected across all chunks and seams",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "labyrinth corridor 3 wall 1 + dfs stays connected across all chunks and seams",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "labyrinth corridor 3 wall 1 + prim stays connected across all chunks and seams",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "labyrinth corridor 3 wall 1 + sidewinder stays connected across all chunks and seams",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "labyrinth corridor 5 wall 2 + dfs stays connected across all chunks and seams",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "labyrinth corridor 5 wall 2 + prim stays connected across all chunks and seams",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "labyrinth corridor 5 wall 2 + sidewinder stays connected across all chunks and seams",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "labyrinth corridor 6 wall 2 + dfs stays connected across all chunks and seams",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "labyrinth corridor 6 wall 2 + prim stays connected across all chunks and seams",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "labyrinth corridor 6 wall 2 + sidewinder stays connected across all chunks and seams",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "labyrinth corridor 7 wall 1 + dfs stays connected across all chunks and seams",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "labyrinth corridor 7 wall 1 + prim stays connected across all chunks and seams",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "labyrinth corridor 7 wall 1 + sidewinder stays connected across all chunks and seams",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "doors per edge adds extra seam crossings",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "corridor width knob reshapes the labyrinth",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "chunks of one multi-chunk maze agree regardless of which is generated first",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a maze spanning multiple chunks stays one connected labyrinth across regions",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "nested labyrinths preset shows the inner hedge maze through the outer maze corridors",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a river on a slope flows straight downhill and stops at the sea",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "meander makes rivers wander but never uphill",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "river chunks are deterministic regardless of evaluation order",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "rivers appear in the rivers & towns preset",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "every river cell continues into another river cell or the sea",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "towns appear and are tagged as towns",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "every town sits on a river",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "every town qualifies as a river mouth or river junction",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "towns keep their configured spacing from each other",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "custom script node runs deterministically",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "custom script node reports no error on valid code",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "broken script surfaces an error and yields an empty layer",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "pipeline serialization roundtrips",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "node comments survive sanitize and serialization",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "unknown node types are dropped on load",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "wires to later nodes are dropped",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a new node auto-wires to the nearest compatible source",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a new multi-input node fans out across the most recent distinct sources",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "optional inputs stay unwired on creation",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "duplicating copies params and wiring under a fresh id right after the original",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "dragging a node to the end lands it there",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "dragging a source below its consumers unwires them but spares other wires",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "dragging a node to the top lands it there",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "with one source available every required input reuses it",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "deleting a mid-chain node splices its consumers onto its own source",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "deleting a node with no upstream leaves consumers unwired",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "empty void is walkable",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "water is not walkable",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "custom markers keep their own glyph and color",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "player stands on walkable ground after a world change",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a refused step leaves the player in place",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "ascii snapshot has the requested dimensions",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "ascii snapshot marks the player once",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a blank pipeline renders an empty world",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "blank face art validates and counts as blank",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "painting a pixel makes face art non-blank",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "cloned face art does not share pixel arrays",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "malformed face art is rejected",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "legacy top/sides/bottom art upgrades to six faces",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "legacy sides spread to all four compass faces",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "garbage stored art is dropped",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "resizing up rescales painted pixels",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "resizing back down keeps the art",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "shifting wraps pixels around the edge",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "shifting down moves rows",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "flood fill stops at other colors",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "mirrored painting hits both columns",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "double mirror paints four corners",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "blank art has matching sides",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "painting one side unmatches the sides",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "relinking copies one side everywhere",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "placements carry the tile face art",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "tiles without art stay flat-colored",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "marker placements carry the sourced tile face art",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "adding a frame leaves the first one alone and starts a loop",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "painting a later frame does not disturb the first",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a face a later frame leaves out is read from the first frame",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "animated art validates and survives a clone",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "dropping the first frame promotes the next one whole",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the last frame cannot be removed",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "malformed frames are rejected",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a relief layer rides alongside the colours",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "unpainted relief pixels read as the same flat height as the flat ink",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "resizing carries the relief layer and every frame with it",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a difference painted on a later frame unmatches the sides",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a raised pixel tilts the normals of its neighbours away from straight up",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "flat relief leaves every normal pointing straight up",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a thin slab shows a thin band of its side art rather than the whole face squashed",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a full cube still shows every face whole",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "each wave frame tiles seamlessly in both directions",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the wave loop closes: scrolling a whole band lands back on the first frame",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "no two frames of the swell are the same picture",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the shipped water rolls through several frames",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "only the water surface moves — later frames carry nothing but the top face",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the water surface is drawn frame by frame while its still sides are drawn once",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "only the face carrying relief pays for a normal map",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the water surface carries a relief layer for the light to catch",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "every shipped tile carries 32px cube art",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "no shipped tile art is left blank",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "shipped tiles have unique names, symbols and ids",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "terrain roles keep the tile ids that saved pipelines reference",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "tile art generation is deterministic",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "forward faces north with the camera at north",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "forward faces east with the camera turned right",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "strafing right of south faces west",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "one wheel notch out doubles the zoom scale",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "scrolling back returns to the starting scale",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "zooming in stops at the maximum scale",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "zooming out stops at the minimum scale",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "panning accumulates in tiles",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "recentering reports that it moved the camera",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "recentering an unpanned camera is a no-op",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "dragging right pulls the world right by moving the camera west",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "dragging down looks further north",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "dragging right with the camera turned right moves the camera north",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a shallower pitch covers more ground per vertical drag pixel",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a close camera streams the minimum chunk radius",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "zooming out streams more chunks",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "streaming radius stays capped when zoomed way out",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "random world rolls are deterministic per stream",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "different streams roll different worlds",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "random worlds survive sanitize unchanged",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "random worlds keep every param inside its declared range",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "every random world paints at least two tile kinds",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "random worlds cover both terrain and maze recipes",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "slider permutation is deterministic per stream",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "slider permutation preserves nodes and wiring",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "slider permutation keeps params inside their declared ranges",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "slider permutation moves at least one slider",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "slider permutation leaves tiles and text params alone",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "slider permutation does not mutate its input state",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "node permutation is deterministic per stream",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "node permutation changes the combination",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "node permutation yields a pipeline that survives sanitize unchanged",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "node permutation of an empty pipeline rolls fresh nodes",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "repeated node permutations stay valid and generate without crashing",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "randomize history starts empty",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "randomize history restores snapshots untouched by later edits",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "panning still holds before the player moves",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "stepping snaps every view back onto the player",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a blocked step leaves the camera where the player put it",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "every terrain and water field node stays inside 0..1",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "tectonic uplift produces both ocean basins and mountain belts",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "ridged noise reaches higher crests than rolling noise from the same settings",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "domain warp with zero strength is the source field, and with strength it is not",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "blend fields at weight 0 and 1 are exactly its two inputs",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "slope of a constant field is zero everywhere",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the hypsometric curve keeps sea level fixed and is monotone",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the hypsometric curve clears heights away from sea level",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "windowed water nodes are deterministic regardless of evaluation order",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "flow accumulation gives a chunk the same answer alone or beside its region neighbors",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "coast distance gives a chunk the same answer alone or beside its region neighbors",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the hydrology test world has land to drain",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "filling depressions never lowers the ground",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "no land cell of the filled surface is a closed pit",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "carving valleys only ever removes material, and only near watercourses",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "distance to coast puts land at or above 0.5 and sea below it",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "flow accumulation yields a river network",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "every flow-derived river cell continues into another river cell or the sea",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "river flow only grows downstream inside a chunk",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "rivers widen with the max width knob",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the earthlike preset regenerates identically from the same seed",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the earthlike preset shows sea, beach, grass and rock around the origin",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "god observation grid is GOD_VIEW_SIZE² with @ at the center",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "god observation states its facing",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "character observation never states a facing",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "character observation blanks everything behind the agent",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the character view grid is exactly wide enough to hold the sight radius",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the 2.5D fog turns opaque exactly at the sight radius",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the character camera renders nothing past the fog",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the character camera stands in the player tile, so nothing behind the player can reach the screen",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the character camera looks along the facing it is given",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "character observation blanks every tile the fog would swallow",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the character sight test is the half-plane test bounded by the sight radius",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a character observation stays smaller to read than a god observation",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the character observation states its sight radius, the god one has none",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the character observation text names the sight radius",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "every facing rotates the blank half of the character view",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "character legend appears only for visible glyphs plus the fixed entries",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a widened sight radius widens the observation grid to match",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a widened observation reports the radius it was built with",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a widened sight radius still blanks everything behind and past the fog",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a wider radius only adds ground: every tile the default radius showed reads the same",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "sight radii are clamped into the range the docs promise",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the default radius is inside the range agents may ask for",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the 2.5D fog and camera follow a widened sight radius",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "haze always starts before the fog closes, at every radius agents may pick",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "api docs state the character sight radius and grid size",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "api docs render with no unfilled placeholder",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "api docs list every ability of both modes",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "api docs list every failure code",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "api docs legend names every tileset symbol",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "api docs list every registered node type",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "api docs render an example body for every ability that takes params",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "api docs name the human control for every ability",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "every registered node type serializes into the catalog",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "turning wraps in eighth turns",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "facing-relative steps never exceed one tile per axis",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "observation text and json carry the same grid",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "an ability is refused to a mode that does not own it",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "an unknown action lists the ones the mode does have",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a missing required param is named, not guessed at",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "moving and turning go through the same registry the API uses",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "set_sight_radius is a character power, and god mode has no such knob",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "set_sight_radius clamps rather than refusing, and says so",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "set_sight_radius refuses a radius that is not a number",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "add_node rejects an unknown type",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "add_node creates and reports the node",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "set_param clamps a knob to its range",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "set_param names the real params on a miss",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "threshold auto-wires to the noise field when added",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "wire_input refuses a later source for an earlier node",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "set_display refuses a mode the output kind cannot take",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "set_display binds elevation with a height scale",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "set_display keeps the fields you leave out",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "set_seed reseeds the pipeline",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "set_display rejects a prefab id the library does not have",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "remove_node deletes and reports",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "tiles can be created and edited through abilities",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "prefabs can be built voxel by voxel through abilities",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "creatures can be created and tuned through abilities",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "presets and templates round-trip through abilities",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a roll can be seeded and undone",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "capture_region lifts world tiles into a new prefab",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "every ability is reachable through the API dispatcher",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "character mode owns nothing but its own movement and senses, never the world editor",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "character mode can widen its own sight and nothing else senses-shaped",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "only the ability layer and the runtime can hold a mutable library",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the ability registry is what the panels call",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "one biome node paints sea, shore, ground and rock from a single card",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a biome node never leaves a cell empty when it has no region mask",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "water is deep only further below sea level than the deep cut point",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a region mask holds a biome back and leaves those cells to another layer",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "adjacent nodes sharing a folder fold into one run, and a break starts a new one",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "folders survive sanitize and serialization",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "folders never reach the node signature, so grouping cannot change the world",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "every built-in template survives sanitize with all of its nodes",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "every built-in template describes itself and comments every node",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "stamping a template makes fresh ids that cannot collide",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a stamped template lands in a folder named after itself",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "wiring inside a stamped template is remapped onto its new ids",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a stamped template generates without error",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "saving a folder as a template keeps wiring inside it and opens wiring to nodes outside",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a saved template round-trips through storage",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "templates reject junk",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the fallen metropolis preset survives sanitize with all nodes",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the fallen metropolis regenerates identically from the same seed",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the fallen metropolis shows stone walls, flagstone streets, rubble and reclaiming grass",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the risen sea drowns part of the fallen metropolis",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "district fate varies between districts but stays inside 0..1",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the pole to equator preset survives sanitize with all nodes",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the pole to equator preset regenerates identically from the same seed",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the far north of pole to equator is snow or ice",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the middle latitudes of pole to equator grow grass",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the far south of pole to equator is sand",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "grass belongs to the middle latitudes, not the polar cap",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the ember marches preset survives sanitize with all nodes",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the ember marches regenerates identically from the same seed",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the green west of the ember marches grows grass",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the eastern ashfall is ash and lava, and grass does not grow there",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a western ward is a hedge labyrinth over worn paths",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "an eastern ward is scorched stone with ash-filled breaches, its hedges burnt away",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "the ember marches spawns every creature in its own country",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a saved world preset round-trips through storage with its seed and nodes",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "world presets reject junk",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a color is transparent only when its alpha byte is zero",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "every color reaches three.js as six opaque digits",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "a color editor toggles transparency without losing the hue it had",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "painting with a transparent color punches a hole rather than storing a color",
+    "topic": "the world",
+    "held": true
+  },
+  {
+    "claim": "four quarter turns return a prefab to its original voxels",
+    "topic": "prefabs and creatures",
+    "held": true
+  },
+  {
+    "claim": "a quarter turn swaps width and depth",
+    "topic": "prefabs and creatures",
+    "held": true
+  },
+  {
+    "claim": "growing a prefab keeps every voxel it already had",
+    "topic": "prefabs and creatures",
+    "held": true
+  },
+  {
+    "claim": "shrinking a prefab keeps the corner voxel and drops the rest",
+    "topic": "prefabs and creatures",
+    "held": true
+  },
+  {
+    "claim": "the prefab test world scatters at least one stamp point",
+    "topic": "prefabs and creatures",
+    "held": true
+  },
+  {
+    "claim": "every ground voxel of a stamped prefab replaces the terrain tile beneath it",
+    "topic": "prefabs and creatures",
+    "held": true
+  },
+  {
+    "claim": "stamped prefab columns stand as tall as the prefab that made them",
+    "topic": "prefabs and creatures",
+    "held": true
+  },
+  {
+    "claim": "stacked prefab voxels become 2.5D blocks above the ground",
+    "topic": "prefabs and creatures",
+    "held": true
+  },
+  {
+    "claim": "the ascii view shows the topmost voxel of a stamped prefab",
+    "topic": "prefabs and creatures",
+    "held": true
+  },
+  {
+    "claim": "a stamped wall blocks movement wherever it lands",
+    "topic": "prefabs and creatures",
+    "held": true
+  },
+  {
+    "claim": "capturing a stamped prefab out of the world keeps its footprint",
+    "topic": "prefabs and creatures",
+    "held": true
+  },
+  {
+    "claim": "capturing a stamped prefab keeps every voxel above the ground layer",
+    "topic": "prefabs and creatures",
+    "held": true
+  },
+  {
+    "claim": "creature spawns appear around the player",
+    "topic": "prefabs and creatures",
+    "held": true
+  },
+  {
+    "claim": "the same world and seed step creatures to the same places",
+    "topic": "prefabs and creatures",
+    "held": true
+  },
+  {
+    "claim": "creatures stay within their roam radius of the spawn cell",
+    "topic": "prefabs and creatures",
+    "held": true
+  },
+  {
+    "claim": "creatures never stand on a cell the player could not walk on",
+    "topic": "prefabs and creatures",
+    "held": true
+  },
+  {
+    "claim": "the ember tiles ship with the tileset: walkable ash, blocking hedge, scorched stone and charred tree",
+    "topic": "prefabs and creatures",
+    "held": true
+  },
+  {
+    "claim": "the ember marches creatures ship with the library, and only the wisp phases",
+    "topic": "prefabs and creatures",
+    "held": true
+  },
+  {
+    "claim": "points nodes can be displayed as markers, prefabs or creatures",
+    "topic": "prefabs and creatures",
+    "held": true
+  },
+  {
+    "claim": "the default items ship with 1x1, 1x2 and 2x2 footprints",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "billboard items carry a sprite with transparent pixels, cube items carry cube art",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "a coin lies flat while a sword stands up",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "items round-trip through storage with their art, footprint and tags",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "stored item junk is repaired rather than trusted",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "an upright billboard is only as deep as its thickness",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "a flat billboard is only as tall as its thickness",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "a cube item is square in all three axes",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "items float clear of the ground they stand on",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "a sprite billboard is built as a slab, not a box",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "the slab keeps the art and its extruded rim on separate materials",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "the rim traces the silhouette rather than four flat sides",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "a blank sprite extrudes no rim at all",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "a points node can be displayed as items",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "an items-bound points node scatters items through the world",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "every item spawn reports the glyph and colour of its item",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "a spawned item draws its own symbol in the ascii view",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "deleting an item stops the world from spawning it",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "a 1x2 item fits where there is room below it",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "a 1x2 item hanging off the bottom row is refused",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "an item covering a dead slot is refused",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "a tagged slot takes the item that carries its tag and refuses the one that does not",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "an item overlapping one already placed is refused, anywhere in its footprint",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "the item covering a cell is found from any cell of its footprint",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "growing an inventory keeps every slot flag, tag and placed item",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "shrinking an inventory drops the items that no longer fit",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "an inventory round-trips through storage with its slots, tags and placements",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "inventory junk is rejected rather than trusted",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "the default library ships a character carrying items in its inventory",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "characters round-trip through storage with their inventory",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "a creature saved before inventories existed loads as a plain creature",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "add_item creates an item through the ability layer",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "update_item changes the footprint, tags and render mode",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "update_item refuses a render mode that does not exist",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "update_item refuses a sprite that is not a square grid",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "update_item accepts a square sprite",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "add_character makes a creature that starts with an inventory",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "set_inventory reshapes the grid",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "update_inventory_slot can kill a slot and tag another",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "place_inventory_item refuses an item a tagged slot does not accept",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "place_inventory_item accepts the item the slot was tagged for",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "place_inventory_item refuses to stack two items on the same cell",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "remove_inventory_item takes the item back out from any of its cells",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "inventory actions on a creature without one say so",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "clear_inventory takes the grid away entirely",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "remove_item deletes the definition",
+    "topic": "items and inventories",
+    "held": true
+  },
+  {
+    "claim": "a character walking the way the camera looks shows its back, and the other way its front",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "a character crossing the view shows its side, mirrored on the far half",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "the 45° turns land on the quarter rotations, toward and away",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "the eight facings fold onto exactly the five rotations",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "turning the camera turns every character with it",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "a heading a hair either side of dead ahead still reads as facing the viewer",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "a frame index cycles with the clock and holds still on a single frame",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "standing still plays idle and walking plays moving, in the rotation the camera sees",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "the moving animation advances over time",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "a rotation or animation with no frames falls back to one that has them",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "a billboard with no frames at all draws nothing",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "every rotation ships with both an idle and a moving animation",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "every shipped frame is valid sprite art with transparent edges",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "the five rotations are drawn differently from one another",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "the default character ships with billboard sprites",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "plain creatures ship without them and keep their cubes",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "billboards round-trip through storage with every frame and both fps",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "stored billboard junk is repaired rather than trusted",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "a billboard with nothing usable in it is dropped entirely",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "a creature saved before billboards existed loads without one",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "a heading is the compass angle of the step it came from",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "a creature walking south is moving, and faces south",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "a creature that could not move is not animated as walking",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "a creature standing on its target is idle",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "set_character_frame refuses a rotation that is not one of the five",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "set_character_frame refuses an animation that is neither idle nor moving",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "painting the first frame gives a creature a billboard and makes it a character",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "a frame index past the append slot is refused",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "the frame after the last one appends",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "set_character_animation_fps clamps to the playable range",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "remove_character_frame drops one frame and keeps the rest",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "removing the last frame anywhere takes the whole billboard away",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "fps on a character with no sprites says so",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "clear_character_billboard drops every rotation at once",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "a billboard cleared to nothing reports no frames",
+    "topic": "character billboards",
+    "held": true
+  },
+  {
+    "claim": "art resolutions go up to 1024x1024 and still offer the small ones",
+    "topic": "the player character",
+    "held": true
+  },
+  {
+    "claim": "sprite art of 128 and 1024 is accepted, and 2048 is not",
+    "topic": "the player character",
+    "held": true
+  },
+  {
+    "claim": "cube face art of 1024 is accepted where 64 used to be the ceiling",
+    "topic": "the player character",
+    "held": true
+  },
+  {
+    "claim": "every dwarf frame is valid 128x128 sprite art with something drawn on it",
+    "topic": "the player character",
+    "held": true
+  },
+  {
+    "claim": "the dwarf leaves the frame edges transparent so she reads as a cut-out",
+    "topic": "the player character",
+    "held": true
+  },
+  {
+    "claim": "every rotation carries the full idle and walk cycles",
+    "topic": "the player character",
+    "held": true
+  },
+  {
+    "claim": "no two frames of a walk cycle are the same drawing",
+    "topic": "the player character",
+    "held": true
+  },
+  {
+    "claim": "the idle cycle breathes rather than holding one pose",
+    "topic": "the player character",
+    "held": true
+  },
+  {
+    "claim": "the five rotations are drawn differently from one another",
+    "topic": "the player character",
+    "held": true
+  },
+  {
+    "claim": "the default library ships a female dwarf as the player character",
+    "topic": "the player character",
+    "held": true
+  },
+  {
+    "claim": "the player character has sprites to draw, so no capsule is needed",
+    "topic": "the player character",
+    "held": true
+  },
+  {
+    "claim": "the player character stands two tiles tall, as tall as a blocking tile",
+    "topic": "the player character",
+    "held": true
+  },
+  {
+    "claim": "the dwarf sprite is drawn body-height tall, undistorted, feet on the ground",
+    "topic": "the player character",
+    "held": true
+  },
+  {
+    "claim": "a library with no dwarf still resolves some character for the player",
+    "topic": "the player character",
+    "held": true
+  },
+  {
+    "claim": "built-in art is stored as a name, never as its pixels",
+    "topic": "the player character",
+    "held": true
+  },
+  {
+    "claim": "the saved creature file stays far smaller than the art it names",
+    "topic": "the player character",
+    "held": true
+  },
+  {
+    "claim": "reloading rebuilds the named art in full",
+    "topic": "the player character",
+    "held": true
+  },
+  {
+    "claim": "every built-in art name builds a billboard, and unknown names build nothing",
+    "topic": "the player character",
+    "held": true
+  },
+  {
+    "claim": "a creature naming art that no longer exists falls back to its own stored frames",
+    "topic": "the player character",
+    "held": true
+  },
+  {
+    "claim": "every blocking tile in the catalog stands at least two tiles tall, except the pools",
+    "topic": "tile heights",
+    "held": true
+  },
+  {
+    "claim": "pools stay ankle deep rather than standing as a wall",
+    "topic": "tile heights",
+    "held": true
+  },
+  {
+    "claim": "walkable tiles are floors, so they claim no standing height",
+    "topic": "tile heights",
+    "held": true
+  },
+  {
+    "claim": "a two-tall wall draws two stacked cubes over one floor",
+    "topic": "tile heights",
+    "held": true
+  },
+  {
+    "claim": "the stacked cubes sit one unit apart, starting at the ground",
+    "topic": "tile heights",
+    "held": true
+  },
+  {
+    "claim": "a tree is drawn as a single cone as tall as the tile says",
+    "topic": "tile heights",
+    "held": true
+  },
+  {
+    "claim": "a tileset saved before heights existed loads with blockers two tall and floors one",
+    "topic": "tile heights",
+    "held": true
+  },
+  {
+    "claim": "an authored height survives a save and reload",
+    "topic": "tile heights",
+    "held": true
+  },
+  {
+    "claim": "inside a panel, only its presentation folders reach for react or three",
+    "topic": "the dom boundary",
+    "held": true
+  },
+  {
+    "claim": "the ability layer, the api, the wire and the server never reach for react or three",
+    "topic": "the dom boundary",
+    "held": true
+  },
+  {
+    "claim": "documentation is rendered from the code, so no prose file has grown back beside it",
+    "topic": "documentation",
+    "held": true
+  },
+  {
+    "claim": "a sentence about this codebase lives in a check claim, never in a comment beside one",
+    "topic": "documentation",
+    "held": true
+  },
+  {
+    "claim": "every claim stays one sentence, so a check cannot quietly become a paragraph",
+    "topic": "documentation",
+    "held": true
+  },
+  {
+    "claim": "the wire carries poses and speech, never terrain, because both ends regenerate the world from its seed",
+    "topic": "the design bets",
+    "held": true
+  },
+  {
+    "claim": "a snapshot row is six numbers, so its cost is per player rather than per tile",
+    "topic": "the design bets",
+    "held": true
+  },
+  {
+    "claim": "doubling sight radius roughly quadruples the tiles an agent must read, so seeing farther is a trade",
+    "topic": "the design bets",
+    "held": true
+  },
+  {
+    "claim": "every sight radius in range yields an odd-sided window, so the agent stays centred on it",
+    "topic": "the design bets",
+    "held": true
+  },
+  {
+    "claim": "no ability changes what you are looking at, only what is there for an observation to report",
+    "topic": "the design bets",
+    "held": true
+  },
+  {
+    "claim": "a landmark room floors exactly the rectangle it was given",
+    "topic": "landmarks and ceilings",
+    "held": true
+  },
+  {
+    "claim": "a landmark room lands in whichever chunk holds its coordinates, and nowhere else",
+    "topic": "landmarks and ceilings",
+    "held": true
+  },
+  {
+    "claim": "a landmark room is the same however its chunks are visited",
+    "topic": "landmarks and ceilings",
+    "held": true
+  },
+  {
+    "claim": "a landmark point puts exactly one tagged point at the coordinates it was given",
+    "topic": "landmarks and ceilings",
+    "held": true
+  },
+  {
+    "claim": "the rooms knob opens chambers wider than the corridors around them",
+    "topic": "landmarks and ceilings",
+    "held": true
+  },
+  {
+    "claim": "a labyrinth with rooms is the same however its chunks are visited",
+    "topic": "landmarks and ceilings",
+    "held": true
+  },
+  {
+    "claim": "rooms only ever open walls, never seal a corridor shut",
+    "topic": "landmarks and ceilings",
+    "held": true
+  },
+  {
+    "claim": "a tiles node may be drawn as a tile layer or as a ceiling",
+    "topic": "landmarks and ceilings",
+    "held": true
+  },
+  {
+    "claim": "a node bound to ceiling roofs the world without painting anything on the floor",
+    "topic": "landmarks and ceilings",
+    "held": true
+  },
+  {
+    "claim": "a stored ceiling height survives a save and load, and junk falls back to the default",
+    "topic": "landmarks and ceilings",
+    "held": true
+  },
+  {
+    "claim": "a light radius is clamped into range and junk reads as dark",
+    "topic": "underground light",
+    "held": true
+  },
+  {
+    "claim": "blocks and items are dark until something sets a radius on them",
+    "topic": "underground light",
+    "held": true
+  },
+  {
+    "claim": "the torch emits warm light and is carried in a hand slot",
+    "topic": "underground light",
+    "held": true
+  },
+  {
+    "claim": "whatever emits light glows in its own right, since its light sits inside it",
+    "topic": "underground light",
+    "held": true
+  },
+  {
+    "claim": "a brighter emitter glows harder, and none of them glow past full",
+    "topic": "underground light",
+    "held": true
+  },
+  {
+    "claim": "stored tiles and items without a light field load as dark rather than broken",
+    "topic": "underground light",
+    "held": true
+  },
+  {
+    "claim": "the lava seams lighting the delve are placed as glowing surfaces, not dark ones",
+    "topic": "underground light",
+    "held": true
+  },
+  {
+    "claim": "the underground world turns the sky off entirely",
+    "topic": "underground light",
+    "held": true
+  },
+  {
+    "claim": "every cell of the underground world has a ceiling over it",
+    "topic": "underground light",
+    "held": true
+  },
+  {
+    "claim": "the roof hangs above head height, not on the floor",
+    "topic": "underground light",
+    "held": true
+  },
+  {
+    "claim": "the labyrinth mixes passages with chambers wider than any corridor",
+    "topic": "underground light",
+    "held": true
+  },
+  {
+    "claim": "the player wakes in a floored seed chamber",
+    "topic": "underground light",
+    "held": true
+  },
+  {
+    "claim": "every open cell of the delve is reachable on foot from the seed chamber",
+    "topic": "underground light",
+    "held": true
+  },
+  {
+    "claim": "the delve is mostly open ground rather than solid rock",
+    "topic": "underground light",
+    "held": true
+  },
+  {
+    "claim": "the only blocks lighting the delve are the lava seams",
+    "topic": "underground light",
+    "held": true
+  },
+  {
+    "claim": "the torch lying in the seed chamber lights it before anyone picks it up",
+    "topic": "underground light",
+    "held": true
+  },
+  {
+    "claim": "a character carrying nothing that glows emits no light",
+    "topic": "underground light",
+    "held": true
+  },
+  {
+    "claim": "picking up where nothing lies says so instead of inventing an item",
+    "topic": "underground light",
+    "held": true
+  },
+  {
+    "claim": "walking onto the torch and picking it up succeeds",
+    "topic": "underground light",
+    "held": true
+  },
+  {
+    "claim": "the picked-up torch is gone from the ground and in the bag",
+    "topic": "underground light",
+    "held": true
+  },
+  {
+    "claim": "a character holding the torch emits its light wherever she walks",
+    "topic": "underground light",
+    "held": true
+  },
+  {
+    "claim": "an item already taken cannot be picked up again",
+    "topic": "underground light",
+    "held": true
+  },
+  {
+    "claim": "walking over bare ground stows nothing and says nothing",
+    "topic": "underground light",
+    "held": true
+  },
+  {
+    "claim": "walking onto the torch stows it without pressing a key",
+    "topic": "underground light",
+    "held": true
+  },
+  {
+    "claim": "the walk-over pickup says what it picked up",
+    "topic": "underground light",
+    "held": true
+  },
+  {
+    "claim": "walking back over an emptied tile picks nothing up twice",
+    "topic": "underground light",
+    "held": true
+  },
+  {
+    "claim": "the torch lights the way once it has been walked over",
+    "topic": "underground light",
+    "held": true
+  }
+]

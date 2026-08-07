@@ -18,7 +18,7 @@ function rejectNonKnobParams(def: StandardNodeTypeDef): void {
     if (!isKnobParamSpec(spec)) {
       throw new Error(
         `node type '${def.type}' param '${name}' has kind '${(spec as { kind: string }).kind}' — ` +
-          `node knobs must be numbers (number/int/choice/toggle) or tile links (tile); see docs/authoring-nodes.md`,
+          `node knobs must be numbers (number/int/choice/toggle) or tile links (tile) — see the node types section of GET /docs`,
       );
     }
   }

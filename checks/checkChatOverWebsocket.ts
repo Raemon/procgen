@@ -30,15 +30,18 @@ function startServer() {
 
 async function waitForHealth(): Promise<void> {
   for (let attempt = 0; attempt < 60; attempt++) {
-    try {
-      const response = await fetch(`http://localhost:${PORT}/healthz`);
-      if (response.ok) return;
-    } catch {
-      // the server is still booting
-    }
+    if (await serverIsAnswering()) return;
     await delay(500);
   }
   throw new Error('server never became healthy');
+}
+
+async function serverIsAnswering(): Promise<boolean> {
+  try {
+    return (await fetch(`http://localhost:${PORT}/healthz`)).ok;
+  } catch {
+    return false;
+  }
 }
 
 async function checkSpeechReachesEveryone(): Promise<void> {

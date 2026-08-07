@@ -7,6 +7,10 @@ import { checkUndergroundLightInvariants } from './checkUndergroundLightInvarian
 import { checkPrefabAndCreatureInvariants } from './checkPrefabAndCreatureInvariants';
 import { checkTileHeightInvariants } from './checkTileHeightInvariants';
 import { checkPresentationFoldersAreTheOnlyDomCode } from './checkPresentationFoldersAreTheOnlyDomCode';
+import { checkDesignBetsStillHold } from './checkDesignBetsStillHold';
+import { recordClaim, underTopic } from './claimRegistry';
+import { writeProvenClaims } from './writeProvenClaims';
+import { checkDocumentationHasNotRegrown } from './checkDocumentationHasNotRegrown';
 import { cameraRelativeStep } from '../world/input/cameraRelativeStep';
 import { PipelineEvaluator } from '../procgen/eval/evaluator';
 import { allNodeTypes } from '../procgen/nodeRegistry';
@@ -121,8 +125,7 @@ import {
 import { CharacterCamera } from '../world/render/view3d/characterCamera';
 import { createCharacterFog } from '../world/render/view3d/worldScene';
 
-/** The grid a character sees at the default sight radius. */
-const CHARACTER_VIEW_SIZE = characterViewSize();
+const CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT = characterViewSize();
 
 const failures: string[] = [];
 
@@ -143,6 +146,7 @@ function round(value: number): number {
 const tileset = new Tileset();
 
 function check(name: string, condition: boolean): void {
+  recordClaim(name, condition);
   if (!condition) failures.push(name);
   console.log(`${condition ? 'ok  ' : 'FAIL'} ${name}`);
 }
@@ -1331,9 +1335,9 @@ check('god observation states its facing', godObs.facing === 'north');
 const charObs = buildObservation(agentWorld.sampler, tileset, { x: 0, y: 0, facing: 0 }, 'character');
 check('character observation never states a facing', charObs.facing === null);
 check('character observation blanks everything behind the agent', (() => {
-  const center = Math.floor(CHARACTER_VIEW_SIZE / 2);
-  for (let row = 0; row < CHARACTER_VIEW_SIZE; row++) {
-    for (let column = 0; column < CHARACTER_VIEW_SIZE; column++) {
+  const center = Math.floor(CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT / 2);
+  for (let row = 0; row < CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT; row++) {
+    for (let column = 0; column < CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT; column++) {
       const behind = !isInFrontHalfPlane(0, column - center, row - center);
       const isSelf = row === center && column === center;
       if (behind && !isSelf && charObs.view[row]![column] !== ' ') return false;
@@ -1341,7 +1345,7 @@ check('character observation blanks everything behind the agent', (() => {
   }
   return true;
 })());
-check('the character view grid is exactly wide enough to hold the sight radius', CHARACTER_VIEW_SIZE === DEFAULT_CHARACTER_SIGHT_RADIUS_TILES * 2 + 1);
+check('the character view grid is exactly wide enough to hold the sight radius', CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT === DEFAULT_CHARACTER_SIGHT_RADIUS_TILES * 2 + 1);
 check('the 2.5D fog turns opaque exactly at the sight radius', (() => {
   const fog = createCharacterFog();
   return fog.far === DEFAULT_CHARACTER_SIGHT_RADIUS_TILES && fog.near === hazeStartTiles();
@@ -1367,9 +1371,9 @@ check('the character camera looks along the facing it is given', (() => {
   return seen.size === 8;
 })());
 check('character observation blanks every tile the fog would swallow', (() => {
-  const center = Math.floor(CHARACTER_VIEW_SIZE / 2);
-  for (let row = 0; row < CHARACTER_VIEW_SIZE; row++) {
-    for (let column = 0; column < CHARACTER_VIEW_SIZE; column++) {
+  const center = Math.floor(CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT / 2);
+  for (let row = 0; row < CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT; row++) {
+    for (let column = 0; column < CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT; column++) {
       const dx = column - center;
       const dy = row - center;
       const isSelf = dx === 0 && dy === 0;
@@ -1381,8 +1385,8 @@ check('character observation blanks every tile the fog would swallow', (() => {
 })());
 check('the character sight test is the half-plane test bounded by the sight radius', (() => {
   for (let facing = 0; facing < 8; facing++) {
-    for (let dy = -CHARACTER_VIEW_SIZE; dy <= CHARACTER_VIEW_SIZE; dy++) {
-      for (let dx = -CHARACTER_VIEW_SIZE; dx <= CHARACTER_VIEW_SIZE; dx++) {
+    for (let dy = -CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT; dy <= CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT; dy++) {
+      for (let dx = -CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT; dx <= CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT; dx++) {
         const expected =
           isInFrontHalfPlane(facing as FacingIndex, dx, dy) &&
           dx * dx + dy * dy <= DEFAULT_CHARACTER_SIGHT_RADIUS_TILES * DEFAULT_CHARACTER_SIGHT_RADIUS_TILES;
@@ -1392,11 +1396,11 @@ check('the character sight test is the half-plane test bounded by the sight radi
   }
   return true;
 })());
-check('a character observation stays smaller to read than a god observation', CHARACTER_VIEW_SIZE < GOD_VIEW_SIZE);
+check('a character observation stays smaller to read than a god observation', CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT < GOD_VIEW_SIZE);
 check('the character observation states its sight radius, the god one has none', charObs.sightRadiusTiles === DEFAULT_CHARACTER_SIGHT_RADIUS_TILES && godObs.sightRadiusTiles === null);
 check('the character observation text names the sight radius', observationText(charObs).includes(`${DEFAULT_CHARACTER_SIGHT_RADIUS_TILES} tiles`));
 check('every facing rotates the blank half of the character view', (() => {
-  const center = Math.floor(CHARACTER_VIEW_SIZE / 2);
+  const center = Math.floor(CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT / 2);
   const views = new Set<string>();
   for (let facing = 0; facing < 8; facing++) {
     const obs = buildObservation(
@@ -1406,8 +1410,8 @@ check('every facing rotates the blank half of the character view', (() => {
       'character',
     );
     views.add(obs.view.join('\n'));
-    for (let row = 0; row < CHARACTER_VIEW_SIZE; row++) {
-      for (let column = 0; column < CHARACTER_VIEW_SIZE; column++) {
+    for (let row = 0; row < CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT; row++) {
+      for (let column = 0; column < CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT; column++) {
         const visible = isWithinCharacterSight(facing as FacingIndex, column - center, row - center);
         if (!visible && !(row === center && column === center) && obs.view[row]![column] !== ' ') {
           return false;
@@ -1438,10 +1442,10 @@ check('a widened sight radius still blanks everything behind and past the fog', 
 })());
 check('a wider radius only adds ground: every tile the default radius showed reads the same', (() => {
   const wideCenter = Math.floor(wideObs.viewSize / 2);
-  const nearCenter = Math.floor(CHARACTER_VIEW_SIZE / 2);
+  const nearCenter = Math.floor(CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT / 2);
   let widened = false;
-  for (let row = 0; row < CHARACTER_VIEW_SIZE; row++) {
-    for (let column = 0; column < CHARACTER_VIEW_SIZE; column++) {
+  for (let row = 0; row < CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT; row++) {
+    for (let column = 0; column < CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT; column++) {
       const near = charObs.view[row]![column]!;
       const wide = wideObs.view[row - nearCenter + wideCenter]![column - nearCenter + wideCenter]!;
       if (near !== ' ' && near !== wide) return false;
@@ -1471,7 +1475,7 @@ check('haze always starts before the fog closes, at every radius agents may pick
 })());
 
 const agentDocs = buildApiDocs(tileset);
-check('api docs state the character sight radius and grid size', agentDocs.includes(`${DEFAULT_CHARACTER_SIGHT_RADIUS_TILES}-tile sight radius`) && agentDocs.includes(`${CHARACTER_VIEW_SIZE}x${CHARACTER_VIEW_SIZE}`));
+check('api docs state the character sight radius and grid size', agentDocs.includes(`${DEFAULT_CHARACTER_SIGHT_RADIUS_TILES}-tile sight radius`) && agentDocs.includes(`${CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT}x${CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT}`));
 check('api docs render with no unfilled placeholder', !/\{\{\w+\}\}/.test(agentDocs));
 check('api docs list every ability of both modes', everyAbility().every((spec) => agentDocs.includes(`\`${spec.action}\``)));
 check('api docs list every failure code', FAILURES.every((failure) => agentDocs.includes(`\`${failure.code}\``)));
@@ -1970,14 +1974,28 @@ check(
   })(),
 );
 
+underTopic('prefabs and creatures');
 checkPrefabAndCreatureInvariants(check);
+underTopic('items and inventories');
 checkItemAndInventoryInvariants(check);
+underTopic('character billboards');
 checkCharacterBillboardInvariants(check);
+underTopic('the player character');
 checkPlayerCharacterInvariants(check);
+underTopic('tile heights');
 checkTileHeightInvariants(check);
+underTopic('the dom boundary');
 checkPresentationFoldersAreTheOnlyDomCode(check);
+underTopic('documentation');
+checkDocumentationHasNotRegrown(check);
+underTopic('the design bets');
+checkDesignBetsStillHold(check);
+underTopic('landmarks and ceilings');
 checkLandmarkAndCeilingInvariants(check);
+underTopic('underground light');
 checkUndergroundLightInvariants(check);
+
+writeProvenClaims();
 
 if (failures.length > 0) throw new Error(`${failures.length} check(s) failed: ${failures.join(', ')}`);
 console.log('\nall checks passed');
