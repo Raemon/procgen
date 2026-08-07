@@ -8,6 +8,7 @@ import { NodeListToolbar } from './NodeListToolbar';
 import { PresetsRow } from './PresetsRow';
 import { RandomizeRow } from './RandomizeRow';
 import { scrollNodeCardIntoView } from './scrollNodeCardIntoView';
+import { WorldDaylightRow } from './WorldDaylightRow';
 import { WorldSeedRow } from './WorldSeedRow';
 
 export function ProcgenPanel() {
@@ -24,6 +25,7 @@ export function ProcgenPanel() {
   return (
     <>
       <WorldSeedRow />
+      <WorldDaylightRow />
       <PresetsRow />
       <RandomizeRow />
       <NodeListToolbar />

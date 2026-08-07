@@ -198,14 +198,19 @@ registerNodeAbility({
   action: 'set_display',
   humanControl: 'procgen panel: display section',
   description:
-    'Map a node into the world: tile layers stack in list order, elevation shapes the ground, markers draw glyphs, prefabs stamp structures, creatures spawn life, items float loot. Fields you leave out keep their current value when the mode is unchanged.',
+    'Map a node into the world: tile layers stack in list order, ceilings roof the world over, elevation shapes the ground, markers draw glyphs, prefabs stamp structures, creatures spawn life, items float loot. Fields you leave out keep their current value when the mode is unchanged.',
   params: {
     node_id: { kind: 'nodeId', help: NODE_ID_HELP },
     display: {
       kind: 'text',
-      help: "'hidden', 'tileLayer' (tiles output), 'elevation' (field output); a points output takes 'markers', 'prefabs', 'creatures' or 'items'",
+      help: "'hidden', 'tileLayer' or 'ceiling' (tiles output), 'elevation' (field output); a points output takes 'markers', 'prefabs', 'creatures' or 'items'",
     },
     height_scale: { kind: 'number', help: 'elevation only: world height per field unit', optional: true },
+    ceiling_height: {
+      kind: 'number',
+      help: 'ceiling only: how many tiles above the ground the roof hangs',
+      optional: true,
+    },
     tile_id: { kind: 'int', help: 'markers only: a tileset id to draw, or -1 for the glyph', optional: true },
     glyph: { kind: 'text', help: 'markers only: a single character', optional: true },
     color: { kind: 'text', help: 'markers only: a #rrggbb color, or #rrggbbaa with aa=00 for transparent', optional: true },
@@ -461,7 +466,7 @@ function setDisplay(
   if (!isDisplayMode(mode)) {
     return abilityFailed(
       'invalid_value',
-      "display must be 'hidden', 'tileLayer', 'elevation', 'markers', 'prefabs', 'creatures' or 'items'",
+      "display must be 'hidden', 'tileLayer', 'ceiling', 'elevation', 'markers', 'prefabs', 'creatures' or 'items'",
     );
   }
   const kind = outputKindOf(def, node.params);
@@ -482,6 +487,7 @@ function isDisplayMode(value: unknown): value is DisplayMode {
   return (
     value === 'hidden' ||
     value === 'tileLayer' ||
+    value === 'ceiling' ||
     value === 'elevation' ||
     value === 'markers' ||
     value === 'prefabs' ||
@@ -496,6 +502,10 @@ function bindingFrom(
   params: Record<string, unknown>,
 ): DisplayBinding {
   const base = current.mode === mode ? current : defaultBindingForMode(mode);
+  if (base.mode === 'ceiling') {
+    const height = readNumber(params, 'ceiling_height');
+    return height.ok ? { ...base, height: height.value } : base;
+  }
   if (base.mode === 'elevation') {
     const height = readNumber(params, 'height_scale');
     return height.ok ? { ...base, heightScale: height.value } : base;

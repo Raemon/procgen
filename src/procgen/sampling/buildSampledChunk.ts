@@ -4,20 +4,27 @@ import type { NodeInstance } from '../pipeline/pipelineState';
 import type { ChunkVoxelColumns } from '../prefabOverlay/chunkVoxelColumns';
 import { EMPTY_TILE } from '../values/chunkValues';
 import { asField, asTiles } from '../values/valueAccess';
+import { mergedCeiling } from './mergedCeiling';
 import type { SampledChunk } from './sampledChunkCache';
+
+export interface SampledChunkNodes {
+  tileLayers: readonly NodeInstance[];
+  ceilings: readonly NodeInstance[];
+  elevation: NodeInstance | undefined;
+}
 
 export function buildSampledChunk(
   evaluator: PipelineEvaluator,
-  tileLayerNodes: readonly NodeInstance[],
-  elevationNode: NodeInstance | undefined,
+  nodes: SampledChunkNodes,
   columns: ChunkVoxelColumns,
   chunkX: number,
   chunkY: number,
 ): SampledChunk {
   return {
-    tiles: mergedTiles(evaluator, tileLayerNodes, columns, chunkX, chunkY),
-    elevation: scaledElevation(evaluator, elevationNode, chunkX, chunkY),
+    tiles: mergedTiles(evaluator, nodes.tileLayers, columns, chunkX, chunkY),
+    elevation: scaledElevation(evaluator, nodes.elevation, chunkX, chunkY),
     columns,
+    ceiling: mergedCeiling(evaluator, nodes.ceilings, chunkX, chunkY),
   };
 }
 

@@ -5,6 +5,7 @@ import {
   clampGridSide,
   isItemOrientation,
   isItemRender,
+  itemWithSanitizedLight,
   newItemWithId,
   normalizedTags,
   type ItemDef,
@@ -33,7 +34,7 @@ function hasItemIdentity(value: unknown): value is Partial<ItemDef> & { id: numb
 }
 
 function sanitizedItem(stored: Partial<ItemDef> & { id: number }): ItemDef {
-  const item = { ...newItemWithId(stored.id), ...stored };
+  const item = itemWithSanitizedLight({ ...newItemWithId(stored.id), ...stored });
   return {
     ...item,
     render: isItemRender(item.render) ? item.render : newItemWithId(item.id).render,

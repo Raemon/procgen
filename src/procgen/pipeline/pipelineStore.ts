@@ -3,7 +3,7 @@ import { nodeTypeOf } from '../nodeRegistry';
 import { outputKindOf, type ParamValue } from '../nodeType';
 import { autoWireInputsToNearestSources } from './autoWireNewNode';
 import { createNodeInstance, nextNodeId } from './createNodeInstance';
-import { nodeIndexById, type NodeInstance, type PipelineState } from './pipelineState';
+import { clampDaylight, nodeIndexById, type NodeInstance, type PipelineState } from './pipelineState';
 import type { NodeTemplate } from '../templates/nodeTemplate';
 import { stampTemplateInto } from '../templates/stampTemplate';
 import { dropInvalidWires, isWireValid } from './wiringRules';
@@ -24,6 +24,10 @@ export class PipelineStore {
     return this.state.seed;
   }
 
+  daylight(): number {
+    return this.state.daylight;
+  }
+
   nodes(): readonly NodeInstance[] {
     return this.state.nodes;
   }
@@ -39,6 +43,11 @@ export class PipelineStore {
 
   setSeed(seed: number): void {
     this.state.seed = Math.round(seed);
+    this.emit('values');
+  }
+
+  setDaylight(daylight: number): void {
+    this.state.daylight = clampDaylight(daylight);
     this.emit('values');
   }
 

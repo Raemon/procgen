@@ -36,6 +36,7 @@ export function performVerb(
       worldPresets: world.worldPresets,
       randomizeHistory: world.randomizeHistory,
       regionSampler: world.sampler,
+      groundItems: world.groundItems,
       actor: sessionActor(session, world.isWalkable),
     },
     session.mode,

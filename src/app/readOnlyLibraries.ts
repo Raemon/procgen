@@ -7,7 +7,10 @@ import type { TemplateLibrary } from '../procgen/templates/templateLibrary';
 import type { Tileset } from '../world/tiles/tileset';
 import type { World } from '../world/world';
 
-export type ReadOnlyPipelineStore = Pick<PipelineStore, 'seed' | 'nodes' | 'nodeById' | 'onChange'>;
+export type ReadOnlyPipelineStore = Pick<
+  PipelineStore,
+  'seed' | 'daylight' | 'nodes' | 'nodeById' | 'onChange'
+>;
 export type ReadOnlyTileset = Pick<Tileset, 'all' | 'byId' | 'byRole' | 'idForRole' | 'onChange'>;
 export type ReadOnlyPrefabLibrary = Pick<
   PrefabLibrary,

@@ -2,6 +2,8 @@ import '../src/procgen/nodes';
 import { checkCharacterBillboardInvariants } from './checkCharacterBillboardInvariants';
 import { checkItemAndInventoryInvariants } from './checkItemAndInventoryInvariants';
 import { checkPlayerCharacterInvariants } from './checkPlayerCharacterInvariants';
+import { checkLandmarkAndCeilingInvariants } from './checkLandmarkAndCeilingInvariants';
+import { checkUndergroundLightInvariants } from './checkUndergroundLightInvariants';
 import { checkPrefabAndCreatureInvariants } from './checkPrefabAndCreatureInvariants';
 import { cameraRelativeStep } from '../src/input/cameraRelativeStep';
 import { PipelineEvaluator } from '../src/procgen/eval/evaluator';
@@ -76,6 +78,7 @@ import { TemplateLibrary } from '../src/procgen/templates/templateLibrary';
 import { WorldPresetLibrary } from '../src/procgen/presets/worldPresetLibrary';
 import { CreatureLibrary } from '../src/creatures/creatureLibrary';
 import { ItemLibrary } from '../src/items/itemLibrary';
+import { NO_GROUND_ITEMS } from '../src/items/pickups/groundItems';
 import { PrefabLibrary } from '../src/prefabs/prefabLibrary';
 import { FAILURES } from '../src/agent/failures';
 import { nodeTypesJson } from '../src/agent/nodeCatalog';
@@ -97,7 +100,7 @@ import {
   isWithinCharacterSight,
 } from '../src/world/vision/characterSight';
 import { CharacterCamera } from '../src/views/view3d/characterCamera';
-import { createCharacterFog } from '../src/views/view3d/daylitScene';
+import { createCharacterFog } from '../src/views/view3d/worldScene';
 
 const failures: string[] = [];
 
@@ -1302,6 +1305,7 @@ function abilityWorld() {
     templates: new TemplateLibrary([]),
     worldPresets: new WorldPresetLibrary([]),
     randomizeHistory: new RandomizeHistory(),
+    groundItems: NO_GROUND_ITEMS,
     regionSampler: {
       tileAt: () => 0,
       elevationAt: () => 0,
@@ -1733,6 +1737,8 @@ checkPrefabAndCreatureInvariants(check);
 checkItemAndInventoryInvariants(check);
 checkCharacterBillboardInvariants(check);
 checkPlayerCharacterInvariants(check);
+checkLandmarkAndCeilingInvariants(check);
+checkUndergroundLightInvariants(check);
 
 if (failures.length > 0) throw new Error(`${failures.length} check(s) failed: ${failures.join(', ')}`);
 console.log('\nall checks passed');

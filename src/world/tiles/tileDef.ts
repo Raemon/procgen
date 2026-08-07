@@ -1,3 +1,4 @@
+import { clampLightRadius, DEFAULT_LIGHT_INK } from '../light/lightEmission';
 import type { CubeFaceArt } from './tileFaceArt';
 
 export type TileRole = 'water' | 'sand' | 'grass' | 'tree' | 'rock';
@@ -10,6 +11,8 @@ export interface TileDef {
   walkable: boolean;
   role: TileRole | null;
   faceArt: CubeFaceArt | null;
+  light: number;
+  lightInk: string;
 }
 
 export function newTileWithId(id: number): TileDef {
@@ -21,5 +24,15 @@ export function newTileWithId(id: number): TileDef {
     walkable: true,
     role: null,
     faceArt: null,
+    light: 0,
+    lightInk: DEFAULT_LIGHT_INK,
+  };
+}
+
+export function tileWithSanitizedLight(tile: TileDef): TileDef {
+  return {
+    ...tile,
+    light: clampLightRadius(tile.light),
+    lightInk: typeof tile.lightInk === 'string' ? tile.lightInk : DEFAULT_LIGHT_INK,
   };
 }

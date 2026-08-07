@@ -5,6 +5,7 @@ export const RANDOM_ROTATION = -1;
 export type DisplayBinding =
   | { mode: 'hidden' }
   | { mode: 'tileLayer' }
+  | { mode: 'ceiling'; height: number }
   | { mode: 'elevation'; heightScale: number }
   | { mode: 'markers'; tileId: number; glyph: string; color: string }
   | { mode: 'prefabs'; prefabId: number; rotation: number }
@@ -15,11 +16,15 @@ export type DisplayMode = DisplayBinding['mode'];
 
 export function displayModesForKind(kind: ValueKind): DisplayMode[] {
   if (kind === 'field') return ['hidden', 'elevation'];
-  if (kind === 'tiles') return ['tileLayer', 'hidden'];
+  if (kind === 'tiles') return ['tileLayer', 'ceiling', 'hidden'];
   return ['markers', 'prefabs', 'creatures', 'items', 'hidden'];
 }
 
+export const DEFAULT_CEILING_HEIGHT = 4;
+export const MAX_CEILING_HEIGHT = 16;
+
 export function defaultBindingForMode(mode: DisplayMode): DisplayBinding {
+  if (mode === 'ceiling') return { mode, height: DEFAULT_CEILING_HEIGHT };
   if (mode === 'elevation') return { mode, heightScale: 3 };
   if (mode === 'markers') return { mode, tileId: -1, glyph: '*', color: '#ff5577' };
   if (mode === 'prefabs') return { mode, prefabId: -1, rotation: RANDOM_ROTATION };

@@ -1,3 +1,4 @@
+import { clampLightRadius, DEFAULT_LIGHT_INK } from '../world/light/lightEmission';
 import type { SpriteArt } from '../world/tiles/spriteArt';
 import type { CubeFaceArt } from '../world/tiles/tileFaceArt';
 
@@ -51,6 +52,8 @@ export interface ItemDef {
   gridWidth: number;
   gridHeight: number;
   tags: string[];
+  light: number;
+  lightInk: string;
 }
 
 export function newItemWithId(id: number): ItemDef {
@@ -70,6 +73,16 @@ export function newItemWithId(id: number): ItemDef {
     gridWidth: 1,
     gridHeight: 1,
     tags: [],
+    light: 0,
+    lightInk: DEFAULT_LIGHT_INK,
+  };
+}
+
+export function itemWithSanitizedLight(item: ItemDef): ItemDef {
+  return {
+    ...item,
+    light: clampLightRadius(item.light),
+    lightInk: typeof item.lightInk === 'string' ? item.lightInk : DEFAULT_LIGHT_INK,
   };
 }
 

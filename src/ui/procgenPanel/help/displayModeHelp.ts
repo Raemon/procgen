@@ -6,6 +6,7 @@ import type { TooltipContent } from '../../tooltips/tooltipContent';
 export const MODE_LABELS: Record<DisplayMode, string> = {
   hidden: 'hidden',
   tileLayer: 'tile layer',
+  ceiling: 'ceiling',
   elevation: 'elevation',
   markers: 'markers',
   prefabs: 'prefabs',
@@ -17,6 +18,8 @@ const MODE_HELP: Record<DisplayMode, string> = {
   hidden: 'Not drawn at all. For intermediate values that only exist to feed nodes below.',
   tileLayer:
     'Paints the tiles into the map. Layers stack in panel order: later non-empty cells cover earlier ones, empty cells let lower layers show.',
+  ceiling:
+    'Roofs the world over: every non-empty cell hangs as a block that many tiles above the ground. Only drawn in first-person, so the god camera can still see down into a covered world.',
   elevation:
     'Uses the field as 2.5D ground height, multiplied by the height slider. The last enabled elevation node wins.',
   markers:
@@ -34,6 +37,13 @@ export function displayModeTooltip(kind: ValueKind): TooltipContent {
     title: 'display',
     body: 'How this node is drawn into the world. Display never changes dataflow — hidden nodes still feed nodes wired to them.',
     options: displayModesForKind(kind).map((mode) => ({ name: MODE_LABELS[mode], meaning: MODE_HELP[mode] })),
+  };
+}
+
+export function ceilingHeightTooltip(): TooltipContent {
+  return {
+    title: 'ceiling height',
+    body: 'How many tiles above the ground the roof hangs. Keep it above head height or the player walks into her own ceiling; raise it for cathedral caverns.',
   };
 }
 

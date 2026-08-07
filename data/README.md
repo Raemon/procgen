@@ -9,7 +9,10 @@ Committed save files for the app, written by the dev server.
   (see `docs/authoring-tile-art.md`).
 - `prefabs.json` — the prefab library: voxel stamps painted in the prefabs tab
   or captured out of the world view.
-- `creatures.json` — the creature library: looks plus behavior knobs.
+- `creatures.json` — the creature library: looks plus behavior knobs, and for
+  characters the name of their built-in billboard art rather than its pixels.
+  `npm run creatures:write` regenerates it from `src/creatures/defaultCreatures.ts`,
+  discarding creature edits made in the app.
 
 While `npm run dev` is running, every edit in the app is saved here (via the
 `/persist/*` middleware in `vite.config.ts`); commit these files to keep your

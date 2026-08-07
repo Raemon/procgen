@@ -15,6 +15,7 @@ import {
 import { sanitizeInventory } from '../src/items/inventory/sanitizeInventory';
 import { BILLBOARD, CUBE, LYING_FLAT, type ItemDef } from '../src/items/itemDef';
 import { ItemLibrary } from '../src/items/itemLibrary';
+import { NO_GROUND_ITEMS } from '../src/items/pickups/groundItems';
 import { itemsFromStoredJson } from '../src/items/itemStorage';
 import { PrefabLibrary } from '../src/prefabs/prefabLibrary';
 import { displayModesForKind } from '../src/procgen/display/displayBinding';
@@ -349,6 +350,7 @@ function abilityWorld() {
     templates: new TemplateLibrary([]),
     worldPresets: new WorldPresetLibrary([]),
     randomizeHistory: new RandomizeHistory(),
+    groundItems: NO_GROUND_ITEMS,
     regionSampler: { tileAt: () => 0, elevationAt: () => 0, voxelColumnAt: () => null },
     actor: { pose: () => ({ x: 0, y: 0, facing: 0 }), tryStep: () => true, turn: () => undefined },
   };
