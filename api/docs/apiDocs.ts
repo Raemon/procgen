@@ -12,6 +12,7 @@ import {
 import { GOD_VIEW_SIZE } from '../../agents/observation';
 import { FAILURES } from '../../agents/failures';
 import { allRoutes } from '../agent/routeRegistry';
+import { metaTools } from '../agent/agentTools';
 
 const TEMPLATE = `# Procgen world — agent API
 
@@ -172,16 +173,11 @@ world only changes when someone acts on it.
 ## Autopilot runs
 
 A run started through POST .../run drives the agent with an LLM. It gets one tool
-per action above, plus six of its own:
+per action above, plus these of its own:
 
 | tool | what it does |
 | --- | --- |
-| remember | save a note to memory |
-| forget | delete a memory note |
-| write_script | save a named script, replacing one of the same name |
-| run_script | run a saved script |
-| delete_script | delete a saved script |
-| finish | end the run with a summary |
+{{AUTOPILOT_TOOLS}}
 
 Notes and scripts outlive the run, and both are repeated back in every
 observation the model sees, along with what is left of the run's dollar budget.
@@ -213,6 +209,7 @@ function placeholderValue(tileset: ReadOnlyTileset, key: string): string {
   if (key === 'MAX_SIGHT_RADIUS') return String(MAX_CHARACTER_SIGHT_RADIUS_TILES);
   if (key === 'MAX_CHARACTER_SIZE') return String(characterViewSize(MAX_CHARACTER_SIGHT_RADIUS_TILES));
   if (key === 'ENDPOINTS') return endpointsTable();
+  if (key === 'AUTOPILOT_TOOLS') return autopilotToolsTable();
   if (key === 'EXAMPLES') return examples();
   if (key === 'FAILURES') return failuresTable();
   if (key === 'NODE_TYPES') return nodeTypesTable();
@@ -249,6 +246,17 @@ function paramsCell(spec: AbilitySpec): string {
   return entries
     .map(([name, param]) => `\`${name}\`${param.optional ? ' (optional)' : ''}: ${param.help}`)
     .join('; ');
+}
+
+function autopilotToolsTable(): string {
+  return metaTools('god')
+    .map((tool) => `| ${tool.name} | ${firstSentenceOf(tool.description)} |`)
+    .join('\n');
+}
+
+function firstSentenceOf(description: string): string {
+  const stop = description.indexOf('. ');
+  return stop === -1 ? description.replace(/\.$/, '') : description.slice(0, stop);
 }
 
 function endpointsTable(): string {

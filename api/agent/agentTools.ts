@@ -64,7 +64,7 @@ function typeSchema(kind: AbilityParamSpec['kind']): object {
   return { type: 'string' };
 }
 
-function metaTools(mode: AgentMode): ToolDefinition[] {
+export function metaTools(mode: AgentMode): ToolDefinition[] {
   const tools: ToolDefinition[] = [
     {
       name: META_TOOLS.finish,
