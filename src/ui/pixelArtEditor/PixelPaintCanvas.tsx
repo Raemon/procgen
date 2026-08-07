@@ -2,7 +2,8 @@ import { useEffect, useRef, type PointerEvent } from 'react';
 import { paintFacePixels } from '../../views/paintFacePixels';
 import { faceGridSize, type FacePixels } from '../../world/tiles/tileFaceArt';
 
-const CANVAS_TARGET_PIXELS = 160;
+const CANVAS_TARGET_PIXELS = 256;
+const SMALLEST_LEGIBLE_GRID_SCALE = 4;
 
 const CHECKER_SQUARES =
   'linear-gradient(45deg, #2b2b2b 25%, transparent 25%, transparent 75%, #2b2b2b 75%)';
@@ -73,7 +74,7 @@ function redraw(
   const scale = fitCanvasToGrid(canvas, gridSize);
   const ctx = canvas.getContext('2d')!;
   paintFacePixels(ctx, pixels, baseColor, scale);
-  drawGridLines(ctx, gridSize, scale);
+  if (scale >= SMALLEST_LEGIBLE_GRID_SCALE) drawGridLines(ctx, gridSize, scale);
 }
 
 function fitCanvasToGrid(canvas: HTMLCanvasElement, gridSize: number): number {

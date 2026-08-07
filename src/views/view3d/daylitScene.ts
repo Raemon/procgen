@@ -19,10 +19,10 @@ export function createCharacterFog(): THREE.Fog {
   return new THREE.Fog(SKY_INK, CHARACTER_HAZE_START_TILES, CHARACTER_SIGHT_RADIUS_TILES);
 }
 
-export function createPlayerMesh(): THREE.Mesh {
+export function createPlayerCapsule(ink: number = PLAYER_INK): THREE.Mesh {
   return new THREE.Mesh(
     new THREE.CapsuleGeometry(0.3, 0.5, 4, 12),
-    new THREE.MeshLambertMaterial({ color: PLAYER_INK }),
+    new THREE.MeshLambertMaterial({ color: ink }),
   );
 }
 

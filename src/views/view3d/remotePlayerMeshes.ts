@@ -1,49 +1,64 @@
-import * as THREE from 'three';
+import type * as THREE from 'three';
+import type { ReadOnlyCreatureLibrary } from '../../app/readOnlyLibraries';
+import type { CharacterMotion } from '../../creatures/character/characterFrame';
 import type { RemoteEntity, RemotePlayers } from '../../net/remotePlayers';
 import type { WorldSampler } from '../../procgen/worldSampler';
-import { disposeMeshResources } from './disposeMeshResources';
+import { facingYawRadians, type FacingIndex } from '../../world/facing';
+import type { CameraView } from './cameraView';
+import type { CharacterSpriteTextures } from './characterSpriteTextures';
 import { EasedPoint } from './easedPoint';
+import { PlayerCharacterMesh } from './playerCharacterMesh';
 
-const PLAYER_HEIGHT = 0.55;
 const PLAYER_HUES = [0x6ad8ff, 0x8dff6a, 0xff8d6a, 0xd86aff, 0xffe36a, 0x6affc8];
 const AGENT_HUE = 0xff6ad8;
+const HUE_WASH = 0.68;
+const ANIMATION_SPREAD_SECONDS = 3;
 
 export class RemotePlayerMeshes {
-  private readonly meshes = new Map<number, THREE.Mesh>();
+  private readonly characters = new Map<number, PlayerCharacterMesh>();
   private readonly easedPositions = new Map<number, EasedPoint>();
-  private readonly group = new THREE.Group();
 
   constructor(
-    root: THREE.Group,
+    private readonly root: THREE.Group,
+    private readonly creatures: ReadOnlyCreatureLibrary,
     private readonly sampler: WorldSampler,
-  ) {
-    root.add(this.group);
-  }
+    private readonly sprites: CharacterSpriteTextures,
+  ) {}
 
   dispose(): void {
-    for (const id of [...this.meshes.keys()]) this.dropMesh(id);
-    this.group.removeFromParent();
+    for (const id of [...this.characters.keys()]) this.dropCharacter(id);
   }
 
-  syncTo(remote: RemotePlayers, dtSeconds: number): void {
+  forgetSprites(): void {
+    for (const id of [...this.characters.keys()]) this.dropCharacter(id);
+  }
+
+  syncTo(remote: RemotePlayers, dtSeconds: number, view: CameraView): void {
     const live = new Set<number>();
     for (const entity of remote.others()) {
       live.add(entity.id);
-      this.placeMesh(entity, dtSeconds);
+      this.placeCharacter(entity, dtSeconds, view);
     }
-    for (const id of [...this.meshes.keys()]) if (!live.has(id)) this.dropMesh(id);
+    for (const id of [...this.characters.keys()]) if (!live.has(id)) this.dropCharacter(id);
   }
 
   headPointOf(entityId: number): THREE.Vector3 | null {
-    return this.meshes.get(entityId)?.position ?? null;
+    return this.characters.get(entityId)?.position ?? null;
   }
 
-  private placeMesh(entity: RemoteEntity, dtSeconds: number): void {
-    const mesh = this.meshes.get(entity.id) ?? this.addMesh(entity);
+  private placeCharacter(entity: RemoteEntity, dtSeconds: number, view: CameraView): void {
+    const character = this.characters.get(entity.id) ?? this.addCharacter(entity);
     const eased = this.easedPositions.get(entity.id) ?? this.addEasedPosition(entity);
     eased.approach(entity.x, entity.y, dtSeconds);
-    const elevation = this.sampler.elevationAt(Math.round(eased.x), Math.round(eased.y));
-    mesh.position.set(eased.x + 0.5, elevation + PLAYER_HEIGHT, eased.y + 0.5);
+    character.standAt(
+      {
+        x: eased.x + 0.5,
+        y: eased.y + 0.5,
+        elevation: this.sampler.elevationAt(Math.round(eased.x), Math.round(eased.y)),
+        motion: motionOf(entity),
+      },
+      { yaw: view.yaw, seconds: view.seconds + spreadOf(entity.id) },
+    );
   }
 
   private addEasedPosition(entity: RemoteEntity): EasedPoint {
@@ -52,27 +67,41 @@ export class RemotePlayerMeshes {
     return eased;
   }
 
-  private addMesh(entity: RemoteEntity): THREE.Mesh {
-    const mesh = new THREE.Mesh(
-      new THREE.CapsuleGeometry(0.3, 0.5, 4, 12),
-      new THREE.MeshLambertMaterial({ color: hueFor(entity) }),
-    );
-    this.meshes.set(entity.id, mesh);
-    this.group.add(mesh);
-    return mesh;
+  private addCharacter(entity: RemoteEntity): PlayerCharacterMesh {
+    const character = new PlayerCharacterMesh(this.creatures, this.sprites, hueFor(entity));
+    this.root.add(character.object);
+    this.characters.set(entity.id, character);
+    return character;
   }
 
-  private dropMesh(id: number): void {
-    const mesh = this.meshes.get(id);
-    if (!mesh) return;
-    this.group.remove(mesh);
-    disposeMeshResources(mesh);
-    this.meshes.delete(id);
+  private dropCharacter(id: number): void {
+    this.characters.get(id)?.dispose();
+    this.characters.delete(id);
     this.easedPositions.delete(id);
   }
 }
 
+function motionOf(entity: RemoteEntity): CharacterMotion {
+  const stepping = entity.moveDir >= 0;
+  return {
+    heading: facingYawRadians((stepping ? entity.moveDir : entity.facing) as FacingIndex),
+    moving: stepping,
+  };
+}
+
+function spreadOf(entityId: number): number {
+  return ((entityId * 7919) % 1000) / 1000 * ANIMATION_SPREAD_SECONDS;
+}
+
 function hueFor(entity: RemoteEntity): number {
-  if (entity.kind === 'agent') return AGENT_HUE;
-  return PLAYER_HUES[entity.id % PLAYER_HUES.length]!;
+  const hue = entity.kind === 'agent' ? AGENT_HUE : PLAYER_HUES[entity.id % PLAYER_HUES.length]!;
+  return washedTowardWhite(hue, HUE_WASH);
+}
+
+function washedTowardWhite(hue: number, amount: number): number {
+  const channel = (shift: number) => {
+    const value = (hue >> shift) & 255;
+    return Math.round(value + (255 - value) * amount) << shift;
+  };
+  return channel(16) | channel(8) | channel(0);
 }

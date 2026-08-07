@@ -1,11 +1,12 @@
 import * as THREE from 'three';
 import type { ReadOnlyCreatureLibrary } from '../../app/readOnlyLibraries';
-import { characterFrame, frameKey } from '../../creatures/character/characterFrame';
 import type { CreatureDef } from '../../creatures/creatureDef';
 import type { CreatureInstance } from '../../creatures/sim/creatureInstance';
 import type { CreatureSim } from '../../creatures/sim/creatureSim';
 import type { WorldSampler } from '../../procgen/worldSampler';
 import { hashString } from '../../random/hashString';
+import type { CameraView } from './cameraView';
+import { characterQuadMesh, dressCharacterQuad, isCharacterQuad } from './characterQuad';
 import { CharacterSpriteTextures } from './characterSpriteTextures';
 import { disposeMeshResources } from './disposeMeshResources';
 import { cubeFaceMaterials } from './faceArtMaterials';
@@ -13,33 +14,28 @@ import { lambertFromInk } from './inkMaterial';
 
 const ANIMATION_SPREAD_SECONDS = 4;
 
-export interface CameraView {
-  yaw: number;
-  seconds: number;
-}
+export type { CameraView };
 
 export class CreatureMeshes {
   private readonly meshes = new Map<string, THREE.Mesh>();
   private readonly group = new THREE.Group();
-  private readonly sprites = new CharacterSpriteTextures();
 
   constructor(
     root: THREE.Group,
     private readonly library: ReadOnlyCreatureLibrary,
     private readonly sampler: WorldSampler,
+    private readonly sprites: CharacterSpriteTextures,
   ) {
     root.add(this.group);
   }
 
   dispose(): void {
     for (const key of [...this.meshes.keys()]) this.dropMesh(key);
-    this.sprites.dispose();
     this.group.removeFromParent();
   }
 
   forgetSprites(): void {
     for (const key of [...this.meshes.keys()]) this.dropMesh(key);
-    this.sprites.dispose();
   }
 
   syncTo(sim: CreatureSim, view: CameraView): void {
@@ -67,21 +63,20 @@ export class CreatureMeshes {
     view: CameraView,
   ): boolean {
     if (!def.billboard) return false;
-    const frame = characterFrame(def.billboard, creature, view.yaw, animationClock(creature, view));
-    if (!frame) return false;
-    const mesh = this.meshOf(creature.key, null);
-    mesh.material = this.sprites.materialFor(`${def.id}:${frameKey(frame)}`, frame.sprite);
-    mesh.rotation.set(0, -view.yaw, 0);
-    mesh.scale.set(def.size * (frame.mirrored ? -1 : 1), def.size, def.size);
-    return true;
+    return dressCharacterQuad(this.meshOf(creature.key, null), {
+      sprites: this.sprites,
+      def,
+      motion: creature,
+      view: { yaw: view.yaw, seconds: animationClock(creature, view) },
+    });
   }
 
   private meshOf(key: string, cubeDef: CreatureDef | null): THREE.Mesh {
     const existing = this.meshes.get(key);
     const wantsCube = cubeDef !== null;
-    if (existing && isCube(existing) === wantsCube) return existing;
+    if (existing && isCharacterQuad(existing) !== wantsCube) return existing;
     if (existing) this.dropMesh(key);
-    const mesh = wantsCube ? cubeMesh(cubeDef) : quadMesh();
+    const mesh = wantsCube ? cubeMesh(cubeDef) : characterQuadMesh();
     this.meshes.set(key, mesh);
     this.group.add(mesh);
     return mesh;
@@ -91,7 +86,7 @@ export class CreatureMeshes {
     const mesh = this.meshes.get(key);
     if (!mesh) return;
     this.group.remove(mesh);
-    disposeMeshResources(mesh, { keepMaterials: !isCube(mesh) });
+    disposeMeshResources(mesh, { keepMaterials: isCharacterQuad(mesh) });
     this.meshes.delete(key);
   }
 }
@@ -101,18 +96,8 @@ function animationClock(creature: CreatureInstance, view: CameraView): number {
   return view.seconds + offset * ANIMATION_SPREAD_SECONDS;
 }
 
-function isCube(mesh: THREE.Mesh): boolean {
-  return mesh.geometry.type === 'BoxGeometry';
-}
-
 function cubeMesh(def: CreatureDef): THREE.Mesh {
   return new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), creatureMaterial(def));
-}
-
-const UNPAINTED_QUAD = new THREE.MeshLambertMaterial({ visible: false });
-
-function quadMesh(): THREE.Mesh {
-  return new THREE.Mesh(new THREE.PlaneGeometry(1, 1), UNPAINTED_QUAD);
 }
 
 function creatureMaterial(def: CreatureDef): THREE.Material | THREE.Material[] {
