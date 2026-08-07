@@ -43,6 +43,58 @@ export const PAINT_EDIT_TIPS = {
   clear: { title: 'clear face', body: 'Resets every pixel of this face to the base colour.' },
 } as const satisfies Record<string, TooltipContent>;
 
+export const LAYER_TIPS = {
+  color: {
+    title: 'colour layer',
+    body: 'The pixels you see. This is the ordinary drawing surface.',
+  },
+  height: {
+    title: 'relief layer',
+    body: 'A greyscale height field painted over the same grid. Light is high, dark is low, and the 3D view turns it into a normal map so lamps and sunlight catch the bumps. Untouched pixels stay flat.',
+  },
+} as const satisfies Record<string, TooltipContent>;
+
+export const HEIGHT_SLIDER_TIP: TooltipContent = {
+  title: 'relief height',
+  body: 'How far this brush pushes the surface out or in, from a deep pit at the left to a raised ridge at the right.',
+};
+
+export const ADD_FRAME_TIP: TooltipContent = {
+  title: 'add a frame',
+  body: 'Copies the current frame in after it. Frames play in a loop, so make the last one lead back into the first.',
+};
+
+export const REMOVE_FRAME_TIP: TooltipContent = {
+  title: 'remove this frame',
+  body: 'Drops the frame being edited. Art with one frame is a still picture again.',
+};
+
+export const FRAME_MS_TIP: TooltipContent = {
+  title: 'frame length',
+  body: 'Milliseconds each frame is held for. The whole loop takes this times the number of frames.',
+};
+
+export function frameTip(frame: number, frameCount: number): TooltipContent {
+  return {
+    title: `frame ${frame + 1} of ${frameCount}`,
+    body: 'Paints this frame of the animation. Every face and both layers have their own copy of it.',
+  };
+}
+
+export function playFramesTip(playing: boolean): TooltipContent {
+  return {
+    title: playing ? 'stop the loop' : 'play the loop',
+    body: 'Cycles the frames at the frame length, in the canvas and the tiling preview, so you can judge the motion before it reaches the world.',
+  };
+}
+
+export function heightSwatchTip(height: number): TooltipContent {
+  return {
+    title: `${Math.round(height * 100)}% height`,
+    body: 'Paints this height. The middle swatch is flat, darker sinks, lighter rises.',
+  };
+}
+
 export function faceTabTip(tab: string): TooltipContent {
   return { title: `${tab} face`, body: 'Paints this face of the cube.' };
 }

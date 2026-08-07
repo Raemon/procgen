@@ -1,9 +1,9 @@
-import { CUBE_FACES, type CubeFaceArt, type FacePixels } from '../../../world/tiles/tileFaceArt';
+import { mapEveryFaceGrid } from '../../../world/tiles/faceArtFrames';
+import type { CubeFaceArt, FacePixels } from '../../../world/tiles/tileFaceArt';
 
 export function resizeCubeFaceArt(art: CubeFaceArt, size: number): CubeFaceArt {
-  const resized = { size } as CubeFaceArt;
-  for (const face of CUBE_FACES) resized[face] = resampleFacePixels(art[face], art.size, size);
-  return resized;
+  const resized = mapEveryFaceGrid(art, (pixels) => resampleFacePixels(pixels, art.size, size));
+  return { ...resized, size };
 }
 
 export function resampleFacePixels(

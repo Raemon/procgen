@@ -65,6 +65,20 @@ import {
   isEntirelyBlank,
   SIDE_FACES,
 } from '../src/world/tiles/tileFaceArt';
+import {
+  faceArtWithFrameInserted,
+  faceArtWithFrameRemoved,
+  faceArtWithPixelsAt,
+  facePixelsAt,
+  frameCount,
+  frameMsOf,
+  isAnimated,
+} from '../src/world/tiles/faceArtFrames';
+import { FLAT_HEIGHT_INK, heightInk, heightOfInk } from '../src/world/tiles/faceArtHeight';
+import { faceArtPlan } from '../src/world/tiles/faceArtFacePlan';
+import { normalTextureFromHeights } from '../src/views/view3d/normalTextureFromHeights';
+import { tileBoxGeometry } from '../src/views/view3d/tileBoxGeometry';
+import { scrolledWaves, wavePainter } from '../src/world/tiles/art/painters/wavePainter';
 import { defaultTiles } from '../src/world/tiles/defaultTiles';
 import { Tileset } from '../src/world/tiles/tileset';
 import { isWalkableTile } from '../src/world/tileWalkability';
@@ -735,6 +749,137 @@ check(
   markerPlacements.length > 0 && markerPlacements.every((p) => p.faceArt === art),
 );
 tileset.update(treeId, { faceArt: defaultTiles()[treeId]?.faceArt ?? null });
+
+const stillArt = blankCubeFaceArt(4);
+const twoFrames = faceArtWithFrameInserted(stillArt, 0);
+check('adding a frame leaves the first one alone and starts a loop', frameCount(twoFrames) === 2);
+const paintedSecondFrame = faceArtWithPixelsAt(
+  twoFrames,
+  { face: 'top', frame: 1, layer: 'color' },
+  blankFacePixels(4).map((_, index) => (index === 0 ? '#ff0000' : null)),
+);
+check(
+  'painting a later frame does not disturb the first',
+  facePixelsAt(paintedSecondFrame, { face: 'top', frame: 1, layer: 'color' })[0] === '#ff0000' &&
+    facePixelsAt(paintedSecondFrame, { face: 'top', frame: 0, layer: 'color' })[0] === null,
+);
+check(
+  'a face a later frame leaves out is read from the first frame',
+  facePixelsAt(paintedSecondFrame, { face: 'north', frame: 1, layer: 'color' }) ===
+    facePixelsAt(paintedSecondFrame, { face: 'north', frame: 0, layer: 'color' }),
+);
+check(
+  'animated art validates and survives a clone',
+  isCubeFaceArt(paintedSecondFrame) &&
+    frameCount(cloneCubeFaceArt(paintedSecondFrame)) === 2 &&
+    isCubeFaceArt(JSON.parse(JSON.stringify(paintedSecondFrame))),
+);
+check(
+  'dropping the first frame promotes the next one whole',
+  facePixelsAt(faceArtWithFrameRemoved(paintedSecondFrame, 0), {
+    face: 'north',
+    frame: 0,
+    layer: 'color',
+  }).length === 16,
+);
+check('the last frame cannot be removed', frameCount(faceArtWithFrameRemoved(stillArt, 0)) === 1);
+check('malformed frames are rejected', !isCubeFaceArt({ ...stillArt, framesAfterFirst: [{ color: { top: [] } }] }));
+
+const reliefArt = faceArtWithPixelsAt(
+  blankCubeFaceArt(4),
+  { face: 'top', frame: 0, layer: 'height' },
+  blankFacePixels(4).map((_, index) => (index === 0 ? heightInk(1) : null)),
+);
+check('a relief layer rides alongside the colours', isCubeFaceArt(reliefArt) && isEntirelyBlank(reliefArt) === false);
+check(
+  'unpainted relief pixels read as the same flat height as the flat ink',
+  heightOfInk(FLAT_HEIGHT_INK) === heightOfInk(null) && heightOfInk(heightInk(1)) === 1,
+);
+check(
+  'resizing carries the relief layer and every frame with it',
+  facePixelsAt(resizeCubeFaceArt(reliefArt, 8), { face: 'top', frame: 0, layer: 'height' })[0] ===
+    heightInk(1) &&
+    frameCount(resizeCubeFaceArt(paintedSecondFrame, 8)) === 2,
+);
+check(
+  'a difference painted on a later frame unmatches the sides',
+  !sideFacesMatch(
+    faceArtWithPixelsAt(faceArtWithFrameInserted(blankCubeFaceArt(4), 0), { face: 'north', frame: 1, layer: 'color' }, blankFacePixels(4).map(() => '#ff0000')),
+  ),
+);
+
+const RAISED_PIXEL = 5;
+const bumpyNormalBytes = normalTextureFromHeights(
+  blankFacePixels(4).map((_, index) => (index === RAISED_PIXEL ? heightInk(1) : FLAT_HEIGHT_INK)),
+).image.data as Uint8Array;
+check(
+  'a raised pixel tilts the normals of its neighbours away from straight up',
+  bumpyNormalBytes[(RAISED_PIXEL - 1) * 4] !== 128 && bumpyNormalBytes[RAISED_PIXEL * 4] === 128,
+);
+check(
+  'flat relief leaves every normal pointing straight up',
+  [...(normalTextureFromHeights(blankFacePixels(4)).image.data as Uint8Array)].every(
+    (channel, index) => (index % 4 === 2 || index % 4 === 3 ? channel === 255 : channel === 128),
+  ),
+);
+
+const slabUvs = tileBoxGeometry(1, 0.1, 1).attributes.uv!;
+const slabSideV = [...Array(4).keys()].map((corner) => slabUvs.getY(corner));
+check(
+  'a thin slab shows a thin band of its side art rather than the whole face squashed',
+  Math.abs(Math.max(...slabSideV) - Math.min(...slabSideV) - 0.1) < 1e-6 &&
+    Math.abs(Math.max(...slabSideV) - 1) < 1e-6,
+);
+const cubeUvs = tileBoxGeometry(1, 1, 1).attributes.uv!;
+check(
+  'a full cube still shows every face whole',
+  [...Array(cubeUvs.count).keys()].every((vertex) =>
+    [cubeUvs.getX(vertex), cubeUvs.getY(vertex)].every((coordinate) => coordinate === 0 || coordinate === 1),
+  ),
+);
+
+const shallowWaves = { palette: ['#1', '#2', '#3', '#4'], wavelength: 16, amplitude: 2.2, bandHeight: 4, size: 32 };
+const wavesAt = (phase: number) => wavePainter(scrolledWaves(shallowWaves, phase));
+const everyWaterPixel = [...Array(32 * 32).keys()].map((index) => [index % 32, Math.floor(index / 32)] as const);
+check(
+  'each wave frame tiles seamlessly in both directions',
+  everyWaterPixel.every(
+    ([x, y]) => wavesAt(0)(x + 32, y) === wavesAt(0)(x, y) && wavesAt(0)(x, y + 32) === wavesAt(0)(x, y),
+  ),
+);
+check(
+  'the wave loop closes: scrolling a whole band lands back on the first frame',
+  everyWaterPixel.every(([x, y]) => wavesAt(shallowWaves.bandHeight)(x, y) === wavesAt(0)(x, y)),
+);
+check(
+  'no two frames of the swell are the same picture',
+  new Set([0, 1, 2, 3].map((phase) => everyWaterPixel.map(([x, y]) => wavesAt(phase)(x, y)).join())).size === 4,
+);
+
+const shippedWater = defaultTiles().find((tile) => tile.role === 'water')!.faceArt!;
+check(
+  'the shipped water rolls through several frames',
+  isAnimated(shippedWater) && frameCount(shippedWater) === 4 && frameMsOf(shippedWater) === 200,
+);
+check(
+  'only the water surface moves — later frames carry nothing but the top face',
+  (shippedWater.framesAfterFirst ?? []).every((frame) => Object.keys(frame.color).join() === 'top'),
+);
+check(
+  'the water surface is drawn frame by frame while its still sides are drawn once',
+  faceArtPlan(shippedWater, 'top').frames.length === 4 &&
+    faceArtPlan(shippedWater, 'north').frames.length === 1,
+);
+check(
+  'only the face carrying relief pays for a normal map',
+  faceArtPlan(shippedWater, 'top').embossed && !faceArtPlan(shippedWater, 'north').embossed,
+);
+check(
+  'the water surface carries a relief layer for the light to catch',
+  facePixelsAt(shippedWater, { face: 'top', frame: 0, layer: 'height' }).some(
+    (pixel) => pixel !== null && heightOfInk(pixel) !== 0.5,
+  ),
+);
 
 const shippedTiles = defaultTiles();
 check(

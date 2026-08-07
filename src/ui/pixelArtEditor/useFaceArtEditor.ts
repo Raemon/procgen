@@ -1,8 +1,20 @@
 import { useRef, useState } from 'react';
 import {
+  clampFrameMs,
+  faceArtWithFrameInserted,
+  faceArtWithFrameRemoved,
+  faceArtWithPixelsAt,
+  facePixelsAt,
+  frameCount,
+  frameMsOf,
+  type ArtLayer,
+  type ArtSlot,
+} from '../../world/tiles/faceArtFrames';
+import {
   blankCubeFaceArt,
   blankFacePixels,
   cloneCubeFaceArt,
+  DEFAULT_FRAME_MS,
   faceGridSize,
   type CubeFaceArt,
   type FacePixels,
@@ -18,6 +30,7 @@ import {
   activeFace,
   initialPaintSettings,
   isSideTab,
+  paintedLayerInk,
   targetFaces,
   type FaceTab,
   type PaintSettings,
@@ -36,9 +49,14 @@ export interface FaceArtSource {
 export interface FaceArtEditor {
   settings: PaintSettings;
   size: number;
+  art: CubeFaceArt | null;
+  frameCount: number;
+  frameMs: number;
   activePixels: FacePixels;
   updateSettings(patch: Partial<PaintSettings>): void;
   selectFace(tab: FaceTab): void;
+  selectLayer(layer: ArtLayer): void;
+  selectFrame(frame: number): void;
   toggleLinkedSides(): void;
   setTool(tool: PaintTool): void;
   paintAt(index: number, phase: StrokePhase): void;
@@ -49,11 +67,15 @@ export interface FaceArtEditor {
   clearFace(): void;
   shiftFace(dx: number, dy: number): void;
   changeResolution(size: number): void;
+  addFrame(): void;
+  removeFrame(): void;
+  changeFrameMs(frameMs: number): void;
 }
 
 function paintedInk(settings: PaintSettings): string | null {
-  if (settings.tool === 'erase' || isTransparentInk(settings.paintColor)) return null;
-  return settings.paintColor;
+  const ink = paintedLayerInk(settings);
+  if (settings.tool === 'erase' || isTransparentInk(ink)) return null;
+  return ink;
 }
 
 export function useFaceArtEditor({
@@ -70,18 +92,37 @@ export function useFaceArtEditor({
   const history = useFaceArtHistory(art, onChange);
   const size = strokeArt?.size ?? art?.size ?? settings.size;
   const paintedArt = strokeArt ?? art;
+  const frames = paintedArt ? frameCount(paintedArt) : 1;
+  const frame = Math.min(settings.frame, frames - 1);
 
   const updateSettings = (patch: Partial<PaintSettings>) =>
     setSettings((current) => ({ ...current, ...patch }));
+
+  function slotFor(face: CubeFace): ArtSlot {
+    return { face, frame, layer: settings.layer };
+  }
 
   function editableArt(): CubeFaceArt {
     return art ? cloneCubeFaceArt(art) : blankCubeFaceArt(size);
   }
 
+  function pixelsOf(source: CubeFaceArt | null, face: CubeFace): FacePixels {
+    return source ? facePixelsAt(source, slotFor(face)) : blankFacePixels(size);
+  }
+
   function commitToTargetFaces(transform: (pixels: FacePixels) => FacePixels): void {
-    const next = editableArt();
-    for (const face of targetFaces(settings)) next[face] = transform(next[face]);
-    history.commit(next);
+    history.commit(paintedOverTargetFaces(editableArt(), transform));
+  }
+
+  function paintedOverTargetFaces(
+    next: CubeFaceArt,
+    transform: (pixels: FacePixels) => FacePixels,
+  ): CubeFaceArt {
+    return targetFaces(settings).reduce(
+      (painted, face) =>
+        faceArtWithPixelsAt(painted, slotFor(face), transform(pixelsOf(painted, face))),
+      next,
+    );
   }
 
   function toggleLinkedSides(): void {
@@ -112,17 +153,22 @@ export function useFaceArtEditor({
   }
 
   function pickColorAt(index: number): void {
-    const picked = art?.[activeFace(settings)][index] ?? null;
-    updateSettings({ paintColor: picked ?? TRANSPARENT_INK, tool: 'draw' });
+    const picked = pixelsOf(art, activeFace(settings))[index] ?? null;
+    const inkPatch =
+      settings.layer === 'height'
+        ? { heightInk: picked ?? TRANSPARENT_INK }
+        : { paintColor: picked ?? TRANSPARENT_INK };
+    updateSettings({ ...inkPatch, tool: 'draw' });
   }
 
   function strokePaintAt(index: number): void {
-    const next = strokeArt ? cloneCubeFaceArt(strokeArt) : editableArt();
     const value = paintedInk(settings);
-    for (const face of targetFaces(settings))
-      for (const mirrored of mirroredPixelIndices(index, size, settings.mirrorX, settings.mirrorY))
-        next[face][mirrored] = value;
-    setStrokeArt(next);
+    const mirrored = mirroredPixelIndices(index, size, settings.mirrorX, settings.mirrorY);
+    setStrokeArt(
+      paintedOverTargetFaces(strokeArt ? cloneCubeFaceArt(strokeArt) : editableArt(), (pixels) =>
+        pixelsWithInkAt(pixels, mirrored, value),
+      ),
+    );
   }
 
   function endStroke(): void {
@@ -143,23 +189,54 @@ export function useFaceArtEditor({
     updateSettings({ size: nextSize });
   }
 
+  function addFrame(): void {
+    history.commit(faceArtWithFrameInserted(editableArt(), frame));
+    updateSettings({ frame: frame + 1 });
+  }
+
+  function removeFrame(): void {
+    if (!art || frames <= 1) return;
+    history.commit(faceArtWithFrameRemoved(art, frame));
+    updateSettings({ frame: Math.max(0, frame - 1) });
+  }
+
   return {
-    settings,
+    settings: { ...settings, frame },
     size,
-    activePixels: paintedArt?.[activeFace(settings)] ?? blankFacePixels(size),
+    art: paintedArt,
+    frameCount: frames,
+    frameMs: paintedArt ? frameMsOf(paintedArt) : DEFAULT_FRAME_MS,
+    activePixels: pixelsOf(paintedArt, activeFace(settings)),
     updateSettings,
     selectFace: (faceTab) => updateSettings({ faceTab }),
+    selectLayer: (layer) => updateSettings({ layer }),
+    selectFrame: (nextFrame) => updateSettings({ frame: nextFrame, playing: false }),
     toggleLinkedSides,
     setTool: (tool) => updateSettings({ tool }),
     paintAt,
     endStroke,
     undo: history.undo,
-    copyFace: () => (clipboard.current = [...(paintedArt?.[activeFace(settings)] ?? [])]),
+    copyFace: () => (clipboard.current = [...pixelsOf(paintedArt, activeFace(settings))]),
     pasteFace,
     clearFace: () => commitToTargetFaces(() => blankFacePixels(size)),
     shiftFace: (dx, dy) => {
       if (art) commitToTargetFaces((pixels) => shiftFacePixelsWithWrap(pixels, size, dx, dy));
     },
     changeResolution,
+    addFrame,
+    removeFrame,
+    changeFrameMs: (frameMs) => {
+      if (art) history.commit({ ...cloneCubeFaceArt(art), frameMs: clampFrameMs(frameMs) });
+    },
   };
+}
+
+function pixelsWithInkAt(
+  pixels: FacePixels,
+  indices: readonly number[],
+  ink: string | null,
+): FacePixels {
+  const painted = [...pixels];
+  for (const index of indices) painted[index] = ink;
+  return painted;
 }

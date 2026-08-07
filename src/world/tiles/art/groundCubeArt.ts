@@ -12,16 +12,24 @@ export interface GroundCrossSection {
   capHeight?: number;
 }
 
-export function groundCubeArt(top: PixelPainter, section: GroundCrossSection): CubeFaceArt {
-  return cubeArtFrom(SIZE, {
-    top,
-    sides: soilSidePainter({
-      surface: section.surface,
-      soil: section.soil,
-      capHeight: section.capHeight ?? 3,
-      seed: section.seed,
-      size: SIZE,
-    }),
-    bottom: flatPainter(darken(section.soil, 0.45)),
-  });
+export function groundCubeArt(
+  top: PixelPainter,
+  section: GroundCrossSection,
+  topRelief?: PixelPainter,
+): CubeFaceArt {
+  return cubeArtFrom(
+    SIZE,
+    {
+      top,
+      sides: soilSidePainter({
+        surface: section.surface,
+        soil: section.soil,
+        capHeight: section.capHeight ?? 3,
+        seed: section.seed,
+        size: SIZE,
+      }),
+      bottom: flatPainter(darken(section.soil, 0.45)),
+    },
+    topRelief ? { top: topRelief } : undefined,
+  );
 }

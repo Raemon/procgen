@@ -1,3 +1,5 @@
+import { FLAT_HEIGHT_INK } from '../../world/tiles/faceArtHeight';
+import type { ArtLayer } from '../../world/tiles/faceArtFrames';
 import {
   DEFAULT_FACE_ART_SIZE,
   SIDE_FACES,
@@ -13,10 +15,18 @@ export interface PaintSettings {
   faceTab: FaceTab;
   tool: PaintTool;
   paintColor: string;
+  heightInk: string;
+  layer: ArtLayer;
+  frame: number;
+  playing: boolean;
   mirrorX: boolean;
   mirrorY: boolean;
   linkedSides: boolean;
   size: number;
+}
+
+export function paintedLayerInk(settings: PaintSettings): string {
+  return settings.layer === 'height' ? settings.heightInk : settings.paintColor;
 }
 
 export function initialPaintSettings(
@@ -28,6 +38,10 @@ export function initialPaintSettings(
     faceTab: lockedFace ?? 'top',
     tool: 'draw',
     paintColor: baseColor,
+    heightInk: FLAT_HEIGHT_INK,
+    layer: 'color',
+    frame: 0,
+    playing: false,
     mirrorX: false,
     mirrorY: false,
     linkedSides: art ? sideFacesMatch(art) : true,

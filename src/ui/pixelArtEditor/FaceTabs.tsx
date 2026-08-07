@@ -26,7 +26,7 @@ export function FaceTabs({
   onToggleLink(): void;
 }) {
   return (
-    <div className="mb-1.5 flex flex-wrap gap-1">
+    <div className="flex flex-1 flex-wrap items-center gap-1">
       {(settings.linkedSides ? LINKED_TABS : UNLINKED_TABS).map((tab) => (
         <Button
           key={tab}

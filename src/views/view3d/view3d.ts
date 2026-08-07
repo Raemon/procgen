@@ -13,6 +13,7 @@ import { CharacterSpriteTextures } from './characterSpriteTextures';
 import { ChunkMeshStreamer } from './chunkMeshStreamer';
 import { CreatureMeshes } from './creatureMeshes';
 import { EasedPoint } from './easedPoint';
+import { advanceFaceArtAnimations } from './faceArtAnimations';
 import { ItemMeshes } from './itemMeshes';
 import { RemotePlayerMeshes } from './remotePlayerMeshes';
 import { createCharacterFog, createWorldScene, setFogRange } from './worldScene';
@@ -206,6 +207,7 @@ export class View3D {
     this.easedPlayer.approach(this.deps.world.playerX, this.deps.world.playerY, dtSeconds);
     this.applySightRadius();
     this.elapsedSeconds += dtSeconds;
+    advanceFaceArtAnimations(this.elapsedSeconds);
     const view = { yaw: this.viewYaw(), seconds: this.elapsedSeconds };
     this.placePlayer(view);
     this.creatureMeshes.syncTo(this.deps.sim, view);

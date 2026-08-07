@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Button } from '../controls/Button';
 import { ColorField } from '../controls/ColorField';
+import { HeightInkField } from './HeightInkField';
 import type { PaintTool } from './paintSettings';
 import type { FaceArtEditor } from './useFaceArtEditor';
 import { PAINT_COLOR_TIP, PAINT_EDIT_TIPS, PAINT_TOOL_TIPS } from './help/paintTips';
@@ -19,11 +20,18 @@ export function PaintToolbar({ editor }: { editor: FaceArtEditor }) {
   return (
     <>
       <ToolRow>
-        <ColorField
-          ink={settings.paintColor}
-          tip={PAINT_COLOR_TIP}
-          onChange={(paintColor) => updateSettings({ paintColor })}
-        />
+        {settings.layer === 'height' ? (
+          <HeightInkField
+            ink={settings.heightInk}
+            onChange={(heightInk) => updateSettings({ heightInk })}
+          />
+        ) : (
+          <ColorField
+            ink={settings.paintColor}
+            tip={PAINT_COLOR_TIP}
+            onChange={(paintColor) => updateSettings({ paintColor })}
+          />
+        )}
         {TOOLS.map((spec) => (
           <Button
             key={spec.tool}

@@ -5,6 +5,7 @@ import { isTransparentInk } from '../../world/tiles/inkColor';
 import type { CubeFaceArt } from '../../world/tiles/tileFaceArt';
 import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
 import { cubeFaceMaterials, sideFaceMaterial } from './faceArtMaterials';
+import { tileBoxGeometry } from './tileBoxGeometry';
 import { instancedTileMesh, type PlacementPosition } from './instancedTileMesh';
 import { ceilingPlacementsForRect } from './ceilingPlacements';
 import { markerPlacementsForRect } from './markerPlacements';
@@ -77,7 +78,7 @@ function ceilingGroup(
 
 function ceilingShape(): ShapeSpec {
   return {
-    geometry: () => new THREE.BoxGeometry(1, BLOCK_HEIGHT, 1),
+    geometry: () => tileBoxGeometry(1, BLOCK_HEIGHT, 1),
     artMaterials: cubeFaceMaterials,
     positionOf: (p) => [p.x + 0.5, p.elevation + BLOCK_HEIGHT / 2, p.y + 0.5],
   };
@@ -85,7 +86,7 @@ function ceilingShape(): ShapeSpec {
 
 function voxelShape(): ShapeSpec {
   return {
-    geometry: () => new THREE.BoxGeometry(1, BLOCK_HEIGHT, 1),
+    geometry: () => tileBoxGeometry(1, BLOCK_HEIGHT, 1),
     artMaterials: cubeFaceMaterials,
     positionOf: (p) => [p.x + 0.5, p.elevation + BLOCK_HEIGHT / 2, p.y + 0.5],
   };
@@ -93,7 +94,7 @@ function voxelShape(): ShapeSpec {
 
 function floorShape(): ShapeSpec {
   return {
-    geometry: () => new THREE.BoxGeometry(1, FLOOR_THICKNESS, 1),
+    geometry: () => tileBoxGeometry(1, FLOOR_THICKNESS, 1),
     artMaterials: cubeFaceMaterials,
     positionOf: (p) => [
       p.x + 0.5,
@@ -105,7 +106,7 @@ function floorShape(): ShapeSpec {
 
 function blockShape(): ShapeSpec {
   return {
-    geometry: () => new THREE.BoxGeometry(0.95, BLOCK_HEIGHT, 0.95),
+    geometry: () => tileBoxGeometry(0.95, BLOCK_HEIGHT, 0.95),
     artMaterials: cubeFaceMaterials,
     positionOf: (p) => [p.x + 0.5, p.elevation + BLOCK_HEIGHT / 2, p.y + 0.5],
   };
