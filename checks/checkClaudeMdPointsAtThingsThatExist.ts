@@ -1,0 +1,63 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { CODEBASE_DOCS_PATH } from '../api/codebaseDocsRoute';
+import { everyRegisteredRoute } from '../api/agent/everyRoute';
+
+const CLAUDE_MD = 'claude.md';
+const AGENT_API_PREFIX = '/api/v1';
+const FILE_PATH = /\b[\w.-]+\/[\w./-]+\.(?:tsx?|json|css|sh)\b/g;
+const NPM_SCRIPT = /\bnpm run ([\w:]+)/g;
+const HTTP_ROUTE = /\b(?:GET|POST|DELETE) (\/[\w./{}-]*)/g;
+
+export function checkClaudeMdPointsAtThingsThatExist(
+  check: (name: string, condition: boolean) => void,
+): void {
+  const house = readFileSync(CLAUDE_MD, 'utf8');
+
+  const missingFiles = matchesOf(house, FILE_PATH).filter((path) => !existsSync(path));
+  report('paths claude.md names that do not exist', missingFiles);
+  check(
+    'every file claude.md points at exists, so the one hand-written file cannot misdirect',
+    missingFiles.length === 0,
+  );
+
+  const missingScripts = capturesOf(house, NPM_SCRIPT).filter((name) => !npmScripts().includes(name));
+  report('npm scripts claude.md names that are not defined', missingScripts);
+  check(
+    'every npm script claude.md names is defined in package.json',
+    missingScripts.length === 0,
+  );
+
+  const missingRoutes = capturesOf(house, HTTP_ROUTE).filter((path) => !isServed(path));
+  report('routes claude.md names that nothing serves', missingRoutes);
+  check(
+    'every url claude.md names is a route this server actually mounts',
+    missingRoutes.length === 0,
+  );
+}
+
+function isServed(path: string): boolean {
+  if (path === CODEBASE_DOCS_PATH) return true;
+  if (!path.startsWith(AGENT_API_PREFIX)) return false;
+  const withinApi = path.slice(AGENT_API_PREFIX.length);
+  return everyRegisteredRoute().some((route) => route.path === withinApi);
+}
+
+function npmScripts(): string[] {
+  const manifest = JSON.parse(readFileSync('package.json', 'utf8')) as {
+    scripts: Record<string, string>;
+  };
+  return Object.keys(manifest.scripts);
+}
+
+function matchesOf(source: string, pattern: RegExp): string[] {
+  return [...new Set(source.match(pattern) ?? [])];
+}
+
+function capturesOf(source: string, pattern: RegExp): string[] {
+  return [...new Set([...source.matchAll(pattern)].map((match) => match[1]!))];
+}
+
+function report(what: string, offenders: readonly string[]): void {
+  if (offenders.length === 0) return;
+  console.log(`     ${what}:\n       ${offenders.join('\n       ')}`);
+}

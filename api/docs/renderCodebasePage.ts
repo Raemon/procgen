@@ -2,7 +2,7 @@ import '../../abilities/index';
 import '../../procgen/nodes/index';
 import { allAbilities } from '../../abilities/abilityRegistry';
 import { allNodeTypes } from '../../procgen/nodeRegistry';
-import { allRoutes } from '../agent/routeRegistry';
+import { everyRegisteredRoute } from '../agent/everyRoute';
 import { folderMap, TOP_LEVEL_FOLDERS, type FolderEntry } from './folderMap';
 import { PAGE_STYLE } from './pageStyle';
 
@@ -43,7 +43,7 @@ function abilitiesTable(): string {
 }
 
 function routesTable(): string {
-  const rows = allRoutes().map(
+  const rows = everyRegisteredRoute().map(
     (route) =>
       `<tr><td><code>${route.method} /api/v1${escapeHtml(route.path)}</code></td><td>${escapeHtml(route.summary)}</td></tr>`,
   );

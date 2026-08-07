@@ -1,4 +1,4 @@
-import { allRoutes } from '../api/agent/routeRegistry';
+import { everyRegisteredRoute } from '../api/agent/everyRoute';
 import { openApiDocument } from '../api/docs/openApiDocument';
 import { everyAbility } from '../api/docs/apiDocs';
 
@@ -11,8 +11,13 @@ export function checkEveryApiSurfaceIsDescribed(
   };
 
   check(
+    'the route and ability registries are populated here, so these checks cannot pass by finding nothing',
+    everyRegisteredRoute().length >= 15 && everyAbility().length >= 50,
+  );
+
+  check(
     'every route an agent can call is described in the openapi document',
-    allRoutes().every((route) => document.paths[route.path]?.[route.method.toLowerCase()]),
+    everyRegisteredRoute().every((route) => document.paths[route.path]?.[route.method.toLowerCase()]),
   );
 
   const described = new Set(

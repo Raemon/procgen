@@ -1,6 +1,7 @@
 import '../../abilities/index';
 import type { AbilityParamSpec, AbilitySpec } from '../../abilities/ability';
-import { allRoutes, type RouteSpec } from '../agent/routeRegistry';
+import { everyRegisteredRoute } from '../agent/everyRoute';
+import type { RouteSpec } from '../agent/routeRegistry';
 import { everyAbility } from './apiDocs';
 
 export function openApiDocument(): object {
@@ -20,7 +21,7 @@ export function openApiDocument(): object {
 
 function pathItems(): [string, object][] {
   const byPath = new Map<string, Record<string, object>>();
-  for (const route of allRoutes()) {
+  for (const route of everyRegisteredRoute()) {
     const item = byPath.get(route.path) ?? {};
     item[route.method.toLowerCase()] = operationOf(route);
     byPath.set(route.path, item);

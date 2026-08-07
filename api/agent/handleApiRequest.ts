@@ -1,6 +1,4 @@
-import '../docs/docsRoute';
-import './catalogRoutes';
-import './agentRoutes';
+import './everyRoute';
 import { failure, type ApiRequest, type ApiResponse } from './apiMessages';
 import { methodsAllowedFor, routeFor } from './routeRegistry';
 import type { WorldAccess } from './serverWorld';

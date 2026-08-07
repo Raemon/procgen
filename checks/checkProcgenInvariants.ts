@@ -11,6 +11,7 @@ import { checkTileHeightInvariants } from './checkTileHeightInvariants';
 import { checkPresentationFoldersAreTheOnlyDomCode } from './checkPresentationFoldersAreTheOnlyDomCode';
 import { checkDesignBetsStillHold } from './checkDesignBetsStillHold';
 import { checkEveryApiSurfaceIsDescribed } from './checkEveryApiSurfaceIsDescribed';
+import { checkClaudeMdPointsAtThingsThatExist } from './checkClaudeMdPointsAtThingsThatExist';
 import { checkDocumentationHasNotRegrown } from './checkDocumentationHasNotRegrown';
 import { cameraRelativeStep } from '../world/input/cameraRelativeStep';
 import { PipelineEvaluator } from '../procgen/eval/evaluator';
@@ -1978,7 +1979,10 @@ describe('character billboards', () => checkCharacterBillboardInvariants(check))
 describe('the player character', () => checkPlayerCharacterInvariants(check));
 describe('tile heights', () => checkTileHeightInvariants(check));
 describe('the dom boundary', () => checkPresentationFoldersAreTheOnlyDomCode(check));
-describe('documentation', () => checkDocumentationHasNotRegrown(check));
+describe('documentation', () => {
+  checkDocumentationHasNotRegrown(check);
+  checkClaudeMdPointsAtThingsThatExist(check);
+});
 describe('the design bets', () => checkDesignBetsStillHold(check));
 describe('the api surface', () => checkEveryApiSurfaceIsDescribed(check));
 describe('landmarks and ceilings', () => checkLandmarkAndCeilingInvariants(check));

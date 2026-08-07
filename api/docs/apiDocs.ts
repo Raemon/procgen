@@ -11,7 +11,7 @@ import {
 } from '../../world/vision/characterSight';
 import { GOD_VIEW_SIZE } from '../../agents/observation';
 import { FAILURES } from '../../agents/failures';
-import { allRoutes } from '../agent/routeRegistry';
+import { everyRegisteredRoute } from '../agent/everyRoute';
 import { metaTools } from '../agent/agentTools';
 
 const TEMPLATE = `# Procgen world — agent API
@@ -260,7 +260,7 @@ function firstSentenceOf(description: string): string {
 }
 
 function endpointsTable(): string {
-  return allRoutes()
+  return everyRegisteredRoute()
     .map(
       (route) =>
         `| ${route.method} /api/v1${route.path} | ${paramsCellOf(route.body)} | ${paramsCellOf(route.query)} | ${route.summary} |`,
