@@ -1,5 +1,6 @@
 import '../abilities/index';
 import { performAbility } from '../abilities/performAbility';
+import { abilityFor } from '../abilities/abilityRegistry';
 import type { AbilityMode, AbilityResult } from '../abilities/ability';
 import { ChatComposerState } from '../chat/chatComposerState';
 import { CreatureLibrary } from '../creatures/creatureLibrary';
@@ -107,6 +108,8 @@ export function createAppRuntime(): AppRuntime {
           pose: () => ({ x: world.playerX, y: world.playerY, facing: world.facing }),
           tryStep: (dx, dy) => world.tryStep(dx, dy),
           turn: (eighthTurns) => world.turn(eighthTurns),
+          sightRadiusTiles: () => world.sightRadiusTiles,
+          setSightRadiusTiles: (radius) => world.setSightRadiusTiles(radius),
         },
       },
       abilityModeFor(action),
@@ -116,9 +119,11 @@ export function createAppRuntime(): AppRuntime {
   }
 
   function abilityModeFor(action: string): AbilityMode {
-    return action.startsWith('step_') || action.startsWith('turn_') || action.startsWith('strafe_')
-      ? playerMode
-      : 'god';
+    if (action.startsWith('step_') || action.startsWith('turn_') || action.startsWith('strafe_')) {
+      return playerMode;
+    }
+    // Sight lives on the character, so its actions resolve there whichever view is open.
+    return abilityFor('character', action)?.group === 'senses' ? 'character' : 'god';
   }
 
   function applyWorldChange(): void {

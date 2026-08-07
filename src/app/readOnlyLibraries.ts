@@ -23,4 +23,7 @@ export type ReadOnlyWorldPresetLibrary = Pick<
   WorldPresetLibrary,
   'savedPresets' | 'byName' | 'onChange'
 >;
-export type ReadOnlyWorld = Pick<World, 'playerX' | 'playerY' | 'facing' | 'on'>;
+export type ReadOnlyWorld = Pick<
+  World,
+  'playerX' | 'playerY' | 'facing' | 'sightRadiusTiles' | 'on'
+>;

@@ -30,7 +30,7 @@ export function WorldPanel() {
             {entry.label}
           </Button>
         ))}
-        <WorldToolbar />
+        <WorldToolbar mode={mode} />
       </div>
       <WorldStage mode={mode} />
     </div>

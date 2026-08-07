@@ -1,4 +1,5 @@
 import './movementAbilities';
+import './sightAbilities';
 import './nodeAbilities';
 import './worldAbilities';
 import './tileAbilities';
