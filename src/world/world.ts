@@ -1,5 +1,9 @@
 import { turnedFacing, type FacingIndex } from './facing';
 import { nearestWalkable } from './nearestWalkable';
+import {
+  DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
+  clampSightRadiusTiles,
+} from './vision/characterSight';
 import { WorldEvents, type WorldEvent } from './worldEvents';
 
 const SNAP_SEARCH_RADIUS = 64;
@@ -10,9 +14,17 @@ export class World {
   playerX = 0;
   playerY = 0;
   facing: FacingIndex = 0;
+  sightRadiusTiles = DEFAULT_CHARACTER_SIGHT_RADIUS_TILES;
   private readonly events = new WorldEvents();
 
   constructor(private readonly isWalkableAt: WalkabilityProbe) {}
+
+  setSightRadiusTiles(radius: number): void {
+    const clamped = clampSightRadiusTiles(radius);
+    if (clamped === this.sightRadiusTiles) return;
+    this.sightRadiusTiles = clamped;
+    this.events.emit('sight-changed');
+  }
 
   turn(eighthTurns: number): void {
     this.facing = turnedFacing(this.facing, eighthTurns);

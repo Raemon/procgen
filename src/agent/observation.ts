@@ -5,8 +5,9 @@ import { viewportCenteredOn } from '../views/ascii/asciiViewport';
 import type { ReadOnlyTileset } from '../app/readOnlyLibraries';
 import { FACING_NAMES } from '../world/facing';
 import {
-  CHARACTER_SIGHT_RADIUS_TILES,
-  CHARACTER_VIEW_SIZE,
+  DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
+  characterViewSize,
+  clampSightRadiusTiles,
   isWithinCharacterSight,
 } from '../world/vision/characterSight';
 import type { AgentMode, AgentPose } from './agentMode';
@@ -32,8 +33,11 @@ export interface AgentObservation {
   legend: LegendEntry[];
 }
 
-export function viewSizeFor(mode: AgentMode): number {
-  return mode === 'god' ? GOD_VIEW_SIZE : CHARACTER_VIEW_SIZE;
+export function viewSizeFor(
+  mode: AgentMode,
+  sightRadiusTiles: number = DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
+): number {
+  return mode === 'god' ? GOD_VIEW_SIZE : characterViewSize(clampSightRadiusTiles(sightRadiusTiles));
 }
 
 export function buildObservation(
@@ -41,19 +45,21 @@ export function buildObservation(
   tileset: ReadOnlyTileset,
   pose: AgentPose,
   mode: AgentMode,
+  sightRadiusTiles: number = DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
 ): AgentObservation {
-  const size = viewSizeFor(mode);
+  const radius = clampSightRadiusTiles(sightRadiusTiles);
+  const size = viewSizeFor(mode, radius);
   const viewport = viewportCenteredOn(pose.x, pose.y, size, size);
   const markers = pointOverlayLookup(sampler, viewport);
   const legend = new Map<string, LegendEntry>();
-  addFixedLegendEntries(legend, mode);
+  addFixedLegendEntries(legend, mode, radius);
   const view: string[] = [];
   for (let row = 0; row < size; row++) {
     let line = '';
     for (let column = 0; column < size; column++) {
       const x = viewport.originX + column;
       const y = viewport.originY + row;
-      line += observedGlyph(sampler, tileset, markers, legend, pose, mode, x, y);
+      line += observedGlyph(sampler, tileset, markers, legend, pose, mode, radius, x, y);
     }
     view.push(line);
   }
@@ -62,7 +68,7 @@ export function buildObservation(
     position: { x: pose.x, y: pose.y },
     facing: mode === 'god' ? FACING_NAMES[pose.facing] : null,
     viewSize: size,
-    sightRadiusTiles: mode === 'character' ? CHARACTER_SIGHT_RADIUS_TILES : null,
+    sightRadiusTiles: mode === 'character' ? radius : null,
     view,
     legend: [...legend.values()],
   };
@@ -75,11 +81,15 @@ function observedGlyph(
   legend: Map<string, LegendEntry>,
   pose: AgentPose,
   mode: AgentMode,
+  sightRadiusTiles: number,
   x: number,
   y: number,
 ): string {
   if (x === pose.x && y === pose.y) return SELF_GLYPH;
-  if (mode === 'character' && !isWithinCharacterSight(pose.facing, x - pose.x, y - pose.y)) {
+  if (
+    mode === 'character' &&
+    !isWithinCharacterSight(pose.facing, x - pose.x, y - pose.y, sightRadiusTiles)
+  ) {
     return BLANK_GLYPH;
   }
   const marker = markers.get(`${x},${y}`);
@@ -115,13 +125,17 @@ function collectLegend(
   return glyph;
 }
 
-function addFixedLegendEntries(legend: Map<string, LegendEntry>, mode: AgentMode): void {
+function addFixedLegendEntries(
+  legend: Map<string, LegendEntry>,
+  mode: AgentMode,
+  sightRadiusTiles: number,
+): void {
   legend.set(SELF_GLYPH, { glyph: SELF_GLYPH, meaning: 'you', walkable: null });
   legend.set(BLANK_GLYPH, {
     glyph: BLANK_GLYPH,
     meaning:
       mode === 'character'
-        ? `nothing generated here, or unseen: behind you, or past your ${CHARACTER_SIGHT_RADIUS_TILES}-tile sight radius (fog)`
+        ? `nothing generated here, or unseen: behind you, or past your ${sightRadiusTiles}-tile sight radius (fog)`
         : 'nothing generated here',
     walkable: null,
   });

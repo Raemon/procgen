@@ -34,6 +34,12 @@ export const CAPTURE_TIP: TooltipContent = {
   body: 'Drag a rectangle over the world to lift that section — tiles, stacked prefab voxels and terrain height — into a new prefab in the library. Esc leaves capture mode.',
 };
 
+export const SIGHT_RANGE_TIP: TooltipContent = {
+  title: 'sight',
+  body: 'How far the character sees, in tiles: the fog and the ASCII window both end here. Widen it to plan around ground you would otherwise have to walk into; the tiles drawn and read grow with the square of the radius, so it costs frames here and tokens for an agent. Click the number to go back to the default 12. Agents set the same knob with set_sight_radius, or sight_radius_tiles on the API.',
+  when: 'Scouting a route from a ridge, or comparing what a far-sighted agent would perceive against a default one.',
+};
+
 export const LIFE_TIP: TooltipContent = {
   title: 'life',
   body: 'Runs the creature simulation. Paused, creatures hold their positions; the world itself is unaffected either way.',

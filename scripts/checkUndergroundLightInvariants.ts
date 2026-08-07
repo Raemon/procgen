@@ -1,4 +1,5 @@
 import { performAbility } from '../src/abilities/performAbility';
+import { DEFAULT_CHARACTER_SIGHT_RADIUS_TILES } from '../src/world/vision/characterSight';
 import { CreatureLibrary } from '../src/creatures/creatureLibrary';
 import { playerCharacterDef } from '../src/creatures/playerCharacter';
 import { brightestCarriedLight } from '../src/items/inventory/carriedLight';
@@ -188,7 +189,13 @@ function undergroundWorld() {
     randomizeHistory: new RandomizeHistory(),
     regionSampler: sampler,
     groundItems: groundItemsOf(sampler, takenItems),
-    actor: { pose: () => pose, tryStep: () => true, turn: () => undefined },
+    actor: {
+      pose: () => pose,
+      tryStep: () => true,
+      turn: () => undefined,
+      sightRadiusTiles: () => DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
+      setSightRadiusTiles: () => undefined,
+    },
   };
   return {
     state: state as PipelineState,

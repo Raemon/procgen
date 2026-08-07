@@ -4,8 +4,10 @@ import type { AbilityGroup, AbilityMode, AbilitySpec } from '../abilities/abilit
 import { allNodeTypes } from '../procgen/nodeRegistry';
 import type { ReadOnlyTileset } from '../app/readOnlyLibraries';
 import {
-  CHARACTER_SIGHT_RADIUS_TILES,
-  CHARACTER_VIEW_SIZE,
+  DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
+  MAX_CHARACTER_SIGHT_RADIUS_TILES,
+  MIN_CHARACTER_SIGHT_RADIUS_TILES,
+  characterViewSize,
 } from '../world/vision/characterSight';
 import { GOD_VIEW_SIZE } from './observation';
 import { FAILURES } from './failures';
@@ -45,19 +47,44 @@ An agent is created in one of two modes and stays in it for life.
   know which way you face — the observation never states it. That half-disc is
   exactly the ground the 2.5D character view renders before its fog closes in,
   which is first person and shows no more of the world than you are told. You move
-  relative to your facing and turn in 45-degree steps. Characters can only
-  move.
+  relative to your facing and turn in 45-degree steps. Characters can move and
+  can change how far they see.
+
+## Sight range, and what it costs
+
+{{SIGHT_RADIUS}} tiles is only the default. A character's sight radius is a
+parameter you control, anywhere from {{MIN_SIGHT_RADIUS}} to
+{{MAX_SIGHT_RADIUS}} tiles, and there are three ways to set it:
+
+- at birth — \`POST /api/v1/agents\` with \`"sight_radius_tiles": 24\`
+- for the rest of the session — the \`set_sight_radius\` action below, which the
+  autopilot gets as a tool like any other
+- on one read — \`GET /api/v1/agents/{id}/observe?sight_radius_tiles=24\`, which
+  also becomes the agent's radius from then on
+
+Values outside the range are clamped rather than rejected. Every observation
+reports the radius in force as \`sight_radius_tiles\`, and the grid resizes with
+it: the window is always \`radius * 2 + 1\` on a side, so it runs from
+{{MIN_SIGHT_RADIUS}}x… up to {{MAX_CHARACTER_SIZE}}x{{MAX_CHARACTER_SIZE}}.
+
+Seeing farther is a trade, not a free upgrade. The tiles you must read grow
+with the SQUARE of the radius — doubling it quadruples the grid, and an
+autopilot run pays for that grid in tokens on every single turn — and the 2.5D
+view has to stream and draw everything inside the new fog distance, so the
+frame rate falls off the same way. The point is that you can choose when to pay:
+widen your sight where the ground ahead decides your route, get the layout, then
+narrow it again and travel cheaply on what you learned.
 
 ## Endpoints
 
 | method and path | body | what it does |
 | --- | --- | --- |
 | GET /api/v1/docs | — | this document |
-| POST /api/v1/agents | {"mode": "god" or "character", "name": optional} | create an agent; responds with its id and urls |
+| POST /api/v1/agents | {"mode": "god" or "character", "name": optional, "sight_radius_tiles": optional} | create an agent; responds with its id and urls. sight_radius_tiles (character mode, default {{SIGHT_RADIUS}}, clamped to {{MIN_SIGHT_RADIUS}}–{{MAX_SIGHT_RADIUS}}) is how far it sees |
 | GET /api/v1/agents | — | list agents |
 | GET /api/v1/agents/{id} | — | the agent's current state |
 | DELETE /api/v1/agents/{id} | — | remove the agent |
-| GET /api/v1/agents/{id}/observe?format=json or text | — | a fresh observation |
+| GET /api/v1/agents/{id}/observe?format=json or text | — | a fresh observation. add &sight_radius_tiles=N to widen or narrow the character's sight first ({{MIN_SIGHT_RADIUS}}–{{MAX_SIGHT_RADIUS}}, clamped); the new radius sticks |
 | POST /api/v1/agents/{id}/act | {"action": "...", ...params} | perform one action; responds with the outcome and a fresh observation |
 | GET /api/v1/pipeline | — | the current node pipeline: every node with id, type, params, wiring, display |
 | GET /api/v1/node-types | — | the catalog of node types you can add, every param and input explained |
@@ -81,6 +108,12 @@ along the other.
 | action | params | the human control | what it does |
 | --- | --- | --- | --- |
 {{MOVEMENT_ACTIONS}}
+
+## Actions — your senses (character mode)
+
+| action | params | the human control | what it does |
+| --- | --- | --- | --- |
+{{SENSES_ACTIONS}}
 
 ## Actions — building the world (god mode)
 
@@ -191,8 +224,11 @@ export function everyAbility(): AbilitySpec[] {
 
 function placeholderValue(tileset: ReadOnlyTileset, key: string): string {
   if (key === 'GOD_SIZE') return String(GOD_VIEW_SIZE);
-  if (key === 'CHARACTER_SIZE') return String(CHARACTER_VIEW_SIZE);
-  if (key === 'SIGHT_RADIUS') return String(CHARACTER_SIGHT_RADIUS_TILES);
+  if (key === 'CHARACTER_SIZE') return String(characterViewSize());
+  if (key === 'SIGHT_RADIUS') return String(DEFAULT_CHARACTER_SIGHT_RADIUS_TILES);
+  if (key === 'MIN_SIGHT_RADIUS') return String(MIN_CHARACTER_SIGHT_RADIUS_TILES);
+  if (key === 'MAX_SIGHT_RADIUS') return String(MAX_CHARACTER_SIGHT_RADIUS_TILES);
+  if (key === 'MAX_CHARACTER_SIZE') return String(characterViewSize(MAX_CHARACTER_SIGHT_RADIUS_TILES));
   if (key === 'EXAMPLES') return examples();
   if (key === 'FAILURES') return failuresTable();
   if (key === 'NODE_TYPES') return nodeTypesTable();
@@ -202,6 +238,7 @@ function placeholderValue(tileset: ReadOnlyTileset, key: string): string {
 
 const GROUP_OF_PLACEHOLDER: Readonly<Record<string, AbilityGroup>> = {
   MOVEMENT_ACTIONS: 'movement',
+  SENSES_ACTIONS: 'senses',
   PIPELINE_ACTIONS: 'pipeline',
   LIBRARY_ACTIONS: 'library',
   WORLD_ACTIONS: 'world',

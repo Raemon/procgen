@@ -1,5 +1,6 @@
 import '../src/abilities/index';
 import { performAbility } from '../src/abilities/performAbility';
+import { DEFAULT_CHARACTER_SIGHT_RADIUS_TILES } from '../src/world/vision/characterSight';
 import type { AbilityContext, AbilityResult } from '../src/abilities/ability';
 import { CreatureLibrary } from '../src/creatures/creatureLibrary';
 import { creaturesFromStoredJson } from '../src/creatures/creatureStorage';
@@ -352,7 +353,13 @@ function abilityWorld() {
     randomizeHistory: new RandomizeHistory(),
     groundItems: NO_GROUND_ITEMS,
     regionSampler: { tileAt: () => 0, elevationAt: () => 0, voxelColumnAt: () => null },
-    actor: { pose: () => ({ x: 0, y: 0, facing: 0 }), tryStep: () => true, turn: () => undefined },
+    actor: {
+      pose: () => ({ x: 0, y: 0, facing: 0 }),
+      tryStep: () => true,
+      turn: () => undefined,
+      sightRadiusTiles: () => DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
+      setSightRadiusTiles: () => undefined,
+    },
   };
   return { context, items, creatures };
 }

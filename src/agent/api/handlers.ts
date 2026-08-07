@@ -1,4 +1,10 @@
 import { examplePipelines } from '../../procgen/presets/examplePipelines';
+import {
+  DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
+  MAX_CHARACTER_SIGHT_RADIUS_TILES,
+  MIN_CHARACTER_SIGHT_RADIUS_TILES,
+  clampSightRadiusTiles,
+} from '../../world/vision/characterSight';
 import { isAgentMode, type AgentMode } from '../agentMode';
 import { buildApiDocs } from '../apiDocs';
 import { abilitiesForMode } from '../../abilities/abilityRegistry';
@@ -129,9 +135,23 @@ function createAgent(sessions: SessionStore, world: ServerWorld, body: unknown):
   if (!isAgentMode(mode)) {
     return failure(400, 'bad_request', 'body must be {"mode": "god" | "character"}');
   }
+  const sightRadius = readSightRadius((body as { sight_radius_tiles?: unknown } | null)?.sight_radius_tiles);
+  if (sightRadius === 'invalid') {
+    return failure(
+      400,
+      'invalid_value',
+      `"sight_radius_tiles" takes a number of tiles (${MIN_CHARACTER_SIGHT_RADIUS_TILES}-${MAX_CHARACTER_SIGHT_RADIUS_TILES}; out-of-range values are clamped)`,
+    );
+  }
   const id = `agent_${Math.random().toString(36).slice(2, 10)}`;
   const name = readName(body) ?? id;
-  const session = newSession(id, name, mode, world.spawn());
+  const session = newSession(
+    id,
+    name,
+    mode,
+    world.spawn(),
+    sightRadius ?? DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
+  );
   sessions.set(id, session);
   return json(201, {
     agent: agentJson(session),
@@ -143,6 +163,14 @@ function createAgent(sessions: SessionStore, world: ServerWorld, body: unknown):
       node_types: '/api/v1/node-types',
     },
   });
+}
+
+/** null when absent, 'invalid' when present but not a number, otherwise the clamped radius. */
+function readSightRadius(raw: unknown): number | null | 'invalid' {
+  if (raw === undefined || raw === null) return null;
+  const value = typeof raw === 'number' ? raw : typeof raw === 'string' ? Number(raw) : NaN;
+  if (!Number.isFinite(value)) return 'invalid';
+  return clampSightRadiusTiles(value);
 }
 
 function readName(body: unknown): string | null {
@@ -177,7 +205,22 @@ function agentResource(
 }
 
 function observe(session: AgentSession, world: ServerWorld, req: ApiRequest): ApiResponse {
-  const observation = buildObservation(world.sampler, world.tileset, sessionPose(session), session.mode);
+  const asked = readSightRadius(req.query.get('sight_radius_tiles'));
+  if (asked === 'invalid') {
+    return failure(
+      400,
+      'invalid_value',
+      `sight_radius_tiles takes a number of tiles (${MIN_CHARACTER_SIGHT_RADIUS_TILES}-${MAX_CHARACTER_SIGHT_RADIUS_TILES}; out-of-range values are clamped)`,
+    );
+  }
+  if (asked !== null) session.sightRadiusTiles = asked;
+  const observation = buildObservation(
+    world.sampler,
+    world.tileset,
+    sessionPose(session),
+    session.mode,
+    session.sightRadiusTiles,
+  );
   if (req.query.get('format') === 'text') {
     return { status: 200, contentType: 'text/plain; charset=utf-8', body: observationText(observation) };
   }
@@ -195,7 +238,13 @@ function act(session: AgentSession, access: WorldAccess, body: unknown): ApiResp
   const result = performVerb(session, world, action, params);
   if (result.changedPipeline) access.persistWorld(world);
   const fresh = result.changedPipeline ? access.current() : world;
-  const observation = buildObservation(fresh.sampler, fresh.tileset, sessionPose(session), session.mode);
+  const observation = buildObservation(
+    fresh.sampler,
+    fresh.tileset,
+    sessionPose(session),
+    session.mode,
+    session.sightRadiusTiles,
+  );
   return json(result.outcome === 'unknown_action' || result.outcome === 'failed' ? 400 : 200, {
     outcome: result.outcome,
     summary: result.summary,
@@ -250,6 +299,7 @@ function agentJson(session: AgentSession) {
     name: session.name,
     mode: session.mode,
     position: { x: session.x, y: session.y },
+    sight_radius_tiles: session.mode === 'character' ? session.sightRadiusTiles : null,
     last_action: session.lastAction,
     run_status: session.run?.status ?? 'idle',
     run_goal: session.run?.goal ?? null,
@@ -269,6 +319,7 @@ function observationJson(mode: AgentMode, observation: AgentObservation) {
     facing: observation.facing,
     grid_orientation: 'north-up',
     view_size: observation.viewSize,
+    sight_radius_tiles: observation.sightRadiusTiles,
     view: observation.view,
     legend: observation.legend,
     available_actions: abilitiesForMode(mode).map((spec) => ({

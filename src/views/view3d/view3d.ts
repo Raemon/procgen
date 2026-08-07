@@ -15,7 +15,7 @@ import { CreatureMeshes } from './creatureMeshes';
 import { EasedPoint } from './easedPoint';
 import { ItemMeshes } from './itemMeshes';
 import { RemotePlayerMeshes } from './remotePlayerMeshes';
-import { createCharacterFog, createWorldScene } from './worldScene';
+import { createCharacterFog, createWorldScene, setFogRange } from './worldScene';
 import { SceneDaylight } from './sceneDaylight';
 import { WorldLights } from './worldLights';
 import { PlayerCharacterMesh } from './playerCharacterMesh';
@@ -25,10 +25,7 @@ import { SelectionBox } from './selectionBox';
 import { speechBubbleAnchors } from './speechBubbleAnchors';
 import { SpeechBubbleLabels } from './speechBubbleLabels';
 import { streamingRadiusChunks } from './streamingRadius';
-import {
-  CHARACTER_SIGHT_RADIUS_TILES,
-  isWithinSightRadius,
-} from '../../world/vision/characterSight';
+import { clampSightRadiusTiles, isWithinSightRadius } from '../../world/vision/characterSight';
 
 const MAX_FRAME_MS = 100;
 const STILL_ENOUGH_TILES = 0.05;
@@ -207,6 +204,7 @@ export class View3D {
   private renderFrame(dtSeconds: number): void {
     if (isCollapsed(containerSize(this.container))) return;
     this.easedPlayer.approach(this.deps.world.playerX, this.deps.world.playerY, dtSeconds);
+    this.applySightRadius();
     this.elapsedSeconds += dtSeconds;
     const view = { yaw: this.viewYaw(), seconds: this.elapsedSeconds };
     this.placePlayer(view);
@@ -244,7 +242,22 @@ export class View3D {
   }
 
   private isWithinCharacterSight(head: THREE.Vector3): boolean {
-    return isWithinSightRadius(head.x - (this.easedPlayer.x + 0.5), head.z - (this.easedPlayer.y + 0.5));
+    return isWithinSightRadius(
+      head.x - (this.easedPlayer.x + 0.5),
+      head.z - (this.easedPlayer.y + 0.5),
+      this.sightRadiusTiles(),
+    );
+  }
+
+  private sightRadiusTiles(): number {
+    return clampSightRadiusTiles(this.deps.world.sightRadiusTiles);
+  }
+
+  /** Sight can be widened mid-run, so the fog and the far plane follow it every frame. */
+  private applySightRadius(): void {
+    const radius = this.sightRadiusTiles();
+    setFogRange(this.characterFog, radius);
+    this.characterCamera.setSightRadiusTiles(radius);
   }
 
   private updateActiveCamera(dtSeconds: number): void {
@@ -272,7 +285,7 @@ export class View3D {
     const radiusTiles =
       this.cameraStyle === 'god'
         ? this.followCamera.visibleGroundRadiusTiles()
-        : CHARACTER_SIGHT_RADIUS_TILES;
+        : this.sightRadiusTiles();
     this.streamer.streamAround(focus.x, focus.y, streamingRadiusChunks(radiusTiles));
     this.itemMeshes.syncAround(focus.x, focus.y, radiusTiles);
   }
