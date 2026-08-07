@@ -5,9 +5,9 @@ the agent API rather than renderings of the world:
 
 | mode | what it draws | movement |
 | --- | --- | --- |
-| 3-D God | Three.js follow camera, free pan/zoom, Q/E rotates the camera in quarter turns | WASD camera-relative |
-| Agent God | the literal text a god-mode API agent receives for the player's position | WASD compass |
-| 2.5D Character | first-person Three.js camera at the player's eye, fogged out at the sight radius, Q/E turns the player in 45° steps | W/S forward/back, A/D strafe |
+| 3-D God | Three.js follow camera, free pan/zoom, A/D or ←/→ rotates the camera in quarter turns | W/S or ↑/↓ camera-relative, Q/E sidestep |
+| Agent God | the literal text a god-mode API agent receives for the player's position | W/S/Q/E compass |
+| 2.5D Character | first-person Three.js camera at the player's eye, fogged out at the sight radius, A/D or ←/→ turns the player in 45° steps | W/S forward/back, Q/E sidestep |
 | Agent Character | the literal text a character-mode API agent receives for the player's pose | same as 2.5D Character |
 
 ## Parity rule

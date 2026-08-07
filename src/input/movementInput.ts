@@ -14,7 +14,12 @@ export interface MovementDeps {
   isSuspended(): boolean;
 }
 
-const ROTATION_KEYS: Readonly<Record<string, -1 | 1>> = { KeyQ: -1, KeyE: 1 };
+const ROTATION_KEYS: Readonly<Record<string, -1 | 1>> = {
+  KeyA: -1,
+  ArrowLeft: -1,
+  KeyD: 1,
+  ArrowRight: 1,
+};
 
 export class MovementInput {
   private readonly heldAxes = new Set<MovementAxis>();
@@ -44,6 +49,7 @@ export class MovementInput {
     if (this.deps.isSuspended()) return;
     const rotation = ROTATION_KEYS[event.code];
     if (rotation) {
+      event.preventDefault();
       this.deps.rotate(rotation);
       return;
     }

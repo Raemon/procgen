@@ -54,8 +54,8 @@ Five panels:
    the character one is first person and fogs out at the same sight radius the
    agent grid covers. **Agent God** and **Agent Character** render the exact
    observation text the API sends an agent, so you can read what an LLM is
-   working from. WASD/arrows to walk, Q/E to rotate the god camera or turn the
-   character 45°, wheel to zoom. Return opens chat; what you send floats over
+   working from. W/S or ↑/↓ to walk and Q/E to sidestep, A/D or ←/→ to rotate
+   the god camera or turn the character 45°, wheel to zoom. Return opens chat; what you send floats over
    your character's head for a few seconds and over the heads of everyone
    else's (docs/multiplayer.md). `capture` lifts a dragged rectangle into a
    prefab; `life` pauses or runs the creature simulation.

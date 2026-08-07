@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { Button } from '../controls/Button';
-import { HINT_CLASSES } from '../controls/fieldClasses';
 import { WorldIcon } from '../icons/panelIcons';
 import { WorldStage } from './WorldStage';
 import { WorldToolbar } from './WorldToolbar';
-import { MODE_HINTS, VIEW_MODES, type ViewMode } from './viewMode';
+import { VIEW_MODES, type ViewMode } from './viewMode';
 import { lastUsedViewMode, rememberViewMode } from './viewModePreference';
 
 export function WorldPanel() {
@@ -15,7 +14,7 @@ export function WorldPanel() {
   };
   return (
     <div className="flex min-w-0 flex-col">
-      <div className="flex items-center gap-1.5 border-b border-panel-edge bg-panel px-3 py-2">
+      <div className="flex items-center gap-1.5 px-3 py-2">
         <span className="text-ink-dim" title="world">
           <WorldIcon />
         </span>
@@ -25,7 +24,6 @@ export function WorldPanel() {
           </Button>
         ))}
         <WorldToolbar />
-        <p className={`${HINT_CLASSES} ml-auto`}>{MODE_HINTS[mode]} · return opens chat</p>
       </div>
       <WorldStage mode={mode} />
     </div>
