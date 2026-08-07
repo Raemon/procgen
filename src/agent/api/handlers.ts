@@ -48,6 +48,8 @@ export function handleApiRequest(
         symbol: tile.symbol,
         color: tile.color,
         walkable: tile.walkable,
+        light: tile.light,
+        light_ink: tile.lightInk,
         has_face_art: tile.faceArt !== null,
       })),
     });

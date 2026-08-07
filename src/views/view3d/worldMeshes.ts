@@ -6,6 +6,7 @@ import type { CubeFaceArt } from '../../world/tiles/tileFaceArt';
 import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
 import { cubeFaceMaterials, sideFaceMaterial } from './faceArtMaterials';
 import { instancedTileMesh, type PlacementPosition } from './instancedTileMesh';
+import { ceilingPlacementsForRect } from './ceilingPlacements';
 import { markerPlacementsForRect } from './markerPlacements';
 import { tilePlacementsForRect, type TilePlacement } from './tilePlacements';
 import { voxelPlacementsForRect } from './voxelPlacements';
@@ -17,6 +18,7 @@ const WATER_DROP = 0.22;
 const BLOCK_HEIGHT = 1;
 const TREE_HEIGHT = 1.4;
 const MARKER_HEIGHT = 0.7;
+export const CEILING_GROUP_NAME = 'ceiling';
 
 interface ShapeSpec {
   geometry(): THREE.BufferGeometry;
@@ -55,8 +57,30 @@ export function buildChunkMeshGroup(
     ...meshesForShape(voxels, voxelShape()),
     ...meshesForShape(trees, treeShape()),
     ...meshesForShape(markers, markerShape()),
+    ceilingGroup(sampler, tileset, minX, minY),
   );
   return group;
+}
+
+function ceilingGroup(
+  sampler: WorldSampler,
+  tileset: ReadOnlyTileset,
+  minX: number,
+  minY: number,
+): THREE.Group {
+  const placements = ceilingPlacementsForRect(sampler, tileset, minX, minY, CHUNK_SIZE, CHUNK_SIZE);
+  const group = new THREE.Group();
+  group.name = CEILING_GROUP_NAME;
+  group.add(...meshesForShape(placements, ceilingShape()));
+  return group;
+}
+
+function ceilingShape(): ShapeSpec {
+  return {
+    geometry: () => new THREE.BoxGeometry(1, BLOCK_HEIGHT, 1),
+    artMaterials: cubeFaceMaterials,
+    positionOf: (p) => [p.x + 0.5, p.elevation + BLOCK_HEIGHT / 2, p.y + 0.5],
+  };
 }
 
 function voxelShape(): ShapeSpec {

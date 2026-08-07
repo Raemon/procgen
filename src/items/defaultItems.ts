@@ -6,7 +6,10 @@ import {
   shieldSprite,
   swordSprite,
 } from './art/defaultItemArt';
+import { torchSprite } from './art/torchArt';
 import { BILLBOARD, CUBE, LYING_FLAT, newItemWithId, UPRIGHT, type ItemDef } from './itemDef';
+
+export const TORCH_ITEM_ID = 5;
 
 export function defaultItems(): ItemDef[] {
   return [
@@ -46,6 +49,14 @@ export function defaultItems(): ItemDef[] {
       hover: 0.55,
       tags: ['gem'],
     },
+    billboard(TORCH_ITEM_ID, 'torch', '†', '#ffb14a', torchSprite(), {
+      edgeColor: '#7a4a1c',
+      size: 0.7,
+      hover: 0.3,
+      tags: ['hand', 'light'],
+      light: 9,
+      lightInk: '#ffa63a',
+    }),
   ];
 }
 

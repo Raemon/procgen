@@ -5,6 +5,11 @@ export const SEED_TIP: TooltipContent = {
   body: 'The one number every node draws its randomness from. Same seed and same nodes always generate the same world; change it and the shape of everything changes while the rules stay put.',
 };
 
+export const DAYLIGHT_TIP: TooltipContent = {
+  title: 'daylight',
+  body: 'How much light the sky gives this world. At 0 the world is pitch dark and only tiles, items and carried lights are visible — the setting an underground world wants. At 1 the sun is up everywhere.',
+};
+
 export const ROLL_SEED_TIP: TooltipContent = {
   title: 'roll a new seed',
   body: 'Rerolls the world without touching the pipeline — the fastest way to see whether a setup produces good worlds in general or just got lucky once.',

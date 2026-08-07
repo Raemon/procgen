@@ -1,5 +1,6 @@
 import type { CreatureLibrary } from '../creatures/creatureLibrary';
 import type { ItemLibrary } from '../items/itemLibrary';
+import type { GroundItems } from '../items/pickups/groundItems';
 import type { PrefabLibrary } from '../prefabs/prefabLibrary';
 import type { RegionSampler } from '../prefabs/captureRegionAsPrefab';
 import type { PipelineStore } from '../procgen/pipeline/pipelineStore';
@@ -28,6 +29,7 @@ export interface AbilityContext {
   worldPresets: WorldPresetLibrary;
   randomizeHistory: RandomizeHistory;
   regionSampler: RegionSampler;
+  groundItems: GroundItems;
   actor: AbilityActor;
 }
 

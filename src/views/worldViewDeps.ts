@@ -1,6 +1,7 @@
 import type {
   ReadOnlyCreatureLibrary,
   ReadOnlyItemLibrary,
+  ReadOnlyPipelineStore,
   ReadOnlyTileset,
   ReadOnlyWorld,
 } from '../app/readOnlyLibraries';
@@ -13,6 +14,7 @@ import type { CaptureTool } from '../world/capture/captureTool';
 export interface WorldViewDeps {
   world: ReadOnlyWorld;
   sampler: WorldSampler;
+  store: ReadOnlyPipelineStore;
   tileset: ReadOnlyTileset;
   creatures: ReadOnlyCreatureLibrary;
   items: ReadOnlyItemLibrary;

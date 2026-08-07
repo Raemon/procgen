@@ -1,4 +1,5 @@
 import {
+  DEFAULT_CEILING_HEIGHT,
   isBindingValidForKind,
   RANDOM_ROTATION,
   type DisplayBinding,
@@ -12,14 +13,21 @@ import {
 } from '../nodeType';
 import { nodeTypeOf } from '../nodeRegistry';
 import { createNodeInstance } from './createNodeInstance';
-import { DEFAULT_SEED, emptyPipeline, type NodeInstance, type PipelineState } from './pipelineState';
+import {
+  clampDaylight,
+  DEFAULT_SEED,
+  emptyPipeline,
+  type NodeInstance,
+  type PipelineState,
+} from './pipelineState';
 import { dropInvalidWires } from './wiringRules';
 
 export function sanitizePipeline(raw: unknown): PipelineState {
   if (typeof raw !== 'object' || raw === null) return emptyPipeline();
-  const candidate = raw as { seed?: unknown; nodes?: unknown };
+  const candidate = raw as { seed?: unknown; daylight?: unknown; nodes?: unknown };
   const state: PipelineState = {
     seed: sanitizeSeed(candidate.seed),
+    daylight: clampDaylight(candidate.daylight),
     nodes: sanitizeNodes(candidate.nodes),
   };
   dropInvalidWires(state);
@@ -102,6 +110,9 @@ function applyStoredDisplay(node: NodeInstance, def: NodeTypeDef, rawDisplay: un
 }
 
 function normalizedBinding(binding: DisplayBinding): DisplayBinding {
+  if (binding.mode === 'ceiling') {
+    return { mode: 'ceiling', height: finiteOr(binding.height, DEFAULT_CEILING_HEIGHT) };
+  }
   if (binding.mode === 'elevation') {
     return { mode: 'elevation', heightScale: finiteOr(binding.heightScale, 3) };
   }

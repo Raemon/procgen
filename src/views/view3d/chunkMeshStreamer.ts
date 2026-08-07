@@ -3,7 +3,7 @@ import { chunkCoordOfCell, chunkKey } from '../../procgen/chunk';
 import type { WorldSampler } from '../../procgen/worldSampler';
 import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
 import { disposeMeshChildren } from './disposeMeshResources';
-import { buildChunkMeshGroup } from './worldMeshes';
+import { buildChunkMeshGroup, CEILING_GROUP_NAME } from './worldMeshes';
 
 const CHUNK_BUILD_BUDGET_MS_PER_FRAME = 8;
 
@@ -15,6 +15,7 @@ interface BuiltChunk {
 export class ChunkMeshStreamer {
   private readonly builtChunks = new Map<string, BuiltChunk>();
   private version = 0;
+  private ceilingsVisible = false;
 
   constructor(
     private readonly root: THREE.Group,
@@ -24,6 +25,11 @@ export class ChunkMeshStreamer {
 
   invalidateAll(): void {
     this.version++;
+  }
+
+  showCeilings(visible: boolean): void {
+    this.ceilingsVisible = visible;
+    for (const built of this.builtChunks.values()) this.applyCeilingVisibility(built.group);
   }
 
   streamAround(centerX: number, centerY: number, radiusChunks: number): void {
@@ -67,9 +73,15 @@ export class ChunkMeshStreamer {
     if (existing && existing.version === this.version) return false;
     if (existing) this.dropChunk(key);
     const group = buildChunkMeshGroup(this.sampler, this.tileset, chunkX, chunkY);
+    this.applyCeilingVisibility(group);
     this.root.add(group);
     this.builtChunks.set(key, { version: this.version, group });
     return true;
+  }
+
+  private applyCeilingVisibility(group: THREE.Group): void {
+    const ceiling = group.getObjectByName(CEILING_GROUP_NAME);
+    if (ceiling) ceiling.visible = this.ceilingsVisible;
   }
 
   private dropChunk(key: string): void {

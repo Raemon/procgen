@@ -15,7 +15,9 @@ import { CreatureMeshes } from './creatureMeshes';
 import { EasedPoint } from './easedPoint';
 import { ItemMeshes } from './itemMeshes';
 import { RemotePlayerMeshes } from './remotePlayerMeshes';
-import { createCharacterFog, createDaylitScene } from './daylitScene';
+import { createCharacterFog, createWorldScene } from './worldScene';
+import { SceneDaylight } from './sceneDaylight';
+import { WorldLights } from './worldLights';
 import { PlayerCharacterMesh } from './playerCharacterMesh';
 import { FollowCamera } from './followCamera';
 import { worldCellUnderPointer } from './pointerToWorldCell';
@@ -37,7 +39,8 @@ export class View3D {
   readonly canvas: HTMLCanvasElement;
 
   private readonly renderer = new THREE.WebGLRenderer({ antialias: true });
-  private readonly scene = createDaylitScene();
+  private readonly scene = createWorldScene();
+  private readonly daylight = new SceneDaylight(this.scene);
   private readonly followCamera = new FollowCamera();
   private readonly characterCamera = new CharacterCamera();
   private readonly characterFog = createCharacterFog();
@@ -51,6 +54,7 @@ export class View3D {
   private readonly itemMeshes: ItemMeshes;
   private readonly remotePlayerMeshes: RemotePlayerMeshes;
   private readonly selectionBox: SelectionBox;
+  private readonly worldLights: WorldLights;
   private readonly speechLabels: SpeechBubbleLabels;
   private readonly resizeObserver = new ResizeObserver(() => this.resize());
   private animationFrame = 0;
@@ -82,6 +86,7 @@ export class View3D {
       this.characterSprites,
     );
     this.selectionBox = new SelectionBox(this.worldGroup);
+    this.worldLights = new WorldLights(this.scene, deps);
     this.speechLabels = new SpeechBubbleLabels(container);
     this.listenForCameraGestures();
     listenForCaptureDrag(this.canvas, deps.capture, (x, y) => this.cellAtPixel(x, y));
@@ -99,6 +104,7 @@ export class View3D {
     this.player.dispose();
     this.characterSprites.dispose();
     this.selectionBox.dispose();
+    this.worldLights.dispose();
     this.speechLabels.dispose();
     this.streamer.dispose();
     this.renderer.dispose();
@@ -109,6 +115,7 @@ export class View3D {
     if (this.cameraStyle === style) return;
     this.cameraStyle = style;
     this.scene.fog = style === 'character' ? this.characterFog : null;
+    this.streamer.showCeilings(style === 'character');
     this.player.visible = style === 'god';
     this.characterCamera.snapOnNextFrame();
     this.followCamera.snapToFocusOnNextUpdate();
@@ -129,6 +136,7 @@ export class View3D {
 
   onWorldChanged(): void {
     this.streamer.invalidateAll();
+    this.worldLights.invalidate();
     this.itemMeshes.invalidate();
     this.creatureMeshes.forgetSprites();
     this.remotePlayerMeshes.forgetSprites();
@@ -207,6 +215,7 @@ export class View3D {
     this.selectionBox.showRegion(this.deps.capture.selectedRegion(), this.focusGroundHeight());
     this.updateActiveCamera(dtSeconds);
     this.streamAroundCameraFocus();
+    this.lightAroundPlayer();
     this.showSpeechBubbles();
     this.renderer.render(this.scene, this.activeCamera());
   }
@@ -251,6 +260,11 @@ export class View3D {
       this.deps.sampler.elevationAt(Math.round(eased.x), Math.round(eased.y)),
       facingYawRadians(this.deps.world.facing),
     );
+  }
+
+  private lightAroundPlayer(): void {
+    this.daylight.setLevel(this.deps.store.daylight());
+    this.worldLights.syncAround(this.easedPlayer.x, this.easedPlayer.y);
   }
 
   private streamAroundCameraFocus(): void {

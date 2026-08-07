@@ -4,6 +4,8 @@ import '../../procgen/nodes';
 import { CreatureLibrary } from '../../creatures/creatureLibrary';
 import { creaturesFromStoredJson } from '../../creatures/creatureStorage';
 import { ItemLibrary } from '../../items/itemLibrary';
+import { groundItemsOf, type GroundItems } from '../../items/pickups/groundItems';
+import { TakenItemSpawns } from '../../items/pickups/takenItemSpawns';
 import { itemsFromStoredJson } from '../../items/itemStorage';
 import { PrefabLibrary } from '../../prefabs/prefabLibrary';
 import { prefabsFromStoredJson } from '../../prefabs/prefabStorage';
@@ -34,6 +36,8 @@ export interface ServerWorld {
   templates: TemplateLibrary;
   worldPresets: WorldPresetLibrary;
   randomizeHistory: RandomizeHistory;
+  takenItems: TakenItemSpawns;
+  groundItems: GroundItems;
   isWalkable(x: number, y: number): boolean;
   spawn(): { x: number; y: number };
 }
@@ -61,13 +65,19 @@ function writeDataFile(root: string, name: string, value: unknown): void {
 export function currentServerWorld(root: string, previous: ServerWorld | null): ServerWorld {
   const stamp = dataFileStamp(root);
   if (previous && previous.stamp === stamp) return previous;
-  return buildServerWorld(root, stamp, previous?.randomizeHistory ?? new RandomizeHistory());
+  return buildServerWorld(
+    root,
+    stamp,
+    previous?.randomizeHistory ?? new RandomizeHistory(),
+    previous?.takenItems ?? new TakenItemSpawns(),
+  );
 }
 
 function buildServerWorld(
   root: string,
   stamp: string,
   randomizeHistory: RandomizeHistory,
+  takenItems: TakenItemSpawns,
 ): ServerWorld {
   const tileset = new Tileset(tilesFromStoredJson(dataFileJson(root, 'tileset')) ?? undefined);
   const tileIdByName = (name: string) => tileset.all().find((tile) => tile.name === name)?.id ?? -1;
@@ -83,11 +93,12 @@ function buildServerWorld(
   const worldPresets = new WorldPresetLibrary(sanitizeWorldPresets(dataFileJson(root, 'worldPresets')));
   const store = new PipelineStore(sanitizePipeline(dataFileJson(root, 'pipeline')));
   const evaluator = new PipelineEvaluator(store);
-  const sampler = new WorldSampler(store, evaluator, tileset, prefabs, items);
+  const sampler = new WorldSampler(store, evaluator, tileset, prefabs, items, takenItems);
   const isWalkable = (x: number, y: number) => isWalkableTile(tileset, sampler.tileAt(x, y));
   return {
     stamp,
     sampler,
+    groundItems: groundItemsOf(sampler, takenItems),
     tileset,
     store,
     prefabs,
@@ -96,6 +107,7 @@ function buildServerWorld(
     templates,
     worldPresets,
     randomizeHistory,
+    takenItems,
     isWalkable,
     spawn: () => nearestWalkable(0, 0, SPAWN_SEARCH_RADIUS, isWalkable) ?? { x: 0, y: 0 },
   };

@@ -231,6 +231,10 @@ affects dataflow. Each node card has a display selector:
 
 - `tiles` → **tile layer**: layers paint in list order, later non-empty cells
   win. Use `-1` to let lower layers show through.
+- `tiles` → **ceiling**: the same layering, hung a chosen number of tiles above
+  the ground instead of painted on it. Ceilings are drawn in first person only,
+  so the god camera can still see into a roofed world — see
+  `docs/light-and-darkness.md`.
 - `field` → **elevation**: shapes the 2.5D ground height (× height scale);
   the last enabled elevation node wins.
 - `points` → **markers**: drawn as a glyph in ASCII and a small cone in 2.5D,
@@ -244,6 +248,13 @@ Node — no DOM. It asserts determinism, chunk-order independence, signature
 invalidation, layering, custom-script behavior, and serialization. Add checks
 for your own nodes there; `asciiSnapshot(...)` gives you a pure-text render of
 any sampler for assertions or LLM-agent observation.
+
+## World settings
+
+Two numbers on `PipelineState` belong to the world rather than to any node,
+because nothing spatial produces them: `seed`, and `daylight` (0-1, how much
+light the sky gives — see `docs/light-and-darkness.md`). Add another only when
+it genuinely cannot be a node's knob; a node is the default answer.
 
 ## Adding a new value kind
 
