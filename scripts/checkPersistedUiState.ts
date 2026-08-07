@@ -17,6 +17,7 @@ checkTheNextLoadReadsWhatStorageHolds();
 checkStorageHoldingTheWrongShapeFallsBackToTheDefault();
 checkEveryReaderOfAKeySeesAWrite();
 checkTogglingAMemberAddsThenRemovesIt();
+checkCollapsingEveryCardReplacesWhateverWasCollapsed();
 checkGuardsAcceptOnlyTheShapesTheUiPersists();
 console.log('persisted ui state: all checks passed');
 
@@ -74,6 +75,20 @@ function checkTogglingAMemberAddsThenRemovesIt(): void {
   assert(collapsed.join() === 'node-7', 'toggling an absent member collapses it');
   assert(toggledMembers(collapsed, 'node-7').length === 0, 'toggling it again expands it');
   assert(toggledMembers(['a', 'b'], 'a').join() === 'b', 'toggling one member leaves the rest alone');
+}
+
+function checkCollapsingEveryCardReplacesWhateverWasCollapsed(): void {
+  writePersistedUiValue('procgen.collapsedNodeCards', ['node-1']);
+  writePersistedUiValue('procgen.collapsedNodeCards', ['node-1', 'node-2', 'node-3']);
+  assert(
+    persistedUiValue('procgen.collapsedNodeCards', [], isStringArray).length === 3,
+    'collapse all stores every card at once rather than toggling them one by one',
+  );
+  writePersistedUiValue('procgen.collapsedNodeCards', []);
+  assert(
+    persistedUiValue('procgen.collapsedNodeCards', ['stale'], isStringArray).length === 0,
+    'expand all leaves nothing collapsed behind',
+  );
 }
 
 function checkGuardsAcceptOnlyTheShapesTheUiPersists(): void {

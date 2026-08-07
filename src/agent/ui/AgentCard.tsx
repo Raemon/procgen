@@ -1,4 +1,6 @@
 import { classes } from '../../ui/controls/classes';
+import type { TooltipContent } from '../../ui/tooltips/tooltipContent';
+import { tooltipHandlers } from '../../ui/tooltips/tooltipHandlers';
 import { formatUsd } from '../pricing';
 import type { RosterAgent } from './agentsApiClient';
 
@@ -10,6 +12,21 @@ const RUN_STATUS_INKS: Readonly<Record<RosterAgent['run_status'], string>> = {
   stopped: 'text-ink-dim',
   finished: 'text-sky-400',
   error: 'text-amber-400',
+};
+
+const RUN_TIP: TooltipContent = {
+  title: 'run',
+  body: 'Hands the agent to the chosen model with the run goal and budget, and lets it play until it finishes or runs out.',
+};
+
+const STOP_TIP: TooltipContent = {
+  title: 'stop',
+  body: 'Ends the run after the step in flight. The agent keeps everything it has learned and can be run again.',
+};
+
+const DELETE_TIP: TooltipContent = {
+  title: 'delete agent',
+  body: 'Removes the agent and its transcript from the server.',
 };
 
 export function AgentCard({
@@ -54,32 +71,47 @@ export function AgentCard({
           </span>
         )}
         {(agent.notebook_notes > 0 || agent.notebook_scripts > 0) && (
-          <span title="memory notes / saved scripts">
+          <span
+            {...tooltipHandlers({
+              title: 'notebook',
+              body: 'What the agent has written down for itself: memory notes it can re-read, and scripts it saved to replay.',
+            })}
+          >
             {agent.notebook_notes}m {agent.notebook_scripts}s
           </span>
         )}
         <span className="ml-auto flex gap-1">
           {agent.run_status === 'running' ? (
-            <CardButton label="■ stop" onClick={onStop} />
+            <CardButton label="■ stop" tip={STOP_TIP} onClick={onStop} />
           ) : (
-            <CardButton label="▶ run" onClick={onRun} />
+            <CardButton label="▶ run" tip={RUN_TIP} onClick={onRun} />
           )}
-          <CardButton label="✕" onClick={onDelete} />
+          <CardButton label="✕" tip={DELETE_TIP} onClick={onDelete} />
         </span>
       </div>
     </div>
   );
 }
 
-function CardButton({ label, onClick }: { label: string; onClick(): void }) {
+function CardButton({
+  label,
+  tip,
+  onClick,
+}: {
+  label: string;
+  tip: TooltipContent;
+  onClick(): void;
+}) {
   return (
     <button
       type="button"
+      aria-label={tip.title}
       className="cursor-pointer rounded border border-btn-edge bg-btn px-1.5 py-0.5 text-[11px] hover:bg-btn-hover"
       onClick={(event) => {
         event.stopPropagation();
         onClick();
       }}
+      {...tooltipHandlers(tip)}
     >
       {label}
     </button>

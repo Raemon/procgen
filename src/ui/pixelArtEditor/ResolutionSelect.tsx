@@ -1,5 +1,6 @@
 import { FACE_ART_SIZES } from '../../world/tiles/tileFaceArt';
 import { Select } from '../controls/Select';
+import { RESOLUTION_TIP } from './help/paintTips';
 
 export function ResolutionSelect({
   size,
@@ -12,7 +13,7 @@ export function ResolutionSelect({
     <Select
       fullWidth={false}
       className="text-[11px]"
-      title="art resolution (existing art is rescaled)"
+      tip={RESOLUTION_TIP}
       value={String(size)}
       options={FACE_ART_SIZES.map((option) => ({
         value: String(option),

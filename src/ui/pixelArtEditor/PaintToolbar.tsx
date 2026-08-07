@@ -3,12 +3,13 @@ import { Button } from '../controls/Button';
 import { ColorField } from '../controls/ColorField';
 import type { PaintTool } from './paintSettings';
 import type { FaceArtEditor } from './useFaceArtEditor';
+import { PAINT_COLOR_TIP, PAINT_EDIT_TIPS, PAINT_TOOL_TIPS } from './help/paintTips';
 
-const TOOLS: { tool: PaintTool; label: string; title: string }[] = [
-  { tool: 'draw', label: 'draw', title: 'paint pixels with the current color' },
-  { tool: 'erase', label: 'erase', title: 'clear pixels back to the base color — transparent, in sprite art' },
-  { tool: 'fill', label: 'fill', title: 'flood-fill a region with the current color' },
-  { tool: 'pick', label: 'pick', title: 'pick a color from the canvas' },
+const TOOLS: { tool: PaintTool; label: string }[] = [
+  { tool: 'draw', label: 'draw' },
+  { tool: 'erase', label: 'erase' },
+  { tool: 'fill', label: 'fill' },
+  { tool: 'pick', label: 'pick' },
 ];
 
 const TOOL_CLASSES = 'px-2 py-0.5 text-[11px]';
@@ -20,14 +21,14 @@ export function PaintToolbar({ editor }: { editor: FaceArtEditor }) {
       <ToolRow>
         <ColorField
           ink={settings.paintColor}
-          title="paint color — transparent paints holes in the art"
+          tip={PAINT_COLOR_TIP}
           onChange={(paintColor) => updateSettings({ paintColor })}
         />
         {TOOLS.map((spec) => (
           <Button
             key={spec.tool}
             className={TOOL_CLASSES}
-            title={spec.title}
+            tip={PAINT_TOOL_TIPS[spec.tool]}
             active={settings.tool === spec.tool}
             onClick={() => editor.setTool(spec.tool)}
           >
@@ -38,7 +39,7 @@ export function PaintToolbar({ editor }: { editor: FaceArtEditor }) {
       <ToolRow>
         <Button
           className={TOOL_CLASSES}
-          title="mirror strokes left↔right"
+          tip={PAINT_EDIT_TIPS.mirrorX}
           active={settings.mirrorX}
           onClick={() => updateSettings({ mirrorX: !settings.mirrorX })}
         >
@@ -46,28 +47,28 @@ export function PaintToolbar({ editor }: { editor: FaceArtEditor }) {
         </Button>
         <Button
           className={TOOL_CLASSES}
-          title="mirror strokes top↕bottom"
+          tip={PAINT_EDIT_TIPS.mirrorY}
           active={settings.mirrorY}
           onClick={() => updateSettings({ mirrorY: !settings.mirrorY })}
         >
           mir y
         </Button>
-        <Button className={TOOL_CLASSES} title="undo the last edit" onClick={editor.undo}>
+        <Button className={TOOL_CLASSES} tip={PAINT_EDIT_TIPS.undo} onClick={editor.undo}>
           undo
         </Button>
-        <Button className={TOOL_CLASSES} title="copy this face" onClick={editor.copyFace}>
+        <Button className={TOOL_CLASSES} tip={PAINT_EDIT_TIPS.copy} onClick={editor.copyFace}>
           copy
         </Button>
         <Button
           className={TOOL_CLASSES}
-          title="paste the copied face here"
+          tip={PAINT_EDIT_TIPS.paste}
           onClick={editor.pasteFace}
         >
           paste
         </Button>
         <Button
           className={TOOL_CLASSES}
-          title="reset this face to the base color"
+          tip={PAINT_EDIT_TIPS.clear}
           onClick={editor.clearFace}
         >
           clear

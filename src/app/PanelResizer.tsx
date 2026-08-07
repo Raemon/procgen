@@ -1,4 +1,6 @@
 import { useRef, type PointerEvent } from 'react';
+import { tooltipHandlers } from '../ui/tooltips/tooltipHandlers';
+import { RESIZER_TIP } from './help/panelTips';
 
 interface DragOrigin {
   pointerX: number;
@@ -9,10 +11,12 @@ export function PanelResizer({
   width,
   disabled,
   onResize,
+  onResetWidth,
 }: {
   width: number;
   disabled?: boolean;
   onResize(width: number): void;
+  onResetWidth(): void;
 }) {
   const origin = useRef<DragOrigin | null>(null);
   if (disabled) return <div className="bg-panel-edge" />;
@@ -23,6 +27,8 @@ export function PanelResizer({
       onPointerMove={(event) => resizeWhileDragging(event, origin.current, onResize)}
       onPointerUp={() => (origin.current = null)}
       onPointerCancel={() => (origin.current = null)}
+      onDoubleClick={onResetWidth}
+      {...tooltipHandlers(RESIZER_TIP)}
     />
   );
 }

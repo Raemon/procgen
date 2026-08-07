@@ -1,5 +1,6 @@
 import { Button } from '../controls/Button';
 import type { PrefabEditor } from './usePrefabEditor';
+import { LAYER_TIPS } from './help/prefabTips';
 
 const STEP_CLASSES = 'px-2 py-0.5 text-[11px]';
 
@@ -9,7 +10,7 @@ export function LayerStepper({ editor }: { editor: PrefabEditor }) {
     <div className="flex items-center gap-1.5">
       <Button
         className={STEP_CLASSES}
-        title="lower layer"
+        tip={LAYER_TIPS.lower}
         disabled={layer === 0}
         onClick={() => editor.selectLayer(layer - 1)}
       >
@@ -20,18 +21,18 @@ export function LayerStepper({ editor }: { editor: PrefabEditor }) {
       </span>
       <Button
         className={STEP_CLASSES}
-        title="higher layer"
+        tip={LAYER_TIPS.higher}
         disabled={layer === prefab.layers - 1}
         onClick={() => editor.selectLayer(layer + 1)}
       >
         ▴
       </Button>
-      <Button className={STEP_CLASSES} title="add a layer on top" onClick={editor.addLayer}>
+      <Button className={STEP_CLASSES} tip={LAYER_TIPS.add} onClick={editor.addLayer}>
         +
       </Button>
       <Button
         className={STEP_CLASSES}
-        title="drop the top layer"
+        tip={LAYER_TIPS.remove}
         disabled={prefab.layers === 1}
         onClick={editor.removeLayer}
       >

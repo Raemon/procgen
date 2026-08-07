@@ -6,6 +6,7 @@ import { usePersistedUiValue } from './usePersistedUiValue';
 export interface PersistedUiSet {
   has(member: string): boolean;
   toggle(member: string): void;
+  replaceWith(members: readonly string[]): void;
 }
 
 const NO_MEMBERS: string[] = [];
@@ -16,5 +17,6 @@ export function usePersistedUiSet(key: string): PersistedUiSet {
   return {
     has: (member) => set.has(member),
     toggle: (member) => setMembers(toggledMembers(members, member)),
+    replaceWith: (next) => setMembers([...next]),
   };
 }

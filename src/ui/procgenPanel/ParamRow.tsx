@@ -19,7 +19,7 @@ export function ParamRow(props: ParamRowProps) {
   if (props.spec.kind === 'code')
     return <CodeParam spec={props.spec} value={String(props.value)} onChange={props.onChange} />;
   return (
-    <KnobRow label={props.spec.label} tooltip={paramTooltip(props.spec)}>
+    <KnobRow label={props.spec.label} tip={paramTooltip(props.spec)}>
       <ParamControl {...props} />
     </KnobRow>
   );

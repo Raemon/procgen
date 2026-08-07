@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react';
 import { paintFacePixels } from '../../views/paintFacePixels';
 import { faceGridSize, type FacePixels } from '../../world/tiles/tileFaceArt';
 import { Button } from '../controls/Button';
+import { tooltipHandlers } from '../tooltips/tooltipHandlers';
+import { SHIFT_TIP, TILED_PREVIEW_TIP } from './help/paintTips';
 
 const TILED_REPEATS = 3;
 const SHIFTS: { label: string; dx: number; dy: number }[] = [
@@ -26,7 +28,7 @@ export function TilingTools({
         <Button
           key={shift.label}
           className="px-1.5 py-0.5 text-[11px]"
-          title="shift this face one pixel (wraps around, for seamless tiling)"
+          tip={SHIFT_TIP}
           onClick={() => onShift(shift.dx, shift.dy)}
         >
           {shift.label}
@@ -45,7 +47,7 @@ function TiledPreview({ pixels, baseColor }: { pixels: FacePixels; baseColor: st
   return (
     <canvas
       ref={canvas}
-      title="this face repeated 3×3: seams show up here"
+      {...tooltipHandlers(TILED_PREVIEW_TIP)}
       className="ml-auto h-[54px] w-[54px] rounded-[3px] border border-art-edge [image-rendering:pixelated]"
     />
   );

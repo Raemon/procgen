@@ -1,6 +1,8 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { useAppRuntime } from '../../app/appRuntimeContext';
 import type { NodeInstance } from '../../procgen/pipeline/pipelineState';
+import { tooltipHandlers } from '../tooltips/tooltipHandlers';
+import { NODE_NOTES_TIP } from './help/nodeCardTips';
 
 export function NodeCommentRow({ node }: { node: NodeInstance }) {
   const { perform } = useAppRuntime();
@@ -16,6 +18,7 @@ export function NodeCommentRow({ node }: { node: NodeInstance }) {
       value={draft}
       onChange={(event) => setDraft(event.target.value)}
       onBlur={() => perform('comment_node', { node_id: node.id, comment: draft })}
+      {...tooltipHandlers(NODE_NOTES_TIP)}
     />
   );
 }

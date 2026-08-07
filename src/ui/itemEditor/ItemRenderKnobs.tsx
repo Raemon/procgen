@@ -13,6 +13,11 @@ import { TagsInput } from '../controls/TagsInput';
 import { ValueReadout } from '../controls/ValueReadout';
 import { ColorField } from '../controls/ColorField';
 import type { TooltipContent } from '../tooltips/tooltipContent';
+import {
+  ITEM_EDGE_COLOR_TIP,
+  ITEM_GRID_TIPS,
+  ITEM_TAGS_TIP,
+} from './help/itemTips';
 
 interface SizeKnob {
   field: 'size' | 'hover' | 'thickness';
@@ -60,7 +65,7 @@ export function ItemRenderKnobs({ item }: { item: ItemDef }) {
   const isBillboard = item.render === BILLBOARD;
   return (
     <div className="mt-1.5 rounded border border-art-edge bg-art-panel p-2">
-      <KnobRow label="render" tooltip={choiceTooltip('render', RENDER_CHOICES)}>
+      <KnobRow label="render" tip={choiceTooltip('render', RENDER_CHOICES)}>
         <Select
           value={String(item.render)}
           options={choiceOptions(RENDER_CHOICES)}
@@ -69,7 +74,7 @@ export function ItemRenderKnobs({ item }: { item: ItemDef }) {
       </KnobRow>
       {isBillboard && (
         <>
-          <KnobRow label="orientation" tooltip={choiceTooltip('orientation', ORIENTATION_CHOICES)}>
+          <KnobRow label="orientation" tip={choiceTooltip('orientation', ORIENTATION_CHOICES)}>
             <Select
               value={String(item.orientation)}
               options={choiceOptions(ORIENTATION_CHOICES)}
@@ -78,21 +83,21 @@ export function ItemRenderKnobs({ item }: { item: ItemDef }) {
           </KnobRow>
           <KnobRow
             label="edge"
-            tooltip={{
+            tip={{
               title: 'edge color',
               body: 'The colour of the extruded rim — the part of a billboard you see from the side.',
             }}
           >
             <ColorField
               ink={item.edgeColor}
-              title="edge color"
+              tip={ITEM_EDGE_COLOR_TIP}
               onChange={(edgeColor) => edit({ edge_color: edgeColor })}
             />
           </KnobRow>
         </>
       )}
       {SIZE_KNOBS.filter((knob) => isBillboard || knob.field !== 'thickness').map((knob) => (
-        <KnobRow key={knob.field} label={knob.label} tooltip={{ title: knob.label, body: knob.help }}>
+        <KnobRow key={knob.field} label={knob.label} tip={{ title: knob.label, body: knob.help }}>
           <Slider
             min={knob.min}
             max={knob.max}
@@ -103,25 +108,25 @@ export function ItemRenderKnobs({ item }: { item: ItemDef }) {
           <ValueReadout value={item[knob.field]} />
         </KnobRow>
       ))}
-      <KnobRow label="cells" tooltip={footprintTooltip()}>
+      <KnobRow label="cells" tip={footprintTooltip()}>
         <div className="flex items-center gap-1.5">
           <FootprintSelect
             value={item.gridWidth}
-            title="inventory columns"
+            tip={ITEM_GRID_TIPS.columns}
             onChange={(gridWidth) => edit({ grid_width: gridWidth })}
           />
           <span className="text-ink-dim">×</span>
           <FootprintSelect
             value={item.gridHeight}
-            title="inventory rows"
+            tip={ITEM_GRID_TIPS.rows}
             onChange={(gridHeight) => edit({ grid_height: gridHeight })}
           />
         </div>
       </KnobRow>
-      <KnobRow label="tags" tooltip={tagsTooltip()}>
+      <KnobRow label="tags" tip={tagsTooltip()}>
         <TagsInput
           tags={item.tags}
-          title="tags that decide which inventory slots accept this item"
+          tip={ITEM_TAGS_TIP}
           onChange={(tags) => edit({ tags })}
         />
       </KnobRow>
@@ -131,17 +136,17 @@ export function ItemRenderKnobs({ item }: { item: ItemDef }) {
 
 function FootprintSelect({
   value,
-  title,
+  tip,
   onChange,
 }: {
   value: number;
-  title: string;
+  tip: TooltipContent;
   onChange(value: number): void;
 }) {
   return (
     <Select
       fullWidth={false}
-      title={title}
+      tip={tip}
       value={String(value)}
       options={Array.from({ length: MAX_ITEM_GRID_SIDE }, (_, index) => ({
         value: String(index + 1),

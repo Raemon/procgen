@@ -1,7 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { floatingTipPosition, type TipPosition } from './floatingTipPosition';
 import { TooltipBody } from './TooltipBody';
-import { activeTooltip, hideTooltip, subscribeToTooltip } from './tooltipState';
+import { hideTooltipAndCancelPending } from './hoverIntent';
+import { activeTooltip, subscribeToTooltip } from './tooltipState';
 
 const OFFSCREEN: TipPosition = { left: -9999, top: -9999 };
 
@@ -11,6 +12,7 @@ export function FloatingTooltip() {
   const [position, setPosition] = useState<TipPosition>(OFFSCREEN);
 
   useHideOnScroll();
+  useHideOnEscape();
   useLayoutEffect(() => {
     if (active && tip.current)
       setPosition(floatingTipPosition(tip.current.getBoundingClientRect(), active.anchor));
@@ -31,7 +33,17 @@ export function FloatingTooltip() {
 
 function useHideOnScroll(): void {
   useEffect(() => {
-    window.addEventListener('scroll', hideTooltip, true);
-    return () => window.removeEventListener('scroll', hideTooltip, true);
+    window.addEventListener('scroll', hideTooltipAndCancelPending, true);
+    return () => window.removeEventListener('scroll', hideTooltipAndCancelPending, true);
+  }, []);
+}
+
+function useHideOnEscape(): void {
+  useEffect(() => {
+    const dismiss = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') hideTooltipAndCancelPending();
+    };
+    window.addEventListener('keydown', dismiss);
+    return () => window.removeEventListener('keydown', dismiss);
   }, []);
 }

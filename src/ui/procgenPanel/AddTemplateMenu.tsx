@@ -3,6 +3,7 @@ import { useAppRuntime } from '../../app/appRuntimeContext';
 import type { NodeTemplate } from '../../procgen/templates/nodeTemplate';
 import { Button } from '../controls/Button';
 import { tooltipHandlers } from '../tooltips/tooltipHandlers';
+import { ADD_TEMPLATE_TIP, deleteTemplateTip } from './help/pipelineTips';
 
 export function AddTemplateMenu({ onAdded }: { onAdded(nodeId: string): void }) {
   const { store, templates, perform } = useAppRuntime();
@@ -22,7 +23,7 @@ export function AddTemplateMenu({ onAdded }: { onAdded(nodeId: string): void }) 
 
   return (
     <div>
-      <Button className="w-full" onClick={() => setOpen(!open)}>
+      <Button className="w-full" tip={ADD_TEMPLATE_TIP} onClick={() => setOpen(!open)}>
         + add template
       </Button>
       {open && (
@@ -99,7 +100,7 @@ function TemplateItem({
       {removable && (
         <Button
           className="px-1.5 py-0.5 text-[11px] hover:border-danger-edge hover:text-danger-ink"
-          title="forget this saved template"
+          tip={deleteTemplateTip(template.name)}
           onClick={() => perform('delete_template', { name: template.name })}
         >
           ✕

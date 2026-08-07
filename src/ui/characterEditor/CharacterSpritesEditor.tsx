@@ -19,6 +19,7 @@ import { Slider } from '../controls/Slider';
 import { ValueReadout } from '../controls/ValueReadout';
 import { classes } from '../controls/classes';
 import { HINT_CLASSES } from '../controls/fieldClasses';
+import { CLEAR_SPRITES_TIP } from '../creatureEditor/help/creatureTips';
 import { SpriteArtEditor } from '../pixelArtEditor/SpriteArtEditor';
 import { tooltipHandlers } from '../tooltips/tooltipHandlers';
 import { SpriteFrameStrip } from './SpriteFrameStrip';
@@ -94,7 +95,7 @@ export function CharacterSpritesEditor({ character }: { character: CreatureDef }
       <div className="mt-2 flex items-center gap-1.5">
         <Button
           className="px-2 py-0.5 text-[11px] hover:border-danger-edge hover:text-danger-ink"
-          title="drop every frame and go back to cube art"
+          tip={CLEAR_SPRITES_TIP}
           onClick={() => perform('clear_character_billboard', { creature_id: character.id })}
         >
           clear sprites
@@ -151,7 +152,7 @@ function FpsRows({
           key={animation}
           className="mt-2"
           label={`${animation} fps`}
-          tooltip={{ title: `${animation} fps`, body: `How fast the ${animation} frames play. 0 freezes on the first frame.` }}
+          tip={{ title: `${animation} fps`, body: `How fast the ${animation} frames play. 0 freezes on the first frame.` }}
         >
           <Slider
             min={0}

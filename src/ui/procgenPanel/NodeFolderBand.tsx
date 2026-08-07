@@ -3,6 +3,13 @@ import { useAppRuntime } from '../../app/appRuntimeContext';
 import { Button } from '../controls/Button';
 import { classes } from '../controls/classes';
 import { FOLDER_HOVER_GROUP, REVEALED_ON_FOLDER_HOVER } from '../controls/revealOnRowHover';
+import { tooltipHandlers } from '../tooltips/tooltipHandlers';
+import {
+  collapseFolderTip,
+  FOLDER_NAME_TIP,
+  SAVE_TEMPLATE_TIP,
+  UNGROUP_TIP,
+} from './help/nodeCardTips';
 import type { NodeRun } from './nodeFolderRuns';
 
 export function NodeFolderBand({
@@ -45,8 +52,9 @@ function FolderHeader({
       <button
         type="button"
         className="cursor-pointer border-none bg-transparent p-0.5 text-[11px] text-ink-dim hover:text-ink"
-        title="collapse / expand folder"
+        aria-label="collapse or expand folder"
         onClick={onToggleCollapsed}
+        {...tooltipHandlers(collapseFolderTip(collapsed))}
       >
         {collapsed ? '▸' : '▾'}
       </button>
@@ -57,7 +65,7 @@ function FolderHeader({
       <SaveAsTemplateButton run={run} />
       <Button
         className={classes(REVEALED_ON_FOLDER_HOVER, 'px-1.5 py-0.5 text-[11px]')}
-        title="ungroup — leaves every node exactly where it is"
+        tip={UNGROUP_TIP}
         onClick={() => setFolderOfNodes(perform, nodeIds, '')}
       >
         ⊘
@@ -80,7 +88,7 @@ function SaveAsTemplateButton({ run }: { run: NodeRun }) {
   return (
     <Button
       className={classes(REVEALED_ON_FOLDER_HOVER, 'px-1.5 py-0.5 text-[11px]')}
-      title="save this folder as a template — wiring inside is kept, wiring to nodes outside is left open"
+      tip={SAVE_TEMPLATE_TIP}
       onClick={save}
     >
       {saved ? '✓' : '⤓'}
@@ -101,10 +109,11 @@ function FolderNameInput({ folder, nodeIds }: { folder: string; nodeIds: string[
       type="text"
       className="min-w-0 flex-1 rounded border border-transparent bg-transparent px-1 py-[3px] text-xs font-semibold tracking-wide text-ink-dim uppercase hover:border-panel-edge hover:bg-bg focus:border-panel-edge focus:bg-bg"
       value={draft}
-      title="folder name — grouping is for the panel only and never changes what is generated"
+      aria-label="folder name"
       onChange={(event) => setDraft(event.target.value)}
       onBlur={commit}
       onKeyDown={(event) => event.key === 'Enter' && commit()}
+      {...tooltipHandlers(FOLDER_NAME_TIP)}
     />
   );
 }
