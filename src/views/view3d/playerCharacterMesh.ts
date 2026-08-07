@@ -48,18 +48,22 @@ export class PlayerCharacterMesh {
 
   standAt(stance: PlayerStance, view: CameraView): void {
     const def = playerCharacterDef(this.creatures);
-    const dressed =
-      def !== null &&
-      dressCharacterQuad(this.quad, {
-        sprites: this.sprites,
-        def,
-        motion: stance.motion,
-        view,
-        tint: this.tint,
-      });
-    this.quad.visible = dressed;
-    this.capsule.visible = !dressed;
-    const height = dressed ? def!.size / 2 : CAPSULE_CENTER_HEIGHT;
-    this.object.position.set(stance.x, stance.elevation + height, stance.y);
+    const centerHeight =
+      def === null
+        ? null
+        : dressCharacterQuad(this.quad, {
+            sprites: this.sprites,
+            def,
+            motion: stance.motion,
+            view,
+            tint: this.tint,
+          });
+    this.quad.visible = centerHeight !== null;
+    this.capsule.visible = centerHeight === null;
+    this.object.position.set(
+      stance.x,
+      stance.elevation + (centerHeight ?? CAPSULE_CENTER_HEIGHT),
+      stance.y,
+    );
   }
 }

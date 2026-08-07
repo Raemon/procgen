@@ -78,7 +78,8 @@ registerCreatureAbility({
     speed: { kind: 'number', help: 'tiles per second', optional: true },
     sight: { kind: 'number', help: 'how many tiles away it notices the player', optional: true },
     roam: { kind: 'number', help: 'how far from its spawn cell it will range', optional: true },
-    size: { kind: 'number', help: 'how large it is drawn, in tiles', optional: true },
+    body_width: { kind: 'number', help: 'how wide its body is, in tiles', optional: true },
+    body_height: { kind: 'number', help: 'how tall its body is, in tiles — characters default to 2', optional: true },
     phasing: { kind: 'int', help: '1 if it walks through blocking tiles, 0 if it must go around', optional: true },
     kind: { kind: 'int', help: entityKindHelp(), optional: true },
     face_art: { kind: 'json', help: 'cube face art, or null to clear it', optional: true },
@@ -146,10 +147,11 @@ function creaturePatchFrom(params: Record<string, unknown>): CreaturePatchRead {
   if (color.ok) patch.color = color.value;
   const symbol = readText(params, 'symbol');
   if (symbol.ok) patch.symbol = [...symbol.value][0]!;
-  for (const knob of ['speed', 'sight', 'roam', 'size'] as const) {
+  for (const knob of ['speed', 'sight', 'roam'] as const) {
     const read = readNumber(params, knob);
     if (read.ok) patch[knob] = read.value;
   }
+  addBodySizeToPatch(params, patch);
   const phasing = readInt(params, 'phasing');
   if (phasing.ok) patch.phasing = phasing.value === 0 ? 0 : 1;
   const behavior = behaviorFrom(params);
@@ -162,6 +164,18 @@ function creaturePatchFrom(params: Record<string, unknown>): CreaturePatchRead {
   if (!art.ok) return art;
   if (art.value !== undefined) patch.faceArt = art.value;
   return { ok: true, value: patch };
+}
+
+const BODY_SIZE_PARAMS = [
+  ['body_width', 'bodyWidth'],
+  ['body_height', 'bodyHeight'],
+] as const;
+
+function addBodySizeToPatch(params: Record<string, unknown>, patch: CreaturePatch): void {
+  for (const [param, field] of BODY_SIZE_PARAMS) {
+    const read = readNumber(params, param);
+    if (read.ok && read.value > 0) patch[field] = read.value;
+  }
 }
 
 function behaviorFrom(

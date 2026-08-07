@@ -35,7 +35,8 @@ export function creatureJson(creature: CreatureDef) {
     name: creature.name,
     symbol: creature.symbol,
     speed: creature.speed,
-    size: creature.size,
+    body_width: creature.bodyWidth,
+    body_height: creature.bodyHeight,
     kind: entityKindLabel(creature.kind),
     inventory: creature.inventory
       ? { width: creature.inventory.width, height: creature.inventory.height }

@@ -7,6 +7,7 @@ import {
 import type { CreatureDef } from '../../creatures/creatureDef';
 import type { CameraView } from './cameraView';
 import type { CharacterSpriteTextures } from './characterSpriteTextures';
+import { characterQuadFit } from './characterQuadFit';
 
 const UNPAINTED_QUAD = new THREE.MeshLambertMaterial({ visible: false });
 
@@ -26,13 +27,17 @@ export function isCharacterQuad(mesh: THREE.Mesh): boolean {
   return mesh.geometry.type === 'PlaneGeometry';
 }
 
-export function dressCharacterQuad(mesh: THREE.Mesh, dressing: CharacterQuadDressing): boolean {
+export function dressCharacterQuad(
+  mesh: THREE.Mesh,
+  dressing: CharacterQuadDressing,
+): number | null {
   const { sprites, def, motion, view, tint } = dressing;
-  if (!def.billboard) return false;
+  if (!def.billboard) return null;
   const frame = characterFrame(def.billboard, motion, view.yaw, view.seconds);
-  if (!frame) return false;
+  if (!frame) return null;
+  const fit = characterQuadFit(def, def.billboard);
   mesh.material = sprites.materialFor(`${def.id}:${frameKey(frame)}`, frame.sprite, tint);
   mesh.rotation.set(0, -view.yaw, 0);
-  mesh.scale.set(def.size * (frame.mirrored ? -1 : 1), def.size, def.size);
-  return true;
+  mesh.scale.set(fit.quadWidth * (frame.mirrored ? -1 : 1), fit.quadHeight, fit.quadWidth);
+  return fit.centerHeightAboveFeet;
 }

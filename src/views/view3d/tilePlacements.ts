@@ -1,6 +1,11 @@
 import { EMPTY_TILE } from '../../procgen/values/chunkValues';
 import type { WorldSampler } from '../../procgen/worldSampler';
 import type { TileDef } from '../../world/tiles/tileDef';
+import {
+  blockLayersOfTile,
+  storedTileHeight,
+  WALKABLE_TILE_HEIGHT,
+} from '../../world/tiles/tileHeight';
 import type { CubeFaceArt } from '../../world/tiles/tileFaceArt';
 import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
 
@@ -8,6 +13,7 @@ export interface TilePlacement {
   x: number;
   y: number;
   elevation: number;
+  height: number;
   baseColor: string;
   shade: number;
   faceArt: CubeFaceArt | null;
@@ -69,7 +75,9 @@ function addTileToShapes(
     shapes.trees.push(placement(x, y, elevation, tile, 1, false));
   } else if (tileStandsAsSolidBlock(tile)) {
     shapes.floors.push(placement(x, y, elevation, tile, BLOCK_FLOOR_SHADE, false));
-    shapes.blocks.push(placement(x, y, elevation, tile, 1, false));
+    for (const layerElevation of blockLayerElevations(tile, elevation)) {
+      shapes.blocks.push(placement(x, y, layerElevation, tile, 1, false));
+    }
   } else {
     shapes.floors.push(placement(x, y, elevation, tile, 1, false));
   }
@@ -77,6 +85,10 @@ function addTileToShapes(
 
 export function tileStandsAsSolidBlock(tile: TileDef): boolean {
   return tile.role === 'rock' || !tile.walkable;
+}
+
+function blockLayerElevations(tile: TileDef, elevation: number): number[] {
+  return Array.from({ length: blockLayersOfTile(tile) }, (_, layer) => elevation + layer);
 }
 
 function groundUnderTree(
@@ -90,6 +102,7 @@ function groundUnderTree(
     x,
     y,
     elevation,
+    height: WALKABLE_TILE_HEIGHT,
     baseColor: grass?.color ?? FALLBACK_TREE_GROUND,
     shade: 1,
     faceArt: grass?.faceArt ?? null,
@@ -105,5 +118,14 @@ function placement(
   shade: number,
   sunkenAsWater: boolean,
 ): TilePlacement {
-  return { x, y, elevation, baseColor: tile.color, shade, faceArt: tile.faceArt, sunkenAsWater };
+  return {
+    x,
+    y,
+    elevation,
+    height: storedTileHeight(tile),
+    baseColor: tile.color,
+    shade,
+    faceArt: tile.faceArt,
+    sunkenAsWater,
+  };
 }

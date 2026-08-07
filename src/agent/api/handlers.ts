@@ -48,6 +48,7 @@ export function handleApiRequest(
         symbol: tile.symbol,
         color: tile.color,
         walkable: tile.walkable,
+        height: tile.height,
         has_face_art: tile.faceArt !== null,
       })),
     });

@@ -7,7 +7,7 @@ import {
   type AbilityResult,
   type AbilitySpec,
 } from './ability';
-import { listOf, readInt, readText } from './abilityParams';
+import { listOf, readInt, readNumber, readText } from './abilityParams';
 import { registerAbility } from './abilityRegistry';
 
 const TILE_ID_HELP = 'id of an existing tile — see GET /api/v1/tiles';
@@ -42,6 +42,11 @@ registerTileAbility({
     symbol: { kind: 'text', help: 'the single character this tile draws as in an observation', optional: true },
     color: { kind: 'text', help: 'a #rrggbb color, or #rrggbbaa with aa=00 for transparent', optional: true },
     walkable: { kind: 'int', help: '1 if anyone may stand on this tile, 0 if it blocks', optional: true },
+    height: {
+      kind: 'number',
+      help: 'how tall a blocking tile stands in the 3-D view, in tiles — blockers default to 2, walkable tiles are always drawn flat',
+      optional: true,
+    },
     face_art: {
       kind: 'json',
       help: 'cube face art as GET /api/v1/tiles reports it, or null to clear it',
@@ -102,6 +107,8 @@ function tilePatchFrom(params: Record<string, unknown>): TilePatch {
   if (symbol !== null) patch.symbol = symbol;
   const walkable = readInt(params, 'walkable');
   if (walkable.ok) patch.walkable = walkable.value !== 0;
+  const height = readNumber(params, 'height');
+  if (height.ok && height.value > 0) patch.height = height.value;
   const art = faceArtFrom(params);
   if (!art.ok) return art;
   if (art.value !== undefined) patch.faceArt = art.value;

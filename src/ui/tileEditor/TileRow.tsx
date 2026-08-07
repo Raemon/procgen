@@ -12,7 +12,7 @@ import { PixelArtEditor } from '../pixelArtEditor/PixelArtEditor';
 import { PERSISTED_UI_KEYS } from '../uiState/persistedUiKeys';
 import { usePersistedUiSet } from '../uiState/usePersistedUiSet';
 import { tooltipHandlers } from '../tooltips/tooltipHandlers';
-import { deleteTileTip, TILE_NAME_TIP, walkableTip } from './help/tileTips';
+import { deleteTileTip, TILE_HEIGHT_TIP, TILE_NAME_TIP, walkableTip } from './help/tileTips';
 import { FaceArtToggle } from './FaceArtToggle';
 import { SymbolInput } from './SymbolInput';
 
@@ -34,6 +34,9 @@ export function TileRow({ tile }: { tile: TileDef }) {
           onChange={(event) => editTile({ name: event.target.value })}
           {...tooltipHandlers(TILE_NAME_TIP)}
         />
+        {!tile.walkable && (
+          <HeightInput height={tile.height} onChange={(height) => editTile({ height })} />
+        )}
         <WalkableToggle tile={tile} onToggle={(walkable) => editTile({ walkable })} />
         <Button
           className={classes(
@@ -57,6 +60,27 @@ export function TileRow({ tile }: { tile: TileDef }) {
       )}
     </div>
   );
+}
+
+function HeightInput({ height, onChange }: { height: number; onChange(height: number): void }) {
+  return (
+    <input
+      type="number"
+      min={0.5}
+      max={8}
+      step={0.5}
+      className={classes(FIELD_CLASSES, 'w-14 shrink-0')}
+      aria-label="tile height"
+      value={height}
+      onChange={(event) => onChange(heightFromField(event.target.value, height))}
+      {...tooltipHandlers(TILE_HEIGHT_TIP)}
+    />
+  );
+}
+
+function heightFromField(value: string, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
 function WalkableToggle({ tile, onToggle }: { tile: TileDef; onToggle(walkable: boolean): void }) {

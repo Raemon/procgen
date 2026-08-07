@@ -50,19 +50,21 @@ export class CreatureMeshes {
   }
 
   private placeMesh(creature: CreatureInstance, def: CreatureDef, view: CameraView): void {
-    const billboarded = this.dressAsCharacter(creature, def, view);
-    const mesh = this.meshOf(creature.key, billboarded ? null : def);
+    const billboardedCenterHeight = this.dressAsCharacter(creature, def, view);
+    const cubed = billboardedCenterHeight === null;
+    const mesh = this.meshOf(creature.key, cubed ? def : null);
     const elevation = this.sampler.elevationAt(Math.round(creature.x), Math.round(creature.y));
-    mesh.position.set(creature.x + 0.5, elevation + def.size / 2, creature.y + 0.5);
-    if (!billboarded) mesh.scale.setScalar(def.size);
+    const centerHeight = billboardedCenterHeight ?? def.bodyHeight / 2;
+    mesh.position.set(creature.x + 0.5, elevation + centerHeight, creature.y + 0.5);
+    if (cubed) mesh.scale.set(def.bodyWidth, def.bodyHeight, def.bodyWidth);
   }
 
   private dressAsCharacter(
     creature: CreatureInstance,
     def: CreatureDef,
     view: CameraView,
-  ): boolean {
-    if (!def.billboard) return false;
+  ): number | null {
+    if (!def.billboard) return null;
     return dressCharacterQuad(this.meshOf(creature.key, null), {
       sprites: this.sprites,
       def,

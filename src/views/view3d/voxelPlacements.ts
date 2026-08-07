@@ -1,6 +1,7 @@
 import { EMPTY_TILE } from '../../procgen/values/chunkValues';
 import type { WorldSampler } from '../../procgen/worldSampler';
 import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
+import { blockLayersOfTile, WALKABLE_TILE_HEIGHT } from '../../world/tiles/tileHeight';
 import { tileStandsAsSolidBlock, type TilePlacement } from './tilePlacements';
 
 export function voxelPlacementsForRect(
@@ -37,6 +38,7 @@ function collectColumn(
       x,
       y,
       elevation: groundElevation + layer - 1,
+      height: WALKABLE_TILE_HEIGHT,
       baseColor: tile.color,
       shade: 1,
       faceArt: tile.faceArt,
@@ -52,5 +54,5 @@ function standingHeightOfGround(
   y: number,
 ): number {
   const tile = tileset.byId(sampler.tileAt(x, y));
-  return tile && tileStandsAsSolidBlock(tile) ? 1 : 0;
+  return tile && tileStandsAsSolidBlock(tile) ? blockLayersOfTile(tile) : 0;
 }
