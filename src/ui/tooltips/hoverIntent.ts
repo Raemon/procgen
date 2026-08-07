@@ -1,7 +1,7 @@
 import type { TooltipContent } from './tooltipContent';
 import { activeTooltip, hideTooltip, showTooltip } from './tooltipState';
 
-const HOVER_DELAY_MS = 320;
+const HOVER_DELAY_MS = 50;
 
 let pending: ReturnType<typeof setTimeout> | null = null;
 
