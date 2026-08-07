@@ -1,13 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useAppRuntime } from '../../app/appRuntimeContext';
 import { CreaturesTab } from '../creatureEditor/CreaturesTab';
 import { PrefabsTab } from '../prefabEditor/PrefabsTab';
 import { TilesTab } from '../tileEditor/TilesTab';
-import { LibraryTabs, type LibraryTab } from './LibraryTabs';
+import { isOneOf } from '../uiState/persistedUiGuards';
+import { PERSISTED_UI_KEYS } from '../uiState/persistedUiKeys';
+import { usePersistedUiValue } from '../uiState/usePersistedUiValue';
+import { LIBRARY_TABS, LibraryTabs, type LibraryTab } from './LibraryTabs';
 
 export function LibraryPanel() {
   const { prefabs } = useAppRuntime();
-  const [tab, setTab] = useState<LibraryTab>('tiles');
+  const [tab, setTab] = usePersistedUiValue<LibraryTab>(
+    PERSISTED_UI_KEYS.libraryTab,
+    'tiles',
+    isOneOf(LIBRARY_TABS),
+  );
   useEffect(() => prefabs.onPrefabAdded(() => setTab('prefabs')), [prefabs]);
   return (
     <>

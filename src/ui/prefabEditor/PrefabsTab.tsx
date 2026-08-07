@@ -1,14 +1,21 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useAppRuntime } from '../../app/appRuntimeContext';
 import { useRerenderOnPrefabChange } from '../../app/rerenderHooks';
 import { Button } from '../controls/Button';
 import { classes } from '../controls/classes';
 import { HINT_CLASSES } from '../controls/fieldClasses';
+import { isNumberOrNull } from '../uiState/persistedUiGuards';
+import { PERSISTED_UI_KEYS } from '../uiState/persistedUiKeys';
+import { usePersistedUiValue } from '../uiState/usePersistedUiValue';
 import { PrefabRow } from './PrefabRow';
 
 export function PrefabsTab() {
   const { prefabs, perform } = useAppRuntime();
-  const [openId, setOpenId] = useState<number | null>(null);
+  const [openId, setOpenId] = usePersistedUiValue<number | null>(
+    PERSISTED_UI_KEYS.openPrefabId,
+    null,
+    isNumberOrNull,
+  );
   useRerenderOnPrefabChange();
   useEffect(() => prefabs.onPrefabAdded((prefab) => setOpenId(prefab.id)), [prefabs]);
   return (

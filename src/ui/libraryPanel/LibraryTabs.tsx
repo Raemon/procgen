@@ -2,7 +2,9 @@ import { Button } from '../controls/Button';
 import { tooltipHandlers } from '../tooltips/tooltipHandlers';
 import type { TooltipContent } from '../tooltips/tooltipContent';
 
-export type LibraryTab = 'tiles' | 'prefabs' | 'creatures';
+export const LIBRARY_TABS = ['tiles', 'prefabs', 'creatures'] as const;
+
+export type LibraryTab = (typeof LIBRARY_TABS)[number];
 
 const TABS: { tab: LibraryTab; tip: TooltipContent }[] = [
   {

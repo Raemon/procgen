@@ -1,6 +1,8 @@
 import { useRef, useState, type DragEvent } from 'react';
 import { useAppRuntime } from '../../app/appRuntimeContext';
 import { HINT_CLASSES } from '../controls/fieldClasses';
+import { PERSISTED_UI_KEYS } from '../uiState/persistedUiKeys';
+import { usePersistedUiSet } from '../uiState/usePersistedUiSet';
 import { DROP_INDEX_ATTRIBUTE, insertionIndexAt } from './nodeInsertionIndex';
 import { carriesNodeId, draggedNodeId } from './nodeDragTransfer';
 import { NodeCard, type DropMarker } from './NodeCard';
@@ -11,7 +13,7 @@ export function NodeList() {
   const { store, perform } = useAppRuntime();
   const list = useRef<HTMLDivElement>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
-  const [collapsedFolders, setCollapsedFolders] = useState<ReadonlySet<string>>(new Set());
+  const collapsedFolders = usePersistedUiSet(PERSISTED_UI_KEYS.collapsedNodeFolders);
   const nodes = store.nodes();
   const runs = nodeFolderRuns(nodes);
 
@@ -45,7 +47,7 @@ export function NodeList() {
           nodeCount={nodes.length}
           dropIndex={dropIndex}
           collapsed={collapsedFolders.has(run.folder)}
-          onToggleCollapsed={() => setCollapsedFolders(toggled(collapsedFolders, run.folder))}
+          onToggleCollapsed={() => collapsedFolders.toggle(run.folder)}
         />
       ))}
       {nodes.length === 0 && (
@@ -109,12 +111,6 @@ function CardInRun({
       dropMarker={dropMarkerFor(index, nodeCount, dropIndex)}
     />
   );
-}
-
-function toggled(collapsed: ReadonlySet<string>, folder: string): ReadonlySet<string> {
-  const next = new Set(collapsed);
-  if (!next.delete(folder)) next.add(folder);
-  return next;
 }
 
 function clearMarkerWhenLeavingList(

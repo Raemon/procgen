@@ -1,9 +1,11 @@
-import { useState, useSyncExternalStore } from 'react';
+import { useSyncExternalStore } from 'react';
 import { useAppRuntime } from '../../app/appRuntimeContext';
 import { nodeTypeOf } from '../../procgen/nodeRegistry';
 import { outputKindOf } from '../../procgen/nodeType';
 import type { NodeInstance } from '../../procgen/pipeline/pipelineState';
 import { classes } from '../controls/classes';
+import { PERSISTED_UI_KEYS } from '../uiState/persistedUiKeys';
+import { usePersistedUiSet } from '../uiState/usePersistedUiSet';
 import { DisplaySection } from './DisplaySection';
 import { NodeCardHeader } from './NodeCardHeader';
 import { NodeCommentRow } from './NodeCommentRow';
@@ -26,7 +28,8 @@ export function NodeCard({
   dropMarker: DropMarker;
 }) {
   const { perform, tileset } = useAppRuntime();
-  const [collapsed, setCollapsed] = useState(false);
+  const collapsedCards = usePersistedUiSet(PERSISTED_UI_KEYS.collapsedNodeCards);
+  const collapsed = collapsedCards.has(node.id);
   const def = nodeTypeOf(node.type);
   const highlighted = useSyncExternalStore(subscribeToWireHighlight, highlightedWireSource);
 
@@ -50,7 +53,7 @@ export function NodeCard({
             node={node}
             typeTitle={def.title}
             collapsed={collapsed}
-            onToggleCollapsed={() => setCollapsed(!collapsed)}
+            onToggleCollapsed={() => collapsedCards.toggle(node.id)}
           />
           <NodeError nodeId={node.id} />
           {!collapsed && (
