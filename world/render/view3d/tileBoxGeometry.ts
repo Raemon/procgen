@@ -9,7 +9,6 @@ interface FaceUvWindow {
 const VERTICES_PER_FACE = 4;
 const BOX_FACE_COUNT = 6;
 
-/** Sides keep the top of their texture, the part of the volume the surface belongs to. */
 export function tileBoxGeometry(width: number, height: number, depth: number): THREE.BoxGeometry {
   const geometry = new THREE.BoxGeometry(width, height, depth);
   faceUvWindows(width, height, depth).forEach((window, face) =>

@@ -17,7 +17,6 @@ export type FaceGrids = Record<CubeFace, FacePixels>;
 
 export type PartialFaceGrids = Partial<FaceGrids>;
 
-/** Faces a frame leaves out are the ones it does not change, and read from the first frame. */
 export interface FaceArtFrame {
   color: PartialFaceGrids;
   height: PartialFaceGrids | null;

@@ -9,10 +9,6 @@ export interface Quad {
 
 const TRIANGULATED_CORNERS = [0, 1, 2, 0, 2, 3];
 
-/**
- * Grows a non-indexed mesh a quad at a time, closing a material group whenever the
- * surface being built changes, so one geometry can carry both art and rim faces.
- */
 export class QuadBuffer {
   private readonly positions: number[] = [];
   private readonly normals: number[] = [];

@@ -32,10 +32,6 @@ interface RimFace {
   normal: readonly number[];
 }
 
-/**
- * The sprite as a solid slab: art on the front and back, and side walls that trace the
- * painted silhouette, so the thickness follows the drawing instead of a square rim.
- */
 export function spriteSlabGeometry(sprite: SpriteArt, size: SlabSize): THREE.BufferGeometry {
   const buffer = new QuadBuffer();
   for (const face of artFaces(size)) buffer.push(face);

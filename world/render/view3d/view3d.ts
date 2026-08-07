@@ -255,7 +255,6 @@ export class View3D {
     return clampSightRadiusTiles(this.deps.world.sightRadiusTiles);
   }
 
-  /** Sight can be widened mid-run, so the fog and the far plane follow it every frame. */
   private applySightRadius(): void {
     const radius = this.sightRadiusTiles();
     setFogRange(this.characterFog, radius);

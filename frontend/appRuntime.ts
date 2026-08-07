@@ -133,8 +133,11 @@ export function createAppRuntime(): AppRuntime {
 
   function abilityModeFor(action: string): AbilityMode {
     if (abilityFor(playerMode, action)) return playerMode;
-    // Sight lives on the character, so its actions resolve there whichever view is open.
-    return abilityFor('character', action)?.group === 'senses' ? 'character' : 'god';
+    return isASenseOnlyTheCharacterOwns(action) ? 'character' : 'god';
+  }
+
+  function isASenseOnlyTheCharacterOwns(action: string): boolean {
+    return abilityFor('character', action)?.group === 'senses';
   }
 
   function applyWorldChange(): void {

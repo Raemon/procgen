@@ -76,7 +76,6 @@ interface WaterSurface {
   bottom: string;
 }
 
-/** One frame per row of a wave band, so the swell lands back where it started. */
 function rollingWaveFrames(
   style: WaveStyle,
   relief: number,

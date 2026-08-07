@@ -82,7 +82,6 @@ function litPixel(ink: string, heights: number[], size: number, index: number): 
   return hexToRgb(ink).map((channel) => Math.min(255, Math.round(channel * light))) as Rgb;
 }
 
-/** The same wrapping slope the renderer's normal map is built from, lit by one low sun. */
 function lightAt(heights: number[], size: number, x: number, y: number): number {
   const alongU = heightAt(heights, size, x + 1, y) - heightAt(heights, size, x - 1, y);
   const alongV = heightAt(heights, size, x, y + 1) - heightAt(heights, size, x, y - 1);

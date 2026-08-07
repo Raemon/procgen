@@ -5,7 +5,6 @@ const HOVER_DELAY_MS = 50;
 
 let pending: ReturnType<typeof setTimeout> | null = null;
 
-/** A tip waits out a deliberate hover, but once one is up the next follows the pointer at once. */
 export function showTooltipOnHoverIntent(content: TooltipContent, anchor: DOMRect): void {
   cancelPendingTooltip();
   if (activeTooltip()) return showTooltip(content, anchor);

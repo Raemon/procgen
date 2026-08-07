@@ -68,6 +68,10 @@ export function App() {
   );
 }
 
+function anAgentIsSelectedToLog(selectedAgentId: string | null): selectedAgentId is string {
+  return selectedAgentId !== null;
+}
+
 function visibleColumns(
   selectedAgentId: string | null,
   onSelectAgent: (id: string | null) => void,
@@ -101,8 +105,7 @@ function visibleColumns(
       rail: <AgentsRail />,
     },
   ];
-  // The log has nothing to show without a selection, so it only claims a column once one exists.
-  if (selectedAgentId !== null) {
+  if (anAgentIsSelectedToLog(selectedAgentId)) {
     columns.push({
       key: 'log',
       tip: PANEL_TIPS.log,

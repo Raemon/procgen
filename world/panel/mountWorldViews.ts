@@ -70,7 +70,6 @@ export function mountWorldViews(
     isSuspended: () => inputIsSuspended(runtime),
   });
 
-  // The 2.5D view re-reads the sight radius every frame; the ASCII views only redraw when asked.
   const redrawOnSightChange = world.on('sight-changed', () => {
     agentGodView.draw();
     agentCharacterView.draw();

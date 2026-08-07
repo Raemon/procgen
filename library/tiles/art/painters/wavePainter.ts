@@ -19,7 +19,6 @@ export function crestPainter(color: string, style: WaveStyle): PixelPainter {
   return (x, y) => (bandProgress(x, y, style) < 1 / style.bandHeight ? color : null);
 }
 
-/** Bands read as rolling swells: highest along the crest, lowest in the trough. */
 export function waveHeightPainter(style: WaveStyle, relief: number): PixelPainter {
   return (x, y) =>
     heightInk(0.5 + relief * Math.cos(2 * Math.PI * bandProgress(x, y, style)));

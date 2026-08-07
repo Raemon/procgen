@@ -1,12 +1,7 @@
 import type { ReactNode } from 'react';
 import { Icon } from '../../frontend/icons/Icon';
 
-/**
- * One glyph per node type, so a collapsed card still says what it does.
- * Every registered type gets an entry; unknown types fall back to a plain box.
- */
 const NODE_TYPE_ICONS: Readonly<Record<string, ReactNode>> = {
-  // examples
   constantField: (
     <>
       <rect x="3" y="5" width="18" height="14" rx="2" />
@@ -41,7 +36,6 @@ const NODE_TYPE_ICONS: Readonly<Record<string, ReactNode>> = {
     </>
   ),
 
-  // terrain
   terrainNoise: (
     <>
       <path d="M2.5 19 9 8l4.5 7 2.5-3.5L21.5 19Z" />
@@ -83,7 +77,6 @@ const NODE_TYPE_ICONS: Readonly<Record<string, ReactNode>> = {
     </>
   ),
 
-  // water
   coastDistance: (
     <>
       <path d="M3 5c4 3 4 11 0 14" />
@@ -133,7 +126,6 @@ const NODE_TYPE_ICONS: Readonly<Record<string, ReactNode>> = {
     </>
   ),
 
-  // biome
   biomeBands: (
     <>
       <path d="M3 6.5h18" />
@@ -144,7 +136,6 @@ const NODE_TYPE_ICONS: Readonly<Record<string, ReactNode>> = {
     </>
   ),
 
-  // maze
   mazeChunk: (
     <>
       <rect x="3" y="3" width="18" height="18" rx="1.5" />
@@ -154,7 +145,6 @@ const NODE_TYPE_ICONS: Readonly<Record<string, ReactNode>> = {
     </>
   ),
 
-  // custom
   customScript: (
     <>
       <path d="M8.5 8 4 12l4.5 4" />

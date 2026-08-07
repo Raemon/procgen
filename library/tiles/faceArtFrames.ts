@@ -109,7 +109,6 @@ export function faceArtWithFrameRemoved(art: CubeFaceArt, frame: number): CubeFa
   return faceArtWithFrames(art, frame === 0 ? framesRebasedOn(dropped!, frames) : frames);
 }
 
-/** Dropping the first frame promotes the next one, which may lean on faces it left out. */
 function framesRebasedOn(dropped: FaceArtFrame, frames: FaceArtFrame[]): FaceArtFrame[] {
   const [next, ...rest] = frames;
   if (!next) return frames;

@@ -12,7 +12,6 @@ export interface DocSyncDeps {
   worldHost: WorldHost;
 }
 
-/** Call after a doc has been written to the doc store, which owns durability itself. */
 export function afterDocChanged(deps: DocSyncDeps, name: string): void {
   broadcastDocChanged(deps.connections, name);
   snapEntitiesToWalkableGround(deps);

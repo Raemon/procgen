@@ -45,7 +45,6 @@ export interface WorldAccess {
   persistWorld(world: ServerWorld): void;
 }
 
-/** Reads persisted docs. `stamp` changes whenever any doc does, so a cached world knows to rebuild. */
 export interface DocSource {
   read(name: string): unknown;
   stamp(): string;

@@ -16,12 +16,6 @@ export function isPersistedDocName(name: string): boolean {
   return PERSISTED_DOC_NAMES.includes(name);
 }
 
-/**
- * The authoritative copy of every persisted doc, held in memory so that reads
- * never hit the disk or the database. Durability is the database when one is
- * configured; without one, data/*.json is the only place edits can survive a
- * restart, so writes fall back to it.
- */
 export interface DocStore {
   read(name: string): unknown;
   stamp(): string;

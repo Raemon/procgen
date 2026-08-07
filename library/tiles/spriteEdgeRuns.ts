@@ -19,10 +19,6 @@ const OUTWARD: Record<SpriteEdgeSide, readonly [number, number]> = {
   bottom: [0, 1],
 };
 
-/**
- * Where a painted pixel meets empty space, merged into the longest straight runs
- * so the silhouette becomes a handful of wall quads instead of one per pixel.
- */
 export function spriteEdgeRuns(sprite: SpriteArt): SpriteEdgeRun[] {
   const size = spriteGridSize(sprite);
   return SIDES.flatMap((side) => runsOfSide(sprite, size, side));

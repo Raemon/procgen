@@ -1,10 +1,5 @@
 import type { CubeFaceArt, FacePixels } from './tileFaceArt';
 
-/**
- * The colour a tile reads as at a distance: the most common painted pixel on its top face.
- * Tiles have no colour swatch of their own — the art is the only place colour is chosen — so
- * views that need one flat colour (ascii ink, prefab previews) get it from here.
- */
 export function dominantFaceColor(art: CubeFaceArt | null): string | null {
   return art ? dominantPixelColor(art.top) : null;
 }

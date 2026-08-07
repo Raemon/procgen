@@ -9,7 +9,6 @@ export interface FaceArtPlan {
   embossed: boolean;
 }
 
-/** A face that never changes across the art's frames is drawn once, as a still. */
 export function faceArtPlan(art: CubeFaceArt, face: CubeFace): FaceArtPlan {
   const everyFrame = [...Array(frameCount(art)).keys()];
   return {

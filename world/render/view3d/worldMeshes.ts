@@ -155,7 +155,6 @@ function groupMesh(group: PlacementGroup, shape: ShapeSpec): THREE.InstancedMesh
   );
 }
 
-/** One mesh per drawing, and glowing tiles keep their own so their glow is their own. */
 function groupsOfLikeSurface(placements: TilePlacement[]): PlacementGroup[] {
   const groups = new Map<CubeFaceArt | string, PlacementGroup>();
   for (const placement of placements) {

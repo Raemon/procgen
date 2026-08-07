@@ -10,10 +10,6 @@ export function glowOfEmitter(emitter: LightEmitter | null | undefined): number 
   return Math.max(FAINTEST_GLOW, Math.min(1, radius / FULLY_GLOWING_RADIUS));
 }
 
-/**
- * A surface that emits light stands inside its own point light, where no face
- * can catch it, so it has to light itself or it renders as a black cut-out.
- */
 export function glowSelfLit(
   material: THREE.Material | THREE.Material[],
   glow: number,

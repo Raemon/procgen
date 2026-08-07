@@ -1,5 +1,6 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { commentCountOf } from './commentCountOf';
 
 const SEARCHED_ROOTS = [
   'abilities',
@@ -19,7 +20,6 @@ const SEARCHED_ROOTS = [
 
 const MARKDOWN_IS_ALLOWED_AT = ['claude.md'];
 const LONGEST_READABLE_CLAIM = 140;
-const COMMENT_LINE = /^\s*(\/\/|\/\*|\*)/;
 
 export function checkDocumentationHasNotRegrown(
   check: (name: string, condition: boolean) => void,
@@ -33,10 +33,10 @@ export function checkDocumentationHasNotRegrown(
     markdown.length === 0,
   );
 
-  const commented = filesUnder('checks', '.ts').filter(hasACommentLine);
-  report('comment lines inside checks', commented);
+  const commented = everySourceFile().filter(hasAComment);
+  report('files carrying comments', commented);
   check(
-    'a sentence about this codebase lives in a check claim, never in a comment beside one',
+    'a sentence about this codebase lives in a name or a check claim, never in a comment',
     commented.length === 0,
   );
 
@@ -55,8 +55,17 @@ function overlongClaims(): string[] {
     .filter((claim) => claim.length > LONGEST_READABLE_CLAIM);
 }
 
-function hasACommentLine(path: string): boolean {
-  return readFileSync(path, 'utf8').split('\n').some((line) => COMMENT_LINE.test(line));
+function hasAComment(path: string): boolean {
+  return commentCountOf(path) > 0;
+}
+
+const ROOT_LEVEL_SOURCES = ['vite.config.ts'];
+
+function everySourceFile(): string[] {
+  return [
+    ...ROOT_LEVEL_SOURCES,
+    ...SEARCHED_ROOTS.flatMap((root) => [...filesUnder(root, '.ts'), ...filesUnder(root, '.tsx')]),
+  ];
 }
 
 function report(what: string, offenders: readonly string[]): void {

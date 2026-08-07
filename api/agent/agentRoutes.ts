@@ -185,7 +185,6 @@ function createAgent(sessions: SessionStore, world: ServerWorld, body: unknown):
   });
 }
 
-/** null when absent, 'invalid' when present but not a number, otherwise the clamped radius. */
 function readSightRadius(raw: unknown): number | null | 'invalid' {
   if (raw === undefined || raw === null) return null;
   const value = typeof raw === 'number' ? raw : typeof raw === 'string' ? Number(raw) : NaN;

@@ -16,7 +16,7 @@
     "check:ui": "npx tsx checks/checkPersistedUiState.ts",
     "check:tooltips": "npx tsx checks/checkPanelTooltips.ts",
     "check:nodefilter": "esbuild checks/checkNodeTypeFilter.ts --bundle --format=esm --platform=node --log-level=error --outfile=dist/checkNodeTypeFilter.mjs && node dist/checkNodeTypeFilter.mjs",
-    "check": "esbuild checks/checkProcgenInvariants.ts --bundle --format=esm --platform=node --log-level=error --outfile=dist/checks.mjs && node --test-reporter=spec dist/checks.mjs",
+    "check": "esbuild checks/checkProcgenInvariants.ts --bundle --format=esm --platform=node --log-level=error --external:typescript --outfile=dist/checks.mjs && node --test-reporter=spec dist/checks.mjs",
     "roll": "esbuild tools/rollAndRankWorlds.ts --bundle --format=esm --platform=node --log-level=error --outfile=dist/rollAndRankWorlds.mjs && node dist/rollAndRankWorlds.mjs",
     "tiles:write": "esbuild tools/writeTilesetDataFile.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
     "pipeline:write": "esbuild tools/writePipelineDataFile.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",

@@ -1,6 +1,5 @@
 import { Icon } from './Icon';
 
-/** Stacked library shelves — the tiles / prefabs / creatures column. */
 export function LibraryIcon({ size }: { size?: number }) {
   return (
     <Icon size={size}>
@@ -11,7 +10,6 @@ export function LibraryIcon({ size }: { size?: number }) {
   );
 }
 
-/** Node graph — the procgen pipeline column. */
 export function ProcgenIcon({ size }: { size?: number }) {
   return (
     <Icon size={size}>
@@ -24,7 +22,6 @@ export function ProcgenIcon({ size }: { size?: number }) {
   );
 }
 
-/** Robot head — the agents roster column. */
 export function AgentsIcon({ size }: { size?: number }) {
   return (
     <Icon size={size}>
@@ -37,7 +34,6 @@ export function AgentsIcon({ size }: { size?: number }) {
   );
 }
 
-/** Transcript lines with a cursor — the agent log column. */
 export function AgentLogIcon({ size }: { size?: number }) {
   return (
     <Icon size={size}>
@@ -49,7 +45,6 @@ export function AgentLogIcon({ size }: { size?: number }) {
   );
 }
 
-/** Globe — the world viewport column. */
 export function WorldIcon({ size }: { size?: number }) {
   return (
     <Icon size={size}>
@@ -62,7 +57,6 @@ export function WorldIcon({ size }: { size?: number }) {
   );
 }
 
-/** Walking figure — stands in for the word "walkable". */
 export function WalkIcon({ size }: { size?: number }) {
   return (
     <Icon size={size}>
@@ -76,7 +70,6 @@ export function WalkIcon({ size }: { size?: number }) {
   );
 }
 
-/** Question mark — reveals the explanatory notes a panel keeps folded away. */
 export function HelpIcon({ size }: { size?: number }) {
   return (
     <Icon size={size}>
@@ -87,7 +80,6 @@ export function HelpIcon({ size }: { size?: number }) {
   );
 }
 
-/** Chevron that folds a panel away toward its own edge. */
 export function CollapseIcon({ size }: { size?: number }) {
   return (
     <Icon size={size}>

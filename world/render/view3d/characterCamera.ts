@@ -37,7 +37,6 @@ export class CharacterCamera {
     this.snapOnNextUpdate = true;
   }
 
-  /** The far plane sits exactly at the fog, so nothing past sight ever reaches the screen. */
   setSightRadiusTiles(sightRadiusTiles: number): void {
     if (this.camera.far === sightRadiusTiles) return;
     this.camera.far = sightRadiusTiles;

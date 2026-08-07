@@ -8,7 +8,6 @@ const BASE_CLASSES =
 const IDLE_CLASSES = 'border-btn-edge bg-btn text-ink-dim hover:bg-btn-hover hover:text-ink';
 const ACTIVE_CLASSES = 'border-accent bg-btn-active text-accent';
 
-/** A square button sized for a single glyph — icon toggles that must not stretch a row. */
 export function IconButton({
   active,
   tip,
