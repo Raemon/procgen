@@ -1733,6 +1733,7 @@ checkPrefabAndCreatureInvariants(check);
 checkItemAndInventoryInvariants(check);
 checkCharacterBillboardInvariants(check);
 checkPlayerCharacterInvariants(check);
+checkTileHeightInvariants(check);
 
 if (failures.length > 0) throw new Error(`${failures.length} check(s) failed: ${failures.join(', ')}`);
 console.log('\nall checks passed');
