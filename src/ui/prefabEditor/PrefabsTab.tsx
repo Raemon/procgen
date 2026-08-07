@@ -3,6 +3,7 @@ import { useAppRuntime } from '../../app/appRuntimeContext';
 import { useRerenderOnPrefabChange } from '../../app/rerenderHooks';
 import { Button } from '../controls/Button';
 import { PanelHint } from '../help/PanelHint';
+import { ADD_PREFAB_TIP } from './help/prefabTips';
 import { isNumberOrNull } from '../uiState/persistedUiGuards';
 import { PERSISTED_UI_KEYS } from '../uiState/persistedUiKeys';
 import { usePersistedUiValue } from '../uiState/usePersistedUiValue';
@@ -27,7 +28,7 @@ export function PrefabsTab() {
           onToggle={() => setOpenId(openId === prefab.id ? null : prefab.id)}
         />
       ))}
-      <Button className="mt-2" onClick={() => perform('add_prefab')}>
+      <Button className="mt-2" tip={ADD_PREFAB_TIP} onClick={() => perform('add_prefab')}>
         + add prefab
       </Button>
       <PanelHint className="mt-2">

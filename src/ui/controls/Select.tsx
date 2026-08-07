@@ -1,3 +1,5 @@
+import type { TooltipContent } from '../tooltips/tooltipContent';
+import { tooltipHandlers } from '../tooltips/tooltipHandlers';
 import { classes } from './classes';
 
 const SELECT_CLASSES =
@@ -13,7 +15,7 @@ export function Select({
   value,
   onChange,
   className,
-  title,
+  tip,
   fullWidth = true,
   warn = false,
 }: {
@@ -21,7 +23,7 @@ export function Select({
   value: string;
   onChange(value: string): void;
   className?: string;
-  title?: string;
+  tip?: TooltipContent;
   fullWidth?: boolean;
   warn?: boolean;
 }) {
@@ -34,8 +36,9 @@ export function Select({
         className,
       )}
       value={value}
-      title={title}
+      aria-label={tip?.title}
       onChange={(event) => onChange(event.target.value)}
+      {...tooltipHandlers(tip)}
     >
       {options.map((option) => (
         <option key={option.value} value={option.value}>

@@ -5,12 +5,12 @@ import { classes } from './classes';
 
 export function KnobRow({
   label,
-  tooltip,
+  tip,
   className,
   children,
 }: {
   label: string;
-  tooltip?: TooltipContent;
+  tip?: TooltipContent;
   className?: string;
   children: ReactNode;
 }) {
@@ -20,7 +20,7 @@ export function KnobRow({
         'mb-2 grid grid-cols-[76px_1fr_auto] items-center gap-2 text-xs',
         className,
       )}
-      {...tooltipHandlers(tooltip)}
+      {...tooltipHandlers(tip)}
     >
       <label className="truncate text-ink-dim">{label}</label>
       {children}

@@ -1,5 +1,4 @@
 import { Button } from '../controls/Button';
-import { tooltipHandlers } from '../tooltips/tooltipHandlers';
 import type { TooltipContent } from '../tooltips/tooltipContent';
 
 export const LIBRARY_TABS = ['tiles', 'items', 'prefabs', 'creatures', 'characters'] as const;
@@ -57,8 +56,8 @@ export function LibraryTabs({
         <Button
           key={entry.tab}
           active={tab === entry.tab}
+          tip={entry.tip}
           onClick={() => onSelect(entry.tab)}
-          {...tooltipHandlers(entry.tip)}
         >
           {entry.tab}
         </Button>

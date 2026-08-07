@@ -2,6 +2,8 @@ import type { InventoryDef, InventorySlot } from '../../items/inventory/inventor
 import type { ItemDef } from '../../items/itemDef';
 import type { ReadOnlyItemLibrary } from '../../app/readOnlyLibraries';
 import { classes } from '../controls/classes';
+import { tooltipHandlers } from '../tooltips/tooltipHandlers';
+import { placedItemTip, slotTip } from './help/inventoryTips';
 import { ItemSpritePreview } from '../itemEditor/ItemSpritePreview';
 import { InventoryBackdrop } from './InventoryBackdrop';
 import type { InventoryEditorMode } from './inventoryEditorMode';
@@ -76,8 +78,9 @@ function SlotCell({
   return (
     <button
       type="button"
-      title={slotTitle(slot, cell)}
+      aria-label={`slot ${cell.x},${cell.y}`}
       onClick={onClick}
+      {...tooltipHandlers(slotTip(cell.x, cell.y, slot.usable, slot.tags))}
       className={classes(
         'relative aspect-square min-w-0 border text-[9px] leading-none',
         slot.usable ? 'border-panel-edge/70 bg-field/40' : 'border-black/40 bg-black/60',
@@ -109,8 +112,9 @@ function PlacedItem({
   return (
     <button
       type="button"
-      title={`${item.name} (${item.gridWidth}×${item.gridHeight})`}
+      aria-label={item.name}
       onClick={onClick}
+      {...tooltipHandlers(placedItemTip(item.name, item.gridWidth, item.gridHeight))}
       style={footprintRect(inventory, item, cell)}
       className={classes(
         'absolute flex items-center justify-center rounded-[2px] border border-accent/60 bg-black/40 p-px',
@@ -139,10 +143,3 @@ function isSameCell(selected: GridCell | null, cell: GridCell): boolean {
   return selected !== null && selected.x === cell.x && selected.y === cell.y;
 }
 
-function slotTitle(slot: InventorySlot, cell: GridCell): string {
-  const where = `slot ${cell.x},${cell.y}`;
-  if (!slot.usable) return `${where} — dead, nothing may sit here`;
-  return slot.tags.length > 0
-    ? `${where} — accepts ${slot.tags.join(', ')}`
-    : `${where} — accepts anything`;
-}

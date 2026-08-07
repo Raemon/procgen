@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react';
 import { normalizedTags } from '../../items/itemDef';
+import type { TooltipContent } from '../tooltips/tooltipContent';
+import { tooltipHandlers } from '../tooltips/tooltipHandlers';
 import { classes } from './classes';
 import { FIELD_CLASSES } from './fieldClasses';
 
 export function TagsInput({
   tags,
-  title,
+  tip,
   placeholder,
   onChange,
 }: {
   tags: readonly string[];
-  title: string;
+  tip: TooltipContent;
   placeholder?: string;
   onChange(tags: string[]): void;
 }) {
@@ -22,7 +24,7 @@ export function TagsInput({
   return (
     <input
       type="text"
-      title={title}
+      aria-label={tip.title}
       placeholder={placeholder ?? 'comma separated'}
       className={classes(FIELD_CLASSES, 'min-w-0 flex-1')}
       value={draft}
@@ -30,6 +32,7 @@ export function TagsInput({
         setDraft(event.target.value);
         onChange(normalizedTags(tagsFromText(event.target.value)));
       }}
+      {...tooltipHandlers(tip)}
     />
   );
 }

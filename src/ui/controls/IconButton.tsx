@@ -1,4 +1,6 @@
 import type { ButtonHTMLAttributes } from 'react';
+import type { TooltipContent } from '../tooltips/tooltipContent';
+import { tooltipHandlers } from '../tooltips/tooltipHandlers';
 import { classes } from './classes';
 
 const BASE_CLASSES =
@@ -9,14 +11,17 @@ const ACTIVE_CLASSES = 'border-accent bg-btn-active text-accent';
 /** A square button sized for a single glyph — icon toggles that must not stretch a row. */
 export function IconButton({
   active,
+  tip,
   className,
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & { active?: boolean }) {
+}: ButtonHTMLAttributes<HTMLButtonElement> & { active?: boolean; tip?: TooltipContent }) {
   return (
     <button
       type="button"
+      aria-label={tip?.title}
       className={classes(BASE_CLASSES, active ? ACTIVE_CLASSES : IDLE_CLASSES, className)}
       {...props}
+      {...tooltipHandlers(tip)}
     />
   );
 }

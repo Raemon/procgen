@@ -25,7 +25,7 @@ export function WiringRow({
       onMouseEnter={() => highlightWireSource(wiredTo || null)}
       onMouseLeave={() => highlightWireSource(null)}
     >
-      <KnobRow label={`← ${spec.label}`} tooltip={wiringTooltip(spec)}>
+      <KnobRow label={`← ${spec.label}`} tip={wiringTooltip(spec)}>
         <Select
           warn={missingWire(node, inputName, spec)}
           value={wiredTo}

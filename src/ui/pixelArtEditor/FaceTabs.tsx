@@ -1,5 +1,6 @@
 import { Button } from '../controls/Button';
 import type { FaceTab, PaintSettings } from './paintSettings';
+import { faceTabTip, linkSidesTip } from './help/paintTips';
 
 const LINKED_TABS: FaceTab[] = ['top', 'sides', 'bottom'];
 const UNLINKED_TABS: FaceTab[] = ['top', 'north', 'east', 'south', 'west', 'bottom'];
@@ -31,6 +32,7 @@ export function FaceTabs({
           key={tab}
           className={TAB_CLASSES}
           active={settings.faceTab === tab}
+          tip={faceTabTip(TAB_LABELS[tab])}
           onClick={() => onSelect(tab)}
         >
           {TAB_LABELS[tab]}
@@ -39,17 +41,11 @@ export function FaceTabs({
       <Button
         className={`${TAB_CLASSES} ml-auto`}
         active={settings.linkedSides}
-        title={linkTitle(settings.linkedSides)}
+        tip={linkSidesTip(settings.linkedSides)}
         onClick={onToggleLink}
       >
         🔗
       </Button>
     </div>
   );
-}
-
-function linkTitle(linkedSides: boolean): string {
-  return linkedSides
-    ? 'sides are linked: unlink to paint N/E/S/W separately'
-    : 'link sides: copy the current side to all four and edit them together';
 }

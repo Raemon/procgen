@@ -5,7 +5,7 @@ import {
   useRerenderOnCreatureClockChange,
 } from '../../app/rerenderHooks';
 import { Button } from '../controls/Button';
-import { tooltipHandlers } from '../tooltips/tooltipHandlers';
+import { CAPTURE_TIP, LIFE_TIP } from './help/worldTips';
 
 export function WorldToolbar() {
   const { capture, clock } = useAppRuntime();
@@ -17,20 +17,14 @@ export function WorldToolbar() {
       <Button
         active={capture.isActive()}
         onClick={() => capture.setActive(!capture.isActive())}
-        {...tooltipHandlers({
-          title: 'capture',
-          body: 'Drag a rectangle over the world to lift that section — tiles, stacked prefab voxels and terrain height — into a new prefab in the library. Esc leaves capture mode.',
-        })}
+        tip={CAPTURE_TIP}
       >
         capture
       </Button>
       <Button
         active={clock.isRunning()}
         onClick={() => clock.setRunning(!clock.isRunning())}
-        {...tooltipHandlers({
-          title: 'life',
-          body: 'Runs the creature simulation. Paused, creatures hold their positions; the world itself is unaffected either way.',
-        })}
+        tip={LIFE_TIP}
       >
         life
       </Button>

@@ -14,6 +14,7 @@
     "typecheck": "tsc --noEmit",
     "check:chat": "npx tsx scripts/checkSpeechBubbleStore.ts && npx tsx scripts/checkChatOverWebsocket.ts",
     "check:ui": "npx tsx scripts/checkPersistedUiState.ts",
+    "check:tooltips": "npx tsx scripts/checkPanelTooltips.ts",
     "check": "esbuild scripts/checkProcgenInvariants.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
     "roll": "esbuild scripts/rollAndRankWorlds.ts --bundle --format=esm --platform=node --log-level=error --outfile=dist/rollAndRankWorlds.mjs && node dist/rollAndRankWorlds.mjs",
     "tiles:write": "esbuild scripts/writeTilesetDataFile.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",

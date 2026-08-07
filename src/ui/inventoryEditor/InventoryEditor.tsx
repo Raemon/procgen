@@ -5,6 +5,13 @@ import type { CreatureDef } from '../../creatures/creatureDef';
 import { MAX_INVENTORY_SIDE, slotAt, type InventoryDef } from '../../items/inventory/inventoryDef';
 import { Button } from '../controls/Button';
 import { KnobRow } from '../controls/KnobRow';
+import type { TooltipContent } from '../tooltips/tooltipContent';
+import {
+  GRID_SIDE_TIPS,
+  inventoryModeTip,
+  REMOVE_INVENTORY_TIP,
+  SLOT_TAGS_TIP,
+} from './help/inventoryTips';
 import { Select } from '../controls/Select';
 import { TagsInput } from '../controls/TagsInput';
 import { classes } from '../controls/classes';
@@ -69,7 +76,7 @@ function InventoryPanel({
           <Button
             key={entry.mode}
             className="px-2 py-0.5 text-[11px]"
-            title={entry.help}
+            tip={inventoryModeTip(entry.label, entry.help)}
             active={mode === entry.mode}
             onClick={() => setMode(entry.mode)}
           >
@@ -78,7 +85,7 @@ function InventoryPanel({
         ))}
         <Button
           className="ml-auto px-2 py-0.5 text-[11px] hover:border-danger-edge hover:text-danger-ink"
-          title="remove the inventory grid entirely"
+          tip={REMOVE_INVENTORY_TIP}
           onClick={() => act('clear_inventory', {})}
         >
           remove
@@ -122,11 +129,25 @@ function SizeRow({ creature, inventory }: { creature: CreatureDef; inventory: In
       height: patch.height ?? inventory.height,
     });
   return (
-    <KnobRow label="grid" tooltip={{ title: 'grid', body: 'Columns × rows. Shrinking drops the slots — and the items — that fall outside.' }}>
+    <KnobRow
+      label="grid"
+      tip={{
+        title: 'grid',
+        body: 'Columns × rows. Shrinking drops the slots — and the items — that fall outside.',
+      }}
+    >
       <div className="flex items-center gap-1.5">
-        <SideSelect value={inventory.width} title="columns" onChange={(width) => resize({ width })} />
+        <SideSelect
+          value={inventory.width}
+          tip={GRID_SIDE_TIPS.columns}
+          onChange={(width) => resize({ width })}
+        />
         <span className="text-ink-dim">×</span>
-        <SideSelect value={inventory.height} title="rows" onChange={(height) => resize({ height })} />
+        <SideSelect
+          value={inventory.height}
+          tip={GRID_SIDE_TIPS.rows}
+          onChange={(height) => resize({ height })}
+        />
       </div>
     </KnobRow>
   );
@@ -134,17 +155,17 @@ function SizeRow({ creature, inventory }: { creature: CreatureDef; inventory: In
 
 function SideSelect({
   value,
-  title,
+  tip,
   onChange,
 }: {
   value: number;
-  title: string;
+  tip: TooltipContent;
   onChange(value: number): void;
 }) {
   return (
     <Select
       fullWidth={false}
-      title={title}
+      tip={tip}
       value={String(value)}
       options={Array.from({ length: MAX_INVENTORY_SIDE }, (_, index) => ({
         value: String(index + 1),
@@ -173,7 +194,7 @@ function SlotTagsRow({
       <TagsInput
         key={`${creatureId}-${selected.x}-${selected.y}`}
         tags={slot.tags}
-        title="only items carrying one of these tags may sit here; empty accepts anything"
+        tip={SLOT_TAGS_TIP}
         onChange={(tags) =>
           perform('update_inventory_slot', {
             creature_id: creatureId,

@@ -9,6 +9,15 @@ import { FIELD_CLASSES } from '../controls/fieldClasses';
 import { PixelArtEditor } from '../pixelArtEditor/PixelArtEditor';
 import { SpriteArtEditor } from '../pixelArtEditor/SpriteArtEditor';
 import { SymbolInput } from '../tileEditor/SymbolInput';
+import {
+  deleteItemTip,
+  duplicateItemTip,
+  ITEM_ART_TIP,
+  ITEM_COLOR_TIP,
+  ITEM_NAME_TIP,
+  itemShapeTip,
+} from './help/itemTips';
+import { tooltipHandlers } from '../tooltips/tooltipHandlers';
 import { ItemRenderKnobs } from './ItemRenderKnobs';
 import { ItemSpritePreview } from './ItemSpritePreview';
 
@@ -23,25 +32,26 @@ export function ItemRow({ item }: { item: ItemDef }) {
   return (
     <div className="mb-1.5">
       <div className="flex items-center gap-1.5">
-        <IconButton title="pixel art" active={openPanel === 'art'} onClick={() => toggle('art')}>
+        <IconButton tip={ITEM_ART_TIP} active={openPanel === 'art'} onClick={() => toggle('art')}>
           <ItemSpritePreview item={item} />
         </IconButton>
         <ColorField
           ink={item.color}
-          title="color — the ascii ink, and the fallback where there is no art"
+          tip={ITEM_COLOR_TIP}
           onChange={(color) => edit({ color })}
         />
         <SymbolInput symbol={item.symbol} onPick={(symbol) => edit({ symbol })} />
         <input
           type="text"
-          title="name"
+          aria-label="item name"
           className={classes(FIELD_CLASSES, 'min-w-0 flex-1')}
           value={item.name}
           onChange={(event) => edit({ name: event.target.value })}
+          {...tooltipHandlers(ITEM_NAME_TIP)}
         />
         <Button
           className="px-2 py-0.5 text-[11px]"
-          title={`${renderLabel(item.render)} — ${item.gridWidth}×${item.gridHeight} in an inventory`}
+          tip={itemShapeTip(item)}
           active={openPanel === 'knobs'}
           onClick={() => toggle('knobs')}
         >
@@ -49,14 +59,14 @@ export function ItemRow({ item }: { item: ItemDef }) {
         </Button>
         <Button
           className="px-2 py-0.5"
-          title="duplicate item"
+          tip={duplicateItemTip(item)}
           onClick={() => perform('duplicate_item', { item_id: item.id })}
         >
           ⧉
         </Button>
         <Button
           className="px-2 py-0.5 hover:border-danger-edge hover:text-danger-ink"
-          title="delete item"
+          tip={deleteItemTip(item)}
           onClick={() => perform('remove_item', { item_id: item.id })}
         >
           ×

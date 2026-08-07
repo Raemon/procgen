@@ -3,6 +3,7 @@ import { paintFacePixels } from '../../views/paintFacePixels';
 import type { TileDef } from '../../world/tiles/tileDef';
 import { blankFacePixels, faceGridSize } from '../../world/tiles/tileFaceArt';
 import { IconButton } from '../controls/IconButton';
+import { TILE_ART_TIP } from './help/tileTips';
 
 export function FaceArtToggle({
   tile,
@@ -14,7 +15,7 @@ export function FaceArtToggle({
   onToggle(): void;
 }) {
   return (
-    <IconButton title="pixel art (per cube face)" active={open} onClick={onToggle}>
+    <IconButton tip={TILE_ART_TIP} active={open} onClick={onToggle}>
       <TopFacePreview tile={tile} />
     </IconButton>
   );

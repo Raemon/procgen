@@ -50,7 +50,7 @@ export function CreatureBehaviorKnobs({ creature }: { creature: CreatureDef }) {
     perform('update_creature', { creature_id: creature.id, ...patch });
   return (
     <div className="mt-1.5 rounded border border-art-edge bg-art-panel p-2">
-      <KnobRow label="behavior" tooltip={behaviorTooltip()}>
+      <KnobRow label="behavior" tip={behaviorTooltip()}>
         <Select
           value={String(creature.behavior)}
           options={BEHAVIOR_CHOICES.map((choice) => ({
@@ -61,7 +61,7 @@ export function CreatureBehaviorKnobs({ creature }: { creature: CreatureDef }) {
         />
       </KnobRow>
       {MOTION_KNOBS.map((knob) => (
-        <KnobRow key={knob.field} label={knob.label} tooltip={{ title: knob.label, body: knob.help }}>
+        <KnobRow key={knob.field} label={knob.label} tip={{ title: knob.label, body: knob.help }}>
           <Slider
             min={knob.min}
             max={knob.max}
@@ -74,7 +74,7 @@ export function CreatureBehaviorKnobs({ creature }: { creature: CreatureDef }) {
       ))}
       <KnobRow
         label="phasing"
-        tooltip={{
+        tip={{
           title: 'phasing',
           body: 'On, the creature walks through walls and water. Off, it is blocked by anything the player cannot walk on.',
         }}

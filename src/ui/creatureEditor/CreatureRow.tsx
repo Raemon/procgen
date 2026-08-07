@@ -14,6 +14,18 @@ import { SymbolInput } from '../tileEditor/SymbolInput';
 import { isOneOf } from '../uiState/persistedUiGuards';
 import { PERSISTED_UI_KEYS } from '../uiState/persistedUiKeys';
 import { usePersistedUiRecord } from '../uiState/usePersistedUiRecord';
+import { tooltipHandlers } from '../tooltips/tooltipHandlers';
+import {
+  CHARACTER_BAG_TIP,
+  CHARACTER_SPRITES_TIP,
+  CREATURE_ART_TIP,
+  CREATURE_COLOR_TIP,
+  CREATURE_NAME_TIP,
+  creatureBehaviorTip,
+  deleteCreatureTip,
+  MAKE_CHARACTER_TIP,
+  MAKE_PLAIN_CREATURE_TIP,
+} from './help/creatureTips';
 import { CreatureBehaviorKnobs } from './CreatureBehaviorKnobs';
 
 const CREATURE_PANELS = ['none', 'behavior', 'art', 'inventory', 'sprites'] as const;
@@ -34,18 +46,19 @@ export function CreatureRow({ creature }: { creature: CreatureDef }) {
   return (
     <div className="mb-1.5">
       <div className={classes(ROW_HOVER_GROUP, 'flex items-center gap-1.5')}>
-        <ColorField ink={creature.color} title="color" onChange={(color) => edit({ color })} />
+        <ColorField ink={creature.color} tip={CREATURE_COLOR_TIP} onChange={(color) => edit({ color })} />
         <SymbolInput symbol={creature.symbol} onPick={(symbol) => edit({ symbol })} />
         <input
           type="text"
-          title="name"
+          aria-label="creature name"
           className={classes(FIELD_CLASSES, 'min-w-0 flex-1')}
           value={creature.name}
           onChange={(event) => edit({ name: event.target.value })}
+          {...tooltipHandlers(CREATURE_NAME_TIP)}
         />
         <Button
           className="px-2 py-0.5 text-[11px]"
-          title={`behavior: ${behaviorLabel(creature.behavior)}`}
+          tip={creatureBehaviorTip(creature)}
           active={openPanel === 'behavior'}
           onClick={() => toggle('behavior')}
         >
@@ -53,7 +66,7 @@ export function CreatureRow({ creature }: { creature: CreatureDef }) {
         </Button>
         <Button
           className="px-2 py-0.5"
-          title="cube art (used when a character has no sprites)"
+          tip={CREATURE_ART_TIP}
           active={openPanel === 'art'}
           onClick={() => toggle('art')}
         >
@@ -63,7 +76,7 @@ export function CreatureRow({ creature }: { creature: CreatureDef }) {
           <>
             <Button
               className="px-2 py-0.5 text-[11px]"
-              title="billboard sprites: five rotations, each with an idle and a moving animation"
+              tip={CHARACTER_SPRITES_TIP}
               active={openPanel === 'sprites'}
               onClick={() => toggle('sprites')}
             >
@@ -71,7 +84,7 @@ export function CreatureRow({ creature }: { creature: CreatureDef }) {
             </Button>
             <Button
               className="px-2 py-0.5 text-[11px]"
-              title="inventory grid"
+              tip={CHARACTER_BAG_TIP}
               active={openPanel === 'inventory'}
               onClick={() => toggle('inventory')}
             >
@@ -81,7 +94,7 @@ export function CreatureRow({ creature }: { creature: CreatureDef }) {
         ) : (
           <Button
             className="px-2 py-0.5 text-[11px]"
-            title="make this a character: same creature rules, plus an inventory"
+            tip={MAKE_CHARACTER_TIP}
             onClick={() => edit({ kind: CHARACTER })}
           >
             +bag
@@ -89,7 +102,7 @@ export function CreatureRow({ creature }: { creature: CreatureDef }) {
         )}
         <Button
           className={classes(REVEALED_ON_ROW_HOVER, 'px-2 py-0.5')}
-          title="duplicate"
+          tip={{ title: `duplicate ${creature.name}`, body: 'Copies the creature, art and knobs included.' }}
           onClick={() => perform('duplicate_creature', { creature_id: creature.id })}
         >
           ⧉
@@ -99,7 +112,7 @@ export function CreatureRow({ creature }: { creature: CreatureDef }) {
             REVEALED_ON_ROW_HOVER,
             'px-2 py-0.5 hover:border-danger-edge hover:text-danger-ink',
           )}
-          title="delete"
+          tip={deleteCreatureTip(creature)}
           onClick={() => perform('remove_creature', { creature_id: creature.id })}
         >
           ×
@@ -121,7 +134,7 @@ export function CreatureRow({ creature }: { creature: CreatureDef }) {
           <InventoryEditor creature={creature} />
           <Button
             className="mt-1.5 px-2 py-0.5 text-[11px]"
-            title="demote to a plain creature; the inventory is kept but no longer shown"
+            tip={MAKE_PLAIN_CREATURE_TIP}
             onClick={() => edit({ kind: CREATURE })}
           >
             make it a plain creature
