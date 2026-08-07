@@ -7,6 +7,7 @@ import { nodeTypesJson, pipelineJson } from '../nodeCatalog';
 import { buildObservation, type AgentObservation } from '../observation';
 import { observationText } from '../observationText';
 import { startAutopilot } from './autopilot';
+import { creatureJson, inventoryJson, itemJson } from './libraryJson';
 import { performVerb } from './performVerb';
 import type { ServerWorld, WorldAccess } from './serverWorld';
 import { newSession, sessionPose, type AgentSession, type SessionStore } from './sessions';
@@ -89,20 +90,28 @@ export function handleApiRequest(
     });
   }
   if (req.path === '/creatures' && req.method === 'GET') {
-    return json(200, {
-      creatures: world.creatures.all().map((creature) => ({
-        id: creature.id,
-        name: creature.name,
-        symbol: creature.symbol,
-        speed: creature.speed,
-        size: creature.size,
-      })),
-    });
+    return json(200, { creatures: world.creatures.all().map(creatureJson) });
+  }
+  if (req.path === '/items' && req.method === 'GET') {
+    return json(200, { items: world.items.all().map(itemJson) });
+  }
+  const inventoryMatch = req.path.match(/^\/creatures\/(\d+)\/inventory$/);
+  if (inventoryMatch && req.method === 'GET') {
+    return creatureInventory(world, Number(inventoryMatch[1]));
   }
   if (req.path === '/agents') return agentCollection(sessions, world, req);
   const match = req.path.match(/^\/agents\/([^/]+)(\/[a-z]+)?$/);
   if (match) return agentResource(sessions, access, req, match[1]!, match[2] ?? '');
   return failure(404, 'bad_request', `no route for ${req.method} ${req.path}`);
+}
+
+function creatureInventory(world: ServerWorld, creatureId: number): ApiResponse {
+  const creature = world.creatures.byId(creatureId);
+  if (!creature) return failure(404, 'unknown_creature', `no creature ${creatureId}`);
+  if (!creature.inventory) {
+    return failure(404, 'no_inventory', `creature ${creatureId} has no inventory grid`);
+  }
+  return json(200, { creature_id: creatureId, inventory: inventoryJson(creature.inventory) });
 }
 
 function agentCollection(sessions: SessionStore, world: ServerWorld, req: ApiRequest): ApiResponse {

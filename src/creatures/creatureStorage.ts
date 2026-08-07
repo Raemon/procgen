@@ -1,6 +1,9 @@
+import { sanitizeInventory } from '../items/inventory/sanitizeInventory';
 import { readPersistedFile, writePersistedFile } from '../persistence/repoFileStore';
 import { upgradeStoredFaceArt } from '../world/tiles/legacyFaceArt';
+import { sanitizeCharacterBillboard } from './character/sanitizeCharacterBillboard';
 import type { CreatureDef } from './creatureDef';
+import { CREATURE, isEntityKind } from './entityKinds';
 
 const FILE_NAME = 'creatures';
 
@@ -10,7 +13,7 @@ export function loadStoredCreatures(): CreatureDef[] | null {
 
 export function creaturesFromStoredJson(parsed: unknown): CreatureDef[] | null {
   if (!Array.isArray(parsed)) return null;
-  const creatures = parsed.filter(isCreatureDef).map(withValidatedFaceArt);
+  const creatures = parsed.filter(isCreatureDef).map(withValidatedArt);
   return creatures.length > 0 ? creatures : null;
 }
 
@@ -18,8 +21,14 @@ export function storeCreatures(creatures: readonly CreatureDef[]): void {
   writePersistedFile(FILE_NAME, creatures);
 }
 
-function withValidatedFaceArt(creature: CreatureDef): CreatureDef {
-  return { ...creature, faceArt: upgradeStoredFaceArt(creature.faceArt) };
+function withValidatedArt(creature: CreatureDef): CreatureDef {
+  return {
+    ...creature,
+    faceArt: upgradeStoredFaceArt(creature.faceArt),
+    kind: isEntityKind(creature.kind) ? creature.kind : CREATURE,
+    inventory: sanitizeInventory(creature.inventory),
+    billboard: sanitizeCharacterBillboard(creature.billboard),
+  };
 }
 
 function isCreatureDef(value: unknown): value is CreatureDef {

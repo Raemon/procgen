@@ -10,7 +10,7 @@ and `data/tileset.json` is a baked copy of that catalog.
 ## The model in one paragraph
 
 A face is a `FacePixels` array — one color (or `null` for "use the tile's flat
-color") per pixel. A **painter** is `(x, y) => string | null`. `paintedFace`
+color", which is see-through when that flat color is transparent) per pixel. A **painter** is `(x, y) => string | null`. `paintedFace`
 runs a painter over the grid, `stackedPainters` layers painters so later ones
 paint over earlier ones wherever they return a color, and `cubeArtFrom` builds
 all six faces from a top / sides / bottom painter. Every painter must be a pure

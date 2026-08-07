@@ -3,6 +3,7 @@ import { performAbility } from '../abilities/performAbility';
 import type { AbilityMode, AbilityResult } from '../abilities/ability';
 import { ChatComposerState } from '../chat/chatComposerState';
 import { CreatureLibrary } from '../creatures/creatureLibrary';
+import { ItemLibrary } from '../items/itemLibrary';
 import { MultiplayerSession } from '../net/multiplayerSession';
 import { CreatureClock } from '../creatures/sim/creatureClock';
 import { CreatureSim } from '../creatures/sim/creatureSim';
@@ -22,6 +23,7 @@ import { World } from '../world/world';
 import { ChangeNotifier } from './changeNotifier';
 import type {
   ReadOnlyCreatureLibrary,
+  ReadOnlyItemLibrary,
   ReadOnlyPipelineStore,
   ReadOnlyPrefabLibrary,
   ReadOnlyTemplateLibrary,
@@ -37,6 +39,7 @@ export interface AppRuntime {
   tileset: ReadOnlyTileset;
   prefabs: ReadOnlyPrefabLibrary;
   creatures: ReadOnlyCreatureLibrary;
+  items: ReadOnlyItemLibrary;
   store: ReadOnlyPipelineStore;
   templates: ReadOnlyTemplateLibrary;
   worldPresets: ReadOnlyWorldPresetLibrary;
@@ -63,10 +66,11 @@ export function createAppRuntime(): AppRuntime {
   const worldPresets = new WorldPresetLibrary();
   const prefabs = new PrefabLibrary((name) => tileIdByName(tileset, name));
   const creatures = new CreatureLibrary();
+  const items = new ItemLibrary();
   const store = new PipelineStore(loadStoredPipeline());
   attachPipelinePersistence(store);
   const evaluator = new PipelineEvaluator(store);
-  const sampler = new WorldSampler(store, evaluator, tileset, prefabs);
+  const sampler = new WorldSampler(store, evaluator, tileset, prefabs, items);
   const isWalkableAt = (x: number, y: number) => isWalkableTile(tileset, sampler.tileAt(x, y));
   const world = new World(isWalkableAt);
   const net = new MultiplayerSession(world, store, isWalkableAt);
@@ -94,6 +98,7 @@ export function createAppRuntime(): AppRuntime {
         tileset,
         prefabs,
         creatures,
+        items,
         templates,
         worldPresets,
         randomizeHistory,
@@ -131,6 +136,7 @@ export function createAppRuntime(): AppRuntime {
   tileset.onChange(applyWorldChange);
   prefabs.onChange(applyWorldChange);
   creatures.onChange(applyWorldChange);
+  items.onChange(applyWorldChange);
   world.on('player-moved', () => renderers.recenterAll());
   world.on('player-turned', () => renderers.recenterAll());
 
@@ -140,6 +146,7 @@ export function createAppRuntime(): AppRuntime {
     worldPresets,
     prefabs,
     creatures,
+    items,
     store,
     evaluator,
     sampler,

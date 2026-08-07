@@ -7,6 +7,7 @@ export function paintFacePixels(
   pixelSize: number,
 ): void {
   const size = faceGridSize(pixels);
+  ctx.clearRect(0, 0, size * pixelSize, size * pixelSize);
   pixels.forEach((pixel, index) => {
     ctx.fillStyle = pixel ?? baseColor;
     ctx.fillRect(

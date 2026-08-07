@@ -3,6 +3,8 @@ import { join } from 'node:path';
 import '../../procgen/nodes';
 import { CreatureLibrary } from '../../creatures/creatureLibrary';
 import { creaturesFromStoredJson } from '../../creatures/creatureStorage';
+import { ItemLibrary } from '../../items/itemLibrary';
+import { itemsFromStoredJson } from '../../items/itemStorage';
 import { PrefabLibrary } from '../../prefabs/prefabLibrary';
 import { prefabsFromStoredJson } from '../../prefabs/prefabStorage';
 import { PipelineEvaluator } from '../../procgen/eval/evaluator';
@@ -28,6 +30,7 @@ export interface ServerWorld {
   store: PipelineStore;
   prefabs: PrefabLibrary;
   creatures: CreatureLibrary;
+  items: ItemLibrary;
   templates: TemplateLibrary;
   worldPresets: WorldPresetLibrary;
   randomizeHistory: RandomizeHistory;
@@ -46,6 +49,7 @@ export function persistWorld(root: string, world: ServerWorld): void {
   writeDataFile(root, 'tileset', world.tileset.all());
   writeDataFile(root, 'prefabs', world.prefabs.all());
   writeDataFile(root, 'creatures', world.creatures.all());
+  writeDataFile(root, 'items', world.items.all());
   writeDataFile(root, 'templates', world.templates.savedTemplates());
   writeDataFile(root, 'worldPresets', world.worldPresets.savedPresets());
 }
@@ -74,11 +78,12 @@ function buildServerWorld(
   const creatures = new CreatureLibrary(
     creaturesFromStoredJson(dataFileJson(root, 'creatures')) ?? undefined,
   );
+  const items = new ItemLibrary(itemsFromStoredJson(dataFileJson(root, 'items')) ?? undefined);
   const templates = new TemplateLibrary(sanitizeTemplates(dataFileJson(root, 'templates')));
   const worldPresets = new WorldPresetLibrary(sanitizeWorldPresets(dataFileJson(root, 'worldPresets')));
   const store = new PipelineStore(sanitizePipeline(dataFileJson(root, 'pipeline')));
   const evaluator = new PipelineEvaluator(store);
-  const sampler = new WorldSampler(store, evaluator, tileset, prefabs);
+  const sampler = new WorldSampler(store, evaluator, tileset, prefabs, items);
   const isWalkable = (x: number, y: number) => isWalkableTile(tileset, sampler.tileAt(x, y));
   return {
     stamp,
@@ -87,6 +92,7 @@ function buildServerWorld(
     store,
     prefabs,
     creatures,
+    items,
     templates,
     worldPresets,
     randomizeHistory,
@@ -96,7 +102,7 @@ function buildServerWorld(
 }
 
 function dataFileStamp(root: string): string {
-  return ['pipeline', 'tileset', 'prefabs', 'creatures', 'templates', 'worldPresets']
+  return ['pipeline', 'tileset', 'prefabs', 'creatures', 'items', 'templates', 'worldPresets']
     .map((name) => String(dataFileMtime(root, name)))
     .join('|');
 }
