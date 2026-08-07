@@ -213,6 +213,7 @@ function observe(session: AgentSession, world: ServerWorld, req: ApiRequest): Ap
     sessionPose(session),
     session.mode,
     session.sightRadiusTiles,
+    world.puzzles,
   );
   if (req.query.get('format') === 'text') {
     return { status: 200, contentType: 'text/plain; charset=utf-8', body: observationText(observation) };
@@ -237,6 +238,7 @@ function act(session: AgentSession, access: WorldAccess, body: unknown): ApiResp
     sessionPose(session),
     session.mode,
     session.sightRadiusTiles,
+    fresh.puzzles,
   );
   return json(result.outcome === 'unknown_action' || result.outcome === 'failed' ? 400 : 200, {
     outcome: result.outcome,

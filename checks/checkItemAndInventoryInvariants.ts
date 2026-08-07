@@ -18,6 +18,7 @@ import { sanitizeInventory } from '../library/items/inventory/sanitizeInventory'
 import { BILLBOARD, CUBE, LYING_FLAT, type ItemDef } from '../library/items/itemDef';
 import { ItemLibrary } from '../library/items/itemLibrary';
 import { NO_GROUND_ITEMS } from '../library/items/pickups/groundItems';
+import { PuzzleWorld } from '../world/puzzles/puzzleWorld';
 import { itemsFromStoredJson } from '../library/items/itemStorage';
 import { PrefabLibrary } from '../library/prefabs/prefabLibrary';
 import { displayModesForKind } from '../procgen/display/displayBinding';
@@ -369,10 +370,11 @@ function checkItemAndInventoryAbilities(check: CheckReporter): void {
 }
 
 function abilityWorld() {
+  const store = new PipelineStore(emptyPipeline());
   const items = new ItemLibrary();
   const creatures = new CreatureLibrary();
   const context: AbilityContext = {
-    store: new PipelineStore(emptyPipeline()),
+    store,
     tileset: new Tileset(),
     prefabs: new PrefabLibrary(() => -1),
     creatures,
@@ -381,6 +383,7 @@ function abilityWorld() {
     worldPresets: new WorldPresetLibrary([]),
     randomizeHistory: new RandomizeHistory(),
     groundItems: NO_GROUND_ITEMS,
+    puzzles: new PuzzleWorld(store, () => true),
     regionSampler: { tileAt: () => 0, elevationAt: () => 0, voxelColumnAt: () => null },
     actor: {
       pose: () => ({ x: 0, y: 0, facing: 0 }),

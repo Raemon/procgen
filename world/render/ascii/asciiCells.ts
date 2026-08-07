@@ -1,6 +1,7 @@
 import type { Marker, WorldSampler } from '../../../procgen/worldSampler';
 import { EMPTY_TILE } from '../../../procgen/values/chunkValues';
 import type { ReadOnlyTileset } from '../../../frontend/readOnlyLibraries';
+import { NO_EXTRA_MARKERS, type MarkerSource } from '../markerSource';
 import type { AsciiViewport } from './asciiViewport';
 
 export const PLAYER_GLYPH = '@';
@@ -17,6 +18,7 @@ export interface AsciiCell {
 export function pointOverlayLookup(
   sampler: WorldSampler,
   viewport: AsciiViewport,
+  extraMarkers: MarkerSource = NO_EXTRA_MARKERS,
 ): Map<string, Marker> {
   const maxX = viewport.originX + viewport.columns - 1;
   const maxY = viewport.originY + viewport.rows - 1;
@@ -26,6 +28,9 @@ export function pointOverlayLookup(
   }
   for (const spawn of sampler.itemSpawnsIn(viewport.originX, viewport.originY, maxX, maxY)) {
     lookup.set(`${spawn.x},${spawn.y}`, { ...spawn, faceArt: null, tag: spawn.name });
+  }
+  for (const marker of extraMarkers.markersIn(viewport.originX, viewport.originY, maxX, maxY)) {
+    lookup.set(`${marker.x},${marker.y}`, marker);
   }
   return lookup;
 }

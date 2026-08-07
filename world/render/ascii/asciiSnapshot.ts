@@ -1,6 +1,7 @@
 import type { Marker, WorldSampler } from '../../../procgen/worldSampler';
 import type { ReadOnlyTileset } from '../../../frontend/readOnlyLibraries';
 import { asciiCellAt, pointOverlayLookup, EMPTY_GLYPH } from './asciiCells';
+import { NO_EXTRA_MARKERS, type MarkerSource } from '../markerSource';
 import { viewportCenteredOn, type AsciiViewport } from './asciiViewport';
 
 export function asciiSnapshot(
@@ -10,9 +11,10 @@ export function asciiSnapshot(
   playerY: number,
   columns: number,
   rows: number,
+  extraMarkers: MarkerSource = NO_EXTRA_MARKERS,
 ): string {
   const viewport = viewportCenteredOn(playerX, playerY, columns, rows);
-  const markers = pointOverlayLookup(sampler, viewport);
+  const markers = pointOverlayLookup(sampler, viewport, extraMarkers);
   const lines: string[] = [];
   for (let row = 0; row < rows; row++) {
     lines.push(snapshotRow(sampler, tileset, markers, viewport, playerX, playerY, row));

@@ -180,6 +180,7 @@ function observe(session: AgentSession, access: WorldAccess): string {
       sessionPose(session),
       session.mode,
       session.sightRadiusTiles,
+      world.puzzles,
     ),
   );
 }

@@ -4,7 +4,6 @@ import { FACING_NAMES, facingVector, type FacingIndex } from '../world/facing';
 import {
   abilityFailed,
   abilitySucceeded,
-  type AbilityActor,
   type AbilityContext,
   type AbilityResult,
 } from './ability';
@@ -20,7 +19,7 @@ FACING_NAMES.forEach((name, compass) => {
     params: {},
     example: { action: `step_${name}` },
     changesWorld: false,
-    apply: (context) => stepBy(context.actor, vectorStep(compass as FacingIndex)),
+    apply: (context) => stepBy(context, vectorStep(compass as FacingIndex)),
   });
 });
 
@@ -72,7 +71,7 @@ for (const step of CHARACTER_STEPS) {
     example: { action: step.action },
     changesWorld: false,
     apply: (context) =>
-      stepBy(context.actor, facingRelativeStep(context.actor.pose().facing, step.forward, step.strafe)),
+      stepBy(context, facingRelativeStep(context.actor.pose().facing, step.forward, step.strafe)),
   });
 }
 
@@ -100,15 +99,19 @@ function vectorStep(facing: FacingIndex): Step {
   return [vector.dx, vector.dy];
 }
 
-function stepBy(actor: AbilityActor, step: Step): AbilityResult {
+function stepBy(context: AbilityContext, step: Step): AbilityResult {
   let moved = false;
   slideAlongEachAxis(step, (dx, dy) => {
-    if (actor.tryStep(dx, dy)) moved = true;
+    if (context.actor.tryStep(dx, dy)) moved = true;
   });
-  const pose = actor.pose();
-  return moved
-    ? abilitySucceeded(`moved to (${pose.x},${pose.y})`)
-    : abilityFailed('blocked', `nothing gave way from (${pose.x},${pose.y})`);
+  const pose = context.actor.pose();
+  if (!moved) return abilityFailed('blocked', `nothing gave way from (${pose.x},${pose.y})`);
+  return abilitySucceeded(`moved to (${pose.x},${pose.y})${keysPickedUp(context, pose)}`);
+}
+
+function keysPickedUp(context: AbilityContext, pose: { x: number; y: number }): string {
+  const taken = context.puzzles.takeKeysAt(pose.x, pose.y);
+  return taken.length === 0 ? '' : `, taking ${taken.length} key(s) lying here`;
 }
 
 function turnBy(context: AbilityContext, eighths: -1 | 1): AbilityResult {

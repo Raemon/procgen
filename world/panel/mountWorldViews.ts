@@ -3,6 +3,7 @@ import { cameraRelativeStep } from '../input/cameraRelativeStep';
 import { facingRelativeStep } from '../input/facingRelativeStep';
 import { MovementInput } from '../input/movementInput';
 import { PickUpInput } from '../input/pickUpInput';
+import { UseFixtureInput } from '../input/useFixtureInput';
 import { AgentTextView } from '../render/agentText/agentTextView';
 import { View3D } from '../render/view3d/view3d';
 import type { WorldViewDeps } from '../render/worldViewDeps';
@@ -26,13 +27,21 @@ export function mountWorldViews(
 ): MountedWorldViews {
   const { world, sampler, tileset, perform } = runtime;
   const view3d = new View3D(slots.view3d, worldViewDepsOf(runtime));
-  const agentGodView = new AgentTextView(slots.agentGod, world, sampler, tileset, 'god');
+  const agentGodView = new AgentTextView(
+    slots.agentGod,
+    world,
+    sampler,
+    tileset,
+    'god',
+    runtime.puzzles,
+  );
   const agentCharacterView = new AgentTextView(
     slots.agentCharacter,
     world,
     sampler,
     tileset,
     'character',
+    runtime.puzzles,
   );
 
   const unregister = [
@@ -65,6 +74,13 @@ export function mountWorldViews(
     isSuspended: () => inputIsSuspended(runtime),
   });
 
+  const useFixture = new UseFixtureInput({
+    use: () => perform(isCharacterControlled(currentMode()) ? 'use' : 'use_fixture'),
+    resetRoom: () =>
+      perform(isCharacterControlled(currentMode()) ? 'reset_room' : 'reset_puzzle_room'),
+    isSuspended: () => inputIsSuspended(runtime),
+  });
+
   const pickUp = new PickUpInput({
     pickUp: () => perform(isCharacterControlled(currentMode()) ? 'pick_up' : 'pick_up_item'),
     isSuspended: () => inputIsSuspended(runtime),
@@ -92,6 +108,7 @@ export function mountWorldViews(
       stopWalkingWhileBagIsOpen();
       movement.dispose();
       pickUp.dispose();
+      useFixture.dispose();
       for (const remove of unregister) remove();
       view3d.dispose();
       agentGodView.dispose();
@@ -113,6 +130,7 @@ function worldViewDepsOf(runtime: AppRuntime): WorldViewDeps {
     world: runtime.world,
     sampler: runtime.sampler,
     store: runtime.store,
+    puzzles: runtime.puzzles,
     tileset: runtime.tileset,
     creatures: runtime.creatures,
     items: runtime.items,

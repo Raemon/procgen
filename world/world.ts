@@ -4,11 +4,14 @@ import {
   DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
   clampSightRadiusTiles,
 } from './vision/characterSight';
+import { NOTHING_IN_THE_WAY, stepIsAllowed } from './sim/stepIsAllowed';
 import { WorldEvents, type WorldEvent } from './worldEvents';
 
 const SNAP_SEARCH_RADIUS = 64;
 
 export type WalkabilityProbe = (x: number, y: number) => boolean;
+
+export type ObstacleResolver = (x: number, y: number, dx: number, dy: number) => boolean;
 
 export class World {
   playerX = 0;
@@ -17,7 +20,10 @@ export class World {
   sightRadiusTiles = DEFAULT_CHARACTER_SIGHT_RADIUS_TILES;
   private readonly events = new WorldEvents();
 
-  constructor(private readonly isWalkableAt: WalkabilityProbe) {}
+  constructor(
+    private readonly isWalkableAt: WalkabilityProbe,
+    private readonly clearTheWay: ObstacleResolver = NOTHING_IN_THE_WAY,
+  ) {}
 
   setSightRadiusTiles(radius: number): void {
     const clamped = clampSightRadiusTiles(radius);
@@ -34,7 +40,8 @@ export class World {
   tryStep(dx: number, dy: number): boolean {
     const nextX = this.playerX + dx;
     const nextY = this.playerY + dy;
-    if (!this.isWalkableAt(nextX, nextY)) return false;
+    const rules = { isWalkableAt: this.isWalkableAt, clearTheWay: this.clearTheWay };
+    if (!stepIsAllowed(rules, nextX, nextY, dx, dy)) return false;
     this.playerX = nextX;
     this.playerY = nextY;
     this.events.emit('player-moved');

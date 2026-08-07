@@ -4,6 +4,7 @@ import { observationText } from '../../../agents/observationText';
 import type { WorldSampler } from '../../../procgen/worldSampler';
 import type { ReadOnlyTileset } from '../../../frontend/readOnlyLibraries';
 import type { ReadOnlyWorld } from '../../../frontend/readOnlyLibraries';
+import type { MarkerSource } from '../markerSource';
 
 const AGENT_TEXT_CLASSES =
   'absolute inset-0 m-0 overflow-auto whitespace-pre p-4 font-mono text-[13px] leading-[1.15] text-emerald-100/90';
@@ -17,6 +18,7 @@ export class AgentTextView {
     private readonly sampler: WorldSampler,
     private readonly tileset: ReadOnlyTileset,
     private readonly mode: AgentMode,
+    private readonly puzzles: MarkerSource,
   ) {
     this.pre.className = AGENT_TEXT_CLASSES;
     container.appendChild(this.pre);
@@ -29,7 +31,14 @@ export class AgentTextView {
   draw(): void {
     const pose = { x: this.world.playerX, y: this.world.playerY, facing: this.world.facing };
     this.pre.textContent = observationText(
-      buildObservation(this.sampler, this.tileset, pose, this.mode, this.world.sightRadiusTiles),
+      buildObservation(
+        this.sampler,
+        this.tileset,
+        pose,
+        this.mode,
+        this.world.sightRadiusTiles,
+        this.puzzles,
+      ),
     );
   }
 }

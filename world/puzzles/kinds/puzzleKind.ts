@@ -1,0 +1,49 @@
+import type { RandomStream } from '../../../procgen/random/mulberry32';
+import type { PuzzleFixture } from '../fixtures/puzzleFixture';
+import type { Cell, RoomCells } from './roomCells';
+
+export interface CratePush {
+  crateId: string;
+  dx: number;
+  dy: number;
+}
+
+export interface FurnishedRoom {
+  fixtures: PuzzleFixture[];
+  opensWhen: string[];
+  solution: CratePush[];
+}
+
+export interface FurnishContext {
+  cells: RoomCells;
+  level: number;
+  entrance: Cell;
+  rng: RandomStream;
+}
+
+export interface PuzzleKindDef {
+  name: string;
+  introducedAtRing: number;
+  teaches: string;
+  furnish(context: FurnishContext): FurnishedRoom;
+}
+
+const registry: PuzzleKindDef[] = [];
+
+export function registerPuzzleKind(def: PuzzleKindDef): PuzzleKindDef {
+  registry.push(def);
+  registry.sort((a, b) => a.introducedAtRing - b.introducedAtRing);
+  return def;
+}
+
+export function allPuzzleKinds(): readonly PuzzleKindDef[] {
+  return registry;
+}
+
+export function puzzleKindNamed(name: string): PuzzleKindDef | undefined {
+  return registry.find((kind) => kind.name === name);
+}
+
+export function nothingToSolve(): FurnishedRoom {
+  return { fixtures: [], opensWhen: [], solution: [] };
+}

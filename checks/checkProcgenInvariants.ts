@@ -10,6 +10,7 @@ import { checkPrefabAndCreatureInvariants } from './checkPrefabAndCreatureInvari
 import { checkTileHeightInvariants } from './checkTileHeightInvariants';
 import { checkPresentationFoldersAreTheOnlyDomCode } from './checkPresentationFoldersAreTheOnlyDomCode';
 import { checkDesignBetsStillHold } from './checkDesignBetsStillHold';
+import { checkPuzzleInvariants } from './checkPuzzleInvariants';
 import { checkEveryApiSurfaceIsDescribed } from './checkEveryApiSurfaceIsDescribed';
 import { checkClaudeMdPointsAtThingsThatExist } from './checkClaudeMdPointsAtThingsThatExist';
 import { checkDocumentationHasNotRegrown } from './checkDocumentationHasNotRegrown';
@@ -101,6 +102,7 @@ import { WorldPresetLibrary } from '../procgen/presets/worldPresetLibrary';
 import { CreatureLibrary } from '../library/creatures/creatureLibrary';
 import { ItemLibrary } from '../library/items/itemLibrary';
 import { NO_GROUND_ITEMS } from '../library/items/pickups/groundItems';
+import { PuzzleWorld } from '../world/puzzles/puzzleWorld';
 import { PrefabLibrary } from '../library/prefabs/prefabLibrary';
 import { FAILURES } from '../agents/failures';
 import { nodeTypesJson } from '../agents/nodeCatalog';
@@ -1514,6 +1516,7 @@ function abilityWorld() {
     worldPresets: new WorldPresetLibrary([]),
     randomizeHistory: new RandomizeHistory(),
     groundItems: NO_GROUND_ITEMS,
+    puzzles: new PuzzleWorld(store, () => true),
     regionSampler: {
       tileAt: () => 0,
       elevationAt: () => 0,
@@ -1978,6 +1981,7 @@ describe('items and inventories', () => checkItemAndInventoryInvariants(check));
 describe('character billboards', () => checkCharacterBillboardInvariants(check));
 describe('the player character', () => checkPlayerCharacterInvariants(check));
 describe('tile heights', () => checkTileHeightInvariants(check));
+describe('puzzle rooms', () => checkPuzzleInvariants(check));
 describe('the dom boundary', () => checkPresentationFoldersAreTheOnlyDomCode(check));
 describe('documentation', () => {
   checkDocumentationHasNotRegrown(check);

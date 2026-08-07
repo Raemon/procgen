@@ -30,6 +30,7 @@ import { tileLightSourcesInRect } from '../world/light/tileLightSources';
 import { defaultTiles } from '../library/tiles/defaultTiles';
 import { tilesFromStoredJson } from '../library/tiles/tilesetStorage';
 import { itemsFromStoredJson } from '../library/items/itemStorage';
+import { PuzzleWorld } from '../world/puzzles/puzzleWorld';
 import { isWalkableTile } from '../world/tileWalkability';
 import { Tileset } from '../library/tiles/tileset';
 import type { CheckReporter } from './checkCharacterBillboardInvariants';
@@ -260,6 +261,7 @@ function undergroundWorld() {
     randomizeHistory: new RandomizeHistory(),
     regionSampler: sampler,
     groundItems,
+    puzzles: new PuzzleWorld(store, () => true),
     actor: {
       pose: () => pose,
       tryStep: () => true,

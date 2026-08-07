@@ -15,6 +15,9 @@ import { TemplateLibrary } from '../../procgen/templates/templateLibrary';
 import { sanitizePipeline } from '../../procgen/pipeline/sanitizePipeline';
 import { WorldSampler } from '../../procgen/worldSampler';
 import { nearestWalkable } from '../../world/nearestWalkable';
+import type { StepRules } from '../../world/sim/stepIsAllowed';
+import { PuzzleWorld } from '../../world/puzzles/puzzleWorld';
+import { PuzzleState } from '../../world/puzzles/state/puzzleState';
 import { isWalkableTile } from '../../world/tileWalkability';
 import { Tileset } from '../../library/tiles/tileset';
 import { tilesFromStoredJson } from '../../library/tiles/tilesetStorage';
@@ -36,7 +39,9 @@ export interface ServerWorld {
   randomizeHistory: RandomizeHistory;
   takenItems: TakenItemSpawns;
   groundItems: GroundItems;
+  puzzles: PuzzleWorld;
   isWalkable(x: number, y: number): boolean;
+  stepRules: StepRules;
   spawn(): { x: number; y: number };
 }
 
@@ -72,6 +77,7 @@ export function currentServerWorld(docs: DocSource, previous: ServerWorld | null
     stamp,
     previous?.randomizeHistory ?? new RandomizeHistory(),
     previous?.takenItems ?? new TakenItemSpawns(),
+    previous?.puzzles.state ?? new PuzzleState(),
   );
 }
 
@@ -80,6 +86,7 @@ function buildServerWorld(
   stamp: string,
   randomizeHistory: RandomizeHistory,
   takenItems: TakenItemSpawns,
+  puzzleState: PuzzleState,
 ): ServerWorld {
   const tileset = new Tileset(tilesFromStoredJson(docs.read('tileset')) ?? undefined);
   const tileIdByName = (name: string) => tileset.all().find((tile) => tile.name === name)?.id ?? -1;
@@ -96,10 +103,13 @@ function buildServerWorld(
   const store = new PipelineStore(sanitizePipeline(docs.read('pipeline')));
   const evaluator = new PipelineEvaluator(store);
   const sampler = new WorldSampler(store, evaluator, tileset, prefabs, items, takenItems);
-  const isWalkable = (x: number, y: number) => isWalkableTile(tileset, sampler.tileAt(x, y));
+  const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileset, sampler.tileAt(x, y));
+  const puzzles = new PuzzleWorld(store, tileIsWalkable, puzzleState);
+  const isWalkable = (x: number, y: number) => tileIsWalkable(x, y) && !puzzles.blocksAt(x, y);
   return {
     stamp,
     sampler,
+    puzzles,
     groundItems: groundItemsOf(sampler, takenItems),
     tileset,
     store,
@@ -111,6 +121,10 @@ function buildServerWorld(
     randomizeHistory,
     takenItems,
     isWalkable,
+    stepRules: {
+      isWalkableAt: tileIsWalkable,
+      clearTheWay: (x, y, dx, dy) => puzzles.clearTheWay(x, y, dx, dy),
+    },
     spawn: () => nearestWalkable(0, 0, SPAWN_SEARCH_RADIUS, isWalkable) ?? { x: 0, y: 0 },
   };
 }

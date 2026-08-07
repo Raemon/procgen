@@ -23,6 +23,7 @@ import { WorldSampler } from '../procgen/worldSampler';
 import { PrefabLibrary } from '../library/prefabs/prefabLibrary';
 import { debounce } from './debounce';
 import { CaptureTool } from '../world/capture/captureTool';
+import { PuzzleWorld } from '../world/puzzles/puzzleWorld';
 import { isWalkableTile } from '../world/tileWalkability';
 import { Tileset } from '../library/tiles/tileset';
 import { World } from '../world/world';
@@ -59,6 +60,7 @@ export interface AppRuntime {
   sim: CreatureSim;
   clock: CreatureClock;
   capture: CaptureTool;
+  puzzles: PuzzleWorld;
   renderers: WorldRenderers;
   perform(action: string, params?: Record<string, unknown>): AbilityResult;
   playerMode(): AbilityMode;
@@ -81,8 +83,10 @@ export function createAppRuntime(): AppRuntime {
   const takenItems = new TakenItemSpawns();
   const sampler = new WorldSampler(store, evaluator, tileset, prefabs, items, takenItems);
   const groundItems = groundItemsOf(sampler, takenItems);
-  const isWalkableAt = (x: number, y: number) => isWalkableTile(tileset, sampler.tileAt(x, y));
-  const world = new World(isWalkableAt);
+  const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileset, sampler.tileAt(x, y));
+  const puzzles = new PuzzleWorld(store, tileIsWalkable);
+  const isWalkableAt = (x: number, y: number) => tileIsWalkable(x, y) && !puzzles.blocksAt(x, y);
+  const world = new World(isWalkableAt, (x, y, dx, dy) => puzzles.clearTheWay(x, y, dx, dy));
   const net = new MultiplayerSession(world, store, isWalkableAt);
   const chatComposer = new ChatComposerState();
   const playerInventoryPanel = new PlayerInventoryPanelState();
@@ -94,6 +98,7 @@ export function createAppRuntime(): AppRuntime {
   const worldChanged = new ChangeNotifier();
   const randomizeHistory = new RandomizeHistory();
   let playerMode: AbilityMode = 'god';
+  let lastPuzzleRevision = puzzles.state.revision();
 
   const capture = new CaptureTool((region) =>
     perform('capture_region', {
@@ -105,6 +110,21 @@ export function createAppRuntime(): AppRuntime {
   );
 
   function perform(action: string, params: Record<string, unknown> = {}): AbilityResult {
+    const result = performAbilityOnce(action, params);
+    redrawIfPuzzlesChanged();
+    return result;
+  }
+
+  function redrawIfPuzzlesChanged(): void {
+    if (puzzles.state.revision() === lastPuzzleRevision) return;
+    lastPuzzleRevision = puzzles.state.revision();
+    renderers.redrawAll();
+  }
+
+  function performAbilityOnce(
+    action: string,
+    params: Record<string, unknown>,
+  ): AbilityResult {
     return performAbility(
       {
         store,
@@ -117,6 +137,7 @@ export function createAppRuntime(): AppRuntime {
         randomizeHistory,
         regionSampler: sampler,
         groundItems,
+        puzzles,
         actor: {
           pose: () => ({ x: world.playerX, y: world.playerY, facing: world.facing }),
           tryStep: (dx, dy) => world.tryStep(dx, dy),
@@ -140,6 +161,13 @@ export function createAppRuntime(): AppRuntime {
     return abilityFor('character', action)?.group === 'senses';
   }
 
+  function announceKeysTakenByWalkingOver(): void {
+    for (const key of puzzles.takeKeysAt(world.playerX, world.playerY)) {
+      pickupFeed.announceTaken(`${key} (a door key)`);
+    }
+    redrawIfPuzzlesChanged();
+  }
+
   function applyWorldChange(): void {
     sampler.invalidatePrefabOverlay();
     sim.forget();
@@ -157,6 +185,7 @@ export function createAppRuntime(): AppRuntime {
   creatures.onChange(applyWorldChange);
   items.onChange(applyWorldChange);
   world.on('player-moved', () => walkOverPickup.onSteppedOnto(world.playerX, world.playerY));
+  world.on('player-moved', () => announceKeysTakenByWalkingOver());
   world.on('player-moved', () => renderers.recenterAll());
   world.on('player-turned', () => renderers.recenterAll());
 
@@ -178,6 +207,7 @@ export function createAppRuntime(): AppRuntime {
     sim,
     clock,
     capture,
+    puzzles,
     renderers,
     perform,
     playerMode: () => playerMode,

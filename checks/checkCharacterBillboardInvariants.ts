@@ -18,6 +18,7 @@ import { characterFrame } from '../library/characters/characterFrame';
 import { sanitizeCharacterBillboard } from '../library/characters/sanitizeCharacterBillboard';
 import { CreatureLibrary } from '../library/creatures/creatureLibrary';
 import { NO_GROUND_ITEMS } from '../library/items/pickups/groundItems';
+import { PuzzleWorld } from '../world/puzzles/puzzleWorld';
 import { creaturesFromStoredJson } from '../library/creatures/creatureStorage';
 import { CHARACTER } from '../library/creatures/entityKinds';
 import { moveCreatureTowardTarget } from '../world/creatureSim/moveCreatureTowardTarget';
@@ -310,9 +311,10 @@ function billboardOf(world: ReturnType<typeof abilityWorld>, creatureId: number)
 }
 
 function abilityWorld() {
+  const store = new PipelineStore(emptyPipeline());
   const creatures = new CreatureLibrary();
   const context: AbilityContext = {
-    store: new PipelineStore(emptyPipeline()),
+    store,
     tileset: new Tileset(),
     prefabs: new PrefabLibrary(() => -1),
     creatures,
@@ -321,6 +323,7 @@ function abilityWorld() {
     worldPresets: new WorldPresetLibrary([]),
     randomizeHistory: new RandomizeHistory(),
     groundItems: NO_GROUND_ITEMS,
+    puzzles: new PuzzleWorld(store, () => true),
     regionSampler: { tileAt: () => 0, elevationAt: () => 0, voxelColumnAt: () => null },
     actor: {
       pose: () => ({ x: 0, y: 0, facing: 0 }),

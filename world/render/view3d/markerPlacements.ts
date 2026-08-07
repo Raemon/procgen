@@ -1,5 +1,6 @@
 import type { WorldSampler } from '../../../procgen/worldSampler';
 import { WALKABLE_TILE_HEIGHT } from '../../../library/tiles/tileHeight';
+import { NO_EXTRA_MARKERS, type MarkerSource } from '../markerSource';
 import type { TilePlacement } from './tilePlacements';
 
 export function markerPlacementsForRect(
@@ -8,9 +9,12 @@ export function markerPlacementsForRect(
   minY: number,
   width: number,
   height: number,
+  extraMarkers: MarkerSource = NO_EXTRA_MARKERS,
 ): TilePlacement[] {
-  return sampler
-    .markersIn(minX, minY, minX + width - 1, minY + height - 1)
+  return [
+    ...sampler.markersIn(minX, minY, minX + width - 1, minY + height - 1),
+    ...extraMarkers.markersIn(minX, minY, minX + width - 1, minY + height - 1),
+  ]
     .map((marker) => ({
       x: marker.x,
       y: marker.y,

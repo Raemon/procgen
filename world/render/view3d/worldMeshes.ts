@@ -14,6 +14,7 @@ import { glowSelfLit } from './selfLitGlow';
 import { tileBoxGeometry } from './tileBoxGeometry';
 import { ceilingPlacementsForRect } from './ceilingPlacements';
 import { markerPlacementsForRect } from './markerPlacements';
+import { NO_EXTRA_MARKERS, type MarkerSource } from '../markerSource';
 import { tilePlacementsForRect, type TilePlacement } from './tilePlacements';
 import { voxelPlacementsForRect } from './voxelPlacements';
 
@@ -44,6 +45,7 @@ export function buildChunkMeshGroup(
   tileset: ReadOnlyTileset,
   chunkX: number,
   chunkY: number,
+  extraMarkers: MarkerSource = NO_EXTRA_MARKERS,
 ): THREE.Group {
   const minX = chunkOrigin(chunkX);
   const minY = chunkOrigin(chunkY);
@@ -55,7 +57,7 @@ export function buildChunkMeshGroup(
     CHUNK_SIZE,
     CHUNK_SIZE,
   );
-  const markers = markerPlacementsForRect(sampler, minX, minY, CHUNK_SIZE, CHUNK_SIZE);
+  const markers = markerPlacementsForRect(sampler, minX, minY, CHUNK_SIZE, CHUNK_SIZE, extraMarkers);
   const voxels = voxelPlacementsForRect(sampler, tileset, minX, minY, CHUNK_SIZE, CHUNK_SIZE);
   const group = new THREE.Group();
   group.add(

@@ -5,6 +5,7 @@ import {
   clampSightRadiusTiles,
 } from '../../world/vision/characterSight';
 import type { AgentMode, AgentPose } from '../../agents/agentMode';
+import { stepIsAllowed, type StepRules } from '../../world/sim/stepIsAllowed';
 import { newNotebook, type AgentNotebook } from './agentNotebook';
 
 export interface AgentSession {
@@ -68,16 +69,13 @@ export function sessionPose(session: AgentSession): AgentPose {
   return { x: session.x, y: session.y, facing: session.facing };
 }
 
-export function sessionActor(
-  session: AgentSession,
-  isWalkable: (x: number, y: number) => boolean,
-): AbilityActor {
+export function sessionActor(session: AgentSession, rules: StepRules): AbilityActor {
   return {
     pose: () => sessionPose(session),
     tryStep: (dx, dy) => {
       const nextX = session.x + dx;
       const nextY = session.y + dy;
-      if (!isWalkable(nextX, nextY)) return false;
+      if (!stepIsAllowed(rules, nextX, nextY, dx, dy)) return false;
       session.x = nextX;
       session.y = nextY;
       return true;

@@ -2,6 +2,7 @@ import type { CreatureLibrary } from '../library/creatures/creatureLibrary';
 import type { ItemLibrary } from '../library/items/itemLibrary';
 import type { GroundItems } from '../library/items/pickups/groundItems';
 import type { PrefabLibrary } from '../library/prefabs/prefabLibrary';
+import type { PuzzleWorld } from '../world/puzzles/puzzleWorld';
 import type { RegionSampler } from '../library/prefabs/captureRegionAsPrefab';
 import type { PipelineStore } from '../procgen/pipeline/pipelineStore';
 import type { WorldPresetLibrary } from '../procgen/presets/worldPresetLibrary';
@@ -32,6 +33,7 @@ export interface AbilityContext {
   randomizeHistory: RandomizeHistory;
   regionSampler: RegionSampler;
   groundItems: GroundItems;
+  puzzles: PuzzleWorld;
   actor: AbilityActor;
 }
 

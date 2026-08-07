@@ -24,6 +24,8 @@ const MUTABLE_LIBRARIES = [
   'TemplateLibrary',
   'WorldPresetLibrary',
   'World',
+  'PuzzleWorld',
+  'PuzzleState',
 ];
 
 const MAY_HOLD_A_MUTABLE_LIBRARY = [

@@ -69,7 +69,12 @@ export class View3D {
     container.appendChild(this.canvas);
     this.player = new PlayerCharacterMesh(deps.creatures, this.characterSprites);
     this.scene.add(this.worldGroup, this.player.object);
-    this.streamer = new ChunkMeshStreamer(this.worldGroup, deps.sampler, deps.tileset);
+    this.streamer = new ChunkMeshStreamer(
+      this.worldGroup,
+      deps.sampler,
+      deps.tileset,
+      deps.puzzles,
+    );
     this.creatureMeshes = new CreatureMeshes(
       this.worldGroup,
       deps.creatures,

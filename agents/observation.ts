@@ -10,6 +10,7 @@ import {
   clampSightRadiusTiles,
   isWithinCharacterSight,
 } from '../world/vision/characterSight';
+import { NO_EXTRA_MARKERS, type MarkerSource } from '../world/render/markerSource';
 import type { AgentMode, AgentPose } from './agentMode';
 
 export const GOD_VIEW_SIZE = 33;
@@ -46,11 +47,12 @@ export function buildObservation(
   pose: AgentPose,
   mode: AgentMode,
   sightRadiusTiles: number = DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
+  extraMarkers: MarkerSource = NO_EXTRA_MARKERS,
 ): AgentObservation {
   const radius = clampSightRadiusTiles(sightRadiusTiles);
   const size = viewSizeFor(mode, radius);
   const viewport = viewportCenteredOn(pose.x, pose.y, size, size);
-  const markers = pointOverlayLookup(sampler, viewport);
+  const markers = pointOverlayLookup(sampler, viewport, extraMarkers);
   const legend = new Map<string, LegendEntry>();
   addFixedLegendEntries(legend, mode, radius);
   const view: string[] = [];

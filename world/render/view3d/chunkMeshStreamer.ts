@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { chunkCoordOfCell, chunkKey } from '../../../procgen/chunk';
 import type { WorldSampler } from '../../../procgen/worldSampler';
 import type { ReadOnlyTileset } from '../../../frontend/readOnlyLibraries';
+import type { MarkerSource } from '../markerSource';
 import { disposeMeshChildren } from './disposeMeshResources';
 import { buildChunkMeshGroup, CEILING_GROUP_NAME } from './worldMeshes';
 
@@ -21,6 +22,7 @@ export class ChunkMeshStreamer {
     private readonly root: THREE.Group,
     private readonly sampler: WorldSampler,
     private readonly tileset: ReadOnlyTileset,
+    private readonly extraMarkers: MarkerSource,
   ) {}
 
   invalidateAll(): void {
@@ -72,7 +74,13 @@ export class ChunkMeshStreamer {
     const existing = this.builtChunks.get(key);
     if (existing && existing.version === this.version) return false;
     if (existing) this.dropChunk(key);
-    const group = buildChunkMeshGroup(this.sampler, this.tileset, chunkX, chunkY);
+    const group = buildChunkMeshGroup(
+      this.sampler,
+      this.tileset,
+      chunkX,
+      chunkY,
+      this.extraMarkers,
+    );
     this.applyCeilingVisibility(group);
     this.root.add(group);
     this.builtChunks.set(key, { version: this.version, group });
