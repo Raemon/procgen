@@ -123,6 +123,9 @@ function normalizedBinding(binding: DisplayBinding): DisplayBinding {
   if (binding.mode === 'creatures') {
     return { mode: 'creatures', creatureId: Math.round(finiteOr(binding.creatureId, -1)) };
   }
+  if (binding.mode === 'items') {
+    return { mode: 'items', itemId: Math.round(finiteOr(binding.itemId, -1)) };
+  }
   return { mode: binding.mode };
 }
 

@@ -56,6 +56,18 @@ export const FAILURES: readonly FailureSpec[] = [
     recovery: 'tiles → tileLayer, field → elevation, points → markers; hidden always fits.',
   },
   {
+    code: 'no_inventory',
+    meaning: 'That creature has no inventory grid yet.',
+    recovery: 'set_inventory gives it one; GET /api/v1/creatures reports who has one.',
+  },
+  {
+    code: 'placement_refused',
+    meaning:
+      'The item does not fit there: it would hang off the grid, cover an unusable slot, cover a slot whose tags it does not carry, or overlap an item already placed.',
+    recovery:
+      'GET /api/v1/creatures/{id}/inventory shows the grid, its slot tags and what is already placed.',
+  },
+  {
     code: 'bad_request',
     meaning: 'The request body was not valid JSON or is missing a required field.',
     recovery: 'Check the endpoint table in GET /api/v1/docs.',

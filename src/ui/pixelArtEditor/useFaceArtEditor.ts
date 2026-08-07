@@ -12,6 +12,7 @@ import { copyFaceToAllSides, sideFacesMatch } from './ops/linkedSideFaces';
 import { mirroredPixelIndices } from './ops/mirroredPixelIndices';
 import { resampleFacePixels, resizeCubeFaceArt } from './ops/resizeFaceArt';
 import { shiftFacePixelsWithWrap } from './ops/shiftFacePixelsWithWrap';
+import type { CubeFace } from '../../world/tiles/tileFaceArt';
 import {
   activeFace,
   initialPaintSettings,
@@ -27,6 +28,7 @@ import { useFaceArtHistory } from './useFaceArtHistory';
 export interface FaceArtSource {
   art: CubeFaceArt | null;
   baseColor: string;
+  lockedFace?: CubeFace;
   onChange(art: CubeFaceArt | null): void;
 }
 
@@ -48,8 +50,15 @@ export interface FaceArtEditor {
   changeResolution(size: number): void;
 }
 
-export function useFaceArtEditor({ art, baseColor, onChange }: FaceArtSource): FaceArtEditor {
-  const [settings, setSettings] = useState(() => initialPaintSettings(art, baseColor));
+export function useFaceArtEditor({
+  art,
+  baseColor,
+  lockedFace,
+  onChange,
+}: FaceArtSource): FaceArtEditor {
+  const [settings, setSettings] = useState(() =>
+    initialPaintSettings(art, baseColor, lockedFace),
+  );
   const [strokeArt, setStrokeArt] = useState<CubeFaceArt | null>(null);
   const clipboard = useRef<FacePixels | null>(null);
   const history = useFaceArtHistory(art, onChange);

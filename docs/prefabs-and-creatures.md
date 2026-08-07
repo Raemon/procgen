@@ -1,11 +1,12 @@
 # Prefabs and creatures
 
-The library panel (left) has three tabs over the same idea: reusable definitions
+The library panel (left) has five tabs over the same idea: reusable definitions
 the world is assembled from. **Tiles** are materials, **prefabs** are voxel
-stamps built out of tiles, **creatures** are things that move. Prefabs and
-creatures are placed by the pipeline — both are display bindings on a `points`
-node — so the world stays a pure function of the seed, with the single
-exception noted under [Creature time](#creature-time).
+stamps built out of tiles, **creatures** are things that move, and **items** and
+**characters** are covered in [Items and inventories](items-and-inventories.md).
+Prefabs, creatures and items are placed by the pipeline — each is a display
+binding on a `points` node — so the world stays a pure function of the seed,
+with the single exception noted under [Creature time](#creature-time).
 
 ## Prefabs
 

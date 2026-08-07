@@ -1,4 +1,4 @@
-import { newCreatureWithId, type CreatureDef } from './creatureDef';
+import { newCharacterWithId, newCreatureWithId, type CreatureDef } from './creatureDef';
 import { loadStoredCreatures, storeCreatures } from './creatureStorage';
 import { defaultCreatures } from './defaultCreatures';
 
@@ -23,10 +23,11 @@ export class CreatureLibrary {
   }
 
   add(): CreatureDef {
-    const creature = newCreatureWithId(this.nextId++);
-    this.creatures.push(creature);
-    this.persistAndNotify();
-    return creature;
+    return this.append(newCreatureWithId(this.nextId++));
+  }
+
+  addCharacter(): CreatureDef {
+    return this.append(newCharacterWithId(this.nextId++));
   }
 
   duplicate(id: number): CreatureDef | null {
@@ -53,6 +54,12 @@ export class CreatureLibrary {
   onChange(listener: () => void): () => void {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
+  }
+
+  private append(creature: CreatureDef): CreatureDef {
+    this.creatures.push(creature);
+    this.persistAndNotify();
+    return creature;
   }
 
   private persistAndNotify(): void {

@@ -1,4 +1,5 @@
 import '../src/procgen/nodes';
+import { checkItemAndInventoryInvariants } from './checkItemAndInventoryInvariants';
 import { checkPrefabAndCreatureInvariants } from './checkPrefabAndCreatureInvariants';
 import { cameraRelativeStep } from '../src/input/cameraRelativeStep';
 import { PipelineEvaluator } from '../src/procgen/eval/evaluator';
@@ -66,6 +67,7 @@ import { checkOnlyTheAbilityLayerCanMutate } from './checkAbilityLayerIsTheOnlyM
 import { TemplateLibrary } from '../src/procgen/templates/templateLibrary';
 import { WorldPresetLibrary } from '../src/procgen/presets/worldPresetLibrary';
 import { CreatureLibrary } from '../src/creatures/creatureLibrary';
+import { ItemLibrary } from '../src/items/itemLibrary';
 import { PrefabLibrary } from '../src/prefabs/prefabLibrary';
 import { FAILURES } from '../src/agent/failures';
 import { nodeTypesJson } from '../src/agent/nodeCatalog';
@@ -1276,6 +1278,7 @@ function abilityWorld() {
     tileset: abilityTileset,
     prefabs,
     creatures: new CreatureLibrary(),
+    items: new ItemLibrary(),
     templates: new TemplateLibrary([]),
     worldPresets: new WorldPresetLibrary([]),
     randomizeHistory: new RandomizeHistory(),
@@ -1680,6 +1683,7 @@ check(
 );
 
 checkPrefabAndCreatureInvariants(check);
+checkItemAndInventoryInvariants(check);
 
 if (failures.length > 0) throw new Error(`${failures.length} check(s) failed: ${failures.join(', ')}`);
 console.log('\nall checks passed');

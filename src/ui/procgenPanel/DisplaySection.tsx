@@ -1,6 +1,7 @@
 import { useAppRuntime } from '../../app/appRuntimeContext';
 import {
   useRerenderOnCreatureChange,
+  useRerenderOnItemChange,
   useRerenderOnPrefabChange,
 } from '../../app/rerenderHooks';
 import {
@@ -53,6 +54,7 @@ export function DisplaySection({ node, kind }: { node: NodeInstance; kind: Value
       {node.display.mode === 'markers' && <MarkerRows node={node} binding={node.display} />}
       {node.display.mode === 'prefabs' && <PrefabRows node={node} binding={node.display} />}
       {node.display.mode === 'creatures' && <CreatureRows node={node} binding={node.display} />}
+      {node.display.mode === 'items' && <ItemRows node={node} binding={node.display} />}
     </div>
   );
 }
@@ -101,6 +103,26 @@ function CreatureRows({
         value={String(binding.creatureId)}
         options={libraryOptions('(none)', creatures.all())}
         onChange={(value) => perform('set_display', { node_id: node.id, display: 'creatures', creature_id: Number(value) })}
+      />
+    </KnobRow>
+  );
+}
+
+function ItemRows({
+  node,
+  binding,
+}: {
+  node: NodeInstance;
+  binding: Extract<DisplayBinding, { mode: 'items' }>;
+}) {
+  const { perform, items } = useAppRuntime();
+  useRerenderOnItemChange();
+  return (
+    <KnobRow label="item">
+      <Select
+        value={String(binding.itemId)}
+        options={libraryOptions('(none)', items.all())}
+        onChange={(value) => perform('set_display', { node_id: node.id, display: 'items', item_id: Number(value) })}
       />
     </KnobRow>
   );

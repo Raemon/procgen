@@ -2,7 +2,7 @@ import { Button } from '../controls/Button';
 import { tooltipHandlers } from '../tooltips/tooltipHandlers';
 import type { TooltipContent } from '../tooltips/tooltipContent';
 
-export type LibraryTab = 'tiles' | 'prefabs' | 'creatures';
+export type LibraryTab = 'tiles' | 'items' | 'prefabs' | 'creatures' | 'characters';
 
 const TABS: { tab: LibraryTab; tip: TooltipContent }[] = [
   {
@@ -10,6 +10,13 @@ const TABS: { tab: LibraryTab; tip: TooltipContent }[] = [
     tip: {
       title: 'tiles',
       body: 'The materials every other library is built from: symbol, walkability and cube art.',
+    },
+  },
+  {
+    tab: 'items',
+    tip: {
+      title: 'items',
+      body: 'Pixel art on a transparent background, drawn as a thickened billboard or a floating cube, sized in inventory cells.',
     },
   },
   {
@@ -24,6 +31,13 @@ const TABS: { tab: LibraryTab; tip: TooltipContent }[] = [
     tip: {
       title: 'creatures',
       body: 'Things that move. Each one is a look plus a behavior, spawned into the world by any points node.',
+    },
+  },
+  {
+    tab: 'characters',
+    tip: {
+      title: 'characters',
+      body: 'Creatures that carry things: the same rules plus an inventory grid of usable, taggable slots.',
     },
   },
 ];

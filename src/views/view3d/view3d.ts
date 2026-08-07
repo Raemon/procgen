@@ -10,6 +10,7 @@ import { CharacterCamera } from './characterCamera';
 import { ChunkMeshStreamer } from './chunkMeshStreamer';
 import { CreatureMeshes } from './creatureMeshes';
 import { EasedPoint } from './easedPoint';
+import { ItemMeshes } from './itemMeshes';
 import { RemotePlayerMeshes } from './remotePlayerMeshes';
 import { createCharacterFog, createDaylitScene, createPlayerMesh } from './daylitScene';
 import { FollowCamera } from './followCamera';
@@ -42,6 +43,7 @@ export class View3D {
   private readonly easedPlayer: EasedPoint;
   private readonly streamer: ChunkMeshStreamer;
   private readonly creatureMeshes: CreatureMeshes;
+  private readonly itemMeshes: ItemMeshes;
   private readonly remotePlayerMeshes: RemotePlayerMeshes;
   private readonly selectionBox: SelectionBox;
   private readonly speechLabels: SpeechBubbleLabels;
@@ -60,6 +62,7 @@ export class View3D {
     this.scene.add(this.worldGroup, this.player);
     this.streamer = new ChunkMeshStreamer(this.worldGroup, deps.sampler, deps.tileset);
     this.creatureMeshes = new CreatureMeshes(this.worldGroup, deps.creatures, deps.sampler);
+    this.itemMeshes = new ItemMeshes(this.worldGroup, deps.items, deps.sampler);
     this.remotePlayerMeshes = new RemotePlayerMeshes(this.worldGroup, deps.sampler);
     this.selectionBox = new SelectionBox(this.worldGroup);
     this.speechLabels = new SpeechBubbleLabels(container);
@@ -74,6 +77,7 @@ export class View3D {
     cancelAnimationFrame(this.animationFrame);
     this.resizeObserver.disconnect();
     this.creatureMeshes.dispose();
+    this.itemMeshes.dispose();
     this.remotePlayerMeshes.dispose();
     this.selectionBox.dispose();
     this.speechLabels.dispose();
@@ -106,6 +110,7 @@ export class View3D {
 
   onWorldChanged(): void {
     this.streamer.invalidateAll();
+    this.itemMeshes.invalidate();
   }
 
   private activeCamera(): THREE.PerspectiveCamera {
@@ -225,6 +230,7 @@ export class View3D {
         ? this.followCamera.visibleGroundRadiusTiles()
         : CHARACTER_SIGHT_RADIUS_TILES;
     this.streamer.streamAround(focus.x, focus.y, streamingRadiusChunks(radiusTiles));
+    this.itemMeshes.syncAround(focus.x, focus.y, radiusTiles);
   }
 
   private placePlayer(): void {

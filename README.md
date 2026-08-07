@@ -35,12 +35,21 @@ Five panels:
      from the same pixel editor) plus a behavior (idle / wander / patrol /
      chase / flee / guard) and speed, sight, roam and size knobs. Bind one to a
      `points` node and each point near the player becomes a live creature.
+   - **items** — pixel art on a transparent background, drawn either as a
+     billboard (the sprite extruded to a slight thickness, standing up or lying
+     flat, its rim painted with the edge color) or wrapped on a floating cube.
+     Each item takes a Diablo-style block of inventory cells — `1×1`, `1×2`,
+     `2×2`, up to `8×8` — and carries tags. Bind one to a `points` node to
+     scatter it through the world.
+   - **characters** — creatures that carry things: every creature rule plus an
+     inventory grid whose slots can each be switched off or tagged so only
+     matching items fit, with pixel art layered underneath.
 
-   See `docs/prefabs-and-creatures.md`.
+   See `docs/prefabs-and-creatures.md` and `docs/items-and-inventories.md`.
 2. **Procgen panel** — a layered pipeline of generator nodes. Each node
    produces a typed value per chunk (`field`, `tiles`, or `points`), wires its
    inputs to nodes above it, and can be mapped into the world via a display
-   binding (tile layer / elevation / markers / prefabs / creatures). Starts
+   binding (tile layer / elevation / markers / prefabs / creatures / items). Starts
    blank — build worlds up from zero, load an example pipeline, or write a
    `custom script` node in the browser. See `docs/authoring-nodes.md` for writing node types.
 3. **Agents panel** — create agents that play the world through the REST API,

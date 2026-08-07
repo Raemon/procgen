@@ -1,4 +1,4 @@
-import type { CubeFaceArt } from '../../world/tiles/tileFaceArt';
+import type { CubeFace, CubeFaceArt } from '../../world/tiles/tileFaceArt';
 import { FaceTabs } from './FaceTabs';
 import { PaintToolbar } from './PaintToolbar';
 import { PixelPaintCanvas } from './PixelPaintCanvas';
@@ -9,20 +9,24 @@ import { useFaceArtEditor } from './useFaceArtEditor';
 export function PixelArtEditor({
   art,
   baseColor,
+  lockedFace,
   onChange,
 }: {
   art: CubeFaceArt | null;
   baseColor: string;
+  lockedFace?: CubeFace;
   onChange(art: CubeFaceArt | null): void;
 }) {
-  const editor = useFaceArtEditor({ art, baseColor, onChange });
+  const editor = useFaceArtEditor({ art, baseColor, lockedFace, onChange });
   return (
     <div className="mt-1.5 rounded border border-art-edge bg-art-panel p-2">
-      <FaceTabs
-        settings={editor.settings}
-        onSelect={editor.selectFace}
-        onToggleLink={editor.toggleLinkedSides}
-      />
+      {!lockedFace && (
+        <FaceTabs
+          settings={editor.settings}
+          onSelect={editor.selectFace}
+          onToggleLink={editor.toggleLinkedSides}
+        />
+      )}
       <PixelPaintCanvas
         pixels={editor.activePixels}
         baseColor={baseColor}

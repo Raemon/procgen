@@ -63,7 +63,9 @@ An agent is created in one of two modes and stays in it for life.
 | GET /api/v1/node-types | — | the catalog of node types you can add, every param and input explained |
 | GET /api/v1/tiles | — | the tileset: what every glyph in an observation means |
 | GET /api/v1/prefabs | — | the prefab library: structures a points node can stamp |
-| GET /api/v1/creatures | — | the creature library: creatures a points node can spawn |
+| GET /api/v1/creatures | — | the creature library: creatures and characters a points node can spawn, and whether each carries an inventory |
+| GET /api/v1/creatures/{id}/inventory | — | one character's inventory grid: every slot with its usable flag and tags, and every item placed in it |
+| GET /api/v1/items | — | the item library: items a points node can scatter and a character can carry |
 | GET /api/v1/templates | — | saved groups of wired nodes you can stamp in |
 | GET /api/v1/presets | — | whole worlds you can load |
 | POST /api/v1/agents/{id}/run | {"goal": "...", "model": optional, "budget_usd": optional, "anthropic_api_key": optional} | start an autopilot run that drives this agent with an LLM. budget_usd (default 1, max 100) is the only ceiling: it caps what the run may spend at list prices, and the run stops before the first turn that would start over budget, so its final turn can carry it slightly past |
@@ -87,7 +89,7 @@ field (numbers per tile), tiles (a tile id per cell), or points (tagged
 markers); a node may consume the outputs of EARLIER nodes only. A display
 binding maps a node into the world: tile layers stack in list order, elevation
 shapes the ground, markers draw glyphs, prefabs stamp structures, creatures
-spawn life. Every act that edits echoes the full pipeline back, and every later
+spawn life, items float loot above the ground. Every act that edits echoes the full pipeline back, and every later
 observation is regenerated from it.
 
 | action | params | the human control | what it does |
@@ -96,8 +98,17 @@ observation is regenerated from it.
 
 ## Actions — the libraries (god mode)
 
-Tiles, prefabs and creatures are the vocabulary the pipeline draws from. A node
-references them by id, so create the definition first, then point a node at it.
+Tiles, items, prefabs, creatures and characters are the vocabulary the pipeline
+draws from. A node references them by id, so create the definition first, then
+point a node at it.
+
+An item is pixel art on a transparent background plus how it is drawn — a
+billboard (the sprite extruded to a slight thickness, standing up or lying flat,
+its rim painted with the edge color) or a floating cube painted face by face —
+and how much room it takes in an inventory: 1x1, 1x2, 2x2, or any size up to
+8x8. A character is a creature that additionally carries an inventory: a grid
+whose slots can each be switched off or tagged, so a tagged slot only accepts
+items carrying one of its tags, with a sprite layered underneath.
 
 | action | params | the human control | what it does |
 | --- | --- | --- | --- |

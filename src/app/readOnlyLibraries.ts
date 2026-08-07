@@ -1,4 +1,5 @@
 import type { CreatureLibrary } from '../creatures/creatureLibrary';
+import type { ItemLibrary } from '../items/itemLibrary';
 import type { PrefabLibrary } from '../prefabs/prefabLibrary';
 import type { PipelineStore } from '../procgen/pipeline/pipelineStore';
 import type { WorldPresetLibrary } from '../procgen/presets/worldPresetLibrary';
@@ -13,6 +14,7 @@ export type ReadOnlyPrefabLibrary = Pick<
   'all' | 'byId' | 'largestFootprint' | 'onChange' | 'onPrefabAdded'
 >;
 export type ReadOnlyCreatureLibrary = Pick<CreatureLibrary, 'all' | 'byId' | 'onChange'>;
+export type ReadOnlyItemLibrary = Pick<ItemLibrary, 'all' | 'byId' | 'onChange'>;
 export type ReadOnlyTemplateLibrary = Pick<
   TemplateLibrary,
   'builtIn' | 'savedTemplates' | 'all' | 'byName' | 'onChange'
