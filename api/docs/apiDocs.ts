@@ -11,6 +11,7 @@ import {
 } from '../../world/vision/characterSight';
 import { GOD_VIEW_SIZE } from '../../agents/observation';
 import { FAILURES } from '../../agents/failures';
+import { allRoutes } from '../agent/routeRegistry';
 
 const TEMPLATE = `# Procgen world — agent API
 
@@ -79,25 +80,7 @@ narrow it again and travel cheaply on what you learned.
 
 | method and path | body | what it does |
 | --- | --- | --- |
-| GET /api/v1/docs | — | this document |
-| POST /api/v1/agents | {"mode": "god" or "character", "name": optional, "sight_radius_tiles": optional} | create an agent; responds with its id and urls. sight_radius_tiles (character mode, default {{SIGHT_RADIUS}}, clamped to {{MIN_SIGHT_RADIUS}}–{{MAX_SIGHT_RADIUS}}) is how far it sees |
-| GET /api/v1/agents | — | list agents |
-| GET /api/v1/agents/{id} | — | the agent's current state |
-| DELETE /api/v1/agents/{id} | — | remove the agent |
-| GET /api/v1/agents/{id}/observe?format=json or text | — | a fresh observation. add &sight_radius_tiles=N to widen or narrow the character's sight first ({{MIN_SIGHT_RADIUS}}–{{MAX_SIGHT_RADIUS}}, clamped); the new radius sticks |
-| POST /api/v1/agents/{id}/act | {"action": "...", ...params} | perform one action; responds with the outcome and a fresh observation |
-| GET /api/v1/pipeline | — | the current node pipeline: every node with id, type, params, wiring, display |
-| GET /api/v1/node-types | — | the catalog of node types you can add, every param and input explained |
-| GET /api/v1/tiles | — | the tileset: what every glyph in an observation means |
-| GET /api/v1/prefabs | — | the prefab library: structures a points node can stamp |
-| GET /api/v1/creatures | — | the creature library: creatures and characters a points node can spawn, and whether each carries an inventory |
-| GET /api/v1/creatures/{id}/inventory | — | one character's inventory grid: every slot with its usable flag and tags, and every item placed in it |
-| GET /api/v1/items | — | the item library: items a points node can scatter and a character can carry |
-| GET /api/v1/templates | — | saved groups of wired nodes you can stamp in |
-| GET /api/v1/presets | — | whole worlds you can load |
-| POST /api/v1/agents/{id}/run | {"goal": "...", "model": optional, "budget_usd": optional, "anthropic_api_key": optional} | start an autopilot run that drives this agent with an LLM. budget_usd (default 1, max 100) is the only ceiling: it caps what the run may spend at list prices, and the run stops before the first turn that would start over budget, so its final turn can carry it slightly past |
-| POST /api/v1/agents/{id}/stop | — | stop the autopilot run |
-| GET /api/v1/agents/{id}/transcript?after=seq | — | the autopilot transcript |
+{{ENDPOINTS}}
 
 ## Actions — moving
 
@@ -229,6 +212,7 @@ function placeholderValue(tileset: ReadOnlyTileset, key: string): string {
   if (key === 'MIN_SIGHT_RADIUS') return String(MIN_CHARACTER_SIGHT_RADIUS_TILES);
   if (key === 'MAX_SIGHT_RADIUS') return String(MAX_CHARACTER_SIGHT_RADIUS_TILES);
   if (key === 'MAX_CHARACTER_SIZE') return String(characterViewSize(MAX_CHARACTER_SIGHT_RADIUS_TILES));
+  if (key === 'ENDPOINTS') return endpointsTable();
   if (key === 'EXAMPLES') return examples();
   if (key === 'FAILURES') return failuresTable();
   if (key === 'NODE_TYPES') return nodeTypesTable();
@@ -265,6 +249,12 @@ function paramsCell(spec: AbilitySpec): string {
   return entries
     .map(([name, param]) => `\`${name}\`${param.optional ? ' (optional)' : ''}: ${param.help}`)
     .join('; ');
+}
+
+function endpointsTable(): string {
+  return allRoutes()
+    .map((route) => `| ${route.method} /api/v1${route.path} | ${route.body} | ${route.summary} |`)
+    .join('\n');
 }
 
 function examples(): string {

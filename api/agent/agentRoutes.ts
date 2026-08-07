@@ -1,4 +1,3 @@
-import { examplePipelines } from '../../procgen/presets/examplePipelines';
 import {
   DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
   MAX_CHARACTER_SIGHT_RADIUS_TILES,
@@ -6,129 +5,110 @@ import {
   clampSightRadiusTiles,
 } from '../../world/vision/characterSight';
 import { isAgentMode, type AgentMode } from '../../agents/agentMode';
-import { buildApiDocs } from '../docs/apiDocs';
 import { abilitiesForMode } from '../../abilities/abilityRegistry';
-import { failureByCode } from '../../agents/failures';
-import { nodeTypesJson, pipelineJson } from '../../agents/nodeCatalog';
+import { pipelineJson } from '../../agents/nodeCatalog';
 import { buildObservation, type AgentObservation } from '../../agents/observation';
 import { observationText } from '../../agents/observationText';
 import { startAutopilot } from './autopilot';
-import { creatureJson, inventoryJson, itemJson } from './libraryJson';
 import { performVerb } from './performVerb';
 import type { ServerWorld, WorldAccess } from './serverWorld';
 import { newSession, sessionPose, type AgentSession, type SessionStore } from './sessions';
+import { failure, json, type ApiRequest, type ApiResponse } from './apiMessages';
+import { registerRoute, type RouteContext } from './routeRegistry';
 
-export interface ApiRequest {
-  method: string;
-  path: string;
-  query: URLSearchParams;
-  body: unknown;
-}
+registerRoute({
+  method: 'GET',
+  path: '/agents',
+  summary: 'list agents',
+  body: '—',
+  handle: ({ sessions }) => json(200, { agents: [...sessions.values()].map(agentJson) }),
+});
 
-export interface ApiResponse {
-  status: number;
-  contentType: string;
-  body: string;
-}
+registerRoute({
+  method: 'POST',
+  path: '/agents',
+  summary: 'create an agent; responds with its id and urls',
+  body: '{"mode": "god" or "character", "name": optional, "sight_radius_tiles": optional}',
+  handle: ({ sessions, access, req }) => createAgent(sessions, access.current(), req.body),
+});
 
-export function handleApiRequest(
-  sessions: SessionStore,
-  access: WorldAccess,
-  req: ApiRequest,
+registerRoute({
+  method: 'GET',
+  path: '/agents/{id}',
+  summary: "the agent's current state",
+  body: '—',
+  handle: (context) => withSession(context, (session) => json(200, { agent: agentJson(session) })),
+});
+
+registerRoute({
+  method: 'DELETE',
+  path: '/agents/{id}',
+  summary: 'remove the agent',
+  body: '—',
+  handle: (context) =>
+    withSession(context, (session) => {
+      stopRun(session);
+      context.sessions.delete(session.id);
+      return json(200, { deleted: true, id: session.id });
+    }),
+});
+
+registerRoute({
+  method: 'GET',
+  path: '/agents/{id}/observe',
+  summary:
+    'a fresh observation. add &sight_radius_tiles=N to widen or narrow the character\'s sight first (clamped); the new radius sticks. format=json or text',
+  body: '—',
+  handle: (context) =>
+    withSession(context, (session) => observe(session, context.access.current(), context.req)),
+});
+
+registerRoute({
+  method: 'POST',
+  path: '/agents/{id}/act',
+  summary: 'perform one action; responds with the outcome and a fresh observation',
+  body: '{"action": "...", ...params}',
+  handle: (context) =>
+    withSession(context, (session) => act(session, context.access, context.req.body)),
+});
+
+registerRoute({
+  method: 'POST',
+  path: '/agents/{id}/run',
+  summary:
+    'start an autopilot run that drives this agent with an LLM. budget_usd (default 1, max 100) caps what the run may spend at list prices, and the run stops before the first turn that would start over budget, so its final turn can carry it slightly past',
+  body: '{"goal": "...", "model": optional, "budget_usd": optional, "anthropic_api_key": optional}',
+  handle: (context) =>
+    withSession(context, (session) => run(session, context.access, context.req.body)),
+});
+
+registerRoute({
+  method: 'POST',
+  path: '/agents/{id}/stop',
+  summary: 'stop the autopilot run',
+  body: '—',
+  handle: (context) =>
+    withSession(context, (session) => {
+      stopRun(session);
+      return json(200, { agent: agentJson(session) });
+    }),
+});
+
+registerRoute({
+  method: 'GET',
+  path: '/agents/{id}/transcript',
+  summary: 'the autopilot transcript',
+  body: '—',
+  handle: (context) => withSession(context, (session) => transcript(session, context.req)),
+});
+
+function withSession(
+  context: RouteContext,
+  use: (session: AgentSession) => ApiResponse,
 ): ApiResponse {
-  const world = access.current();
-  if (req.path === '/docs' && req.method === 'GET') {
-    return { status: 200, contentType: 'text/markdown', body: buildApiDocs(world.tileset) };
-  }
-  if (req.path === '/pipeline' && req.method === 'GET') {
-    return json(200, { pipeline: pipelineJson(world.store) });
-  }
-  if (req.path === '/node-types' && req.method === 'GET') {
-    return json(200, nodeTypesJson());
-  }
-  if (req.path === '/tiles' && req.method === 'GET') {
-    return json(200, {
-      tiles: world.tileset.all().map((tile) => ({
-        id: tile.id,
-        name: tile.name,
-        symbol: tile.symbol,
-        color: tile.color,
-        walkable: tile.walkable,
-        height: tile.height,
-        light: tile.light,
-        light_ink: tile.lightInk,
-        has_face_art: tile.faceArt !== null,
-      })),
-    });
-  }
-  if (req.path === '/templates' && req.method === 'GET') {
-    return json(200, {
-      templates: world.templates.all().map((template) => ({
-        name: template.name,
-        description: template.description,
-        node_count: template.nodes.length,
-        saved: world.templates.savedTemplates().some((each) => each.name === template.name),
-      })),
-    });
-  }
-  if (req.path === '/presets' && req.method === 'GET') {
-    return json(200, {
-      presets: [
-        ...examplePipelines().map((preset) => ({
-          name: preset.name,
-          description: preset.description ?? '',
-          saved: false,
-        })),
-        ...world.worldPresets.savedPresets().map((preset) => ({
-          name: preset.name,
-          description: preset.description,
-          saved: true,
-        })),
-      ],
-    });
-  }
-  if (req.path === '/prefabs' && req.method === 'GET') {
-    return json(200, {
-      prefabs: world.prefabs.all().map((prefab) => ({
-        id: prefab.id,
-        name: prefab.name,
-        width: prefab.width,
-        depth: prefab.depth,
-        layers: prefab.layers,
-      })),
-    });
-  }
-  if (req.path === '/creatures' && req.method === 'GET') {
-    return json(200, { creatures: world.creatures.all().map(creatureJson) });
-  }
-  if (req.path === '/items' && req.method === 'GET') {
-    return json(200, { items: world.items.all().map(itemJson) });
-  }
-  const inventoryMatch = req.path.match(/^\/creatures\/(\d+)\/inventory$/);
-  if (inventoryMatch && req.method === 'GET') {
-    return creatureInventory(world, Number(inventoryMatch[1]));
-  }
-  if (req.path === '/agents') return agentCollection(sessions, world, req);
-  const match = req.path.match(/^\/agents\/([^/]+)(\/[a-z]+)?$/);
-  if (match) return agentResource(sessions, access, req, match[1]!, match[2] ?? '');
-  return failure(404, 'bad_request', `no route for ${req.method} ${req.path}`);
-}
-
-function creatureInventory(world: ServerWorld, creatureId: number): ApiResponse {
-  const creature = world.creatures.byId(creatureId);
-  if (!creature) return failure(404, 'unknown_creature', `no creature ${creatureId}`);
-  if (!creature.inventory) {
-    return failure(404, 'no_inventory', `creature ${creatureId} has no inventory grid`);
-  }
-  return json(200, { creature_id: creatureId, inventory: inventoryJson(creature.inventory) });
-}
-
-function agentCollection(sessions: SessionStore, world: ServerWorld, req: ApiRequest): ApiResponse {
-  if (req.method === 'GET') {
-    return json(200, { agents: [...sessions.values()].map(agentJson) });
-  }
-  if (req.method === 'POST') return createAgent(sessions, world, req.body);
-  return failure(405, 'bad_request', 'use GET or POST on /agents');
+  const session = context.sessions.get(context.params.id!);
+  if (!session) return failure(404, 'unknown_agent', `no agent ${context.params.id}`);
+  return use(session);
 }
 
 function createAgent(sessions: SessionStore, world: ServerWorld, body: unknown): ApiResponse {
@@ -177,32 +157,6 @@ function readSightRadius(raw: unknown): number | null | 'invalid' {
 function readName(body: unknown): string | null {
   const name = (body as { name?: unknown } | null)?.name;
   return typeof name === 'string' && name.trim() !== '' ? name.trim().slice(0, 24) : null;
-}
-
-function agentResource(
-  sessions: SessionStore,
-  access: WorldAccess,
-  req: ApiRequest,
-  id: string,
-  sub: string,
-): ApiResponse {
-  const session = sessions.get(id);
-  if (!session) return failure(404, 'unknown_agent', `no agent ${id}`);
-  if (sub === '' && req.method === 'GET') return json(200, { agent: agentJson(session) });
-  if (sub === '' && req.method === 'DELETE') {
-    stopRun(session);
-    sessions.delete(id);
-    return json(200, { deleted: true, id });
-  }
-  if (sub === '/observe' && req.method === 'GET') return observe(session, access.current(), req);
-  if (sub === '/act' && req.method === 'POST') return act(session, access, req.body);
-  if (sub === '/run' && req.method === 'POST') return run(session, access, req.body);
-  if (sub === '/stop' && req.method === 'POST') {
-    stopRun(session);
-    return json(200, { agent: agentJson(session) });
-  }
-  if (sub === '/transcript' && req.method === 'GET') return transcript(session, req);
-  return failure(404, 'bad_request', `no route for ${req.method} ${req.path}`);
 }
 
 function observe(session: AgentSession, world: ServerWorld, req: ApiRequest): ApiResponse {
@@ -336,16 +290,4 @@ function observationJson(mode: AgentMode, observation: AgentObservation) {
   };
 }
 
-function json(status: number, body: unknown): ApiResponse {
-  return { status, contentType: 'application/json', body: JSON.stringify(body, null, 2) };
-}
 
-function failure(status: number, code: string, hint: string): ApiResponse {
-  const spec = failureByCode(code);
-  return json(status, {
-    error: code,
-    meaning: spec?.meaning ?? code,
-    recovery: spec?.recovery ?? 'See GET /api/v1/docs.',
-    hint,
-  });
-}
