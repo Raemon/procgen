@@ -6,6 +6,7 @@ import { tooltipHandlers } from '../tooltips/tooltipHandlers';
 import { placedItemTip, slotTip } from './help/inventoryTips';
 import { ItemSpritePreview } from '../itemEditor/ItemSpritePreview';
 import { InventoryBackdrop } from './InventoryBackdrop';
+import { footprintRect } from './placementFootprint';
 import type { InventoryEditorMode } from './inventoryEditorMode';
 
 export interface GridCell {
@@ -124,15 +125,6 @@ function PlacedItem({
       <ItemSpritePreview item={item} className="max-h-full max-w-full [image-rendering:pixelated]" />
     </button>
   );
-}
-
-function footprintRect(inventory: InventoryDef, item: ItemDef, cell: GridCell) {
-  return {
-    left: `${(cell.x / inventory.width) * 100}%`,
-    top: `${(cell.y / inventory.height) * 100}%`,
-    width: `${(item.gridWidth / inventory.width) * 100}%`,
-    height: `${(item.gridHeight / inventory.height) * 100}%`,
-  };
 }
 
 function cellOfIndex(inventory: InventoryDef, index: number): GridCell {

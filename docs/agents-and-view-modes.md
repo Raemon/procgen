@@ -5,10 +5,14 @@ the agent API rather than renderings of the world:
 
 | mode | what it draws | movement |
 | --- | --- | --- |
-| 3-D God | Three.js follow camera, free pan/zoom, A/D or ←/→ rotates the camera in quarter turns | W/S or ↑/↓ camera-relative, Q/E sidestep |
-| Agent God | the literal text a god-mode API agent receives for the player's position | W/S/Q/E compass |
-| 2.5D Character | first-person Three.js camera at the player's eye, fogged out at the sight radius, A/D or ←/→ turns the player in 45° steps | W/S forward/back, Q/E sidestep |
+| 3-D God | Three.js follow camera, free pan/zoom, A/D or ←/→ rotates the camera in quarter turns | W/S or ↑/↓ camera-relative, Q/C sidestep |
+| Agent God | the literal text a god-mode API agent receives for the player's position | W/S/Q/C compass |
+| 2.5D Character | first-person Three.js camera at the player's eye, fogged out at the sight radius, A/D or ←/→ turns the player in 45° steps | W/S forward/back, Q/C sidestep |
 | Agent Character | the literal text a character-mode API agent receives for the player's pose | same as 2.5D Character |
+
+Walking onto a tile picks up whatever lies on it, and `E` opens the player
+character's bag over the world (`Esc` or `E` again closes it). Both work in
+every mode, because both act on the same player the four views share.
 
 ## Parity rule
 

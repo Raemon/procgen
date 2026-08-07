@@ -11,7 +11,7 @@ export function undergroundLabyrinth(): ExamplePipeline {
   return {
     name: 'underground labyrinth',
     description:
-      'A roofed labyrinth of passages and chambers with no sky at all: daylight is 0, so the only things you can see are the lava seams that glow, and whatever light you carry. A torch waits in the seed chamber you start in — walk onto it and press G to pick it up.',
+      'A roofed labyrinth of passages and chambers with no sky at all: daylight is 0, so the only things you can see are the lava seams that glow, and whatever light you carry. A torch waits in the seed chamber you start in — walk onto it and the character picks it up; press E to see it in her bag.',
     state: {
       seed: 3106,
       daylight: 0,
@@ -89,7 +89,7 @@ export function undergroundLabyrinth(): ExamplePipeline {
           label: 'torch',
           folder: 'where you wake up',
           comment:
-            'One point, two tiles east of the spawn, bound to the torch item. The torch is what makes the rest of the world visible: pick it up and the character carries its light with her.',
+            'One point, two tiles east of the spawn, bound to the torch item. The torch is what makes the rest of the world visible: walk over it and the character carries its light with her.',
           enabled: true,
           params: { x: 2, y: 0 },
           inputs: {},

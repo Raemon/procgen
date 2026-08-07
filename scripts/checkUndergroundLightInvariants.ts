@@ -6,7 +6,9 @@ import { brightestCarriedLight } from '../src/items/inventory/carriedLight';
 import { ItemLibrary } from '../src/items/itemLibrary';
 import { TORCH_ITEM_ID } from '../src/items/defaultItems';
 import { groundItemsOf } from '../src/items/pickups/groundItems';
+import { PickupFeed } from '../src/items/pickups/pickupFeed';
 import { TakenItemSpawns } from '../src/items/pickups/takenItemSpawns';
+import { WalkOverPickup } from '../src/items/pickups/walkOverPickup';
 import { PrefabLibrary } from '../src/prefabs/prefabLibrary';
 import { CHUNK_SIZE } from '../src/procgen/chunk';
 import { PipelineEvaluator } from '../src/procgen/eval/evaluator';
@@ -41,6 +43,7 @@ export function checkUndergroundLightInvariants(check: CheckReporter): void {
   checkTheUndergroundWorldIsRoofedAndConnected(check);
   checkNothingIsLitButWhatEmits(check);
   checkTheTorchCanBePickedUpAndCarried(check);
+  checkWalkingOverTheTorchStowsItWithoutAKeypress(check);
 }
 
 function checkLightIsAKnobOnBlocksAndItems(check: CheckReporter): void {
@@ -160,6 +163,43 @@ function checkTheTorchCanBePickedUpAndCarried(check: CheckReporter): void {
   check('an item already taken cannot be picked up again', !twice.ok);
 }
 
+function checkWalkingOverTheTorchStowsItWithoutAKeypress(check: CheckReporter): void {
+  const world = undergroundWorld();
+  const feed = new PickupFeed();
+  const walkOver = new WalkOverPickup(
+    { creatures: world.creatures, items: world.items, groundItems: world.groundItems },
+    feed,
+  );
+  walkOver.onSteppedOnto(0, 0);
+  check(
+    'walking over bare ground stows nothing and says nothing',
+    feed.recent().length === 0 &&
+      playerCharacterDef(world.creatures)!.inventory!.placements.length === 0,
+  );
+  walkOver.onSteppedOnto(2, 0);
+  check(
+    'walking onto the torch stows it without pressing a key',
+    playerCharacterDef(world.creatures)!.inventory!.placements.some(
+      (placement) => placement.itemId === TORCH_ITEM_ID,
+    ) && world.sampler.itemSpawnsIn(2, 0, 2, 0).length === 0,
+  );
+  check(
+    'the walk-over pickup says what it picked up',
+    feed.recent().some((notice) => notice.tone === 'taken' && notice.text.includes('torch')),
+  );
+  const placementsAfterFirstWalk = playerCharacterDef(world.creatures)!.inventory!.placements.length;
+  walkOver.onSteppedOnto(2, 0);
+  check(
+    'walking back over an emptied tile picks nothing up twice',
+    playerCharacterDef(world.creatures)!.inventory!.placements.length === placementsAfterFirstWalk,
+  );
+  check(
+    'the torch lights the way once it has been walked over',
+    brightestCarriedLight(playerCharacterDef(world.creatures), world.items)?.light ===
+      world.items.byId(TORCH_ITEM_ID)!.light,
+  );
+}
+
 function undergroundWorld() {
   const state = sanitizePipeline(
     examplePipelines().find((preset) => preset.name === PRESET_NAME)!.state,
@@ -178,6 +218,7 @@ function undergroundWorld() {
     takenItems,
   );
   const pose = { x: 0, y: 0, facing: 0 as const };
+  const groundItems = groundItemsOf(sampler, takenItems);
   const context = {
     store,
     tileset,
@@ -188,7 +229,7 @@ function undergroundWorld() {
     worldPresets: new WorldPresetLibrary([]),
     randomizeHistory: new RandomizeHistory(),
     regionSampler: sampler,
-    groundItems: groundItemsOf(sampler, takenItems),
+    groundItems,
     actor: {
       pose: () => pose,
       tryStep: () => true,
@@ -204,6 +245,7 @@ function undergroundWorld() {
     tileset,
     items,
     creatures,
+    groundItems,
     pose,
     act: (mode: 'god' | 'character', action: string, params: Record<string, unknown> = {}) =>
       performAbility(context, mode, action, params),

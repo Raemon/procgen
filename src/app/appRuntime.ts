@@ -5,8 +5,11 @@ import type { AbilityMode, AbilityResult } from '../abilities/ability';
 import { ChatComposerState } from '../chat/chatComposerState';
 import { CreatureLibrary } from '../creatures/creatureLibrary';
 import { ItemLibrary } from '../items/itemLibrary';
+import { PlayerInventoryPanelState } from '../items/inventory/playerInventoryPanelState';
 import { groundItemsOf } from '../items/pickups/groundItems';
+import { PickupFeed } from '../items/pickups/pickupFeed';
 import { TakenItemSpawns } from '../items/pickups/takenItemSpawns';
+import { WalkOverPickup } from '../items/pickups/walkOverPickup';
 import { MultiplayerSession } from '../net/multiplayerSession';
 import { CreatureClock } from '../creatures/sim/creatureClock';
 import { CreatureSim } from '../creatures/sim/creatureSim';
@@ -51,6 +54,8 @@ export interface AppRuntime {
   world: ReadOnlyWorld;
   net: MultiplayerSession;
   chatComposer: ChatComposerState;
+  playerInventoryPanel: PlayerInventoryPanelState;
+  pickupFeed: PickupFeed;
   sim: CreatureSim;
   clock: CreatureClock;
   capture: CaptureTool;
@@ -80,6 +85,9 @@ export function createAppRuntime(): AppRuntime {
   const world = new World(isWalkableAt);
   const net = new MultiplayerSession(world, store, isWalkableAt);
   const chatComposer = new ChatComposerState();
+  const playerInventoryPanel = new PlayerInventoryPanelState();
+  const pickupFeed = new PickupFeed();
+  const walkOverPickup = new WalkOverPickup({ creatures, items, groundItems }, pickupFeed);
   const sim = new CreatureSim({ sampler, library: creatures, world, isWalkableAt });
   const clock = new CreatureClock(sim);
   const renderers = new WorldRenderers();
@@ -145,6 +153,7 @@ export function createAppRuntime(): AppRuntime {
   prefabs.onChange(applyWorldChange);
   creatures.onChange(applyWorldChange);
   items.onChange(applyWorldChange);
+  world.on('player-moved', () => walkOverPickup.onSteppedOnto(world.playerX, world.playerY));
   world.on('player-moved', () => renderers.recenterAll());
   world.on('player-turned', () => renderers.recenterAll());
 
@@ -161,6 +170,8 @@ export function createAppRuntime(): AppRuntime {
     world,
     net,
     chatComposer,
+    playerInventoryPanel,
+    pickupFeed,
     sim,
     clock,
     capture,
