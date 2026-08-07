@@ -4,6 +4,7 @@ import type { EditableTileFields } from '../../world/tiles/tileset';
 import { Button } from '../controls/Button';
 import { IconButton } from '../controls/IconButton';
 import { classes } from '../controls/classes';
+import { REVEALED_ON_ROW_HOVER, ROW_HOVER_GROUP } from '../controls/revealOnRowHover';
 import { FIELD_CLASSES } from '../controls/fieldClasses';
 import { dominantFaceColor } from '../../world/tiles/dominantFaceColor';
 import { WalkIcon } from '../icons/panelIcons';
@@ -20,7 +21,7 @@ export function TileRow({ tile }: { tile: TileDef }) {
   const editTile = (patch: EditableTileFields) => perform('update_tile', { tile_id: tile.id, ...patch });
   return (
     <div className="mb-1.5">
-      <div className="flex items-center gap-1.5">
+      <div className={classes(ROW_HOVER_GROUP, 'flex items-center gap-1.5')}>
         <FaceArtToggle tile={tile} open={artOpen} onToggle={() => openTileArt.toggle(String(tile.id))} />
         <SymbolInput symbol={tile.symbol} onPick={(symbol) => editTile({ symbol })} />
         <input
@@ -32,7 +33,10 @@ export function TileRow({ tile }: { tile: TileDef }) {
         />
         <WalkableToggle tile={tile} onToggle={(walkable) => editTile({ walkable })} />
         <Button
-          className="px-2 py-0.5 hover:border-danger-edge hover:text-danger-ink"
+          className={classes(
+            REVEALED_ON_ROW_HOVER,
+            'px-2 py-0.5 hover:border-danger-edge hover:text-danger-ink',
+          )}
           title="delete tile"
           onClick={() => perform('remove_tile', { tile_id: tile.id })}
         >

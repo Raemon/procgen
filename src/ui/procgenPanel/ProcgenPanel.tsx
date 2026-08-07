@@ -1,6 +1,6 @@
 import { useAppRuntime } from '../../app/appRuntimeContext';
 import { useRerenderOnPipelineChange, useRerenderOnTilesetChange } from '../../app/rerenderHooks';
-import { HINT_CLASSES } from '../controls/fieldClasses';
+import { PanelHint } from '../help/PanelHint';
 import { AddNodeMenu } from './AddNodeMenu';
 import { AddTemplateMenu } from './AddTemplateMenu';
 import { NodeList } from './NodeList';
@@ -30,14 +30,14 @@ export function ProcgenPanel() {
         <AddNodeMenu onPick={addNodeAndReveal} />
         <AddTemplateMenu onAdded={scrollNodeCardIntoView} />
       </div>
-      <p className={HINT_CLASSES}>
+      <PanelHint>
         Nodes run top to bottom — drag ⠿ to reorder. A template stamps in a named group of nodes
         with its wiring already made; give adjacent nodes the same folder name to fold them into
         one band, and save that band back out as a template of your own. New nodes wire themselves to the nearest
         matching source; rewire with the input (←) dropdowns. Display maps a node into the world:
         tile layers stack in list order, elevation shapes the 2.5D ground, markers draw tagged
         points.
-      </p>
+      </PanelHint>
     </>
   );
 }

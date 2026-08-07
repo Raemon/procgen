@@ -4,12 +4,12 @@ import { nodeTypeOf } from '../../procgen/nodeRegistry';
 import { outputKindOf } from '../../procgen/nodeType';
 import type { NodeInstance } from '../../procgen/pipeline/pipelineState';
 import { classes } from '../controls/classes';
+import { ROW_HOVER_GROUP } from '../controls/revealOnRowHover';
 import { PERSISTED_UI_KEYS } from '../uiState/persistedUiKeys';
 import { usePersistedUiSet } from '../uiState/usePersistedUiSet';
 import { DisplaySection } from './DisplaySection';
 import { NodeCardHeader } from './NodeCardHeader';
-import { NodeCommentRow } from './NodeCommentRow';
-import { NodeFolderRow } from './NodeFolderRow';
+import { NodeNotesRows } from './NodeNotesRows';
 import { DROP_INDEX_ATTRIBUTE } from './nodeInsertionIndex';
 import { ErrorNote, NodeError } from './NodeError';
 import { ParamRow } from './ParamRow';
@@ -38,6 +38,7 @@ export function NodeCard({
       data-node-id={node.id}
       {...{ [DROP_INDEX_ATTRIBUTE]: index }}
       className={classes(
+        ROW_HOVER_GROUP,
         'rounded-md border bg-field',
         collapsed ? 'w-fit p-1' : 'p-2',
         highlighted === node.id ? 'border-accent' : 'border-panel-edge',
@@ -58,8 +59,7 @@ export function NodeCard({
           <NodeError nodeId={node.id} />
           {!collapsed && (
             <>
-              <NodeCommentRow node={node} />
-              <NodeFolderRow node={node} />
+              <NodeNotesRows node={node} />
               {Object.entries(def.inputs).map(([name, spec]) => (
                 <WiringRow key={name} node={node} inputName={name} spec={spec} />
               ))}

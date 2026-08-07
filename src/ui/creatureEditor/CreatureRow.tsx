@@ -3,6 +3,7 @@ import { behaviorLabel } from '../../creatures/behaviorKinds';
 import type { CreatureDef } from '../../creatures/creatureDef';
 import { Button } from '../controls/Button';
 import { classes } from '../controls/classes';
+import { REVEALED_ON_ROW_HOVER, ROW_HOVER_GROUP } from '../controls/revealOnRowHover';
 import { COLOR_INPUT_CLASSES, FIELD_CLASSES } from '../controls/fieldClasses';
 import { PixelArtEditor } from '../pixelArtEditor/PixelArtEditor';
 import { SymbolInput } from '../tileEditor/SymbolInput';
@@ -24,7 +25,7 @@ export function CreatureRow({ creature }: { creature: CreatureDef }) {
     openPanels.set(String(creature.id), openPanel === panel ? 'none' : panel);
   return (
     <div className="mb-1.5">
-      <div className="flex items-center gap-1.5">
+      <div className={classes(ROW_HOVER_GROUP, 'flex items-center gap-1.5')}>
         <input
           type="color"
           className={COLOR_INPUT_CLASSES}
@@ -60,7 +61,10 @@ export function CreatureRow({ creature }: { creature: CreatureDef }) {
           art
         </Button>
         <Button
-          className="px-2 py-0.5 hover:border-danger-edge hover:text-danger-ink"
+          className={classes(
+            REVEALED_ON_ROW_HOVER,
+            'px-2 py-0.5 hover:border-danger-edge hover:text-danger-ink',
+          )}
           title="delete creature"
           onClick={() => perform('remove_creature', { creature_id: creature.id })}
         >

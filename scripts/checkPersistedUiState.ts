@@ -2,7 +2,7 @@ import { installFakeLocalStorage } from './fakeLocalStorage';
 
 const storage = installFakeLocalStorage();
 
-const { isNumber, isNumberOrNull, isOneOf, isRecordOf, isStringArray } = await import(
+const { isBoolean, isNumber, isNumberOrNull, isOneOf, isRecordOf, isStringArray } = await import(
   '../src/ui/uiState/persistedUiGuards'
 );
 const { persistedUiValue, subscribeToPersistedUiValue, writePersistedUiValue } = await import(
@@ -84,6 +84,10 @@ function checkGuardsAcceptOnlyTheShapesTheUiPersists(): void {
   );
   assert(!isRecordOf(isNumber)(['library']), 'an array is not a record of panel widths');
   assert(!isNumber(Number.NaN), 'a NaN width is rejected before it reaches the grid');
+  assert(
+    isBoolean(false) && !isBoolean('false'),
+    'the hints toggle only restores a real boolean',
+  );
 }
 
 function assert(condition: boolean, message: string): void {

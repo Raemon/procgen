@@ -3,6 +3,7 @@ import { useAppRuntime } from '../../app/appRuntimeContext';
 import type { NodeInstance } from '../../procgen/pipeline/pipelineState';
 import { Button } from '../controls/Button';
 import { classes } from '../controls/classes';
+import { REVEALED_ON_ROW_HOVER } from '../controls/revealOnRowHover';
 import { NODE_ID_MIME } from './nodeDragTransfer';
 import { NodeTypeIcon } from './nodeTypeIcon';
 
@@ -48,16 +49,18 @@ export function NodeCardHeader({
         onChange={(event) => perform(event.target.checked ? 'enable_node' : 'disable_node', { node_id: node.id })}
       />
       <NodeLabelInput node={node} />
-      <span className="text-[10px] whitespace-nowrap text-ink-dim">{typeTitle}</span>
       <Button
-        className="px-1.5 py-0.5 text-[11px]"
+        className={classes(REVEALED_ON_ROW_HOVER, 'px-1.5 py-0.5 text-[11px]')}
         title="duplicate node"
         onClick={() => perform('duplicate_node', { node_id: node.id })}
       >
         ⧉
       </Button>
       <Button
-        className="px-1.5 py-0.5 text-[11px] hover:border-danger-edge hover:text-danger-ink"
+        className={classes(
+          REVEALED_ON_ROW_HOVER,
+          'px-1.5 py-0.5 text-[11px] hover:border-danger-edge hover:text-danger-ink',
+        )}
         title="delete node"
         onClick={() => perform('remove_node', { node_id: node.id })}
       >

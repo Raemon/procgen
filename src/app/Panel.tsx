@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { classes } from '../ui/controls/classes';
+import { HintsToggle } from '../ui/help/HintsToggle';
 import { CollapseIcon } from '../ui/icons/panelIcons';
 import { useAppRuntime } from './appRuntimeContext';
 
@@ -35,6 +36,7 @@ function PanelHeader({ chrome }: { chrome: PanelChrome }) {
     >
       <span className="text-ink-dim">{chrome.icon}</span>
       <h2 className="flex-1 text-[13px] tracking-[0.12em] text-ink-dim uppercase">{chrome.title}</h2>
+      <HintsToggle />
       <button
         type="button"
         className="cursor-pointer rounded border border-transparent p-0.5 text-ink-dim hover:border-panel-edge hover:text-ink"

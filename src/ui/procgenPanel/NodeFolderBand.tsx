@@ -1,6 +1,8 @@
 import { useState, type ReactNode } from 'react';
 import { useAppRuntime } from '../../app/appRuntimeContext';
 import { Button } from '../controls/Button';
+import { classes } from '../controls/classes';
+import { FOLDER_HOVER_GROUP, REVEALED_ON_FOLDER_HOVER } from '../controls/revealOnRowHover';
 import type { NodeRun } from './nodeFolderRuns';
 
 export function NodeFolderBand({
@@ -15,7 +17,12 @@ export function NodeFolderBand({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-md border border-dashed border-panel-edge bg-bg/40 p-1.5">
+    <section
+      className={classes(
+        FOLDER_HOVER_GROUP,
+        'rounded-md border border-dashed border-panel-edge bg-bg/40 p-1.5',
+      )}
+    >
       <FolderHeader run={run} collapsed={collapsed} onToggleCollapsed={onToggleCollapsed} />
       {collapsed ? <CollapsedSummary run={run} /> : <div className="flex flex-col gap-2.5">{children}</div>}
     </section>
@@ -49,7 +56,7 @@ function FolderHeader({
       </span>
       <SaveAsTemplateButton run={run} />
       <Button
-        className="px-1.5 py-0.5 text-[11px]"
+        className={classes(REVEALED_ON_FOLDER_HOVER, 'px-1.5 py-0.5 text-[11px]')}
         title="ungroup — leaves every node exactly where it is"
         onClick={() => setFolderOfNodes(perform, nodeIds, '')}
       >
@@ -72,7 +79,7 @@ function SaveAsTemplateButton({ run }: { run: NodeRun }) {
   }
   return (
     <Button
-      className="px-1.5 py-0.5 text-[11px]"
+      className={classes(REVEALED_ON_FOLDER_HOVER, 'px-1.5 py-0.5 text-[11px]')}
       title="save this folder as a template — wiring inside is kept, wiring to nodes outside is left open"
       onClick={save}
     >
