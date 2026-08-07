@@ -15,5 +15,17 @@
     "noEmit": true,
     "types": ["vite/client", "node"]
   },
-  "include": ["src", "scripts", "server"]
+  "include": [
+    "abilities",
+    "agents",
+    "api",
+    "checks",
+    "frontend",
+    "library",
+    "multiplayer",
+    "procgen",
+    "server",
+    "tools",
+    "world"
+  ]
 }

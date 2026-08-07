@@ -4,6 +4,10 @@ Make sure files only have one major responsibility, as soon as it seems like the
 
 If a function is more than 5 lines and definitely if it's more than 10, see if you can split it into multiple functions, each of which carves the code as closely as possible along "why are we doing this?" axes. Group files into folders that help convey what they are for.
 
+Codebase should follow the principle of being able to quickly derive what parts of the codebase do what from looking at the UI, following the same structure as the UI
+
+All json files should be pretty-print formatted.
+
 Whenever you report back to a user, always end with a direct link to a running server
 
 When adding or changing procgen node types, follow docs/authoring-nodes.md and keep the determinism rules; extend scripts/checkProcgenInvariants.ts with checks for new nodes.
