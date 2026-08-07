@@ -1,9 +1,11 @@
 import type { ChunkVoxelColumns } from '../prefabOverlay/chunkVoxelColumns';
+import type { CeilingChunk } from './mergedCeiling';
 
 export interface SampledChunk {
   tiles: Int32Array;
   elevation: Float32Array;
   columns: ChunkVoxelColumns;
+  ceiling: CeilingChunk;
 }
 
 const PACK_STRIDE = 1 << 16;

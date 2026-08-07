@@ -1,6 +1,6 @@
 import { readPersistedFile, writePersistedFile } from '../../persistence/repoFileStore';
 import { upgradeStoredFaceArt } from './legacyFaceArt';
-import type { TileDef } from './tileDef';
+import { tileWithSanitizedLight, type TileDef } from './tileDef';
 import { storedTileHeight } from './tileHeight';
 
 const FILE_NAME = 'tileset';
@@ -11,7 +11,7 @@ export function loadStoredTiles(): TileDef[] | null {
 
 export function tilesFromStoredJson(parsed: unknown): TileDef[] | null {
   if (!Array.isArray(parsed)) return null;
-  const tiles = parsed.filter(isTileDef).map(withValidatedFields);
+  const tiles = parsed.filter(isTileDef).map(withValidatedFields).map(tileWithSanitizedLight);
   return tiles.length > 0 ? tiles : null;
 }
 

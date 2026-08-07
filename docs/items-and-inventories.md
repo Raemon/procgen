@@ -22,6 +22,11 @@ art becomes geometry.
 Either way the item floats: `float` is how far above the ground it hangs, and
 `size` is how large it is drawn, in tiles. Items never block movement.
 
+An item can also emit light: `light` is the radius it lights in tiles and
+`light ink` the colour of that light. A lit item lights the ground where it
+lies, and lights the way for any character carrying it —
+`docs/light-and-darkness.md` covers the whole model.
+
 The art lives in two fields, and the editor shows whichever the render mode
 uses: `sprite` is a single square grid of colors and nulls (null is
 transparent), `face_art` is the same six-face cube art tiles and creatures use.
@@ -132,7 +137,7 @@ The actions, all god mode:
 | action | what it does |
 | --- | --- |
 | `add_item`, `duplicate_item`, `remove_item` | manage definitions |
-| `update_item` | name, symbol, color, render, orientation, thickness, edge_color, size, hover, sprite, face_art, grid_width, grid_height, tags |
+| `update_item` | name, symbol, color, render, orientation, thickness, edge_color, size, hover, light, light_ink, sprite, face_art, grid_width, grid_height, tags |
 | `add_character` | a creature that starts with a 6×4 inventory and a generated humanoid billboard |
 | `set_character_frame` | paint one frame of one animation of one rotation; the frame after the last one appends |
 | `remove_character_frame` | drop one frame; dropping the last one anywhere removes the billboard |
@@ -144,6 +149,7 @@ The actions, all god mode:
 | `set_inventory_background` | the sprite under the grid |
 | `place_inventory_item`, `remove_inventory_item` | put items in and take them out |
 | `set_display` with `display: "items"` | scatter an item through the world from a points node |
+| `pick_up_item` (god) / `pick_up` (character) | take the item under the player into the player character's bag |
 
 A refused placement comes back as `placement_refused` with a hint naming which
 of the four rules stopped it.

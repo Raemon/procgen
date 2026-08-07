@@ -1,5 +1,6 @@
 import '../src/abilities/index';
 import { performAbility } from '../src/abilities/performAbility';
+import { DEFAULT_CHARACTER_SIGHT_RADIUS_TILES } from '../src/world/vision/characterSight';
 import type { AbilityContext, AbilityResult } from '../src/abilities/ability';
 import { humanoidBillboard } from '../src/creatures/art/humanoidBillboard';
 import { WANDERING_TRADER_PALETTE } from '../src/creatures/art/humanoidPalette';
@@ -16,6 +17,7 @@ import { headingRadians, viewRelativeRotation } from '../src/creatures/character
 import { characterFrame } from '../src/creatures/character/characterFrame';
 import { sanitizeCharacterBillboard } from '../src/creatures/character/sanitizeCharacterBillboard';
 import { CreatureLibrary } from '../src/creatures/creatureLibrary';
+import { NO_GROUND_ITEMS } from '../src/items/pickups/groundItems';
 import { creaturesFromStoredJson } from '../src/creatures/creatureStorage';
 import { CHARACTER } from '../src/creatures/entityKinds';
 import { moveCreatureTowardTarget } from '../src/creatures/sim/moveCreatureTowardTarget';
@@ -318,8 +320,15 @@ function abilityWorld() {
     templates: new TemplateLibrary([]),
     worldPresets: new WorldPresetLibrary([]),
     randomizeHistory: new RandomizeHistory(),
+    groundItems: NO_GROUND_ITEMS,
     regionSampler: { tileAt: () => 0, elevationAt: () => 0, voxelColumnAt: () => null },
-    actor: { pose: () => ({ x: 0, y: 0, facing: 0 }), tryStep: () => true, turn: () => undefined },
+    actor: {
+      pose: () => ({ x: 0, y: 0, facing: 0 }),
+      tryStep: () => true,
+      turn: () => undefined,
+      sightRadiusTiles: () => DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
+      setSightRadiusTiles: () => undefined,
+    },
   };
   return { context, creatures };
 }

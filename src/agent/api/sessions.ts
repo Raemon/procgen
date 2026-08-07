@@ -1,5 +1,9 @@
 import type { FacingIndex } from '../../world/facing';
 import type { AbilityActor } from '../../abilities/ability';
+import {
+  DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
+  clampSightRadiusTiles,
+} from '../../world/vision/characterSight';
 import type { AgentMode, AgentPose } from '../agentMode';
 import { newNotebook, type AgentNotebook } from './agentNotebook';
 
@@ -10,6 +14,7 @@ export interface AgentSession {
   x: number;
   y: number;
   facing: FacingIndex;
+  sightRadiusTiles: number;
   createdAt: number;
   lastAction: { action: string; outcome: string } | null;
   notebook: AgentNotebook;
@@ -42,6 +47,7 @@ export function newSession(
   name: string,
   mode: AgentMode,
   spawn: { x: number; y: number },
+  sightRadiusTiles: number = DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
 ): AgentSession {
   return {
     id,
@@ -50,6 +56,7 @@ export function newSession(
     x: spawn.x,
     y: spawn.y,
     facing: 0,
+    sightRadiusTiles: clampSightRadiusTiles(sightRadiusTiles),
     createdAt: Date.now(),
     lastAction: null,
     notebook: newNotebook(),
@@ -77,6 +84,10 @@ export function sessionActor(
     },
     turn: (eighthTurns) => {
       session.facing = ((((session.facing + eighthTurns) % 8) + 8) % 8) as FacingIndex;
+    },
+    sightRadiusTiles: () => session.sightRadiusTiles,
+    setSightRadiusTiles: (radius) => {
+      session.sightRadiusTiles = clampSightRadiusTiles(radius);
     },
   };
 }

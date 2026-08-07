@@ -5,6 +5,7 @@ import { braidCellMaze } from './braidCellMaze';
 import { CARVER_CHOICES, CARVER_DFS, carveCellMaze } from './mazeCarvers';
 import { regionBorderDoors } from './mazeRegionDoors';
 import { chunkOffsetInRegion, mazeRegionLayout, regionIndexOfChunk } from './mazeRegionLayout';
+import { carveMazeRooms } from './mazeRooms';
 import { paintMazeWindow } from './paintMazeWindow';
 
 registerNodeType({
@@ -12,9 +13,9 @@ registerNodeType({
   title: 'labyrinth',
   category: 'maze',
   description:
-    'Carves an endless labyrinth from numeric knobs: corridor width, wall thickness, and how many chunks each self-contained maze spans. Mazes join to every neighbor through border doors so the whole world stays connected.',
+    'Carves an endless labyrinth from numeric knobs: corridor width, wall thickness, how many chunks each self-contained maze spans, and how much of it opens into rooms. Mazes join to every neighbor through border doors so the whole world stays connected.',
   whenToUse:
-    'Dungeon-like structure instead of organic noise terrain. Layer two of these at different maze sizes for nested labyrinths (give the big one an empty floor so the small one shows through), or scatter monsters and loot on top with points nodes.',
+    'Dungeon-like structure instead of organic noise terrain. Turn the rooms knob up for a dungeon of chambers linked by passages instead of pure corridor. Layer two of these at different maze sizes for nested labyrinths (give the big one an empty floor so the small one shows through), or scatter monsters and loot on top with points nodes.',
   inputs: {},
   params: {
     corridor: {
@@ -65,6 +66,23 @@ registerNodeType({
       max: 4,
       default: 1,
     },
+    rooms: {
+      kind: 'number',
+      label: 'rooms',
+      help: 'Fraction of the maze given over to open rooms: rectangles of lattice cells whose inner walls are knocked out. 0 is pure corridors; 0.4 reads as chambers joined by passages.',
+      min: 0,
+      max: 0.9,
+      step: 0.05,
+      default: 0,
+    },
+    roomCells: {
+      kind: 'int',
+      label: 'room size',
+      help: 'Largest room, measured in maze cells on a side. With corridor 3 / wall 1 a 4-cell room is a 15-tile chamber.',
+      min: 2,
+      max: 8,
+      default: 3,
+    },
     wallTile: { kind: 'tile', label: 'wall', help: 'Tile painted on maze walls. Pick (empty) to let lower layers show through the walls.' },
     floorTile: { kind: 'tile', label: 'floor', help: 'Tile painted on corridors and doors. Pick (empty) to let lower layers show through the corridors — the trick behind nesting a small labyrinth inside a big one.' },
   },
@@ -85,14 +103,18 @@ function mazeChunk(ctx: ChunkGenCtx): ChunkValue {
   const maze = carveCellMaze(layout.cells, ctx.params.carver as number, ctx.rngAt(regionX, regionY, 'carve'));
   braidCellMaze(maze, ctx.params.braid as number, ctx.rngAt(regionX, regionY, 'braid'));
   const doors = regionBorderDoors(ctx, regionX, regionY, layout.cells, ctx.params.doorsPerEdge as number);
+  const rooms = carveMazeRooms(
+    layout.cells,
+    ctx.params.rooms as number,
+    ctx.params.roomCells as number,
+    ctx.rngAt(regionX, regionY, 'rooms'),
+  );
   const tiles = paintMazeWindow(
     ctx.newTiles(),
     ctx.size,
     chunkOffsetInRegion(ctx.chunkX, regionX, regionChunks, ctx.size),
     chunkOffsetInRegion(ctx.chunkY, regionY, regionChunks, ctx.size),
-    layout,
-    maze,
-    doors,
+    { layout, maze, doors, rooms },
     ctx.params.wallTile as number,
     ctx.params.floorTile as number,
   );

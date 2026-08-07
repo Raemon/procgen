@@ -1,35 +1,25 @@
 import { nearestWalkable } from '../../src/world/nearestWalkable';
 import type { Connection } from '../net/connection';
-import { PERSISTED_DOC_NAMES, readDocFile, saveDoc } from '../persist/docsRepo';
-import type { Store } from '../persist/db';
+import { PERSISTED_DOC_NAMES } from '../persist/docsRepo';
 import type { EntityRegistry } from './entities';
 import type { WorldHost } from './worldHost';
 
 const SNAP_SEARCH_RADIUS = 64;
 
 export interface DocSyncDeps {
-  store: Store;
-  root: string;
   connections: Set<Connection>;
   registry: EntityRegistry;
   worldHost: WorldHost;
 }
 
-export function afterDocChanged(deps: DocSyncDeps, name: string, json: unknown): void {
-  void saveDoc(deps.store, name, json).catch((err) => console.warn(`[persist] doc ${name} failed`, err));
+/** Call after a doc has been written to the doc store, which owns durability itself. */
+export function afterDocChanged(deps: DocSyncDeps, name: string): void {
   broadcastDocChanged(deps.connections, name);
   snapEntitiesToWalkableGround(deps);
 }
 
 export function afterWorldPersistedByAgent(deps: DocSyncDeps): void {
-  for (const name of PERSISTED_DOC_NAMES) {
-    const raw = readDocFile(deps.root, name);
-    if (raw === null) continue;
-    void saveDoc(deps.store, name, JSON.parse(raw)).catch((err) =>
-      console.warn(`[persist] doc ${name} failed`, err),
-    );
-    broadcastDocChanged(deps.connections, name);
-  }
+  for (const name of PERSISTED_DOC_NAMES) broadcastDocChanged(deps.connections, name);
   snapEntitiesToWalkableGround(deps);
 }
 

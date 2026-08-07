@@ -27,10 +27,25 @@ place either view learns how far a character can see:
   `src/world/facing.ts`) — everything behind is the blank glyph, and the
   observation deliberately never states the facing, so the rotating blank half
   is the only way an agent knows which way it points;
-- `CHARACTER_SIGHT_RADIUS_TILES` — beyond it the tile is blank too, which is
-  why a character grid has blank corners. The agent grid is sized
-  `2 * radius + 1` from the same constant, so it is exactly wide enough to hold
-  what can be seen and no wider.
+- the sight radius — beyond it the tile is blank too, which is why a character
+  grid has blank corners. The agent grid is sized `2 * radius + 1` from that
+  same radius, so it is exactly wide enough to hold what can be seen and no
+  wider.
+
+The radius is a parameter, not a constant. `DEFAULT_CHARACTER_SIGHT_RADIUS_TILES`
+is 12, but a character carries its own radius anywhere in
+`MIN_CHARACTER_SIGHT_RADIUS_TILES`..`MAX_CHARACTER_SIGHT_RADIUS_TILES`, and
+every function in that module takes it. An API agent sets it three ways —
+`sight_radius_tiles` when it is created, the `set_sight_radius` action, or
+`?sight_radius_tiles=` on an observe — and the human sets the same knob with the
+sight slider on the character view toolbar, which goes through that very action.
+Out-of-range values are clamped rather than refused, so nothing has to reason
+about the bounds to use it.
+
+Seeing farther is deliberately a trade: the tiles read and drawn grow with the
+square of the radius, which is tokens per turn for an autopilot run and frames
+for the 2.5D view. The point of exposing it is that the caller chooses when to
+pay — widen to plan a route, narrow to travel.
 
 God mode sees its full window and is told its facing.
 
@@ -39,10 +54,12 @@ stands in the player's own tile at eye height and looks along the facing, so a
 third-person camera can no longer pull back far enough to show ground the agent
 is told is behind it, and the player mesh is hidden while that camera is live.
 Because the eye is the player, three.js fog — which measures from the camera —
-measures from the player too: `createCharacterFog` is just the two constants,
-`CHARACTER_HAZE_START_TILES` to `CHARACTER_SIGHT_RADIUS_TILES`, with no
-distance correction to get wrong. The camera's far plane is the sight radius as
-well, so geometry is culled exactly where it would have been painted pure fog,
+measures from the player too: `createCharacterFog` is just `hazeStartTiles(radius)`
+to the radius, with no distance correction to get wrong. The haze keeps a fixed
+share of the radius, so widening sight pushes the fog outward instead of
+thinning what is already close. The fog range and the camera's far plane are
+re-read from the player's radius every frame, so a slider drag or an API call
+retunes both mid-walk. The camera's far plane is the sight radius as well, so geometry is culled exactly where it would have been painted pure fog,
 and the chunk streamer is asked for the sight radius rather than anything
 derived from zoom, which is why character mode streams a couple of chunks
 instead of the dozens the old third-person camera asked for. The wheel narrows
@@ -53,10 +70,11 @@ What still differs: the human's field of view is narrower than the agent's flat
 180°, and in first person terrain and prefabs occlude, so the human sometimes
 sees *less* than the grid shows. Never more.
 
-Changing what a character can see therefore means changing one constant.
-`npm run check` asserts the grid size, the fog distances, the camera's far
-plane, the eye's position and facing, and the blanked tiles all still agree
-with it.
+Changing what a character can see therefore means changing one number, in one
+place, at runtime. `npm run check` asserts the grid size, the fog distances, the
+camera's far plane, the eye's position and facing, and the blanked tiles all
+still agree with it — at the default radius and at a widened one, and that a
+wider radius only ever adds ground to what a narrower one showed.
 
 ## The API
 

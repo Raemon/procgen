@@ -29,7 +29,7 @@ export class AgentTextView {
   draw(): void {
     const pose = { x: this.world.playerX, y: this.world.playerY, facing: this.world.facing };
     this.pre.textContent = observationText(
-      buildObservation(this.sampler, this.tileset, pose, this.mode),
+      buildObservation(this.sampler, this.tileset, pose, this.mode, this.world.sightRadiusTiles),
     );
   }
 }

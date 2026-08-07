@@ -1,3 +1,4 @@
+import { clampLightRadius, DEFAULT_LIGHT_INK } from '../light/lightEmission';
 import type { CubeFaceArt } from './tileFaceArt';
 import { WALKABLE_TILE_HEIGHT } from './tileHeight';
 
@@ -12,6 +13,8 @@ export interface TileDef {
   height: number;
   role: TileRole | null;
   faceArt: CubeFaceArt | null;
+  light: number;
+  lightInk: string;
 }
 
 export function newTileWithId(id: number): TileDef {
@@ -24,5 +27,15 @@ export function newTileWithId(id: number): TileDef {
     height: WALKABLE_TILE_HEIGHT,
     role: null,
     faceArt: null,
+    light: 0,
+    lightInk: DEFAULT_LIGHT_INK,
+  };
+}
+
+export function tileWithSanitizedLight(tile: TileDef): TileDef {
+  return {
+    ...tile,
+    light: clampLightRadius(tile.light),
+    lightInk: typeof tile.lightInk === 'string' ? tile.lightInk : DEFAULT_LIGHT_INK,
   };
 }

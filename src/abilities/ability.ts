@@ -1,5 +1,6 @@
 import type { CreatureLibrary } from '../creatures/creatureLibrary';
 import type { ItemLibrary } from '../items/itemLibrary';
+import type { GroundItems } from '../items/pickups/groundItems';
 import type { PrefabLibrary } from '../prefabs/prefabLibrary';
 import type { RegionSampler } from '../prefabs/captureRegionAsPrefab';
 import type { PipelineStore } from '../procgen/pipeline/pipelineStore';
@@ -10,12 +11,14 @@ import type { Tileset } from '../world/tiles/tileset';
 import type { FacingIndex } from '../world/facing';
 
 export type AbilityMode = 'god' | 'character';
-export type AbilityGroup = 'movement' | 'pipeline' | 'library' | 'world';
+export type AbilityGroup = 'movement' | 'senses' | 'pipeline' | 'library' | 'world';
 
 export interface AbilityActor {
   pose(): { x: number; y: number; facing: FacingIndex };
   tryStep(dx: number, dy: number): boolean;
   turn(eighthTurns: number): void;
+  sightRadiusTiles(): number;
+  setSightRadiusTiles(radius: number): void;
 }
 
 export interface AbilityContext {
@@ -28,6 +31,7 @@ export interface AbilityContext {
   worldPresets: WorldPresetLibrary;
   randomizeHistory: RandomizeHistory;
   regionSampler: RegionSampler;
+  groundItems: GroundItems;
   actor: AbilityActor;
 }
 

@@ -2,6 +2,7 @@ import type { AppRuntime } from '../../app/appRuntime';
 import { cameraRelativeStep } from '../../input/cameraRelativeStep';
 import { facingRelativeStep } from '../../input/facingRelativeStep';
 import { MovementInput } from '../../input/movementInput';
+import { PickUpInput } from '../../input/pickUpInput';
 import { AgentTextView } from '../../views/agentText/agentTextView';
 import { View3D } from '../../views/view3d/view3d';
 import type { WorldViewDeps } from '../../views/worldViewDeps';
@@ -64,6 +65,17 @@ export function mountWorldViews(
     isSuspended: () => runtime.chatComposer.isOpen(),
   });
 
+  const pickUp = new PickUpInput({
+    pickUp: () => perform(isCharacterControlled(currentMode()) ? 'pick_up' : 'pick_up_item'),
+    isSuspended: () => runtime.chatComposer.isOpen(),
+  });
+
+  // The 2.5D view re-reads the sight radius every frame; the ASCII views only redraw when asked.
+  const redrawOnSightChange = world.on('sight-changed', () => {
+    agentGodView.draw();
+    agentCharacterView.draw();
+  });
+
   const stopWalkingWhileTyping = runtime.chatComposer.subscribe(() => {
     if (runtime.chatComposer.isOpen()) movement.releaseHeldKeys();
   });
@@ -72,8 +84,10 @@ export function mountWorldViews(
 
   return {
     dispose: () => {
+      redrawOnSightChange();
       stopWalkingWhileTyping();
       movement.dispose();
+      pickUp.dispose();
       for (const remove of unregister) remove();
       view3d.dispose();
       agentGodView.dispose();
@@ -90,6 +104,7 @@ function worldViewDepsOf(runtime: AppRuntime): WorldViewDeps {
   return {
     world: runtime.world,
     sampler: runtime.sampler,
+    store: runtime.store,
     tileset: runtime.tileset,
     creatures: runtime.creatures,
     items: runtime.items,

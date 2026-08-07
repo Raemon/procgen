@@ -6,6 +6,7 @@ import {
 } from '../../app/rerenderHooks';
 import {
   displayModesForKind,
+  MAX_CEILING_HEIGHT,
   RANDOM_ROTATION,
   type DisplayBinding,
 } from '../../procgen/display/displayBinding';
@@ -20,6 +21,7 @@ import { Select } from '../controls/Select';
 import { Slider } from '../controls/Slider';
 import { ValueReadout } from '../controls/ValueReadout';
 import {
+  ceilingHeightTooltip,
   displayModeTooltip,
   markerTileTooltip,
   prefabRotationTooltip,
@@ -49,6 +51,9 @@ export function DisplaySection({ node, kind }: { node: NodeInstance; kind: Value
           onChange={(mode) => perform('set_display', { node_id: node.id, display: mode })}
         />
       </KnobRow>
+      {node.display.mode === 'ceiling' && (
+        <CeilingHeightRow node={node} height={node.display.height} />
+      )}
       {node.display.mode === 'elevation' && (
         <HeightScaleRow node={node} heightScale={node.display.heightScale} />
       )}
@@ -151,6 +156,22 @@ function HeightScaleRow({ node, heightScale }: { node: NodeInstance; heightScale
         onChange={(value) => perform('set_display', { node_id: node.id, display: 'elevation', height_scale: value })}
       />
       <ValueReadout value={heightScale} />
+    </KnobRow>
+  );
+}
+
+function CeilingHeightRow({ node, height }: { node: NodeInstance; height: number }) {
+  const { perform } = useAppRuntime();
+  return (
+    <KnobRow label="height" tip={ceilingHeightTooltip()}>
+      <Slider
+        min={1}
+        max={MAX_CEILING_HEIGHT}
+        step={1}
+        value={height}
+        onChange={(value) => perform('set_display', { node_id: node.id, display: 'ceiling', ceiling_height: value })}
+      />
+      <ValueReadout value={height} />
     </KnobRow>
   );
 }

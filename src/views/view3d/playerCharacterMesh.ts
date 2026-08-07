@@ -5,7 +5,7 @@ import { playerCharacterDef } from '../../creatures/playerCharacter';
 import type { CameraView } from './cameraView';
 import { characterQuadMesh, dressCharacterQuad } from './characterQuad';
 import type { CharacterSpriteTextures } from './characterSpriteTextures';
-import { createPlayerCapsule } from './daylitScene';
+import { createPlayerCapsule } from './playerCapsule';
 import { disposeMeshResources } from './disposeMeshResources';
 
 const CAPSULE_CENTER_HEIGHT = 0.55;

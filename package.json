@@ -24,7 +24,8 @@
     "characters:preview": "esbuild scripts/renderCharacterSheet.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
     "perf": "esbuild scripts/benchmarkWorldPerf.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
     "dwarf:preview": "esbuild scripts/renderDwarfPortrait.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
-    "dwarf:sheet": "esbuild scripts/renderDwarfSheet.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module"
+    "dwarf:sheet": "esbuild scripts/renderDwarfSheet.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
+    "creatures:write": "esbuild scripts/writeCreaturesDataFile.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

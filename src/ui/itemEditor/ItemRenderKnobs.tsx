@@ -12,6 +12,7 @@ import { Slider } from '../controls/Slider';
 import { TagsInput } from '../controls/TagsInput';
 import { ValueReadout } from '../controls/ValueReadout';
 import { ColorField } from '../controls/ColorField';
+import { LightKnobRows } from '../lightEditor/LightKnobRows';
 import type { TooltipContent } from '../tooltips/tooltipContent';
 import {
   ITEM_EDGE_COLOR_TIP,
@@ -123,6 +124,7 @@ export function ItemRenderKnobs({ item }: { item: ItemDef }) {
           />
         </div>
       </KnobRow>
+      <LightKnobRows emitter={item} onChange={edit} />
       <KnobRow label="tags" tip={tagsTooltip()}>
         <TagsInput
           tags={item.tags}

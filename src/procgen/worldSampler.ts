@@ -1,4 +1,5 @@
 import { NO_ITEMS, type ItemSource } from '../items/itemLibrary';
+import { TakenItemSpawns } from '../items/pickups/takenItemSpawns';
 import type { CubeFaceArt } from '../world/tiles/tileFaceArt';
 import type { Tileset } from '../world/tiles/tileset';
 import { cellIndexInChunk, chunkCoordOfCell } from './chunk';
@@ -39,7 +40,14 @@ export interface ItemSpawn {
   tag: string;
 }
 
-type DisplayedMode = 'tileLayer' | 'elevation' | 'markers' | 'prefabs' | 'creatures' | 'items';
+type DisplayedMode =
+  | 'tileLayer'
+  | 'ceiling'
+  | 'elevation'
+  | 'markers'
+  | 'prefabs'
+  | 'creatures'
+  | 'items';
 
 const SAMPLED_CHUNKS_KEPT = 512;
 
@@ -54,6 +62,7 @@ export class WorldSampler {
     private readonly tileset: Tileset,
     prefabs: PrefabSource = NO_PREFABS,
     private readonly items: ItemSource = NO_ITEMS,
+    private readonly takenItems: TakenItemSpawns = new TakenItemSpawns(),
   ) {
     this.prefabOverlay = new PrefabOverlay(prefabs, (chunkX, chunkY) =>
       this.prefabPlacementsInChunk(chunkX, chunkY),
@@ -76,6 +85,14 @@ export class WorldSampler {
 
   topVoxelAt(x: number, y: number): number {
     return topVoxelOf(this.voxelColumnAt(x, y));
+  }
+
+  ceilingTileAt(x: number, y: number): number {
+    return this.sampledChunkOfCell(x, y).ceiling.tiles[cellIndexInChunk(x, y)]!;
+  }
+
+  ceilingHeightAt(x: number, y: number): number {
+    return this.sampledChunkOfCell(x, y).ceiling.height[cellIndexInChunk(x, y)]!;
   }
 
   elevationAt(x: number, y: number): number {
@@ -109,6 +126,7 @@ export class WorldSampler {
       const item = this.items.byId(node.display.itemId);
       if (!item) continue;
       for (const point of this.pointsInRect(node, minX, minY, maxX, maxY)) {
+        if (this.takenItems.isTaken({ x: point.x, y: point.y, itemId: item.id })) continue;
         spawns.push({
           x: point.x,
           y: point.y,
@@ -129,8 +147,11 @@ export class WorldSampler {
     return this.sampledChunks.at(chunkX, chunkY, () =>
       buildSampledChunk(
         this.evaluator,
-        this.displayedNodes('tileLayer'),
-        this.lastElevationNode(),
+        {
+          tileLayers: this.displayedNodes('tileLayer'),
+          ceilings: this.displayedNodes('ceiling'),
+          elevation: this.lastElevationNode(),
+        },
         this.prefabOverlay.columnsForChunk(chunkX, chunkY),
         chunkX,
         chunkY,

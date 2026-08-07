@@ -8,6 +8,7 @@ import { REVEALED_ON_ROW_HOVER, ROW_HOVER_GROUP } from '../controls/revealOnRowH
 import { FIELD_CLASSES } from '../controls/fieldClasses';
 import { dominantFaceColor } from '../../world/tiles/dominantFaceColor';
 import { WalkIcon } from '../icons/panelIcons';
+import { LightKnobRows } from '../lightEditor/LightKnobRows';
 import { PixelArtEditor } from '../pixelArtEditor/PixelArtEditor';
 import { PERSISTED_UI_KEYS } from '../uiState/persistedUiKeys';
 import { usePersistedUiSet } from '../uiState/usePersistedUiSet';
@@ -49,6 +50,12 @@ export function TileRow({ tile }: { tile: TileDef }) {
           ×
         </Button>
       </div>
+      {artOpen && (
+        <LightKnobRows
+          emitter={tile}
+          onChange={(patch) => perform('update_tile', { tile_id: tile.id, ...patch })}
+        />
+      )}
       {artOpen && (
         <PixelArtEditor
           art={tile.faceArt}

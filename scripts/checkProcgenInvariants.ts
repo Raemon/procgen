@@ -2,6 +2,8 @@ import '../src/procgen/nodes';
 import { checkCharacterBillboardInvariants } from './checkCharacterBillboardInvariants';
 import { checkItemAndInventoryInvariants } from './checkItemAndInventoryInvariants';
 import { checkPlayerCharacterInvariants } from './checkPlayerCharacterInvariants';
+import { checkLandmarkAndCeilingInvariants } from './checkLandmarkAndCeilingInvariants';
+import { checkUndergroundLightInvariants } from './checkUndergroundLightInvariants';
 import { checkPrefabAndCreatureInvariants } from './checkPrefabAndCreatureInvariants';
 import { checkTileHeightInvariants } from './checkTileHeightInvariants';
 import { cameraRelativeStep } from '../src/input/cameraRelativeStep';
@@ -77,6 +79,7 @@ import { TemplateLibrary } from '../src/procgen/templates/templateLibrary';
 import { WorldPresetLibrary } from '../src/procgen/presets/worldPresetLibrary';
 import { CreatureLibrary } from '../src/creatures/creatureLibrary';
 import { ItemLibrary } from '../src/items/itemLibrary';
+import { NO_GROUND_ITEMS } from '../src/items/pickups/groundItems';
 import { PrefabLibrary } from '../src/prefabs/prefabLibrary';
 import { FAILURES } from '../src/agent/failures';
 import { nodeTypesJson } from '../src/agent/nodeCatalog';
@@ -92,13 +95,19 @@ import {
 } from '../src/world/facing';
 import { Vector3 } from 'three';
 import {
-  CHARACTER_SIGHT_RADIUS_TILES,
-  CHARACTER_HAZE_START_TILES,
-  CHARACTER_VIEW_SIZE,
+  DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
+  MAX_CHARACTER_SIGHT_RADIUS_TILES,
+  MIN_CHARACTER_SIGHT_RADIUS_TILES,
+  characterViewSize,
+  clampSightRadiusTiles,
+  hazeStartTiles,
   isWithinCharacterSight,
 } from '../src/world/vision/characterSight';
 import { CharacterCamera } from '../src/views/view3d/characterCamera';
-import { createCharacterFog } from '../src/views/view3d/daylitScene';
+import { createCharacterFog } from '../src/views/view3d/worldScene';
+
+/** The grid a character sees at the default sight radius. */
+const CHARACTER_VIEW_SIZE = characterViewSize();
 
 const failures: string[] = [];
 
@@ -1186,12 +1195,12 @@ check('character observation blanks everything behind the agent', (() => {
   }
   return true;
 })());
-check('the character view grid is exactly wide enough to hold the sight radius', CHARACTER_VIEW_SIZE === CHARACTER_SIGHT_RADIUS_TILES * 2 + 1);
+check('the character view grid is exactly wide enough to hold the sight radius', CHARACTER_VIEW_SIZE === DEFAULT_CHARACTER_SIGHT_RADIUS_TILES * 2 + 1);
 check('the 2.5D fog turns opaque exactly at the sight radius', (() => {
   const fog = createCharacterFog();
-  return fog.far === CHARACTER_SIGHT_RADIUS_TILES && fog.near === CHARACTER_HAZE_START_TILES;
+  return fog.far === DEFAULT_CHARACTER_SIGHT_RADIUS_TILES && fog.near === hazeStartTiles();
 })());
-check('the character camera renders nothing past the fog', firstPersonCamera().camera.far === CHARACTER_SIGHT_RADIUS_TILES);
+check('the character camera renders nothing past the fog', firstPersonCamera().camera.far === DEFAULT_CHARACTER_SIGHT_RADIUS_TILES);
 check('the character camera stands in the player tile, so nothing behind the player can reach the screen', (() => {
   const camera = firstPersonCamera(3, 7, 2);
   const eye = camera.camera.position;
@@ -1218,7 +1227,7 @@ check('character observation blanks every tile the fog would swallow', (() => {
       const dx = column - center;
       const dy = row - center;
       const isSelf = dx === 0 && dy === 0;
-      const fogged = dx * dx + dy * dy > CHARACTER_SIGHT_RADIUS_TILES * CHARACTER_SIGHT_RADIUS_TILES;
+      const fogged = dx * dx + dy * dy > DEFAULT_CHARACTER_SIGHT_RADIUS_TILES * DEFAULT_CHARACTER_SIGHT_RADIUS_TILES;
       if (fogged && !isSelf && charObs.view[row]![column] !== ' ') return false;
     }
   }
@@ -1230,7 +1239,7 @@ check('the character sight test is the half-plane test bounded by the sight radi
       for (let dx = -CHARACTER_VIEW_SIZE; dx <= CHARACTER_VIEW_SIZE; dx++) {
         const expected =
           isInFrontHalfPlane(facing as FacingIndex, dx, dy) &&
-          dx * dx + dy * dy <= CHARACTER_SIGHT_RADIUS_TILES * CHARACTER_SIGHT_RADIUS_TILES;
+          dx * dx + dy * dy <= DEFAULT_CHARACTER_SIGHT_RADIUS_TILES * DEFAULT_CHARACTER_SIGHT_RADIUS_TILES;
         if (isWithinCharacterSight(facing as FacingIndex, dx, dy) !== expected) return false;
       }
     }
@@ -1238,8 +1247,8 @@ check('the character sight test is the half-plane test bounded by the sight radi
   return true;
 })());
 check('a character observation stays smaller to read than a god observation', CHARACTER_VIEW_SIZE < GOD_VIEW_SIZE);
-check('the character observation states its sight radius, the god one has none', charObs.sightRadiusTiles === CHARACTER_SIGHT_RADIUS_TILES && godObs.sightRadiusTiles === null);
-check('the character observation text names the sight radius', observationText(charObs).includes(`${CHARACTER_SIGHT_RADIUS_TILES} tiles`));
+check('the character observation states its sight radius, the god one has none', charObs.sightRadiusTiles === DEFAULT_CHARACTER_SIGHT_RADIUS_TILES && godObs.sightRadiusTiles === null);
+check('the character observation text names the sight radius', observationText(charObs).includes(`${DEFAULT_CHARACTER_SIGHT_RADIUS_TILES} tiles`));
 check('every facing rotates the blank half of the character view', (() => {
   const center = Math.floor(CHARACTER_VIEW_SIZE / 2);
   const views = new Set<string>();
@@ -1264,8 +1273,59 @@ check('every facing rotates the blank half of the character view', (() => {
 })());
 check('character legend appears only for visible glyphs plus the fixed entries', charObs.legend.every((entry) => entry.glyph === '@' || entry.glyph === ' ' || charObs.view.some((row) => row.includes(entry.glyph))));
 
+const WIDE_SIGHT_RADIUS = 24;
+const wideObs = buildObservation(agentWorld.sampler, tileset, { x: 0, y: 0, facing: 0 }, 'character', WIDE_SIGHT_RADIUS);
+check('a widened sight radius widens the observation grid to match', wideObs.viewSize === characterViewSize(WIDE_SIGHT_RADIUS) && wideObs.view.length === wideObs.viewSize && wideObs.view.every((row) => row.length === wideObs.viewSize));
+check('a widened observation reports the radius it was built with', wideObs.sightRadiusTiles === WIDE_SIGHT_RADIUS && observationText(wideObs).includes(`${WIDE_SIGHT_RADIUS} tiles`));
+check('a widened sight radius still blanks everything behind and past the fog', (() => {
+  const center = Math.floor(wideObs.viewSize / 2);
+  for (let row = 0; row < wideObs.viewSize; row++) {
+    for (let column = 0; column < wideObs.viewSize; column++) {
+      const dx = column - center;
+      const dy = row - center;
+      if (dx === 0 && dy === 0) continue;
+      const visible = isWithinCharacterSight(0, dx, dy, WIDE_SIGHT_RADIUS);
+      if (!visible && wideObs.view[row]![column] !== ' ') return false;
+    }
+  }
+  return true;
+})());
+check('a wider radius only adds ground: every tile the default radius showed reads the same', (() => {
+  const wideCenter = Math.floor(wideObs.viewSize / 2);
+  const nearCenter = Math.floor(CHARACTER_VIEW_SIZE / 2);
+  let widened = false;
+  for (let row = 0; row < CHARACTER_VIEW_SIZE; row++) {
+    for (let column = 0; column < CHARACTER_VIEW_SIZE; column++) {
+      const near = charObs.view[row]![column]!;
+      const wide = wideObs.view[row - nearCenter + wideCenter]![column - nearCenter + wideCenter]!;
+      if (near !== ' ' && near !== wide) return false;
+      if (near === ' ' && wide !== ' ') widened = true;
+    }
+  }
+  return widened;
+})());
+check('sight radii are clamped into the range the docs promise', clampSightRadiusTiles(0) === MIN_CHARACTER_SIGHT_RADIUS_TILES && clampSightRadiusTiles(1000) === MAX_CHARACTER_SIGHT_RADIUS_TILES && clampSightRadiusTiles(Number.NaN) === DEFAULT_CHARACTER_SIGHT_RADIUS_TILES && clampSightRadiusTiles(WIDE_SIGHT_RADIUS) === WIDE_SIGHT_RADIUS);
+check('the default radius is inside the range agents may ask for', DEFAULT_CHARACTER_SIGHT_RADIUS_TILES >= MIN_CHARACTER_SIGHT_RADIUS_TILES && DEFAULT_CHARACTER_SIGHT_RADIUS_TILES <= MAX_CHARACTER_SIGHT_RADIUS_TILES);
+check('the 2.5D fog and camera follow a widened sight radius', (() => {
+  const fog = createCharacterFog(WIDE_SIGHT_RADIUS);
+  const camera = firstPersonCamera();
+  camera.setSightRadiusTiles(WIDE_SIGHT_RADIUS);
+  return (
+    fog.far === WIDE_SIGHT_RADIUS &&
+    fog.near === hazeStartTiles(WIDE_SIGHT_RADIUS) &&
+    fog.near < fog.far &&
+    camera.camera.far === WIDE_SIGHT_RADIUS
+  );
+})());
+check('haze always starts before the fog closes, at every radius agents may pick', (() => {
+  for (let radius = MIN_CHARACTER_SIGHT_RADIUS_TILES; radius <= MAX_CHARACTER_SIGHT_RADIUS_TILES; radius++) {
+    if (!(hazeStartTiles(radius) > 0 && hazeStartTiles(radius) < radius)) return false;
+  }
+  return true;
+})());
+
 const agentDocs = buildApiDocs(tileset);
-check('api docs state the character sight radius and grid size', agentDocs.includes(`${CHARACTER_SIGHT_RADIUS_TILES}-tile sight radius`) && agentDocs.includes(`${CHARACTER_VIEW_SIZE}x${CHARACTER_VIEW_SIZE}`));
+check('api docs state the character sight radius and grid size', agentDocs.includes(`${DEFAULT_CHARACTER_SIGHT_RADIUS_TILES}-tile sight radius`) && agentDocs.includes(`${CHARACTER_VIEW_SIZE}x${CHARACTER_VIEW_SIZE}`));
 check('api docs render with no unfilled placeholder', !/\{\{\w+\}\}/.test(agentDocs));
 check('api docs list every ability of both modes', everyAbility().every((spec) => agentDocs.includes(`\`${spec.action}\``)));
 check('api docs list every failure code', FAILURES.every((failure) => agentDocs.includes(`\`${failure.code}\``)));
@@ -1294,6 +1354,7 @@ function abilityWorld() {
   const abilityTileset = new Tileset();
   const prefabs = new PrefabLibrary(() => -1);
   const pose = { x: 0, y: 0, facing: 0 as FacingIndex };
+  const sight: { radius: number } = { radius: DEFAULT_CHARACTER_SIGHT_RADIUS_TILES };
   const context = {
     store,
     tileset: abilityTileset,
@@ -1303,6 +1364,7 @@ function abilityWorld() {
     templates: new TemplateLibrary([]),
     worldPresets: new WorldPresetLibrary([]),
     randomizeHistory: new RandomizeHistory(),
+    groundItems: NO_GROUND_ITEMS,
     regionSampler: {
       tileAt: () => 0,
       elevationAt: () => 0,
@@ -1312,9 +1374,11 @@ function abilityWorld() {
       pose: () => pose,
       tryStep: (dx: number, dy: number) => ((pose.x += dx), (pose.y += dy), true),
       turn: (turns: number) => (pose.facing = turnedFacing(pose.facing, turns)),
+      sightRadiusTiles: () => sight.radius,
+      setSightRadiusTiles: (radius: number) => (sight.radius = clampSightRadiusTiles(radius)),
     },
   };
-  return { context, store, pose, prefabs, tileset: abilityTileset };
+  return { context, store, pose, sight, prefabs, tileset: abilityTileset };
 }
 
 const abilities = abilityWorld();
@@ -1343,6 +1407,35 @@ check('moving and turning go through the same registry the API uses', (() => {
   const moved = act('god', 'step_east');
   const turned = act('character', 'turn_right');
   return moved.ok && abilities.pose.x === 1 && turned.ok && abilities.pose.facing === 1;
+})());
+check('set_sight_radius is a character power, and god mode has no such knob', (() => {
+  const widened = act('character', 'set_sight_radius', { radius_tiles: 24 });
+  const inGodMode = act('god', 'set_sight_radius', { radius_tiles: 24 });
+  return (
+    widened.ok &&
+    widened.summary.includes('24') &&
+    abilities.sight.radius === 24 &&
+    !inGodMode.ok &&
+    inGodMode.code === 'unknown_action'
+  );
+})());
+check('set_sight_radius clamps rather than refusing, and says so', (() => {
+  const tooFar = act('character', 'set_sight_radius', { radius_tiles: 5000 });
+  const clampedTo = abilities.sight.radius;
+  const tooNear = act('character', 'set_sight_radius', { radius_tiles: -10 });
+  const narrowedTo = abilities.sight.radius;
+  const back = act('character', 'set_sight_radius', {
+    radius_tiles: DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
+  });
+  return (
+    tooFar.ok && tooFar.summary.includes('clamped') && clampedTo === MAX_CHARACTER_SIGHT_RADIUS_TILES &&
+    tooNear.ok && narrowedTo === MIN_CHARACTER_SIGHT_RADIUS_TILES &&
+    back.ok && abilities.sight.radius === DEFAULT_CHARACTER_SIGHT_RADIUS_TILES
+  );
+})());
+check('set_sight_radius refuses a radius that is not a number', (() => {
+  const result = act('character', 'set_sight_radius', { radius_tiles: 'far' });
+  return !result.ok && result.code === 'invalid_value';
 })());
 check('add_node rejects an unknown type', (() => {
   const result = act('god', 'add_node', { type: 'noSuchThing' });
@@ -1460,7 +1553,8 @@ check('capture_region lifts world tiles into a new prefab', (() => {
   return captured.ok && abilities.prefabs.all().length === before + 1;
 })());
 check('every ability is reachable through the API dispatcher', everyAbility().every((spec) => abilityFor(spec.mode, spec.action) === spec));
-check('character mode owns nothing but movement', abilitiesForMode('character').every((spec) => spec.group === 'movement'));
+check('character mode owns nothing but its own movement and senses, never the world editor', abilitiesForMode('character').every((spec) => spec.group === 'movement' || spec.group === 'senses'));
+check('character mode can widen its own sight and nothing else senses-shaped', abilitiesForMode('character').filter((spec) => spec.group === 'senses').map((spec) => spec.action).join() === 'set_sight_radius');
 
 checkOnlyTheAbilityLayerCanMutate(check);
 
@@ -1735,6 +1829,8 @@ checkItemAndInventoryInvariants(check);
 checkCharacterBillboardInvariants(check);
 checkPlayerCharacterInvariants(check);
 checkTileHeightInvariants(check);
+checkLandmarkAndCeilingInvariants(check);
+checkUndergroundLightInvariants(check);
 
 if (failures.length > 0) throw new Error(`${failures.length} check(s) failed: ${failures.join(', ')}`);
 console.log('\nall checks passed');

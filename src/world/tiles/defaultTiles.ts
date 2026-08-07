@@ -1,4 +1,4 @@
-import type { TileDef, TileRole } from './tileDef';
+import { newTileWithId, type TileDef, type TileRole } from './tileDef';
 import { defaultHeightForTile } from './tileHeight';
 import type { CubeFaceArt } from './tileFaceArt';
 import {
@@ -40,6 +40,7 @@ interface TileEntry {
   role: TileRole | null;
   height?: number;
   art: () => CubeFaceArt;
+  light?: number;
 }
 
 const POOL_HEIGHT = 1;
@@ -69,7 +70,7 @@ const TILE_CATALOG: readonly TileEntry[] = [
   { name: 'brick wall', symbol: '█', color: '#a04c3a', walkable: false, role: null, art: brickWallFaceArt },
   { name: 'wood planks', symbol: '≡', color: '#8a6236', walkable: true, role: null, art: woodPlanksFaceArt },
   { name: 'thatch roof', symbol: '∩', color: '#b58f45', walkable: false, role: null, art: thatchRoofFaceArt },
-  { name: 'lava', symbol: '^', color: '#e8531f', walkable: false, role: null, height: POOL_HEIGHT, art: lavaFaceArt },
+  { name: 'lava', symbol: '^', color: '#e8531f', walkable: false, role: null, height: POOL_HEIGHT, art: lavaFaceArt, light: 6 },
   { name: 'ash', symbol: '∴', color: '#615952', walkable: true, role: null, art: ashFaceArt },
   { name: 'scorched stone', symbol: '▒', color: '#4e4a46', walkable: false, role: null, art: scorchedStoneFaceArt },
   { name: 'hedge', symbol: '♧', color: '#2e5a28', walkable: false, role: 'tree', art: hedgeFaceArt },
@@ -82,5 +83,10 @@ export function defaultTiles(): TileDef[] {
 
 function tileFromEntry(entry: TileEntry, id: number): TileDef {
   const { art, height, ...fields } = entry;
-  return { id, ...fields, height: height ?? defaultHeightForTile(entry), faceArt: art() };
+  return {
+    ...newTileWithId(id),
+    ...fields,
+    height: height ?? defaultHeightForTile(entry),
+    faceArt: art(),
+  };
 }

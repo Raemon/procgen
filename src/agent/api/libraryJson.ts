@@ -21,6 +21,8 @@ export function itemJson(item: ItemDef) {
     edge_color: item.edgeColor,
     size: item.size,
     hover: item.hover,
+    light: item.light,
+    light_ink: item.lightInk,
     grid_width: item.gridWidth,
     grid_height: item.gridHeight,
     tags: item.tags,

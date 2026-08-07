@@ -14,7 +14,7 @@ import {
   type AbilityResult,
   type AbilitySpec,
 } from './ability';
-import { listOf, readInt, readOptionalText, readText } from './abilityParams';
+import { listOf, readInt, readNumber, readOptionalText, readText } from './abilityParams';
 import { registerAbility } from './abilityRegistry';
 
 function registerWorldAbility(
@@ -34,6 +34,21 @@ registerWorldAbility({
     if (!seed.ok) return seed.failure;
     context.store.setSeed(seed.value);
     return abilitySucceeded(`seed = ${seed.value}; the world regenerated`);
+  },
+});
+
+registerWorldAbility({
+  action: 'set_daylight',
+  humanControl: 'procgen panel: daylight row',
+  description:
+    'Set how much light the sky gives this world, 0 to 1. At 0 nothing is lit until a tile, an item or a character carrying a light emits some — the setting for caves and underground worlds.',
+  params: { daylight: { kind: 'number', help: '0 for pitch dark, 1 for full daylight' } },
+  example: { action: 'set_daylight', daylight: 0 },
+  apply: (context, params) => {
+    const daylight = readNumber(params, 'daylight');
+    if (!daylight.ok) return daylight.failure;
+    context.store.setDaylight(daylight.value);
+    return abilitySucceeded(`daylight = ${context.store.daylight()}`);
   },
 });
 

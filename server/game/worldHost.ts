@@ -1,14 +1,14 @@
 import type { AgentApiState } from '../../src/agent/api/nodeEntry';
-import { currentServerWorld, type ServerWorld } from '../../src/agent/api/serverWorld';
+import { currentServerWorld, type DocSource, type ServerWorld } from '../../src/agent/api/serverWorld';
 
 export interface WorldHost {
   current(): ServerWorld;
 }
 
-export function createWorldHost(state: AgentApiState, root: string): WorldHost {
+export function createWorldHost(state: AgentApiState, docs: DocSource): WorldHost {
   return {
     current() {
-      state.world = currentServerWorld(root, state.world);
+      state.world = currentServerWorld(docs, state.world);
       return state.world;
     },
   };

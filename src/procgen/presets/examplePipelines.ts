@@ -4,6 +4,7 @@ import type { ExamplePipeline } from './examplePipeline';
 import { fallenMetropolis } from './fallenMetropolis';
 import { poleToEquator } from './poleToEquator';
 import { settlementsAndWildlife } from './settlementsAndWildlife';
+import { undergroundLabyrinth } from './undergroundLabyrinth';
 
 export type { ExamplePipeline };
 
@@ -20,6 +21,7 @@ export function examplePipelines(): ExamplePipeline[] {
     fallenMetropolis(),
     poleToEquator(),
     emberMarches(),
+    undergroundLabyrinth(),
   ];
 }
 

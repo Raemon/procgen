@@ -1,9 +1,12 @@
 import '../abilities/index';
+import { abilityFor } from '../abilities/abilityRegistry';
 import { performAbility } from '../abilities/performAbility';
 import type { AbilityMode, AbilityResult } from '../abilities/ability';
 import { ChatComposerState } from '../chat/chatComposerState';
 import { CreatureLibrary } from '../creatures/creatureLibrary';
 import { ItemLibrary } from '../items/itemLibrary';
+import { groundItemsOf } from '../items/pickups/groundItems';
+import { TakenItemSpawns } from '../items/pickups/takenItemSpawns';
 import { MultiplayerSession } from '../net/multiplayerSession';
 import { CreatureClock } from '../creatures/sim/creatureClock';
 import { CreatureSim } from '../creatures/sim/creatureSim';
@@ -70,7 +73,9 @@ export function createAppRuntime(): AppRuntime {
   const store = new PipelineStore(loadStoredPipeline());
   attachPipelinePersistence(store);
   const evaluator = new PipelineEvaluator(store);
-  const sampler = new WorldSampler(store, evaluator, tileset, prefabs, items);
+  const takenItems = new TakenItemSpawns();
+  const sampler = new WorldSampler(store, evaluator, tileset, prefabs, items, takenItems);
+  const groundItems = groundItemsOf(sampler, takenItems);
   const isWalkableAt = (x: number, y: number) => isWalkableTile(tileset, sampler.tileAt(x, y));
   const world = new World(isWalkableAt);
   const net = new MultiplayerSession(world, store, isWalkableAt);
@@ -103,10 +108,13 @@ export function createAppRuntime(): AppRuntime {
         worldPresets,
         randomizeHistory,
         regionSampler: sampler,
+        groundItems,
         actor: {
           pose: () => ({ x: world.playerX, y: world.playerY, facing: world.facing }),
           tryStep: (dx, dy) => world.tryStep(dx, dy),
           turn: (eighthTurns) => world.turn(eighthTurns),
+          sightRadiusTiles: () => world.sightRadiusTiles,
+          setSightRadiusTiles: (radius) => world.setSightRadiusTiles(radius),
         },
       },
       abilityModeFor(action),
@@ -116,9 +124,9 @@ export function createAppRuntime(): AppRuntime {
   }
 
   function abilityModeFor(action: string): AbilityMode {
-    return action.startsWith('step_') || action.startsWith('turn_') || action.startsWith('strafe_')
-      ? playerMode
-      : 'god';
+    if (abilityFor(playerMode, action)) return playerMode;
+    // Sight lives on the character, so its actions resolve there whichever view is open.
+    return abilityFor('character', action)?.group === 'senses' ? 'character' : 'god';
   }
 
   function applyWorldChange(): void {

@@ -73,6 +73,11 @@ export const FAILURES: readonly FailureSpec[] = [
       'GET /api/v1/creatures/{id}/inventory shows the grid, its slot tags and what is already placed.',
   },
   {
+    code: 'nothing_to_pick_up',
+    meaning: 'No item lies on the tile you are standing on.',
+    recovery: 'Observe first: items show as their own symbol in the legend, then step onto one.',
+  },
+  {
     code: 'bad_request',
     meaning: 'The request body was not valid JSON or is missing a required field.',
     recovery: 'Check the endpoint table in GET /api/v1/docs.',

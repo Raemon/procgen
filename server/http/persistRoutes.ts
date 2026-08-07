@@ -1,31 +1,37 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { afterDocChanged, type DocSyncDeps } from '../game/docSync';
-import { isPersistedDocName, readDocFile, writeDocFile } from '../persist/docsRepo';
+import { isPersistedDocName, type DocStore } from '../persist/docsRepo';
 import type { Router } from './router';
 
-export function mountPersistRoutes(router: Router, deps: DocSyncDeps): void {
+export function mountPersistRoutes(router: Router, docs: DocStore, deps: DocSyncDeps): void {
   router.mount('/persist', (req, res, url) => {
     const name = url.pathname.replace(/^\/persist\//, '');
     if (!isPersistedDocName(name)) return endWithStatus(res, 404);
-    if (req.method === 'GET') return sendDoc(deps.root, name, res);
-    if (req.method === 'PUT') return receiveDoc(deps, name, req, res);
+    if (req.method === 'GET') return sendDoc(docs, name, res);
+    if (req.method === 'PUT') return receiveDoc(docs, deps, name, req, res);
     endWithStatus(res, 405);
   });
 }
 
-function sendDoc(root: string, name: string, res: ServerResponse): void {
-  const raw = readDocFile(root, name);
-  if (raw === null) return endWithStatus(res, 404);
+function sendDoc(docs: DocStore, name: string, res: ServerResponse): void {
+  const json = docs.read(name);
+  if (json === null) return endWithStatus(res, 404);
   res.writeHead(200, { 'content-type': 'application/json' });
-  res.end(raw);
+  res.end(JSON.stringify(json));
 }
 
-function receiveDoc(deps: DocSyncDeps, name: string, req: IncomingMessage, res: ServerResponse): void {
+function receiveDoc(
+  docs: DocStore,
+  deps: DocSyncDeps,
+  name: string,
+  req: IncomingMessage,
+  res: ServerResponse,
+): void {
   collectBody(req, (body) => {
     const json = parseJson(body);
     if (json === undefined) return endWithStatus(res, 400);
-    writeDocFile(deps.root, name, json);
-    afterDocChanged(deps, name, json);
+    docs.write(name, json);
+    afterDocChanged(deps, name);
     endWithStatus(res, 204);
   });
 }

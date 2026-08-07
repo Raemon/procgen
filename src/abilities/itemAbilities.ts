@@ -7,6 +7,7 @@ import {
   RENDER_CHOICES,
 } from '../items/itemDef';
 import type { ItemPatch } from '../items/itemLibrary';
+import { clampLightRadius, MAX_LIGHT_RADIUS } from '../world/light/lightEmission';
 import { isSpriteArt } from '../world/tiles/spriteArt';
 import {
   abilityFailed,
@@ -77,6 +78,12 @@ registerItemAbility({
       optional: true,
     },
     face_art: { kind: 'json', help: 'cube art as GET /api/v1/tiles reports it, or null to clear it', optional: true },
+    light: {
+      kind: 'number',
+      help: `how far this item lights the dark around it, in tiles (0-${MAX_LIGHT_RADIUS}); a character carrying it casts the same light`,
+      optional: true,
+    },
+    light_ink: { kind: 'text', help: 'a #rrggbb color for the light this item casts', optional: true },
     grid_width: { kind: 'int', help: 'how many inventory columns it fills (1-8)', optional: true },
     grid_height: { kind: 'int', help: 'how many inventory rows it fills (1-8)', optional: true },
     tags: {
@@ -163,6 +170,8 @@ function applyTextFields(patch: ItemPatch, params: Record<string, unknown>): voi
   if (color.ok) patch.color = color.value;
   const edgeColor = readText(params, 'edge_color');
   if (edgeColor.ok) patch.edgeColor = edgeColor.value;
+  const lightInk = readText(params, 'light_ink');
+  if (lightInk.ok) patch.lightInk = lightInk.value;
   const symbol = readText(params, 'symbol');
   if (symbol.ok) patch.symbol = [...symbol.value][0]!;
 }
@@ -172,6 +181,8 @@ function applyNumberFields(patch: ItemPatch, params: Record<string, unknown>): v
     const read = readNumber(params, knob);
     if (read.ok) patch[knob] = read.value;
   }
+  const light = readNumber(params, 'light');
+  if (light.ok) patch.light = clampLightRadius(light.value);
   const width = readInt(params, 'grid_width');
   if (width.ok) patch.gridWidth = clampGridSide(width.value);
   const height = readInt(params, 'grid_height');

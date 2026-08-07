@@ -1,3 +1,4 @@
+import { clampLightRadius, MAX_LIGHT_RADIUS } from '../world/light/lightEmission';
 import { isCubeFaceArt } from '../world/tiles/tileFaceArt';
 import type { EditableTileFields } from '../world/tiles/tileset';
 import {
@@ -47,6 +48,12 @@ registerTileAbility({
       help: 'how tall a blocking tile stands in the 3-D view, in tiles — blockers default to 2, walkable tiles are always drawn flat',
       optional: true,
     },
+    light: {
+      kind: 'number',
+      help: `how far the tile lights the dark around it, in tiles (0-${MAX_LIGHT_RADIUS}); 0 means it emits no light`,
+      optional: true,
+    },
+    light_ink: { kind: 'text', help: 'a #rrggbb color for the light this tile casts', optional: true },
     face_art: {
       kind: 'json',
       help: 'cube face art as GET /api/v1/tiles reports it, or null to clear it',
@@ -109,6 +116,10 @@ function tilePatchFrom(params: Record<string, unknown>): TilePatch {
   if (walkable.ok) patch.walkable = walkable.value !== 0;
   const height = readNumber(params, 'height');
   if (height.ok && height.value > 0) patch.height = height.value;
+  const light = readNumber(params, 'light');
+  if (light.ok) patch.light = clampLightRadius(light.value);
+  const lightInk = readText(params, 'light_ink');
+  if (lightInk.ok) patch.lightInk = lightInk.value;
   const art = faceArtFrom(params);
   if (!art.ok) return art;
   if (art.value !== undefined) patch.faceArt = art.value;
