@@ -5,7 +5,7 @@ import type { RemoteEntity, RemotePlayers } from '../../net/remotePlayers';
 import type { WorldSampler } from '../../procgen/worldSampler';
 import { facingYawRadians, type FacingIndex } from '../../world/facing';
 import type { CameraView } from './cameraView';
-import type { CharacterSpriteTextures } from './characterSpriteTextures';
+import type { CharacterSpriteAssets } from './characterSpriteAssets';
 import { EasedPoint } from './easedPoint';
 import { PlayerCharacterMesh } from './playerCharacterMesh';
 
@@ -22,7 +22,7 @@ export class RemotePlayerMeshes {
     private readonly root: THREE.Group,
     private readonly creatures: ReadOnlyCreatureLibrary,
     private readonly sampler: WorldSampler,
-    private readonly sprites: CharacterSpriteTextures,
+    private readonly sprites: CharacterSpriteAssets,
   ) {}
 
   dispose(): void {

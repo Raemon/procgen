@@ -7,7 +7,7 @@ import type { WorldSampler } from '../../procgen/worldSampler';
 import { hashString } from '../../random/hashString';
 import type { CameraView } from './cameraView';
 import { characterQuadMesh, dressCharacterQuad, isCharacterQuad } from './characterQuad';
-import { CharacterSpriteTextures } from './characterSpriteTextures';
+import { CharacterSpriteAssets } from './characterSpriteAssets';
 import { disposeMeshResources } from './disposeMeshResources';
 import { cubeFaceMaterials } from './faceArtMaterials';
 import { lambertFromInk } from './inkMaterial';
@@ -24,7 +24,7 @@ export class CreatureMeshes {
     root: THREE.Group,
     private readonly library: ReadOnlyCreatureLibrary,
     private readonly sampler: WorldSampler,
-    private readonly sprites: CharacterSpriteTextures,
+    private readonly sprites: CharacterSpriteAssets,
   ) {
     root.add(this.group);
   }
@@ -88,7 +88,10 @@ export class CreatureMeshes {
     const mesh = this.meshes.get(key);
     if (!mesh) return;
     this.group.remove(mesh);
-    disposeMeshResources(mesh, { keepMaterials: isCharacterQuad(mesh) });
+    disposeMeshResources(mesh, {
+      keepMaterials: isCharacterQuad(mesh),
+      keepGeometry: isCharacterQuad(mesh),
+    });
     this.meshes.delete(key);
   }
 }

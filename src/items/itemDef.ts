@@ -9,7 +9,7 @@ export const RENDER_CHOICES = [
   {
     value: BILLBOARD,
     label: 'billboard',
-    help: 'The sprite on a flat quad given slight thickness. Transparent pixels stay see-through and the extruded rim is painted with the edge color.',
+    help: 'The sprite extruded into a slab. Transparent pixels stay see-through and the rim follows the painted outline, shaded from the pixels it was cut from.',
   },
   {
     value: CUBE,

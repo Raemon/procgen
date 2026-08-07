@@ -56,7 +56,7 @@ const SIZE_KNOBS: readonly SizeKnob[] = [
     min: 0.02,
     max: 0.5,
     step: 0.01,
-    help: 'Billboard only: how far the sprite is extruded. The rim that thickness exposes is painted with the edge color.',
+    help: 'Billboard only: how far the sprite is extruded. The rim that thickness exposes traces the sprite outline.',
   },
 ];
 
@@ -86,7 +86,7 @@ export function ItemRenderKnobs({ item }: { item: ItemDef }) {
             label="edge"
             tip={{
               title: 'edge color',
-              body: 'The colour of the extruded rim — the part of a billboard you see from the side.',
+              body: 'The colour of the extruded rim on a sprite-less billboard. A sprite extrudes its own outline instead.',
             }}
           >
             <ColorField

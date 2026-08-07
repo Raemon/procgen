@@ -9,7 +9,7 @@ import { containerSize, devicePixelRatioCapped, isCollapsed } from '../canvasSur
 import type { WorldViewDeps } from '../worldViewDeps';
 import { WORLD_CANVAS_CLASSES } from '../worldCanvasClasses';
 import { CharacterCamera } from './characterCamera';
-import { CharacterSpriteTextures } from './characterSpriteTextures';
+import { CharacterSpriteAssets } from './characterSpriteAssets';
 import { ChunkMeshStreamer } from './chunkMeshStreamer';
 import { CreatureMeshes } from './creatureMeshes';
 import { EasedPoint } from './easedPoint';
@@ -44,7 +44,7 @@ export class View3D {
   private readonly characterFog = createCharacterFog();
   private cameraStyle: CameraStyle = 'god';
   private readonly worldGroup = new THREE.Group();
-  private readonly characterSprites = new CharacterSpriteTextures();
+  private readonly characterSprites = new CharacterSpriteAssets();
   private readonly player: PlayerCharacterMesh;
   private readonly easedPlayer: EasedPoint;
   private readonly streamer: ChunkMeshStreamer;

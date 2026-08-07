@@ -1,4 +1,4 @@
-import type { CubeFaceArt } from './tileFaceArt';
+import type { CubeFaceArt, FacePixels } from './tileFaceArt';
 
 /**
  * The colour a tile reads as at a distance: the most common painted pixel on its top face.
@@ -6,9 +6,12 @@ import type { CubeFaceArt } from './tileFaceArt';
  * views that need one flat colour (ascii ink, prefab previews) get it from here.
  */
 export function dominantFaceColor(art: CubeFaceArt | null): string | null {
-  if (!art) return null;
+  return art ? dominantPixelColor(art.top) : null;
+}
+
+export function dominantPixelColor(pixels: FacePixels): string | null {
   const counts = new Map<string, number>();
-  for (const pixel of art.top) {
+  for (const pixel of pixels) {
     if (pixel) counts.set(pixel, (counts.get(pixel) ?? 0) + 1);
   }
   let best: string | null = null;

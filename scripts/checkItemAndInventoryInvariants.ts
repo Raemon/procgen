@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import '../src/abilities/index';
 import { performAbility } from '../src/abilities/performAbility';
 import { DEFAULT_CHARACTER_SIGHT_RADIUS_TILES } from '../src/world/vision/characterSight';
@@ -30,7 +31,7 @@ import { TemplateLibrary } from '../src/procgen/templates/templateLibrary';
 import { WorldSampler } from '../src/procgen/worldSampler';
 import { asciiSnapshot } from '../src/views/ascii/asciiSnapshot';
 import { itemGeometry, itemHalfHeight } from '../src/views/view3d/itemMeshBuild';
-import { isSpriteArt } from '../src/world/tiles/spriteArt';
+import { blankSpriteArt, isSpriteArt } from '../src/world/tiles/spriteArt';
 import { Tileset } from '../src/world/tiles/tileset';
 
 export interface CheckReporter {
@@ -100,23 +101,51 @@ function checkItemGeometry(check: CheckReporter): void {
   const upright = items.all().find((item) => item.render === BILLBOARD && item.orientation === 0)!;
   const flat = items.all().find((item) => item.orientation === LYING_FLAT)!;
   const cube = items.all().find((item) => item.render === CUBE)!;
-  const box = (item: ItemDef) => itemGeometry(item).parameters;
+  const box = (item: ItemDef) => geometryExtent(itemGeometry(item));
   check(
     'an upright billboard is only as deep as its thickness',
-    box(upright).depth === upright.thickness && box(upright).height === upright.size,
+    box(upright).z === upright.thickness && box(upright).y === upright.size,
   );
   check(
     'a flat billboard is only as tall as its thickness',
-    box(flat).height === flat.thickness && box(flat).depth === flat.size,
+    box(flat).y === flat.thickness && box(flat).z === flat.size,
   );
   check(
     'a cube item is square in all three axes',
-    box(cube).width === cube.size && box(cube).height === cube.size && box(cube).depth === cube.size,
+    box(cube).x === cube.size && box(cube).y === cube.size && box(cube).z === cube.size,
   );
   check(
     'items float clear of the ground they stand on',
     itemHalfHeight(upright) === upright.size / 2 && itemHalfHeight(flat) === flat.thickness / 2,
   );
+  checkSpriteSlabs(check, upright);
+}
+
+function checkSpriteSlabs(check: CheckReporter, upright: ItemDef): void {
+  check('a sprite billboard is built as a slab, not a box', upright.sprite !== null);
+  const slab = itemGeometry(upright);
+  check(
+    'the slab keeps the art and its extruded rim on separate materials',
+    slab.groups.length === 2 && slab.groups[1]!.materialIndex === 1,
+  );
+  check(
+    'the rim traces the silhouette rather than four flat sides',
+    slab.groups[1]!.count > 4 * SQUARE_RIM_VERTICES,
+  );
+  const blank = itemGeometry({ ...upright, sprite: blankSpriteArt() });
+  check('a blank sprite extrudes no rim at all', blank.groups.length === 1);
+}
+
+const SQUARE_RIM_VERTICES = 6;
+
+function geometryExtent(geometry: THREE.BufferGeometry): { x: number; y: number; z: number } {
+  geometry.computeBoundingBox();
+  const size = geometry.boundingBox!.getSize(new THREE.Vector3());
+  return { x: rounded(size.x), y: rounded(size.y), z: rounded(size.z) };
+}
+
+function rounded(value: number): number {
+  return Math.round(value * 1e6) / 1e6;
 }
 
 function checkItemsInTheWorld(check: CheckReporter): void {

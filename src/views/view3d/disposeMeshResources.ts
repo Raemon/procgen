@@ -30,8 +30,8 @@ function disposeTexturesOf(material: THREE.Material): void {
 
 export function disposeMeshResources(
   mesh: THREE.Mesh,
-  options: { keepMaterials?: boolean } = {},
+  options: { keepMaterials?: boolean; keepGeometry?: boolean } = {},
 ): void {
-  mesh.geometry.dispose();
+  if (!options.keepGeometry) mesh.geometry.dispose();
   if (!options.keepMaterials) disposeMaterials(mesh.material);
 }

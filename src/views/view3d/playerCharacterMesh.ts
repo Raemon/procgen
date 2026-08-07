@@ -4,7 +4,7 @@ import type { CharacterMotion } from '../../creatures/character/characterFrame';
 import { playerCharacterDef } from '../../creatures/playerCharacter';
 import type { CameraView } from './cameraView';
 import { characterQuadMesh, dressCharacterQuad } from './characterQuad';
-import type { CharacterSpriteTextures } from './characterSpriteTextures';
+import type { CharacterSpriteAssets } from './characterSpriteAssets';
 import { createPlayerCapsule } from './playerCapsule';
 import { disposeMeshResources } from './disposeMeshResources';
 
@@ -25,7 +25,7 @@ export class PlayerCharacterMesh {
 
   constructor(
     private readonly creatures: ReadOnlyCreatureLibrary,
-    private readonly sprites: CharacterSpriteTextures,
+    private readonly sprites: CharacterSpriteAssets,
     private readonly tint?: number,
   ) {
     this.capsule = createPlayerCapsule(tint);
@@ -34,7 +34,7 @@ export class PlayerCharacterMesh {
 
   dispose(): void {
     this.object.removeFromParent();
-    disposeMeshResources(this.quad, { keepMaterials: true });
+    disposeMeshResources(this.quad, { keepMaterials: true, keepGeometry: true });
     disposeMeshResources(this.capsule);
   }
 

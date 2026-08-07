@@ -18,7 +18,7 @@ export const ITEM_NAME_TIP: TooltipContent = {
 
 export const ITEM_EDGE_COLOR_TIP: TooltipContent = {
   title: 'edge colour',
-  body: 'The colour of the extruded rim — the part of a billboard you see from the side.',
+  body: 'The colour of the extruded rim on a billboard that has no sprite. A sprite extrudes its own outline instead, each wall shaded from the pixel it was cut from.',
 };
 
 export const ITEM_TAGS_TIP: TooltipContent = {
