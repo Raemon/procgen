@@ -1,12 +1,18 @@
-import { defaultTiles, newTileWithId, type TileDef, type TileRole } from './tileDef';
+import { defaultTiles } from './defaultTiles';
+import { newTileWithId, type TileDef, type TileRole } from './tileDef';
 import { loadStoredTiles, storeTiles } from './tilesetStorage';
 
 export type EditableTileFields = Partial<Omit<TileDef, 'id' | 'role'>>;
 
 export class Tileset {
-  private tiles: TileDef[] = loadStoredTiles() ?? defaultTiles();
-  private nextId = this.tiles.reduce((highest, tile) => Math.max(highest, tile.id + 1), 0);
+  private tiles: TileDef[];
+  private nextId: number;
   private readonly listeners = new Set<() => void>();
+
+  constructor(initialTiles?: TileDef[]) {
+    this.tiles = initialTiles ?? loadStoredTiles() ?? defaultTiles();
+    this.nextId = this.tiles.reduce((highest, tile) => Math.max(highest, tile.id + 1), 0);
+  }
 
   all(): readonly TileDef[] {
     return this.tiles;
@@ -43,8 +49,9 @@ export class Tileset {
     this.persistAndNotify();
   }
 
-  onChange(listener: () => void): void {
+  onChange(listener: () => void): () => void {
     this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
   }
 
   private persistAndNotify(): void {
