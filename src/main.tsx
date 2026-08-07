@@ -14,6 +14,7 @@ void preloadPersistedFiles([
   'worldPresets',
   'prefabs',
   'creatures',
+  'items',
 ]).then(
   startApp,
 );

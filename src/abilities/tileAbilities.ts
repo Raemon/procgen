@@ -40,7 +40,7 @@ registerTileAbility({
     tile_id: { kind: 'int', help: TILE_ID_HELP },
     name: { kind: 'text', help: 'the tile name shown in menus and the observation legend', optional: true },
     symbol: { kind: 'text', help: 'the single character this tile draws as in an observation', optional: true },
-    color: { kind: 'text', help: 'a #rrggbb color', optional: true },
+    color: { kind: 'text', help: 'a #rrggbb color, or #rrggbbaa with aa=00 for transparent', optional: true },
     walkable: { kind: 'int', help: '1 if anyone may stand on this tile, 0 if it blocks', optional: true },
     face_art: {
       kind: 'json',

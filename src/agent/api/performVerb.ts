@@ -31,6 +31,7 @@ export function performVerb(
       tileset: world.tileset,
       prefabs: world.prefabs,
       creatures: world.creatures,
+      items: world.items,
       templates: world.templates,
       worldPresets: world.worldPresets,
       randomizeHistory: world.randomizeHistory,

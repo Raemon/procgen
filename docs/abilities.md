@@ -8,7 +8,7 @@ same registered function, with the same validation and the same failure text.
 
 An ability is anything that changes the world or the definitions it is built
 from: nodes, knobs, wiring, displays, the seed, tiles, prefabs, creatures,
-templates, presets, and where the player stands.
+items, inventories, templates, presets, and where the player stands.
 
 View state is not an ability: camera angle, zoom, pan, which view mode you are
 looking at, which panel is open, panel widths, the creature clock, and the
@@ -47,7 +47,7 @@ The panels cannot reach a mutable object. `AppRuntime` hands out
 `ReadOnlyTileset`, `ReadOnlyPipelineStore`, `ReadOnlyPrefabLibrary` and friends
 (`src/app/readOnlyLibraries.ts`) — `Pick<>` views with every mutator removed.
 The real `Tileset`, `PipelineStore`, `PrefabLibrary`, `CreatureLibrary`,
-`TemplateLibrary`, `WorldPresetLibrary` and `World` live in the closure of
+`ItemLibrary`, `TemplateLibrary`, `WorldPresetLibrary` and `World` live in the closure of
 `createAppRuntime` and are handed to nothing but the ability context. A panel
 that tries to change something directly does not fail review; it fails to
 compile, because the method is not on the type it holds.

@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react';
 import { Button } from '../controls/Button';
-import { COLOR_INPUT_CLASSES } from '../controls/fieldClasses';
+import { ColorField } from '../controls/ColorField';
 import type { PaintTool } from './paintSettings';
 import type { FaceArtEditor } from './useFaceArtEditor';
 
 const TOOLS: { tool: PaintTool; label: string; title: string }[] = [
   { tool: 'draw', label: 'draw', title: 'paint pixels with the current color' },
-  { tool: 'erase', label: 'erase', title: 'reset pixels to the base tile color' },
+  { tool: 'erase', label: 'erase', title: 'clear pixels back to the base color — transparent, in sprite art' },
   { tool: 'fill', label: 'fill', title: 'flood-fill a region with the current color' },
   { tool: 'pick', label: 'pick', title: 'pick a color from the canvas' },
 ];
@@ -18,12 +18,10 @@ export function PaintToolbar({ editor }: { editor: FaceArtEditor }) {
   return (
     <>
       <ToolRow>
-        <input
-          type="color"
-          className={COLOR_INPUT_CLASSES}
-          title="paint color"
-          value={settings.paintColor}
-          onChange={(event) => updateSettings({ paintColor: event.target.value })}
+        <ColorField
+          ink={settings.paintColor}
+          title="paint color — transparent paints holes in the art"
+          onChange={(paintColor) => updateSettings({ paintColor })}
         />
         {TOOLS.map((spec) => (
           <Button

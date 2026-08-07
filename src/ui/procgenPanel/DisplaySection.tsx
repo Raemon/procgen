@@ -1,6 +1,7 @@
 import { useAppRuntime } from '../../app/appRuntimeContext';
 import {
   useRerenderOnCreatureChange,
+  useRerenderOnItemChange,
   useRerenderOnPrefabChange,
 } from '../../app/rerenderHooks';
 import {
@@ -12,7 +13,8 @@ import type { MarkerBinding } from '../../procgen/display/markerAppearance';
 import type { NodeInstance } from '../../procgen/pipeline/pipelineState';
 import type { ValueKind } from '../../procgen/values/chunkValues';
 import { classes } from '../controls/classes';
-import { COLOR_INPUT_CLASSES, FIELD_CLASSES } from '../controls/fieldClasses';
+import { ColorField } from '../controls/ColorField';
+import { FIELD_CLASSES } from '../controls/fieldClasses';
 import { KnobRow } from '../controls/KnobRow';
 import { Select } from '../controls/Select';
 import { Slider } from '../controls/Slider';
@@ -53,6 +55,7 @@ export function DisplaySection({ node, kind }: { node: NodeInstance; kind: Value
       {node.display.mode === 'markers' && <MarkerRows node={node} binding={node.display} />}
       {node.display.mode === 'prefabs' && <PrefabRows node={node} binding={node.display} />}
       {node.display.mode === 'creatures' && <CreatureRows node={node} binding={node.display} />}
+      {node.display.mode === 'items' && <ItemRows node={node} binding={node.display} />}
     </div>
   );
 }
@@ -101,6 +104,26 @@ function CreatureRows({
         value={String(binding.creatureId)}
         options={libraryOptions('(none)', creatures.all())}
         onChange={(value) => perform('set_display', { node_id: node.id, display: 'creatures', creature_id: Number(value) })}
+      />
+    </KnobRow>
+  );
+}
+
+function ItemRows({
+  node,
+  binding,
+}: {
+  node: NodeInstance;
+  binding: Extract<DisplayBinding, { mode: 'items' }>;
+}) {
+  const { perform, items } = useAppRuntime();
+  useRerenderOnItemChange();
+  return (
+    <KnobRow label="item">
+      <Select
+        value={String(binding.itemId)}
+        options={libraryOptions('(none)', items.all())}
+        onChange={(value) => perform('set_display', { node_id: node.id, display: 'items', item_id: Number(value) })}
       />
     </KnobRow>
   );
@@ -157,11 +180,10 @@ function MarkerRows({ node, binding }: { node: NodeInstance; binding: MarkerBind
             />
           </KnobRow>
           <KnobRow label="color">
-            <input
-              type="color"
-              className={COLOR_INPUT_CLASSES}
-              value={binding.color}
-              onChange={(event) => perform('set_display', { node_id: node.id, display: 'markers', color: event.target.value })}
+            <ColorField
+              ink={binding.color}
+              title="marker color"
+              onChange={(color) => perform('set_display', { node_id: node.id, display: 'markers', color })}
             />
           </KnobRow>
         </>

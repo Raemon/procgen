@@ -1,5 +1,6 @@
 import type {
   ReadOnlyCreatureLibrary,
+  ReadOnlyItemLibrary,
   ReadOnlyTileset,
   ReadOnlyWorld,
 } from '../app/readOnlyLibraries';
@@ -14,6 +15,7 @@ export interface WorldViewDeps {
   sampler: WorldSampler;
   tileset: ReadOnlyTileset;
   creatures: ReadOnlyCreatureLibrary;
+  items: ReadOnlyItemLibrary;
   sim: CreatureSim;
   capture: CaptureTool;
   remotePlayers: RemotePlayers;

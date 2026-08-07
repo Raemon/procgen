@@ -198,17 +198,17 @@ registerNodeAbility({
   action: 'set_display',
   humanControl: 'procgen panel: display section',
   description:
-    'Map a node into the world: tile layers stack in list order, elevation shapes the ground, markers draw glyphs, prefabs stamp structures, creatures spawn life. Fields you leave out keep their current value when the mode is unchanged.',
+    'Map a node into the world: tile layers stack in list order, elevation shapes the ground, markers draw glyphs, prefabs stamp structures, creatures spawn life, items float loot. Fields you leave out keep their current value when the mode is unchanged.',
   params: {
     node_id: { kind: 'nodeId', help: NODE_ID_HELP },
     display: {
       kind: 'text',
-      help: "'hidden', 'tileLayer' (tiles output), 'elevation' (field output); a points output takes 'markers', 'prefabs' or 'creatures'",
+      help: "'hidden', 'tileLayer' (tiles output), 'elevation' (field output); a points output takes 'markers', 'prefabs', 'creatures' or 'items'",
     },
     height_scale: { kind: 'number', help: 'elevation only: world height per field unit', optional: true },
     tile_id: { kind: 'int', help: 'markers only: a tileset id to draw, or -1 for the glyph', optional: true },
     glyph: { kind: 'text', help: 'markers only: a single character', optional: true },
-    color: { kind: 'text', help: 'markers only: a #rrggbb color', optional: true },
+    color: { kind: 'text', help: 'markers only: a #rrggbb color, or #rrggbbaa with aa=00 for transparent', optional: true },
     prefab_id: {
       kind: 'int',
       help: 'prefabs only: a prefab id to stamp at each point — see GET /api/v1/prefabs',
@@ -222,6 +222,11 @@ registerNodeAbility({
     creature_id: {
       kind: 'int',
       help: 'creatures only: a creature id to spawn at each point — see GET /api/v1/creatures',
+      optional: true,
+    },
+    item_id: {
+      kind: 'int',
+      help: 'items only: an item id to float above each point — see GET /api/v1/items',
       optional: true,
     },
   },
@@ -456,7 +461,7 @@ function setDisplay(
   if (!isDisplayMode(mode)) {
     return abilityFailed(
       'invalid_value',
-      "display must be 'hidden', 'tileLayer', 'elevation', 'markers', 'prefabs' or 'creatures'",
+      "display must be 'hidden', 'tileLayer', 'elevation', 'markers', 'prefabs', 'creatures' or 'items'",
     );
   }
   const kind = outputKindOf(def, node.params);
@@ -480,7 +485,8 @@ function isDisplayMode(value: unknown): value is DisplayMode {
     value === 'elevation' ||
     value === 'markers' ||
     value === 'prefabs' ||
-    value === 'creatures'
+    value === 'creatures' ||
+    value === 'items'
   );
 }
 
@@ -504,6 +510,9 @@ function bindingFrom(
   }
   if (base.mode === 'creatures') {
     return { ...base, creatureId: readOptionalId(params, 'creature_id', base.creatureId) };
+  }
+  if (base.mode === 'items') {
+    return { ...base, itemId: readOptionalId(params, 'item_id', base.itemId) };
   }
   return base;
 }
@@ -549,6 +558,12 @@ function rejectMissingBindingTarget(
     return abilityFailed(
       'invalid_value',
       `creature_id must be -1 or one of: ${listOf(context.creatures.all().map((creature) => creature.id))} — see GET /api/v1/creatures`,
+    );
+  }
+  if (binding.mode === 'items' && binding.itemId !== -1 && !context.items.byId(binding.itemId)) {
+    return abilityFailed(
+      'invalid_value',
+      `item_id must be -1 or one of: ${listOf(context.items.all().map((item) => item.id))} — see GET /api/v1/items`,
     );
   }
   return null;

@@ -1,5 +1,7 @@
 import { BEHAVIOR_CHOICES } from '../creatures/behaviorKinds';
+import { CHARACTER, ENTITY_KIND_CHOICES, isEntityKind } from '../creatures/entityKinds';
 import type { CreaturePatch } from '../creatures/creatureLibrary';
+import { blankInventory } from '../items/inventory/inventoryDef';
 import {
   abilityFailed,
   abilitySucceeded,
@@ -33,6 +35,21 @@ registerCreatureAbility({
 });
 
 registerCreatureAbility({
+  action: 'add_character',
+  humanControl: 'library panel, characters tab: + add character',
+  description:
+    'Create a character: a creature in every respect — same look, movement and spawning — that starts with an empty inventory grid. Reshape the grid with set_inventory.',
+  params: {},
+  example: { action: 'add_character' },
+  apply: (context) => {
+    const character = context.creatures.addCharacter();
+    return abilitySucceeded(
+      `added character ${character.id} with a ${character.inventory!.width}x${character.inventory!.height} inventory`,
+    );
+  },
+});
+
+registerCreatureAbility({
   action: 'duplicate_creature',
   humanControl: 'library panel, creatures tab: ⧉ on a creature row',
   description: 'Copy a creature definition with all its knobs.',
@@ -56,13 +73,14 @@ registerCreatureAbility({
     creature_id: { kind: 'int', help: CREATURE_ID_HELP },
     name: { kind: 'text', help: 'the creature name', optional: true },
     symbol: { kind: 'text', help: 'the single character it draws as', optional: true },
-    color: { kind: 'text', help: 'a #rrggbb color', optional: true },
+    color: { kind: 'text', help: 'a #rrggbb color, or #rrggbbaa with aa=00 for transparent', optional: true },
     behavior: { kind: 'int', help: behaviorHelp(), optional: true },
     speed: { kind: 'number', help: 'tiles per second', optional: true },
     sight: { kind: 'number', help: 'how many tiles away it notices the player', optional: true },
     roam: { kind: 'number', help: 'how far from its spawn cell it will range', optional: true },
     size: { kind: 'number', help: 'how large it is drawn, in tiles', optional: true },
     phasing: { kind: 'int', help: '1 if it walks through blocking tiles, 0 if it must go around', optional: true },
+    kind: { kind: 'int', help: entityKindHelp(), optional: true },
     face_art: { kind: 'json', help: 'cube face art, or null to clear it', optional: true },
   },
   example: { action: 'update_creature', creature_id: 0, behavior: 3, speed: 2.5 },
@@ -86,7 +104,11 @@ function behaviorHelp(): string {
   return `how it moves — ${BEHAVIOR_CHOICES.map((choice) => `${choice.value}=${choice.label}`).join(', ')}`;
 }
 
-function withCreature(
+function entityKindHelp(): string {
+  return `what it is — ${ENTITY_KIND_CHOICES.map((choice) => `${choice.value}=${choice.label}`).join(', ')}; a character keeps an inventory`;
+}
+
+export function withCreature(
   context: AbilityContext,
   params: Record<string, unknown>,
   use: (creatureId: number) => AbilityResult,
@@ -106,8 +128,9 @@ function updateCreature(context: AbilityContext, params: Record<string, unknown>
   return withCreature(context, params, (creatureId) => {
     const patch = creaturePatchFrom(params);
     if (!patch.ok) return patch.failure;
-    context.creatures.update(creatureId, patch.value);
-    return abilitySucceeded(`creature ${creatureId} updated: ${listOf(Object.keys(patch.value))}`);
+    const applied = inventoryForKind(context, creatureId, patch.value);
+    context.creatures.update(creatureId, applied);
+    return abilitySucceeded(`creature ${creatureId} updated: ${listOf(Object.keys(applied))}`);
   });
 }
 
@@ -132,6 +155,9 @@ function creaturePatchFrom(params: Record<string, unknown>): CreaturePatchRead {
   const behavior = behaviorFrom(params);
   if (!behavior.ok) return behavior;
   if (behavior.value !== undefined) patch.behavior = behavior.value;
+  const kind = entityKindFrom(params);
+  if (!kind.ok) return kind;
+  if (kind.value !== undefined) patch.kind = kind.value;
   const art = faceArtFrom(params);
   if (!art.ok) return art;
   if (art.value !== undefined) patch.faceArt = art.value;
@@ -147,4 +173,25 @@ function behaviorFrom(
     return { ok: false, failure: abilityFailed('invalid_value', `'behavior' — ${behaviorHelp()}`) };
   }
   return { ok: true, value: read.value };
+}
+
+function entityKindFrom(
+  params: Record<string, unknown>,
+): { ok: true; value: number | undefined } | { ok: false; failure: AbilityResult } {
+  const read = readInt(params, 'kind');
+  if (!read.ok) return { ok: true, value: undefined };
+  if (!isEntityKind(read.value)) {
+    return { ok: false, failure: abilityFailed('invalid_value', `'kind' — ${entityKindHelp()}`) };
+  }
+  return { ok: true, value: read.value };
+}
+
+function inventoryForKind(
+  context: AbilityContext,
+  creatureId: number,
+  patch: CreaturePatch,
+): CreaturePatch {
+  const alreadyHasOne = context.creatures.byId(creatureId)?.inventory !== null;
+  if (patch.kind !== CHARACTER || alreadyHasOne) return patch;
+  return { ...patch, inventory: blankInventory() };
 }
