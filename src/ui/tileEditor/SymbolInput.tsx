@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react';
 import { classes } from '../controls/classes';
 import { FIELD_CLASSES } from '../controls/fieldClasses';
+import { tooltipHandlers } from '../tooltips/tooltipHandlers';
+import { TILE_SYMBOL_TIP } from './help/tileTips';
 import { SymbolPickerPopup } from './SymbolPickerPopup';
 
 export function SymbolInput({
@@ -25,11 +27,12 @@ export function SymbolInput({
         ref={anchor}
         type="text"
         maxLength={1}
-        title="ascii symbol"
+        aria-label="ascii symbol"
         className={classes(FIELD_CLASSES, 'w-[26px] shrink-0 px-0 text-center')}
         value={symbol}
         onChange={(event) => typedSymbolOf(event.target.value, onPick)}
         onClick={() => setPickerOpen(true)}
+        {...tooltipHandlers(TILE_SYMBOL_TIP)}
       />
       {pickerOpen && anchor.current && (
         <SymbolPickerPopup

@@ -4,6 +4,15 @@ import type { NodeInstance } from '../../procgen/pipeline/pipelineState';
 import { Button } from '../controls/Button';
 import { classes } from '../controls/classes';
 import { REVEALED_ON_ROW_HOVER } from '../controls/revealOnRowHover';
+import { tooltipHandlers } from '../tooltips/tooltipHandlers';
+import {
+  collapseCardTip,
+  deleteNodeTip,
+  DRAG_HANDLE_TIP,
+  duplicateNodeTip,
+  NODE_LABEL_TIP,
+  nodeEnabledTip,
+} from './help/nodeCardTips';
 import { NODE_ID_MIME } from './nodeDragTransfer';
 import { NodeTypeIcon } from './nodeTypeIcon';
 
@@ -44,14 +53,15 @@ export function NodeCardHeader({
       <input
         type="checkbox"
         className="accent-accent"
-        title="enabled"
+        aria-label="enabled"
         checked={node.enabled}
         onChange={(event) => perform(event.target.checked ? 'enable_node' : 'disable_node', { node_id: node.id })}
+        {...tooltipHandlers(nodeEnabledTip(node))}
       />
       <NodeLabelInput node={node} />
       <Button
         className={classes(REVEALED_ON_ROW_HOVER, 'px-1.5 py-0.5 text-[11px]')}
-        title="duplicate node"
+        tip={duplicateNodeTip(node)}
         onClick={() => perform('duplicate_node', { node_id: node.id })}
       >
         ⧉
@@ -61,7 +71,7 @@ export function NodeCardHeader({
           REVEALED_ON_ROW_HOVER,
           'px-1.5 py-0.5 text-[11px] hover:border-danger-edge hover:text-danger-ink',
         )}
-        title="delete node"
+        tip={deleteNodeTip(node)}
         onClick={() => perform('remove_node', { node_id: node.id })}
       >
         ✕
@@ -88,10 +98,9 @@ function TypeIconButton({
         'cursor-pointer rounded border border-transparent p-1 hover:border-panel-edge hover:text-ink',
         collapsed ? 'text-ink' : 'text-ink-dim',
       )}
-      title={
-        collapsed ? `${node.label} · ${typeTitle} — click to expand` : `${typeTitle} — click to collapse`
-      }
+      aria-label={`${node.label} · ${typeTitle}`}
       onClick={onToggleCollapsed}
+      {...tooltipHandlers(collapseCardTip(node, typeTitle))}
     >
       <NodeTypeIcon type={node.type} size={16} />
     </button>
@@ -102,9 +111,9 @@ function DragHandle({ nodeId }: { nodeId: string }) {
   return (
     <span
       draggable
-      title="drag to reorder"
       className="cursor-grab px-[3px] py-0.5 text-xs text-ink-dim select-none hover:text-ink active:cursor-grabbing"
       onDragStart={(event) => startCardDrag(event, nodeId)}
+      {...tooltipHandlers(DRAG_HANDLE_TIP)}
     >
       ⠿
     </span>
@@ -130,6 +139,8 @@ function NodeLabelInput({ node }: { node: NodeInstance }) {
       onChange={(event) => setDraft(event.target.value)}
       onBlur={commit}
       onKeyDown={(event) => event.key === 'Enter' && commit()}
+      aria-label="node label"
+      {...tooltipHandlers(NODE_LABEL_TIP)}
     />
   );
 }

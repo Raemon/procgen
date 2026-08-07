@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import type { Prefab } from '../../prefabs/prefabDef';
 import type { ReadOnlyTileset } from '../../app/readOnlyLibraries';
+import { tooltipHandlers } from '../tooltips/tooltipHandlers';
+import { ORBIT_TIP } from './help/prefabTips';
 import { PrefabPreviewScene } from './prefabPreviewScene';
 
 export function PrefabPreview3D({ prefab, tileset }: { prefab: Prefab; tileset: ReadOnlyTileset }) {
@@ -20,7 +22,7 @@ export function PrefabPreview3D({ prefab, tileset }: { prefab: Prefab; tileset: 
   return (
     <canvas
       ref={canvas}
-      title="drag to orbit"
+      {...tooltipHandlers(ORBIT_TIP)}
       className="mt-1.5 block h-32 w-full cursor-grab touch-none rounded-[3px] border border-art-edge"
     />
   );

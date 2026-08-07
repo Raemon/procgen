@@ -37,7 +37,7 @@ export function DisplaySection({ node, kind }: { node: NodeInstance; kind: Value
   const { perform } = useAppRuntime();
   return (
     <div className="mt-2 border-t border-dashed border-panel-edge pt-2">
-      <KnobRow label="display" tooltip={displayModeTooltip(kind)}>
+      <KnobRow label="display" tip={displayModeTooltip(kind)}>
         <Select
           value={node.display.mode}
           options={displayModesForKind(kind).map((mode) => ({
@@ -75,7 +75,7 @@ function PrefabRows({
           onChange={(value) => perform('set_display', { node_id: node.id, display: 'prefabs', prefab_id: Number(value) })}
         />
       </KnobRow>
-      <KnobRow label="rotation" tooltip={prefabRotationTooltip()}>
+      <KnobRow label="rotation" tip={prefabRotationTooltip()}>
         <Select
           value={String(binding.rotation)}
           options={ROTATION_OPTIONS}
@@ -136,7 +136,7 @@ function MarkerRows({ node, binding }: { node: NodeInstance; binding: MarkerBind
   const { perform, tileset } = useAppRuntime();
   return (
     <>
-      <KnobRow label="tile" tooltip={markerTileTooltip()}>
+      <KnobRow label="tile" tip={markerTileTooltip()}>
         <Select
           value={String(binding.tileId)}
           options={tileSelectOptions(tileset, '(custom glyph)')}

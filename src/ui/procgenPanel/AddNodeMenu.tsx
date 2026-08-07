@@ -4,12 +4,13 @@ import type { NodeTypeDef } from '../../procgen/nodeType';
 import { Button } from '../controls/Button';
 import { tooltipHandlers } from '../tooltips/tooltipHandlers';
 import { nodeTypeTooltip } from './help/nodeTypeTooltip';
+import { ADD_NODE_TIP } from './help/pipelineTips';
 
 export function AddNodeMenu({ onPick }: { onPick(type: string): void }) {
   const [open, setOpen] = useState(false);
   return (
     <div>
-      <Button className="w-full" onClick={() => setOpen(!open)}>
+      <Button className="w-full" tip={ADD_NODE_TIP} onClick={() => setOpen(!open)}>
         + add node
       </Button>
       {open && <NodeTypeList onPick={onPick} />}

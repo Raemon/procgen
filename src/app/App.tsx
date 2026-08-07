@@ -9,8 +9,10 @@ import {
   LibraryIcon,
   ProcgenIcon,
 } from '../ui/icons/panelIcons';
+import type { TooltipContent } from '../ui/tooltips/tooltipContent';
 import { FloatingTooltip } from '../ui/tooltips/FloatingTooltip';
 import { WorldPanel } from '../ui/worldView/WorldPanel';
+import { PANEL_TIPS } from './help/panelTips';
 import { Panel } from './Panel';
 import { PanelResizer } from './PanelResizer';
 import { usePanelLayout, type PanelKey } from './usePanelLayout';
@@ -18,6 +20,7 @@ import { usePanelLayout, type PanelKey } from './usePanelLayout';
 interface Column {
   key: PanelKey;
   title: string;
+  tip: TooltipContent;
   icon: ReactNode;
   tone: string;
   body: ReactNode;
@@ -35,6 +38,7 @@ export function App() {
             <Panel
               chrome={{
                 title: column.title,
+                tip: column.tip,
                 icon: column.icon,
                 tone: column.tone,
                 collapsed: layout.isCollapsed(column.key),
@@ -64,6 +68,7 @@ function visibleColumns(
   const columns: Column[] = [
     {
       key: 'library',
+      tip: PANEL_TIPS.library,
       title: 'library',
       icon: <LibraryIcon />,
       tone: 'bg-panel',
@@ -71,6 +76,7 @@ function visibleColumns(
     },
     {
       key: 'procgen',
+      tip: PANEL_TIPS.procgen,
       title: 'procgen',
       icon: <ProcgenIcon />,
       tone: 'bg-procgen',
@@ -78,6 +84,7 @@ function visibleColumns(
     },
     {
       key: 'agents',
+      tip: PANEL_TIPS.agents,
       title: 'agents',
       icon: <AgentsIcon />,
       tone: 'bg-panel',
@@ -88,6 +95,7 @@ function visibleColumns(
   if (selectedAgentId !== null) {
     columns.push({
       key: 'log',
+      tip: PANEL_TIPS.log,
       title: 'agent log',
       icon: <AgentLogIcon />,
       tone: 'bg-procgen',

@@ -2,10 +2,14 @@ import type { ReactNode } from 'react';
 import { classes } from '../ui/controls/classes';
 import { HintsToggle } from '../ui/help/HintsToggle';
 import { CollapseIcon } from '../ui/icons/panelIcons';
+import type { TooltipContent } from '../ui/tooltips/tooltipContent';
+import { tooltipHandlers } from '../ui/tooltips/tooltipHandlers';
 import { useAppRuntime } from './appRuntimeContext';
+import { collapsePanelTip, expandPanelTip } from './help/panelTips';
 
 export interface PanelChrome {
   title: string;
+  tip: TooltipContent;
   icon: ReactNode;
   tone: string;
   collapsed: boolean;
@@ -34,14 +38,18 @@ function PanelHeader({ chrome }: { chrome: PanelChrome }) {
         chrome.tone,
       )}
     >
-      <span className="text-ink-dim">{chrome.icon}</span>
-      <h2 className="flex-1 text-[13px] tracking-[0.12em] text-ink-dim uppercase">{chrome.title}</h2>
+      <span className="flex items-center gap-1.5 text-ink-dim" {...tooltipHandlers(chrome.tip)}>
+        {chrome.icon}
+        <h2 className="text-[13px] tracking-[0.12em] uppercase">{chrome.title}</h2>
+      </span>
+      <span className="flex-1" />
       <HintsToggle />
       <button
         type="button"
+        aria-label={`collapse ${chrome.title}`}
         className="cursor-pointer rounded border border-transparent p-0.5 text-ink-dim hover:border-panel-edge hover:text-ink"
-        title={`collapse ${chrome.title}`}
         onClick={chrome.onToggleCollapsed}
+        {...tooltipHandlers(collapsePanelTip(chrome.title))}
       >
         <CollapseIcon />
       </button>
@@ -53,12 +61,13 @@ function CollapsedRail({ chrome }: { chrome: PanelChrome }) {
   return (
     <button
       type="button"
-      title={`expand ${chrome.title}`}
+      aria-label={`expand ${chrome.title}`}
       onClick={chrome.onToggleCollapsed}
       className={classes(
         'flex cursor-pointer flex-col items-center gap-2 overflow-hidden border-r border-panel-edge py-2.5 text-ink-dim hover:text-ink',
         chrome.tone,
       )}
+      {...tooltipHandlers(expandPanelTip(chrome.title))}
     >
       {chrome.icon}
       <span className="text-[11px] tracking-[0.12em] uppercase [writing-mode:vertical-rl]">

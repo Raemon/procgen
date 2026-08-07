@@ -1,11 +1,12 @@
 import { Button } from '../controls/Button';
 import type { PrefabEditor, VoxelTool } from './usePrefabEditor';
+import { PREFAB_EDIT_TIPS, VOXEL_TOOL_TIPS } from './help/prefabTips';
 
-const TOOLS: { tool: VoxelTool; label: string; title: string }[] = [
-  { tool: 'paint', label: 'paint', title: 'paint voxels with the selected tile' },
-  { tool: 'erase', label: 'erase', title: 'clear voxels back to empty' },
-  { tool: 'fill', label: 'fill', title: 'flood-fill this layer from the clicked cell' },
-  { tool: 'pick', label: 'pick', title: 'pick the tile under the cursor' },
+const TOOLS: { tool: VoxelTool; label: string }[] = [
+  { tool: 'paint', label: 'paint' },
+  { tool: 'erase', label: 'erase' },
+  { tool: 'fill', label: 'fill' },
+  { tool: 'pick', label: 'pick' },
 ];
 
 const TOOL_CLASSES = 'px-2 py-0.5 text-[11px]';
@@ -18,7 +19,7 @@ export function PrefabToolbar({ editor }: { editor: PrefabEditor }) {
           <Button
             key={spec.tool}
             className={TOOL_CLASSES}
-            title={spec.title}
+            tip={VOXEL_TOOL_TIPS[spec.tool]}
             active={editor.tool === spec.tool}
             onClick={() => editor.setTool(spec.tool)}
           >
@@ -27,19 +28,19 @@ export function PrefabToolbar({ editor }: { editor: PrefabEditor }) {
         ))}
       </div>
       <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-        <Button className={TOOL_CLASSES} title="undo the last voxel edit" onClick={editor.undo}>
+        <Button className={TOOL_CLASSES} tip={PREFAB_EDIT_TIPS.undo} onClick={editor.undo}>
           undo
         </Button>
-        <Button className={TOOL_CLASSES} title="turn the whole prefab 90°" onClick={editor.rotate}>
+        <Button className={TOOL_CLASSES} tip={PREFAB_EDIT_TIPS.rotate} onClick={editor.rotate}>
           rotate
         </Button>
-        <Button className={TOOL_CLASSES} title="copy this layer" onClick={editor.copyLayer}>
+        <Button className={TOOL_CLASSES} tip={PREFAB_EDIT_TIPS.copy} onClick={editor.copyLayer}>
           copy
         </Button>
-        <Button className={TOOL_CLASSES} title="paste onto this layer" onClick={editor.pasteLayer}>
+        <Button className={TOOL_CLASSES} tip={PREFAB_EDIT_TIPS.paste} onClick={editor.pasteLayer}>
           paste
         </Button>
-        <Button className={TOOL_CLASSES} title="empty this layer" onClick={editor.clearLayer}>
+        <Button className={TOOL_CLASSES} tip={PREFAB_EDIT_TIPS.clear} onClick={editor.clearLayer}>
           clear
         </Button>
       </div>

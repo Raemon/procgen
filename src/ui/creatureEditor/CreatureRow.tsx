@@ -10,6 +10,14 @@ import { SymbolInput } from '../tileEditor/SymbolInput';
 import { isOneOf } from '../uiState/persistedUiGuards';
 import { PERSISTED_UI_KEYS } from '../uiState/persistedUiKeys';
 import { usePersistedUiRecord } from '../uiState/usePersistedUiRecord';
+import { tooltipHandlers } from '../tooltips/tooltipHandlers';
+import {
+  CREATURE_ART_TIP,
+  CREATURE_COLOR_TIP,
+  CREATURE_NAME_TIP,
+  creatureBehaviorTip,
+  deleteCreatureTip,
+} from './help/creatureTips';
 import { CreatureBehaviorKnobs } from './CreatureBehaviorKnobs';
 
 const CREATURE_PANELS = ['none', 'behavior', 'art'] as const;
@@ -29,9 +37,10 @@ export function CreatureRow({ creature }: { creature: CreatureDef }) {
         <input
           type="color"
           className={COLOR_INPUT_CLASSES}
-          title="color"
+          aria-label="body colour"
           value={creature.color}
           onChange={(event) => perform('update_creature', { creature_id: creature.id, color: event.target.value })}
+          {...tooltipHandlers(CREATURE_COLOR_TIP)}
         />
         <SymbolInput
           symbol={creature.symbol}
@@ -39,14 +48,15 @@ export function CreatureRow({ creature }: { creature: CreatureDef }) {
         />
         <input
           type="text"
-          title="name"
+          aria-label="creature name"
           className={classes(FIELD_CLASSES, 'min-w-0 flex-1')}
           value={creature.name}
           onChange={(event) => perform('update_creature', { creature_id: creature.id, name: event.target.value })}
+          {...tooltipHandlers(CREATURE_NAME_TIP)}
         />
         <Button
           className="px-2 py-0.5 text-[11px]"
-          title={`behavior: ${behaviorLabel(creature.behavior)}`}
+          tip={creatureBehaviorTip(creature)}
           active={openPanel === 'behavior'}
           onClick={() => toggle('behavior')}
         >
@@ -54,7 +64,7 @@ export function CreatureRow({ creature }: { creature: CreatureDef }) {
         </Button>
         <Button
           className="px-2 py-0.5"
-          title="cube art"
+          tip={CREATURE_ART_TIP}
           active={openPanel === 'art'}
           onClick={() => toggle('art')}
         >
@@ -65,7 +75,7 @@ export function CreatureRow({ creature }: { creature: CreatureDef }) {
             REVEALED_ON_ROW_HOVER,
             'px-2 py-0.5 hover:border-danger-edge hover:text-danger-ink',
           )}
-          title="delete creature"
+          tip={deleteCreatureTip(creature)}
           onClick={() => perform('remove_creature', { creature_id: creature.id })}
         >
           ×
