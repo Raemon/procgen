@@ -76,6 +76,17 @@ export function WalkIcon({ size }: { size?: number }) {
   );
 }
 
+/** Question mark — reveals the explanatory notes a panel keeps folded away. */
+export function HelpIcon({ size }: { size?: number }) {
+  return (
+    <Icon size={size}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.5 9.2a2.6 2.6 0 1 1 3.1 2.9v1.6" />
+      <path d="M12.6 16.8h.01" />
+    </Icon>
+  );
+}
+
 /** Chevron that folds a panel away toward its own edge. */
 export function CollapseIcon({ size }: { size?: number }) {
   return (

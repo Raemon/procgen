@@ -2,8 +2,7 @@ import { useAppRuntime } from '../../app/appRuntimeContext';
 import { useRerenderOnCreatureChange } from '../../app/rerenderHooks';
 import { isCharacter } from '../../creatures/creatureDef';
 import { Button } from '../controls/Button';
-import { classes } from '../controls/classes';
-import { HINT_CLASSES } from '../controls/fieldClasses';
+import { PanelHint } from '../help/PanelHint';
 import { CreatureRow } from './CreatureRow';
 
 export function CreaturesTab() {
@@ -20,11 +19,11 @@ export function CreaturesTab() {
       <Button className="mt-2" onClick={() => perform('add_creature')}>
         + add creature
       </Button>
-      <p className={classes(HINT_CLASSES, 'mt-2')}>
+      <PanelHint className="mt-2">
         Creatures spawn from points nodes bound with display “creatures”, one per point near the
         player, and walk their behavior in real time. Pause them with the life button in the world
         view. Give one a bag and it becomes a character, over on the characters tab.
-      </p>
+      </PanelHint>
     </>
   );
 }

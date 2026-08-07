@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '../../ui/controls/Button';
 import { Select } from '../../ui/controls/Select';
 import { FIELD_CLASSES, HINT_CLASSES } from '../../ui/controls/fieldClasses';
+import { PanelHint } from '../../ui/help/PanelHint';
 import type { AgentMode } from '../agentMode';
 import { createAgent, deleteAgent, startRun, stopRun, type RosterAgent } from './agentsApiClient';
 import { AgentCard } from './AgentCard';
@@ -117,11 +118,11 @@ export function AgentsPanel({
           />
         ))}
       </div>
-      <p className={`${HINT_CLASSES} mt-2`}>
+      <PanelHint className="mt-2">
         Agents live on the dev server and play through the same API an external LLM would use:
         <code> GET /api/v1/docs</code>. A run drives the agent with the chosen model on your key;
         without a key you can still drive agents by hand with curl.
-      </p>
+      </PanelHint>
     </>
   );
 }

@@ -4,6 +4,7 @@ import { isCharacter, type CreatureDef } from '../../creatures/creatureDef';
 import { CHARACTER, CREATURE } from '../../creatures/entityKinds';
 import { Button } from '../controls/Button';
 import { classes } from '../controls/classes';
+import { REVEALED_ON_ROW_HOVER, ROW_HOVER_GROUP } from '../controls/revealOnRowHover';
 import { ColorField } from '../controls/ColorField';
 import { FIELD_CLASSES } from '../controls/fieldClasses';
 import { CharacterSpritesEditor } from '../characterEditor/CharacterSpritesEditor';
@@ -32,7 +33,7 @@ export function CreatureRow({ creature }: { creature: CreatureDef }) {
     openPanels.set(String(creature.id), openPanel === panel ? 'none' : panel);
   return (
     <div className="mb-1.5">
-      <div className="flex items-center gap-1.5">
+      <div className={classes(ROW_HOVER_GROUP, 'flex items-center gap-1.5')}>
         <ColorField ink={creature.color} title="color" onChange={(color) => edit({ color })} />
         <SymbolInput symbol={creature.symbol} onPick={(symbol) => edit({ symbol })} />
         <input
@@ -87,14 +88,17 @@ export function CreatureRow({ creature }: { creature: CreatureDef }) {
           </Button>
         )}
         <Button
-          className="px-2 py-0.5"
+          className={classes(REVEALED_ON_ROW_HOVER, 'px-2 py-0.5')}
           title="duplicate"
           onClick={() => perform('duplicate_creature', { creature_id: creature.id })}
         >
           ⧉
         </Button>
         <Button
-          className="px-2 py-0.5 hover:border-danger-edge hover:text-danger-ink"
+          className={classes(
+            REVEALED_ON_ROW_HOVER,
+            'px-2 py-0.5 hover:border-danger-edge hover:text-danger-ink',
+          )}
           title="delete"
           onClick={() => perform('remove_creature', { creature_id: creature.id })}
         >
