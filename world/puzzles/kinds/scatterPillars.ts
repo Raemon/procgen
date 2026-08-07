@@ -3,7 +3,7 @@ import type { FurnishContext } from './puzzleKind';
 import type { Cell } from './roomCells';
 
 export function scatterPillars(context: FurnishContext, count: number): PuzzleFixture[] {
-  reserveWalkingRoom(context, context.entrance);
+  for (const entrance of context.entrances) reserveWalkingRoom(context, entrance);
   const pillars: PuzzleFixture[] = [];
   for (let index = 0; index < count; index++) {
     const cell = context.cells.takeFreeCell(context.rng);
@@ -19,8 +19,10 @@ function reserveWalkingRoom(context: FurnishContext, around: Cell): void {
   }
 }
 
-export function releaseWalkingRoom(context: FurnishContext, around: Cell): void {
-  for (const cell of cellAndItsNeighbours(around)) context.cells.release(cell);
+export function releaseWalkingRoom(context: FurnishContext): void {
+  for (const entrance of context.entrances) {
+    for (const cell of cellAndItsNeighbours(entrance)) context.cells.release(cell);
+  }
 }
 
 function cellAndItsNeighbours(cell: Cell): Cell[] {

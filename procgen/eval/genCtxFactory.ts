@@ -1,4 +1,5 @@
 import { hashString } from '../random/hashString';
+import { labelSeed } from '../random/labelSeed';
 import { mulberry32 } from '../random/mulberry32';
 import { hashLatticePoint } from '../noise/hashLatticePoint';
 import { CHUNK_SIZE, chunkOrigin } from '../chunk';
@@ -57,7 +58,7 @@ function seedForLabel(
 ): number {
   const cached = cache.get(label);
   if (cached !== undefined) return cached;
-  const computed = hashString(`${seed}:${nodeId}:${label}`);
+  const computed = labelSeed(seed, nodeId, label);
   cache.set(label, computed);
   return computed;
 }

@@ -17,7 +17,7 @@ export interface FurnishedRoom {
 export interface FurnishContext {
   cells: RoomCells;
   level: number;
-  entrance: Cell;
+  entrances: Cell[];
   rng: RandomStream;
 }
 

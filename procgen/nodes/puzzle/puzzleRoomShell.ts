@@ -7,18 +7,23 @@ import {
 } from './puzzleRoomCorridors';
 import type { PuzzleRoomKnobs } from './puzzleRoomKnobs';
 import { rectContains, roomIndexOfCell, roomInteriorRect } from './puzzleRoomLattice';
+import type { RoomLatticeMaze } from './roomLatticeMaze';
 
 export type ShellCell = 'floor' | 'wall' | 'outside';
 
-export function puzzleShellAt(knobs: PuzzleRoomKnobs, x: number, y: number): ShellCell {
+export function puzzleShellAt(
+  knobs: PuzzleRoomKnobs,
+  maze: RoomLatticeMaze,
+  x: number,
+  y: number,
+): ShellCell {
   const roomX = roomIndexOfCell(x, knobs);
   const roomY = roomIndexOfCell(y, knobs);
   if (rectContains(roomInteriorRect(roomX, roomY, knobs), x, y)) return 'floor';
-  if (touchesAnyCorridor(knobs, roomX, roomY, x, y, (floor) => floor)) return 'floor';
+  const reaching = corridorsReaching(knobs, maze, roomX, roomY);
+  if (reaching.some((floor) => bandContains(floor, x, y))) return 'floor';
   if (isWallRing(knobs, roomX, roomY, x, y)) return 'wall';
-  if (touchesAnyCorridor(knobs, roomX, roomY, x, y, (floor) => corridorLining(floor, knobs))) {
-    return 'wall';
-  }
+  if (reaching.some((floor) => bandContains(corridorLining(floor, knobs), x, y))) return 'wall';
   return 'outside';
 }
 
@@ -39,24 +44,20 @@ function isWallRing(
   return rectContains(ring, x, y);
 }
 
-function touchesAnyCorridor(
+function corridorsReaching(
   knobs: PuzzleRoomKnobs,
+  maze: RoomLatticeMaze,
   roomX: number,
   roomY: number,
-  x: number,
-  y: number,
-  widen: (floor: Band) => Band,
-): boolean {
-  return corridorsReaching(knobs, roomX, roomY).some((floor) =>
-    bandContains(widen(floor), x, y),
-  );
-}
-
-function corridorsReaching(knobs: PuzzleRoomKnobs, roomX: number, roomY: number): Band[] {
-  return [
-    eastCorridorFloor(roomX, roomY, knobs),
-    southCorridorFloor(roomX, roomY, knobs),
-    eastCorridorFloor(roomX - 1, roomY, knobs),
-    southCorridorFloor(roomX, roomY - 1, knobs),
-  ];
+): Band[] {
+  const bands: Band[] = [];
+  if (maze.hasEastCorridor(roomX, roomY)) bands.push(eastCorridorFloor(roomX, roomY, knobs));
+  if (maze.hasSouthCorridor(roomX, roomY)) bands.push(southCorridorFloor(roomX, roomY, knobs));
+  if (maze.hasEastCorridor(roomX - 1, roomY)) {
+    bands.push(eastCorridorFloor(roomX - 1, roomY, knobs));
+  }
+  if (maze.hasSouthCorridor(roomX, roomY - 1)) {
+    bands.push(southCorridorFloor(roomX, roomY - 1, knobs));
+  }
+  return bands;
 }

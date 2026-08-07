@@ -1,4 +1,3 @@
-import './kinds/index';
 import type { PuzzleRoomKnobs } from '../../procgen/nodes/puzzle/puzzleRoomKnobs';
 import { roomIndexOfCell, roomKey } from '../../procgen/nodes/puzzle/puzzleRoomLattice';
 import type { Marker } from '../../procgen/worldSampler';
@@ -159,19 +158,24 @@ export class PuzzleWorld {
       : fixtureIsOn(layout, this.state, fixture);
   }
 
-  private fixtureAt(layout: PuzzleRoomLayout, x: number, y: number): PuzzleFixture | null {
-    for (const fixture of everyFixtureOf(layout)) {
+  private fixturesAt(layout: PuzzleRoomLayout, x: number, y: number): PuzzleFixture[] {
+    return everyFixtureOf(layout).filter((fixture) => {
       const at = livePosition(layout, this.state, fixture);
-      if (at.x === x && at.y === y) return fixture;
-    }
-    return null;
+      return at.x === x && at.y === y;
+    });
+  }
+
+  private fixtureAt(layout: PuzzleRoomLayout, x: number, y: number): PuzzleFixture | null {
+    const here = this.fixturesAt(layout, x, y);
+    return here.find((fixture) => fixture.kind !== 'plate') ?? here[0] ?? null;
   }
 
   private blockerAt(layout: PuzzleRoomLayout, x: number, y: number): PuzzleFixture | null {
-    const fixture = this.fixtureAt(layout, x, y);
-    if (!fixture) return null;
-    if (fixture.kind === 'crate' || fixture.kind === 'pillar') return fixture;
-    if (fixture.kind === 'gate' && !this.gateIsOpen(layout, fixture)) return fixture;
-    return null;
+    return this.fixturesAt(layout, x, y).find((fixture) => this.standsInTheWay(layout, fixture)) ?? null;
+  }
+
+  private standsInTheWay(layout: PuzzleRoomLayout, fixture: PuzzleFixture): boolean {
+    if (fixture.kind === 'crate' || fixture.kind === 'pillar') return true;
+    return fixture.kind === 'gate' && !this.gateIsOpen(layout, fixture);
   }
 }

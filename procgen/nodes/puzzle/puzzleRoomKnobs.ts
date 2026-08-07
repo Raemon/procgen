@@ -1,11 +1,18 @@
 import type { KnobParamSpec, ParamValue } from '../../nodeType';
+import { CARVER_CHOICES, CARVER_DFS } from '../maze/mazeCarvers';
 
 export const PUZZLE_ROOMS_NODE_TYPE = 'puzzleRooms';
+
+export const PUZZLE_LATTICE_LABEL = 'lattice';
 
 export interface PuzzleRoomKnobs {
   seed: number;
   roomTiles: number;
   roomChunks: number;
+  regionRooms: number;
+  carver: number;
+  braid: number;
+  doorsPerEdge: number;
   wall: number;
   corridor: number;
   fillBetween: number;
@@ -26,6 +33,38 @@ export const PUZZLE_ROOM_PARAMS: Record<keyof Omit<PuzzleRoomKnobs, 'seed'>, Kno
     kind: 'int',
     label: 'chunks per room',
     help: 'Side length, in 32-tile chunks, of the block each chamber sits in. Raise it to space the chambers further apart and lengthen the corridors between them.',
+    min: 1,
+    max: 4,
+    default: 1,
+  },
+  regionRooms: {
+    kind: 'int',
+    label: 'rooms per maze',
+    help: 'Side length, in chambers, of each self-contained maze of chambers. The corridors inside one are carved as a maze over the chambers, so most neighbours are not joined at all and the labyrinth has dead ends; neighbouring mazes meet through border corridors.',
+    min: 2,
+    max: 12,
+    default: 5,
+  },
+  carver: {
+    kind: 'choice',
+    label: 'carver',
+    help: 'The algorithm that decides which chambers are joined; each gives the labyrinth a distinct shape.',
+    options: CARVER_CHOICES,
+    default: CARVER_DFS,
+  },
+  braid: {
+    kind: 'number',
+    label: 'braid',
+    help: 'Fraction of dead-end chambers given a second corridor. 0 leaves a perfect maze where every chamber has exactly one way in; higher values add loops, so a chamber you cannot solve need not end the run.',
+    min: 0,
+    max: 1,
+    step: 0.05,
+    default: 0.25,
+  },
+  doorsPerEdge: {
+    kind: 'int',
+    label: 'corridors per border',
+    help: 'Corridors punched through each border between neighbouring mazes of chambers, so the labyrinth carries on rather than sealing itself into blocks.',
     min: 1,
     max: 4,
     default: 1,
@@ -72,6 +111,10 @@ export function puzzleRoomKnobsFrom(
     seed,
     roomTiles: params.roomTiles as number,
     roomChunks: params.roomChunks as number,
+    regionRooms: params.regionRooms as number,
+    carver: params.carver as number,
+    braid: params.braid as number,
+    doorsPerEdge: params.doorsPerEdge as number,
     wall: params.wall as number,
     corridor: params.corridor as number,
     fillBetween: params.fillBetween as number,

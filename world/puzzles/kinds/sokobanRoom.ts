@@ -18,9 +18,14 @@ registerPuzzleKind({
 function furnishSokobanRoom(context: FurnishContext): FurnishedRoom {
   const pillars = scatterPillars(context, pillarCount(context.level));
   const plates = placePlates(context);
-  releaseWalkingRoom(context, context.entrance);
+  releaseWalkingRoom(context);
   const room = crateRoomStartingSolved(context, pillars, plates);
-  const solution = reversePullCrates(room, pullCount(context.level) * plates.length, context.rng);
+  const solution = reversePullCrates(
+    room,
+    context.entrances,
+    pullCount(context.level) * plates.length,
+    context.rng,
+  );
   return {
     fixtures: [...pillars, ...plates, ...cratesAsFixtures(room)],
     opensWhen: plates.map((plate) => plate.id),
@@ -49,7 +54,7 @@ function crateRoomStartingSolved(
     cells: context.cells,
     pillars: new Set(pillars.map((pillar) => `${pillar.x},${pillar.y}`)),
     crates,
-    player: context.entrance,
+    player: context.entrances[0]!,
   };
 }
 
