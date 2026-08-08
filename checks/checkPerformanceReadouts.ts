@@ -1,14 +1,14 @@
 import { parseHeaviestProcessListing } from '../perf/heaviestHostProcesses';
 import { forgetRecordedWork, recentWorkLoad, recordWork, WORK_WINDOW_MS } from '../perf/workTimers';
+import type { Claim } from './claims';
 
-type CheckReporter = (name: string, condition: boolean) => void;
 
-export function checkPerformanceReadouts(check: CheckReporter): void {
+export function checkPerformanceReadouts(check: Claim): void {
   checkTheWorkWindowForgetsWhatFellOutOfIt(check);
   checkAProcessListingBecomesRowsTheBadgeCanShow(check);
 }
 
-function checkTheWorkWindowForgetsWhatFellOutOfIt(check: CheckReporter): void {
+function checkTheWorkWindowForgetsWhatFellOutOfIt(check: Claim): void {
   const restoreClock = withFakeClock();
   forgetRecordedWork();
 
@@ -50,7 +50,7 @@ function checkTheWorkWindowForgetsWhatFellOutOfIt(check: CheckReporter): void {
   restoreClock();
 }
 
-function checkAProcessListingBecomesRowsTheBadgeCanShow(check: CheckReporter): void {
+function checkAProcessListingBecomesRowsTheBadgeCanShow(check: Claim): void {
   const rows = parseHeaviestProcessListing(
     [
       '  701   3.5  1.2 node',

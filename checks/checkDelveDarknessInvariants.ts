@@ -45,23 +45,23 @@ import { itemsFromStoredJson } from '../library/items/itemStorage';
 import { PuzzleWorld } from '../world/puzzles/puzzleWorld';
 import { isWalkableTile } from '../world/tileWalkability';
 import { Tileset } from '../library/tiles/tileset';
-import type { CheckReporter } from './checkCharacterBillboardInvariants';
+import type { Claim } from './claims';
 
 const PRESET_NAME = 'puzzle labyrinth';
 const REACH_SPAN = 64;
 const INNER_SPAN = 32;
 const LIGHT_SCAN_SPAN = 96;
 
-export function checkDelveDarknessInvariants(check: CheckReporter): void {
+export function checkDelveDarknessInvariants(check: Claim, characterize: Claim): void {
   checkLightIsAKnobOnBlocksAndItems(check);
-  checkTheDelveIsRoofedAndLightless(check);
+  checkTheDelveIsRoofedAndLightless(check, characterize);
   checkNothingIsLitButWhatEmits(check);
   checkTheTorchCanBePickedUpAndCarried(check);
   checkTheCarriedLightGlidesRatherThanHoppingTileToTile(check);
   checkWalkingOverTheTorchStowsItWithoutAKeypress(check);
 }
 
-function checkLightIsAKnobOnBlocksAndItems(check: CheckReporter): void {
+function checkLightIsAKnobOnBlocksAndItems(check: Claim): void {
   check(
     'a light radius is clamped into range and junk reads as dark',
     clampLightRadius(-4) === 0 &&
@@ -106,10 +106,10 @@ function checkLightIsAKnobOnBlocksAndItems(check: CheckReporter): void {
   );
 }
 
-function checkTheDelveIsRoofedAndLightless(check: CheckReporter): void {
+function checkTheDelveIsRoofedAndLightless(check: Claim, characterize: Claim): void {
   const { state, sampler, tileset } = delveWorld();
-  check(
-    'nothing built into the delve glows, so the torch is the only light in it',
+  characterize(
+    'no block built into the delve emits light of its own',
     tilePlacementsForRect(
       sampler,
       tileset,
@@ -119,7 +119,7 @@ function checkTheDelveIsRoofedAndLightless(check: CheckReporter): void {
       LIGHT_SCAN_SPAN * 2,
     ).blocks.every((placement) => placement.glow === 0),
   );
-  check('the delve turns the sky off entirely', state.daylight === 0);
+  characterize('the delve preset leaves daylight at 0', state.daylight === 0);
   check(
     'every cell of the delve has a ceiling over it',
     everyCellInSpan(CHUNK_SIZE, (x, y) => sampler.ceilingTileAt(x, y) !== EMPTY_TILE),
@@ -141,8 +141,8 @@ function checkTheDelveIsRoofedAndLightless(check: CheckReporter): void {
     distanceWhereHeightEntersView(roofHeight) <=
       hazeStartTiles(DEFAULT_CHARACTER_SIGHT_RADIUS_TILES),
   );
-  check(
-    'the labyrinth mixes passages with chambers wider than any corridor',
+  characterize(
+    'the widest open square in the delve spans at least 6 tiles',
     largestOpenSquare(sampler, tileset) >= 6,
   );
   check(
@@ -151,16 +151,16 @@ function checkTheDelveIsRoofedAndLightless(check: CheckReporter): void {
       everyCellInSpan(4, (x, y) => isWalkableTile(tileset, sampler.tileAt(x, y))),
   );
   check(
-    'the warren the chambers sit in is walkable ground rather than solid rock',
+    'the delve is carved ground rather than solid rock',
     walkableCount(sampler, tileset) > (INNER_SPAN * 2 + 1) ** 2 * 0.3,
   );
-  check(
-    'the ground you can reach without opening a door reaches past the chamber you wake in',
+  characterize(
+    'more than 169 cells are reachable before any door is opened',
     reachableFloorCount(sampler, tileset) > 13 ** 2,
   );
 }
 
-function checkNothingIsLitButWhatEmits(check: CheckReporter): void {
+function checkNothingIsLitButWhatEmits(check: Claim): void {
   const { sampler, tileset, items } = delveWorld();
   const rect = { minX: -CHUNK_SIZE, minY: -CHUNK_SIZE, maxX: CHUNK_SIZE, maxY: CHUNK_SIZE };
   const wide = {
@@ -180,7 +180,7 @@ function checkNothingIsLitButWhatEmits(check: CheckReporter): void {
   );
 }
 
-function checkTheTorchCanBePickedUpAndCarried(check: CheckReporter): void {
+function checkTheTorchCanBePickedUpAndCarried(check: Claim): void {
   const world = delveWorld();
   const carrier = playerCharacterDef(world.creatures)!;
   check(
@@ -211,7 +211,7 @@ function checkTheTorchCanBePickedUpAndCarried(check: CheckReporter): void {
   check('an item already taken cannot be picked up again', !twice.ok);
 }
 
-function checkTheCarriedLightGlidesRatherThanHoppingTileToTile(check: CheckReporter): void {
+function checkTheCarriedLightGlidesRatherThanHoppingTileToTile(check: Claim): void {
   const world = delveWorld();
   world.pose.x = 2;
   world.act('character', 'pick_up');
@@ -233,7 +233,7 @@ function checkTheCarriedLightGlidesRatherThanHoppingTileToTile(check: CheckRepor
   );
 }
 
-function checkWalkingOverTheTorchStowsItWithoutAKeypress(check: CheckReporter): void {
+function checkWalkingOverTheTorchStowsItWithoutAKeypress(check: Claim): void {
   const world = delveWorld();
   const feed = new PickupFeed();
   const walkOver = new WalkOverPickup(

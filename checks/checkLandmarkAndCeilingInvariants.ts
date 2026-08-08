@@ -11,20 +11,20 @@ import { EMPTY_TILE } from '../procgen/values/chunkValues';
 import { asPoints, asTiles } from '../procgen/values/valueAccess';
 import { WorldSampler } from '../procgen/worldSampler';
 import { Tileset } from '../library/tiles/tileset';
-import type { CheckReporter } from './checkCharacterBillboardInvariants';
+import type { Claim } from './claims';
 
 const FLOOR_TILE = 15;
 const WALL_TILE = 17;
 const ROOF_TILE = 4;
 
-export function checkLandmarkAndCeilingInvariants(check: CheckReporter): void {
+export function checkLandmarkAndCeilingInvariants(check: Claim): void {
   checkLandmarkRoomStampsWhereItSays(check);
   checkLandmarkPointDropsOnePointOnly(check);
   checkMazeRoomsOpenChambersDeterministically(check);
   checkCeilingsHangAboveWithoutTouchingTheGround(check);
 }
 
-function checkLandmarkRoomStampsWhereItSays(check: CheckReporter): void {
+function checkLandmarkRoomStampsWhereItSays(check: Claim): void {
   const { sampler } = worldOf([
     landmarkRoomNode({ x: 0, y: 0, width: 5, height: 3, wallThickness: 1 }),
   ]);
@@ -47,7 +47,7 @@ function checkLandmarkRoomStampsWhereItSays(check: CheckReporter): void {
   );
 }
 
-function checkLandmarkPointDropsOnePointOnly(check: CheckReporter): void {
+function checkLandmarkPointDropsOnePointOnly(check: Claim): void {
   const { evaluator } = worldOf([landmarkPointNode(2, 0)]);
   const home = asPoints(evaluator.valueFor('n1', 0, 0)) ?? [];
   const elsewhere = asPoints(evaluator.valueFor('n1', 1, 0)) ?? [];
@@ -57,7 +57,7 @@ function checkLandmarkPointDropsOnePointOnly(check: CheckReporter): void {
   );
 }
 
-function checkMazeRoomsOpenChambersDeterministically(check: CheckReporter): void {
+function checkMazeRoomsOpenChambersDeterministically(check: Claim): void {
   const corridorsOnly = worldOf([mazeNode(0)]);
   const withRooms = worldOf([mazeNode(0.4)]);
   check(
@@ -74,7 +74,7 @@ function checkMazeRoomsOpenChambersDeterministically(check: CheckReporter): void
   );
 }
 
-function checkCeilingsHangAboveWithoutTouchingTheGround(check: CheckReporter): void {
+function checkCeilingsHangAboveWithoutTouchingTheGround(check: Claim): void {
   check(
     'a tiles node may be drawn as a tile layer or as a ceiling',
     displayModesForKind('tiles').includes('ceiling') && !displayModesForKind('field').includes('ceiling'),

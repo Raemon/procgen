@@ -23,9 +23,9 @@ import { playerCharacterDef, PLAYER_CHARACTER_ID } from '../library/characters/p
 import { characterQuadFit } from '../world/render/view3d/characterQuadFit';
 import { isSpriteArt, spriteGridSize } from '../library/tiles/spriteArt';
 import { FACE_ART_SIZES, isCubeFaceArt, MAX_FACE_ART_SIZE } from '../library/tiles/tileFaceArt';
-import type { CheckReporter } from './checkCharacterBillboardInvariants';
+import type { Claim } from './claims';
 
-export function checkPlayerCharacterInvariants(check: CheckReporter): void {
+export function checkPlayerCharacterInvariants(check: Claim): void {
   checkArtResolutionsReachOneThousandTwentyFour(check);
   checkTheDwarfIsDrawnAtOneTwentyEight(check);
   checkTheDwarfIsRichlyAnimated(check);
@@ -33,7 +33,7 @@ export function checkPlayerCharacterInvariants(check: CheckReporter): void {
   checkGeneratedFramesStayOutOfStorage(check);
 }
 
-function checkArtResolutionsReachOneThousandTwentyFour(check: CheckReporter): void {
+function checkArtResolutionsReachOneThousandTwentyFour(check: Claim): void {
   check(
     'art resolutions go up to 1024x1024 and still offer the small ones',
     MAX_FACE_ART_SIZE === 1024 &&
@@ -61,7 +61,7 @@ function checkArtResolutionsReachOneThousandTwentyFour(check: CheckReporter): vo
   );
 }
 
-function checkTheDwarfIsDrawnAtOneTwentyEight(check: CheckReporter): void {
+function checkTheDwarfIsDrawnAtOneTwentyEight(check: Claim): void {
   const billboard = builtInBillboard(MOONLIT_DWARF_ART)!;
   check(
     'every dwarf frame is valid 128x128 sprite art with something drawn on it',
@@ -84,7 +84,7 @@ function checkTheDwarfIsDrawnAtOneTwentyEight(check: CheckReporter): void {
   );
 }
 
-function checkTheDwarfIsRichlyAnimated(check: CheckReporter): void {
+function checkTheDwarfIsRichlyAnimated(check: Claim): void {
   const billboard = builtInBillboard(MOONLIT_DWARF_ART)!;
   check(
     'every rotation carries the full idle and walk cycles',
@@ -118,7 +118,7 @@ function checkTheDwarfIsRichlyAnimated(check: CheckReporter): void {
   );
 }
 
-function checkPlayersAreDrawnAsACharacter(check: CheckReporter): void {
+function checkPlayersAreDrawnAsACharacter(check: Claim): void {
   const creatures = new CreatureLibrary();
   const player = playerCharacterDef(creatures)!;
   check(
@@ -165,7 +165,7 @@ function playerFigureFillsItsBodyBox(player: CreatureDef): boolean {
   );
 }
 
-function checkGeneratedFramesStayOutOfStorage(check: CheckReporter): void {
+function checkGeneratedFramesStayOutOfStorage(check: Claim): void {
   const creatures = new CreatureLibrary();
   const stored = creaturesAsStoredJson(creatures.all());
   check(

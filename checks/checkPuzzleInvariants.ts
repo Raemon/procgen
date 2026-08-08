@@ -56,12 +56,12 @@ import {
 import type { PuzzleFixture } from '../world/puzzles/fixtures/puzzleFixture';
 import { roomAcrossTheGate } from '../world/puzzles/rooms/puzzleRoomLayout';
 import { fixtureIsOn, livePosition, roomIsSolved } from '../world/puzzles/state/fixtureSignals';
+import type { Claim } from './claims';
 
-type Check = (name: string, condition: boolean) => void;
 
 const PUZZLE_PRESET_NAME = 'puzzle labyrinth';
 
-export function checkPuzzleInvariants(check: Check): void {
+export function checkPuzzleInvariants(check: Claim): void {
   const world = puzzleWorldFromPreset();
   checkTheShellIsSolidExceptWhereItLetsYouThrough(check, world);
   checkTheLabyrinthIsALabyrinth(check, world);
@@ -83,7 +83,7 @@ export function checkPuzzleInvariants(check: Check): void {
 }
 
 function checkThePromptOffersOnlyWhatPressingTheKeyWouldDo(
-  check: Check,
+  check: Claim,
   world: PuzzleFixtureWorld,
 ): void {
   check(
@@ -172,7 +172,7 @@ function everySquareTheSolutionParksACrateOn(study: CrateFloorStudy): string[] {
   return parked;
 }
 
-function checkAWrongPushCanCostYouTheRoom(check: Check, world: PuzzleFixtureWorld): void {
+function checkAWrongPushCanCostYouTheRoom(check: Claim, world: PuzzleFixtureWorld): void {
   const studies = everyRoomWithin(world, 12)
     .filter((layout) => layout.kindName === 'sokoban' && layout.solution.length > 0)
     .map(studyTheCrateFloorOf);
@@ -227,7 +227,7 @@ function everyPlainCornerOf(study: CrateFloorStudy): string[] {
     .map((corner) => `${corner.x},${corner.y}`);
 }
 
-function checkTheSearchAsksForMoreRuinUntilItsCeiling(check: Check): void {
+function checkTheSearchAsksForMoreRuinUntilItsCeiling(check: Claim): void {
   check(
     'the deeper a chamber sits the more of its pushes the search insists can go wrong',
     ruinChanceWantedAt(3) > ruinChanceWantedAt(1) && ruinChanceWantedAt(1) > ruinChanceWantedAt(0),
@@ -242,7 +242,7 @@ function checkTheSearchAsksForMoreRuinUntilItsCeiling(check: Check): void {
   );
 }
 
-function checkNoChamberIsAFreePass(check: Check, world: PuzzleFixtureWorld): void {
+function checkNoChamberIsAFreePass(check: Claim, world: PuzzleFixtureWorld): void {
   const unsolved = new PuzzleState();
   const furnished = everyRoomWithin(world, 12).filter((layout) => layout.kindName !== '');
   check('there are furnished chambers to inspect', furnished.length > 100);
@@ -262,7 +262,7 @@ function checkNoChamberIsAFreePass(check: Check, world: PuzzleFixtureWorld): voi
   );
 }
 
-function checkTheCrateYouWalkIntoActuallyMoves(check: Check, world: PuzzleFixtureWorld): void {
+function checkTheCrateYouWalkIntoActuallyMoves(check: Claim, world: PuzzleFixtureWorld): void {
   const layout = everyRoomWithin(world, 12).find(
     (room) => room.kindName === 'sokoban' && room.solution.length > 0,
   )!;
@@ -307,7 +307,7 @@ function checkTheCrateYouWalkIntoActuallyMoves(check: Check, world: PuzzleFixtur
 }
 
 function checkDifficultyRisesThenHoldsAtAKnownRing(
-  check: Check,
+  check: Claim,
   world: PuzzleFixtureWorld,
 ): void {
   const heaviest = (ring: number) =>
@@ -322,7 +322,7 @@ function checkDifficultyRisesThenHoldsAtAKnownRing(
   );
 }
 
-function checkYouCanTellTheFixturesApartFromTheWorld(check: Check): void {
+function checkYouCanTellTheFixturesApartFromTheWorld(check: Claim): void {
   const tileGlyphs = new Set(new Tileset().all().map((tile) => tile.symbol));
   check(
     'no fixture is drawn with a glyph a tile already uses, so a door never reads as a wall',
@@ -377,7 +377,7 @@ function samplerOfPuzzleRoomsAlone(state: PipelineState, tileset: Tileset): Worl
 }
 
 function checkTheShellIsSolidExceptWhereItLetsYouThrough(
-  check: Check,
+  check: Claim,
   world: PuzzleFixtureWorld,
 ): void {
   const room = roomInteriorRect(1, 0, world.knobs);
@@ -485,7 +485,7 @@ function roomCentre(
   return [interior.x + Math.floor(interior.width / 2), interior.y + Math.floor(interior.height / 2)];
 }
 
-function checkTheLabyrinthIsALabyrinth(check: Check, world: PuzzleFixtureWorld): void {
+function checkTheLabyrinthIsALabyrinth(check: Claim, world: PuzzleFixtureWorld): void {
   const rooms = everyRoomIndexWithin(8);
   const joins = rooms.map((room) => world.maze.corridorsTouching(room.roomX, room.roomY));
   check(
@@ -505,7 +505,7 @@ function checkTheLabyrinthIsALabyrinth(check: Check, world: PuzzleFixtureWorld):
 }
 
 function checkTheNodeAndTheRuntimeAgreeOnTheShell(
-  check: Check,
+  check: Claim,
   world: PuzzleFixtureWorld,
 ): void {
   const shellCells = everyCellWithin(40).filter(
@@ -582,7 +582,7 @@ function everyRoomIndexWithin(span: number): { roomX: number; roomY: number }[] 
   return rooms;
 }
 
-function checkTheTutorialRingsComeInOrder(check: Check, world: PuzzleFixtureWorld): void {
+function checkTheTutorialRingsComeInOrder(check: Claim, world: PuzzleFixtureWorld): void {
   check(
     'the chamber you wake in asks nothing of you and its doors are already open',
     roomsOfRing(world, 0).every(
@@ -647,7 +647,7 @@ function stepThroughDoorway(doorway: Doorway): [number, number] {
   return [across.roomX - layout.roomX, across.roomY - layout.roomY];
 }
 
-function checkDoorsStayShutUntilTheRoomIsDone(check: Check, world: PuzzleFixtureWorld): void {
+function checkDoorsStayShutUntilTheRoomIsDone(check: Claim, world: PuzzleFixtureWorld): void {
   const layout = roomsOfRing(world, 1).find((room) => everyGateOf(room).length > 0)!;
   const gate = everyGateOf(layout)[0]!;
   const [dx, dy] = stepThroughDoorway({ layout, gate });
@@ -678,7 +678,7 @@ function checkDoorsStayShutUntilTheRoomIsDone(check: Check, world: PuzzleFixture
   world.puzzles.state.forgetRoom(keyRoom.key);
 }
 
-function checkTheWayOutOpensInEveryDirection(check: Check, world: PuzzleFixtureWorld): void {
+function checkTheWayOutOpensInEveryDirection(check: Claim, world: PuzzleFixtureWorld): void {
   const fromTheStart = doorwaysTouching(world, 0, 0);
   check('the chamber you wake in has a way out at all', fromTheStart.length > 0);
   check(
@@ -719,7 +719,7 @@ function solveRoom(world: PuzzleFixtureWorld, layout: PuzzleRoomLayout): void {
 }
 
 function checkEverySokobanRoomHasASolutionThatWorks(
-  check: Check,
+  check: Claim,
   world: PuzzleFixtureWorld,
 ): void {
   const deepRooms = everyRoomWithin(world, 12).filter((layout) => layout.kindName === 'sokoban');
@@ -777,7 +777,7 @@ function checkEverySokobanRoomHasASolutionThatWorks(
   );
 }
 
-function checkResettingARoomPutsItBack(check: Check, world: PuzzleFixtureWorld): void {
+function checkResettingARoomPutsItBack(check: Claim, world: PuzzleFixtureWorld): void {
   const layout = roomsOfRing(world, 1).find((room) => everyGateOf(room).length > 0)!;
   const gate = everyGateOf(layout)[0]!;
   solveRoom(world, layout);
@@ -791,7 +791,7 @@ function checkResettingARoomPutsItBack(check: Check, world: PuzzleFixtureWorld):
   );
 }
 
-function checkTheSameSeedFurnishesTheSameRooms(check: Check): void {
+function checkTheSameSeedFurnishesTheSameRooms(check: Claim): void {
   const first = puzzleWorldFromPreset();
   const second = puzzleWorldFromPreset();
   check(
@@ -806,7 +806,7 @@ function checkTheSameSeedFurnishesTheSameRooms(check: Check): void {
   );
 }
 
-function checkEveryPuzzleKindDeclaresWhereItLands(check: Check): void {
+function checkEveryPuzzleKindDeclaresWhereItLands(check: Claim): void {
   const kinds = allPuzzleKinds();
   check('there are puzzle kinds registered to find', kinds.length >= 3);
   check(

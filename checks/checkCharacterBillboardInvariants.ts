@@ -32,15 +32,13 @@ import { RandomizeHistory } from '../procgen/randomize/randomizeHistory';
 import { TemplateLibrary } from '../procgen/templates/templateLibrary';
 import { isSpriteArt } from '../library/tiles/spriteArt';
 import { Tileset } from '../library/tiles/tileset';
+import type { Claim } from './claims';
 
-export interface CheckReporter {
-  (name: string, condition: boolean): void;
-}
 
 const QUARTER = Math.PI / 2;
 const EIGHTH = Math.PI / 4;
 
-export function checkCharacterBillboardInvariants(check: CheckReporter): void {
+export function checkCharacterBillboardInvariants(check: Claim): void {
   checkViewRelativeRotations(check);
   checkAnimationTiming(check);
   checkDefaultCharacterArt(check);
@@ -49,7 +47,7 @@ export function checkCharacterBillboardInvariants(check: CheckReporter): void {
   checkCharacterArtAbilities(check);
 }
 
-function checkViewRelativeRotations(check: CheckReporter): void {
+function checkViewRelativeRotations(check: Claim): void {
   const seen = (heading: number, cameraYaw: number) => viewRelativeRotation(heading, cameraYaw);
   check(
     'a character walking the way the camera looks shows its back, and the other way its front',
@@ -82,7 +80,7 @@ function checkViewRelativeRotations(check: CheckReporter): void {
   );
 }
 
-function checkAnimationTiming(check: CheckReporter): void {
+function checkAnimationTiming(check: Claim): void {
   check(
     'a frame index cycles with the clock and holds still on a single frame',
     frameIndexAt(4, 8, 0) === 0 &&
@@ -119,7 +117,7 @@ function checkAnimationTiming(check: CheckReporter): void {
   );
 }
 
-function checkDefaultCharacterArt(check: CheckReporter): void {
+function checkDefaultCharacterArt(check: Claim): void {
   const billboard = humanoidBillboard(WANDERING_TRADER_PALETTE);
   check(
     'every rotation ships with both an idle and a moving animation',
@@ -150,7 +148,7 @@ function checkDefaultCharacterArt(check: CheckReporter): void {
   );
 }
 
-function checkBillboardStorage(check: CheckReporter): void {
+function checkBillboardStorage(check: Claim): void {
   const creatures = new CreatureLibrary();
   const reloaded = creaturesFromStoredJson(JSON.parse(JSON.stringify(creatures.all())))!;
   const trader = reloaded.find((creature) => creature.kind === CHARACTER)!;
@@ -183,7 +181,7 @@ function checkBillboardStorage(check: CheckReporter): void {
   check('a creature saved before billboards existed loads without one', legacy[0]!.billboard === null);
 }
 
-function checkHeadingFromMotion(check: CheckReporter): void {
+function checkHeadingFromMotion(check: Claim): void {
   check(
     'a heading is the compass angle of the step it came from',
     Math.abs(headingRadians(0, -1)) < 1e-9 &&
@@ -208,7 +206,7 @@ function checkHeadingFromMotion(check: CheckReporter): void {
   check('a creature standing on its target is idle', !arrived.moving);
 }
 
-function checkCharacterArtAbilities(check: CheckReporter): void {
+function checkCharacterArtAbilities(check: Claim): void {
   const world = abilityWorld();
   const act = (action: string, params: Record<string, unknown> = {}): AbilityResult =>
     performAbility(world.context, 'god', action, params);

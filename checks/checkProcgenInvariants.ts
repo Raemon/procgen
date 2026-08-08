@@ -1,5 +1,5 @@
-import { describe, test } from 'node:test';
-import assert from 'node:assert';
+import { describe } from 'node:test';
+import { announceCharacterizationsThatChanged, characterize, check } from './claims';
 import '../procgen/nodes';
 import { checkCharacterBillboardInvariants } from './checkCharacterBillboardInvariants';
 import { checkItemAndInventoryInvariants } from './checkItemAndInventoryInvariants';
@@ -149,9 +149,6 @@ function round(value: number): number {
 }
 const tileset = new Tileset();
 
-function check(name: string, condition: boolean): void {
-  test(name, () => assert.ok(condition));
-}
 
 function worldFromState(state: PipelineState): {
   store: PipelineStore;
@@ -1991,7 +1988,7 @@ describe('documentation', () => {
 describe('the design bets', () => checkDesignBetsStillHold(check));
 describe('the api surface', () => checkEveryApiSurfaceIsDescribed(check));
 describe('landmarks and ceilings', () => checkLandmarkAndCeilingInvariants(check));
-describe('delve darkness', () => checkDelveDarknessInvariants(check));
+describe('delve darkness', () => checkDelveDarknessInvariants(check, characterize));
 describe('performance readouts', () => checkPerformanceReadouts(check));
 
-
+announceCharacterizationsThatChanged();

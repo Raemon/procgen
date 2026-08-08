@@ -18,12 +18,10 @@ import { asciiSnapshot } from '../world/render/ascii/asciiSnapshot';
 import { voxelPlacementsForRect } from '../world/render/view3d/voxelPlacements';
 import { Tileset } from '../library/tiles/tileset';
 import { isWalkableTile } from '../world/tileWalkability';
+import type { Claim } from './claims';
 
-export interface CheckReporter {
-  (name: string, condition: boolean): void;
-}
 
-export function checkPrefabAndCreatureInvariants(check: CheckReporter): void {
+export function checkPrefabAndCreatureInvariants(check: Claim): void {
   const tileset = new Tileset();
   const prefabs = new PrefabLibrary((name) => tileIdByName(tileset, name));
   const cottage = prefabs.all()[0]!;
@@ -41,7 +39,7 @@ export function checkPrefabAndCreatureInvariants(check: CheckReporter): void {
   );
 }
 
-function checkPrefabGeometry(check: CheckReporter, prefab: Prefab): void {
+function checkPrefabGeometry(check: Claim, prefab: Prefab): void {
   const fullTurn = rotatedPrefab(rotatedPrefab(rotatedPrefab(rotatedPrefab(prefab, 1), 1), 1), 1);
   check(
     'four quarter turns return a prefab to its original voxels',
@@ -68,7 +66,7 @@ function checkPrefabGeometry(check: CheckReporter, prefab: Prefab): void {
 }
 
 function checkPrefabStamping(
-  check: CheckReporter,
+  check: Claim,
   tileset: Tileset,
   prefabs: PrefabLibrary,
   prefab: Prefab,
@@ -123,7 +121,7 @@ function checkPrefabStamping(
 }
 
 function checkCaptureRoundTrip(
-  check: CheckReporter,
+  check: Claim,
   tileset: Tileset,
   prefabs: PrefabLibrary,
   prefab: Prefab,
@@ -160,7 +158,7 @@ function checkCaptureRoundTrip(
   );
 }
 
-function checkEmberMarchesLibraryEntries(check: CheckReporter, tileset: Tileset): void {
+function checkEmberMarchesLibraryEntries(check: Claim, tileset: Tileset): void {
   const walkableByName = (name: string) =>
     tileset.all().find((tile) => tile.name === name)?.walkable;
   check(
@@ -180,7 +178,7 @@ function checkEmberMarchesLibraryEntries(check: CheckReporter, tileset: Tileset)
   );
 }
 
-function checkCreatureSim(check: CheckReporter, tileset: Tileset, prefabs: PrefabLibrary): void {
+function checkCreatureSim(check: Claim, tileset: Tileset, prefabs: PrefabLibrary): void {
   const creatures = new CreatureLibrary();
   const wanderer = creatures.all().find((creature) => creature.behavior === WANDER)!;
   const first = steppedSim(tileset, prefabs, creatures, wanderer.id);

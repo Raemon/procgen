@@ -5,17 +5,17 @@ import type { TileDef } from '../library/tiles/tileDef';
 import { BLOCKING_TILE_HEIGHT, WALKABLE_TILE_HEIGHT } from '../library/tiles/tileHeight';
 import { tilesFromStoredJson } from '../library/tiles/tilesetStorage';
 import { tilePlacementsForRect } from '../world/render/view3d/tilePlacements';
-import type { CheckReporter } from './checkCharacterBillboardInvariants';
+import type { Claim } from './claims';
 
 const POOL_TILE_NAMES = ['water', 'deep water', 'lava'];
 
-export function checkTileHeightInvariants(check: CheckReporter): void {
+export function checkTileHeightInvariants(check: Claim): void {
   checkBlockersStandTallEnoughToHideBehind(check);
   checkBlocksStackOneCubePerUnitOfHeight(check);
   checkStoredTilesWithoutAHeightGetOne(check);
 }
 
-function checkBlockersStandTallEnoughToHideBehind(check: CheckReporter): void {
+function checkBlockersStandTallEnoughToHideBehind(check: Claim): void {
   const tiles = defaultTiles();
   check(
     'every blocking tile in the catalog stands at least two tiles tall, except the pools',
@@ -35,7 +35,7 @@ function checkBlockersStandTallEnoughToHideBehind(check: CheckReporter): void {
   );
 }
 
-function checkBlocksStackOneCubePerUnitOfHeight(check: CheckReporter): void {
+function checkBlocksStackOneCubePerUnitOfHeight(check: Claim): void {
   const wall = tileNamed('stone wall');
   const { floors, blocks } = onlyTilePlacements(wall);
   check(
@@ -53,7 +53,7 @@ function checkBlocksStackOneCubePerUnitOfHeight(check: CheckReporter): void {
   );
 }
 
-function checkStoredTilesWithoutAHeightGetOne(check: CheckReporter): void {
+function checkStoredTilesWithoutAHeightGetOne(check: Claim): void {
   const legacy = defaultTiles().map(({ height, ...tile }) => tile);
   const loaded = tilesFromStoredJson(JSON.parse(JSON.stringify(legacy)))!;
   check(

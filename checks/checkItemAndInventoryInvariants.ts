@@ -34,12 +34,10 @@ import { asciiSnapshot } from '../world/render/ascii/asciiSnapshot';
 import { itemGeometry, itemHalfHeight } from '../world/render/view3d/itemMeshBuild';
 import { blankSpriteArt, isSpriteArt } from '../library/tiles/spriteArt';
 import { Tileset } from '../library/tiles/tileset';
+import type { Claim } from './claims';
 
-export interface CheckReporter {
-  (name: string, condition: boolean): void;
-}
 
-export function checkItemAndInventoryInvariants(check: CheckReporter): void {
+export function checkItemAndInventoryInvariants(check: Claim): void {
   checkDefaultItems(check);
   checkItemStorage(check);
   checkItemGeometry(check);
@@ -50,7 +48,7 @@ export function checkItemAndInventoryInvariants(check: CheckReporter): void {
   checkItemAndInventoryAbilities(check);
 }
 
-function checkDefaultItems(check: CheckReporter): void {
+function checkDefaultItems(check: Claim): void {
   const items = new ItemLibrary();
   const byName = (name: string) => items.all().find((item) => item.name === name)!;
   check(
@@ -74,7 +72,7 @@ function checkDefaultItems(check: CheckReporter): void {
   );
 }
 
-function checkItemStorage(check: CheckReporter): void {
+function checkItemStorage(check: Claim): void {
   const items = new ItemLibrary();
   const reloaded = itemsFromStoredJson(JSON.parse(JSON.stringify(items.all())))!;
   check(
@@ -97,7 +95,7 @@ function checkItemStorage(check: CheckReporter): void {
   );
 }
 
-function checkItemGeometry(check: CheckReporter): void {
+function checkItemGeometry(check: Claim): void {
   const items = new ItemLibrary();
   const upright = items.all().find((item) => item.render === BILLBOARD && item.orientation === 0)!;
   const flat = items.all().find((item) => item.orientation === LYING_FLAT)!;
@@ -122,7 +120,7 @@ function checkItemGeometry(check: CheckReporter): void {
   checkSpriteSlabs(check, upright);
 }
 
-function checkSpriteSlabs(check: CheckReporter, upright: ItemDef): void {
+function checkSpriteSlabs(check: Claim, upright: ItemDef): void {
   check('a sprite billboard is built as a slab, not a box', upright.sprite !== null);
   const slab = itemGeometry(upright);
   check(
@@ -149,7 +147,7 @@ function rounded(value: number): number {
   return Math.round(value * 1e6) / 1e6;
 }
 
-function checkItemsInTheWorld(check: CheckReporter): void {
+function checkItemsInTheWorld(check: Claim): void {
   check(
     'a points node can be displayed as items',
     displayModesForKind('points').includes('items'),
@@ -176,7 +174,7 @@ function checkItemsInTheWorld(check: CheckReporter): void {
   );
 }
 
-function checkPlacementRules(check: CheckReporter): void {
+function checkPlacementRules(check: Claim): void {
   const items = new ItemLibrary();
   const sword = items.all().find((item) => item.gridHeight === 2 && item.gridWidth === 1)!;
   const potion = items.all()[0]!;
@@ -212,7 +210,7 @@ function checkPlacementRules(check: CheckReporter): void {
   );
 }
 
-function checkInventoryReshaping(check: CheckReporter): void {
+function checkInventoryReshaping(check: Claim): void {
   const items = new ItemLibrary();
   const sword = items.all().find((item) => item.gridHeight === 2)!;
   const tagged = withSlotAt(withSlotAt(blankInventory(4, 3), 3, 2, { usable: false }), 0, 0, {
@@ -248,7 +246,7 @@ function checkInventoryReshaping(check: CheckReporter): void {
   );
 }
 
-function checkCharacterStorage(check: CheckReporter): void {
+function checkCharacterStorage(check: Claim): void {
   const creatures = new CreatureLibrary();
   const trader = creatures.all().find((creature) => creature.kind === CHARACTER)!;
   check(
@@ -270,7 +268,7 @@ function checkCharacterStorage(check: CheckReporter): void {
   );
 }
 
-function checkItemAndInventoryAbilities(check: CheckReporter): void {
+function checkItemAndInventoryAbilities(check: Claim): void {
   const world = abilityWorld();
   const act = (action: string, params: Record<string, unknown> = {}): AbilityResult =>
     performAbility(world.context, 'god', action, params);
