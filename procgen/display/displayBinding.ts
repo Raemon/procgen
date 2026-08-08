@@ -20,7 +20,7 @@ export function displayModesForKind(kind: ValueKind): DisplayMode[] {
   return ['markers', 'prefabs', 'creatures', 'items', 'hidden'];
 }
 
-export const DEFAULT_CEILING_HEIGHT = 4;
+export const DEFAULT_CEILING_HEIGHT = 2;
 export const MAX_CEILING_HEIGHT = 16;
 
 export function defaultBindingForMode(mode: DisplayMode): DisplayBinding {

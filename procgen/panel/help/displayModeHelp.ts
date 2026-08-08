@@ -43,7 +43,7 @@ export function displayModeTooltip(kind: ValueKind): TooltipContent {
 export function ceilingHeightTooltip(): TooltipContent {
   return {
     title: 'ceiling height',
-    body: 'How many tiles above the ground the roof hangs. Keep it above head height or the player walks into her own ceiling; raise it for cathedral caverns.',
+    body: 'How many tiles above the ground the roof hangs. Keep it above head height or the player walks into her own ceiling, and no higher than the walls below it reach: a roof over a gap sits above the first-person view and reads as no roof at all.',
   };
 }
 

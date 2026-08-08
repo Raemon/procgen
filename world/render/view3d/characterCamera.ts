@@ -2,17 +2,19 @@ import * as THREE from 'three';
 import { ZoomScale } from '../camera/zoomScale';
 import { DEFAULT_CHARACTER_SIGHT_RADIUS_TILES } from '../../vision/characterSight';
 import { easeFraction, shortestArc } from './cameraEase';
+import {
+  CHARACTER_DOWNWARD_PITCH_DEG as DOWNWARD_PITCH_DEG,
+  CHARACTER_EYE_HEIGHT as EYE_HEIGHT,
+  CHARACTER_FIELD_OF_VIEW_AT_UNIT_ZOOM_DEG as FIELD_OF_VIEW_AT_UNIT_ZOOM_DEG,
+} from './firstPersonSightline';
 
-const FIELD_OF_VIEW_AT_UNIT_ZOOM_DEG = 70;
 const WIDEST_FIELD_OF_VIEW_DEG = 95;
 const NARROWEST_FIELD_OF_VIEW_DEG = 40;
 const MIN_MAGNIFICATION = FIELD_OF_VIEW_AT_UNIT_ZOOM_DEG / WIDEST_FIELD_OF_VIEW_DEG;
 const MAX_MAGNIFICATION = FIELD_OF_VIEW_AT_UNIT_ZOOM_DEG / NARROWEST_FIELD_OF_VIEW_DEG;
-const DOWNWARD_PITCH_DEG = 12;
 const NEAR_PLANE = 0.05;
 const TURN_SMOOTHING_RATE = 12;
 const WALK_SMOOTHING_RATE = 14;
-const EYE_HEIGHT = 1.1;
 
 export class CharacterCamera {
   readonly camera = new THREE.PerspectiveCamera(

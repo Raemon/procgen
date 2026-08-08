@@ -1,5 +1,7 @@
+import { BLOCKING_TILE_HEIGHT } from '../../library/tiles/tileHeight';
 import type { ExamplePipeline } from './examplePipeline';
 
+const ROOF_ON_THE_WALLS = BLOCKING_TILE_HEIGHT;
 const GRAVEL = 9;
 const COBBLESTONE = 15;
 const STONE_WALL = 17;
@@ -113,11 +115,11 @@ export function undergroundLabyrinth(): ExamplePipeline {
           label: 'rock roof',
           folder: 'the roof',
           comment:
-            'Every cell is above the threshold, so every cell gets rock, and the ceiling display hangs it 4 tiles up — head height plus room for a torch. Ceilings only draw in first person, so the god camera can still look down into the delve.',
+            'Every cell is above the threshold, so every cell gets rock, and the ceiling display hangs it 2 tiles up, which is exactly where the stone walls of the labyrinth end: any higher and the roof floats over a gap the walls never reach, out of the first-person view and past the haze, which reads as no roof at all. Ceilings only draw in first person, so the god camera can still look down into the delve.',
           enabled: true,
           params: { threshold: 0.5, belowTile: -1, aboveTile: ROCK },
           inputs: { source: 'n6' },
-          display: { mode: 'ceiling', height: 4 },
+          display: { mode: 'ceiling', height: ROOF_ON_THE_WALLS },
         },
       ],
     },

@@ -1,5 +1,8 @@
 import { performAbility } from '../abilities/performAbility';
-import { DEFAULT_CHARACTER_SIGHT_RADIUS_TILES } from '../world/vision/characterSight';
+import {
+  DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
+  hazeStartTiles,
+} from '../world/vision/characterSight';
 import { CreatureLibrary } from '../library/creatures/creatureLibrary';
 import { playerCharacterDef } from '../library/characters/playerCharacter';
 import { brightestCarriedLight } from '../library/items/inventory/carriedLight';
@@ -22,13 +25,21 @@ import { WorldPresetLibrary } from '../procgen/presets/worldPresetLibrary';
 import { EMPTY_TILE } from '../procgen/values/chunkValues';
 import { WorldSampler } from '../procgen/worldSampler';
 import { ceilingPlacementsForRect } from '../world/render/view3d/ceilingPlacements';
+import {
+  CHARACTER_EYE_HEIGHT,
+  distanceWhereHeightEntersView,
+} from '../world/render/view3d/firstPersonSightline';
 import { glowOfEmitter } from '../world/render/view3d/selfLitGlow';
-import { tilePlacementsForRect } from '../world/render/view3d/tilePlacements';
+import {
+  tilePlacementsForRect,
+  tileStandsAsSolidBlock,
+} from '../world/render/view3d/tilePlacements';
 import { itemLightSourcesInRect } from '../world/light/itemLightSources';
 import { clampLightRadius, emitsLight, MAX_LIGHT_RADIUS } from '../world/light/lightEmission';
 import { tileLightSourcesInRect } from '../world/light/tileLightSources';
 import { defaultTiles } from '../library/tiles/defaultTiles';
 import { tilesFromStoredJson } from '../library/tiles/tilesetStorage';
+import { blockLayersOfTile } from '../library/tiles/tileHeight';
 import { itemsFromStoredJson } from '../library/items/itemStorage';
 import { PuzzleWorld } from '../world/puzzles/puzzleWorld';
 import { isWalkableTile } from '../world/tileWalkability';
@@ -115,12 +126,22 @@ function checkTheUndergroundWorldIsRoofedAndConnected(check: CheckReporter): voi
     'every cell of the underground world has a ceiling over it',
     everyCellInSpan(CHUNK_SIZE, (x, y) => sampler.ceilingTileAt(x, y) !== EMPTY_TILE),
   );
+  const roofHeight = sampler.ceilingHeightAt(0, 0);
   check(
     'the roof hangs above head height, not on the floor',
-    sampler.ceilingHeightAt(0, 0) >= 3 &&
+    roofHeight > CHARACTER_EYE_HEIGHT &&
       ceilingPlacementsForRect(sampler, tileset, 0, 0, 4, 4).every(
-        (placement) => placement.elevation >= 3,
+        (placement) => placement.elevation >= roofHeight,
       ),
+  );
+  check(
+    'the roof rests on the walls of the delve instead of floating above them',
+    roofHeight <= lowestWallTop(sampler, tileset),
+  );
+  check(
+    'the roof enters the first-person view before the haze swallows it',
+    distanceWhereHeightEntersView(roofHeight) <=
+      hazeStartTiles(DEFAULT_CHARACTER_SIGHT_RADIUS_TILES),
   );
   check(
     'the labyrinth mixes passages with chambers wider than any corridor',
@@ -314,6 +335,18 @@ function isOpenSquare(
     }
   }
   return true;
+}
+
+function lowestWallTop(sampler: WorldSampler, tileset: Tileset): number {
+  let lowest = Infinity;
+  for (let y = -CHUNK_SIZE; y <= CHUNK_SIZE; y++) {
+    for (let x = -CHUNK_SIZE; x <= CHUNK_SIZE; x++) {
+      const tile = tileset.byId(sampler.tileAt(x, y));
+      if (!tile || !tileStandsAsSolidBlock(tile)) continue;
+      lowest = Math.min(lowest, sampler.elevationAt(x, y) + blockLayersOfTile(tile));
+    }
+  }
+  return lowest;
 }
 
 function walkableCount(sampler: WorldSampler, tileset: Tileset): number {
