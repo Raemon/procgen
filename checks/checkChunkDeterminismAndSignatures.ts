@@ -11,18 +11,39 @@ import {
   worldFromState,
 } from './pipelineWorldFixtures';
 
+type IslandsWorld = ReturnType<typeof worldFromState>;
+
 export function checkChunkDeterminismAndSignatures(check: CheckReporter): void {
+  checkTheIslandsFixtureSurvivesSanitizeWithAllItsNodes(check);
+  const a = worldFromState(islandsState());
+  checkTheSameSeedRebuildsTheSameChunksInAFreshEvaluator(check, a);
+  checkChunkEvaluationOrderNeverChangesResults(check);
+  checkADifferentSeedBuildsADifferentWorld(check, a);
+  checkAParamChangeInvalidatesItselfAndWhatFlowsFromIt(check);
+  const sampled = worldFromState(islandsState());
+  checkTheWorldSamplerSurfacesElevationAndTaggedMarkers(check, sampled);
+  checkDisablingANodeTakesItsTileLayerOutOfTheWorld(check, sampled);
+  checkScatteredPointsStayInsideTheirOwnChunk(check, sampled);
+}
+
+function checkTheIslandsFixtureSurvivesSanitizeWithAllItsNodes(check: CheckReporter): void {
   const islands = islandsState();
   check('example pipeline survives sanitize with all nodes', islands.nodes.length === 5);
+}
 
-  const a = worldFromState(islandsState());
+function checkTheSameSeedRebuildsTheSameChunksInAFreshEvaluator(
+  check: CheckReporter,
+  a: IslandsWorld,
+): void {
   const b = worldFromState(islandsState());
   check(
     'same seed generates identical chunks across fresh evaluators',
     fieldBytes(a.evaluator, 'n1', 0, 0) === fieldBytes(b.evaluator, 'n1', 0, 0) &&
       tileBytes(a.evaluator, 'n2', -3, 2) === tileBytes(b.evaluator, 'n2', -3, 2),
   );
+}
 
+function checkChunkEvaluationOrderNeverChangesResults(check: CheckReporter): void {
   const orderA = worldFromState(islandsState());
   const orderB = worldFromState(islandsState());
   const firstThenFar = [tileBytes(orderA.evaluator, 'n2', 0, 0), tileBytes(orderA.evaluator, 'n2', 5, 7)];
@@ -31,14 +52,21 @@ export function checkChunkDeterminismAndSignatures(check: CheckReporter): void {
     'chunk evaluation order never changes results',
     firstThenFar[0] === farThenFirst[1] && firstThenFar[1] === farThenFirst[0],
   );
+}
 
+function checkADifferentSeedBuildsADifferentWorld(
+  check: CheckReporter,
+  a: IslandsWorld,
+): void {
   const reseeded = worldFromState(islandsState());
   reseeded.store.setSeed(999);
   check(
     'different seeds generate different worlds',
     fieldBytes(reseeded.evaluator, 'n1', 0, 0) !== fieldBytes(a.evaluator, 'n1', 0, 0),
   );
+}
 
+function checkAParamChangeInvalidatesItselfAndWhatFlowsFromIt(check: CheckReporter): void {
   const beforeSigs = computeNodeSignatures(islandsState());
   const tweaked = islandsState();
   tweaked.nodes[0]!.params.scale = 0.11;
@@ -53,19 +81,33 @@ export function checkChunkDeterminismAndSignatures(check: CheckReporter): void {
     'downstream param change leaves upstream signature cached',
     computeNodeSignatures(downstreamTweak).get('n1') === beforeSigs.get('n1'),
   );
+}
 
-  const sampled = worldFromState(islandsState());
+function checkTheWorldSamplerSurfacesElevationAndTaggedMarkers(
+  check: CheckReporter,
+  sampled: IslandsWorld,
+): void {
   check('elevation binding shapes the world', sampled.sampler.elevationAt(0, 0) !== 0 || sampled.sampler.elevationAt(17, -23) !== 0);
   const treeMarkers = sampled.sampler.markersIn(-64, -64, 63, 63);
   check(
     'scatter markers carry their node id as tag',
     treeMarkers.length > 0 && treeMarkers.every((m) => m.tag === 'n5'),
   );
+}
 
+function checkDisablingANodeTakesItsTileLayerOutOfTheWorld(
+  check: CheckReporter,
+  sampled: IslandsWorld,
+): void {
   sampled.store.setEnabled('n3', false);
   check('disabling a node removes its tile layer', !tileIdsInRegion(sampled.sampler, 48).has(2));
   sampled.store.setEnabled('n3', true);
+}
 
+function checkScatteredPointsStayInsideTheirOwnChunk(
+  check: CheckReporter,
+  sampled: IslandsWorld,
+): void {
   const scatterPoints = asPoints(sampled.evaluator.valueFor('n5', 2, -1)) ?? [];
   check(
     'scattered points stay inside their own chunk',

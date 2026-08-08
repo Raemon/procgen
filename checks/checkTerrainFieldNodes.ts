@@ -18,43 +18,86 @@ function terrainNodesState(): PipelineState {
   ]);
 }
 
+type TerrainWorld = ReturnType<typeof worldFromState>;
+
 export function checkTerrainFieldNodes(check: CheckReporter): void {
   const terrainNodes = worldFromState(terrainNodesState());
+  checkEveryTerrainFieldStaysInsideTheUnitRangeItPromises(check, terrainNodes);
+  checkTectonicUpliftRaisesBothOceanBasinsAndMountainBelts(check, terrainNodes);
+  checkRidgedNoiseCrestsHigherThanRollingNoise(check, terrainNodes);
+  checkDomainWarpMovesTheFieldOnlyWhenGivenStrength(check, terrainNodes);
+  checkBlendFieldsAtItsExtremesIsExactlyOneOfItsInputs(check, terrainNodes);
+  checkSlopeOfAConstantFieldIsZeroEverywhere(check, terrainNodes);
+  checkTheHypsometricCurveHoldsSeaLevelAndClearsTheShallows(check, terrainNodes);
+}
 
-  function samplesOf(nodeId: string, span: number, evaluator = terrainNodes.evaluator): number[] {
-    const values: number[] = [];
-    for (let y = -span; y < span; y += 2) for (let x = -span; x < span; x += 2) values.push(fieldAt(evaluator, nodeId, x, y));
-    return values;
-  }
-
+function checkEveryTerrainFieldStaysInsideTheUnitRangeItPromises(
+  check: CheckReporter,
+  terrainNodes: TerrainWorld,
+): void {
   check(
     'every terrain and water field node stays inside 0..1',
     ['plates', 'rolling', 'ridged', 'warped', 'curved'].every((nodeId) =>
-      samplesOf(nodeId, 96).every((value) => value >= 0 && value <= 1),
+      samplesOf(terrainNodes, nodeId, 96).every((value) => value >= 0 && value <= 1),
     ),
   );
+}
+
+function checkTectonicUpliftRaisesBothOceanBasinsAndMountainBelts(
+  check: CheckReporter,
+  terrainNodes: TerrainWorld,
+): void {
   check(
     'tectonic uplift produces both ocean basins and mountain belts',
-    samplesOf('plates', 400).some((value) => value < 0.35) && samplesOf('plates', 400).some((value) => value > 0.75),
+    samplesOf(terrainNodes, 'plates', 400).some((value) => value < 0.35) && samplesOf(terrainNodes, 'plates', 400).some((value) => value > 0.75),
   );
+}
+
+function checkRidgedNoiseCrestsHigherThanRollingNoise(
+  check: CheckReporter,
+  terrainNodes: TerrainWorld,
+): void {
   check(
     'ridged noise reaches higher crests than rolling noise from the same settings',
-    Math.max(...samplesOf('ridged', 96)) > Math.max(...samplesOf('rolling', 96)),
+    Math.max(...samplesOf(terrainNodes, 'ridged', 96)) > Math.max(...samplesOf(terrainNodes, 'rolling', 96)),
   );
+}
+
+function checkDomainWarpMovesTheFieldOnlyWhenGivenStrength(
+  check: CheckReporter,
+  terrainNodes: TerrainWorld,
+): void {
   check(
     'domain warp with zero strength is the source field, and with strength it is not',
-    samplesOf('unwarped', 48).every((value, i) => Math.abs(value - samplesOf('plates', 48)[i]!) < 1e-6) &&
-      samplesOf('warped', 48).some((value, i) => Math.abs(value - samplesOf('plates', 48)[i]!) > 1e-3),
+    samplesOf(terrainNodes, 'unwarped', 48).every((value, i) => Math.abs(value - samplesOf(terrainNodes, 'plates', 48)[i]!) < 1e-6) &&
+      samplesOf(terrainNodes, 'warped', 48).some((value, i) => Math.abs(value - samplesOf(terrainNodes, 'plates', 48)[i]!) > 1e-3),
   );
+}
+
+function checkBlendFieldsAtItsExtremesIsExactlyOneOfItsInputs(
+  check: CheckReporter,
+  terrainNodes: TerrainWorld,
+): void {
   check(
     'blend fields at weight 0 and 1 are exactly its two inputs',
-    samplesOf('keepA', 48).every((value, i) => Math.abs(value - samplesOf('plates', 48)[i]!) < 1e-6) &&
-      samplesOf('keepB', 48).every((value, i) => Math.abs(value - samplesOf('rolling', 48)[i]!) < 1e-6),
+    samplesOf(terrainNodes, 'keepA', 48).every((value, i) => Math.abs(value - samplesOf(terrainNodes, 'plates', 48)[i]!) < 1e-6) &&
+      samplesOf(terrainNodes, 'keepB', 48).every((value, i) => Math.abs(value - samplesOf(terrainNodes, 'rolling', 48)[i]!) < 1e-6),
   );
-  check('slope of a constant field is zero everywhere', samplesOf('flatSlope', 48).every((value) => value === 0));
+}
 
-  const curveInput = samplesOf('rolling', 96);
-  const curveOutput = samplesOf('curved', 96);
+function checkSlopeOfAConstantFieldIsZeroEverywhere(
+  check: CheckReporter,
+  terrainNodes: TerrainWorld,
+): void {
+  check('slope of a constant field is zero everywhere', samplesOf(terrainNodes, 'flatSlope', 48).every((value) => value === 0));
+}
+
+function checkTheHypsometricCurveHoldsSeaLevelAndClearsTheShallows(
+  check: CheckReporter,
+  terrainNodes: TerrainWorld,
+): void {
+  const curveInput = samplesOf(terrainNodes, 'rolling', 96);
+  const curveOutput = samplesOf(terrainNodes, 'curved', 96);
   check(
     'the hypsometric curve keeps sea level fixed and is monotone',
     curveInput.every((value, i) => Math.abs(value - 0.5) > 1e-4 || Math.abs(curveOutput[i]! - 0.5) < 1e-3) &&
@@ -65,4 +108,10 @@ export function checkTerrainFieldNodes(check: CheckReporter): void {
     curveOutput.filter((value) => Math.abs(value - 0.5) < 0.05).length <
       curveInput.filter((value) => Math.abs(value - 0.5) < 0.05).length,
   );
+}
+
+function samplesOf(terrainNodes: TerrainWorld, nodeId: string, span: number): number[] {
+  const values: number[] = [];
+  for (let y = -span; y < span; y += 2) for (let x = -span; x < span; x += 2) values.push(fieldAt(terrainNodes.evaluator, nodeId, x, y));
+  return values;
 }

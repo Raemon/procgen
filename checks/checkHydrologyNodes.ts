@@ -34,8 +34,26 @@ function isInsideOwnChunk(x: number, y: number): boolean {
   return isAwayFromChunkEdge(x) && isAwayFromChunkEdge(y);
 }
 
+const SPAN = 64;
+
+type HydrologyWorld = ReturnType<typeof worldFromState>;
+
 export function checkHydrologyNodes(check: CheckReporter): void {
   const hydrology = worldFromState(hydrologyState());
+  checkWindowedWaterNodesAreDeterministicRegardlessOfEvaluationOrder(check, hydrology);
+  checkAChunkGetsTheSameWaterAnswerAloneOrAmongItsNeighbors(check, hydrology);
+  checkFillingDepressionsRaisesTheGroundUntilNoPitIsClosed(check, hydrology);
+  checkCarvingValleysOnlyRemovesMaterialAndOnlyNearWatercourses(check, hydrology);
+  checkDistanceToCoastSeparatesLandFromSea(check, hydrology);
+  checkFlowAccumulationYieldsARiverNetworkThatReachesTheSea(check, hydrology);
+  checkRiverFlowOnlyGrowsDownstream(check, hydrology);
+  checkRiversWidenWithTheMaxWidthKnob(check, hydrology);
+}
+
+function checkWindowedWaterNodesAreDeterministicRegardlessOfEvaluationOrder(
+  check: CheckReporter,
+  hydrology: HydrologyWorld,
+): void {
   const hydrologyReversed = worldFromState(hydrologyState());
   const flowForward = [fieldBytes(hydrology.evaluator, 'flow', 0, 0), fieldBytes(hydrology.evaluator, 'flow', 3, -2)];
   const flowReversed = [fieldBytes(hydrologyReversed.evaluator, 'flow', 3, -2), fieldBytes(hydrologyReversed.evaluator, 'flow', 0, 0)];
@@ -43,7 +61,12 @@ export function checkHydrologyNodes(check: CheckReporter): void {
     'windowed water nodes are deterministic regardless of evaluation order',
     flowForward[0] === flowReversed[1] && flowForward[1] === flowReversed[0],
   );
+}
 
+function checkAChunkGetsTheSameWaterAnswerAloneOrAmongItsNeighbors(
+  check: CheckReporter,
+  hydrology: HydrologyWorld,
+): void {
   const hydrologyLoneChunk = worldFromState(hydrologyState());
   check(
     'flow accumulation gives a chunk the same answer alone or beside its region neighbors',
@@ -55,12 +78,13 @@ export function checkHydrologyNodes(check: CheckReporter): void {
     fieldBytes(hydrologyLoneChunk.evaluator, 'coast', 2, 1) ===
       fieldBytes(hydrology.evaluator, 'coast', 2, 1),
   );
+}
 
-  const SPAN = 64;
-  const landCells: Array<[number, number]> = [];
-  for (let y = -SPAN; y < SPAN; y++) {
-    for (let x = -SPAN; x < SPAN; x++) if (fieldAt(hydrology.evaluator, 'terrain', x, y) >= 0.5) landCells.push([x, y]);
-  }
+function checkFillingDepressionsRaisesTheGroundUntilNoPitIsClosed(
+  check: CheckReporter,
+  hydrology: HydrologyWorld,
+): void {
+  const landCells = landCellsAround(hydrology);
   check('the hydrology test world has land to drain', landCells.length > 0);
   check(
     'filling depressions never lowers the ground',
@@ -75,21 +99,37 @@ export function checkHydrologyNodes(check: CheckReporter): void {
       );
     }),
   );
+}
+
+function checkCarvingValleysOnlyRemovesMaterialAndOnlyNearWatercourses(
+  check: CheckReporter,
+  hydrology: HydrologyWorld,
+): void {
+  const landCells = landCellsAround(hydrology);
   check(
     'carving valleys only ever removes material, and only near watercourses',
     landCells.every(([x, y]) => fieldAt(hydrology.evaluator, 'eroded', x, y) <= fieldAt(hydrology.evaluator, 'terrain', x, y) + 1e-6) &&
       landCells.some(([x, y]) => fieldAt(hydrology.evaluator, 'eroded', x, y) < fieldAt(hydrology.evaluator, 'terrain', x, y) - 1e-6) &&
       landCells.some(([x, y]) => Math.abs(fieldAt(hydrology.evaluator, 'eroded', x, y) - fieldAt(hydrology.evaluator, 'terrain', x, y)) < 1e-6),
   );
+}
+
+function checkDistanceToCoastSeparatesLandFromSea(
+  check: CheckReporter,
+  hydrology: HydrologyWorld,
+): void {
+  const landCells = landCellsAround(hydrology);
   check(
     'distance to coast puts land at or above 0.5 and sea below it',
     landCells.every(([x, y]) => fieldAt(hydrology.evaluator, 'coast', x, y) >= 0.5),
   );
+}
 
-  const flowRiverCells: Array<[number, number]> = [];
-  for (let y = -SPAN; y < SPAN; y++) {
-    for (let x = -SPAN; x < SPAN; x++) if (tileAtNode(hydrology.evaluator, 'rivers', x, y) !== EMPTY_TILE) flowRiverCells.push([x, y]);
-  }
+function checkFlowAccumulationYieldsARiverNetworkThatReachesTheSea(
+  check: CheckReporter,
+  hydrology: HydrologyWorld,
+): void {
+  const flowRiverCells = riverCellsOfNode(hydrology, 'rivers');
   check('flow accumulation yields a river network', flowRiverCells.length > 0);
   check(
     'every flow-derived river cell continues into another river cell or the sea',
@@ -101,6 +141,13 @@ export function checkHydrologyNodes(check: CheckReporter): void {
       ),
     ),
   );
+}
+
+function checkRiverFlowOnlyGrowsDownstream(
+  check: CheckReporter,
+  hydrology: HydrologyWorld,
+): void {
+  const flowRiverCells = riverCellsOfNode(hydrology, 'rivers');
   check(
     'river flow only grows downstream inside a chunk',
     flowRiverCells.filter(([x, y]) => isInsideOwnChunk(x, y)).every(([x, y]) => {
@@ -112,10 +159,29 @@ export function checkHydrologyNodes(check: CheckReporter): void {
       );
     }),
   );
+}
 
-  let wideRiverCells = 0;
-  for (let y = -SPAN; y < SPAN; y++) {
-    for (let x = -SPAN; x < SPAN; x++) if (tileAtNode(hydrology.evaluator, 'wideRivers', x, y) !== EMPTY_TILE) wideRiverCells++;
-  }
+function checkRiversWidenWithTheMaxWidthKnob(
+  check: CheckReporter,
+  hydrology: HydrologyWorld,
+): void {
+  const flowRiverCells = riverCellsOfNode(hydrology, 'rivers');
+  const wideRiverCells = riverCellsOfNode(hydrology, 'wideRivers').length;
   check('rivers widen with the max width knob', wideRiverCells > flowRiverCells.length);
+}
+
+function landCellsAround(hydrology: HydrologyWorld): Array<[number, number]> {
+  const landCells: Array<[number, number]> = [];
+  for (let y = -SPAN; y < SPAN; y++) {
+    for (let x = -SPAN; x < SPAN; x++) if (fieldAt(hydrology.evaluator, 'terrain', x, y) >= 0.5) landCells.push([x, y]);
+  }
+  return landCells;
+}
+
+function riverCellsOfNode(hydrology: HydrologyWorld, nodeId: string): Array<[number, number]> {
+  const cells: Array<[number, number]> = [];
+  for (let y = -SPAN; y < SPAN; y++) {
+    for (let x = -SPAN; x < SPAN; x++) if (tileAtNode(hydrology.evaluator, nodeId, x, y) !== EMPTY_TILE) cells.push([x, y]);
+  }
+  return cells;
 }

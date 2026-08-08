@@ -87,8 +87,22 @@ function gridNeighbors(i: number, size: number): number[] {
   return found;
 }
 
+type MazeWorld = ReturnType<typeof worldFromState>;
+
 export function checkLabyrinthConnectivity(check: CheckReporter): void {
   const mazeA = worldFromState(labyrinthVariant({}));
+  checkLabyrinthChunksAreDeterministicRegardlessOfEvaluationOrder(check, mazeA);
+  checkEveryCorridorAndCarverCombinationStaysOneWalkableMaze(check);
+  checkDoorsPerEdgeAddsExtraSeamCrossings(check);
+  checkTheCorridorWidthKnobReshapesTheLabyrinth(check, mazeA);
+  checkAMazeSpanningChunksIsOneLabyrinthWhicheverChunkComesFirst(check);
+  checkNestedLabyrinthsShowTheInnerMazeThroughTheOuterOne(check);
+}
+
+function checkLabyrinthChunksAreDeterministicRegardlessOfEvaluationOrder(
+  check: CheckReporter,
+  mazeA: MazeWorld,
+): void {
   const mazeB = worldFromState(labyrinthVariant({}));
   const mazeSeq = [tileBytes(mazeA.evaluator, 'n1', 0, 0), tileBytes(mazeA.evaluator, 'n1', 3, -2)];
   const mazeRev = [tileBytes(mazeB.evaluator, 'n1', 3, -2), tileBytes(mazeB.evaluator, 'n1', 0, 0)];
@@ -96,7 +110,9 @@ export function checkLabyrinthConnectivity(check: CheckReporter): void {
     'labyrinth chunks are deterministic regardless of evaluation order',
     mazeSeq[0] === mazeRev[1] && mazeSeq[1] === mazeRev[0],
   );
+}
 
+function checkEveryCorridorAndCarverCombinationStaysOneWalkableMaze(check: CheckReporter): void {
   const MAZE_SHAPES = [
     { corridor: 1, wall: 1 },
     { corridor: 2, wall: 2 },
@@ -114,19 +130,30 @@ export function checkLabyrinthConnectivity(check: CheckReporter): void {
       );
     }
   }
+}
 
+function checkDoorsPerEdgeAddsExtraSeamCrossings(check: CheckReporter): void {
   const denseDoors = worldFromState(labyrinthVariant({ doorsPerEdge: 4 }));
   check(
     'doors per edge adds extra seam crossings',
     verticalSeamDoorRuns(denseDoors.sampler, 0, 0) >= 2 && horizontalSeamDoorRuns(denseDoors.sampler, 0, 0) >= 2,
   );
+}
 
+function checkTheCorridorWidthKnobReshapesTheLabyrinth(
+  check: CheckReporter,
+  mazeA: MazeWorld,
+): void {
   check(
     'corridor width knob reshapes the labyrinth',
     tileBytes(worldFromState(labyrinthVariant({ corridor: 7 })).evaluator, 'n1', 0, 0) !==
       tileBytes(mazeA.evaluator, 'n1', 0, 0),
   );
+}
 
+function checkAMazeSpanningChunksIsOneLabyrinthWhicheverChunkComesFirst(
+  check: CheckReporter,
+): void {
   const bigMazeA = worldFromState(labyrinthVariant({ mazeChunks: 2, corridor: 5, wall: 3 }));
   const bigMazeB = worldFromState(labyrinthVariant({ mazeChunks: 2, corridor: 5, wall: 3 }));
   const bigSeq = [tileBytes(bigMazeA.evaluator, 'n1', 0, 0), tileBytes(bigMazeA.evaluator, 'n1', 1, 1)];
@@ -139,7 +166,9 @@ export function checkLabyrinthConnectivity(check: CheckReporter): void {
     'a maze spanning multiple chunks stays one connected labyrinth across regions',
     regionFloorsConnected(bigMazeA.sampler, -2 * CHUNK_SIZE, -2 * CHUNK_SIZE, 4 * CHUNK_SIZE),
   );
+}
 
+function checkNestedLabyrinthsShowTheInnerMazeThroughTheOuterOne(check: CheckReporter): void {
   const nested = worldFromState(sanitizePipeline(examplePipelines()[4]!.state));
   const nestedTiles = tileIdsInRegion(nested.sampler, 128);
   check(

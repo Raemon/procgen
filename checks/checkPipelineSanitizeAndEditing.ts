@@ -5,20 +5,44 @@ import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
 import type { CheckReporter } from './checkReporter';
 import { islandsState } from './pipelineWorldFixtures';
 
+type GraphNode = NonNullable<ReturnType<PipelineStore['addNode']>>;
+
+interface EditedGraph {
+  editing: PipelineStore;
+  noiseA: GraphNode;
+  noiseB: GraphNode;
+  thresholdNode: GraphNode;
+  combineNode: GraphNode;
+}
+
 export function checkPipelineSanitizeAndEditing(check: CheckReporter): void {
+  checkAPipelineSurvivesTheRoundTripThroughStorage(check);
+  checkUnknownNodeTypesAreDroppedOnLoad(check);
+  checkWiresPointingForwardAreDroppedOnLoad(check);
+  const graph = checkANewNodeAutoWiresToTheSourcesAlreadyInTheGraph(check);
+  checkDuplicatingANodeCopiesItWholeRightAfterTheOriginal(check, graph);
+  checkDraggingANodeUnwiresOnlyTheConsumersItOutruns(check, graph);
+  checkDeletingANodeSplicesItsConsumersOntoItsOwnSource(check);
+}
+
+function checkAPipelineSurvivesTheRoundTripThroughStorage(check: CheckReporter): void {
   const roundtrip = sanitizePipeline(JSON.parse(JSON.stringify(islandsState())));
   check('pipeline serialization roundtrips', JSON.stringify(roundtrip) === JSON.stringify(islandsState()));
   check(
     'node comments survive sanitize and serialization',
     roundtrip.nodes.every((node, i) => node.comment === islandsState().nodes[i]!.comment),
   );
+}
 
+function checkUnknownNodeTypesAreDroppedOnLoad(check: CheckReporter): void {
   const withUnknown = sanitizePipeline({
     seed: 1,
     nodes: [...(islandsState().nodes as unknown[]), { id: 'nx', type: 'doesNotExist', params: {} }],
   });
   check('unknown node types are dropped on load', withUnknown.nodes.length === 5);
+}
 
+function checkWiresPointingForwardAreDroppedOnLoad(check: CheckReporter): void {
   const forwardWire = sanitizePipeline({
     seed: 1,
     nodes: [
@@ -27,7 +51,9 @@ export function checkPipelineSanitizeAndEditing(check: CheckReporter): void {
     ],
   });
   check('wires to later nodes are dropped', forwardWire.nodes[0]!.inputs.source === null);
+}
 
+function checkANewNodeAutoWiresToTheSourcesAlreadyInTheGraph(check: CheckReporter): EditedGraph {
   const editing = new PipelineStore(emptyPipeline());
   const noiseA = editing.addNode('noiseField')!;
   const noiseB = editing.addNode('noiseField')!;
@@ -39,7 +65,13 @@ export function checkPipelineSanitizeAndEditing(check: CheckReporter): void {
     combineNode.inputs.a === noiseB.id && combineNode.inputs.b === noiseA.id,
   );
   check('optional inputs stay unwired on creation', editing.addNode('scatterPoints')!.inputs.mask === null);
+  return { editing, noiseA, noiseB, thresholdNode, combineNode };
+}
 
+function checkDuplicatingANodeCopiesItWholeRightAfterTheOriginal(
+  check: CheckReporter,
+  { editing, noiseB, thresholdNode }: EditedGraph,
+): void {
   const duplicated = editing.duplicateNode(thresholdNode.id)!;
   check(
     'duplicating copies params and wiring under a fresh id right after the original',
@@ -48,7 +80,12 @@ export function checkPipelineSanitizeAndEditing(check: CheckReporter): void {
       JSON.stringify(duplicated.params) === JSON.stringify(thresholdNode.params) &&
       editing.nodes()[3]!.id === duplicated.id,
   );
+}
 
+function checkDraggingANodeUnwiresOnlyTheConsumersItOutruns(
+  check: CheckReporter,
+  { editing, noiseA, noiseB, thresholdNode, combineNode }: EditedGraph,
+): void {
   editing.moveNodeToIndex(noiseB.id, editing.nodes().length);
   check('dragging a node to the end lands it there', editing.nodes()[editing.nodes().length - 1]!.id === noiseB.id);
   check(
@@ -57,7 +94,9 @@ export function checkPipelineSanitizeAndEditing(check: CheckReporter): void {
   );
   editing.moveNodeToIndex(noiseB.id, 0);
   check('dragging a node to the top lands it there', editing.nodes()[0]!.id === noiseB.id);
+}
 
+function checkDeletingANodeSplicesItsConsumersOntoItsOwnSource(check: CheckReporter): void {
   const healing = new PipelineStore(emptyPipeline());
   const baseNoise = healing.addNode('noiseField')!;
   const midCombine = healing.addNode('combineFields')!;

@@ -26,24 +26,37 @@ import { islandsState, tileAssets, worldFromState } from './pipelineWorldFixture
 
 export const CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT = characterViewSize();
 
-function firstPersonCamera(
-  x = 0,
-  y = 0,
-  elevation = 0,
-  facing: FacingIndex = 0,
-): CharacterCamera {
-  const camera = new CharacterCamera();
-  camera.update(0, x, y, elevation, facingYawRadians(facing));
-  return camera;
-}
+const WIDE_SIGHT_RADIUS = 24;
 
-function round(value: number): number {
-  return Math.round(value * 1000) / 1000;
-}
+type AgentWorld = ReturnType<typeof worldFromState>;
+
+type Observation = ReturnType<typeof buildObservation>;
 
 export function checkAgentObservation(check: CheckReporter): void {
   const agentWorld = worldFromState(islandsState());
   const godObs = buildObservation(agentWorld.sampler, tileAssets, { x: 0, y: 0, facing: 0 }, 'god');
+  const charObs = buildObservation(agentWorld.sampler, tileAssets, { x: 0, y: 0, facing: 0 }, 'character');
+  const wideObs = buildObservation(agentWorld.sampler, tileAssets, { x: 0, y: 0, facing: 0 }, 'character', WIDE_SIGHT_RADIUS);
+
+  checkAGodObservationSeesEveryWayAtOnceAndSaysWhichWayItFaces(check, godObs);
+  checkACharacterObservationHidesWhateverIsBehindTheAgent(check, charObs);
+  checkTheGridAndTheFogBothStopAtTheSightRadius(check);
+  checkTheFirstPersonCameraStandsAndLooksWhereThePlayerDoes(check);
+  checkTheCharacterGridBlanksEveryTileTheFogWouldSwallow(check, charObs);
+  checkACharacterObservationIsSmallerAndDeclaresItsSightRadius(check, charObs, godObs);
+  checkEveryFacingRotatesTheVisibleWedgeAndTheLegendWithIt(check, agentWorld, charObs);
+  checkAWidenedSightRadiusWidensTheObservationItBuilds(check, wideObs);
+  checkAWiderRadiusOnlyAddsGroundBeyondWhatWasAlreadySeen(check, charObs, wideObs);
+  checkTheRadiusAnAgentAsksForIsClampedIntoTheDocumentedRange(check);
+  checkTheFogAndCameraFollowAWidenedSightRadius(check);
+  checkFacingRelativeMovementNeverJumpsMoreThanOneTile(check);
+  checkObservationTextAndJsonCarryTheSameGrid(check, charObs);
+}
+
+function checkAGodObservationSeesEveryWayAtOnceAndSaysWhichWayItFaces(
+  check: CheckReporter,
+  godObs: Observation,
+): void {
   check('god observation grid is GOD_VIEW_SIZE² with @ at the center', (() => {
     const center = Math.floor(GOD_VIEW_SIZE / 2);
     return (
@@ -53,8 +66,12 @@ export function checkAgentObservation(check: CheckReporter): void {
     );
   })());
   check('god observation states its facing', godObs.facing === 'north');
+}
 
-  const charObs = buildObservation(agentWorld.sampler, tileAssets, { x: 0, y: 0, facing: 0 }, 'character');
+function checkACharacterObservationHidesWhateverIsBehindTheAgent(
+  check: CheckReporter,
+  charObs: Observation,
+): void {
   check('character observation never states a facing', charObs.facing === null);
   check('character observation blanks everything behind the agent', (() => {
     const center = Math.floor(CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT / 2);
@@ -67,12 +84,18 @@ export function checkAgentObservation(check: CheckReporter): void {
     }
     return true;
   })());
+}
+
+function checkTheGridAndTheFogBothStopAtTheSightRadius(check: CheckReporter): void {
   check('the character view grid is exactly wide enough to hold the sight radius', CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT === DEFAULT_CHARACTER_SIGHT_RADIUS_TILES * 2 + 1);
   check('the 2.5D fog turns opaque exactly at the sight radius', (() => {
     const fog = createCharacterFog();
     return fog.far === DEFAULT_CHARACTER_SIGHT_RADIUS_TILES && fog.near === hazeStartTiles();
   })());
   check('the character camera renders nothing past the fog', firstPersonCamera().camera.far === DEFAULT_CHARACTER_SIGHT_RADIUS_TILES);
+}
+
+function checkTheFirstPersonCameraStandsAndLooksWhereThePlayerDoes(check: CheckReporter): void {
   check('the character camera stands in the player tile, so nothing behind the player can reach the screen', (() => {
     const camera = firstPersonCamera(3, 7, 2);
     const eye = camera.camera.position;
@@ -92,6 +115,12 @@ export function checkAgentObservation(check: CheckReporter): void {
     }
     return seen.size === 8;
   })());
+}
+
+function checkTheCharacterGridBlanksEveryTileTheFogWouldSwallow(
+  check: CheckReporter,
+  charObs: Observation,
+): void {
   check('character observation blanks every tile the fog would swallow', (() => {
     const center = Math.floor(CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT / 2);
     for (let row = 0; row < CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT; row++) {
@@ -118,9 +147,23 @@ export function checkAgentObservation(check: CheckReporter): void {
     }
     return true;
   })());
+}
+
+function checkACharacterObservationIsSmallerAndDeclaresItsSightRadius(
+  check: CheckReporter,
+  charObs: Observation,
+  godObs: Observation,
+): void {
   check('a character observation stays smaller to read than a god observation', CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT < GOD_VIEW_SIZE);
   check('the character observation states its sight radius, the god one has none', charObs.sightRadiusTiles === DEFAULT_CHARACTER_SIGHT_RADIUS_TILES && godObs.sightRadiusTiles === null);
   check('the character observation text names the sight radius', observationText(charObs).includes(`${DEFAULT_CHARACTER_SIGHT_RADIUS_TILES} tiles`));
+}
+
+function checkEveryFacingRotatesTheVisibleWedgeAndTheLegendWithIt(
+  check: CheckReporter,
+  agentWorld: AgentWorld,
+  charObs: Observation,
+): void {
   check('every facing rotates the blank half of the character view', (() => {
     const center = Math.floor(CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT / 2);
     const views = new Set<string>();
@@ -144,9 +187,12 @@ export function checkAgentObservation(check: CheckReporter): void {
     return views.size === 8;
   })());
   check('character legend appears only for visible glyphs plus the fixed entries', charObs.legend.every((entry) => entry.glyph === '@' || entry.glyph === ' ' || charObs.view.some((row) => row.includes(entry.glyph))));
+}
 
-  const WIDE_SIGHT_RADIUS = 24;
-  const wideObs = buildObservation(agentWorld.sampler, tileAssets, { x: 0, y: 0, facing: 0 }, 'character', WIDE_SIGHT_RADIUS);
+function checkAWidenedSightRadiusWidensTheObservationItBuilds(
+  check: CheckReporter,
+  wideObs: Observation,
+): void {
   check('a widened sight radius widens the observation grid to match', wideObs.viewSize === characterViewSize(WIDE_SIGHT_RADIUS) && wideObs.view.length === wideObs.viewSize && wideObs.view.every((row) => row.length === wideObs.viewSize));
   check('a widened observation reports the radius it was built with', wideObs.sightRadiusTiles === WIDE_SIGHT_RADIUS && observationText(wideObs).includes(`${WIDE_SIGHT_RADIUS} tiles`));
   check('a widened sight radius still blanks everything behind and past the fog', (() => {
@@ -162,6 +208,13 @@ export function checkAgentObservation(check: CheckReporter): void {
     }
     return true;
   })());
+}
+
+function checkAWiderRadiusOnlyAddsGroundBeyondWhatWasAlreadySeen(
+  check: CheckReporter,
+  charObs: Observation,
+  wideObs: Observation,
+): void {
   check('a wider radius only adds ground: every tile the default radius showed reads the same', (() => {
     const wideCenter = Math.floor(wideObs.viewSize / 2);
     const nearCenter = Math.floor(CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT / 2);
@@ -176,8 +229,14 @@ export function checkAgentObservation(check: CheckReporter): void {
     }
     return widened;
   })());
+}
+
+function checkTheRadiusAnAgentAsksForIsClampedIntoTheDocumentedRange(check: CheckReporter): void {
   check('sight radii are clamped into the range the docs promise', clampSightRadiusTiles(0) === MIN_CHARACTER_SIGHT_RADIUS_TILES && clampSightRadiusTiles(1000) === MAX_CHARACTER_SIGHT_RADIUS_TILES && clampSightRadiusTiles(Number.NaN) === DEFAULT_CHARACTER_SIGHT_RADIUS_TILES && clampSightRadiusTiles(WIDE_SIGHT_RADIUS) === WIDE_SIGHT_RADIUS);
   check('the default radius is inside the range agents may ask for', DEFAULT_CHARACTER_SIGHT_RADIUS_TILES >= MIN_CHARACTER_SIGHT_RADIUS_TILES && DEFAULT_CHARACTER_SIGHT_RADIUS_TILES <= MAX_CHARACTER_SIGHT_RADIUS_TILES);
+}
+
+function checkTheFogAndCameraFollowAWidenedSightRadius(check: CheckReporter): void {
   check('the 2.5D fog and camera follow a widened sight radius', (() => {
     const fog = createCharacterFog(WIDE_SIGHT_RADIUS);
     const camera = firstPersonCamera();
@@ -195,6 +254,9 @@ export function checkAgentObservation(check: CheckReporter): void {
     }
     return true;
   })());
+}
+
+function checkFacingRelativeMovementNeverJumpsMoreThanOneTile(check: CheckReporter): void {
   check('turning wraps in eighth turns', turnedFacing(7, 1) === 0 && turnedFacing(0, -1) === 7);
   check('facing-relative steps never exceed one tile per axis', (() => {
     for (let facing = 0; facing < 8; facing++) {
@@ -207,5 +269,26 @@ export function checkAgentObservation(check: CheckReporter): void {
     }
     return true;
   })());
+}
+
+function checkObservationTextAndJsonCarryTheSameGrid(
+  check: CheckReporter,
+  charObs: Observation,
+): void {
   check('observation text and json carry the same grid', observationText(charObs).includes(charObs.view.join('\n')));
+}
+
+function firstPersonCamera(
+  x = 0,
+  y = 0,
+  elevation = 0,
+  facing: FacingIndex = 0,
+): CharacterCamera {
+  const camera = new CharacterCamera();
+  camera.update(0, x, y, elevation, facingYawRadians(facing));
+  return camera;
+}
+
+function round(value: number): number {
+  return Math.round(value * 1000) / 1000;
 }

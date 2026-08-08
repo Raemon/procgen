@@ -42,6 +42,16 @@ function sameStructure(a: PipelineState, b: PipelineState): boolean {
 }
 
 export function checkRandomizeAndPermutation(check: CheckReporter): void {
+  checkARolledWorldIsReproducibleAndLegalToBuild(check);
+  checkRolledWorldsSpanTheRecipesTheRollerKnows(check);
+  checkSliderPermutationIsReproducibleAndLeavesTheGraphIntact(check);
+  checkSliderPermutationMovesSlidersAndNothingElse(check);
+  checkNodePermutationIsReproducibleAndActuallyRecombines(check);
+  checkAPermutedCombinationStillSanitizesAndGenerates(check);
+  checkRandomizeHistoryHandsBackSnapshotsLaterEditsCannotReach(check);
+}
+
+function checkARolledWorldIsReproducibleAndLegalToBuild(check: CheckReporter): void {
   const rolledOnce = randomWorldPipeline(mulberry32(7), randomizeTileIds);
   const rolledTwice = randomWorldPipeline(mulberry32(7), randomizeTileIds);
   check('random world rolls are deterministic per stream', JSON.stringify(rolledOnce) === JSON.stringify(rolledTwice));
@@ -54,7 +64,9 @@ export function checkRandomizeAndPermutation(check: CheckReporter): void {
     JSON.stringify(sanitizePipeline(rolledOnce)) === JSON.stringify(rolledOnce),
   );
   check('random worlds keep every param inside its declared range', allParamsWithinSpecs(rolledOnce));
+}
 
+function checkRolledWorldsSpanTheRecipesTheRollerKnows(check: CheckReporter): void {
   let paintedWorlds = 0;
   let sawTerrainRoll = false;
   let sawMazeRoll = false;
@@ -68,7 +80,9 @@ export function checkRandomizeAndPermutation(check: CheckReporter): void {
     if (rolled.nodes.some((node) => node.type === 'thresholdTiles')) sawTerrainRoll = true;
   }
   check('random worlds cover both terrain and maze recipes', sawTerrainRoll && sawMazeRoll);
+}
 
+function checkSliderPermutationIsReproducibleAndLeavesTheGraphIntact(check: CheckReporter): void {
   const sliderBase = islandsState();
   const sliderShuffled = permutedSliderParams(sliderBase, mulberry32(5));
   check(
@@ -77,6 +91,11 @@ export function checkRandomizeAndPermutation(check: CheckReporter): void {
   );
   check('slider permutation preserves nodes and wiring', sameStructure(sliderBase, sliderShuffled));
   check('slider permutation keeps params inside their declared ranges', allParamsWithinSpecs(sliderShuffled));
+}
+
+function checkSliderPermutationMovesSlidersAndNothingElse(check: CheckReporter): void {
+  const sliderBase = islandsState();
+  const sliderShuffled = permutedSliderParams(sliderBase, mulberry32(5));
   check(
     'slider permutation moves at least one slider',
     JSON.stringify(sliderShuffled.nodes.map((node) => node.params)) !==
@@ -92,7 +111,9 @@ export function checkRandomizeAndPermutation(check: CheckReporter): void {
     'slider permutation does not mutate its input state',
     JSON.stringify(sliderBase) === JSON.stringify(islandsState()),
   );
+}
 
+function checkNodePermutationIsReproducibleAndActuallyRecombines(check: CheckReporter): void {
   const comboBase = islandsState();
   const comboShuffled = permutedNodeCombination(comboBase, mulberry32(5), randomizeTileIds);
   check(
@@ -101,6 +122,10 @@ export function checkRandomizeAndPermutation(check: CheckReporter): void {
       JSON.stringify(permutedNodeCombination(comboBase, mulberry32(5), randomizeTileIds)),
   );
   check('node permutation changes the combination', !sameStructure(comboBase, comboShuffled));
+}
+
+function checkAPermutedCombinationStillSanitizesAndGenerates(check: CheckReporter): void {
+  const comboShuffled = permutedNodeCombination(islandsState(), mulberry32(5), randomizeTileIds);
   check(
     'node permutation yields a pipeline that survives sanitize unchanged',
     JSON.stringify(sanitizePipeline(comboShuffled)) === JSON.stringify(comboShuffled),
@@ -116,7 +141,9 @@ export function checkRandomizeAndPermutation(check: CheckReporter): void {
     worldFromState(mutated).sampler.tileAt(5, 5);
   }
   check('repeated node permutations stay valid and generate without crashing', comboWorks);
+}
 
+function checkRandomizeHistoryHandsBackSnapshotsLaterEditsCannotReach(check: CheckReporter): void {
   const historyStates = new RandomizeHistory();
   check('randomize history starts empty', !historyStates.canUndo() && historyStates.undo() === null);
   historyStates.remember(islandsState());

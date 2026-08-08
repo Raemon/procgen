@@ -6,6 +6,12 @@ import { tileBoxGeometry } from '../world/render/view3d/tileBoxGeometry';
 import type { CheckReporter } from './checkReporter';
 
 export function checkTileSurfaceRendering(check: CheckReporter): void {
+  checkAReliefLayerTiltsTheLightItCatches(check);
+  checkATileBoxShowsAsMuchOfItsSideArtAsItIsTall(check);
+  checkTheWaterSwellLoopsWithoutASeamOrARepeat(check);
+}
+
+function checkAReliefLayerTiltsTheLightItCatches(check: CheckReporter): void {
   const RAISED_PIXEL = 5;
   const bumpyNormalBytes = normalTextureFromHeights(
     blankFacePixels(4).map((_, index) => (index === RAISED_PIXEL ? heightInk(1) : FLAT_HEIGHT_INK)),
@@ -20,7 +26,9 @@ export function checkTileSurfaceRendering(check: CheckReporter): void {
       (channel, index) => (index % 4 === 2 || index % 4 === 3 ? channel === 255 : channel === 128),
     ),
   );
+}
 
+function checkATileBoxShowsAsMuchOfItsSideArtAsItIsTall(check: CheckReporter): void {
   const slabUvs = tileBoxGeometry(1, 0.1, 1).attributes.uv!;
   const slabSideV = [...Array(4).keys()].map((corner) => slabUvs.getY(corner));
   check(
@@ -35,8 +43,10 @@ export function checkTileSurfaceRendering(check: CheckReporter): void {
       [cubeUvs.getX(vertex), cubeUvs.getY(vertex)].every((coordinate) => coordinate === 0 || coordinate === 1),
     ),
   );
+}
 
-  const shallowWaves = { palette: ['#1', '#2', '#3', '#4'], wavelength: 16, amplitude: 2.2, bandHeight: 4, size: 32 };
+function checkTheWaterSwellLoopsWithoutASeamOrARepeat(check: CheckReporter): void {
+  const shallowWaves ={ palette: ['#1', '#2', '#3', '#4'], wavelength: 16, amplitude: 2.2, bandHeight: 4, size: 32 };
   const wavesAt = (phase: number) => wavePainter(scrolledWaves(shallowWaves, phase));
   const everyWaterPixel = [...Array(32 * 32).keys()].map((index) => [index % 32, Math.floor(index / 32)] as const);
   check(

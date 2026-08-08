@@ -6,7 +6,19 @@ import { examplePipelines } from '../procgen/presets/examplePipelines';
 import type { CheckReporter } from './checkReporter';
 
 export function checkNodeRegistryAndParamSpecs(check: CheckReporter): void {
+  checkTheRegistryHoldsEveryFamilyOfNodeTheAppShipsWith(check);
+  checkEveryNodeTypeIsBuiltFromKnobsTheEditorCanRender(check);
+  checkEveryNodeTypeExplainsWhatItDoesAndWhenToUseIt(check);
+  checkEveryParamInputAndOptionCarriesItsOwnHelpText(check);
+  checkEveryExamplePipelineDescribesItselfAndItsNodes(check);
+  checkEveryNodeTypeDeclaresAResolvableOutputKind(check);
+}
+
+function checkTheRegistryHoldsEveryFamilyOfNodeTheAppShipsWith(check: CheckReporter): void {
   check('node registry has example, maze, river and custom nodes', allNodeTypes().length >= 9);
+}
+
+function checkEveryNodeTypeIsBuiltFromKnobsTheEditorCanRender(check: CheckReporter): void {
   check(
     'every node type except custom script is built only from numeric knobs and tile links',
     allNodeTypes().every(
@@ -26,10 +38,16 @@ export function checkNodeRegistryAndParamSpecs(check: CheckReporter): void {
       ),
     ),
   );
+}
+
+function checkEveryNodeTypeExplainsWhatItDoesAndWhenToUseIt(check: CheckReporter): void {
   check(
     'every node type explains what it does and when to use it',
     allNodeTypes().every((def) => def.description.length > 0 && def.whenToUse.length > 0),
   );
+}
+
+function checkEveryParamInputAndOptionCarriesItsOwnHelpText(check: CheckReporter): void {
   check(
     'every param and input carries help text for its tooltip',
     allNodeTypes().every(
@@ -46,6 +64,9 @@ export function checkNodeRegistryAndParamSpecs(check: CheckReporter): void {
       ),
     ),
   );
+}
+
+function checkEveryExamplePipelineDescribesItselfAndItsNodes(check: CheckReporter): void {
   check(
     'every example pipeline describes itself and comments every node',
     examplePipelines().every(
@@ -54,6 +75,9 @@ export function checkNodeRegistryAndParamSpecs(check: CheckReporter): void {
         sanitizePipeline(example.state).nodes.every((node) => node.comment.length > 0),
     ),
   );
+}
+
+function checkEveryNodeTypeDeclaresAResolvableOutputKind(check: CheckReporter): void {
   check(
     'every node type declares a resolvable output kind',
     allNodeTypes().every((def) =>

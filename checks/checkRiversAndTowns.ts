@@ -33,7 +33,19 @@ function terrainAt(evaluator: PipelineEvaluator, worldX: number, worldY: number)
   return field ? field[(worldY - cy * CHUNK_SIZE) * CHUNK_SIZE + (worldX - cx * CHUNK_SIZE)]! : 0;
 }
 
+type RiverWorld = ReturnType<typeof worldFromState>;
+
 export function checkRiversAndTowns(check: CheckReporter): void {
+  const riversA = worldFromState(riversExampleState());
+  checkARiverRunsDownhillUntilTheSeaStopsIt(check);
+  checkRiverChunksAreDeterministicRegardlessOfEvaluationOrder(check, riversA);
+  checkEveryRiverCellContinuesIntoAnotherRiverCellOrTheSea(check, riversA);
+  checkTownsAppearTaggedAndStandingOnTheRiver(check, riversA);
+  checkEveryTownStandsAtARiverMouthOrJunction(check, riversA);
+  checkTownsKeepTheirConfiguredSpacingFromEachOther(check, riversA);
+}
+
+function checkARiverRunsDownhillUntilTheSeaStopsIt(check: CheckReporter): void {
   const straightRiver = traceRiverDownhill(
     (x) => rampElevation(x),
     rampHash,
@@ -60,7 +72,12 @@ export function checkRiversAndTowns(check: CheckReporter): void {
         (cell, i) => i === 0 || rampElevation(cell.x) <= rampElevation(meanderingRiver[i - 1]!.x),
       ),
   );
-  const riversA = worldFromState(riversExampleState());
+}
+
+function checkRiverChunksAreDeterministicRegardlessOfEvaluationOrder(
+  check: CheckReporter,
+  riversA: RiverWorld,
+): void {
   const riversB = worldFromState(riversExampleState());
   const riverSeq = [tileBytes(riversA.evaluator, 'n3', 0, 0), tileBytes(riversA.evaluator, 'n3', 2, -2)];
   const riverRev = [tileBytes(riversB.evaluator, 'n3', 2, -2), tileBytes(riversB.evaluator, 'n3', 0, 0)];
@@ -68,13 +85,13 @@ export function checkRiversAndTowns(check: CheckReporter): void {
     'river chunks are deterministic regardless of evaluation order',
     riverSeq[0] === riverRev[1] && riverSeq[1] === riverRev[0],
   );
+}
 
-  const riverCells: Array<[number, number]> = [];
-  for (let y = -64; y < 64; y++) {
-    for (let x = -64; x < 64; x++) {
-      if (riverCellAt(riversA.evaluator, x, y)) riverCells.push([x, y]);
-    }
-  }
+function checkEveryRiverCellContinuesIntoAnotherRiverCellOrTheSea(
+  check: CheckReporter,
+  riversA: RiverWorld,
+): void {
+  const riverCells = riverCellsAround(riversA.evaluator);
   const flowsSomewhere = (x: number, y: number): boolean =>
     [
       [1, 0],
@@ -91,7 +108,12 @@ export function checkRiversAndTowns(check: CheckReporter): void {
     'every river cell continues into another river cell or the sea',
     riverCells.every(([x, y]) => flowsSomewhere(x, y)),
   );
+}
 
+function checkTownsAppearTaggedAndStandingOnTheRiver(
+  check: CheckReporter,
+  riversA: RiverWorld,
+): void {
   const towns = riversA.sampler.markersIn(-96, -96, 95, 95);
   check(
     'towns appear and are tagged as towns',
@@ -101,6 +123,13 @@ export function checkRiversAndTowns(check: CheckReporter): void {
     'every town sits on a river',
     towns.every((m) => riverCellAt(riversA.evaluator, m.x, m.y)),
   );
+}
+
+function checkEveryTownStandsAtARiverMouthOrJunction(
+  check: CheckReporter,
+  riversA: RiverWorld,
+): void {
+  const towns = riversA.sampler.markersIn(-96, -96, 95, 95);
   check(
     'every town qualifies as a river mouth or river junction',
     towns.every(
@@ -119,6 +148,13 @@ export function checkRiversAndTowns(check: CheckReporter): void {
         ].some(([dx, dy]) => terrainAt(riversA.evaluator, m.x + dx!, m.y + dy!) < 0.45),
     ),
   );
+}
+
+function checkTownsKeepTheirConfiguredSpacingFromEachOther(
+  check: CheckReporter,
+  riversA: RiverWorld,
+): void {
+  const towns = riversA.sampler.markersIn(-96, -96, 95, 95);
   check(
     'towns keep their configured spacing from each other',
     towns.every((a, i) =>
@@ -127,4 +163,14 @@ export function checkRiversAndTowns(check: CheckReporter): void {
       ),
     ),
   );
+}
+
+function riverCellsAround(evaluator: PipelineEvaluator): Array<[number, number]> {
+  const riverCells: Array<[number, number]> = [];
+  for (let y = -64; y < 64; y++) {
+    for (let x = -64; x < 64; x++) {
+      if (riverCellAt(evaluator, x, y)) riverCells.push([x, y]);
+    }
+  }
+  return riverCells;
 }
