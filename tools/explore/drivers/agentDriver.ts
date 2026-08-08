@@ -1,4 +1,3 @@
-import { headlessWorldAccess } from '../../../api/agent/headless/headlessWorldAccess';
 import { performVerb, type VerbResult } from '../../../api/agent/performVerb';
 import type { ServerWorld } from '../../../api/agent/serverWorld';
 import { newSession, type AgentSession } from '../../../api/agent/sessions';
@@ -6,35 +5,38 @@ import { buildObservation } from '../../../agents/observation';
 import { observationText } from '../../../agents/observationText';
 import type { CellPoint } from '../../../world/nearestWalkable';
 import { cellKey, stepsTaken, type ExplorationTrace } from '../explorationTrace';
-import type { AgentPolicy, AgentTurnView } from './agentPolicy';
+import type { AgentPolicy, AgentTurnView, SeededAgentPolicy } from './agentPolicy';
 import type { DriverRun, WorldDriver } from './worldDriver';
 
 export const AGENT_DRIVER_NAME = 'agent';
 
-export function agentDriver(policy: AgentPolicy): WorldDriver {
+export function agentDriver(policy: SeededAgentPolicy): WorldDriver {
   return {
     name: `${AGENT_DRIVER_NAME}:${policy.name}`,
-    explore: (run) => walkAsAnAgent(run, policy),
+    explore: (run) => walkAsAnAgent(run, policy.forSeed(run.seed)),
   };
 }
 
 async function walkAsAnAgent(run: DriverRun, policy: AgentPolicy): Promise<ExplorationTrace> {
   const session = newSession('driver', 'driver', 'character', run.spawn);
-  const access = headlessWorldAccess(run.world);
-  const trace: ExplorationTrace = {
-    spawn: run.spawn,
-    path: [run.spawn],
-    visited: new Set([cellKey(run.spawn.x, run.spawn.y)]),
-    exhaustedRegion: false,
-  };
+  const trace = traceStartingAt(run.spawn);
   let last: VerbResult | null = null;
   while (stepsTaken(trace) < run.limits.stepBudget) {
-    const chosen = await policy.decide(turnView(session, access.current(), trace, last));
+    const chosen = await policy.decide(turnView(session, run.world, trace, last));
     if (!chosen) return trace;
-    last = performVerb(session, access.current(), chosen.action, chosen.params);
+    last = performVerb(session, run.world, chosen.action, chosen.params);
     recordWhereTheAgentStands(trace, session);
   }
   return trace;
+}
+
+function traceStartingAt(spawn: CellPoint): ExplorationTrace {
+  return {
+    spawn,
+    path: [spawn],
+    visited: new Set([cellKey(spawn.x, spawn.y)]),
+    exhaustedRegion: false,
+  };
 }
 
 function turnView(

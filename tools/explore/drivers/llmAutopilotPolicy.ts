@@ -1,8 +1,8 @@
+import { callAnthropic, type AnthropicMessage, type AnthropicReply } from '../../../api/agent/anthropicClient';
 import {
-  callAnthropic,
-  type AnthropicMessage,
-  type ContentBlock,
-} from '../../../api/agent/anthropicClient';
+  toolResultBlock,
+  trimHistoryKeepingToolPairs,
+} from '../../../api/agent/anthropicConversation';
 import { toolDefinitions, META_TOOLS } from '../../../api/agent/agentTools';
 import type { AgentAction, AgentPolicy, AgentTurnView } from './agentPolicy';
 
@@ -12,42 +12,52 @@ const MAX_RESPONSE_TOKENS = 2048;
 const HISTORY_MESSAGE_CAP = 20;
 
 export interface LlmPolicyOpts {
-  apiKey: string | null;
+  apiKey: string;
   model: string;
   goal: string;
 }
 
-export function llmAutopilotPolicy(opts: LlmPolicyOpts): AgentPolicy {
-  const apiKey = requiredApiKey(opts.apiKey);
-  const tools = toolDefinitions('character');
-  const messages: AnthropicMessage[] = [];
-  let pendingToolUseId: string | null = null;
-  const decide = async (view: AgentTurnView): Promise<AgentAction | null> => {
-    messages.push(replyTo(pendingToolUseId, view));
-    trimHistory(messages);
-    const reply = await callAnthropic({
-      apiKey,
-      model: opts.model,
-      maxTokens: MAX_RESPONSE_TOKENS,
-      system: systemPrompt(opts.goal),
-      tools,
-      messages,
-      onRetry: () => {},
-    });
-    messages.push({ role: 'assistant', content: reply.content });
-    const toolUse = reply.content.find((block) => block.type === 'tool_use');
-    if (!toolUse || toolUse.name === META_TOOLS.finish) return null;
-    pendingToolUseId = toolUse.id ?? null;
-    return { action: toolUse.name ?? '', params: (toolUse.input ?? {}) as Record<string, unknown> };
-  };
-  return { name: LLM_POLICY_NAME, decide };
+interface Conversation {
+  messages: AnthropicMessage[];
+  pendingToolUseId: string | null;
 }
 
-function requiredApiKey(apiKey: string | null): string {
-  if (apiKey) return apiKey;
-  throw new Error(
-    'the llm policy needs an Anthropic API key: set ANTHROPIC_API_KEY before asking for it',
-  );
+export function llmAutopilotPolicy(opts: LlmPolicyOpts): AgentPolicy {
+  const conversation: Conversation = { messages: [], pendingToolUseId: null };
+  return {
+    name: LLM_POLICY_NAME,
+    decide: (view) => actionAskedOfTheModel(opts, conversation, view),
+  };
+}
+
+async function actionAskedOfTheModel(
+  opts: LlmPolicyOpts,
+  conversation: Conversation,
+  view: AgentTurnView,
+): Promise<AgentAction | null> {
+  conversation.messages.push(replyTo(conversation.pendingToolUseId, view));
+  trimHistoryKeepingToolPairs(conversation.messages, HISTORY_MESSAGE_CAP);
+  const reply = await askForOneAction(opts, conversation.messages);
+  conversation.messages.push({ role: 'assistant', content: reply.content });
+  const toolUse = reply.content.find((block) => block.type === 'tool_use');
+  if (!toolUse || toolUse.name === META_TOOLS.finish) return null;
+  conversation.pendingToolUseId = toolUse.id ?? null;
+  return { action: toolUse.name ?? '', params: (toolUse.input ?? {}) as Record<string, unknown> };
+}
+
+function askForOneAction(
+  opts: LlmPolicyOpts,
+  messages: readonly AnthropicMessage[],
+): Promise<AnthropicReply> {
+  return callAnthropic({
+    apiKey: opts.apiKey,
+    model: opts.model,
+    maxTokens: MAX_RESPONSE_TOKENS,
+    system: systemPrompt(opts.goal),
+    tools: toolDefinitions('character'),
+    messages,
+    onRetry: () => {},
+  });
 }
 
 function replyTo(pendingToolUseId: string | null, view: AgentTurnView): AnthropicMessage {
@@ -55,14 +65,7 @@ function replyTo(pendingToolUseId: string | null, view: AgentTurnView): Anthropi
   if (!pendingToolUseId) return { role: 'user', content: [{ type: 'text', text }] };
   return {
     role: 'user',
-    content: [
-      {
-        type: 'tool_result',
-        tool_use_id: pendingToolUseId,
-        is_error: view.lastFailure !== null,
-        content: text,
-      } as unknown as ContentBlock,
-    ],
+    content: [toolResultBlock(pendingToolUseId, text, view.lastFailure !== null)],
   };
 }
 
@@ -83,15 +86,4 @@ function systemPrompt(goal: string): string {
     `Your goal: ${goal}`,
     'Call finish when the goal is done or clearly impossible.',
   ].join('\n');
-}
-
-function trimHistory(messages: AnthropicMessage[]): void {
-  if (messages.length <= HISTORY_MESSAGE_CAP) return;
-  messages.splice(0, messages.length - HISTORY_MESSAGE_CAP);
-  messages[0] = { role: 'user', content: [{ type: 'text', text: orphanedTurnText(messages[0]) }] };
-}
-
-function orphanedTurnText(message: AnthropicMessage | undefined): string {
-  const blocks = Array.isArray(message?.content) ? (message.content as Record<string, unknown>[]) : [];
-  return blocks.map((block) => String(block.text ?? block.content ?? '')).join('\n');
 }

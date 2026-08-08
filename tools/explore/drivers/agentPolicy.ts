@@ -17,3 +17,8 @@ export interface AgentPolicy {
   name: string;
   decide(view: AgentTurnView): Promise<AgentAction | null>;
 }
+
+export interface SeededAgentPolicy {
+  name: string;
+  forSeed(seed: number): AgentPolicy;
+}

@@ -18,6 +18,7 @@ import {
   writeScript,
 } from './agentNotebook';
 import { isMetaTool, META_TOOLS, toolDefinitions } from './agentTools';
+import { toolResultBlock, trimHistoryKeepingToolPairs } from './anthropicConversation';
 import { performVerb } from './performVerb';
 import { runScript, scriptRunText } from './scriptRunner';
 import type { WorldAccess } from './serverWorld';
@@ -102,7 +103,7 @@ async function driveAgent(
     const answered = answerEveryToolUse(turn, toolUses);
     if (answered.finished) return endRun(run, 'finished', answered.finished);
     messages.push({ role: 'user', content: answered.results });
-    trimHistory(messages);
+    trimHistoryKeepingToolPairs(messages, HISTORY_MESSAGE_CAP);
     moveCacheBreakpointToNewestTurn(messages);
   }
 }
@@ -225,20 +226,15 @@ function answerEveryToolUse(
       const summary = String((toolUse.input as { summary?: unknown } | undefined)?.summary ?? '');
       return { results, finished: `finished: ${summary}` };
     }
-    results.push(toolResultBlock(turn, toolUse));
+    results.push(recordedToolResult(turn, toolUse));
   }
   return { results, finished: null };
 }
 
-function toolResultBlock(turn: Turn, toolUse: ContentBlock): object {
+function recordedToolResult(turn: Turn, toolUse: ContentBlock): object {
   const outcome = toolOutcome(turn, toolUse);
   appendTranscript(turn.run, 'tool_result', outcome.log);
-  return {
-    type: 'tool_result',
-    tool_use_id: toolUse.id,
-    is_error: outcome.isError,
-    content: outcome.text,
-  };
+  return toolResultBlock(toolUse.id, outcome.text, outcome.isError);
 }
 
 function toolOutcome(turn: Turn, toolUse: ContentBlock): ToolOutcome {
@@ -345,10 +341,6 @@ function budgetLine(run: AutopilotRun): string {
   const remaining = Math.max(0, run.budgetUsd - run.spentUsd);
   const share = Math.round((remaining / run.budgetUsd) * 100);
   return `budget: ${formatUsd(remaining)} of ${formatUsd(run.budgetUsd)} left (${share}%). The run stops when it reaches zero.`;
-}
-
-function trimHistory(messages: AnthropicMessage[]): void {
-  while (messages.length > HISTORY_MESSAGE_CAP) messages.splice(1, 2);
 }
 
 function moveCacheBreakpointToNewestTurn(messages: AnthropicMessage[]): void {

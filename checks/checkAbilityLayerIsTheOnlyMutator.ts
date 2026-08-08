@@ -11,6 +11,7 @@ const SOURCE_ROOTS = [
   'procgen',
   'server',
   'world',
+  'tools/explore/drivers',
 ];
 
 const PANEL_AND_CHROME_ROOTS = ['agents', 'assets', 'frontend', 'procgen', 'world'];

@@ -13,12 +13,11 @@ import { thumbnailHtml } from './explore/report/asciiThumbnail';
 import { galleryPageHtml, type GalleryWorld } from './explore/report/galleryHtml';
 import { headlessServerWorld } from '../api/agent/headless/headlessServerWorld';
 import type { ServerWorld } from '../api/agent/serverWorld';
-import { seedPersistedFile } from '../frontend/persistence/repoFileStore';
 import type { PipelineState } from '../procgen/pipeline/pipelineState';
 import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
 import { randomWorldPipeline } from '../procgen/randomize/randomWorldPipeline';
 import { mulberry32 } from '../procgen/random/mulberry32';
-import { TileAssets } from '../assets/tiles/tileAssets';
+import { tilesFromStoredJson } from '../assets/tiles/tileStorage';
 
 const ROLL_COUNT = Number(process.argv[2] ?? 16);
 const ROLL_SEED = Number(process.argv[3] ?? 20260806);
@@ -39,16 +38,14 @@ interface RankedWorld {
 }
 
 const tilesJson: unknown = JSON.parse(readFileSync('data/tiles.json', 'utf8'));
-const tileAssets = tilesetFromRepoData();
-const driver = driverFromEnvironment(process.env, ROLL_SEED);
-const candidates = [currentPipelineCandidate(), ...rolledCandidates(tileAssets)];
+const driver = driverFromEnvironment(process.env);
+const candidates = [currentPipelineCandidate(), ...rolledCandidates(rollableTileIds())];
 const { ranked, unmeasurable } = await measureCandidates(candidates, driver);
 writeGallery(ranked);
 printRanking(ranked, unmeasurable);
 
-function tilesetFromRepoData(): TileAssets {
-  seedPersistedFile('tiles', tilesJson);
-  return new TileAssets();
+function rollableTileIds(): number[] {
+  return (tilesFromStoredJson(tilesJson) ?? []).map((tile) => tile.id);
 }
 
 function currentPipelineCandidate(): Candidate {
@@ -56,9 +53,8 @@ function currentPipelineCandidate(): Candidate {
   return { index: 0, title: 'current data/pipeline.json', state };
 }
 
-function rolledCandidates(activeTiles: TileAssets): Candidate[] {
+function rolledCandidates(tileIds: readonly number[]): Candidate[] {
   const rng = mulberry32(ROLL_SEED);
-  const tileIds = activeTiles.all().map((tile) => tile.id);
   return Array.from({ length: ROLL_COUNT }, (_, i) => ({
     index: i + 1,
     title: `roll ${i + 1}`,
@@ -120,7 +116,7 @@ function galleryWorldOf(world: RankedWorld, position: number): GalleryWorld {
     exhaustedRegion: world.result.trace.exhaustedRegion,
     score: world.result.score,
     measurements: world.result.measurements,
-    thumbnail: thumbnailHtml(world.world.sampler, tileAssets, world.result.trace.spawn),
+    thumbnail: thumbnailHtml(world.world.sampler, world.world.tileAssets, world.result.trace.spawn),
     pipelineFileName: `world-${String(world.candidate.index).padStart(2, '0')}.pipeline.json`,
     pipelineJson: JSON.stringify(world.candidate.state, null, 2) + '\n',
   };
