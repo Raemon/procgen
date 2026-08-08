@@ -1,5 +1,5 @@
 import { readPersistedFile, writePersistedFile } from '../../frontend/persistence/repoFileStore';
-import { upgradeStoredFaceArt } from './legacyFaceArt';
+import { defWithCompactFaceArt, faceArtFromStoredShape, type StoredArtOf } from './storage/storedFaceArt';
 import { tileWithSanitizedLight, type TileDef } from './tileDef';
 import { storedTileHeight } from './tileHeight';
 
@@ -16,11 +16,15 @@ export function tilesFromStoredJson(parsed: unknown): TileDef[] | null {
 }
 
 function withValidatedFields(tile: TileDef): TileDef {
-  return { ...tile, height: storedTileHeight(tile), faceArt: upgradeStoredFaceArt(tile.faceArt) };
+  return { ...tile, height: storedTileHeight(tile), faceArt: faceArtFromStoredShape(tile.faceArt) };
 }
 
 export function storeTiles(tiles: readonly TileDef[]): void {
-  writePersistedFile(FILE_NAME, tiles);
+  writePersistedFile(FILE_NAME, tilesAsStoredJson(tiles));
+}
+
+export function tilesAsStoredJson(tiles: readonly TileDef[]): StoredArtOf<TileDef>[] {
+  return tiles.map(defWithCompactFaceArt);
 }
 
 function isTileDef(value: unknown): value is TileDef {

@@ -1,6 +1,10 @@
 import { readPersistedFile, writePersistedFile } from '../../frontend/persistence/repoFileStore';
 import { isSpriteArt } from '../tiles/spriteArt';
-import { isCubeFaceArt } from '../tiles/tileFaceArt';
+import {
+  defWithCompactFaceArt,
+  faceArtFromStoredShape,
+  type StoredArtOf,
+} from '../tiles/storage/storedFaceArt';
 import {
   clampGridSide,
   isItemOrientation,
@@ -24,7 +28,11 @@ export function itemsFromStoredJson(parsed: unknown): ItemDef[] | null {
 }
 
 export function storeItems(items: readonly ItemDef[]): void {
-  writePersistedFile(FILE_NAME, items);
+  writePersistedFile(FILE_NAME, itemsAsStoredJson(items));
+}
+
+export function itemsAsStoredJson(items: readonly ItemDef[]): StoredArtOf<ItemDef>[] {
+  return items.map(defWithCompactFaceArt);
 }
 
 function hasItemIdentity(value: unknown): value is Partial<ItemDef> & { id: number } {
@@ -40,7 +48,7 @@ function sanitizedItem(stored: Partial<ItemDef> & { id: number }): ItemDef {
     render: isItemRender(item.render) ? item.render : newItemWithId(item.id).render,
     orientation: isItemOrientation(item.orientation) ? item.orientation : 0,
     sprite: isSpriteArt(item.sprite) ? item.sprite : null,
-    faceArt: isCubeFaceArt(item.faceArt) ? item.faceArt : null,
+    faceArt: faceArtFromStoredShape(item.faceArt),
     gridWidth: clampGridSide(numberOr(item.gridWidth, 1)),
     gridHeight: clampGridSide(numberOr(item.gridHeight, 1)),
     thickness: numberOr(item.thickness, 0.12),

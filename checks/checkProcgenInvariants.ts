@@ -10,6 +10,7 @@ import { checkPrefabAndCreatureInvariants } from './checkPrefabAndCreatureInvari
 import { checkTileHeightInvariants } from './checkTileHeightInvariants';
 import { checkTileArtMipInvariants } from './checkTileArtMipInvariants';
 import { checkSharedItemAndCreatureArtInvariants } from './checkSharedItemAndCreatureArtInvariants';
+import { checkTileArtStorageInvariants } from './checkTileArtStorageInvariants';
 import { checkPresentationFoldersAreTheOnlyDomCode } from './checkPresentationFoldersAreTheOnlyDomCode';
 import { checkDesignBetsStillHold } from './checkDesignBetsStillHold';
 import { checkPuzzleInvariants } from './checkPuzzleInvariants';
@@ -62,7 +63,7 @@ import {
 import { mirroredPixelIndices } from '../assets/pixelArtEditor/ops/mirroredPixelIndices';
 import { resizeCubeFaceArt } from '../assets/pixelArtEditor/ops/resizeFaceArt';
 import { shiftFacePixelsWithWrap } from '../assets/pixelArtEditor/ops/shiftFacePixelsWithWrap';
-import { upgradeStoredFaceArt } from '../assets/tiles/legacyFaceArt';
+import { faceArtFromStoredShape } from '../assets/tiles/storage/storedFaceArt';
 import {
   isTransparentInk,
   opaqueInk,
@@ -691,7 +692,7 @@ check('malformed face art is rejected', !isCubeFaceArt({ top: [], sides: [], bot
 
 const legacySides = blankFacePixels(8);
 legacySides[1] = '#00ff00';
-const upgraded = upgradeStoredFaceArt({
+const upgraded = faceArtFromStoredShape({
   top: blankFacePixels(8),
   sides: legacySides,
   bottom: blankFacePixels(8),
@@ -701,7 +702,7 @@ check(
   'legacy sides spread to all four compass faces',
   SIDE_FACES.every((face) => upgraded![face][1] === '#00ff00'),
 );
-check('garbage stored art is dropped', upgradeStoredFaceArt({ top: [] }) === null);
+check('garbage stored art is dropped', faceArtFromStoredShape({ top: [] }) === null);
 
 const grown = resizeCubeFaceArt(art, 16);
 check(
@@ -1986,6 +1987,7 @@ describe('the player character', () => checkPlayerCharacterInvariants(check));
 describe('tile heights', () => checkTileHeightInvariants(check));
 describe('tile art mips', () => checkTileArtMipInvariants(check));
 describe('shared item and creature art', () => checkSharedItemAndCreatureArtInvariants(check));
+describe('tile art storage', () => checkTileArtStorageInvariants(check));
 describe('puzzle rooms', () => checkPuzzleInvariants(check));
 describe('the dom boundary', () => checkPresentationFoldersAreTheOnlyDomCode(check));
 describe('documentation', () => {
