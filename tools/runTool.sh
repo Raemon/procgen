@@ -7,11 +7,19 @@ if [ -z "$toolName" ]; then
   exit 64
 fi
 
-toolDirectory=$(dirname "$0")
+toolDirectory=$(cd "$(dirname "$0")" && pwd)
 toolPath="$toolDirectory/$toolName.ts"
 if [ ! -f "$toolPath" ]; then
   echo "runTool.sh found no tool named $toolName: there is no file at $toolPath" >&2
   exit 66
 fi
 
-esbuild "$toolPath" --bundle --format=esm --platform=node --log-level=error | node --input-type=module
+repoRoot=$(cd "$toolDirectory/.." && pwd)
+esbuildPath="$repoRoot/node_modules/.bin/esbuild"
+if [ ! -x "$esbuildPath" ]; then
+  echo "runTool.sh found no esbuild at $esbuildPath: run npm install first" >&2
+  exit 69
+fi
+
+cd "$repoRoot"
+"$esbuildPath" "$toolPath" --bundle --format=esm --platform=node --log-level=error | node --input-type=module
