@@ -21,6 +21,7 @@ import { RandomizeHistory } from '../procgen/randomize/randomizeHistory';
 import { TemplateLibrary } from '../procgen/templates/templateLibrary';
 import { WorldSampler } from '../procgen/worldSampler';
 import { PieceAssets } from '../assets/pieces/pieceAssets';
+import { CultureAssets } from '../assets/cultures/cultureAssets';
 import { debounce } from './debounce';
 import { CaptureTool } from '../world/capture/captureTool';
 import { HoveredTile } from '../world/hover/hoveredTile';
@@ -35,6 +36,7 @@ import type {
   ReadOnlyItemAssets,
   ReadOnlyPipelineStore,
   ReadOnlyPieceAssets,
+  ReadOnlyCultureAssets,
   ReadOnlyTemplateLibrary,
   ReadOnlyTileAssets,
   ReadOnlyWorld,
@@ -47,6 +49,7 @@ const VALUE_TWEAK_DEBOUNCE_MS = 150;
 export interface AppRuntime {
   tileAssets: ReadOnlyTileAssets;
   pieces: ReadOnlyPieceAssets;
+  cultures: ReadOnlyCultureAssets;
   creatures: ReadOnlyCreatureAssets;
   items: ReadOnlyItemAssets;
   store: ReadOnlyPipelineStore;
@@ -78,13 +81,22 @@ export function createAppRuntime(): AppRuntime {
   const templates = new TemplateLibrary();
   const worldPresets = new WorldPresetLibrary();
   const pieces = new PieceAssets();
+  const cultures = new CultureAssets();
   const creatures = new CreatureAssets();
   const items = new ItemAssets();
   const store = new PipelineStore(loadStoredPipeline());
   attachPipelinePersistence(store);
   const evaluator = new PipelineEvaluator(store);
   const takenItems = new TakenItemSpawns();
-  const sampler = new WorldSampler(store, evaluator, tileAssets, pieces, items, takenItems);
+  const sampler = new WorldSampler(
+    store,
+    evaluator,
+    tileAssets,
+    pieces,
+    items,
+    takenItems,
+    cultures,
+  );
   const groundItems = groundItemsOf(sampler, takenItems);
   const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileAssets, sampler.tileAt(x, y));
   const puzzles = new PuzzleWorld(store, tileIsWalkable);
@@ -140,6 +152,7 @@ export function createAppRuntime(): AppRuntime {
         store,
         tileAssets,
         pieces,
+        cultures,
         creatures,
         items,
         templates,
@@ -192,6 +205,7 @@ export function createAppRuntime(): AppRuntime {
   );
   tileAssets.onChange(applyWorldChange);
   pieces.onChange(applyWorldChange);
+  cultures.onChange(applyWorldChange);
   creatures.onChange(applyWorldChange);
   items.onChange(applyWorldChange);
   world.on('player-moved', () => walkOverPickup.onSteppedOnto(world.playerX, world.playerY));
@@ -204,6 +218,7 @@ export function createAppRuntime(): AppRuntime {
     templates,
     worldPresets,
     pieces,
+    cultures,
     creatures,
     items,
     store,

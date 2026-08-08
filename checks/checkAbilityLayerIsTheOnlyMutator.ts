@@ -19,6 +19,7 @@ const MUTABLE_COLLECTIONS = [
   'PipelineStore',
   'TileAssets',
   'PieceAssets',
+  'CultureAssets',
   'CreatureAssets',
   'ItemAssets',
   'TemplateLibrary',

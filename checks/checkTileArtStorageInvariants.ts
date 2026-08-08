@@ -91,6 +91,7 @@ function worldSavingOnlyTiles(): ServerWorld {
     store: nothing,
     tileAssets: { all: () => [oneTileCarryingArt()] },
     pieces: nothing,
+    cultures: nothing,
     creatures: nothing,
     items: nothing,
     templates: nothing,

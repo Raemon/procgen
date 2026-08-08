@@ -18,6 +18,11 @@ export function useRerenderOnPieceChange(): void {
   useRerenderWhen(useCallback((listener: () => void) => pieces.onChange(listener), [pieces]));
 }
 
+export function useRerenderOnCultureChange(): void {
+  const { cultures } = useAppRuntime();
+  useRerenderWhen(useCallback((listener: () => void) => cultures.onChange(listener), [cultures]));
+}
+
 export function useRerenderOnCreatureChange(): void {
   const { creatures } = useAppRuntime();
   useRerenderWhen(useCallback((listener: () => void) => creatures.onChange(listener), [creatures]));

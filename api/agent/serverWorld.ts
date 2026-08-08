@@ -5,6 +5,8 @@ import { ItemAssets } from '../../assets/items/itemAssets';
 import { groundItemsOf, type GroundItems } from '../../assets/items/pickups/groundItems';
 import { TakenItemSpawns } from '../../assets/items/pickups/takenItemSpawns';
 import { itemsAsStoredJson, itemsFromStoredJson } from '../../assets/items/itemStorage';
+import { CultureAssets } from '../../assets/cultures/cultureAssets';
+import { culturesFromStoredJson } from '../../assets/cultures/cultureStorage';
 import { PieceAssets } from '../../assets/pieces/pieceAssets';
 import { piecesFromStoredJson } from '../../assets/pieces/pieceStorage';
 import { PipelineEvaluator } from '../../procgen/eval/evaluator';
@@ -32,6 +34,7 @@ export interface ServerWorld {
   tileAssets: TileAssets;
   store: PipelineStore;
   pieces: PieceAssets;
+  cultures: CultureAssets;
   creatures: CreatureAssets;
   items: ItemAssets;
   templates: TemplateLibrary;
@@ -63,6 +66,7 @@ export function persistWorld(docs: DocSink, world: ServerWorld): void {
   docs.write('pipeline', world.store.snapshot());
   docs.write('tiles', tilesAsStoredJson(world.tileAssets.all()));
   docs.write('pieces', world.pieces.all());
+  docs.write('cultures', world.cultures.all());
   docs.write('creatures', creaturesAsStoredJson(world.creatures.all()));
   docs.write('items', itemsAsStoredJson(world.items.all()));
   docs.write('templates', world.templates.savedTemplates());
@@ -90,6 +94,7 @@ function buildServerWorld(
 ): ServerWorld {
   const tileAssets = new TileAssets(tilesFromStoredJson(docs.read('tiles')) ?? undefined);
   const pieces = new PieceAssets(piecesFromStoredJson(docs.read('pieces')) ?? undefined);
+  const cultures = new CultureAssets(culturesFromStoredJson(docs.read('cultures')) ?? undefined);
   const creatures = new CreatureAssets(
     creaturesFromStoredJson(docs.read('creatures')) ?? undefined,
   );
@@ -98,7 +103,15 @@ function buildServerWorld(
   const worldPresets = new WorldPresetLibrary(sanitizeWorldPresets(docs.read('worldPresets')));
   const store = new PipelineStore(sanitizePipeline(docs.read('pipeline')));
   const evaluator = new PipelineEvaluator(store);
-  const sampler = new WorldSampler(store, evaluator, tileAssets, pieces, items, takenItems);
+  const sampler = new WorldSampler(
+    store,
+    evaluator,
+    tileAssets,
+    pieces,
+    items,
+    takenItems,
+    cultures,
+  );
   const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileAssets, sampler.tileAt(x, y));
   const puzzles = new PuzzleWorld(store, tileIsWalkable, puzzleState);
   const isWalkable = (x: number, y: number) => tileIsWalkable(x, y) && !puzzles.blocksAt(x, y);
@@ -110,6 +123,7 @@ function buildServerWorld(
     tileAssets,
     store,
     pieces,
+    cultures,
     creatures,
     items,
     templates,

@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useAppRuntime } from '../../frontend/appRuntimeContext';
 import { CharactersTab } from '../characters/editor/CharactersTab';
 import { CreaturesTab } from '../creatures/editor/CreaturesTab';
+import { CulturesTab } from '../cultures/editor/CulturesTab';
 import { ItemsTab } from '../items/editor/ItemsTab';
 import { PiecesTab } from '../pieces/editor/PiecesTab';
 import { TilesTab } from '../tiles/editor/TilesTab';
@@ -25,6 +26,7 @@ export function AssetsPanel() {
       {tab === 'tiles' && <TilesTab />}
       {tab === 'items' && <ItemsTab />}
       {tab === 'pieces' && <PiecesTab />}
+      {tab === 'cultures' && <CulturesTab />}
       {tab === 'creatures' && <CreaturesTab />}
       {tab === 'characters' && <CharactersTab />}
     </>

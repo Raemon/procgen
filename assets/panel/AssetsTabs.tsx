@@ -25,6 +25,13 @@ const TABS: { tab: AssetKind; tip: TooltipContent }[] = [
     },
   },
   {
+    tab: 'cultures',
+    tip: {
+      title: 'cultures',
+      body: 'How a village builds: the tiles and role-bound pieces the assembler raises walls, roofs and floors from.',
+    },
+  },
+  {
     tab: 'creatures',
     tip: {
       title: 'creatures',

@@ -10,7 +10,13 @@ import type { NodeInstance } from './pipeline/pipelineState';
 import type { PipelineStore } from './pipeline/pipelineStore';
 import { topPackedVoxelOf, type VoxelColumn } from './structureOverlay/chunkVoxelColumns';
 import { tileIdOfVoxel } from './structureOverlay/packedVoxel';
-import { StructureOverlay, NO_PIECES, type PieceSource } from './structureOverlay/structureOverlay';
+import {
+  StructureOverlay,
+  NO_CULTURES,
+  NO_PIECES,
+  type CultureSource,
+  type PieceSource,
+} from './structureOverlay/structureOverlay';
 import type { PiecePlacement } from './structureOverlay/piecePlacement';
 import type {
   CultureStructurePlacement,
@@ -72,9 +78,12 @@ export class WorldSampler {
     pieces: PieceSource = NO_PIECES,
     private readonly items: ItemSource = NO_ITEMS,
     private readonly takenItems: TakenItemSpawns = new TakenItemSpawns(),
+    cultures: CultureSource = NO_CULTURES,
   ) {
-    this.structureOverlay = new StructureOverlay(pieces, (chunkX, chunkY) =>
-      this.structurePlacementsInChunk(chunkX, chunkY),
+    this.structureOverlay = new StructureOverlay(
+      pieces,
+      (chunkX, chunkY) => this.structurePlacementsInChunk(chunkX, chunkY),
+      cultures,
     );
     store.onChange(() => this.dropSampledState());
   }
@@ -212,7 +221,7 @@ export class WorldSampler {
       if (node.display.mode !== 'structures' || node.display.cultureId < 0) continue;
       const { cultureId } = node.display;
       for (const point of this.pointsOfNode(node, chunkX, chunkY)) {
-        placements.push({ x: point.x, y: point.y, cultureId });
+        placements.push({ x: point.x, y: point.y, cultureId, tag: point.tag });
       }
     }
     return placements;

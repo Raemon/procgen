@@ -21,4 +21,7 @@ import './landmark/landmarkRoomNode';
 import './landmark/landmarkPointNode';
 import './rivers/riverTilesNode';
 import './rivers/riverTownsNode';
+import './village/villageCentersNode';
+import './village/villagePlotsNode';
+import './village/villageStreetsNode';
 import './customScript/customScriptNode';

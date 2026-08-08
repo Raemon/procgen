@@ -1,5 +1,6 @@
 import type { CreatureAssets } from '../assets/creatures/creatureAssets';
 import type { ItemAssets } from '../assets/items/itemAssets';
+import type { CultureAssets } from '../assets/cultures/cultureAssets';
 import type { PieceAssets } from '../assets/pieces/pieceAssets';
 import type { PipelineStore } from '../procgen/pipeline/pipelineStore';
 import type { WorldPresetLibrary } from '../procgen/presets/worldPresetLibrary';
@@ -16,6 +17,7 @@ export type ReadOnlyPieceAssets = Pick<
   PieceAssets,
   'all' | 'byId' | 'largestFootprint' | 'onChange' | 'onPieceAdded'
 >;
+export type ReadOnlyCultureAssets = Pick<CultureAssets, 'all' | 'byId' | 'onChange'>;
 export type ReadOnlyCreatureAssets = Pick<CreatureAssets, 'all' | 'byId' | 'onChange'>;
 export type ReadOnlyItemAssets = Pick<ItemAssets, 'all' | 'byId' | 'onChange'>;
 export type ReadOnlyTemplateLibrary = Pick<

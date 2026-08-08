@@ -1,22 +1,24 @@
-import type { Piece } from '../../assets/pieces/pieceDef';
+import { assembleBuilding } from '../assembly/assembleBuilding';
+import { tagToSpec } from '../assembly/buildingSpecTag';
+import { NO_CULTURES, type CultureSource } from '../assembly/cultureSource';
+import type { PieceSource } from '../assembly/pieceSource';
 import { CHUNK_SIZE, chunkCoordOfCell, chunkKey, chunkOrigin } from '../chunk';
+import { chunkClippedPaint } from './chunkClippedPaint';
 import { ChunkVoxelColumns, type VoxelColumn } from './chunkVoxelColumns';
 import { placedPieceOf } from './piecePlacement';
 import { stampPlacedPieceIntoChunk } from './stampPlacedPiece';
-import { piecePlacementsOf, type StructurePlacement } from './structurePlacement';
+import {
+  culturePlacementsOf,
+  piecePlacementsOf,
+  type CultureStructurePlacement,
+  type StructurePlacement,
+} from './structurePlacement';
 
 const CACHED_CHUNKS = 256;
 export const MAX_STRUCTURE_SIDE = 32;
 
-export interface PieceSource {
-  byId(id: number): Piece | undefined;
-  largestFootprint(): number;
-}
-
-export const NO_PIECES: PieceSource = {
-  byId: () => undefined,
-  largestFootprint: () => 0,
-};
+export { NO_PIECES, type PieceSource } from '../assembly/pieceSource';
+export { NO_CULTURES, type CultureSource } from '../assembly/cultureSource';
 
 export type PlacementsInChunk = (chunkX: number, chunkY: number) => StructurePlacement[];
 
@@ -26,6 +28,7 @@ export class StructureOverlay {
   constructor(
     private readonly pieces: PieceSource,
     private readonly placementsInChunk: PlacementsInChunk,
+    private readonly cultures: CultureSource = NO_CULTURES,
   ) {}
 
   invalidate(): void {
@@ -52,15 +55,44 @@ export class StructureOverlay {
 
   private buildColumnsForChunk(chunkX: number, chunkY: number): ChunkVoxelColumns {
     const columns = new ChunkVoxelColumns();
+    const nearby = this.placementsNear(chunkX, chunkY);
     const originX = chunkOrigin(chunkX);
     const originY = chunkOrigin(chunkY);
-    for (const placement of piecePlacementsOf(this.placementsNear(chunkX, chunkY))) {
-      const piece = this.pieces.byId(placement.pieceId);
-      if (piece) {
-        stampPlacedPieceIntoChunk(placedPieceOf(piece, placement), originX, originY, columns);
-      }
-    }
+    this.stampPieces(nearby, originX, originY, columns);
+    this.stampBuildings(nearby, originX, originY, columns);
     return columns;
+  }
+
+  private stampPieces(
+    nearby: readonly StructurePlacement[],
+    originX: number,
+    originY: number,
+    columns: ChunkVoxelColumns,
+  ): void {
+    for (const placement of piecePlacementsOf(nearby)) {
+      const piece = this.pieces.byId(placement.pieceId);
+      if (piece) stampPlacedPieceIntoChunk(placedPieceOf(piece, placement), originX, originY, columns);
+    }
+  }
+
+  private stampBuildings(
+    nearby: readonly StructurePlacement[],
+    originX: number,
+    originY: number,
+    columns: ChunkVoxelColumns,
+  ): void {
+    for (const placement of culturePlacementsOf(nearby)) {
+      this.stampBuilding(placement, chunkClippedPaint(originX, originY, columns));
+    }
+  }
+
+  private stampBuilding(
+    placement: CultureStructurePlacement,
+    paint: ReturnType<typeof chunkClippedPaint>,
+  ): void {
+    const culture = this.cultures.byId(placement.cultureId);
+    if (!culture) return;
+    assembleBuilding(tagToSpec(placement.tag, placement.x, placement.y), culture, this.pieces, paint);
   }
 
   private placementsNear(chunkX: number, chunkY: number): StructurePlacement[] {

@@ -2,6 +2,7 @@ import { examplePipelines } from '../../procgen/presets/examplePipelines';
 import { nodeTypesJson, pipelineJson } from '../../agents/nodeCatalog';
 import { failure, json, type ApiResponse } from './apiMessages';
 import { creatureJson, inventoryJson, itemJson } from './assetJson';
+import type { Culture } from '../../assets/cultures/cultureDef';
 import type { Piece } from '../../assets/pieces/pieceDef';
 import { registerRoute } from './routeRegistry';
 import type { ServerWorld } from './serverWorld';
@@ -62,6 +63,15 @@ registerRoute({
 
 registerRoute({
   method: 'GET',
+  path: '/cultures',
+  summary: 'the culture assets: the tiles, role-bound pieces and proportions a village is built from',
+  body: {},
+  query: {},
+  handle: ({ access }) => json(200, { cultures: access.current().cultures.all().map(cultureJson) }),
+});
+
+registerRoute({
+  method: 'GET',
   path: '/creatures',
   summary:
     'the creature assets: creatures and characters a points node can spawn, and whether each carries an inventory',
@@ -96,6 +106,17 @@ function creatureInventory(world: ServerWorld, creatureId: number): ApiResponse 
     return failure(404, 'no_inventory', `creature ${creatureId} has no inventory grid`);
   }
   return json(200, { creature_id: creatureId, inventory: inventoryJson(creature.inventory) });
+}
+
+function cultureJson(culture: Culture) {
+  return {
+    id: culture.id,
+    name: culture.name,
+    roleBindings: culture.roleBindings,
+    roofStyle: culture.roofStyle,
+    storyLayers: culture.storyLayers,
+    windowEvery: culture.windowEvery,
+  };
 }
 
 function pieceJson(piece: Piece) {

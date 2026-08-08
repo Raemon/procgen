@@ -1,6 +1,7 @@
 import type { CreatureAssets } from '../assets/creatures/creatureAssets';
 import type { ItemAssets } from '../assets/items/itemAssets';
 import type { GroundItems } from '../assets/items/pickups/groundItems';
+import type { CultureAssets } from '../assets/cultures/cultureAssets';
 import type { PieceAssets } from '../assets/pieces/pieceAssets';
 import type { PuzzleWorld } from '../world/puzzles/puzzleWorld';
 import type { RegionSampler } from '../assets/pieces/captureRegionAsPiece';
@@ -26,6 +27,7 @@ export interface AbilityContext {
   store: PipelineStore;
   tileAssets: TileAssets;
   pieces: PieceAssets;
+  cultures: CultureAssets;
   creatures: CreatureAssets;
   items: ItemAssets;
   templates: TemplateLibrary;

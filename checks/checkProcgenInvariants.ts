@@ -5,6 +5,7 @@ import { checkLandmarkAndCeilingInvariants } from './checkLandmarkAndCeilingInva
 import { checkTileArtMipInvariants } from './checkTileArtMipInvariants';
 import { checkTileArtStorageInvariants } from './checkTileArtStorageInvariants';
 import { checkPieceInvariants } from './checkPieceInvariants';
+import { checkVillageInvariants } from './checkVillageInvariants';
 import { checkShapedTileInvariants } from './checkShapedTileInvariants';
 import { checkPresentationFoldersAreTheOnlyDomCode } from './checkPresentationFoldersAreTheOnlyDomCode';
 import { checkDesignBetsStillHold } from './checkDesignBetsStillHold';
@@ -97,6 +98,7 @@ import { ItemAssets } from '../assets/items/itemAssets';
 import { NO_GROUND_ITEMS } from '../assets/items/pickups/groundItems';
 import { PuzzleWorld } from '../world/puzzles/puzzleWorld';
 import { PieceAssets } from '../assets/pieces/pieceAssets';
+import { CultureAssets } from '../assets/cultures/cultureAssets';
 import { FAILURES } from '../agents/failures';
 import { nodeTypesJson } from '../agents/nodeCatalog';
 import { buildObservation, GOD_VIEW_SIZE, SELF_GLYPH } from '../agents/observation';
@@ -1408,12 +1410,14 @@ function abilityWorld() {
   const store = new PipelineStore(emptyPipeline());
   const abilityTiles = new TileAssets();
   const pieces = new PieceAssets();
+  const cultures = new CultureAssets();
   const pose = { x: 0, y: 0, facing: 0 as FacingIndex };
   const sight: { radius: number } = { radius: DEFAULT_CHARACTER_SIGHT_RADIUS_TILES };
   const context = {
     store,
     tileAssets: abilityTiles,
     pieces,
+    cultures,
     creatures: new CreatureAssets(),
     items: new ItemAssets(),
     templates: new TemplateLibrary([]),
@@ -1884,6 +1888,7 @@ describe('tile art mips', () => checkTileArtMipInvariants(check));
 describe('tile art storage', () => checkTileArtStorageInvariants(check));
 describe('shaped tiles and per-voxel facing', () => checkShapedTileInvariants(check));
 describe('pieces', () => checkPieceInvariants(check));
+describe('villages', () => checkVillageInvariants(check));
 describe('the dom boundary', () => checkPresentationFoldersAreTheOnlyDomCode(check));
 describe('documentation', () => {
   checkDocumentationHasNotRegrown(check);
