@@ -18,18 +18,14 @@
     "check:nodefilter": "esbuild checks/checkNodeTypeFilter.ts --bundle --format=esm --platform=node --log-level=error --outfile=dist/checkNodeTypeFilter.mjs && node dist/checkNodeTypeFilter.mjs",
     "check": "esbuild checks/checkProcgenInvariants.ts --bundle --format=esm --platform=node --log-level=error --external:typescript --outfile=dist/checks.mjs && node --test-reporter=spec dist/checks.mjs",
     "roll": "esbuild tools/rollAndRankWorlds.ts --bundle --format=esm --platform=node --log-level=error --outfile=dist/rollAndRankWorlds.mjs && node dist/rollAndRankWorlds.mjs",
-    "tiles:write": "esbuild tools/writeTilesetDataFile.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
     "pipeline:write": "esbuild tools/writePipelineDataFile.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
-    "tiles:preview": "esbuild tools/renderTilesetPreview.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
-    "tiles:relief": "esbuild tools/renderReliefAndMotionPreview.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
     "chunk:load": "esbuild tools/probeChunkDrawLoad.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
     "tiles:detail": "esbuild tools/probeTileDetail.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
     "items:draws": "esbuild tools/probeItemAndCreatureDraws.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
     "characters:preview": "esbuild tools/renderCharacterSheet.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
     "perf": "esbuild tools/benchmarkWorldPerf.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
     "dwarf:preview": "esbuild tools/renderDwarfPortrait.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
-    "dwarf:sheet": "esbuild tools/renderDwarfSheet.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
-    "creatures:write": "esbuild tools/writeCreaturesDataFile.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module"
+    "dwarf:sheet": "esbuild tools/renderDwarfSheet.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

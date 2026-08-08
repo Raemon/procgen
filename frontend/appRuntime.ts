@@ -77,7 +77,7 @@ export function createAppRuntime(): AppRuntime {
   const tileAssets = new TileAssets();
   const templates = new TemplateLibrary();
   const worldPresets = new WorldPresetLibrary();
-  const prefabs = new PrefabAssets((name) => tileIdByName(tileAssets, name));
+  const prefabs = new PrefabAssets();
   const creatures = new CreatureAssets();
   const items = new ItemAssets();
   const store = new PipelineStore(loadStoredPipeline());
@@ -227,8 +227,4 @@ export function createAppRuntime(): AppRuntime {
     applyWorldChange,
     flushPendingTweaks: applyAfterTweaks.flushIfPending,
   };
-}
-
-function tileIdByName(tileAssets: TileAssets, name: string): number {
-  return tileAssets.all().find((tile) => tile.name === name)?.id ?? -1;
 }
