@@ -14,6 +14,7 @@ export function checkTileArtMipInvariants(check: CheckReporter): void {
   checkEveryChainEndsAtOnePixelOfAverageColor(check);
   checkTheOnePixelIsTheColorTheFaceReadsAs(check);
   checkUnpaintedPixelsTakeTheTileColor(check);
+  checkATransparentFaceScalesDownStillTransparent(check);
   checkDistanceBuysCoarserArtAndDropsRelief(check);
   checkTheChainIsBuiltOncePerFace(check);
 }
@@ -44,6 +45,26 @@ function checkTheOnePixelIsTheColorTheFaceReadsAs(check: CheckReporter): void {
   check(
     'averaging ignores a fully transparent ink rather than dragging the color to black',
     averageInk(['#ffffff', '#00000000']) === '#ffffff',
+  );
+  check(
+    'a block with nothing painted in it stays unpainted instead of inventing a color',
+    averageInk([null, null]) === null,
+  );
+}
+
+function checkATransparentFaceScalesDownStillTransparent(check: CheckReporter): void {
+  const halfPainted: FacePixels = ['#ff0000', null, null, null];
+  check(
+    'on a see-through tile the unpainted pixels stay out of the average',
+    faceArtMips(halfPainted, null)[1]!.inks[0] === '#ff0000',
+  );
+  check(
+    'a face painted with nothing at all scales down to nothing on a see-through tile',
+    faceArtMips(blankFacePixels(4), null)[2]!.inks[0] === null,
+  );
+  check(
+    'the same face on an opaque tile scales down to the tile color instead',
+    faceArtMips(blankFacePixels(4), '#123456')[2]!.inks[0] === '#123456',
   );
 }
 
@@ -79,5 +100,9 @@ function checkTheChainIsBuiltOncePerFace(check: CheckReporter): void {
   check(
     'a face redrawn in a different tile color gets its own scaled down copies',
     faceArtMips(pixels, '#abcdef') !== faceArtMips(pixels, '#fedcba'),
+  );
+  check(
+    'a see-through tile does not share the scaled down copies of an opaque one',
+    faceArtMips(pixels, null) !== faceArtMips(pixels, '#abcdef'),
   );
 }

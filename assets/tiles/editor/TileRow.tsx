@@ -7,6 +7,7 @@ import { classes } from '../../../frontend/controls/classes';
 import { REVEALED_ON_ROW_HOVER, ROW_HOVER_GROUP } from '../../../frontend/controls/revealOnRowHover';
 import { FIELD_CLASSES } from '../../../frontend/controls/fieldClasses';
 import { dominantFaceColor } from '../dominantFaceColor';
+import { unpaintedInk } from '../inkColor';
 import { WalkIcon } from '../../../frontend/icons/panelIcons';
 import { LightKnobRows } from '../../../world/light/editor/LightKnobRows';
 import { PixelArtEditor } from '../../pixelArtEditor/PixelArtEditor';
@@ -58,7 +59,7 @@ export function TileRow({ tile }: { tile: TileDef }) {
         />
       )}
       {artOpen && tile.faceArt && (
-        <ScaledArtStrip pixels={tile.faceArt.top} baseColor={tile.color} />
+        <ScaledArtStrip pixels={tile.faceArt.top} unpainted={unpaintedInk(tile.color)} />
       )}
       {artOpen && (
         <PixelArtEditor

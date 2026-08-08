@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { faceArtPlan, type FaceArtPlan } from '../../../assets/tiles/faceArtFacePlan';
 import { facePixelsAt, frameMsOf } from '../../../assets/tiles/faceArtFrames';
-import { isTransparentInk } from '../../../assets/tiles/inkColor';
+import { isTransparentInk, unpaintedInk } from '../../../assets/tiles/inkColor';
 import {
   MAX_FACE_ART_SIZE,
   type CubeFace,
@@ -37,7 +37,7 @@ function faceMaterial(
   sideBudget: number,
 ): THREE.MeshLambertMaterial {
   const seeThrough = isTransparentInk(baseColor);
-  const frames = faceFrameTextures(art, face, baseColor, sideBudget, faceArtPlan(art, face));
+  const frames = faceFrameTextures(art, face, unpaintedInk(baseColor), sideBudget, faceArtPlan(art, face));
   const material = new THREE.MeshLambertMaterial({
     map: frames[0]!.map,
     normalMap: frames[0]!.normalMap,
@@ -53,29 +53,29 @@ function faceMaterial(
 function faceFrameTextures(
   art: CubeFaceArt,
   face: CubeFace,
-  baseColor: string,
+  unpainted: string | null,
   sideBudget: number,
   plan: FaceArtPlan,
 ): FaceArtFrameTextures[] {
   return plan.frames.map((frame) => ({
     map: faceArtColorTexture(
       facePixelsAt(art, { face, frame, layer: 'color' }),
-      baseColor,
+      unpainted,
       sideBudget,
     ),
-    normalMap: reliefTexture(art, { face, frame }, baseColor, sideBudget, plan),
+    normalMap: reliefTexture(art, { face, frame }, unpainted, sideBudget, plan),
   }));
 }
 
 function reliefTexture(
   art: CubeFaceArt,
   slot: { face: CubeFace; frame: number },
-  baseColor: string,
+  unpainted: string | null,
   sideBudget: number,
   plan: FaceArtPlan,
 ): THREE.Texture | null {
   const colorPixels = facePixelsAt(art, { ...slot, layer: 'color' });
-  if (!plan.embossed || !drawsNormalMapAt(faceArtMipLevel(colorPixels, baseColor, sideBudget))) {
+  if (!plan.embossed || !drawsNormalMapAt(faceArtMipLevel(colorPixels, unpainted, sideBudget))) {
     return null;
   }
   return faceArtNormalTexture(facePixelsAt(art, { ...slot, layer: 'height' }));

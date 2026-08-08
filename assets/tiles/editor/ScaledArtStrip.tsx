@@ -9,12 +9,12 @@ const SWATCH_PIXELS = 28;
 
 export function ScaledArtStrip({
   pixels,
-  baseColor,
+  unpainted,
 }: {
   pixels: FacePixels;
-  baseColor: string;
+  unpainted: string | null;
 }) {
-  const mips = faceArtMips(pixels, baseColor);
+  const mips = faceArtMips(pixels, unpainted);
   return (
     <div className="mt-1 flex items-end gap-1" {...tooltipHandlers(SCALED_ART_STRIP_TIP)}>
       {mips.map((mip) => (
@@ -41,5 +41,5 @@ function MipSwatch({ mip }: { mip: FaceMip }) {
 
 function drawMip(canvas: HTMLCanvasElement, mip: FaceMip): void {
   canvas.width = canvas.height = mip.side;
-  paintFacePixels(canvas.getContext('2d')!, mip.inks as FacePixels, '#000000', 1);
+  paintFacePixels(canvas.getContext('2d')!, mip.inks, null, 1);
 }

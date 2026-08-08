@@ -7,6 +7,10 @@ export function isTransparentInk(ink: string): boolean {
   return ink.length === WITH_ALPHA_LENGTH && ink.slice(7).toLowerCase() === TRANSPARENT_ALPHA;
 }
 
+export function unpaintedInk(baseColor: string): string | null {
+  return isTransparentInk(baseColor) ? null : baseColor;
+}
+
 export function opaqueInk(ink: string): string {
   return ink.length === WITH_ALPHA_LENGTH ? ink.slice(0, 7) : ink;
 }

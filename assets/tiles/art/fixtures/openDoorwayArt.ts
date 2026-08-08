@@ -22,7 +22,6 @@ const OPENING: PixelRect = { left: 11, top: 2, width: 18, height: 30 };
 const THRESHOLD: PixelRect = { left: 11, top: 28, width: 18, height: 4 };
 const LEAF_LIT_EDGE: PixelRect = { left: 10, top: 2, width: 1, height: 30 };
 const MOUTH_DARK = '#0d0b09';
-const MOUTH_EDGE = '#3a342c';
 const THRESHOLD_STONE = '#4c463d';
 const LEAF = { within: SWUNG_LEAF, seed: 0xd101 };
 
@@ -41,7 +40,6 @@ export function openDoorwayFaceArt(): CubeFaceArt {
 function openDoorwayFacePainter(): PixelPainter {
   return stackedPainters(
     doorFramePainter(0xd103),
-    doorwayMouthPainter(),
     thresholdPainter(),
     doorLeafPainter(LEAF),
     rectPainter(LEAF_LIT_EDGE, lighten(DOOR_TIMBER, 0.35)),
@@ -51,23 +49,9 @@ function openDoorwayFacePainter(): PixelPainter {
 function openDoorwayReliefPainter(): PixelPainter {
   return stackedPainters(
     doorFrameReliefPainter(),
-    rectPainter(OPENING, heightInk(0.05)),
     rectPainter(THRESHOLD, heightInk(0.12)),
     doorLeafReliefPainter(LEAF),
   );
-}
-
-function doorwayMouthPainter(): PixelPainter {
-  const gradient: PixelPainter = (x) => mixHex(MOUTH_EDGE, MOUTH_DARK, howDeepAcross(x));
-  return clippedToRect(
-    OPENING,
-    stackedPainters(gradient, specklePainter(darken(MOUTH_EDGE, 0.5), 0xd104, 0.1)),
-  );
-}
-
-function howDeepAcross(x: number): number {
-  const middle = OPENING.left + OPENING.width / 2;
-  return 1 - Math.abs(x - middle) / (OPENING.width / 2);
 }
 
 function thresholdPainter(): PixelPainter {

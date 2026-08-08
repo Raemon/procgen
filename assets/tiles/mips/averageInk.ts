@@ -8,8 +8,9 @@ interface Rgba {
   alpha: number;
 }
 
-export function averageInk(inks: readonly string[]): string {
-  const samples = inks.map(rgbaOfInk);
+export function averageInk(inks: readonly (string | null)[]): string | null {
+  const samples = inks.filter((ink): ink is string => ink !== null).map(rgbaOfInk);
+  if (samples.length === 0) return null;
   const totalAlpha = samples.reduce((sum, sample) => sum + sample.alpha, 0);
   const weightOf = totalAlpha > 0 ? (sample: Rgba) => sample.alpha : () => 1;
   return inkOfChannels(

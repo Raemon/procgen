@@ -12,19 +12,23 @@ export function isSharedFaceArtTexture(texture: THREE.Texture): boolean {
   return sharedTextures.has(texture);
 }
 
-export function faceArtMipLevel(pixels: FacePixels, baseColor: string, sideBudget: number): number {
-  return mipLevelWithin(faceArtMips(pixels, baseColor), sideBudget);
+export function faceArtMipLevel(
+  pixels: FacePixels,
+  unpainted: string | null,
+  sideBudget: number,
+): number {
+  return mipLevelWithin(faceArtMips(pixels, unpainted), sideBudget);
 }
 
 export function faceArtColorTexture(
   pixels: FacePixels,
-  baseColor: string,
+  unpainted: string | null,
   sideBudget: number,
 ): THREE.Texture {
-  const mips = faceArtMips(pixels, baseColor);
+  const mips = faceArtMips(pixels, unpainted);
   const byLevel = colorTextures.get(pixels) ?? new Map<string, THREE.CanvasTexture>();
   colorTextures.set(pixels, byLevel);
-  const key = `${baseColor}|${mipLevelWithin(mips, sideBudget)}`;
+  const key = `${unpainted ?? 'transparent'}|${mipLevelWithin(mips, sideBudget)}`;
   const cached = byLevel.get(key);
   if (cached) return cached;
   const texture = shared(pixelCrispTexture(canvasOfInks(mipWithin(mips, sideBudget).inks)));
@@ -52,10 +56,10 @@ function shared<T extends THREE.Texture>(texture: T): T {
   return texture;
 }
 
-function canvasOfInks(inks: readonly string[]): HTMLCanvasElement {
+function canvasOfInks(inks: FacePixels): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = Math.round(Math.sqrt(inks.length));
-  paintFacePixels(canvas.getContext('2d')!, inks as FacePixels, '#000000', 1);
+  paintFacePixels(canvas.getContext('2d')!, inks, null, 1);
   return canvas;
 }
 

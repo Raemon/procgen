@@ -24,6 +24,9 @@ import { WorldSampler } from '../procgen/worldSampler';
 import { TileAssets } from '../assets/tiles/tileAssets';
 import { buildObservation } from '../agents/observation';
 import { observationText } from '../agents/observationText';
+import { isTransparentInk } from '../assets/tiles/inkColor';
+import { markerPlacementsForRect } from '../world/render/view3d/markerPlacements';
+import type { TilePlacement } from '../world/render/view3d/tilePlacements';
 import { isWalkableTile } from '../world/tileWalkability';
 import { everyFixtureLook, fixtureLook } from '../world/puzzles/fixtures/fixtureAppearance';
 import { allPuzzleKinds } from '../world/puzzles/kinds/puzzleKind';
@@ -74,6 +77,7 @@ export function checkPuzzleInvariants(check: Check): void {
   checkTheSameSeedFurnishesTheSameRooms(check);
   checkEveryPuzzleKindDeclaresWhereItLands(check);
   checkYouCanTellTheFixturesApartFromTheWorld(check);
+  checkAnOpenDoorwayIsSomethingYouCanSeeThrough(check, world);
   checkNoChamberIsAFreePass(check, world);
   checkTheCrateYouWalkIntoActuallyMoves(check, world);
   checkAWrongPushCanCostYouTheRoom(check, world);
@@ -320,6 +324,46 @@ function checkDifficultyRisesThenHoldsAtAKnownRing(
     'and from the ninth ring outwards every chamber is drawn at that same top difficulty',
     heaviest(20) === heaviest(9) && heaviest(40) === heaviest(9),
   );
+}
+
+function checkAnOpenDoorwayIsSomethingYouCanSeeThrough(
+  check: Check,
+  world: PuzzleFixtureWorld,
+): void {
+  const opening = fixtureLook('gate', true).faceArt!;
+  const shutFace = fixtureLook('gate', false).faceArt!;
+  check(
+    'an open doorway leaves the gap in its face unpainted, so there is a hole to look through',
+    opening.north.some((pixel) => pixel === null),
+  );
+  check(
+    'a locked door paints its whole face, so it reads as the solid thing it is',
+    shutFace.north.every((pixel) => pixel !== null),
+  );
+  check(
+    'the open doorway reaches the renderer asking for its unpainted pixels to stay clear',
+    isTransparentInk(doorPlacementAt(world, doorwaysTouching(world, 0, 0)[0]!).baseColor),
+  );
+  check(
+    'a locked door reaches the renderer opaque, so nothing shows through a door you cannot pass',
+    !isTransparentInk(doorPlacementAt(world, aDoorwayStillShut(world)).baseColor),
+  );
+}
+
+function aDoorwayStillShut(world: PuzzleFixtureWorld): Doorway {
+  const next = firstNeighbourOfTheStart(world);
+  return doorwaysTouching(world, next.roomX, next.roomY).find(
+    (doorway) => !world.puzzles.gateIsOpen(doorway.layout, doorway.gate),
+  )!;
+}
+
+function doorPlacementAt(world: PuzzleFixtureWorld, doorway: Doorway): TilePlacement {
+  const { gate } = doorway;
+  const markers = markerPlacementsForRect(world.sampler, gate.x, gate.y, 1, 1, world.puzzles);
+  return markers.standingFixtures.find(
+    (placement) => placement.faceArt === fixtureLook('gate', true).faceArt ||
+      placement.faceArt === fixtureLook('gate', false).faceArt,
+  )!;
 }
 
 function checkYouCanTellTheFixturesApartFromTheWorld(check: Check): void {
