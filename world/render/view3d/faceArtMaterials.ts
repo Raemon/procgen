@@ -49,17 +49,21 @@ function faceFrameTextures(
   plan: FaceArtPlan,
 ): FaceArtFrameTextures[] {
   return plan.frames.map((frame) => ({
-    map: facePixelsTexture(facePixelsAt(art, { face, frame, layer: 'color' }), baseColor),
+    map: facePixelsTexture(facePixelsAt(art, { face, frame, layer: 'color' }), unpaintedAs(baseColor)),
     normalMap: plan.embossed
       ? normalTextureFromHeights(facePixelsAt(art, { face, frame, layer: 'height' }))
       : null,
   }));
 }
 
-function facePixelsTexture(pixels: FacePixels, baseColor: string): THREE.CanvasTexture {
+function unpaintedAs(baseColor: string): string | null {
+  return isTransparentInk(baseColor) ? null : baseColor;
+}
+
+function facePixelsTexture(pixels: FacePixels, unpainted: string | null): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = faceGridSize(pixels);
-  paintFacePixels(canvas.getContext('2d')!, pixels, baseColor, 1);
+  paintFacePixels(canvas.getContext('2d')!, pixels, unpainted, 1);
   return pixelCrispTexture(canvas);
 }
 
