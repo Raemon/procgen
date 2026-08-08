@@ -23,6 +23,14 @@ import { everyFixtureLook, fixtureLook } from '../world/puzzles/fixtures/fixture
 import { allPuzzleKinds } from '../world/puzzles/kinds/puzzleKind';
 import { pushCrate } from '../world/puzzles/interaction/pushCrate';
 import { forwardSolutionWorks } from '../world/puzzles/kinds/forwardSolutionWorks';
+import {
+  chanceToRuinTheRoom,
+  ruinChanceWantedAt,
+} from '../world/puzzles/kinds/chanceToRuinTheRoom';
+import {
+  squaresACrateCannotComeBackFrom,
+  standingRoomForACrate,
+} from '../world/puzzles/kinds/squaresACrateCannotComeBackFrom';
 import { RoomCells } from '../world/puzzles/kinds/roomCells';
 import { PuzzleWorld } from '../world/puzzles/puzzleWorld';
 import { playerCanEnter } from '../world/puzzles/playerCanEnter';
@@ -51,7 +59,111 @@ export function checkPuzzleInvariants(check: Check): void {
   checkYouCanTellTheFixturesApartFromTheWorld(check);
   checkNoChamberIsAFreePass(check, world);
   checkTheCrateYouWalkIntoActuallyMoves(check, world);
+  checkAWrongPushCanCostYouTheRoom(check, world);
+  checkTheSearchAsksForMoreRuinUntilItsCeiling(check);
   checkDifficultyRisesThenHoldsAtAKnownRing(check, world);
+}
+
+interface CrateFloorStudy {
+  layout: PuzzleRoomLayout;
+  space: ReturnType<typeof crateSpaceOf>;
+  plates: { x: number; y: number }[];
+  stranding: Set<string>;
+}
+
+function studyTheCrateFloorOf(layout: PuzzleRoomLayout): CrateFloorStudy {
+  const space = crateSpaceOf(layout);
+  const plates = layout.fixtures
+    .filter((fixture) => fixture.kind === 'plate')
+    .map((fixture) => ({ x: fixture.x, y: fixture.y }));
+  return {
+    layout,
+    space,
+    plates,
+    stranding: squaresACrateCannotComeBackFrom(space, plates),
+  };
+}
+
+function everySquareTheSolutionParksACrateOn(study: CrateFloorStudy): string[] {
+  const crates = new Map(study.space.crates);
+  const parked: string[] = [];
+  for (const push of study.layout.solution) {
+    const crate = crates.get(push.crateId)!;
+    const landsOn = { x: crate.x + push.dx, y: crate.y + push.dy };
+    crates.set(push.crateId, landsOn);
+    parked.push(`${landsOn.x},${landsOn.y}`);
+  }
+  return parked;
+}
+
+function checkAWrongPushCanCostYouTheRoom(check: Check, world: PuzzleFixtureWorld): void {
+  const studies = everyRoomWithin(world, 12)
+    .filter((layout) => layout.kindName === 'sokoban' && layout.solution.length > 0)
+    .map(studyTheCrateFloorOf);
+  check('there are sokoban chambers to study the crate floor of', studies.length > 100);
+  check(
+    'every crate a chamber starts with stands where a plate is still reachable, so no chamber is born unsolvable',
+    studies.every((study) =>
+      [...study.space.crates.values()].every(
+        (crate) => !study.stranding.has(`${crate.x},${crate.y}`),
+      ),
+    ),
+  );
+  check(
+    'no push of a recorded solution parks a crate on ground the analysis calls stranding, so it never cries wolf',
+    studies.every((study) =>
+      everySquareTheSolutionParksACrateOn(study).every((cell) => !study.stranding.has(cell)),
+    ),
+  );
+  check(
+    'a corner of a chamber with no plate in it is ground a crate can never be pushed off',
+    studies.every((study) => everyPlainCornerOf(study).every((cell) => study.stranding.has(cell))),
+  );
+  const risky = studies.filter((study) => study.layout.level > 0 && aPushCanRuinIt(study));
+  const deep = studies.filter((study) => study.layout.level > 0);
+  check(
+    'past the tutorial ring most sokoban chambers offer a push that costs you the room',
+    risky.length > deep.length * 0.8,
+  );
+  check(
+    'and the tutorial chamber that introduces crates still lets you shove them about freely',
+    studies
+      .filter((study) => study.layout.level === 0)
+      .every((study) => !aPushCanRuinIt(study)),
+  );
+}
+
+function aPushCanRuinIt(study: CrateFloorStudy): boolean {
+  return chanceToRuinTheRoom(study.space, study.layout.entrance, study.plates) > 0;
+}
+
+function everyPlainCornerOf(study: CrateFloorStudy): string[] {
+  const rect = study.layout.interior;
+  const corners = [
+    { x: rect.x, y: rect.y },
+    { x: rect.x + rect.width - 1, y: rect.y },
+    { x: rect.x, y: rect.y + rect.height - 1 },
+    { x: rect.x + rect.width - 1, y: rect.y + rect.height - 1 },
+  ];
+  return corners
+    .filter((corner) => standingRoomForACrate(study.space, corner))
+    .filter((corner) => !study.plates.some((plate) => plate.x === corner.x && plate.y === corner.y))
+    .map((corner) => `${corner.x},${corner.y}`);
+}
+
+function checkTheSearchAsksForMoreRuinUntilItsCeiling(check: Check): void {
+  check(
+    'the deeper a chamber sits the more of its pushes the search insists can go wrong',
+    ruinChanceWantedAt(3) > ruinChanceWantedAt(1) && ruinChanceWantedAt(1) > ruinChanceWantedAt(0),
+  );
+  check(
+    'the chamber that introduces crates is asked for no risk at all, so nothing there can be lost',
+    ruinChanceWantedAt(0) === 0,
+  );
+  check(
+    'and the search stops asking for more past a stated ceiling rather than hunting forever',
+    ruinChanceWantedAt(40) === ruinChanceWantedAt(200) && ruinChanceWantedAt(40) < 1,
+  );
 }
 
 function checkNoChamberIsAFreePass(check: Check, world: PuzzleFixtureWorld): void {

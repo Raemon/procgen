@@ -30,6 +30,22 @@ function aCrateSitsOn(space: CrateFloorSpace, cell: Cell): boolean {
   return false;
 }
 
+export function cellsReachableFrom(space: CrateFloorSpace, from: Cell): Set<string> {
+  if (!isOpenFloor(space, from)) return new Set();
+  const seen = new Set<string>([cellKey(from)]);
+  const queue: Cell[] = [from];
+  for (let read = 0; read < queue.length; read++) {
+    const here = queue[read]!;
+    for (const step of CRATE_DIRECTIONS) {
+      const next = { x: here.x + step.dx, y: here.y + step.dy };
+      if (seen.has(cellKey(next)) || !isOpenFloor(space, next)) continue;
+      seen.add(cellKey(next));
+      queue.push(next);
+    }
+  }
+  return seen;
+}
+
 export function canWalkBetween(space: CrateFloorSpace, from: Cell, goal: Cell): boolean {
   if (!isOpenFloor(space, from) || !isOpenFloor(space, goal)) return false;
   const seen = new Set<string>([cellKey(from)]);

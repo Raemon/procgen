@@ -5,7 +5,17 @@ import {
   type FurnishContext,
   type FurnishedRoom,
 } from './puzzleKind';
-import { cratesStillOnPlates, reversePullCrates, type PullableRoom } from './reversePullCrates';
+import {
+  chanceToRuinTheRoom,
+  ruinChanceWantedAt,
+  timesTheSolutionChangesCrate,
+} from './chanceToRuinTheRoom';
+import {
+  cratesStillOnPlates,
+  everyDoorwayCanRunTheSolution,
+  reversePullCrates,
+  type PullableRoom,
+} from './reversePullCrates';
 import { releaseWalkingRoom, scatterPillars } from './scatterPillars';
 import { RoomCells, type Cell } from './roomCells';
 
@@ -25,12 +35,35 @@ const FURNISH_ATTEMPTS = 8;
 
 function furnishSokobanRoom(context: FurnishContext): FurnishedRoom {
   for (const demand of demandsToTry(context)) {
-    for (let attempt = 0; attempt < FURNISH_ATTEMPTS; attempt++) {
-      const room = layOutCratesAndPlates(freshCells(context), demand);
-      if (room) return room;
-    }
+    const chosen = theMostRuinableLayoutOnOffer(context, demand);
+    if (chosen) return chosen.room;
   }
   return nothingToSolve();
+}
+
+interface LayoutOnOffer {
+  room: FurnishedRoom;
+  ruinChance: number;
+  crateHandovers: number;
+}
+
+function theMostRuinableLayoutOnOffer(
+  context: FurnishContext,
+  demand: CrateDemand,
+): LayoutOnOffer | null {
+  const wanted = ruinChanceWantedAt(context.level);
+  let best: LayoutOnOffer | null = null;
+  for (let attempt = 0; attempt < FURNISH_ATTEMPTS; attempt++) {
+    const candidate = layOutCratesAndPlates(freshCells(context), demand);
+    if (candidate && (!best || askingMoreOfThePlayer(candidate, best))) best = candidate;
+    if (best && best.ruinChance >= wanted) return best;
+  }
+  return best;
+}
+
+function askingMoreOfThePlayer(candidate: LayoutOnOffer, best: LayoutOnOffer): boolean {
+  if (candidate.ruinChance !== best.ruinChance) return candidate.ruinChance > best.ruinChance;
+  return candidate.crateHandovers > best.crateHandovers;
 }
 
 interface CrateDemand {
@@ -61,7 +94,7 @@ function freshCells(context: FurnishContext): FurnishContext {
 function layOutCratesAndPlates(
   context: FurnishContext,
   demand: CrateDemand,
-): FurnishedRoom | null {
+): LayoutOnOffer | null {
   const pillars = scatterPillars(context, demand.pillars);
   const plates = placePlates(context, demand.crates);
   releaseWalkingRoom(context);
@@ -75,10 +108,15 @@ function layOutCratesAndPlates(
   );
   if (cratesStillOnPlates(room, plateCells).length > 0) return null;
   if (solution.length === 0) return null;
+  if (!everyDoorwayCanRunTheSolution(room, context.entrances, solution)) return null;
   return {
-    fixtures: [...pillars, ...plates, ...cratesAsFixtures(room)],
-    opensWhen: plates.map((plate) => plate.id),
-    solution,
+    room: {
+      fixtures: [...pillars, ...plates, ...cratesAsFixtures(room)],
+      opensWhen: plates.map((plate) => plate.id),
+      solution,
+    },
+    ruinChance: chanceToRuinTheRoom(room, context.entrances[0]!, plates),
+    crateHandovers: timesTheSolutionChangesCrate(solution),
   };
 }
 
