@@ -1,21 +1,12 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert';
 import '../procgen/nodes';
-import { checkCharacterBillboardInvariants } from './checkCharacterBillboardInvariants';
-import { checkItemAndInventoryInvariants } from './checkItemAndInventoryInvariants';
-import { checkPlayerCharacterInvariants } from './checkPlayerCharacterInvariants';
 import { checkLandmarkAndCeilingInvariants } from './checkLandmarkAndCeilingInvariants';
-import { checkDelveDarknessInvariants } from './checkDelveDarknessInvariants';
-import { checkPrefabAndCreatureInvariants } from './checkPrefabAndCreatureInvariants';
-import { checkTileHeightInvariants } from './checkTileHeightInvariants';
 import { checkTileArtMipInvariants } from './checkTileArtMipInvariants';
-import { checkSharedItemAndCreatureArtInvariants } from './checkSharedItemAndCreatureArtInvariants';
 import { checkTileArtStorageInvariants } from './checkTileArtStorageInvariants';
-import { checkHiddenTileFaceCulling } from './checkHiddenTileFaceCulling';
 import { checkShapedTileInvariants } from './checkShapedTileInvariants';
 import { checkPresentationFoldersAreTheOnlyDomCode } from './checkPresentationFoldersAreTheOnlyDomCode';
 import { checkDesignBetsStillHold } from './checkDesignBetsStillHold';
-import { checkPuzzleInvariants } from './checkPuzzleInvariants';
 import { checkEveryApiSurfaceIsDescribed } from './checkEveryApiSurfaceIsDescribed';
 import { checkClaudeMdPointsAtThingsThatExist } from './checkClaudeMdPointsAtThingsThatExist';
 import { checkDocumentationHasNotRegrown } from './checkDocumentationHasNotRegrown';
@@ -56,8 +47,6 @@ import { ZoomScale } from '../world/render/camera/zoomScale';
 import { WorldRenderers, type WorldRenderer } from '../frontend/worldRenderers';
 import { worldPanForDrag } from '../world/render/view3d/dragToWorldPan';
 import { streamingRadiusChunks } from '../world/render/view3d/streamingRadius';
-import { markerPlacementsForRect } from '../world/render/view3d/markerPlacements';
-import { tilePlacementsForRect } from '../world/render/view3d/tilePlacements';
 import { floodFillFacePixels } from '../assets/pixelArtEditor/ops/floodFillFacePixels';
 import {
   copyFaceToAllSides,
@@ -87,15 +76,11 @@ import {
   faceArtWithPixelsAt,
   facePixelsAt,
   frameCount,
-  frameMsOf,
-  isAnimated,
 } from '../assets/tiles/faceArtFrames';
 import { FLAT_HEIGHT_INK, heightInk, heightOfInk } from '../assets/tiles/faceArtHeight';
-import { faceArtPlan } from '../assets/tiles/faceArtFacePlan';
 import { normalTextureFromHeights } from '../world/render/view3d/normalTextureFromHeights';
 import { tileBoxGeometry } from '../world/render/view3d/tileBoxGeometry';
 import { scrolledWaves, wavePainter } from '../assets/tiles/art/painters/wavePainter';
-import { defaultTiles } from '../assets/tiles/defaultTiles';
 import { TileAssets } from '../assets/tiles/tileAssets';
 import { isWalkableTile } from '../world/tileWalkability';
 import { World } from '../world/world';
@@ -287,27 +272,12 @@ check(
 );
 
 const sampled = worldFromState(islandsState());
-const seenTiles = tileIdsInRegion(sampled.sampler, 48);
-check('tile layers stack: water, sand, grass and rock all appear', [0, 1, 2, 4].every((id) => seenTiles.has(id)));
 check('elevation binding shapes the world', sampled.sampler.elevationAt(0, 0) !== 0 || sampled.sampler.elevationAt(17, -23) !== 0);
 const treeMarkers = sampled.sampler.markersIn(-64, -64, 63, 63);
 check(
   'scatter markers carry their node id as tag',
   treeMarkers.length > 0 && treeMarkers.every((m) => m.tag === 'n5'),
 );
-check(
-  'tile-sourced markers take symbol and color from the tile assets',
-  treeMarkers.every((m) => m.glyph === '♠' && m.color === '#2d6a34'),
-);
-
-const treeId = tileAssets.idForRole('tree');
-tileAssets.update(treeId, { symbol: 'T', color: '#123456' });
-const editedTreeMarker = sampled.sampler.markersIn(-64, -64, 63, 63)[0]!;
-check(
-  'editing a tile restyles the markers that source it',
-  editedTreeMarker.glyph === 'T' && editedTreeMarker.color === '#123456',
-);
-tileAssets.update(treeId, { symbol: '♠', color: '#2d6a34' });
 
 sampled.store.setEnabled('n3', false);
 check('disabling a node removes its tile layer', !tileIdsInRegion(sampled.sampler, 48).has(2));
@@ -661,7 +631,6 @@ healing.removeNode(baseNoise.id);
 check('deleting a node with no upstream leaves consumers unwired', tailCombine.inputs.a === null);
 
 check('empty void is walkable', isWalkableTile(tileAssets, EMPTY_TILE));
-check('water is not walkable', !isWalkableTile(tileAssets, 0));
 
 const caves = worldFromState(sanitizePipeline(examplePipelines()[1]!.state));
 const monsterMarkers = caves.sampler.markersIn(-64, -64, 63, 63);
@@ -742,27 +711,6 @@ splitSides.north[0] = '#ff0000';
 check('painting one side unmatches the sides', !sideFacesMatch(splitSides));
 const relinked = copyFaceToAllSides(splitSides, 'north');
 check('relinking copies one side everywhere', sideFacesMatch(relinked) && relinked.west[0] === '#ff0000');
-
-const grass = tileAssets.byRole('grass')!;
-const shippedGrassArt = grass.faceArt;
-tileAssets.update(grass.id, { faceArt: art });
-const placements = tilePlacementsForRect(sampled.sampler, tileAssets, -48, -48, 96, 96);
-check('placements carry the tile face art', placements.floors.some((p) => p.faceArt === art));
-tileAssets.update(grass.id, { faceArt: null });
-const strippedPlacements = tilePlacementsForRect(sampled.sampler, tileAssets, -48, -48, 96, 96);
-check(
-  'tiles without art stay flat-colored',
-  strippedPlacements.floors.some((p) => p.faceArt === null),
-);
-tileAssets.update(grass.id, { faceArt: shippedGrassArt });
-
-tileAssets.update(treeId, { faceArt: art });
-const markerPlacements = markerPlacementsForRect(sampled.sampler, -48, -48, 96, 96).pins;
-check(
-  'marker placements carry the sourced tile face art',
-  markerPlacements.length > 0 && markerPlacements.every((p) => p.faceArt === art),
-);
-tileAssets.update(treeId, { faceArt: defaultTiles()[treeId]?.faceArt ?? null });
 
 const stillArt = blankCubeFaceArt(4);
 const twoFrames = faceArtWithFrameInserted(stillArt, 0);
@@ -870,58 +818,7 @@ check(
   new Set([0, 1, 2, 3].map((phase) => everyWaterPixel.map(([x, y]) => wavesAt(phase)(x, y)).join())).size === 4,
 );
 
-const shippedWater = defaultTiles().find((tile) => tile.role === 'water')!.faceArt!;
-check(
-  'the shipped water rolls through several frames',
-  isAnimated(shippedWater) && frameCount(shippedWater) === 4 && frameMsOf(shippedWater) === 200,
-);
-check(
-  'only the water surface moves — later frames carry nothing but the top face',
-  (shippedWater.framesAfterFirst ?? []).every((frame) => Object.keys(frame.color).join() === 'top'),
-);
-check(
-  'the water surface is drawn frame by frame while its still sides are drawn once',
-  faceArtPlan(shippedWater, 'top').frames.length === 4 &&
-    faceArtPlan(shippedWater, 'north').frames.length === 1,
-);
-check(
-  'only the face carrying relief pays for a normal map',
-  faceArtPlan(shippedWater, 'top').embossed && !faceArtPlan(shippedWater, 'north').embossed,
-);
-check(
-  'the water surface carries a relief layer for the light to catch',
-  facePixelsAt(shippedWater, { face: 'top', frame: 0, layer: 'height' }).some(
-    (pixel) => pixel !== null && heightOfInk(pixel) !== 0.5,
-  ),
-);
 
-const shippedTiles = defaultTiles();
-check(
-  'every shipped tile carries 32px cube art',
-  shippedTiles.every((tile) => isCubeFaceArt(tile.faceArt) && tile.faceArt.size === 32),
-);
-check(
-  'no shipped tile art is left blank',
-  shippedTiles.every((tile) => tile.faceArt !== null && !isEntirelyBlank(tile.faceArt)),
-);
-check(
-  'shipped tiles have unique names, symbols and ids',
-  [
-    shippedTiles.map((tile) => tile.name),
-    shippedTiles.map((tile) => tile.symbol),
-    shippedTiles.map((tile) => String(tile.id)),
-  ].every((values) => new Set(values).size === shippedTiles.length),
-);
-check(
-  'terrain roles keep the tile ids that saved pipelines reference',
-  ['water', 'sand', 'grass', 'tree', 'rock'].every(
-    (role, id) => shippedTiles[id]?.role === role,
-  ),
-);
-check(
-  'tile art generation is deterministic',
-  JSON.stringify(defaultTiles()) === JSON.stringify(shippedTiles),
-);
 
 check('forward faces north with the camera at north', String(cameraRelativeStep(0, 1, 0)) === '0,-1');
 check('forward faces east with the camera turned right', String(cameraRelativeStep(1, 1, 0)) === '1,0');
@@ -1025,7 +922,6 @@ for (let roll = 1; roll <= RANDOM_WORLD_ROLLS; roll++) {
   if (rolled.nodes.some((node) => node.type === 'mazeChunk')) sawMazeRoll = true;
   if (rolled.nodes.some((node) => node.type === 'thresholdTiles')) sawTerrainRoll = true;
 }
-check('every random world paints at least two tile kinds', paintedWorlds === RANDOM_WORLD_ROLLS);
 check('random worlds cover both terrain and maze recipes', sawTerrainRoll && sawMazeRoll);
 
 const sliderBase = islandsState();
@@ -1510,7 +1406,7 @@ check('observation text and json carry the same grid', observationText(charObs).
 function abilityWorld() {
   const store = new PipelineStore(emptyPipeline());
   const abilityTiles = new TileAssets();
-  const prefabs = new PrefabAssets(() => -1);
+  const prefabs = new PrefabAssets();
   const pose = { x: 0, y: 0, facing: 0 as FacingIndex };
   const sight: { radius: number } = { radius: DEFAULT_CHARACTER_SIGHT_RADIUS_TILES };
   const context = {
@@ -1983,17 +1879,9 @@ check(
   })(),
 );
 
-describe('prefabs and creatures', () => checkPrefabAndCreatureInvariants(check));
-describe('items and inventories', () => checkItemAndInventoryInvariants(check));
-describe('character billboards', () => checkCharacterBillboardInvariants(check));
-describe('the player character', () => checkPlayerCharacterInvariants(check));
-describe('tile heights', () => checkTileHeightInvariants(check));
 describe('tile art mips', () => checkTileArtMipInvariants(check));
-describe('shared item and creature art', () => checkSharedItemAndCreatureArtInvariants(check));
 describe('tile art storage', () => checkTileArtStorageInvariants(check));
-describe('hidden tile faces', () => checkHiddenTileFaceCulling(check));
 describe('shaped tiles and per-voxel facing', () => checkShapedTileInvariants(check));
-describe('puzzle rooms', () => checkPuzzleInvariants(check));
 describe('the dom boundary', () => checkPresentationFoldersAreTheOnlyDomCode(check));
 describe('documentation', () => {
   checkDocumentationHasNotRegrown(check);
@@ -2002,7 +1890,6 @@ describe('documentation', () => {
 describe('the design bets', () => checkDesignBetsStillHold(check));
 describe('the api surface', () => checkEveryApiSurfaceIsDescribed(check));
 describe('landmarks and ceilings', () => checkLandmarkAndCeilingInvariants(check));
-describe('delve darkness', () => checkDelveDarknessInvariants(check));
 describe('performance readouts', () => checkPerformanceReadouts(check));
 describe('the hovered tile readout', () => checkTileHoverReadout(check));
 

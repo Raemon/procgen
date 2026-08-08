@@ -11,7 +11,7 @@ import { EMPTY_TILE } from '../procgen/values/chunkValues';
 import { asPoints, asTiles } from '../procgen/values/valueAccess';
 import { WorldSampler } from '../procgen/worldSampler';
 import { TileAssets } from '../assets/tiles/tileAssets';
-import type { CheckReporter } from './checkCharacterBillboardInvariants';
+import type { CheckReporter } from './checkReporter';
 
 const FLOOR_TILE = 15;
 const WALL_TILE = 17;

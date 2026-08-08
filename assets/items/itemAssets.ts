@@ -1,5 +1,4 @@
 import { AssetCollection } from '../collection/assetCollection';
-import { defaultItems } from './defaultItems';
 import { newItemWithId, type ItemDef } from './itemDef';
 import { loadStoredItems, storeItems } from './itemStorage';
 
@@ -11,7 +10,7 @@ export interface ItemSource {
 
 export class ItemAssets extends AssetCollection<ItemDef> implements ItemSource {
   constructor(initialItems?: ItemDef[]) {
-    super(initialItems ?? loadStoredItems() ?? defaultItems());
+    super(initialItems ?? loadStoredItems() ?? []);
   }
 
   protected blankAsset(id: number): ItemDef {

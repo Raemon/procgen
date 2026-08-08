@@ -1,35 +1,19 @@
-import { readFileSync } from 'node:fs';
 import { persistWorld, type ServerWorld } from '../api/agent/serverWorld';
-import { defaultTiles } from '../assets/tiles/defaultTiles';
 import { compactFaceArtOf } from '../assets/tiles/storage/compactFaceArtEncode';
 import { isCompactFaceArt } from '../assets/tiles/storage/compactFaceArtShape';
 import { faceArtFromStoredShape } from '../assets/tiles/storage/storedFaceArt';
 import { blankFacePixels, type CubeFaceArt } from '../assets/tiles/tileFaceArt';
-import type { TileDef } from '../assets/tiles/tileDef';
+import { newTileWithId, type TileDef } from '../assets/tiles/tileDef';
 import { tilesAsStoredJson, tilesFromStoredJson } from '../assets/tiles/tileStorage';
 import { faceArtMips } from '../assets/tiles/mips/faceArtMips';
-import type { CheckReporter } from './checkCharacterBillboardInvariants';
-
-const SHIPPED_TILES_PATH = 'data/tiles.json';
-const BYTES_THE_SHIPPED_TILES_MUST_STAY_UNDER = 1_000_000;
+import type { CheckReporter } from './checkReporter';
 
 export function checkTileArtStorageInvariants(check: CheckReporter): void {
-  checkTheShippedTilesSurviveASaveAndReload(check);
   checkEveryFrameAndLayerSurvivesTheCompactForm(check);
   checkArtStoredInTheOldShapeStillLoads(check);
   checkCorruptCompactArtIsDroppedRatherThanDecodedWrong(check);
-  checkTheShippedTileFileIsSmallEnoughToShip(check);
   checkReloadedArtOwnsItsOwnPixelArrays(check);
   checkSavingTheWorldStoresArtCompactly(check);
-}
-
-function checkTheShippedTilesSurviveASaveAndReload(check: CheckReporter): void {
-  const tiles = defaultTiles();
-  const reloaded = tilesFromStoredJson(JSON.parse(JSON.stringify(tilesAsStoredJson(tiles))))!;
-  check(
-    'every shipped tile comes back pixel for pixel after a save and reload',
-    sameArt(reloaded, tiles),
-  );
 }
 
 function checkEveryFrameAndLayerSurvivesTheCompactForm(check: CheckReporter): void {
@@ -46,13 +30,6 @@ function checkEveryFrameAndLayerSurvivesTheCompactForm(check: CheckReporter): vo
 }
 
 function checkArtStoredInTheOldShapeStillLoads(check: CheckReporter): void {
-  const tiles = defaultTiles();
-  const asPlainGrids = JSON.parse(JSON.stringify(tiles));
-  const reloaded = tilesFromStoredJson(asPlainGrids)!;
-  check(
-    'a tileset saved before the compact form still loads with its art intact',
-    sameArt(reloaded, tiles),
-  );
   const legacySides = blankFacePixels(8);
   legacySides[3] = '#00ff00';
   const upgraded = faceArtFromStoredShape({
@@ -82,16 +59,8 @@ function checkCorruptCompactArtIsDroppedRatherThanDecodedWrong(check: CheckRepor
   );
 }
 
-function checkTheShippedTileFileIsSmallEnoughToShip(check: CheckReporter): void {
-  const bytes = readFileSync(SHIPPED_TILES_PATH).length;
-  check(
-    'the tile art every browser downloads is stored compactly, not as a million hex strings',
-    bytes < BYTES_THE_SHIPPED_TILES_MUST_STAY_UNDER,
-  );
-}
-
 function checkReloadedArtOwnsItsOwnPixelArrays(check: CheckReporter): void {
-  const tiles = tilesFromStoredJson(JSON.parse(JSON.stringify(tilesAsStoredJson(defaultTiles()))))!;
+  const tiles = tilesFromStoredJson(JSON.parse(JSON.stringify(tilesAsStoredJson([oneTileCarryingArt()]))))!;
   const tile = tiles.find((candidate) => candidate.faceArt)!;
   const art = tile.faceArt!;
   check(
@@ -120,7 +89,7 @@ function worldSavingOnlyTiles(): ServerWorld {
   return {
     ...nothing,
     store: nothing,
-    tileAssets: { all: () => defaultTiles() },
+    tileAssets: { all: () => [oneTileCarryingArt()] },
     prefabs: nothing,
     creatures: nothing,
     items: nothing,
@@ -167,4 +136,8 @@ function animatedArtWithHeightAndTransparency(): CubeFaceArt {
       { color: { north: painted() }, height: { north: painted() } },
     ],
   };
+}
+
+function oneTileCarryingArt(): TileDef {
+  return { ...newTileWithId(0), faceArt: animatedArtWithHeightAndTransparency() };
 }

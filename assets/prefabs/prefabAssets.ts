@@ -1,5 +1,4 @@
 import { AssetCollection } from '../collection/assetCollection';
-import { defaultPrefabs, type TileIdByName } from './defaultPrefabs';
 import { newPrefabWithId, prefabFootprintRadius, type Prefab } from './prefabDef';
 import { loadStoredPrefabs, storePrefabs } from './prefabStorage';
 
@@ -9,8 +8,8 @@ export type PrefabAddedListener = (prefab: Prefab) => void;
 export class PrefabAssets extends AssetCollection<Prefab> {
   private readonly addedListeners = new Set<PrefabAddedListener>();
 
-  constructor(tileIdOf: TileIdByName, initialPrefabs?: Prefab[]) {
-    super(initialPrefabs ?? loadStoredPrefabs() ?? defaultPrefabs(tileIdOf));
+  constructor(initialPrefabs?: Prefab[]) {
+    super(initialPrefabs ?? loadStoredPrefabs() ?? []);
   }
 
   largestFootprint(): number {

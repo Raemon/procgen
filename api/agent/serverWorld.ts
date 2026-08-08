@@ -89,11 +89,7 @@ function buildServerWorld(
   puzzleState: PuzzleState,
 ): ServerWorld {
   const tileAssets = new TileAssets(tilesFromStoredJson(docs.read('tiles')) ?? undefined);
-  const tileIdByName = (name: string) => tileAssets.all().find((tile) => tile.name === name)?.id ?? -1;
-  const prefabs = new PrefabAssets(
-    tileIdByName,
-    prefabsFromStoredJson(docs.read('prefabs')) ?? undefined,
-  );
+  const prefabs = new PrefabAssets(prefabsFromStoredJson(docs.read('prefabs')) ?? undefined);
   const creatures = new CreatureAssets(
     creaturesFromStoredJson(docs.read('creatures')) ?? undefined,
   );

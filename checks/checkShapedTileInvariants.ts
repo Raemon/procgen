@@ -11,7 +11,7 @@ import type { SampledChunk } from '../procgen/sampling/sampledChunkCache';
 import { EMPTY_TILE } from '../procgen/values/chunkValues';
 import { EVERY_FACE } from '../world/render/view3d/culling/visibleFaceMask';
 import { shapedShape } from '../world/render/view3d/tileShapes';
-import type { CheckReporter } from './checkCharacterBillboardInvariants';
+import type { CheckReporter } from './checkReporter';
 
 const EVERY_FACING = [...Array(VOXEL_FACINGS).keys()];
 const SYNTHETIC_TILE_ID = 9;
