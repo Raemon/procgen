@@ -1,12 +1,14 @@
-import type { Culture } from '../assets/cultures/cultureDef';
+import { wallLayersOf, type Culture } from '../assets/cultures/cultureDef';
+import type { Piece } from '../assets/pieces/pieceDef';
 import { assembleBuilding } from '../procgen/assembly/assembleBuilding';
 import { footprintWithYard, massingFor } from '../procgen/assembly/buildingMassing';
-import { BUILDING_PROGRAMS } from '../procgen/assembly/buildingPrograms';
+import { BUILDING_PROGRAMS, massingRulesFor } from '../procgen/assembly/buildingPrograms';
 import { doorCellOf, shellCellsOf, type ShellCell } from '../procgen/assembly/buildingShell';
 import type { BuildingSpec } from '../procgen/assembly/buildingSpec';
 import { buildingSeedKeyAt, specToTag, tagToSpec } from '../procgen/assembly/buildingSpecTag';
 import { FIRST_WALL_LAYER, FLOOR_LAYER } from '../procgen/assembly/buildingTileFallback';
-import { NO_PIECES } from '../procgen/assembly/pieceSource';
+import { NO_PIECES, type PieceSource } from '../procgen/assembly/pieceSource';
+import { tileIdOfVoxel } from '../procgen/structureOverlay/packedVoxel';
 import { hashString } from '../procgen/random/hashString';
 import { mulberry32 } from '../procgen/random/mulberry32';
 import {
@@ -16,6 +18,11 @@ import {
 import type { CheckReporter } from './checkReporter';
 
 const SYNTHETIC_CULTURE_ID = 2;
+const TWO_STORY_PROGRAM = 1;
+const SHORT_STORY_LAYERS = 2;
+const WALL_PIECE_LAYERS = 3;
+const WALL_PIECE_ID = 41;
+const WALL_PIECE_TILE_ID = 11;
 const STRADDLING_ANCHOR = { x: 28, y: 28 };
 
 interface PaintedVoxel {
@@ -29,6 +36,7 @@ export function checkBuildingAssemblyInvariants(check: CheckReporter): void {
   checkAssemblyIsDeterministic(check);
   checkMassingStaysInsideTheOverlayReach(check);
   checkTilesAloneStillBuildAWholeBuilding(check);
+  checkWallPiecesStackUpToTheRoofTheyCarry(check);
   checkABuildingLooksTheSameFromEveryChunkItStraddles(check);
   checkSpecsSurviveTheirWorldPointTag(check);
 }
@@ -90,6 +98,81 @@ function checkFloorsAndRoofsReachEveryInsideCell(
     'a tile-only building roofs every cell it floors',
     shell.inside.every((cell) => roofLayerCount(painted, spec, cell) > 0),
   );
+}
+
+function checkWallPiecesStackUpToTheRoofTheyCarry(check: CheckReporter): void {
+  const spec = specAt(5, 7, TWO_STORY_PROGRAM, 2);
+  const culture = shortStoriedCultureBoundToWallPiece();
+  const wallLayers = wallLayersOf(culture, massingRulesFor(spec.program).stories);
+  const painted = paintedIndex(paintsFromPieces(spec, culture));
+  const shell = shellOf(spec);
+  check(
+    'a wall piece shorter or taller than a story still walls every layer the roof sits on',
+    shell.walls.every((cell) => everyLayerPainted(painted, spec, cell, wallLayers)),
+  );
+  check(
+    'no wall piece paints its wall above the course the roof starts from',
+    !anyWallTileAbove(painted, wallLayers),
+  );
+}
+
+function anyWallTileAbove(painted: Map<string, number>, wallLayers: number): boolean {
+  return [...painted].some(
+    ([key, packed]) => layerOfKey(key) > wallLayers && tileIdOfVoxel(packed) === WALL_PIECE_TILE_ID,
+  );
+}
+
+function layerOfKey(key: string): number {
+  return Number(key.split(',')[2]);
+}
+
+function everyLayerPainted(
+  painted: Map<string, number>,
+  spec: BuildingSpec,
+  cell: ShellCell,
+  wallLayers: number,
+): boolean {
+  for (let layer = FIRST_WALL_LAYER; layer <= wallLayers; layer++) {
+    if (!painted.has(voxelKey(spec, cell, layer))) return false;
+  }
+  return true;
+}
+
+function paintsFromPieces(spec: BuildingSpec, culture: Culture): PaintedVoxel[] {
+  const painted: PaintedVoxel[] = [];
+  assembleBuilding(spec, culture, oneWallPieceSource(), (x, y, layer, packed) =>
+    painted.push({ x, y, layer, packed }),
+  );
+  return painted;
+}
+
+function oneWallPieceSource(): PieceSource {
+  const piece = wallRunPieceOfLayers(WALL_PIECE_LAYERS);
+  return { byId: (id) => (id === piece.id ? piece : undefined), largestFootprint: () => 1 };
+}
+
+function wallRunPieceOfLayers(layers: number): Piece {
+  return {
+    id: WALL_PIECE_ID,
+    name: 'check wall run',
+    role: 'wallSegment',
+    width: 1,
+    depth: 1,
+    layers,
+    anchorX: 0,
+    anchorY: 0,
+    voxels: new Array<number>(layers).fill(WALL_PIECE_TILE_ID),
+    facings: new Array<number>(layers).fill(0),
+  };
+}
+
+function shortStoriedCultureBoundToWallPiece(): Culture {
+  const bound = [WALL_PIECE_ID];
+  return {
+    ...syntheticCulture(),
+    storyLayers: SHORT_STORY_LAYERS,
+    roleBindings: { wallSegment: bound, wallCorner: bound, window: bound, door: bound },
+  };
 }
 
 function checkABuildingLooksTheSameFromEveryChunkItStraddles(check: CheckReporter): void {
