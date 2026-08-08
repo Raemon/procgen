@@ -1,5 +1,5 @@
-import { EMPTY_VOXEL, voxelAt } from '../../library/prefabs/prefabDef';
-import { rotatedDepth, rotatedWidth, unrotatedCell } from '../../library/prefabs/prefabRotation';
+import { EMPTY_VOXEL, voxelAt } from '../../assets/prefabs/prefabDef';
+import { rotatedDepth, rotatedWidth, unrotatedCell } from '../../assets/prefabs/prefabRotation';
 import { CHUNK_SIZE } from '../chunk';
 import type { ChunkVoxelColumns } from './chunkVoxelColumns';
 import type { PlacedPrefab } from './prefabPlacement';

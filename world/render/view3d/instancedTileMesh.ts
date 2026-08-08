@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { opaqueInk } from '../../../library/tiles/inkColor';
+import { opaqueInk } from '../../../assets/tiles/inkColor';
 import { disposeMaterials } from './disposeMeshResources';
 import type { TilePlacement } from './tilePlacements';
 

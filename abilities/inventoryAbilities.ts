@@ -1,5 +1,5 @@
-import type { CreatureDef } from '../library/creatures/creatureDef';
-import { CHARACTER } from '../library/creatures/entityKinds';
+import type { CreatureDef } from '../assets/creatures/creatureDef';
+import { CHARACTER } from '../assets/creatures/entityKinds';
 import {
   blankInventory,
   clampSide,
@@ -8,7 +8,7 @@ import {
   slotAt,
   withSlotAt,
   type InventoryDef,
-} from '../library/items/inventory/inventoryDef';
+} from '../assets/items/inventory/inventoryDef';
 import {
   placementCovering,
   placementRefusal,
@@ -16,7 +16,7 @@ import {
   REFUSAL_HINTS,
   withItemPlaced,
   withoutPlacementCovering,
-} from '../library/items/inventory/inventoryPlacement';
+} from '../assets/items/inventory/inventoryPlacement';
 import {
   abilityFailed,
   abilitySucceeded,
@@ -36,7 +36,7 @@ const SLOT_Y_HELP = 'inventory row, 0 at the top';
 function registerInventoryAbility(
   spec: Omit<AbilitySpec, 'mode' | 'group' | 'changesWorld'>,
 ): AbilitySpec {
-  return registerAbility({ ...spec, mode: 'god', group: 'library', changesWorld: true });
+  return registerAbility({ ...spec, mode: 'god', group: 'assets', changesWorld: true });
 }
 
 registerInventoryAbility({

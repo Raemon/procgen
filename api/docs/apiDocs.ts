@@ -2,7 +2,7 @@ import '../../abilities/index';
 import { abilitiesForMode } from '../../abilities/abilityRegistry';
 import type { AbilityGroup, AbilityMode, AbilityParamSpec, AbilitySpec } from '../../abilities/ability';
 import { allNodeTypes } from '../../procgen/nodeRegistry';
-import type { ReadOnlyTileset } from '../../frontend/readOnlyLibraries';
+import type { ReadOnlyTileAssets } from '../../frontend/readOnlyAssets';
 import {
   DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
   MAX_CHARACTER_SIGHT_RADIUS_TILES,
@@ -157,7 +157,7 @@ Full param and input details: GET /api/v1/node-types.
 | --- | --- | --- | --- |
 {{NODE_TYPES}}
 
-## Legend (current tileset)
+## Legend (current tileAssets)
 
 {{LEGEND}}
 
@@ -187,9 +187,9 @@ a step at a time. Scripts are checked against this mode's actions and their
 params when they are written, not when they are run.
 `;
 
-export function buildApiDocs(tileset: ReadOnlyTileset): string {
+export function buildApiDocs(tileAssets: ReadOnlyTileAssets): string {
   const filled = TEMPLATE.replace(/\{\{(\w+)\}\}/g, (_, key: string) =>
-    placeholderValue(tileset, key),
+    placeholderValue(tileAssets, key),
   );
   const unfilled = filled.match(/\{\{\w+\}\}/);
   if (unfilled) throw new Error(`unfilled docs placeholder ${unfilled[0]}`);
@@ -201,7 +201,7 @@ export function everyAbility(): AbilitySpec[] {
   return modes.flatMap((mode) => abilitiesForMode(mode));
 }
 
-function placeholderValue(tileset: ReadOnlyTileset, key: string): string {
+function placeholderValue(tileAssets: ReadOnlyTileAssets, key: string): string {
   if (key === 'GOD_SIZE') return String(GOD_VIEW_SIZE);
   if (key === 'CHARACTER_SIZE') return String(characterViewSize());
   if (key === 'SIGHT_RADIUS') return String(DEFAULT_CHARACTER_SIGHT_RADIUS_TILES);
@@ -213,7 +213,7 @@ function placeholderValue(tileset: ReadOnlyTileset, key: string): string {
   if (key === 'EXAMPLES') return examples();
   if (key === 'FAILURES') return failuresTable();
   if (key === 'NODE_TYPES') return nodeTypesTable();
-  if (key === 'LEGEND') return legendBlock(tileset);
+  if (key === 'LEGEND') return legendBlock(tileAssets);
   return actionsTableFor(key);
 }
 
@@ -221,7 +221,7 @@ const GROUP_OF_PLACEHOLDER: Readonly<Record<string, AbilityGroup>> = {
   MOVEMENT_ACTIONS: 'movement',
   SENSES_ACTIONS: 'senses',
   PIPELINE_ACTIONS: 'pipeline',
-  LIBRARY_ACTIONS: 'library',
+  LIBRARY_ACTIONS: 'assets',
   WORLD_ACTIONS: 'world',
 };
 
@@ -298,8 +298,8 @@ function nodeTypesTable(): string {
     .join('\n');
 }
 
-function legendBlock(tileset: ReadOnlyTileset): string {
-  const tiles = tileset
+function legendBlock(tileAssets: ReadOnlyTileAssets): string {
+  const tiles = tileAssets
     .all()
     .map(
       (tile) =>

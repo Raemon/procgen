@@ -3,13 +3,13 @@ import { abilityFor } from '../abilities/abilityRegistry';
 import { performAbility } from '../abilities/performAbility';
 import type { AbilityMode, AbilityResult } from '../abilities/ability';
 import { ChatComposerState } from '../world/chat/chatComposerState';
-import { CreatureLibrary } from '../library/creatures/creatureLibrary';
-import { ItemLibrary } from '../library/items/itemLibrary';
-import { PlayerInventoryPanelState } from '../library/items/inventory/playerInventoryPanelState';
-import { groundItemsOf } from '../library/items/pickups/groundItems';
-import { PickupFeed } from '../library/items/pickups/pickupFeed';
-import { TakenItemSpawns } from '../library/items/pickups/takenItemSpawns';
-import { WalkOverPickup } from '../library/items/pickups/walkOverPickup';
+import { CreatureAssets } from '../assets/creatures/creatureAssets';
+import { ItemAssets } from '../assets/items/itemAssets';
+import { PlayerInventoryPanelState } from '../assets/items/inventory/playerInventoryPanelState';
+import { groundItemsOf } from '../assets/items/pickups/groundItems';
+import { PickupFeed } from '../assets/items/pickups/pickupFeed';
+import { TakenItemSpawns } from '../assets/items/pickups/takenItemSpawns';
+import { WalkOverPickup } from '../assets/items/pickups/walkOverPickup';
 import { MultiplayerSession } from '../multiplayer/client/multiplayerSession';
 import { CreatureClock } from '../world/creatureSim/creatureClock';
 import { CreatureSim } from '../world/creatureSim/creatureSim';
@@ -20,34 +20,34 @@ import { WorldPresetLibrary } from '../procgen/presets/worldPresetLibrary';
 import { RandomizeHistory } from '../procgen/randomize/randomizeHistory';
 import { TemplateLibrary } from '../procgen/templates/templateLibrary';
 import { WorldSampler } from '../procgen/worldSampler';
-import { PrefabLibrary } from '../library/prefabs/prefabLibrary';
+import { PrefabAssets } from '../assets/prefabs/prefabAssets';
 import { debounce } from './debounce';
 import { CaptureTool } from '../world/capture/captureTool';
 import { PuzzleWorld } from '../world/puzzles/puzzleWorld';
 import { playerCanEnter } from '../world/puzzles/playerCanEnter';
 import { isWalkableTile } from '../world/tileWalkability';
-import { Tileset } from '../library/tiles/tileset';
+import { TileAssets } from '../assets/tiles/tileAssets';
 import { World } from '../world/world';
 import { ChangeNotifier } from './changeNotifier';
 import type {
-  ReadOnlyCreatureLibrary,
-  ReadOnlyItemLibrary,
+  ReadOnlyCreatureAssets,
+  ReadOnlyItemAssets,
   ReadOnlyPipelineStore,
-  ReadOnlyPrefabLibrary,
+  ReadOnlyPrefabAssets,
   ReadOnlyTemplateLibrary,
-  ReadOnlyTileset,
+  ReadOnlyTileAssets,
   ReadOnlyWorld,
   ReadOnlyWorldPresetLibrary,
-} from './readOnlyLibraries';
+} from './readOnlyAssets';
 import { WorldRenderers } from './worldRenderers';
 
 const VALUE_TWEAK_DEBOUNCE_MS = 150;
 
 export interface AppRuntime {
-  tileset: ReadOnlyTileset;
-  prefabs: ReadOnlyPrefabLibrary;
-  creatures: ReadOnlyCreatureLibrary;
-  items: ReadOnlyItemLibrary;
+  tileAssets: ReadOnlyTileAssets;
+  prefabs: ReadOnlyPrefabAssets;
+  creatures: ReadOnlyCreatureAssets;
+  items: ReadOnlyItemAssets;
   store: ReadOnlyPipelineStore;
   templates: ReadOnlyTemplateLibrary;
   worldPresets: ReadOnlyWorldPresetLibrary;
@@ -72,19 +72,19 @@ export interface AppRuntime {
 }
 
 export function createAppRuntime(): AppRuntime {
-  const tileset = new Tileset();
+  const tileAssets = new TileAssets();
   const templates = new TemplateLibrary();
   const worldPresets = new WorldPresetLibrary();
-  const prefabs = new PrefabLibrary((name) => tileIdByName(tileset, name));
-  const creatures = new CreatureLibrary();
-  const items = new ItemLibrary();
+  const prefabs = new PrefabAssets((name) => tileIdByName(tileAssets, name));
+  const creatures = new CreatureAssets();
+  const items = new ItemAssets();
   const store = new PipelineStore(loadStoredPipeline());
   attachPipelinePersistence(store);
   const evaluator = new PipelineEvaluator(store);
   const takenItems = new TakenItemSpawns();
-  const sampler = new WorldSampler(store, evaluator, tileset, prefabs, items, takenItems);
+  const sampler = new WorldSampler(store, evaluator, tileAssets, prefabs, items, takenItems);
   const groundItems = groundItemsOf(sampler, takenItems);
-  const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileset, sampler.tileAt(x, y));
+  const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileAssets, sampler.tileAt(x, y));
   const puzzles = new PuzzleWorld(store, tileIsWalkable);
   const isWalkableAt = (x: number, y: number) => tileIsWalkable(x, y) && !puzzles.blocksAt(x, y);
   const world = new World(isWalkableAt, (x, y, dx, dy, mayPush) =>
@@ -135,7 +135,7 @@ export function createAppRuntime(): AppRuntime {
     return performAbility(
       {
         store,
-        tileset,
+        tileAssets,
         prefabs,
         creatures,
         items,
@@ -187,7 +187,7 @@ export function createAppRuntime(): AppRuntime {
   store.onChange((change) =>
     change === 'structure' ? applyWorldChange() : applyAfterTweaks.schedule(),
   );
-  tileset.onChange(applyWorldChange);
+  tileAssets.onChange(applyWorldChange);
   prefabs.onChange(applyWorldChange);
   creatures.onChange(applyWorldChange);
   items.onChange(applyWorldChange);
@@ -197,7 +197,7 @@ export function createAppRuntime(): AppRuntime {
   world.on('player-turned', () => renderers.recenterAll());
 
   return {
-    tileset,
+    tileAssets,
     templates,
     worldPresets,
     prefabs,
@@ -225,6 +225,6 @@ export function createAppRuntime(): AppRuntime {
   };
 }
 
-function tileIdByName(tileset: Tileset, name: string): number {
-  return tileset.all().find((tile) => tile.name === name)?.id ?? -1;
+function tileIdByName(tileAssets: TileAssets, name: string): number {
+  return tileAssets.all().find((tile) => tile.name === name)?.id ?? -1;
 }

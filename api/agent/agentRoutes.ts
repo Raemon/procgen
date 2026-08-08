@@ -209,7 +209,7 @@ function observe(session: AgentSession, world: ServerWorld, req: ApiRequest): Ap
   if (asked !== null) session.sightRadiusTiles = asked;
   const observation = buildObservation(
     world.sampler,
-    world.tileset,
+    world.tileAssets,
     sessionPose(session),
     session.mode,
     session.sightRadiusTiles,
@@ -234,7 +234,7 @@ function act(session: AgentSession, access: WorldAccess, body: unknown): ApiResp
   const fresh = result.changedPipeline ? access.current() : world;
   const observation = buildObservation(
     fresh.sampler,
-    fresh.tileset,
+    fresh.tileAssets,
     sessionPose(session),
     session.mode,
     session.sightRadiusTiles,

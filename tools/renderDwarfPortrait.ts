@@ -1,8 +1,8 @@
 import { writeFileSync } from 'node:fs';
-import { dwarfSprite } from '../library/characters/dwarf/dwarfSprite';
-import { idleDwarfPose, walkingDwarfPose } from '../library/characters/dwarf/dwarfPose';
-import { CHARACTER_ROTATIONS } from '../library/characters/characterBillboard';
-import { spriteGridSize, type SpriteArt } from '../library/tiles/spriteArt';
+import { dwarfSprite } from '../assets/characters/dwarf/dwarfSprite';
+import { idleDwarfPose, walkingDwarfPose } from '../assets/characters/dwarf/dwarfPose';
+import { CHARACTER_ROTATIONS } from '../assets/characters/characterBillboard';
+import { spriteGridSize, type SpriteArt } from '../assets/tiles/spriteArt';
 import { pngBuffer } from './png/writePng';
 
 const OUTPUT_PATH = 'docs/dwarf-portrait.png';

@@ -1,5 +1,5 @@
 import type { WorldSampler } from '../../../procgen/worldSampler';
-import { WALKABLE_TILE_HEIGHT } from '../../../library/tiles/tileHeight';
+import { WALKABLE_TILE_HEIGHT } from '../../../assets/tiles/tileHeight';
 import { NO_EXTRA_MARKERS, type MarkerSource } from '../markerSource';
 import type { TilePlacement } from './tilePlacements';
 

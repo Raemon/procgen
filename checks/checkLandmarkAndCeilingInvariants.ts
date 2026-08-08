@@ -10,7 +10,7 @@ import type { NodeInstance, PipelineState } from '../procgen/pipeline/pipelineSt
 import { EMPTY_TILE } from '../procgen/values/chunkValues';
 import { asPoints, asTiles } from '../procgen/values/valueAccess';
 import { WorldSampler } from '../procgen/worldSampler';
-import { Tileset } from '../library/tiles/tileset';
+import { TileAssets } from '../assets/tiles/tileAssets';
 import type { CheckReporter } from './checkCharacterBillboardInvariants';
 
 const FLOOR_TILE = 15;
@@ -175,7 +175,7 @@ function worldOf(nodes: NodeInstance[]) {
   const state: PipelineState = sanitizePipeline({ seed: 7, nodes });
   const store = new PipelineStore(state);
   const evaluator = new PipelineEvaluator(store);
-  return { store, evaluator, sampler: new WorldSampler(store, evaluator, new Tileset()) };
+  return { store, evaluator, sampler: new WorldSampler(store, evaluator, new TileAssets()) };
 }
 
 function chunkTilesInBothOrders(evaluator: PipelineEvaluator): boolean {

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { CharacterMotion } from '../../../library/characters/characterFrame';
+import type { CharacterMotion } from '../../../assets/characters/characterFrame';
 import { facingYawRadians } from '../../facing';
 import type { CameraView } from './cameraView';
 import { listenForCaptureDrag } from '../../capture/listenForCaptureDrag';
@@ -72,7 +72,7 @@ export class View3D {
     this.streamer = new ChunkMeshStreamer(
       this.worldGroup,
       deps.sampler,
-      deps.tileset,
+      deps.tileAssets,
       deps.puzzles,
     );
     this.creatureMeshes = new CreatureMeshes(

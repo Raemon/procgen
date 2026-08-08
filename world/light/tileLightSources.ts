@@ -1,6 +1,6 @@
 import { EMPTY_TILE } from '../../procgen/values/chunkValues';
 import type { WorldSampler } from '../../procgen/worldSampler';
-import type { ReadOnlyTileset } from '../../frontend/readOnlyLibraries';
+import type { ReadOnlyTileAssets } from '../../frontend/readOnlyAssets';
 import { emitsLight, lightSourceAt, type LightSource } from './lightEmission';
 
 export interface LightRect {
@@ -12,14 +12,14 @@ export interface LightRect {
 
 export function tileLightSourcesInRect(
   sampler: WorldSampler,
-  tileset: ReadOnlyTileset,
+  tileAssets: ReadOnlyTileAssets,
   rect: LightRect,
 ): LightSource[] {
   const sources: LightSource[] = [];
   for (let y = rect.minY; y <= rect.maxY; y++) {
     for (let x = rect.minX; x <= rect.maxX; x++) {
-      addGlowingGround(sources, sampler, tileset, x, y);
-      addGlowingCeiling(sources, sampler, tileset, x, y);
+      addGlowingGround(sources, sampler, tileAssets, x, y);
+      addGlowingCeiling(sources, sampler, tileAssets, x, y);
     }
   }
   return sources;
@@ -28,29 +28,29 @@ export function tileLightSourcesInRect(
 function addGlowingGround(
   into: LightSource[],
   sampler: WorldSampler,
-  tileset: ReadOnlyTileset,
+  tileAssets: ReadOnlyTileAssets,
   x: number,
   y: number,
 ): void {
-  const tile = tileAt(tileset, sampler.tileAt(x, y));
+  const tile = tileAt(tileAssets, sampler.tileAt(x, y));
   if (tile) into.push(lightSourceAt(tile, x, y, sampler.elevationAt(x, y) + 0.5));
 }
 
 function addGlowingCeiling(
   into: LightSource[],
   sampler: WorldSampler,
-  tileset: ReadOnlyTileset,
+  tileAssets: ReadOnlyTileAssets,
   x: number,
   y: number,
 ): void {
-  const tile = tileAt(tileset, sampler.ceilingTileAt(x, y));
+  const tile = tileAt(tileAssets, sampler.ceilingTileAt(x, y));
   if (!tile) return;
   const elevation = sampler.elevationAt(x, y) + sampler.ceilingHeightAt(x, y);
   into.push(lightSourceAt(tile, x, y, elevation - 0.5));
 }
 
-function tileAt(tileset: ReadOnlyTileset, tileId: number) {
+function tileAt(tileAssets: ReadOnlyTileAssets, tileId: number) {
   if (tileId === EMPTY_TILE) return null;
-  const tile = tileset.byId(tileId);
+  const tile = tileAssets.byId(tileId);
   return tile && emitsLight(tile) ? tile : null;
 }

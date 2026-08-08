@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { SpriteArt } from '../../../library/tiles/spriteArt';
+import type { SpriteArt } from '../../../assets/tiles/spriteArt';
 import { spriteMaterial, spriteTexture } from './spriteMaterial';
 import { spriteRimMaterial } from './spriteRimMaterial';
 

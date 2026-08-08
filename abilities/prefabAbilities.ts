@@ -1,16 +1,16 @@
-import { prefabFromWorldRegion, regionSize, type WorldRegion } from '../library/prefabs/captureRegionAsPrefab';
+import { prefabFromWorldRegion, regionSize, type WorldRegion } from '../assets/prefabs/captureRegionAsPrefab';
 import {
   isInsidePrefab,
   MAX_PREFAB_LAYERS,
   MAX_PREFAB_SIDE,
   withCenteredAnchor,
   type Prefab,
-} from '../library/prefabs/prefabDef';
-import { paintVoxel } from '../library/prefabs/prefabPainting';
-import { floodFilledIndices } from '../library/prefabs/editor/ops/floodFillLayer';
-import { resizedPrefab } from '../library/prefabs/prefabResize';
-import { rotatedPrefab } from '../library/prefabs/prefabRotation';
-import type { PrefabPatch } from '../library/prefabs/prefabLibrary';
+} from '../assets/prefabs/prefabDef';
+import { paintVoxel } from '../assets/prefabs/prefabPainting';
+import { floodFilledIndices } from '../assets/prefabs/editor/ops/floodFillLayer';
+import { resizedPrefab } from '../assets/prefabs/prefabResize';
+import { rotatedPrefab } from '../assets/prefabs/prefabRotation';
+import type { PrefabPatch } from '../assets/prefabs/prefabAssets';
 import {
   abilityFailed,
   abilitySucceeded,
@@ -26,7 +26,7 @@ const PREFAB_ID_HELP = 'id of an existing prefab — see GET /api/v1/prefabs';
 function registerPrefabAbility(
   spec: Omit<AbilitySpec, 'mode' | 'group' | 'changesWorld'>,
 ): AbilitySpec {
-  return registerAbility({ ...spec, mode: 'god', group: 'library', changesWorld: true });
+  return registerAbility({ ...spec, mode: 'god', group: 'assets', changesWorld: true });
 }
 
 registerPrefabAbility({
@@ -124,7 +124,7 @@ registerPrefabAbility({
     x: { kind: 'int', help: 'east-west cell, 0 at the west edge' },
     y: { kind: 'int', help: 'north-south cell, 0 at the north edge' },
     layer: { kind: 'int', help: 'height, 0 at the ground' },
-    tile_id: { kind: 'int', help: 'a tileset id to place, or -1 to erase' },
+    tile_id: { kind: 'int', help: 'a tile asset id to place, or -1 to erase' },
   },
   example: { action: 'paint_prefab', prefab_id: 0, x: 2, y: 2, layer: 1, tile_id: 8 },
   apply: (context, params) => withPrefab(context, params, (prefab) => paintPrefab(context, prefab, params)),
@@ -140,7 +140,7 @@ registerPrefabAbility({
     x: { kind: 'int', help: 'east-west cell to start from' },
     y: { kind: 'int', help: 'north-south cell to start from' },
     layer: { kind: 'int', help: 'height, 0 at the ground' },
-    tile_id: { kind: 'int', help: 'a tileset id to flood with, or -1 to erase' },
+    tile_id: { kind: 'int', help: 'a tile asset id to flood with, or -1 to erase' },
   },
   example: { action: 'flood_fill_prefab', prefab_id: 0, x: 0, y: 0, layer: 0, tile_id: 8 },
   apply: (context, params) =>
@@ -158,7 +158,7 @@ registerPrefabAbility({
   params: {
     prefab_id: { kind: 'int', help: PREFAB_ID_HELP },
     layer: { kind: 'int', help: 'height, 0 at the ground' },
-    tile_id: { kind: 'int', help: 'a tileset id to fill with, or -1 to clear' },
+    tile_id: { kind: 'int', help: 'a tile asset id to fill with, or -1 to clear' },
   },
   example: { action: 'fill_prefab_layer', prefab_id: 0, layer: 0, tile_id: -1 },
   apply: (context, params) =>
@@ -302,10 +302,10 @@ function rejectUnpaintableCell(
       `(${cell.x},${cell.y},${cell.layer}) is outside prefab ${prefab.id} — it is ${prefab.width}×${prefab.depth}×${prefab.layers}`,
     );
   }
-  if (cell.tileId !== -1 && !context.tileset.byId(cell.tileId)) {
+  if (cell.tileId !== -1 && !context.tileAssets.byId(cell.tileId)) {
     return abilityFailed(
       'invalid_value',
-      `tile_id must be -1 or one of: ${listOf(context.tileset.all().map((tile) => tile.id))}`,
+      `tile_id must be -1 or one of: ${listOf(context.tileAssets.all().map((tile) => tile.id))}`,
     );
   }
   return null;

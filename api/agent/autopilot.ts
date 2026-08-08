@@ -176,7 +176,7 @@ function observe(session: AgentSession, access: WorldAccess): string {
   return observationText(
     buildObservation(
       world.sampler,
-      world.tileset,
+      world.tileAssets,
       sessionPose(session),
       session.mode,
       session.sightRadiusTiles,
@@ -196,7 +196,7 @@ function systemPrompt(access: WorldAccess, session: AgentSession): string {
       ? 'You can rebuild the world itself with the editing tools; inspect_pipeline and inspect_node_types show what exists and what you can add.'
       : '',
     '',
-    buildApiDocs(access.current().tileset),
+    buildApiDocs(access.current().tileAssets),
   ]
     .filter((line) => line !== '')
     .join('\n');

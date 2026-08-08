@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { isTransparentInk, opaqueInk } from '../../../library/tiles/inkColor';
+import { isTransparentInk, opaqueInk } from '../../../assets/tiles/inkColor';
 
 export function lambertFromInk(ink: string): THREE.MeshLambertMaterial {
   return new THREE.MeshLambertMaterial({

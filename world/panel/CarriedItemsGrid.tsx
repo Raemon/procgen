@@ -1,11 +1,11 @@
-import type { ReadOnlyItemLibrary } from '../../frontend/readOnlyLibraries';
-import type { InventoryDef, InventorySlot } from '../../library/items/inventory/inventoryDef';
-import type { ItemDef } from '../../library/items/itemDef';
+import type { ReadOnlyItemAssets } from '../../frontend/readOnlyAssets';
+import type { InventoryDef, InventorySlot } from '../../assets/items/inventory/inventoryDef';
+import type { ItemDef } from '../../assets/items/itemDef';
 import { classes } from '../../frontend/controls/classes';
-import { ItemSpritePreview } from '../../library/items/editor/ItemSpritePreview';
-import { InventoryBackdrop } from '../../library/items/inventoryEditor/InventoryBackdrop';
-import { footprintRect } from '../../library/items/inventoryEditor/placementFootprint';
-import { carriedItemTip } from '../../library/items/inventoryEditor/help/inventoryTips';
+import { ItemSpritePreview } from '../../assets/items/editor/ItemSpritePreview';
+import { InventoryBackdrop } from '../../assets/items/inventoryEditor/InventoryBackdrop';
+import { footprintRect } from '../../assets/items/inventoryEditor/placementFootprint';
+import { carriedItemTip } from '../../assets/items/inventoryEditor/help/inventoryTips';
 import { tooltipHandlers } from '../../frontend/tooltips/tooltipHandlers';
 
 export function CarriedItemsGrid({
@@ -13,7 +13,7 @@ export function CarriedItemsGrid({
   items,
 }: {
   inventory: InventoryDef;
-  items: ReadOnlyItemLibrary;
+  items: ReadOnlyItemAssets;
 }) {
   return (
     <div

@@ -1,5 +1,5 @@
 import { useAppRuntime } from '../../frontend/appRuntimeContext';
-import { useRerenderOnPipelineChange, useRerenderOnTilesetChange } from '../../frontend/rerenderHooks';
+import { useRerenderOnPipelineChange, useRerenderOnTileAssetChange } from '../../frontend/rerenderHooks';
 import { PanelHint } from '../../frontend/help/PanelHint';
 import { AddNodeMenu } from './AddNodeMenu';
 import { AddTemplateMenu } from './AddTemplateMenu';
@@ -14,7 +14,7 @@ import { WorldSeedRow } from './WorldSeedRow';
 export function ProcgenPanel() {
   const { store, perform } = useAppRuntime();
   useRerenderOnPipelineChange();
-  useRerenderOnTilesetChange();
+  useRerenderOnTileAssetChange();
 
   function addNodeAndReveal(type: string): void {
     const added = perform('add_node', { type });

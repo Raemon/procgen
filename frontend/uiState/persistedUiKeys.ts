@@ -1,7 +1,7 @@
 export const PERSISTED_UI_KEYS = {
   panelWidths: 'panel.widths',
   collapsedPanels: 'panel.collapsed',
-  libraryTab: 'library.tab',
+  assetKind: 'assets.tab',
   openTileArt: 'library.openTileArt',
   openCreaturePanels: 'library.openCreaturePanels',
   openPrefabId: 'library.openPrefabId',

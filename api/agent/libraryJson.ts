@@ -3,11 +3,11 @@ import {
   CHARACTER_ROTATIONS,
   framesOf,
   type CharacterBillboard,
-} from '../../library/characters/characterBillboard';
-import type { CreatureDef } from '../../library/creatures/creatureDef';
-import { entityKindLabel } from '../../library/creatures/entityKinds';
-import type { InventoryDef } from '../../library/items/inventory/inventoryDef';
-import { orientationLabel, renderLabel, type ItemDef } from '../../library/items/itemDef';
+} from '../../assets/characters/characterBillboard';
+import type { CreatureDef } from '../../assets/creatures/creatureDef';
+import { entityKindLabel } from '../../assets/creatures/entityKinds';
+import type { InventoryDef } from '../../assets/items/inventory/inventoryDef';
+import { orientationLabel, renderLabel, type ItemDef } from '../../assets/items/itemDef';
 
 export function itemJson(item: ItemDef) {
   return {

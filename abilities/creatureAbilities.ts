@@ -1,7 +1,7 @@
-import { BEHAVIOR_CHOICES } from '../library/creatures/behaviorKinds';
-import { CHARACTER, ENTITY_KIND_CHOICES, isEntityKind } from '../library/creatures/entityKinds';
-import type { CreaturePatch } from '../library/creatures/creatureLibrary';
-import { blankInventory } from '../library/items/inventory/inventoryDef';
+import { BEHAVIOR_CHOICES } from '../assets/creatures/behaviorKinds';
+import { CHARACTER, ENTITY_KIND_CHOICES, isEntityKind } from '../assets/creatures/entityKinds';
+import type { CreaturePatch } from '../assets/creatures/creatureAssets';
+import { blankInventory } from '../assets/items/inventory/inventoryDef';
 import {
   abilityFailed,
   abilitySucceeded,
@@ -18,7 +18,7 @@ const CREATURE_ID_HELP = 'id of an existing creature — see GET /api/v1/creatur
 function registerCreatureAbility(
   spec: Omit<AbilitySpec, 'mode' | 'group' | 'changesWorld'>,
 ): AbilitySpec {
-  return registerAbility({ ...spec, mode: 'god', group: 'library', changesWorld: true });
+  return registerAbility({ ...spec, mode: 'god', group: 'assets', changesWorld: true });
 }
 
 registerCreatureAbility({

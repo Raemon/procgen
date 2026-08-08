@@ -1,6 +1,6 @@
 import type * as THREE from 'three';
-import type { ReadOnlyCreatureLibrary } from '../../../frontend/readOnlyLibraries';
-import type { CharacterMotion } from '../../../library/characters/characterFrame';
+import type { ReadOnlyCreatureAssets } from '../../../frontend/readOnlyAssets';
+import type { CharacterMotion } from '../../../assets/characters/characterFrame';
 import type { RemoteEntity, RemotePlayers } from '../../../multiplayer/client/remotePlayers';
 import type { WorldSampler } from '../../../procgen/worldSampler';
 import { facingYawRadians, type FacingIndex } from '../../facing';
@@ -20,7 +20,7 @@ export class RemotePlayerMeshes {
 
   constructor(
     private readonly root: THREE.Group,
-    private readonly creatures: ReadOnlyCreatureLibrary,
+    private readonly creatures: ReadOnlyCreatureAssets,
     private readonly sampler: WorldSampler,
     private readonly sprites: CharacterSpriteAssets,
   ) {}

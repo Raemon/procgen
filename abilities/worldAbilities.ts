@@ -189,7 +189,7 @@ registerWorldAbility({
 });
 
 function tileIdsOf(context: AbilityContext): number[] {
-  return context.tileset.all().map((tile) => tile.id);
+  return context.tileAssets.all().map((tile) => tile.id);
 }
 
 function applyRoll(

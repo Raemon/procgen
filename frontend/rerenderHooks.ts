@@ -8,9 +8,9 @@ export function useRerenderOnPipelineChange(): void {
   useRerenderWhen(useCallback((listener: () => void) => store.onChange(listener), [store]));
 }
 
-export function useRerenderOnTilesetChange(): void {
-  const { tileset } = useAppRuntime();
-  useRerenderWhen(useCallback((listener: () => void) => tileset.onChange(listener), [tileset]));
+export function useRerenderOnTileAssetChange(): void {
+  const { tileAssets } = useAppRuntime();
+  useRerenderWhen(useCallback((listener: () => void) => tileAssets.onChange(listener), [tileAssets]));
 }
 
 export function useRerenderOnPrefabChange(): void {

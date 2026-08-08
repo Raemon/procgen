@@ -65,10 +65,10 @@ export function markerTileTooltip(): TooltipContent {
     options: [
       {
         name: '(custom glyph)',
-        meaning: 'Style markers with the glyph and color fields below, independent of the tileset.',
+        meaning: 'Style markers with the glyph and color fields below, independent of the tile assets.',
       },
       {
-        name: 'tileset tiles',
+        name: 'tile assets',
         meaning: "Borrow the tile's symbol and color, so tile edits restyle these markers live.",
       },
     ],

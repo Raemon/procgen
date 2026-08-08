@@ -3,16 +3,16 @@ import {
   DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
   hazeStartTiles,
 } from '../world/vision/characterSight';
-import { CreatureLibrary } from '../library/creatures/creatureLibrary';
-import { playerCharacterDef } from '../library/characters/playerCharacter';
-import { brightestCarriedLight } from '../library/items/inventory/carriedLight';
-import { ItemLibrary } from '../library/items/itemLibrary';
-import { TORCH_ITEM_ID } from '../library/items/defaultItems';
-import { groundItemsOf } from '../library/items/pickups/groundItems';
-import { PickupFeed } from '../library/items/pickups/pickupFeed';
-import { TakenItemSpawns } from '../library/items/pickups/takenItemSpawns';
-import { WalkOverPickup } from '../library/items/pickups/walkOverPickup';
-import { PrefabLibrary } from '../library/prefabs/prefabLibrary';
+import { CreatureAssets } from '../assets/creatures/creatureAssets';
+import { playerCharacterDef } from '../assets/characters/playerCharacter';
+import { brightestCarriedLight } from '../assets/items/inventory/carriedLight';
+import { ItemAssets } from '../assets/items/itemAssets';
+import { TORCH_ITEM_ID } from '../assets/items/defaultItems';
+import { groundItemsOf } from '../assets/items/pickups/groundItems';
+import { PickupFeed } from '../assets/items/pickups/pickupFeed';
+import { TakenItemSpawns } from '../assets/items/pickups/takenItemSpawns';
+import { WalkOverPickup } from '../assets/items/pickups/walkOverPickup';
+import { PrefabAssets } from '../assets/prefabs/prefabAssets';
 import { CHUNK_SIZE } from '../procgen/chunk';
 import { PipelineEvaluator } from '../procgen/eval/evaluator';
 import { PipelineStore } from '../procgen/pipeline/pipelineStore';
@@ -37,13 +37,13 @@ import {
 import { itemLightSourcesInRect } from '../world/light/itemLightSources';
 import { clampLightRadius, emitsLight, MAX_LIGHT_RADIUS } from '../world/light/lightEmission';
 import { tileLightSourcesInRect } from '../world/light/tileLightSources';
-import { defaultTiles } from '../library/tiles/defaultTiles';
-import { tilesFromStoredJson } from '../library/tiles/tilesetStorage';
-import { blockLayersOfTile } from '../library/tiles/tileHeight';
-import { itemsFromStoredJson } from '../library/items/itemStorage';
+import { defaultTiles } from '../assets/tiles/defaultTiles';
+import { tilesFromStoredJson } from '../assets/tiles/tileStorage';
+import { blockLayersOfTile } from '../assets/tiles/tileHeight';
+import { itemsFromStoredJson } from '../assets/items/itemStorage';
 import { PuzzleWorld } from '../world/puzzles/puzzleWorld';
 import { isWalkableTile } from '../world/tileWalkability';
-import { Tileset } from '../library/tiles/tileset';
+import { TileAssets } from '../assets/tiles/tileAssets';
 import type { CheckReporter } from './checkCharacterBillboardInvariants';
 
 const PRESET_NAME = 'underground labyrinth';
@@ -70,19 +70,19 @@ function checkLightIsAKnobOnBlocksAndItems(check: CheckReporter): void {
   check(
     'blocks and items are dark until something sets a radius on them',
     defaultTiles().filter(emitsLight).every((tile) => tile.name === 'lava') &&
-      new ItemLibrary(undefined).all().filter(emitsLight).every((item) => item.id === TORCH_ITEM_ID),
+      new ItemAssets(undefined).all().filter(emitsLight).every((item) => item.id === TORCH_ITEM_ID),
   );
   check(
     'the torch emits warm light and is carried in a hand slot',
     (() => {
-      const torch = new ItemLibrary().byId(TORCH_ITEM_ID);
+      const torch = new ItemAssets().byId(TORCH_ITEM_ID);
       return torch !== undefined && torch.light > 0 && torch.tags.includes('light');
     })(),
   );
   check(
     'whatever emits light glows in its own right, since its light sits inside it',
     (() => {
-      const torch = new ItemLibrary().byId(TORCH_ITEM_ID)!;
+      const torch = new ItemAssets().byId(TORCH_ITEM_ID)!;
       const lava = defaultTiles().find(emitsLight)!;
       const dullStone = defaultTiles().find((tile) => !emitsLight(tile))!;
       return glowOfEmitter(torch) > 0 && glowOfEmitter(lava) > 0 && glowOfEmitter(dullStone) === 0;
@@ -106,16 +106,16 @@ function checkLightIsAKnobOnBlocksAndItems(check: CheckReporter): void {
 }
 
 function checkTheUndergroundWorldIsRoofedAndConnected(check: CheckReporter): void {
-  const { state, sampler, tileset } = undergroundWorld();
+  const { state, sampler, tileAssets } = undergroundWorld();
   const lavaBlocks = tilePlacementsForRect(
     sampler,
-    tileset,
+    tileAssets,
     -LIGHT_SCAN_SPAN,
     -LIGHT_SCAN_SPAN,
     LIGHT_SCAN_SPAN * 2,
     LIGHT_SCAN_SPAN * 2,
   ).blocks.filter(
-    (placement) => placement.faceArt === tileset.byId(LAVA_TILE)?.faceArt,
+    (placement) => placement.faceArt === tileAssets.byId(LAVA_TILE)?.faceArt,
   );
   check(
     'the lava seams lighting the delve are placed as glowing surfaces, not dark ones',
@@ -130,13 +130,13 @@ function checkTheUndergroundWorldIsRoofedAndConnected(check: CheckReporter): voi
   check(
     'the roof hangs above head height, not on the floor',
     roofHeight > CHARACTER_EYE_HEIGHT &&
-      ceilingPlacementsForRect(sampler, tileset, 0, 0, 4, 4).every(
+      ceilingPlacementsForRect(sampler, tileAssets, 0, 0, 4, 4).every(
         (placement) => placement.elevation >= roofHeight,
       ),
   );
   check(
     'the roof rests on the walls of the delve instead of floating above them',
-    roofHeight <= lowestWallTop(sampler, tileset),
+    roofHeight <= lowestWallTop(sampler, tileAssets),
   );
   check(
     'the roof enters the first-person view before the haze swallows it',
@@ -145,25 +145,25 @@ function checkTheUndergroundWorldIsRoofedAndConnected(check: CheckReporter): voi
   );
   check(
     'the labyrinth mixes passages with chambers wider than any corridor',
-    largestOpenSquare(sampler, tileset) >= 6,
+    largestOpenSquare(sampler, tileAssets) >= 6,
   );
   check(
     'the player wakes in a floored seed chamber',
-    isWalkableTile(tileset, sampler.tileAt(0, 0)) &&
-      everyCellInSpan(5, (x, y) => isWalkableTile(tileset, sampler.tileAt(x, y))),
+    isWalkableTile(tileAssets, sampler.tileAt(0, 0)) &&
+      everyCellInSpan(5, (x, y) => isWalkableTile(tileAssets, sampler.tileAt(x, y))),
   );
   check(
     'every open cell of the delve is reachable on foot from the seed chamber',
-    reachableFloorCount(sampler, tileset) === walkableCount(sampler, tileset),
+    reachableFloorCount(sampler, tileAssets) === walkableCount(sampler, tileAssets),
   );
   check(
     'the delve is mostly open ground rather than solid rock',
-    walkableCount(sampler, tileset) > (INNER_SPAN * 2 + 1) ** 2 * 0.3,
+    walkableCount(sampler, tileAssets) > (INNER_SPAN * 2 + 1) ** 2 * 0.3,
   );
 }
 
 function checkNothingIsLitButWhatEmits(check: CheckReporter): void {
-  const { sampler, tileset, items } = undergroundWorld();
+  const { sampler, tileAssets, items } = undergroundWorld();
   const rect = { minX: -CHUNK_SIZE, minY: -CHUNK_SIZE, maxX: CHUNK_SIZE, maxY: CHUNK_SIZE };
   const wide = {
     minX: -LIGHT_SCAN_SPAN,
@@ -171,7 +171,7 @@ function checkNothingIsLitButWhatEmits(check: CheckReporter): void {
     maxX: LIGHT_SCAN_SPAN,
     maxY: LIGHT_SCAN_SPAN,
   };
-  const tileLights = tileLightSourcesInRect(sampler, tileset, wide);
+  const tileLights = tileLightSourcesInRect(sampler, tileAssets, wide);
   check(
     'the only blocks lighting the delve are the lava seams',
     tileLights.length > 0 &&
@@ -257,14 +257,14 @@ function undergroundWorld() {
     examplePipelines().find((preset) => preset.name === PRESET_NAME)!.state,
   );
   const store = new PipelineStore(state);
-  const tileset = new Tileset();
-  const items = new ItemLibrary();
-  const creatures = new CreatureLibrary();
+  const tileAssets = new TileAssets();
+  const items = new ItemAssets();
+  const creatures = new CreatureAssets();
   const takenItems = new TakenItemSpawns();
   const sampler = new WorldSampler(
     store,
     new PipelineEvaluator(store),
-    tileset,
+    tileAssets,
     undefined,
     items,
     takenItems,
@@ -273,8 +273,8 @@ function undergroundWorld() {
   const groundItems = groundItemsOf(sampler, takenItems);
   const context = {
     store,
-    tileset,
-    prefabs: new PrefabLibrary(() => -1),
+    tileAssets,
+    prefabs: new PrefabAssets(() => -1),
     creatures,
     items,
     templates: new TemplateLibrary([]),
@@ -295,7 +295,7 @@ function undergroundWorld() {
     state: state as PipelineState,
     store,
     sampler,
-    tileset,
+    tileAssets,
     items,
     creatures,
     groundItems,
@@ -312,11 +312,11 @@ function everyCellInSpan(span: number, holds: (x: number, y: number) => boolean)
   return true;
 }
 
-function largestOpenSquare(sampler: WorldSampler, tileset: Tileset): number {
+function largestOpenSquare(sampler: WorldSampler, tileAssets: TileAssets): number {
   let largest = 0;
   for (let y = -CHUNK_SIZE; y <= CHUNK_SIZE; y++) {
     for (let x = -CHUNK_SIZE; x <= CHUNK_SIZE; x++) {
-      while (isOpenSquare(sampler, tileset, x, y, largest + 1)) largest++;
+      while (isOpenSquare(sampler, tileAssets, x, y, largest + 1)) largest++;
     }
   }
   return largest;
@@ -324,24 +324,24 @@ function largestOpenSquare(sampler: WorldSampler, tileset: Tileset): number {
 
 function isOpenSquare(
   sampler: WorldSampler,
-  tileset: Tileset,
+  tileAssets: TileAssets,
   x: number,
   y: number,
   side: number,
 ): boolean {
   for (let row = 0; row < side; row++) {
     for (let column = 0; column < side; column++) {
-      if (!isWalkableTile(tileset, sampler.tileAt(x + column, y + row))) return false;
+      if (!isWalkableTile(tileAssets, sampler.tileAt(x + column, y + row))) return false;
     }
   }
   return true;
 }
 
-function lowestWallTop(sampler: WorldSampler, tileset: Tileset): number {
+function lowestWallTop(sampler: WorldSampler, tileAssets: TileAssets): number {
   let lowest = Infinity;
   for (let y = -CHUNK_SIZE; y <= CHUNK_SIZE; y++) {
     for (let x = -CHUNK_SIZE; x <= CHUNK_SIZE; x++) {
-      const tile = tileset.byId(sampler.tileAt(x, y));
+      const tile = tileAssets.byId(sampler.tileAt(x, y));
       if (!tile || !tileStandsAsSolidBlock(tile)) continue;
       lowest = Math.min(lowest, sampler.elevationAt(x, y) + blockLayersOfTile(tile));
     }
@@ -349,17 +349,17 @@ function lowestWallTop(sampler: WorldSampler, tileset: Tileset): number {
   return lowest;
 }
 
-function walkableCount(sampler: WorldSampler, tileset: Tileset): number {
+function walkableCount(sampler: WorldSampler, tileAssets: TileAssets): number {
   let count = 0;
   for (let y = -INNER_SPAN; y <= INNER_SPAN; y++) {
     for (let x = -INNER_SPAN; x <= INNER_SPAN; x++) {
-      if (isWalkableTile(tileset, sampler.tileAt(x, y))) count++;
+      if (isWalkableTile(tileAssets, sampler.tileAt(x, y))) count++;
     }
   }
   return count;
 }
 
-function reachableFloorCount(sampler: WorldSampler, tileset: Tileset): number {
+function reachableFloorCount(sampler: WorldSampler, tileAssets: TileAssets): number {
   const seen = new Set(['0,0']);
   let insideInner = 0;
   const queue: [number, number][] = [[0, 0]];
@@ -369,7 +369,7 @@ function reachableFloorCount(sampler: WorldSampler, tileset: Tileset): number {
       const next: [number, number] = [x + dx, y + dy];
       if (Math.abs(next[0]) > REACH_SPAN || Math.abs(next[1]) > REACH_SPAN) continue;
       const key = `${next[0]},${next[1]}`;
-      if (seen.has(key) || !isWalkableTile(tileset, sampler.tileAt(next[0], next[1]))) continue;
+      if (seen.has(key) || !isWalkableTile(tileAssets, sampler.tileAt(next[0], next[1]))) continue;
       seen.add(key);
       queue.push(next);
       if (Math.abs(next[0]) <= INNER_SPAN && Math.abs(next[1]) <= INNER_SPAN) insideInner++;

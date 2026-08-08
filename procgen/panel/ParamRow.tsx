@@ -1,5 +1,5 @@
 import type { ParamSpec, ParamValue } from '../nodeType';
-import type { ReadOnlyTileset } from '../../frontend/readOnlyLibraries';
+import type { ReadOnlyTileAssets } from '../../frontend/readOnlyAssets';
 import { KnobRow } from '../../frontend/controls/KnobRow';
 import { Select } from '../../frontend/controls/Select';
 import { Slider } from '../../frontend/controls/Slider';
@@ -10,7 +10,7 @@ import { tileSelectOptions } from './tileSelectOptions';
 
 export interface ParamRowProps {
   spec: ParamSpec;
-  tileset: ReadOnlyTileset;
+  tileAssets: ReadOnlyTileAssets;
   value: ParamValue;
   onChange(value: ParamValue): void;
 }
@@ -25,7 +25,7 @@ export function ParamRow(props: ParamRowProps) {
   );
 }
 
-function ParamControl({ spec, tileset, value, onChange }: ParamRowProps) {
+function ParamControl({ spec, tileAssets, value, onChange }: ParamRowProps) {
   if (spec.kind === 'number')
     return <NumberKnob min={spec.min} max={spec.max} step={spec.step} value={Number(value)} onChange={onChange} />;
   if (spec.kind === 'int')
@@ -61,7 +61,7 @@ function ParamControl({ spec, tileset, value, onChange }: ParamRowProps) {
   return (
     <Select
       value={String(value)}
-      options={tileSelectOptions(tileset, '(empty)')}
+      options={tileSelectOptions(tileAssets, '(empty)')}
       onChange={(picked) => onChange(Number(picked))}
     />
   );

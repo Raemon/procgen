@@ -1,6 +1,6 @@
 import { hashString } from '../random/hashString';
-import type { Prefab } from '../../library/prefabs/prefabDef';
-import { rotatedAnchorX, rotatedAnchorY, normalizedQuarterTurns } from '../../library/prefabs/prefabRotation';
+import type { Prefab } from '../../assets/prefabs/prefabDef';
+import { rotatedAnchorX, rotatedAnchorY, normalizedQuarterTurns } from '../../assets/prefabs/prefabRotation';
 import { RANDOM_ROTATION } from '../display/displayBinding';
 
 export interface PrefabPlacement {

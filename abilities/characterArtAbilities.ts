@@ -11,10 +11,10 @@ import {
   type CharacterAnimation,
   type CharacterBillboard,
   type CharacterRotation,
-} from '../library/characters/characterBillboard';
-import { clampFps } from '../library/characters/sanitizeCharacterBillboard';
-import { CHARACTER } from '../library/creatures/entityKinds';
-import type { SpriteArt } from '../library/tiles/spriteArt';
+} from '../assets/characters/characterBillboard';
+import { clampFps } from '../assets/characters/sanitizeCharacterBillboard';
+import { CHARACTER } from '../assets/creatures/entityKinds';
+import type { SpriteArt } from '../assets/tiles/spriteArt';
 import {
   abilityFailed,
   abilitySucceeded,
@@ -32,7 +32,7 @@ const CREATURE_ID_HELP = 'id of an existing creature or character — see GET /a
 function registerCharacterArtAbility(
   spec: Omit<AbilitySpec, 'mode' | 'group' | 'changesWorld'>,
 ): AbilitySpec {
-  return registerAbility({ ...spec, mode: 'god', group: 'library', changesWorld: true });
+  return registerAbility({ ...spec, mode: 'god', group: 'assets', changesWorld: true });
 }
 
 registerCharacterArtAbility({

@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import { CHUNK_SIZE, chunkOrigin } from '../../../procgen/chunk';
 import type { WorldSampler } from '../../../procgen/worldSampler';
-import { isTransparentInk, opaqueInk } from '../../../library/tiles/inkColor';
-import type { CubeFaceArt } from '../../../library/tiles/tileFaceArt';
-import type { ReadOnlyTileset } from '../../../frontend/readOnlyLibraries';
+import { isTransparentInk, opaqueInk } from '../../../assets/tiles/inkColor';
+import type { CubeFaceArt } from '../../../assets/tiles/tileFaceArt';
+import type { ReadOnlyTileAssets } from '../../../frontend/readOnlyAssets';
 import { cubeFaceMaterials, sideFaceMaterial } from './faceArtMaterials';
 import {
   instancedTileMesh,
@@ -42,7 +42,7 @@ interface PlacementGroup {
 
 export function buildChunkMeshGroup(
   sampler: WorldSampler,
-  tileset: ReadOnlyTileset,
+  tileAssets: ReadOnlyTileAssets,
   chunkX: number,
   chunkY: number,
   extraMarkers: MarkerSource = NO_EXTRA_MARKERS,
@@ -51,14 +51,14 @@ export function buildChunkMeshGroup(
   const minY = chunkOrigin(chunkY);
   const { floors, blocks, trees } = tilePlacementsForRect(
     sampler,
-    tileset,
+    tileAssets,
     minX,
     minY,
     CHUNK_SIZE,
     CHUNK_SIZE,
   );
   const markers = markerPlacementsForRect(sampler, minX, minY, CHUNK_SIZE, CHUNK_SIZE, extraMarkers);
-  const voxels = voxelPlacementsForRect(sampler, tileset, minX, minY, CHUNK_SIZE, CHUNK_SIZE);
+  const voxels = voxelPlacementsForRect(sampler, tileAssets, minX, minY, CHUNK_SIZE, CHUNK_SIZE);
   const group = new THREE.Group();
   group.add(
     ...meshesForShape(floors, floorShape()),
@@ -66,18 +66,18 @@ export function buildChunkMeshGroup(
     ...meshesForShape(voxels, voxelShape()),
     ...meshesForShape(trees, treeShape()),
     ...meshesForShape(markers, markerShape()),
-    ceilingGroup(sampler, tileset, minX, minY),
+    ceilingGroup(sampler, tileAssets, minX, minY),
   );
   return group;
 }
 
 function ceilingGroup(
   sampler: WorldSampler,
-  tileset: ReadOnlyTileset,
+  tileAssets: ReadOnlyTileAssets,
   minX: number,
   minY: number,
 ): THREE.Group {
-  const placements = ceilingPlacementsForRect(sampler, tileset, minX, minY, CHUNK_SIZE, CHUNK_SIZE);
+  const placements = ceilingPlacementsForRect(sampler, tileAssets, minX, minY, CHUNK_SIZE, CHUNK_SIZE);
   const group = new THREE.Group();
   group.name = CEILING_GROUP_NAME;
   group.add(...meshesForShape(placements, ceilingShape()));

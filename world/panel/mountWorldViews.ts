@@ -25,13 +25,13 @@ export function mountWorldViews(
   slots: ViewSlots,
   currentMode: () => ViewMode,
 ): MountedWorldViews {
-  const { world, sampler, tileset, perform } = runtime;
+  const { world, sampler, tileAssets, perform } = runtime;
   const view3d = new View3D(slots.view3d, worldViewDepsOf(runtime));
   const agentGodView = new AgentTextView(
     slots.agentGod,
     world,
     sampler,
-    tileset,
+    tileAssets,
     'god',
     runtime.puzzles,
   );
@@ -39,7 +39,7 @@ export function mountWorldViews(
     slots.agentCharacter,
     world,
     sampler,
-    tileset,
+    tileAssets,
     'character',
     runtime.puzzles,
   );
@@ -131,7 +131,7 @@ function worldViewDepsOf(runtime: AppRuntime): WorldViewDeps {
     sampler: runtime.sampler,
     store: runtime.store,
     puzzles: runtime.puzzles,
-    tileset: runtime.tileset,
+    tileAssets: runtime.tileAssets,
     creatures: runtime.creatures,
     items: runtime.items,
     sim: runtime.sim,

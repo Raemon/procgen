@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { BILLBOARD, LYING_FLAT, type ItemDef } from '../../../library/items/itemDef';
-import { dominantPixelColor } from '../../../library/tiles/dominantFaceColor';
-import type { SpriteArt } from '../../../library/tiles/spriteArt';
+import { BILLBOARD, LYING_FLAT, type ItemDef } from '../../../assets/items/itemDef';
+import { dominantPixelColor } from '../../../assets/tiles/dominantFaceColor';
+import type { SpriteArt } from '../../../assets/tiles/spriteArt';
 import { cubeFaceMaterials } from './faceArtMaterials';
 import { lambertFromInk } from './inkMaterial';
 import { glowOfEmitter, glowSelfLit } from './selfLitGlow';

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { frameIndexAt } from '../../../library/characters/characterBillboard';
+import { frameIndexAt } from '../../../assets/characters/characterBillboard';
 
 export interface FaceArtFrameTextures {
   map: THREE.Texture;

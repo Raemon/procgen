@@ -1,4 +1,4 @@
-import type { WorldRegion } from '../../library/prefabs/captureRegionAsPrefab';
+import type { WorldRegion } from '../../assets/prefabs/captureRegionAsPrefab';
 
 export interface CaptureCell {
   x: number;

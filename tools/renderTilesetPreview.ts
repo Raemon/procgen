@@ -1,7 +1,7 @@
 import { writeFileSync } from 'node:fs';
-import { defaultTiles } from '../library/tiles/defaultTiles';
-import type { TileDef } from '../library/tiles/tileDef';
-import { faceGridSize, type FacePixels } from '../library/tiles/tileFaceArt';
+import { defaultTiles } from '../assets/tiles/defaultTiles';
+import type { TileDef } from '../assets/tiles/tileDef';
+import { faceGridSize, type FacePixels } from '../assets/tiles/tileFaceArt';
 import { pngBuffer } from './png/writePng';
 
 const OUTPUT_PATH = 'docs/tileset-preview.png';

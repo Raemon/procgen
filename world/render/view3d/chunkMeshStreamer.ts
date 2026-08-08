@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { chunkCoordOfCell, chunkKey } from '../../../procgen/chunk';
 import type { WorldSampler } from '../../../procgen/worldSampler';
-import type { ReadOnlyTileset } from '../../../frontend/readOnlyLibraries';
+import type { ReadOnlyTileAssets } from '../../../frontend/readOnlyAssets';
 import type { MarkerSource } from '../markerSource';
 import { disposeMeshChildren } from './disposeMeshResources';
 import { buildChunkMeshGroup, CEILING_GROUP_NAME } from './worldMeshes';
@@ -21,7 +21,7 @@ export class ChunkMeshStreamer {
   constructor(
     private readonly root: THREE.Group,
     private readonly sampler: WorldSampler,
-    private readonly tileset: ReadOnlyTileset,
+    private readonly tileAssets: ReadOnlyTileAssets,
     private readonly extraMarkers: MarkerSource,
   ) {}
 
@@ -76,7 +76,7 @@ export class ChunkMeshStreamer {
     if (existing) this.dropChunk(key);
     const group = buildChunkMeshGroup(
       this.sampler,
-      this.tileset,
+      this.tileAssets,
       chunkX,
       chunkY,
       this.extraMarkers,

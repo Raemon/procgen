@@ -1,9 +1,9 @@
 import type { WorldSampler } from '../procgen/worldSampler';
-import type { ReadOnlyTileset } from '../frontend/readOnlyLibraries';
-import { defaultTiles } from '../library/tiles/defaultTiles';
-import type { TileDef } from '../library/tiles/tileDef';
-import { BLOCKING_TILE_HEIGHT, WALKABLE_TILE_HEIGHT } from '../library/tiles/tileHeight';
-import { tilesFromStoredJson } from '../library/tiles/tilesetStorage';
+import type { ReadOnlyTileAssets } from '../frontend/readOnlyAssets';
+import { defaultTiles } from '../assets/tiles/defaultTiles';
+import type { TileDef } from '../assets/tiles/tileDef';
+import { BLOCKING_TILE_HEIGHT, WALKABLE_TILE_HEIGHT } from '../assets/tiles/tileHeight';
+import { tilesFromStoredJson } from '../assets/tiles/tileStorage';
 import { tilePlacementsForRect } from '../world/render/view3d/tilePlacements';
 import type { CheckReporter } from './checkCharacterBillboardInvariants';
 
@@ -57,7 +57,7 @@ function checkStoredTilesWithoutAHeightGetOne(check: CheckReporter): void {
   const legacy = defaultTiles().map(({ height, ...tile }) => tile);
   const loaded = tilesFromStoredJson(JSON.parse(JSON.stringify(legacy)))!;
   check(
-    'a tileset saved before heights existed loads with blockers two tall and floors one',
+    'tile assets saved before heights existed loads with blockers two tall and floors one',
     loaded.every((tile) => tile.height === (tile.walkable ? WALKABLE_TILE_HEIGHT : BLOCKING_TILE_HEIGHT)),
   );
   const roundtripped = tilesFromStoredJson(JSON.parse(JSON.stringify(defaultTiles())))!;
@@ -79,10 +79,10 @@ function samplerOfOneTile(tile: TileDef): WorldSampler {
   return { tileAt: () => tile.id, elevationAt: () => 0 } as unknown as WorldSampler;
 }
 
-function tilesetOfOneTile(tile: TileDef): ReadOnlyTileset {
+function tilesetOfOneTile(tile: TileDef): ReadOnlyTileAssets {
   return {
     byId: (id: number) => (id === tile.id ? tile : undefined),
     byRole: () => undefined,
     all: () => [tile],
-  } as unknown as ReadOnlyTileset;
+  } as unknown as ReadOnlyTileAssets;
 }

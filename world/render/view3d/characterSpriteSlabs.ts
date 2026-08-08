@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { spriteGridSize, type SpriteArt } from '../../../library/tiles/spriteArt';
+import { spriteGridSize, type SpriteArt } from '../../../assets/tiles/spriteArt';
 import { spriteSlabGeometry } from './spriteSlabGeometry';
 
 const RIM_PIXELS_DEEP = 2;

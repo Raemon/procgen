@@ -5,10 +5,10 @@ import {
   normalizedTags,
   ORIENTATION_CHOICES,
   RENDER_CHOICES,
-} from '../library/items/itemDef';
-import type { ItemPatch } from '../library/items/itemLibrary';
+} from '../assets/items/itemDef';
+import type { ItemPatch } from '../assets/items/itemAssets';
 import { clampLightRadius, MAX_LIGHT_RADIUS } from '../world/light/lightEmission';
-import { isSpriteArt } from '../library/tiles/spriteArt';
+import { isSpriteArt } from '../assets/tiles/spriteArt';
 import {
   abilityFailed,
   abilitySucceeded,
@@ -25,7 +25,7 @@ const ITEM_ID_HELP = 'id of an existing item — see GET /api/v1/items';
 function registerItemAbility(
   spec: Omit<AbilitySpec, 'mode' | 'group' | 'changesWorld'>,
 ): AbilitySpec {
-  return registerAbility({ ...spec, mode: 'god', group: 'library', changesWorld: true });
+  return registerAbility({ ...spec, mode: 'god', group: 'assets', changesWorld: true });
 }
 
 registerItemAbility({

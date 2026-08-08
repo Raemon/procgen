@@ -1,13 +1,13 @@
 import * as THREE from 'three';
-import { faceArtPlan, type FaceArtPlan } from '../../../library/tiles/faceArtFacePlan';
-import { facePixelsAt, frameMsOf } from '../../../library/tiles/faceArtFrames';
-import { isTransparentInk } from '../../../library/tiles/inkColor';
+import { faceArtPlan, type FaceArtPlan } from '../../../assets/tiles/faceArtFacePlan';
+import { facePixelsAt, frameMsOf } from '../../../assets/tiles/faceArtFrames';
+import { isTransparentInk } from '../../../assets/tiles/inkColor';
 import {
   faceGridSize,
   type CubeFace,
   type CubeFaceArt,
   type FacePixels,
-} from '../../../library/tiles/tileFaceArt';
+} from '../../../assets/tiles/tileFaceArt';
 import { paintFacePixels } from '../paintFacePixels';
 import { playFaceArtFrames, type FaceArtFrameTextures } from './faceArtAnimations';
 import { normalTextureFromHeights } from './normalTextureFromHeights';

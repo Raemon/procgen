@@ -28,7 +28,7 @@ export function performVerb(
   const result = performAbility(
     {
       store: world.store,
-      tileset: world.tileset,
+      tileAssets: world.tileAssets,
       prefabs: world.prefabs,
       creatures: world.creatures,
       items: world.items,

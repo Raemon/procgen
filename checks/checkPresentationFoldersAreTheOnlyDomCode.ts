@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
-const PANEL_ROOTS = ['agents', 'library', 'procgen', 'world'];
+const PANEL_ROOTS = ['agents', 'assets', 'procgen', 'world'];
 const HEADLESS_ROOTS = ['abilities', 'api', 'multiplayer', 'server'];
 const EVERY_ROOT = [...PANEL_ROOTS, ...HEADLESS_ROOTS, 'frontend', 'checks', 'tools'];
 const PRESENTATION_FOLDER_NAMES = ['panel', 'ui', 'view3d'];

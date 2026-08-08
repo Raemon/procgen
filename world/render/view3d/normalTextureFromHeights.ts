@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { heightOfInk } from '../../../library/tiles/faceArtHeight';
-import { faceGridSize, type FacePixels } from '../../../library/tiles/tileFaceArt';
+import { heightOfInk } from '../../../assets/tiles/faceArtHeight';
+import { faceGridSize, type FacePixels } from '../../../assets/tiles/tileFaceArt';
 
 const SLOPE_STRENGTH = 3;
 const CHANNELS = 4;

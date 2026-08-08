@@ -1,10 +1,10 @@
 import type {
-  ReadOnlyCreatureLibrary,
-  ReadOnlyItemLibrary,
+  ReadOnlyCreatureAssets,
+  ReadOnlyItemAssets,
   ReadOnlyPipelineStore,
-  ReadOnlyTileset,
+  ReadOnlyTileAssets,
   ReadOnlyWorld,
-} from '../../frontend/readOnlyLibraries';
+} from '../../frontend/readOnlyAssets';
 import type { SpeechBubbles } from '../chat/speechBubbles';
 import type { CreatureSim } from '../creatureSim/creatureSim';
 import type { RemotePlayers } from '../../multiplayer/client/remotePlayers';
@@ -17,9 +17,9 @@ export interface WorldViewDeps {
   sampler: WorldSampler;
   puzzles: MarkerSource;
   store: ReadOnlyPipelineStore;
-  tileset: ReadOnlyTileset;
-  creatures: ReadOnlyCreatureLibrary;
-  items: ReadOnlyItemLibrary;
+  tileAssets: ReadOnlyTileAssets;
+  creatures: ReadOnlyCreatureAssets;
+  items: ReadOnlyItemAssets;
   sim: CreatureSim;
   capture: CaptureTool;
   remotePlayers: RemotePlayers;

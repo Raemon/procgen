@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { playerCharacterDef } from '../../../library/characters/playerCharacter';
+import { playerCharacterDef } from '../../../assets/characters/playerCharacter';
 import type { LightSource } from '../../light/lightEmission';
 import { carriedLightSourceOf, carriedLightSourcesOfCreatures } from '../../light/characterLightSources';
 import { itemLightSourcesInRect } from '../../light/itemLightSources';
@@ -40,7 +40,7 @@ export class WorldLights {
     if (key === this.staticRectKey) return;
     this.staticRectKey = key;
     this.staticSources = [
-      ...tileLightSourcesInRect(this.deps.sampler, this.deps.tileset, rect),
+      ...tileLightSourcesInRect(this.deps.sampler, this.deps.tileAssets, rect),
       ...itemLightSourcesInRect(this.deps.sampler, this.deps.items, rect),
     ];
   }

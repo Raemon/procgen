@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { paintSpritePixels } from '../paintSpritePixels';
-import { spriteGridSize, type SpriteArt } from '../../../library/tiles/spriteArt';
+import { spriteGridSize, type SpriteArt } from '../../../assets/tiles/spriteArt';
 
 export function spriteMaterial(
   texture: THREE.CanvasTexture,

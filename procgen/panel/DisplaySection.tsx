@@ -177,13 +177,13 @@ function CeilingHeightRow({ node, height }: { node: NodeInstance; height: number
 }
 
 function MarkerRows({ node, binding }: { node: NodeInstance; binding: MarkerBinding }) {
-  const { perform, tileset } = useAppRuntime();
+  const { perform, tileAssets } = useAppRuntime();
   return (
     <>
       <KnobRow label="tile" tip={markerTileTooltip()}>
         <Select
           value={String(binding.tileId)}
-          options={tileSelectOptions(tileset, '(custom glyph)')}
+          options={tileSelectOptions(tileAssets, '(custom glyph)')}
           onChange={(value) => perform('set_display', { node_id: node.id, display: 'markers', tile_id: Number(value) })}
         />
       </KnobRow>

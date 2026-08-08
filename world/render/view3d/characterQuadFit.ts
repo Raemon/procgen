@@ -1,6 +1,6 @@
-import { billboardFigureExtent } from '../../../library/characters/billboardFigureExtent';
-import type { CharacterBillboard } from '../../../library/characters/characterBillboard';
-import type { CreatureDef } from '../../../library/creatures/creatureDef';
+import { billboardFigureExtent } from '../../../assets/characters/billboardFigureExtent';
+import type { CharacterBillboard } from '../../../assets/characters/characterBillboard';
+import type { CreatureDef } from '../../../assets/creatures/creatureDef';
 
 export interface CharacterQuadFit {
   quadWidth: number;

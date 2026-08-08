@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { useAppRuntime } from '../../frontend/appRuntimeContext';
-import type { ReadOnlyPipelineStore, ReadOnlyWorldPresetLibrary } from '../../frontend/readOnlyLibraries';
+import type { ReadOnlyPipelineStore, ReadOnlyWorldPresetLibrary } from '../../frontend/readOnlyAssets';
 import { examplePipelines } from '../presets/examplePipelines';
 import type { WorldPreset } from '../presets/worldPreset';
 import { Button } from '../../frontend/controls/Button';

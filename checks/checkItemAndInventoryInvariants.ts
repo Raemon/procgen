@@ -3,24 +3,24 @@ import '../abilities/index';
 import { performAbility } from '../abilities/performAbility';
 import { DEFAULT_CHARACTER_SIGHT_RADIUS_TILES } from '../world/vision/characterSight';
 import type { AbilityContext, AbilityResult } from '../abilities/ability';
-import { CreatureLibrary } from '../library/creatures/creatureLibrary';
-import { creaturesFromStoredJson } from '../library/creatures/creatureStorage';
-import { CHARACTER, CREATURE } from '../library/creatures/entityKinds';
-import { blankInventory, resizedInventory, slotAt, withSlotAt } from '../library/items/inventory/inventoryDef';
+import { CreatureAssets } from '../assets/creatures/creatureAssets';
+import { creaturesFromStoredJson } from '../assets/creatures/creatureStorage';
+import { CHARACTER, CREATURE } from '../assets/creatures/entityKinds';
+import { blankInventory, resizedInventory, slotAt, withSlotAt } from '../assets/items/inventory/inventoryDef';
 import {
   canPlaceItemAt,
   placementCovering,
   placementRefusal,
   prunedPlacements,
   withItemPlaced,
-} from '../library/items/inventory/inventoryPlacement';
-import { sanitizeInventory } from '../library/items/inventory/sanitizeInventory';
-import { BILLBOARD, CUBE, LYING_FLAT, type ItemDef } from '../library/items/itemDef';
-import { ItemLibrary } from '../library/items/itemLibrary';
-import { NO_GROUND_ITEMS } from '../library/items/pickups/groundItems';
+} from '../assets/items/inventory/inventoryPlacement';
+import { sanitizeInventory } from '../assets/items/inventory/sanitizeInventory';
+import { BILLBOARD, CUBE, LYING_FLAT, type ItemDef } from '../assets/items/itemDef';
+import { ItemAssets } from '../assets/items/itemAssets';
+import { NO_GROUND_ITEMS } from '../assets/items/pickups/groundItems';
 import { PuzzleWorld } from '../world/puzzles/puzzleWorld';
-import { itemsFromStoredJson } from '../library/items/itemStorage';
-import { PrefabLibrary } from '../library/prefabs/prefabLibrary';
+import { itemsFromStoredJson } from '../assets/items/itemStorage';
+import { PrefabAssets } from '../assets/prefabs/prefabAssets';
 import { displayModesForKind } from '../procgen/display/displayBinding';
 import { PipelineEvaluator } from '../procgen/eval/evaluator';
 import { emptyPipeline, type PipelineState } from '../procgen/pipeline/pipelineState';
@@ -32,8 +32,8 @@ import { TemplateLibrary } from '../procgen/templates/templateLibrary';
 import { WorldSampler } from '../procgen/worldSampler';
 import { asciiSnapshot } from '../world/render/ascii/asciiSnapshot';
 import { itemGeometry, itemHalfHeight } from '../world/render/view3d/itemMeshBuild';
-import { blankSpriteArt, isSpriteArt } from '../library/tiles/spriteArt';
-import { Tileset } from '../library/tiles/tileset';
+import { blankSpriteArt, isSpriteArt } from '../assets/tiles/spriteArt';
+import { TileAssets } from '../assets/tiles/tileAssets';
 
 export interface CheckReporter {
   (name: string, condition: boolean): void;
@@ -51,7 +51,7 @@ export function checkItemAndInventoryInvariants(check: CheckReporter): void {
 }
 
 function checkDefaultItems(check: CheckReporter): void {
-  const items = new ItemLibrary();
+  const items = new ItemAssets();
   const byName = (name: string) => items.all().find((item) => item.name === name)!;
   check(
     'the default items ship with 1x1, 1x2 and 2x2 footprints',
@@ -75,7 +75,7 @@ function checkDefaultItems(check: CheckReporter): void {
 }
 
 function checkItemStorage(check: CheckReporter): void {
-  const items = new ItemLibrary();
+  const items = new ItemAssets();
   const reloaded = itemsFromStoredJson(JSON.parse(JSON.stringify(items.all())))!;
   check(
     'items round-trip through storage with their art, footprint and tags',
@@ -98,7 +98,7 @@ function checkItemStorage(check: CheckReporter): void {
 }
 
 function checkItemGeometry(check: CheckReporter): void {
-  const items = new ItemLibrary();
+  const items = new ItemAssets();
   const upright = items.all().find((item) => item.render === BILLBOARD && item.orientation === 0)!;
   const flat = items.all().find((item) => item.orientation === LYING_FLAT)!;
   const cube = items.all().find((item) => item.render === CUBE)!;
@@ -154,12 +154,12 @@ function checkItemsInTheWorld(check: CheckReporter): void {
     'a points node can be displayed as items',
     displayModesForKind('points').includes('items'),
   );
-  const tileset = new Tileset();
-  const items = new ItemLibrary();
+  const tileAssets = new TileAssets();
+  const items = new ItemAssets();
   const potion = items.all()[0]!;
   const store = new PipelineStore(itemPointsPipeline(potion.id));
   const evaluator = new PipelineEvaluator(store);
-  const sampler = new WorldSampler(store, evaluator, tileset, new PrefabLibrary(() => -1), items);
+  const sampler = new WorldSampler(store, evaluator, tileAssets, new PrefabAssets(() => -1), items);
   const spawns = sampler.itemSpawnsIn(-40, -40, 40, 40);
   check('an items-bound points node scatters items through the world', spawns.length > 0);
   check(
@@ -167,7 +167,7 @@ function checkItemsInTheWorld(check: CheckReporter): void {
     spawns.every((spawn) => spawn.itemId === potion.id && spawn.glyph === potion.symbol),
   );
   const spawn = spawns[0]!;
-  const beside = asciiSnapshot(sampler, tileset, spawn.x + 1, spawn.y, 3, 3).split('\n');
+  const beside = asciiSnapshot(sampler, tileAssets, spawn.x + 1, spawn.y, 3, 3).split('\n');
   check('a spawned item draws its own symbol in the ascii view', beside[1]![0] === potion.symbol);
   items.remove(potion.id);
   check(
@@ -177,7 +177,7 @@ function checkItemsInTheWorld(check: CheckReporter): void {
 }
 
 function checkPlacementRules(check: CheckReporter): void {
-  const items = new ItemLibrary();
+  const items = new ItemAssets();
   const sword = items.all().find((item) => item.gridHeight === 2 && item.gridWidth === 1)!;
   const potion = items.all()[0]!;
   const empty = blankInventory(4, 3);
@@ -213,7 +213,7 @@ function checkPlacementRules(check: CheckReporter): void {
 }
 
 function checkInventoryReshaping(check: CheckReporter): void {
-  const items = new ItemLibrary();
+  const items = new ItemAssets();
   const sword = items.all().find((item) => item.gridHeight === 2)!;
   const tagged = withSlotAt(withSlotAt(blankInventory(4, 3), 3, 2, { usable: false }), 0, 0, {
     tags: ['weapon'],
@@ -249,10 +249,10 @@ function checkInventoryReshaping(check: CheckReporter): void {
 }
 
 function checkCharacterStorage(check: CheckReporter): void {
-  const creatures = new CreatureLibrary();
+  const creatures = new CreatureAssets();
   const trader = creatures.all().find((creature) => creature.kind === CHARACTER)!;
   check(
-    'the default library ships a character carrying items in its inventory',
+    'the default creature assets ship a character carrying items in its inventory',
     trader.inventory !== null && trader.inventory.placements.length > 0,
   );
   const reloaded = creaturesFromStoredJson(JSON.parse(JSON.stringify(creatures.all())))!;
@@ -371,12 +371,12 @@ function checkItemAndInventoryAbilities(check: CheckReporter): void {
 
 function abilityWorld() {
   const store = new PipelineStore(emptyPipeline());
-  const items = new ItemLibrary();
-  const creatures = new CreatureLibrary();
+  const items = new ItemAssets();
+  const creatures = new CreatureAssets();
   const context: AbilityContext = {
     store,
-    tileset: new Tileset(),
-    prefabs: new PrefabLibrary(() => -1),
+    tileAssets: new TileAssets(),
+    prefabs: new PrefabAssets(() => -1),
     creatures,
     items,
     templates: new TemplateLibrary([]),

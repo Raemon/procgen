@@ -1,5 +1,5 @@
 import type { WorldSampler } from '../../../procgen/worldSampler';
-import type { Tileset } from '../../../library/tiles/tileset';
+import type { TileAssets } from '../../../assets/tiles/tileAssets';
 import {
   cachedTileIdProbe,
   walkableProbeFrom,
@@ -26,11 +26,11 @@ export interface WorldMeasurementResult {
 
 export function measureWorld(
   sampler: WorldSampler,
-  tileset: Tileset,
+  tileAssets: TileAssets,
   limits: WalkLimits,
 ): WorldMeasurementResult | null {
   const tileIdAt = cachedTileIdProbe(sampler);
-  const isWalkableAt = walkableProbeFrom(tileIdAt, tileset);
+  const isWalkableAt = walkableProbeFrom(tileIdAt, tileAssets);
   const spawn = spawnNearOrigin(isWalkableAt);
   if (!spawn) return null;
   const trace = exploreFromSpawn(isWalkableAt, spawn, limits);

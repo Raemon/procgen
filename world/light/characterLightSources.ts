@@ -1,10 +1,10 @@
 import type { CreatureInstance } from '../creatureSim/creatureInstance';
-import { brightestCarriedLight } from '../../library/items/inventory/carriedLight';
+import { brightestCarriedLight } from '../../assets/items/inventory/carriedLight';
 import type { WorldSampler } from '../../procgen/worldSampler';
 import type {
-  ReadOnlyCreatureLibrary,
-  ReadOnlyItemLibrary,
-} from '../../frontend/readOnlyLibraries';
+  ReadOnlyCreatureAssets,
+  ReadOnlyItemAssets,
+} from '../../frontend/readOnlyAssets';
 import { lightSourceAt, type LightSource } from './lightEmission';
 
 const CARRIED_LIGHT_HEIGHT = 0.9;
@@ -13,8 +13,8 @@ export function carriedLightSourceOf(
   creatureId: number,
   x: number,
   y: number,
-  creatures: ReadOnlyCreatureLibrary,
-  items: ReadOnlyItemLibrary,
+  creatures: ReadOnlyCreatureAssets,
+  items: ReadOnlyItemAssets,
   sampler: WorldSampler,
 ): LightSource | null {
   const carried = brightestCarriedLight(creatures.byId(creatureId) ?? null, items);
@@ -25,8 +25,8 @@ export function carriedLightSourceOf(
 
 export function carriedLightSourcesOfCreatures(
   active: readonly CreatureInstance[],
-  creatures: ReadOnlyCreatureLibrary,
-  items: ReadOnlyItemLibrary,
+  creatures: ReadOnlyCreatureAssets,
+  items: ReadOnlyItemAssets,
   sampler: WorldSampler,
 ): LightSource[] {
   const sources: LightSource[] = [];

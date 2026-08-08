@@ -17,7 +17,7 @@ import { asciiSnapshot } from '../world/render/ascii/asciiSnapshot';
 import { markerPlacementsForRect } from '../world/render/view3d/markerPlacements';
 import { tilePlacementsForRect } from '../world/render/view3d/tilePlacements';
 import { voxelPlacementsForRect } from '../world/render/view3d/voxelPlacements';
-import { Tileset } from '../library/tiles/tileset';
+import { TileAssets } from '../assets/tiles/tileAssets';
 
 interface NodeCost {
   nodeId: string;
@@ -106,18 +106,18 @@ interface Bench {
   state: PipelineState;
 }
 
-function freshWorld(tileset: Tileset): Bench {
+function freshWorld(tileAssets: TileAssets): Bench {
   const state = sanitizePipeline(emberMarches().state);
   const store = new PipelineStore(state);
   const evaluator = new PipelineEvaluator(store);
   countValueForCalls(evaluator);
-  const sampler = new WorldSampler(store, evaluator, tileset);
+  const sampler = new WorldSampler(store, evaluator, tileAssets);
   return { store, evaluator, sampler, state };
 }
 
 function buildRegionLikeMeshStreamer(
   bench: Bench,
-  tileset: Tileset,
+  tileAssets: TileAssets,
   centerX: number,
   centerY: number,
   radiusChunks: number,
@@ -126,17 +126,17 @@ function buildRegionLikeMeshStreamer(
   const centerChunkY = Math.floor(centerY / CHUNK_SIZE);
   for (let chunkY = centerChunkY - radiusChunks; chunkY <= centerChunkY + radiusChunks; chunkY++) {
     for (let chunkX = centerChunkX - radiusChunks; chunkX <= centerChunkX + radiusChunks; chunkX++) {
-      buildOneChunk(bench, tileset, chunkX, chunkY);
+      buildOneChunk(bench, tileAssets, chunkX, chunkY);
     }
   }
 }
 
-function buildOneChunk(bench: Bench, tileset: Tileset, chunkX: number, chunkY: number): void {
+function buildOneChunk(bench: Bench, tileAssets: TileAssets, chunkX: number, chunkY: number): void {
   const minX = chunkOrigin(chunkX);
   const minY = chunkOrigin(chunkY);
-  tilePlacementsForRect(bench.sampler, tileset, minX, minY, CHUNK_SIZE, CHUNK_SIZE);
+  tilePlacementsForRect(bench.sampler, tileAssets, minX, minY, CHUNK_SIZE, CHUNK_SIZE);
   markerPlacementsForRect(bench.sampler, minX, minY, CHUNK_SIZE, CHUNK_SIZE);
-  voxelPlacementsForRect(bench.sampler, tileset, minX, minY, CHUNK_SIZE, CHUNK_SIZE);
+  voxelPlacementsForRect(bench.sampler, tileAssets, minX, minY, CHUNK_SIZE, CHUNK_SIZE);
 }
 
 interface ScenarioResult {
@@ -222,7 +222,7 @@ function directElevationForChunk(bench: Bench, chunkX: number, chunkY: number): 
 function perCellVersusPerChunkMicrobench(bench: Bench, repeats: number): void {
   const chunkX = 0;
   const chunkY = 0;
-  buildOneChunk(bench, tileset, chunkX, chunkY);
+  buildOneChunk(bench, tileAssets, chunkX, chunkY);
   const perCell = timeIt(repeats, () => {
     for (let y = 0; y < CHUNK_SIZE; y++) {
       for (let x = 0; x < CHUNK_SIZE; x++) {
@@ -249,30 +249,30 @@ function timeIt(repeats: number, run: () => void): number {
   return (performance.now() - start) / repeats;
 }
 
-function coldRegionScenarios(tileset: Tileset, centerX: number, centerY: number): void {
+function coldRegionScenarios(tileAssets: TileAssets, centerX: number, centerY: number): void {
   for (const radius of [2, 4, 6]) {
-    const bench = freshWorld(tileset);
+    const bench = freshWorld(tileAssets);
     const side = radius * 2 + 1;
     const result = runScenario(
       `cold build ${side}x${side} chunks at (${centerX},${centerY})`,
-      () => buildRegionLikeMeshStreamer(bench, tileset, centerX, centerY, radius),
+      () => buildRegionLikeMeshStreamer(bench, tileAssets, centerX, centerY, radius),
     );
     printScenario(result);
     if (radius === 6) printTopNodes(bench.state, 12);
   }
 }
 
-function warmScenarios(tileset: Tileset): void {
-  const bench = freshWorld(tileset);
-  buildRegionLikeMeshStreamer(bench, tileset, 0, 0, 6);
+function warmScenarios(tileAssets: TileAssets): void {
+  const bench = freshWorld(tileAssets);
+  buildRegionLikeMeshStreamer(bench, tileAssets, 0, 0, 6);
   printScenario(
     runScenario('warm rebuild 13x13 chunks (redraw, cache hot)', () =>
-      buildRegionLikeMeshStreamer(bench, tileset, 0, 0, 6),
+      buildRegionLikeMeshStreamer(bench, tileAssets, 0, 0, 6),
     ),
   );
   printScenario(
     runScenario('warm ascii snapshot 120x60 x100 frames', () => {
-      for (let i = 0; i < 100; i++) asciiSnapshot(bench.sampler, tileset, 0, 0, 120, 60);
+      for (let i = 0; i < 100; i++) asciiSnapshot(bench.sampler, tileAssets, 0, 0, 120, 60);
     }),
   );
   printScenario(
@@ -283,30 +283,30 @@ function warmScenarios(tileset: Tileset): void {
   perCellVersusPerChunkMicrobench(bench, 50);
 }
 
-function knobTweakScenario(tileset: Tileset): void {
-  const bench = freshWorld(tileset);
-  buildRegionLikeMeshStreamer(bench, tileset, 0, 0, 6);
+function knobTweakScenario(tileAssets: TileAssets): void {
+  const bench = freshWorld(tileAssets);
+  buildRegionLikeMeshStreamer(bench, tileAssets, 0, 0, 6);
   bench.store.setParam('n5', 'gain', 0.52);
   const result = runScenario('rebuild 13x13 after tweaking one terrain knob (n5)', () =>
-    buildRegionLikeMeshStreamer(bench, tileset, 0, 0, 6),
+    buildRegionLikeMeshStreamer(bench, tileAssets, 0, 0, 6),
   );
   printScenario(result);
   printTopNodes(bench.state, 12);
 }
 
-const tileset = tilesetFromRepoData();
+const tileAssets = tilesetFromRepoData();
 instrumentNodeGeneration();
 
 console.log('== ember marches: cold generation at the frontier (0,0), zoom sweep ==');
-coldRegionScenarios(tileset, 0, 0);
+coldRegionScenarios(tileAssets, 0, 0);
 console.log('\n== ember marches: cold generation in the green west (-1200,0) ==');
-coldRegionScenarios(tileset, -1200, 0);
+coldRegionScenarios(tileAssets, -1200, 0);
 console.log('\n== warm paths ==');
-warmScenarios(tileset);
+warmScenarios(tileAssets);
 console.log('\n== knob tweak invalidation ==');
-knobTweakScenario(tileset);
+knobTweakScenario(tileAssets);
 
-function tilesetFromRepoData(): Tileset {
-  seedPersistedFile('tileset', JSON.parse(readFileSync('data/tileset.json', 'utf8')));
-  return new Tileset();
+function tilesetFromRepoData(): TileAssets {
+  seedPersistedFile('tiles', JSON.parse(readFileSync('data/tiles.json', 'utf8')));
+  return new TileAssets();
 }

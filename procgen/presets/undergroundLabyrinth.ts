@@ -1,4 +1,4 @@
-import { BLOCKING_TILE_HEIGHT } from '../../library/tiles/tileHeight';
+import { BLOCKING_TILE_HEIGHT } from '../../assets/tiles/tileHeight';
 import type { ExamplePipeline } from './examplePipeline';
 
 const ROOF_ON_THE_WALLS = BLOCKING_TILE_HEIGHT;

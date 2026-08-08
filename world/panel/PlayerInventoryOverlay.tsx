@@ -1,7 +1,7 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import { useAppRuntime } from '../../frontend/appRuntimeContext';
 import { useRerenderOnCreatureChange, useRerenderOnItemChange } from '../../frontend/rerenderHooks';
-import { playerCharacterDef } from '../../library/characters/playerCharacter';
+import { playerCharacterDef } from '../../assets/characters/playerCharacter';
 import { InventoryKeyInput } from '../input/inventoryKey';
 import { HINT_CLASSES } from '../../frontend/controls/fieldClasses';
 import { CarriedItemsGrid } from './CarriedItemsGrid';

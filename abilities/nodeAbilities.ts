@@ -211,7 +211,7 @@ registerNodeAbility({
       help: 'ceiling only: how many tiles above the ground the roof hangs',
       optional: true,
     },
-    tile_id: { kind: 'int', help: 'markers only: a tileset id to draw, or -1 for the glyph', optional: true },
+    tile_id: { kind: 'int', help: 'markers only: a tile asset id to draw, or -1 for the glyph', optional: true },
     glyph: { kind: 'text', help: 'markers only: a single character', optional: true },
     color: { kind: 'text', help: 'markers only: a #rrggbb color, or #rrggbbaa with aa=00 for transparent', optional: true },
     prefab_id: {
@@ -379,13 +379,13 @@ function acceptKnobValue(
           ),
         };
   }
-  return value === -1 || context.tileset.byId(value)
+  return value === -1 || context.tileAssets.byId(value)
     ? { ok: true, value }
     : {
         ok: false,
         failure: abilityFailed(
           'invalid_value',
-          `'${spec.label}' is a tile link: -1 or a tileset id (${listOf(context.tileset.all().map((tile) => tile.id))})`,
+          `'${spec.label}' is a tile link: -1 or a tile asset id (${listOf(context.tileAssets.all().map((tile) => tile.id))})`,
         ),
       };
 }

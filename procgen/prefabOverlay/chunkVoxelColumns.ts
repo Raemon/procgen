@@ -1,4 +1,4 @@
-import { EMPTY_VOXEL } from '../../library/prefabs/prefabDef';
+import { EMPTY_VOXEL } from '../../assets/prefabs/prefabDef';
 
 export type VoxelColumn = number[];
 

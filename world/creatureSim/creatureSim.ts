@@ -1,5 +1,5 @@
 import type { CreatureSpawn, WorldSampler } from '../../procgen/worldSampler';
-import type { CreatureLibrary } from '../../library/creatures/creatureLibrary';
+import type { CreatureAssets } from '../../assets/creatures/creatureAssets';
 import { spawnedCreature, spawnKeyOf, type CreatureInstance } from './creatureInstance';
 import { retargetCreature, type SimWorldView } from './creatureTargets';
 import { moveCreatureTowardTarget, type WalkabilityProbe } from './moveCreatureTowardTarget';
@@ -11,7 +11,7 @@ const MAX_ACTIVE_CREATURES = 400;
 
 export interface CreatureSimDeps {
   sampler: WorldSampler;
-  library: CreatureLibrary;
+  library: CreatureAssets;
   world: SimWorldView;
   isWalkableAt: WalkabilityProbe;
 }

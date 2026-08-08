@@ -3,26 +3,26 @@ import {
   builtInBillboard,
   isBuiltInBillboardArt,
   MOONLIT_DWARF_ART,
-} from '../library/creatures/art/builtInBillboards';
+} from '../assets/creatures/art/builtInBillboards';
 import {
   DWARF_IDLE_FRAMES,
   DWARF_WALK_FRAMES,
-} from '../library/characters/dwarf/dwarfBillboard';
-import { DWARF_SPRITE_SIZE } from '../library/characters/dwarf/dwarfProportions';
+} from '../assets/characters/dwarf/dwarfBillboard';
+import { DWARF_SPRITE_SIZE } from '../assets/characters/dwarf/dwarfProportions';
 import {
   CHARACTER_ANIMATIONS,
   CHARACTER_ROTATIONS,
   framesOf,
-} from '../library/characters/characterBillboard';
-import { billboardFigureExtent } from '../library/characters/billboardFigureExtent';
-import { CHARACTER_BODY, type CreatureDef } from '../library/creatures/creatureDef';
-import { CreatureLibrary } from '../library/creatures/creatureLibrary';
-import { creaturesAsStoredJson, creaturesFromStoredJson } from '../library/creatures/creatureStorage';
-import { CHARACTER } from '../library/creatures/entityKinds';
-import { playerCharacterDef, PLAYER_CHARACTER_ID } from '../library/characters/playerCharacter';
+} from '../assets/characters/characterBillboard';
+import { billboardFigureExtent } from '../assets/characters/billboardFigureExtent';
+import { CHARACTER_BODY, type CreatureDef } from '../assets/creatures/creatureDef';
+import { CreatureAssets } from '../assets/creatures/creatureAssets';
+import { creaturesAsStoredJson, creaturesFromStoredJson } from '../assets/creatures/creatureStorage';
+import { CHARACTER } from '../assets/creatures/entityKinds';
+import { playerCharacterDef, PLAYER_CHARACTER_ID } from '../assets/characters/playerCharacter';
 import { characterQuadFit } from '../world/render/view3d/characterQuadFit';
-import { isSpriteArt, spriteGridSize } from '../library/tiles/spriteArt';
-import { FACE_ART_SIZES, isCubeFaceArt, MAX_FACE_ART_SIZE } from '../library/tiles/tileFaceArt';
+import { isSpriteArt, spriteGridSize } from '../assets/tiles/spriteArt';
+import { FACE_ART_SIZES, isCubeFaceArt, MAX_FACE_ART_SIZE } from '../assets/tiles/tileFaceArt';
 import type { CheckReporter } from './checkCharacterBillboardInvariants';
 
 export function checkPlayerCharacterInvariants(check: CheckReporter): void {
@@ -119,10 +119,10 @@ function checkTheDwarfIsRichlyAnimated(check: CheckReporter): void {
 }
 
 function checkPlayersAreDrawnAsACharacter(check: CheckReporter): void {
-  const creatures = new CreatureLibrary();
+  const creatures = new CreatureAssets();
   const player = playerCharacterDef(creatures)!;
   check(
-    'the default library ships a female dwarf as the player character',
+    'the default creature assets ship a female dwarf as the player character',
     player !== null &&
       player.id === PLAYER_CHARACTER_ID &&
       player.kind === CHARACTER &&
@@ -141,9 +141,9 @@ function checkPlayersAreDrawnAsACharacter(check: CheckReporter): void {
     playerFigureFillsItsBodyBox(player),
   );
   check(
-    'a library with no dwarf still resolves some character for the player',
+    'creature assets with no dwarf still resolve some character for the player',
     playerCharacterDef(
-      new CreatureLibrary(
+      new CreatureAssets(
         creatures.all().filter((creature) => creature.billboardArt !== MOONLIT_DWARF_ART),
       ),
     )?.kind === CHARACTER,
@@ -166,7 +166,7 @@ function playerFigureFillsItsBodyBox(player: CreatureDef): boolean {
 }
 
 function checkGeneratedFramesStayOutOfStorage(check: CheckReporter): void {
-  const creatures = new CreatureLibrary();
+  const creatures = new CreatureAssets();
   const stored = creaturesAsStoredJson(creatures.all());
   check(
     'built-in art is stored as a name, never as its pixels',
@@ -177,7 +177,7 @@ function checkGeneratedFramesStayOutOfStorage(check: CheckReporter): void {
     JSON.stringify(stored).length < 40_000,
   );
   const reloaded = creaturesFromStoredJson(JSON.parse(JSON.stringify(stored)))!;
-  const player = playerCharacterDef(new CreatureLibrary(reloaded))!;
+  const player = playerCharacterDef(new CreatureAssets(reloaded))!;
   check(
     'reloading rebuilds the named art in full',
     player.billboard !== null &&

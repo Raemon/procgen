@@ -1,12 +1,12 @@
 import '../../procgen/nodes';
-import { CreatureLibrary } from '../../library/creatures/creatureLibrary';
-import { creaturesFromStoredJson } from '../../library/creatures/creatureStorage';
-import { ItemLibrary } from '../../library/items/itemLibrary';
-import { groundItemsOf, type GroundItems } from '../../library/items/pickups/groundItems';
-import { TakenItemSpawns } from '../../library/items/pickups/takenItemSpawns';
-import { itemsFromStoredJson } from '../../library/items/itemStorage';
-import { PrefabLibrary } from '../../library/prefabs/prefabLibrary';
-import { prefabsFromStoredJson } from '../../library/prefabs/prefabStorage';
+import { CreatureAssets } from '../../assets/creatures/creatureAssets';
+import { creaturesFromStoredJson } from '../../assets/creatures/creatureStorage';
+import { ItemAssets } from '../../assets/items/itemAssets';
+import { groundItemsOf, type GroundItems } from '../../assets/items/pickups/groundItems';
+import { TakenItemSpawns } from '../../assets/items/pickups/takenItemSpawns';
+import { itemsFromStoredJson } from '../../assets/items/itemStorage';
+import { PrefabAssets } from '../../assets/prefabs/prefabAssets';
+import { prefabsFromStoredJson } from '../../assets/prefabs/prefabStorage';
 import { PipelineEvaluator } from '../../procgen/eval/evaluator';
 import { PipelineStore } from '../../procgen/pipeline/pipelineStore';
 import { WorldPresetLibrary } from '../../procgen/presets/worldPresetLibrary';
@@ -19,8 +19,8 @@ import type { StepRules } from '../../world/sim/stepIsAllowed';
 import { PuzzleWorld } from '../../world/puzzles/puzzleWorld';
 import { PuzzleState } from '../../world/puzzles/state/puzzleState';
 import { isWalkableTile } from '../../world/tileWalkability';
-import { Tileset } from '../../library/tiles/tileset';
-import { tilesFromStoredJson } from '../../library/tiles/tilesetStorage';
+import { TileAssets } from '../../assets/tiles/tileAssets';
+import { tilesFromStoredJson } from '../../assets/tiles/tileStorage';
 import { sanitizeTemplates } from '../../procgen/templates/nodeTemplate';
 import { sanitizeWorldPresets } from '../../procgen/presets/worldPreset';
 
@@ -29,11 +29,11 @@ const SPAWN_SEARCH_RADIUS = 128;
 export interface ServerWorld {
   stamp: string;
   sampler: WorldSampler;
-  tileset: Tileset;
+  tileAssets: TileAssets;
   store: PipelineStore;
-  prefabs: PrefabLibrary;
-  creatures: CreatureLibrary;
-  items: ItemLibrary;
+  prefabs: PrefabAssets;
+  creatures: CreatureAssets;
+  items: ItemAssets;
   templates: TemplateLibrary;
   worldPresets: WorldPresetLibrary;
   randomizeHistory: RandomizeHistory;
@@ -61,7 +61,7 @@ export interface DocSink {
 
 export function persistWorld(docs: DocSink, world: ServerWorld): void {
   docs.write('pipeline', world.store.snapshot());
-  docs.write('tileset', world.tileset.all());
+  docs.write('tiles', world.tileAssets.all());
   docs.write('prefabs', world.prefabs.all());
   docs.write('creatures', world.creatures.all());
   docs.write('items', world.items.all());
@@ -88,22 +88,22 @@ function buildServerWorld(
   takenItems: TakenItemSpawns,
   puzzleState: PuzzleState,
 ): ServerWorld {
-  const tileset = new Tileset(tilesFromStoredJson(docs.read('tileset')) ?? undefined);
-  const tileIdByName = (name: string) => tileset.all().find((tile) => tile.name === name)?.id ?? -1;
-  const prefabs = new PrefabLibrary(
+  const tileAssets = new TileAssets(tilesFromStoredJson(docs.read('tiles')) ?? undefined);
+  const tileIdByName = (name: string) => tileAssets.all().find((tile) => tile.name === name)?.id ?? -1;
+  const prefabs = new PrefabAssets(
     tileIdByName,
     prefabsFromStoredJson(docs.read('prefabs')) ?? undefined,
   );
-  const creatures = new CreatureLibrary(
+  const creatures = new CreatureAssets(
     creaturesFromStoredJson(docs.read('creatures')) ?? undefined,
   );
-  const items = new ItemLibrary(itemsFromStoredJson(docs.read('items')) ?? undefined);
+  const items = new ItemAssets(itemsFromStoredJson(docs.read('items')) ?? undefined);
   const templates = new TemplateLibrary(sanitizeTemplates(docs.read('templates')));
   const worldPresets = new WorldPresetLibrary(sanitizeWorldPresets(docs.read('worldPresets')));
   const store = new PipelineStore(sanitizePipeline(docs.read('pipeline')));
   const evaluator = new PipelineEvaluator(store);
-  const sampler = new WorldSampler(store, evaluator, tileset, prefabs, items, takenItems);
-  const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileset, sampler.tileAt(x, y));
+  const sampler = new WorldSampler(store, evaluator, tileAssets, prefabs, items, takenItems);
+  const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileAssets, sampler.tileAt(x, y));
   const puzzles = new PuzzleWorld(store, tileIsWalkable, puzzleState);
   const isWalkable = (x: number, y: number) => tileIsWalkable(x, y) && !puzzles.blocksAt(x, y);
   return {
@@ -111,7 +111,7 @@ function buildServerWorld(
     sampler,
     puzzles,
     groundItems: groundItemsOf(sampler, takenItems),
-    tileset,
+    tileAssets,
     store,
     prefabs,
     creatures,

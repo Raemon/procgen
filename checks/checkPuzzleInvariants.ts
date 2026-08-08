@@ -17,7 +17,7 @@ import { PipelineStore } from '../procgen/pipeline/pipelineStore';
 import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
 import { examplePipelines } from '../procgen/presets/examplePipelines';
 import { WorldSampler } from '../procgen/worldSampler';
-import { Tileset } from '../library/tiles/tileset';
+import { TileAssets } from '../assets/tiles/tileAssets';
 import { isWalkableTile } from '../world/tileWalkability';
 import { everyFixtureLook, fixtureLook } from '../world/puzzles/fixtures/fixtureAppearance';
 import { allPuzzleKinds } from '../world/puzzles/kinds/puzzleKind';
@@ -247,7 +247,7 @@ function checkDifficultyRisesThenHoldsAtAKnownRing(
 }
 
 function checkYouCanTellTheFixturesApartFromTheWorld(check: Check): void {
-  const tileGlyphs = new Set(new Tileset().all().map((tile) => tile.symbol));
+  const tileGlyphs = new Set(new TileAssets().all().map((tile) => tile.symbol));
   check(
     'no fixture is drawn with a glyph a tile already uses, so a door never reads as a wall',
     everyFixtureLook().every((look) => !tileGlyphs.has(look.glyph)),
@@ -275,9 +275,9 @@ interface PuzzleFixtureWorld {
 function puzzleWorldFromPreset(): PuzzleFixtureWorld {
   const preset = examplePipelines().find((example) => example.name === PUZZLE_PRESET_NAME)!;
   const store = new PipelineStore(sanitizePipeline(preset.state));
-  const tileset = new Tileset();
-  const sampler = new WorldSampler(store, new PipelineEvaluator(store), tileset);
-  const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileset, sampler.tileAt(x, y));
+  const tileAssets = new TileAssets();
+  const sampler = new WorldSampler(store, new PipelineEvaluator(store), tileAssets);
+  const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileAssets, sampler.tileAt(x, y));
   const knobs = puzzleKnobsFromPipeline(store)!;
   return {
     knobs,

@@ -1,6 +1,6 @@
 import { clampLightRadius, MAX_LIGHT_RADIUS } from '../world/light/lightEmission';
-import { isCubeFaceArt } from '../library/tiles/tileFaceArt';
-import type { EditableTileFields } from '../library/tiles/tileset';
+import { isCubeFaceArt } from '../assets/tiles/tileFaceArt';
+import type { EditableTileFields } from '../assets/tiles/tileAssets';
 import {
   abilityFailed,
   abilitySucceeded,
@@ -16,7 +16,7 @@ const TILE_ID_HELP = 'id of an existing tile — see GET /api/v1/tiles';
 function registerTileAbility(
   spec: Omit<AbilitySpec, 'mode' | 'group' | 'changesWorld'>,
 ): AbilitySpec {
-  return registerAbility({ ...spec, mode: 'god', group: 'library', changesWorld: true });
+  return registerAbility({ ...spec, mode: 'god', group: 'assets', changesWorld: true });
 }
 
 registerTileAbility({
@@ -27,7 +27,7 @@ registerTileAbility({
   params: {},
   example: { action: 'add_tile' },
   apply: (context) => {
-    const tile = context.tileset.add();
+    const tile = context.tileAssets.add();
     return abilitySucceeded(`added tile ${tile.id} ('${tile.symbol}')`);
   },
 });
@@ -72,7 +72,7 @@ registerTileAbility({
   example: { action: 'remove_tile', tile_id: 7 },
   apply: (context, params) =>
     withTile(context, params, (tileId) => {
-      context.tileset.remove(tileId);
+      context.tileAssets.remove(tileId);
       return abilitySucceeded(`removed tile ${tileId}`);
     }),
 });
@@ -84,10 +84,10 @@ function withTile(
 ): AbilityResult {
   const read = readInt(params, 'tile_id');
   if (!read.ok) return read.failure;
-  if (!context.tileset.byId(read.value)) {
+  if (!context.tileAssets.byId(read.value)) {
     return abilityFailed(
       'unknown_tile',
-      `tile_id must be one of: ${listOf(context.tileset.all().map((tile) => tile.id))}`,
+      `tile_id must be one of: ${listOf(context.tileAssets.all().map((tile) => tile.id))}`,
     );
   }
   return use(read.value);
@@ -97,7 +97,7 @@ function updateTile(context: AbilityContext, params: Record<string, unknown>): A
   return withTile(context, params, (tileId) => {
     const patch = tilePatchFrom(params);
     if (!patch.ok) return patch.failure;
-    context.tileset.update(tileId, patch.value);
+    context.tileAssets.update(tileId, patch.value);
     return abilitySucceeded(`tile ${tileId} updated: ${listOf(Object.keys(patch.value))}`);
   });
 }
