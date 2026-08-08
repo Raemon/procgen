@@ -43,6 +43,23 @@ registerNodeType({
       max: 20000,
       default: 3000,
     },
+    convergence: {
+      kind: 'number',
+      label: 'convergence',
+      help: 'How sharply water prefers the steepest way down. Low values let a cell feed several neighbours at once, which braids channels and spreads fans; high values drive nearly everything down one path, which keeps trunks crisp.',
+      min: 1,
+      max: 8,
+      step: 0.5,
+      default: 4,
+    },
+    channelizeAbove: {
+      kind: 'int',
+      label: 'channel forms above',
+      help: 'The drainage area, in tiles, at which water stops spreading over the hillside and commits to a single channel. Below it the flow fans out the way runoff really does; above it the watercourse stays one coherent thread.',
+      min: 1,
+      max: 2000,
+      default: 20,
+    },
     fillPits: {
       kind: 'toggle',
       label: 'fill pits first',
@@ -83,6 +100,10 @@ function sharedRegionFlow(ctx: ChunkGenCtx): RegionFlow | null {
   );
 }
 
+function channelStartInCells(ctx: ChunkGenCtx): number {
+  return Math.max(1, (ctx.params.channelizeAbove as number) / (ctx.stride * ctx.stride));
+}
+
 function catchmentInCells(ctx: ChunkGenCtx): number {
   return Math.max(1, (ctx.params.catchmentScale as number) / (ctx.stride * ctx.stride));
 }
@@ -108,7 +129,14 @@ function computeRegionFlow(
   );
   if (!window) return null;
   const seaLevel = ctx.params.seaLevel as number;
-  return { window, flow: accumulatedFlow(routingSurface(ctx, window, seaLevel), window, seaLevel) };
+  return {
+    window,
+    flow: accumulatedFlow(routingSurface(ctx, window, seaLevel), window, {
+      seaLevel,
+      convergence: ctx.params.convergence as number,
+      channelizeAbove: channelStartInCells(ctx),
+    }),
+  };
 }
 
 function routingSurface(ctx: ChunkGenCtx, window: FieldWindow, seaLevel: number): Float32Array {

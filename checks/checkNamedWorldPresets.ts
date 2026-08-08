@@ -1,4 +1,5 @@
 import '../procgen/nodes';
+import { defaultTileId } from '../assets/tiles/defaultTiles';
 import type { PipelineState } from '../procgen/pipeline/pipelineState';
 import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
 import { examplePipelines } from '../procgen/presets/examplePipelines';
@@ -44,6 +45,29 @@ export function checkNamedWorldPresets(check: CheckReporter): void {
     'the earthlike preset shows sea, beach, grass and rock around the origin',
     [0, 1, 2, 4].every((tile) => tileIdsInRegion(earthlike.sampler, 96).has(tile)),
   );
+  const waters = worldFromState(presetStateNamed('mountains, lakes & rapids'));
+  const watersAgain = worldFromState(presetStateNamed('mountains, lakes & rapids'));
+  check(
+    'the mountains, lakes & rapids preset survives sanitize with all nodes',
+    presetStateNamed('mountains, lakes & rapids').nodes.length === 19,
+  );
+  check(
+    'the mountains, lakes & rapids preset regenerates identically from the same seed',
+    fieldBytes(waters.evaluator, 'lakeSurface', 1, 1) === fieldBytes(watersAgain.evaluator, 'lakeSurface', 1, 1) &&
+      tileBytes(waters.evaluator, 'lakes', 1, 1) === tileBytes(watersAgain.evaluator, 'lakes', 1, 1),
+  );
+  const waterTiles = tileIdsInRegion(waters.sampler, 96);
+  check(
+    'the mountains, lakes & rapids preset shows every water the name promises around the origin',
+    ['sea water', 'river water', 'lake water', 'whitewater'].every((name) => waterTiles.has(defaultTileId(name as never))),
+  );
+  check(
+    'the mountains, lakes & rapids preset shows the ground those waters run over',
+    ['shore sand', 'meadow grass', 'granite outcrop', 'snowfield'].every((name) =>
+      waterTiles.has(defaultTileId(name as never)),
+    ),
+  );
+
   const metropolis = worldFromState(presetStateNamed('fallen metropolis'));
   const metropolisAgain = worldFromState(presetStateNamed('fallen metropolis'));
   check(

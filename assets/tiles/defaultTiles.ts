@@ -31,8 +31,8 @@ const TILE_CATALOG = [
   { name: 'oak tree', symbol: '♠', color: '#41663c', walkable: false, role: 'tree', height: OAK_HEIGHT },
   { name: 'granite outcrop', symbol: '#', color: '#8b8c87', walkable: false, role: 'rock', texture: 'fieldstone' },
 
-  { name: 'shallow water', symbol: '≈', color: '#547f8d', walkable: false, role: null, height: POOL_HEIGHT, texture: 'stillWater' },
-  { name: 'river water', symbol: '≋', color: '#436f80', walkable: false, role: null, height: POOL_HEIGHT, texture: 'stillWater' },
+  { name: 'shallow water', symbol: '≈', color: '#547f8d', walkable: false, role: 'water', height: POOL_HEIGHT, texture: 'stillWater' },
+  { name: 'river water', symbol: '≋', color: '#436f80', walkable: false, role: 'water', height: POOL_HEIGHT, texture: 'stillWater' },
   { name: 'pasture grass', symbol: "'", color: '#7d9660', walkable: true, role: null, texture: 'grassTurf' },
   { name: 'meadow flowers', symbol: '❀', color: '#8aa165', walkable: true, role: null, texture: 'meadowTurf' },
   { name: 'packed dirt', symbol: ',', color: '#8a7053', walkable: true, role: null, texture: 'troddenEarth' },
@@ -78,6 +78,10 @@ const TILE_CATALOG = [
   { name: 'garden loam', symbol: '⁖', color: '#6a5439', walkable: true, role: null, texture: 'forestLoam' },
   { name: 'firewood stack', symbol: '≣', color: '#7a6142', walkable: false, role: null, height: 1, texture: 'oakBeam' },
   { name: 'market awning', symbol: '▬', color: '#a26c46', walkable: false, role: null, shape: 'panel', texture: 'oakPlank' },
+
+  { name: 'lake water', symbol: '≀', color: '#3d6a82', walkable: false, role: 'water', height: POOL_HEIGHT, texture: 'stillWater' },
+  { name: 'whitewater', symbol: '⁓', color: '#a8c6cf', walkable: false, role: 'water', height: POOL_HEIGHT, texture: 'stillWater' },
+  { name: 'snowfield', symbol: '❄', color: '#e6edf2', walkable: true, role: null, texture: 'scree' },
 ] as const satisfies readonly TileEntry[];
 
 export type DefaultTileName = (typeof TILE_CATALOG)[number]['name'];
