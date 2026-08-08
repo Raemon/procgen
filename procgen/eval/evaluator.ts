@@ -1,4 +1,5 @@
 import { chunkKey } from '../chunk';
+import { clampedStride, FINE_STRIDE } from '../cellStride';
 import { nodeTypeOf } from '../nodeRegistry';
 import { outputKindOf, type NodeTypeDef } from '../nodeType';
 import { computeNodeSignatures } from '../pipeline/nodeSignatures';
@@ -23,12 +24,17 @@ export class PipelineEvaluator {
     store.onChange(() => this.refreshSignatures());
   }
 
-  valueFor(nodeId: string, chunkX: number, chunkY: number): ChunkValue {
+  valueFor(
+    nodeId: string,
+    chunkX: number,
+    chunkY: number,
+    stride: number = FINE_STRIDE,
+  ): ChunkValue {
     const node = this.store.nodeById(nodeId);
     const def = node && nodeTypeOf(node.type);
     if (!node || !def) return emptyValueOfKind('field');
     if (!node.enabled) return emptyValueOfKind(outputKindOf(def, node.params));
-    return this.cachedOrGenerated(node, def, chunkX, chunkY);
+    return this.cachedOrGenerated(node, def, chunkX, chunkY, clampedStride(stride));
   }
 
   errorFor(nodeId: string): string | null {
@@ -45,11 +51,12 @@ export class PipelineEvaluator {
     def: NodeTypeDef,
     chunkX: number,
     chunkY: number,
+    stride: number,
   ): ChunkValue {
-    const key = `${this.signatures.get(node.id)}|${chunkKey(chunkX, chunkY)}`;
+    const key = `${this.signatures.get(node.id)}|${stride}|${chunkKey(chunkX, chunkY)}`;
     const cached = this.cache.get(key);
     if (cached !== undefined) return cached;
-    const value = this.generate(node, def, chunkX, chunkY);
+    const value = this.generate(node, def, chunkX, chunkY, stride);
     this.cache.set(key, value);
     return value;
   }
@@ -59,6 +66,7 @@ export class PipelineEvaluator {
     def: NodeTypeDef,
     chunkX: number,
     chunkY: number,
+    stride: number,
   ): ChunkValue {
     const ctx = createChunkGenCtx({
       seed: this.store.seed(),
@@ -66,10 +74,11 @@ export class PipelineEvaluator {
       params: node.params,
       chunkX,
       chunkY,
-      resolveInput: (name, atChunkX, atChunkY) =>
-        this.resolveInput(node, name, atChunkX, atChunkY),
+      stride,
+      resolveInput: (name, atChunkX, atChunkY, atStride) =>
+        this.resolveInput(node, name, atChunkX, atChunkY, atStride),
       memo: (key, compute) =>
-        this.regionMemos.at(`${this.signatures.get(node.id)}|${key}`, compute),
+        this.regionMemos.at(`${this.signatures.get(node.id)}|${stride}|${key}`, compute),
     });
     try {
       const value = def.generateChunk(ctx);
@@ -86,9 +95,10 @@ export class PipelineEvaluator {
     inputName: string,
     chunkX: number,
     chunkY: number,
+    stride: number,
   ): ChunkValue | null {
     const sourceId = node.inputs[inputName];
-    return sourceId ? this.valueFor(sourceId, chunkX, chunkY) : null;
+    return sourceId ? this.valueFor(sourceId, chunkX, chunkY, stride) : null;
   }
 
   private matchingDeclaredKind(

@@ -1,6 +1,7 @@
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { chunkOrigin, CHUNK_SIZE } from '../../chunk';
+import { cellsSpanningTiles } from '../../cellStride';
 import { fieldValue, type ChunkValue } from '../../values/chunkValues';
 import {
   clampedWindowRadius,
@@ -42,6 +43,23 @@ registerNodeType({
       max: 20000,
       default: 3000,
     },
+    convergence: {
+      kind: 'number',
+      label: 'convergence',
+      help: 'How sharply water prefers the steepest way down. Low values let a cell feed several neighbours at once, which braids channels and spreads fans; high values drive nearly everything down one path, which keeps trunks crisp.',
+      min: 1,
+      max: 8,
+      step: 0.5,
+      default: 4,
+    },
+    channelizeAbove: {
+      kind: 'int',
+      label: 'channel forms above',
+      help: 'The drainage area, in tiles, at which water stops spreading over the hillside and commits to a single channel. Below it the flow fans out the way runoff really does; above it the watercourse stays one coherent thread.',
+      min: 1,
+      max: 2000,
+      default: 20,
+    },
     fillPits: {
       kind: 'toggle',
       label: 'fill pits first',
@@ -82,6 +100,14 @@ function sharedRegionFlow(ctx: ChunkGenCtx): RegionFlow | null {
   );
 }
 
+function channelStartInCells(ctx: ChunkGenCtx): number {
+  return Math.max(1, (ctx.params.channelizeAbove as number) / (ctx.stride * ctx.stride));
+}
+
+function catchmentInCells(ctx: ChunkGenCtx): number {
+  return Math.max(1, (ctx.params.catchmentScale as number) / (ctx.stride * ctx.stride));
+}
+
 function alignedRegionStart(chunkCoord: number): number {
   return Math.floor(chunkCoord / SHARED_WINDOW_CHUNKS) * SHARED_WINDOW_CHUNKS;
 }
@@ -91,7 +117,7 @@ function computeRegionFlow(
   regionChunkX: number,
   regionChunkY: number,
 ): RegionFlow | null {
-  const radius = clampedWindowRadius(ctx.params.windowRadius as number);
+  const radius = clampedWindowRadius(cellsSpanningTiles(ctx.params.windowRadius as number, ctx.stride));
   const regionSpan = SHARED_WINDOW_CHUNKS * CHUNK_SIZE;
   const window = gatherFieldWindowRect(
     ctx,
@@ -103,7 +129,14 @@ function computeRegionFlow(
   );
   if (!window) return null;
   const seaLevel = ctx.params.seaLevel as number;
-  return { window, flow: accumulatedFlow(routingSurface(ctx, window, seaLevel), window, seaLevel) };
+  return {
+    window,
+    flow: accumulatedFlow(routingSurface(ctx, window, seaLevel), window, {
+      seaLevel,
+      convergence: ctx.params.convergence as number,
+      channelizeAbove: channelStartInCells(ctx),
+    }),
+  };
 }
 
 function routingSurface(ctx: ChunkGenCtx, window: FieldWindow, seaLevel: number): Float32Array {
@@ -117,7 +150,7 @@ function writeNormalizedFlow(
   flow: Float32Array,
   out: Float32Array,
 ): void {
-  const fullFlow = Math.log(1 + (ctx.params.catchmentScale as number));
+  const fullFlow = Math.log(1 + catchmentInCells(ctx));
   for (let y = 0; y < ctx.size; y++) {
     for (let x = 0; x < ctx.size; x++) {
       const carried = flow[windowIndexAt(window, ctx.originX + x, ctx.originY + y)]!;

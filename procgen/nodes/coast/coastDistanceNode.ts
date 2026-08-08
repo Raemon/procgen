@@ -1,4 +1,5 @@
 import { chunkOrigin, CHUNK_SIZE } from '../../chunk';
+import { cellsSpanningTiles } from '../../cellStride';
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { fieldValue, type ChunkValue } from '../../values/chunkValues';
@@ -48,7 +49,7 @@ registerNodeType({
 
 function coastDistanceChunk(ctx: ChunkGenCtx): ChunkValue {
   const out = ctx.newField();
-  const range = ctx.params.range as number;
+  const range = rangeInCells(ctx);
   const shared = sharedRegionDistances(ctx);
   if (!shared) return fieldValue(out);
   writeSignedDistance(
@@ -77,6 +78,10 @@ function sharedRegionDistances(ctx: ChunkGenCtx): RegionDistances | null {
   );
 }
 
+function rangeInCells(ctx: ChunkGenCtx): number {
+  return clampedWindowRadius(cellsSpanningTiles(ctx.params.range as number, ctx.stride));
+}
+
 function alignedRegionStart(chunkCoord: number): number {
   return Math.floor(chunkCoord / SHARED_WINDOW_CHUNKS) * SHARED_WINDOW_CHUNKS;
 }
@@ -86,7 +91,7 @@ function computeRegionDistances(
   regionChunkX: number,
   regionChunkY: number,
 ): RegionDistances | null {
-  const range = clampedWindowRadius(ctx.params.range as number);
+  const range = rangeInCells(ctx);
   const regionSpan = SHARED_WINDOW_CHUNKS * CHUNK_SIZE;
   const window = gatherFieldWindowRect(
     ctx,

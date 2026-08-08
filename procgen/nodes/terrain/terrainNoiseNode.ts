@@ -5,6 +5,7 @@ import {
   terrainOctaves,
   type OctaveSpec,
 } from '../../noise/terrainOctaves';
+import { worldCoordOfCell } from '../../cellStride';
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { fieldValue, type ChunkValue } from '../../values/chunkValues';
@@ -90,8 +91,10 @@ function terrainNoiseChunk(ctx: ChunkGenCtx): ChunkValue {
   const scale = ctx.params.scale as number;
   const spec = octaveSpecOf(ctx);
   for (let y = 0; y < ctx.size; y++) {
+    const worldY = worldCoordOfCell(ctx.originY + y, ctx.stride);
     for (let x = 0; x < ctx.size; x++) {
-      field[y * ctx.size + x] = terrainOctaves((ctx.originX + x) * scale, (ctx.originY + y) * scale, seed, spec);
+      const worldX = worldCoordOfCell(ctx.originX + x, ctx.stride);
+      field[y * ctx.size + x] = terrainOctaves(worldX * scale, worldY * scale, seed, spec);
     }
   }
   return fieldValue(field);

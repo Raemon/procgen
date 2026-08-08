@@ -15,6 +15,8 @@ import './hydrology/fillDepressionsNode';
 import './hydrology/flowAccumulationNode';
 import './hydrology/carveValleysNode';
 import './hydrology/riverFromFlowNode';
+import './hydrology/lakeFromFillNode';
+import './hydrology/rapidsFromFlowNode';
 import './maze/mazeChunkNode';
 import './puzzle/puzzleRoomsNode';
 import './landmark/landmarkRoomNode';

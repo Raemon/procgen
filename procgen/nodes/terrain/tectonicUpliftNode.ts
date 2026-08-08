@@ -1,3 +1,4 @@
+import { worldCoordOfCell } from '../../cellStride';
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { fieldValue, type ChunkValue } from '../../values/chunkValues';
@@ -82,15 +83,16 @@ registerNodeType({
 function tectonicUpliftChunk(ctx: ChunkGenCtx): ChunkValue {
   const field = ctx.newField();
   const plates = platesOverlapping(
-    ctx.originX,
-    ctx.originY,
-    ctx.originX + ctx.size - 1,
-    ctx.originY + ctx.size - 1,
+    worldCoordOfCell(ctx.originX, ctx.stride),
+    worldCoordOfCell(ctx.originY, ctx.stride),
+    worldCoordOfCell(ctx.originX + ctx.size - 1, ctx.stride),
+    worldCoordOfCell(ctx.originY + ctx.size - 1, ctx.stride),
     latticeSpecOf(ctx),
   );
   for (let y = 0; y < ctx.size; y++) {
+    const worldY = worldCoordOfCell(ctx.originY + y, ctx.stride);
     for (let x = 0; x < ctx.size; x++) {
-      const contact = plateContactAt(plates, ctx.originX + x, ctx.originY + y);
+      const contact = plateContactAt(plates, worldCoordOfCell(ctx.originX + x, ctx.stride), worldY);
       field[y * ctx.size + x] = elevationOfContact(ctx, contact);
     }
   }
