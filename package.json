@@ -22,6 +22,7 @@
     "pipeline:write": "esbuild tools/writePipelineDataFile.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
     "tiles:preview": "esbuild tools/renderTilesetPreview.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
     "tiles:relief": "esbuild tools/renderReliefAndMotionPreview.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
+    "chunk:load": "esbuild tools/probeChunkDrawLoad.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
     "tiles:detail": "esbuild tools/probeTileDetail.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
     "items:draws": "esbuild tools/probeItemAndCreatureDraws.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
     "characters:preview": "esbuild tools/renderCharacterSheet.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",

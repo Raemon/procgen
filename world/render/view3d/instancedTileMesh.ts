@@ -5,6 +5,10 @@ import type { TilePlacement } from './tilePlacements';
 export type PlacementPosition = (placement: TilePlacement) => [number, number, number];
 export type PlacementVerticalScale = (placement: TilePlacement) => number;
 
+const placedAt = new THREE.Matrix4();
+const stretched = new THREE.Vector3();
+const tint = new THREE.Color();
+
 export function instancedTileMesh(
   geometry: THREE.BufferGeometry,
   material: THREE.Material | THREE.Material[],
@@ -12,10 +16,7 @@ export function instancedTileMesh(
   positionOf: PlacementPosition,
   verticalScaleOf?: PlacementVerticalScale,
 ): THREE.InstancedMesh | null {
-  if (placements.length === 0) {
-    geometry.dispose();
-    return null;
-  }
+  if (placements.length === 0) return null;
   const mesh = new THREE.InstancedMesh(geometry, material, placements.length);
   placements.forEach((placement, index) =>
     writeInstance(mesh, index, placement, positionOf, verticalScaleOf),
@@ -36,14 +37,12 @@ function writeInstance(
   const verticalScale = verticalScaleOf?.(placement) ?? 1;
   mesh.setMatrixAt(
     index,
-    new THREE.Matrix4().makeTranslation(x, y, z).scale(new THREE.Vector3(1, verticalScale, 1)),
+    placedAt.makeTranslation(x, y, z).scale(stretched.set(1, verticalScale, 1)),
   );
   mesh.setColorAt(index, instanceTint(placement));
 }
 
 function instanceTint(placement: TilePlacement): THREE.Color {
-  const tint = placement.faceArt
-    ? new THREE.Color('#ffffff')
-    : new THREE.Color(opaqueInk(placement.baseColor));
+  tint.set(placement.faceArt ? '#ffffff' : opaqueInk(placement.baseColor));
   return tint.multiplyScalar(placement.shade);
 }

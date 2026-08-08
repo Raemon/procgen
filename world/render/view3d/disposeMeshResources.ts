@@ -2,13 +2,17 @@ import * as THREE from 'three';
 import { hasSharedMaterials } from './chunkDetail';
 import { faceArtFramesOf, stopFaceArtAnimation } from './faceArtAnimations';
 import { isSharedFaceArtTexture } from './faceArtTextures';
+import { isSharedTileGeometry } from './sharedTileGeometries';
 
 export function disposeMeshChildren(group: THREE.Group): void {
   for (const child of [...group.children]) {
     group.remove(child);
     if (child instanceof THREE.Group) disposeMeshChildren(child);
     if (child instanceof THREE.Mesh)
-      disposeMeshResources(child, { keepMaterials: hasSharedMaterials(child) });
+      disposeMeshResources(child, {
+        keepMaterials: hasSharedMaterials(child),
+        keepGeometry: isSharedTileGeometry(child.geometry),
+      });
   }
 }
 
