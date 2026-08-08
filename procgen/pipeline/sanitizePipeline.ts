@@ -1,6 +1,7 @@
 import {
   DEFAULT_CEILING_HEIGHT,
   isBindingValidForKind,
+  NO_CULTURE,
   RANDOM_ROTATION,
   type DisplayBinding,
 } from '../display/displayBinding';
@@ -124,12 +125,15 @@ function normalizedBinding(binding: DisplayBinding): DisplayBinding {
       color: typeof binding.color === 'string' ? binding.color : '#ff5577',
     };
   }
-  if (binding.mode === 'prefabs') {
+  if (binding.mode === 'pieces') {
     return {
-      mode: 'prefabs',
-      prefabId: Math.round(finiteOr(binding.prefabId, -1)),
+      mode: 'pieces',
+      pieceId: Math.round(finiteOr(binding.pieceId, -1)),
       rotation: Math.round(finiteOr(binding.rotation, RANDOM_ROTATION)),
     };
+  }
+  if (binding.mode === 'structures') {
+    return { mode: 'structures', cultureId: Math.round(finiteOr(binding.cultureId, NO_CULTURE)) };
   }
   if (binding.mode === 'creatures') {
     return { mode: 'creatures', creatureId: Math.round(finiteOr(binding.creatureId, -1)) };

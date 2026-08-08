@@ -8,10 +8,14 @@ import { markerAppearance } from './display/markerAppearance';
 import type { PipelineEvaluator } from './eval/evaluator';
 import type { NodeInstance } from './pipeline/pipelineState';
 import type { PipelineStore } from './pipeline/pipelineStore';
-import { topPackedVoxelOf, type VoxelColumn } from './prefabOverlay/chunkVoxelColumns';
-import { tileIdOfVoxel } from './prefabOverlay/packedVoxel';
-import { PrefabOverlay, NO_PREFABS, type PrefabSource } from './prefabOverlay/prefabOverlay';
-import type { PrefabPlacement } from './prefabOverlay/prefabPlacement';
+import { topPackedVoxelOf, type VoxelColumn } from './structureOverlay/chunkVoxelColumns';
+import { tileIdOfVoxel } from './structureOverlay/packedVoxel';
+import { StructureOverlay, NO_PIECES, type PieceSource } from './structureOverlay/structureOverlay';
+import type { PiecePlacement } from './structureOverlay/piecePlacement';
+import type {
+  CultureStructurePlacement,
+  StructurePlacement,
+} from './structureOverlay/structurePlacement';
 import { buildSampledChunk } from './sampling/buildSampledChunk';
 import { SampledChunkCache, type SampledChunk } from './sampling/sampledChunkCache';
 import { asPoints } from './values/valueAccess';
@@ -49,14 +53,15 @@ type DisplayedMode =
   | 'ceiling'
   | 'elevation'
   | 'markers'
-  | 'prefabs'
+  | 'pieces'
+  | 'structures'
   | 'creatures'
   | 'items';
 
 const SAMPLED_CHUNKS_KEPT = 512;
 
 export class WorldSampler {
-  private readonly prefabOverlay: PrefabOverlay;
+  private readonly structureOverlay: StructureOverlay;
   private readonly sampledChunks = new SampledChunkCache(SAMPLED_CHUNKS_KEPT);
   private readonly displayedByMode = new Map<DisplayedMode, NodeInstance[]>();
 
@@ -64,18 +69,18 @@ export class WorldSampler {
     private readonly store: PipelineStore,
     private readonly evaluator: PipelineEvaluator,
     private readonly tileAssets: TileAssets,
-    prefabs: PrefabSource = NO_PREFABS,
+    pieces: PieceSource = NO_PIECES,
     private readonly items: ItemSource = NO_ITEMS,
     private readonly takenItems: TakenItemSpawns = new TakenItemSpawns(),
   ) {
-    this.prefabOverlay = new PrefabOverlay(prefabs, (chunkX, chunkY) =>
-      this.prefabPlacementsInChunk(chunkX, chunkY),
+    this.structureOverlay = new StructureOverlay(pieces, (chunkX, chunkY) =>
+      this.structurePlacementsInChunk(chunkX, chunkY),
     );
     store.onChange(() => this.dropSampledState());
   }
 
-  invalidatePrefabOverlay(): void {
-    this.prefabOverlay.invalidate();
+  invalidateStructureOverlay(): void {
+    this.structureOverlay.invalidate();
     this.sampledChunks.clear();
   }
 
@@ -161,7 +166,7 @@ export class WorldSampler {
             ceilings: this.displayedNodes('ceiling'),
             elevation: this.lastElevationNode(),
           },
-          this.prefabOverlay.columnsForChunk(chunkX, chunkY),
+          this.structureOverlay.columnsForChunk(chunkX, chunkY),
           chunkX,
           chunkY,
         ),
@@ -179,15 +184,42 @@ export class WorldSampler {
     this.displayedByMode.clear();
   }
 
-  private prefabPlacementsInChunk(chunkX: number, chunkY: number): PrefabPlacement[] {
-    const placements: PrefabPlacement[] = [];
-    for (const node of this.displayedNodes('prefabs')) {
-      if (node.display.mode !== 'prefabs' || node.display.prefabId < 0) continue;
-      const { prefabId, rotation } = node.display;
-      const points = asPoints(this.evaluator.valueFor(node.id, chunkX, chunkY)) ?? [];
-      for (const point of points) placements.push({ x: point.x, y: point.y, prefabId, rotation });
+  private structurePlacementsInChunk(chunkX: number, chunkY: number): StructurePlacement[] {
+    return [
+      ...this.piecePlacementsInChunk(chunkX, chunkY),
+      ...this.culturePlacementsInChunk(chunkX, chunkY),
+    ];
+  }
+
+  private piecePlacementsInChunk(chunkX: number, chunkY: number): PiecePlacement[] {
+    const placements: PiecePlacement[] = [];
+    for (const node of this.displayedNodes('pieces')) {
+      if (node.display.mode !== 'pieces' || node.display.pieceId < 0) continue;
+      const { pieceId, rotation } = node.display;
+      for (const point of this.pointsOfNode(node, chunkX, chunkY)) {
+        placements.push({ x: point.x, y: point.y, pieceId, rotation });
+      }
     }
     return placements;
+  }
+
+  private culturePlacementsInChunk(
+    chunkX: number,
+    chunkY: number,
+  ): CultureStructurePlacement[] {
+    const placements: CultureStructurePlacement[] = [];
+    for (const node of this.displayedNodes('structures')) {
+      if (node.display.mode !== 'structures' || node.display.cultureId < 0) continue;
+      const { cultureId } = node.display;
+      for (const point of this.pointsOfNode(node, chunkX, chunkY)) {
+        placements.push({ x: point.x, y: point.y, cultureId });
+      }
+    }
+    return placements;
+  }
+
+  private pointsOfNode(node: NodeInstance, chunkX: number, chunkY: number) {
+    return asPoints(this.evaluator.valueFor(node.id, chunkX, chunkY)) ?? [];
   }
 
   private displayedNodes(mode: DisplayedMode): NodeInstance[] {

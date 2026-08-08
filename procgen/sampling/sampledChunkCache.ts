@@ -1,4 +1,4 @@
-import type { ChunkVoxelColumns } from '../prefabOverlay/chunkVoxelColumns';
+import type { ChunkVoxelColumns } from '../structureOverlay/chunkVoxelColumns';
 import type { CeilingChunk } from './mergedCeiling';
 
 export interface SampledChunk {

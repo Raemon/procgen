@@ -2,11 +2,12 @@ import { useAppRuntime } from '../../frontend/appRuntimeContext';
 import {
   useRerenderOnCreatureChange,
   useRerenderOnItemChange,
-  useRerenderOnPrefabChange,
+  useRerenderOnPieceChange,
 } from '../../frontend/rerenderHooks';
 import {
   displayModesForKind,
   MAX_CEILING_HEIGHT,
+  NO_CULTURE,
   RANDOM_ROTATION,
   type DisplayBinding,
 } from '../display/displayBinding';
@@ -24,10 +25,12 @@ import {
   ceilingHeightTooltip,
   displayModeTooltip,
   markerTileTooltip,
-  prefabRotationTooltip,
+  pieceRotationTooltip,
   MODE_LABELS,
 } from './help/displayModeHelp';
 import { tileSelectOptions } from './tileSelectOptions';
+
+const MAX_CULTURE_ID = 15;
 
 const ROTATION_OPTIONS = [
   { value: String(RANDOM_ROTATION), text: 'random' },
@@ -58,39 +61,62 @@ export function DisplaySection({ node, kind }: { node: NodeInstance; kind: Value
         <HeightScaleRow node={node} heightScale={node.display.heightScale} />
       )}
       {node.display.mode === 'markers' && <MarkerRows node={node} binding={node.display} />}
-      {node.display.mode === 'prefabs' && <PrefabRows node={node} binding={node.display} />}
+      {node.display.mode === 'pieces' && <PieceRows node={node} binding={node.display} />}
+      {node.display.mode === 'structures' && <StructureRows node={node} binding={node.display} />}
       {node.display.mode === 'creatures' && <CreatureRows node={node} binding={node.display} />}
       {node.display.mode === 'items' && <ItemRows node={node} binding={node.display} />}
     </div>
   );
 }
 
-function PrefabRows({
+function PieceRows({
   node,
   binding,
 }: {
   node: NodeInstance;
-  binding: Extract<DisplayBinding, { mode: 'prefabs' }>;
+  binding: Extract<DisplayBinding, { mode: 'pieces' }>;
 }) {
-  const { perform, prefabs } = useAppRuntime();
-  useRerenderOnPrefabChange();
+  const { perform, pieces } = useAppRuntime();
+  useRerenderOnPieceChange();
   return (
     <>
-      <KnobRow label="prefab">
+      <KnobRow label="piece">
         <Select
-          value={String(binding.prefabId)}
-          options={assetOptions('(none)', prefabs.all())}
-          onChange={(value) => perform('set_display', { node_id: node.id, display: 'prefabs', prefab_id: Number(value) })}
+          value={String(binding.pieceId)}
+          options={assetOptions('(none)', pieces.all())}
+          onChange={(value) => perform('set_display', { node_id: node.id, display: 'pieces', piece_id: Number(value) })}
         />
       </KnobRow>
-      <KnobRow label="rotation" tip={prefabRotationTooltip()}>
+      <KnobRow label="rotation" tip={pieceRotationTooltip()}>
         <Select
           value={String(binding.rotation)}
           options={ROTATION_OPTIONS}
-          onChange={(value) => perform('set_display', { node_id: node.id, display: 'prefabs', rotation: Number(value) })}
+          onChange={(value) => perform('set_display', { node_id: node.id, display: 'pieces', rotation: Number(value) })}
         />
       </KnobRow>
     </>
+  );
+}
+
+function StructureRows({
+  node,
+  binding,
+}: {
+  node: NodeInstance;
+  binding: Extract<DisplayBinding, { mode: 'structures' }>;
+}) {
+  const { perform } = useAppRuntime();
+  return (
+    <KnobRow label="culture">
+      <Slider
+        min={NO_CULTURE}
+        max={MAX_CULTURE_ID}
+        step={1}
+        value={binding.cultureId}
+        onChange={(value) => perform('set_display', { node_id: node.id, display: 'structures', culture_id: value })}
+      />
+      <ValueReadout value={binding.cultureId} />
+    </KnobRow>
   );
 }
 

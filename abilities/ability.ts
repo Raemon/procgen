@@ -1,9 +1,9 @@
 import type { CreatureAssets } from '../assets/creatures/creatureAssets';
 import type { ItemAssets } from '../assets/items/itemAssets';
 import type { GroundItems } from '../assets/items/pickups/groundItems';
-import type { PrefabAssets } from '../assets/prefabs/prefabAssets';
+import type { PieceAssets } from '../assets/pieces/pieceAssets';
 import type { PuzzleWorld } from '../world/puzzles/puzzleWorld';
-import type { RegionSampler } from '../assets/prefabs/captureRegionAsPrefab';
+import type { RegionSampler } from '../assets/pieces/captureRegionAsPiece';
 import type { PipelineStore } from '../procgen/pipeline/pipelineStore';
 import type { WorldPresetLibrary } from '../procgen/presets/worldPresetLibrary';
 import type { RandomizeHistory } from '../procgen/randomize/randomizeHistory';
@@ -25,7 +25,7 @@ export interface AbilityActor {
 export interface AbilityContext {
   store: PipelineStore;
   tileAssets: TileAssets;
-  prefabs: PrefabAssets;
+  pieces: PieceAssets;
   creatures: CreatureAssets;
   items: ItemAssets;
   templates: TemplateLibrary;

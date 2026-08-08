@@ -20,7 +20,7 @@ import { WorldPresetLibrary } from '../procgen/presets/worldPresetLibrary';
 import { RandomizeHistory } from '../procgen/randomize/randomizeHistory';
 import { TemplateLibrary } from '../procgen/templates/templateLibrary';
 import { WorldSampler } from '../procgen/worldSampler';
-import { PrefabAssets } from '../assets/prefabs/prefabAssets';
+import { PieceAssets } from '../assets/pieces/pieceAssets';
 import { debounce } from './debounce';
 import { CaptureTool } from '../world/capture/captureTool';
 import { HoveredTile } from '../world/hover/hoveredTile';
@@ -34,7 +34,7 @@ import type {
   ReadOnlyCreatureAssets,
   ReadOnlyItemAssets,
   ReadOnlyPipelineStore,
-  ReadOnlyPrefabAssets,
+  ReadOnlyPieceAssets,
   ReadOnlyTemplateLibrary,
   ReadOnlyTileAssets,
   ReadOnlyWorld,
@@ -46,7 +46,7 @@ const VALUE_TWEAK_DEBOUNCE_MS = 150;
 
 export interface AppRuntime {
   tileAssets: ReadOnlyTileAssets;
-  prefabs: ReadOnlyPrefabAssets;
+  pieces: ReadOnlyPieceAssets;
   creatures: ReadOnlyCreatureAssets;
   items: ReadOnlyItemAssets;
   store: ReadOnlyPipelineStore;
@@ -77,14 +77,14 @@ export function createAppRuntime(): AppRuntime {
   const tileAssets = new TileAssets();
   const templates = new TemplateLibrary();
   const worldPresets = new WorldPresetLibrary();
-  const prefabs = new PrefabAssets();
+  const pieces = new PieceAssets();
   const creatures = new CreatureAssets();
   const items = new ItemAssets();
   const store = new PipelineStore(loadStoredPipeline());
   attachPipelinePersistence(store);
   const evaluator = new PipelineEvaluator(store);
   const takenItems = new TakenItemSpawns();
-  const sampler = new WorldSampler(store, evaluator, tileAssets, prefabs, items, takenItems);
+  const sampler = new WorldSampler(store, evaluator, tileAssets, pieces, items, takenItems);
   const groundItems = groundItemsOf(sampler, takenItems);
   const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileAssets, sampler.tileAt(x, y));
   const puzzles = new PuzzleWorld(store, tileIsWalkable);
@@ -139,7 +139,7 @@ export function createAppRuntime(): AppRuntime {
       {
         store,
         tileAssets,
-        prefabs,
+        pieces,
         creatures,
         items,
         templates,
@@ -179,7 +179,7 @@ export function createAppRuntime(): AppRuntime {
   }
 
   function applyWorldChange(): void {
-    sampler.invalidatePrefabOverlay();
+    sampler.invalidateStructureOverlay();
     sim.forget();
     world.ensurePlayerOnWalkableGround();
     renderers.redrawAll();
@@ -191,7 +191,7 @@ export function createAppRuntime(): AppRuntime {
     change === 'structure' ? applyWorldChange() : applyAfterTweaks.schedule(),
   );
   tileAssets.onChange(applyWorldChange);
-  prefabs.onChange(applyWorldChange);
+  pieces.onChange(applyWorldChange);
   creatures.onChange(applyWorldChange);
   items.onChange(applyWorldChange);
   world.on('player-moved', () => walkOverPickup.onSteppedOnto(world.playerX, world.playerY));
@@ -203,7 +203,7 @@ export function createAppRuntime(): AppRuntime {
     tileAssets,
     templates,
     worldPresets,
-    prefabs,
+    pieces,
     creatures,
     items,
     store,

@@ -12,7 +12,7 @@ void preloadPersistedFiles([
   'tiles',
   'templates',
   'worldPresets',
-  'prefabs',
+  'pieces',
   'creatures',
   'items',
 ]).then(

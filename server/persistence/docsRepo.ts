@@ -7,7 +7,7 @@ export const PERSISTED_DOC_NAMES = [
   'tiles',
   'templates',
   'worldPresets',
-  'prefabs',
+  'pieces',
   'creatures',
   'items',
 ];

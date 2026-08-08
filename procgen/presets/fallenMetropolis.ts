@@ -330,7 +330,7 @@ export function fallenMetropolis(): ExamplePipeline {
           enabled: true,
           params: { density: 0.0012, maskAtLeast: 0.8, maskAtMost: 1 },
           inputs: { mask: 'n23' },
-          display: { mode: 'prefabs', prefabId: 1, rotation: 0 },
+          display: { mode: 'pieces', pieceId: 1, rotation: 0 },
         },
         {
           id: 'n25',
@@ -353,7 +353,7 @@ export function fallenMetropolis(): ExamplePipeline {
           enabled: true,
           params: { density: 0.0008, maskAtLeast: 0.35, maskAtMost: 0.6 },
           inputs: { mask: 'n23' },
-          display: { mode: 'prefabs', prefabId: 2, rotation: -1 },
+          display: { mode: 'pieces', pieceId: 2, rotation: -1 },
         },
         {
           id: 'n27',

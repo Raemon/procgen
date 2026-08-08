@@ -18,7 +18,7 @@ const PANEL_AND_CHROME_ROOTS = ['agents', 'assets', 'frontend', 'procgen', 'worl
 const MUTABLE_COLLECTIONS = [
   'PipelineStore',
   'TileAssets',
-  'PrefabAssets',
+  'PieceAssets',
   'CreatureAssets',
   'ItemAssets',
   'TemplateLibrary',

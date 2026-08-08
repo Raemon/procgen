@@ -10,7 +10,7 @@ export const VIEW_MODE_TIPS: Readonly<Record<ViewMode, TooltipContent>> = {
   '3d-god': {
     title: '3-D God',
     body: 'Free camera over the voxel world. Drag to orbit, scroll to zoom — nothing to control but the view.',
-    when: 'Judging terrain shape, prefab placement and the overall silhouette of a roll.',
+    when: 'Judging terrain shape, piece placement and the overall silhouette of a roll.',
   },
   'agent-god': {
     title: 'Agent God',
@@ -31,7 +31,7 @@ export const VIEW_MODE_TIPS: Readonly<Record<ViewMode, TooltipContent>> = {
 
 export const CAPTURE_TIP: TooltipContent = {
   title: 'capture',
-  body: 'Drag a rectangle over the world to lift that section — tiles, stacked prefab voxels and terrain height — into a new prefab asset. Esc leaves capture mode.',
+  body: 'Drag a rectangle over the world to lift that section — tiles, stacked piece voxels and terrain height — into a new piece asset. Esc leaves capture mode.',
 };
 
 export const SIGHT_RANGE_TIP: TooltipContent = {

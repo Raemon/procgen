@@ -747,8 +747,8 @@
         "mask": "n34"
       },
       "display": {
-        "mode": "prefabs",
-        "prefabId": 0,
+        "mode": "pieces",
+        "pieceId": 0,
         "rotation": -1
       }
     },
@@ -828,8 +828,8 @@
         "mask": "n35"
       },
       "display": {
-        "mode": "prefabs",
-        "prefabId": 2,
+        "mode": "pieces",
+        "pieceId": 2,
         "rotation": -1
       }
     }

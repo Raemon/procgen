@@ -2,7 +2,7 @@ import { useAppRuntime } from '../../frontend/appRuntimeContext';
 import {
   useRerenderOnCreatureChange,
   useRerenderOnItemChange,
-  useRerenderOnPrefabChange,
+  useRerenderOnPieceChange,
   useRerenderOnTileAssetChange,
 } from '../../frontend/rerenderHooks';
 import { isCharacter } from '../creatures/creatureDef';
@@ -23,7 +23,7 @@ export function AssetsRail() {
     <RailStack>
       {tab === 'tiles' && <TileRailItems />}
       {tab === 'items' && <ItemRailItems />}
-      {tab === 'prefabs' && <PrefabRailItems />}
+      {tab === 'pieces' && <PieceRailItems />}
       {(tab === 'creatures' || tab === 'characters') && <CreatureRailItems characters={tab === 'characters'} />}
     </RailStack>
   );
@@ -64,20 +64,20 @@ function ItemRailItems() {
   );
 }
 
-function PrefabRailItems() {
-  const { prefabs } = useAppRuntime();
-  useRerenderOnPrefabChange();
+function PieceRailItems() {
+  const { pieces } = useAppRuntime();
+  useRerenderOnPieceChange();
   return (
     <>
-      {prefabs.all().map((prefab) => (
+      {pieces.all().map((piece) => (
         <RailItem
-          key={prefab.id}
+          key={piece.id}
           tip={{
-            title: prefab.name,
-            body: `prefab ${prefab.id} · ${prefab.width}×${prefab.depth}, ${prefab.layers} layers`,
+            title: piece.name,
+            body: `piece ${piece.id} · ${piece.width}×${piece.depth}, ${piece.layers} layers`,
           }}
         >
-          {railInitials(prefab.name)}
+          {railInitials(piece.name)}
         </RailItem>
       ))}
     </>

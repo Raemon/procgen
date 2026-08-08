@@ -484,7 +484,7 @@ export function emberMarches(): ExamplePipeline {
           enabled: true,
           params: { density: 0.0005, maskAtLeast: 0.5, maskAtMost: 0.56 },
           inputs: { mask: 'n35' },
-          display: { mode: 'prefabs', prefabId: 2, rotation: -1 },
+          display: { mode: 'pieces', pieceId: 2, rotation: -1 },
         },
         {
           id: 'n38',
@@ -508,7 +508,7 @@ export function emberMarches(): ExamplePipeline {
           enabled: true,
           params: { density: 0.0006, maskAtLeast: 0.68, maskAtMost: 1 },
           inputs: { mask: 'n38' },
-          display: { mode: 'prefabs', prefabId: 1, rotation: 0 },
+          display: { mode: 'pieces', pieceId: 1, rotation: 0 },
         },
         {
           id: 'n40',
@@ -530,7 +530,7 @@ export function emberMarches(): ExamplePipeline {
           enabled: true,
           params: { density: 0.0015, maskAtLeast: 0.55, maskAtMost: 0.64 },
           inputs: { mask: 'n38' },
-          display: { mode: 'prefabs', prefabId: 0, rotation: -1 },
+          display: { mode: 'pieces', pieceId: 0, rotation: -1 },
         },
         {
           id: 'n42',

@@ -1,6 +1,7 @@
 import type { ValueKind } from '../values/chunkValues';
 
 export const RANDOM_ROTATION = -1;
+export const NO_CULTURE = -1;
 
 export type DisplayBinding =
   | { mode: 'hidden' }
@@ -8,7 +9,8 @@ export type DisplayBinding =
   | { mode: 'ceiling'; height: number }
   | { mode: 'elevation'; heightScale: number }
   | { mode: 'markers'; tileId: number; glyph: string; color: string }
-  | { mode: 'prefabs'; prefabId: number; rotation: number }
+  | { mode: 'pieces'; pieceId: number; rotation: number }
+  | { mode: 'structures'; cultureId: number }
   | { mode: 'creatures'; creatureId: number }
   | { mode: 'items'; itemId: number };
 
@@ -17,7 +19,7 @@ export type DisplayMode = DisplayBinding['mode'];
 export function displayModesForKind(kind: ValueKind): DisplayMode[] {
   if (kind === 'field') return ['hidden', 'elevation'];
   if (kind === 'tiles') return ['tileLayer', 'ceiling', 'hidden'];
-  return ['markers', 'prefabs', 'creatures', 'items', 'hidden'];
+  return ['markers', 'pieces', 'structures', 'creatures', 'items', 'hidden'];
 }
 
 export const DEFAULT_CEILING_HEIGHT = 2;
@@ -27,7 +29,8 @@ export function defaultBindingForMode(mode: DisplayMode): DisplayBinding {
   if (mode === 'ceiling') return { mode, height: DEFAULT_CEILING_HEIGHT };
   if (mode === 'elevation') return { mode, heightScale: 3 };
   if (mode === 'markers') return { mode, tileId: -1, glyph: '*', color: '#ff5577' };
-  if (mode === 'prefabs') return { mode, prefabId: -1, rotation: RANDOM_ROTATION };
+  if (mode === 'pieces') return { mode, pieceId: -1, rotation: RANDOM_ROTATION };
+  if (mode === 'structures') return { mode, cultureId: NO_CULTURE };
   if (mode === 'creatures') return { mode, creatureId: -1 };
   if (mode === 'items') return { mode, itemId: -1 };
   return { mode };

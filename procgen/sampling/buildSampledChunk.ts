@@ -1,8 +1,8 @@
 import { CELLS_PER_CHUNK } from '../chunk';
 import type { PipelineEvaluator } from '../eval/evaluator';
 import type { NodeInstance } from '../pipeline/pipelineState';
-import { facingOfVoxel, tileIdOfVoxel } from '../prefabOverlay/packedVoxel';
-import type { ChunkVoxelColumns } from '../prefabOverlay/chunkVoxelColumns';
+import { facingOfVoxel, tileIdOfVoxel } from '../structureOverlay/packedVoxel';
+import type { ChunkVoxelColumns } from '../structureOverlay/chunkVoxelColumns';
 import { EMPTY_TILE } from '../values/chunkValues';
 import { asField, asTiles } from '../values/valueAccess';
 import { mergedCeiling } from './mergedCeiling';

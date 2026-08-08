@@ -10,7 +10,7 @@ const { persistedUiValue, subscribeToPersistedUiValue, writePersistedUiValue } =
 );
 const { toggledMembers } = await import('../frontend/uiState/toggledMembers');
 
-const ASSET_KINDS = ['tiles', 'prefabs', 'creatures'] as const;
+const ASSET_KINDS = ['tiles', 'pieces', 'creatures'] as const;
 
 checkAToggleReachesStorage();
 checkTheNextLoadReadsWhatStorageHolds();
@@ -95,7 +95,7 @@ function checkGuardsAcceptOnlyTheShapesTheUiPersists(): void {
   assert(isStringArray(['a']) && !isStringArray([1]), 'set members must all be strings');
   assert(
     isNumberOrNull(null) && isNumberOrNull(3) && !isNumberOrNull('3'),
-    'an open prefab id is a number or nothing',
+    'an open piece id is a number or nothing',
   );
   assert(!isRecordOf(isNumber)(['library']), 'an array is not a record of panel widths');
   assert(!isNumber(Number.NaN), 'a NaN width is rejected before it reaches the grid');

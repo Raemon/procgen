@@ -198,12 +198,12 @@ registerNodeAbility({
   action: 'set_display',
   humanControl: 'procgen panel: display section',
   description:
-    'Map a node into the world: tile layers stack in list order, ceilings roof the world over, elevation shapes the ground, markers draw glyphs, prefabs stamp structures, creatures spawn life, items float loot. Fields you leave out keep their current value when the mode is unchanged.',
+    'Map a node into the world: tile layers stack in list order, ceilings roof the world over, elevation shapes the ground, markers draw glyphs, pieces stamp one piece each, structures reserve points for an assembled building, creatures spawn life, items float loot. Fields you leave out keep their current value when the mode is unchanged.',
   params: {
     node_id: { kind: 'nodeId', help: NODE_ID_HELP },
     display: {
       kind: 'text',
-      help: "'hidden', 'tileLayer' or 'ceiling' (tiles output), 'elevation' (field output); a points output takes 'markers', 'prefabs', 'creatures' or 'items'",
+      help: "'hidden', 'tileLayer' or 'ceiling' (tiles output), 'elevation' (field output); a points output takes 'markers', 'pieces', 'structures', 'creatures' or 'items'",
     },
     height_scale: { kind: 'number', help: 'elevation only: world height per field unit', optional: true },
     ceiling_height: {
@@ -214,14 +214,19 @@ registerNodeAbility({
     tile_id: { kind: 'int', help: 'markers only: a tile asset id to draw, or -1 for the glyph', optional: true },
     glyph: { kind: 'text', help: 'markers only: a single character', optional: true },
     color: { kind: 'text', help: 'markers only: a #rrggbb color, or #rrggbbaa with aa=00 for transparent', optional: true },
-    prefab_id: {
+    piece_id: {
       kind: 'int',
-      help: 'prefabs only: a prefab id to stamp at each point — see GET /api/v1/prefabs',
+      help: 'pieces only: a piece id to stamp at each point — see GET /api/v1/pieces',
       optional: true,
     },
     rotation: {
       kind: 'int',
-      help: 'prefabs only: quarter turns 0-3, or -1 for random per point',
+      help: 'pieces only: quarter turns 0-3, or -1 for random per point',
+      optional: true,
+    },
+    culture_id: {
+      kind: 'int',
+      help: 'structures only: which culture assembles the building at each point, or -1 for none',
       optional: true,
     },
     creature_id: {
@@ -466,7 +471,7 @@ function setDisplay(
   if (!isDisplayMode(mode)) {
     return abilityFailed(
       'invalid_value',
-      "display must be 'hidden', 'tileLayer', 'ceiling', 'elevation', 'markers', 'prefabs', 'creatures' or 'items'",
+      "display must be 'hidden', 'tileLayer', 'ceiling', 'elevation', 'markers', 'pieces', 'structures', 'creatures' or 'items'",
     );
   }
   const kind = outputKindOf(def, node.params);
@@ -490,7 +495,8 @@ function isDisplayMode(value: unknown): value is DisplayMode {
     value === 'ceiling' ||
     value === 'elevation' ||
     value === 'markers' ||
-    value === 'prefabs' ||
+    value === 'pieces' ||
+    value === 'structures' ||
     value === 'creatures' ||
     value === 'items'
   );
@@ -511,12 +517,15 @@ function bindingFrom(
     return height.ok ? { ...base, heightScale: height.value } : base;
   }
   if (base.mode === 'markers') return markerBindingFrom(base, params);
-  if (base.mode === 'prefabs') {
+  if (base.mode === 'pieces') {
     return {
       ...base,
-      prefabId: readOptionalId(params, 'prefab_id', base.prefabId),
+      pieceId: readOptionalId(params, 'piece_id', base.pieceId),
       rotation: readOptionalId(params, 'rotation', RANDOM_ROTATION),
     };
+  }
+  if (base.mode === 'structures') {
+    return { ...base, cultureId: readOptionalId(params, 'culture_id', base.cultureId) };
   }
   if (base.mode === 'creatures') {
     return { ...base, creatureId: readOptionalId(params, 'creature_id', base.creatureId) };
@@ -554,10 +563,10 @@ function rejectMissingBindingTarget(
   context: AbilityContext,
   binding: DisplayBinding,
 ): AbilityResult | null {
-  if (binding.mode === 'prefabs' && binding.prefabId !== -1 && !context.prefabs.byId(binding.prefabId)) {
+  if (binding.mode === 'pieces' && binding.pieceId !== -1 && !context.pieces.byId(binding.pieceId)) {
     return abilityFailed(
       'invalid_value',
-      `prefab_id must be -1 or one of: ${listOf(context.prefabs.all().map((prefab) => prefab.id))} — see GET /api/v1/prefabs`,
+      `piece_id must be -1 or one of: ${listOf(context.pieces.all().map((piece) => piece.id))} — see GET /api/v1/pieces`,
     );
   }
   if (

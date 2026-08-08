@@ -1,7 +1,7 @@
 import type { WorldSampler } from '../../../procgen/worldSampler';
 import type { ReadOnlyTileAssets } from '../../../frontend/readOnlyAssets';
-import { EMPTY_VOXEL } from '../../../assets/prefabs/prefabDef';
-import { facingOfVoxel, tileIdOfVoxel } from '../../../procgen/prefabOverlay/packedVoxel';
+import { EMPTY_VOXEL } from '../../../assets/pieces/pieceDef';
+import { facingOfVoxel, tileIdOfVoxel } from '../../../procgen/structureOverlay/packedVoxel';
 import { blockLayersOfTile, WALKABLE_TILE_HEIGHT } from '../../../assets/tiles/tileHeight';
 import { shapeFillsCell } from '../../../assets/tiles/tileShapeKind';
 import type { TileDef } from '../../../assets/tiles/tileDef';

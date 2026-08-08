@@ -5,7 +5,7 @@ import './sightAbilities';
 import './nodeAbilities';
 import './worldAbilities';
 import './tileAbilities';
-import './prefabAbilities';
+import './pieceAbilities';
 import './creatureAbilities';
 import './itemAbilities';
 import './inventoryAbilities';

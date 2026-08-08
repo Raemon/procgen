@@ -90,7 +90,7 @@ function worldSavingOnlyTiles(): ServerWorld {
     ...nothing,
     store: nothing,
     tileAssets: { all: () => [oneTileCarryingArt()] },
-    prefabs: nothing,
+    pieces: nothing,
     creatures: nothing,
     items: nothing,
     templates: nothing,

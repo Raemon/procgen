@@ -2,6 +2,7 @@ import { examplePipelines } from '../../procgen/presets/examplePipelines';
 import { nodeTypesJson, pipelineJson } from '../../agents/nodeCatalog';
 import { failure, json, type ApiResponse } from './apiMessages';
 import { creatureJson, inventoryJson, itemJson } from './assetJson';
+import type { Piece } from '../../assets/pieces/pieceDef';
 import { registerRoute } from './routeRegistry';
 import type { ServerWorld } from './serverWorld';
 
@@ -52,11 +53,11 @@ registerRoute({
 
 registerRoute({
   method: 'GET',
-  path: '/prefabs',
-  summary: 'the prefab assets: structures a points node can stamp',
+  path: '/pieces',
+  summary: 'the piece assets: role-tagged voxel boxes a points node can stamp',
   body: {},
   query: {},
-  handle: ({ access }) => json(200, { prefabs: access.current().prefabs.all().map(prefabJson) }),
+  handle: ({ access }) => json(200, { pieces: access.current().pieces.all().map(pieceJson) }),
 });
 
 registerRoute({
@@ -97,13 +98,14 @@ function creatureInventory(world: ServerWorld, creatureId: number): ApiResponse 
   return json(200, { creature_id: creatureId, inventory: inventoryJson(creature.inventory) });
 }
 
-function prefabJson(prefab: { id: number; name: string; width: number; depth: number; layers: number }) {
+function pieceJson(piece: Piece) {
   return {
-    id: prefab.id,
-    name: prefab.name,
-    width: prefab.width,
-    depth: prefab.depth,
-    layers: prefab.layers,
+    id: piece.id,
+    name: piece.name,
+    role: piece.role,
+    width: piece.width,
+    depth: piece.depth,
+    layers: piece.layers,
   };
 }
 

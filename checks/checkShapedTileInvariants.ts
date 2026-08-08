@@ -1,11 +1,11 @@
 import * as THREE from 'three';
-import { blankVoxels, type Prefab } from '../assets/prefabs/prefabDef';
+import { blankFacings, blankVoxels, VOXEL_FACING_COUNT, type Piece } from '../assets/pieces/pieceDef';
 import { TILE_SHAPE_KINDS, type TileShapeKind } from '../assets/tiles/tileShapeKind';
 import { CELLS_PER_CHUNK, CHUNK_SIZE } from '../procgen/chunk';
 import type { PipelineEvaluator } from '../procgen/eval/evaluator';
-import { ChunkVoxelColumns } from '../procgen/prefabOverlay/chunkVoxelColumns';
-import { facingOfVoxel, packedVoxel, tileIdOfVoxel, VOXEL_FACINGS } from '../procgen/prefabOverlay/packedVoxel';
-import { PrefabOverlay, type PrefabSource } from '../procgen/prefabOverlay/prefabOverlay';
+import { ChunkVoxelColumns } from '../procgen/structureOverlay/chunkVoxelColumns';
+import { facingOfVoxel, packedVoxel, tileIdOfVoxel } from '../procgen/structureOverlay/packedVoxel';
+import { StructureOverlay, type PieceSource } from '../procgen/structureOverlay/structureOverlay';
 import { buildSampledChunk } from '../procgen/sampling/buildSampledChunk';
 import type { SampledChunk } from '../procgen/sampling/sampledChunkCache';
 import { EMPTY_TILE } from '../procgen/values/chunkValues';
@@ -13,16 +13,16 @@ import { EVERY_FACE } from '../world/render/view3d/culling/visibleFaceMask';
 import { shapedShape } from '../world/render/view3d/tileShapes';
 import type { CheckReporter } from './checkReporter';
 
-const EVERY_FACING = [...Array(VOXEL_FACINGS).keys()];
+const EVERY_FACING = [...Array(VOXEL_FACING_COUNT).keys()];
 const SYNTHETIC_TILE_ID = 9;
-const SYNTHETIC_PREFAB_ID = 1;
+const SYNTHETIC_PIECE_ID = 1;
 const STAMPED_AT = { x: 4, y: 6 };
 
 export function checkShapedTileInvariants(check: CheckReporter): void {
   checkPackedVoxelsCarryBothTileAndFacing(check);
   checkEveryShapeAndFacingBuildsGeometry(check);
   checkOnlyCubesOccludeTheirNeighbours(check);
-  checkStampedPrefabsSurviveTheSampler(check);
+  checkStampedPiecesSurviveTheSampler(check);
 }
 
 function checkPackedVoxelsCarryBothTileAndFacing(check: CheckReporter): void {
@@ -85,18 +85,18 @@ function checkOnlyCubesOccludeTheirNeighbours(check: CheckReporter): void {
   );
 }
 
-function checkStampedPrefabsSurviveTheSampler(check: CheckReporter): void {
-  const sampled = sampledChunkWithStampedPrefab();
+function checkStampedPiecesSurviveTheSampler(check: CheckReporter): void {
+  const sampled = sampledChunkWithStampedPiece();
   check(
     'a stamped ground voxel reaches the sampler as the tile it was painted with',
     sampled.tiles[cellIndexOf(STAMPED_AT.x, STAMPED_AT.y)] === SYNTHETIC_TILE_ID,
   );
   check(
-    'terrain the prefab never touched keeps no facing of its own',
+    'terrain the piece never touched keeps no facing of its own',
     [...sampled.groundFacing].every((facing) => facing === 0),
   );
   check(
-    'a cell outside the stamped prefab is still empty terrain',
+    'a cell outside the stamped piece is still empty terrain',
     sampled.tiles[cellIndexOf(STAMPED_AT.x + 3, STAMPED_AT.y + 3)] === EMPTY_TILE,
   );
   checkPaintedFacingReachesTheSampler(check);
@@ -118,10 +118,10 @@ function checkPaintedFacingReachesTheSampler(check: CheckReporter): void {
   );
 }
 
-function sampledChunkWithStampedPrefab(): SampledChunk {
-  const overlay = new PrefabOverlay(syntheticPrefabSource(), (chunkX, chunkY) =>
+function sampledChunkWithStampedPiece(): SampledChunk {
+  const overlay = new StructureOverlay(syntheticPieceSource(), (chunkX, chunkY) =>
     chunkX === 0 && chunkY === 0
-      ? [{ x: STAMPED_AT.x, y: STAMPED_AT.y, prefabId: SYNTHETIC_PREFAB_ID, rotation: 0 }]
+      ? [{ x: STAMPED_AT.x, y: STAMPED_AT.y, pieceId: SYNTHETIC_PIECE_ID, rotation: 0 }]
       : [],
   );
   return sampledChunkOf(overlay.columnsForChunk(0, 0));
@@ -137,24 +137,26 @@ function sampledChunkOf(columns: ChunkVoxelColumns): SampledChunk {
   );
 }
 
-function syntheticPrefabSource(): PrefabSource {
-  const prefab = singleVoxelPrefab();
+function syntheticPieceSource(): PieceSource {
+  const piece = singleVoxelPiece();
   return {
-    byId: (id) => (id === SYNTHETIC_PREFAB_ID ? prefab : undefined),
+    byId: (id) => (id === SYNTHETIC_PIECE_ID ? piece : undefined),
     largestFootprint: () => 1,
   };
 }
 
-function singleVoxelPrefab(): Prefab {
+function singleVoxelPiece(): Piece {
   return {
-    id: SYNTHETIC_PREFAB_ID,
+    id: SYNTHETIC_PIECE_ID,
     name: 'one voxel',
+    role: 'freestanding',
     width: 1,
     depth: 1,
     layers: 1,
     anchorX: 0,
     anchorY: 0,
     voxels: blankVoxels(1, 1, 1).fill(SYNTHETIC_TILE_ID),
+    facings: blankFacings(1, 1, 1),
   };
 }
 

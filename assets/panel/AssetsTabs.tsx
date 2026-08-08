@@ -18,9 +18,9 @@ const TABS: { tab: AssetKind; tip: TooltipContent }[] = [
     },
   },
   {
-    tab: 'prefabs',
+    tab: 'pieces',
     tip: {
-      title: 'prefabs',
+      title: 'pieces',
       body: 'Voxel stamps — buildings, ruins, rock formations — painted layer by layer or captured straight out of the world view.',
     },
   },
