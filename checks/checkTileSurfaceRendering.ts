@@ -46,7 +46,7 @@ function checkATileBoxShowsAsMuchOfItsSideArtAsItIsTall(check: CheckReporter): v
 }
 
 function checkTheWaterSwellLoopsWithoutASeamOrARepeat(check: CheckReporter): void {
-  const shallowWaves ={ palette: ['#1', '#2', '#3', '#4'], wavelength: 16, amplitude: 2.2, bandHeight: 4, size: 32 };
+  const shallowWaves = { palette: ['#1', '#2', '#3', '#4'], wavelength: 16, amplitude: 2.2, bandHeight: 4, size: 32 };
   const wavesAt = (phase: number) => wavePainter(scrolledWaves(shallowWaves, phase));
   const everyWaterPixel = [...Array(32 * 32).keys()].map((index) => [index % 32, Math.floor(index / 32)] as const);
   check(

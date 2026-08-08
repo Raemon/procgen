@@ -35,14 +35,17 @@ function terrainAt(evaluator: PipelineEvaluator, worldX: number, worldY: number)
 
 type RiverWorld = ReturnType<typeof worldFromState>;
 
+type Towns = ReturnType<RiverWorld['sampler']['markersIn']>;
+
 export function checkRiversAndTowns(check: CheckReporter): void {
   const riversA = worldFromState(riversExampleState());
+  const towns = riversA.sampler.markersIn(-96, -96, 95, 95);
   checkARiverRunsDownhillUntilTheSeaStopsIt(check);
   checkRiverChunksAreDeterministicRegardlessOfEvaluationOrder(check, riversA);
   checkEveryRiverCellContinuesIntoAnotherRiverCellOrTheSea(check, riversA);
-  checkTownsAppearTaggedAndStandingOnTheRiver(check, riversA);
-  checkEveryTownStandsAtARiverMouthOrJunction(check, riversA);
-  checkTownsKeepTheirConfiguredSpacingFromEachOther(check, riversA);
+  checkTownsAppearTaggedAndStandingOnTheRiver(check, riversA, towns);
+  checkEveryTownStandsAtARiverMouthOrJunction(check, riversA, towns);
+  checkTownsKeepTheirConfiguredSpacingFromEachOther(check, towns);
 }
 
 function checkARiverRunsDownhillUntilTheSeaStopsIt(check: CheckReporter): void {
@@ -113,8 +116,8 @@ function checkEveryRiverCellContinuesIntoAnotherRiverCellOrTheSea(
 function checkTownsAppearTaggedAndStandingOnTheRiver(
   check: CheckReporter,
   riversA: RiverWorld,
+  towns: Towns,
 ): void {
-  const towns = riversA.sampler.markersIn(-96, -96, 95, 95);
   check(
     'towns appear and are tagged as towns',
     towns.length > 0 && towns.every((m) => m.tag === 'town' && m.glyph === '⌂'),
@@ -128,8 +131,8 @@ function checkTownsAppearTaggedAndStandingOnTheRiver(
 function checkEveryTownStandsAtARiverMouthOrJunction(
   check: CheckReporter,
   riversA: RiverWorld,
+  towns: Towns,
 ): void {
-  const towns = riversA.sampler.markersIn(-96, -96, 95, 95);
   check(
     'every town qualifies as a river mouth or river junction',
     towns.every(
@@ -152,9 +155,8 @@ function checkEveryTownStandsAtARiverMouthOrJunction(
 
 function checkTownsKeepTheirConfiguredSpacingFromEachOther(
   check: CheckReporter,
-  riversA: RiverWorld,
+  towns: Towns,
 ): void {
-  const towns = riversA.sampler.markersIn(-96, -96, 95, 95);
   check(
     'towns keep their configured spacing from each other',
     towns.every((a, i) =>

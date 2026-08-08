@@ -41,13 +41,18 @@ function sameStructure(a: PipelineState, b: PipelineState): boolean {
   );
 }
 
+interface PermutedPipeline {
+  base: PipelineState;
+  shuffled: PipelineState;
+}
+
 export function checkRandomizeAndPermutation(check: CheckReporter): void {
   checkARolledWorldIsReproducibleAndLegalToBuild(check);
   checkRolledWorldsSpanTheRecipesTheRollerKnows(check);
-  checkSliderPermutationIsReproducibleAndLeavesTheGraphIntact(check);
-  checkSliderPermutationMovesSlidersAndNothingElse(check);
-  checkNodePermutationIsReproducibleAndActuallyRecombines(check);
-  checkAPermutedCombinationStillSanitizesAndGenerates(check);
+  const sliders = checkSliderPermutationIsReproducibleAndLeavesTheGraphIntact(check);
+  checkSliderPermutationMovesSlidersAndNothingElse(check, sliders);
+  const combination = checkNodePermutationIsReproducibleAndActuallyRecombines(check);
+  checkAPermutedCombinationStillSanitizesAndGenerates(check, combination);
   checkRandomizeHistoryHandsBackSnapshotsLaterEditsCannotReach(check);
 }
 
@@ -82,7 +87,9 @@ function checkRolledWorldsSpanTheRecipesTheRollerKnows(check: CheckReporter): vo
   check('random worlds cover both terrain and maze recipes', sawTerrainRoll && sawMazeRoll);
 }
 
-function checkSliderPermutationIsReproducibleAndLeavesTheGraphIntact(check: CheckReporter): void {
+function checkSliderPermutationIsReproducibleAndLeavesTheGraphIntact(
+  check: CheckReporter,
+): PermutedPipeline {
   const sliderBase = islandsState();
   const sliderShuffled = permutedSliderParams(sliderBase, mulberry32(5));
   check(
@@ -91,11 +98,13 @@ function checkSliderPermutationIsReproducibleAndLeavesTheGraphIntact(check: Chec
   );
   check('slider permutation preserves nodes and wiring', sameStructure(sliderBase, sliderShuffled));
   check('slider permutation keeps params inside their declared ranges', allParamsWithinSpecs(sliderShuffled));
+  return { base: sliderBase, shuffled: sliderShuffled };
 }
 
-function checkSliderPermutationMovesSlidersAndNothingElse(check: CheckReporter): void {
-  const sliderBase = islandsState();
-  const sliderShuffled = permutedSliderParams(sliderBase, mulberry32(5));
+function checkSliderPermutationMovesSlidersAndNothingElse(
+  check: CheckReporter,
+  { base: sliderBase, shuffled: sliderShuffled }: PermutedPipeline,
+): void {
   check(
     'slider permutation moves at least one slider',
     JSON.stringify(sliderShuffled.nodes.map((node) => node.params)) !==
@@ -113,7 +122,9 @@ function checkSliderPermutationMovesSlidersAndNothingElse(check: CheckReporter):
   );
 }
 
-function checkNodePermutationIsReproducibleAndActuallyRecombines(check: CheckReporter): void {
+function checkNodePermutationIsReproducibleAndActuallyRecombines(
+  check: CheckReporter,
+): PermutedPipeline {
   const comboBase = islandsState();
   const comboShuffled = permutedNodeCombination(comboBase, mulberry32(5), randomizeTileIds);
   check(
@@ -122,10 +133,13 @@ function checkNodePermutationIsReproducibleAndActuallyRecombines(check: CheckRep
       JSON.stringify(permutedNodeCombination(comboBase, mulberry32(5), randomizeTileIds)),
   );
   check('node permutation changes the combination', !sameStructure(comboBase, comboShuffled));
+  return { base: comboBase, shuffled: comboShuffled };
 }
 
-function checkAPermutedCombinationStillSanitizesAndGenerates(check: CheckReporter): void {
-  const comboShuffled = permutedNodeCombination(islandsState(), mulberry32(5), randomizeTileIds);
+function checkAPermutedCombinationStillSanitizesAndGenerates(
+  check: CheckReporter,
+  { shuffled: comboShuffled }: PermutedPipeline,
+): void {
   check(
     'node permutation yields a pipeline that survives sanitize unchanged',
     JSON.stringify(sanitizePipeline(comboShuffled)) === JSON.stringify(comboShuffled),

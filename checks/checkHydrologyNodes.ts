@@ -38,16 +38,20 @@ const SPAN = 64;
 
 type HydrologyWorld = ReturnType<typeof worldFromState>;
 
+type Cells = Array<[number, number]>;
+
 export function checkHydrologyNodes(check: CheckReporter): void {
   const hydrology = worldFromState(hydrologyState());
+  const landCells = landCellsAround(hydrology);
+  const flowRiverCells = riverCellsOfNode(hydrology, 'rivers');
   checkWindowedWaterNodesAreDeterministicRegardlessOfEvaluationOrder(check, hydrology);
   checkAChunkGetsTheSameWaterAnswerAloneOrAmongItsNeighbors(check, hydrology);
-  checkFillingDepressionsRaisesTheGroundUntilNoPitIsClosed(check, hydrology);
-  checkCarvingValleysOnlyRemovesMaterialAndOnlyNearWatercourses(check, hydrology);
-  checkDistanceToCoastSeparatesLandFromSea(check, hydrology);
-  checkFlowAccumulationYieldsARiverNetworkThatReachesTheSea(check, hydrology);
-  checkRiverFlowOnlyGrowsDownstream(check, hydrology);
-  checkRiversWidenWithTheMaxWidthKnob(check, hydrology);
+  checkFillingDepressionsRaisesTheGroundUntilNoPitIsClosed(check, hydrology, landCells);
+  checkCarvingValleysOnlyRemovesMaterialAndOnlyNearWatercourses(check, hydrology, landCells);
+  checkDistanceToCoastSeparatesLandFromSea(check, hydrology, landCells);
+  checkFlowAccumulationYieldsARiverNetworkThatReachesTheSea(check, hydrology, flowRiverCells);
+  checkRiverFlowOnlyGrowsDownstream(check, hydrology, flowRiverCells);
+  checkRiversWidenWithTheMaxWidthKnob(check, hydrology, flowRiverCells);
 }
 
 function checkWindowedWaterNodesAreDeterministicRegardlessOfEvaluationOrder(
@@ -83,8 +87,8 @@ function checkAChunkGetsTheSameWaterAnswerAloneOrAmongItsNeighbors(
 function checkFillingDepressionsRaisesTheGroundUntilNoPitIsClosed(
   check: CheckReporter,
   hydrology: HydrologyWorld,
+  landCells: Cells,
 ): void {
-  const landCells = landCellsAround(hydrology);
   check('the hydrology test world has land to drain', landCells.length > 0);
   check(
     'filling depressions never lowers the ground',
@@ -104,8 +108,8 @@ function checkFillingDepressionsRaisesTheGroundUntilNoPitIsClosed(
 function checkCarvingValleysOnlyRemovesMaterialAndOnlyNearWatercourses(
   check: CheckReporter,
   hydrology: HydrologyWorld,
+  landCells: Cells,
 ): void {
-  const landCells = landCellsAround(hydrology);
   check(
     'carving valleys only ever removes material, and only near watercourses',
     landCells.every(([x, y]) => fieldAt(hydrology.evaluator, 'eroded', x, y) <= fieldAt(hydrology.evaluator, 'terrain', x, y) + 1e-6) &&
@@ -117,8 +121,8 @@ function checkCarvingValleysOnlyRemovesMaterialAndOnlyNearWatercourses(
 function checkDistanceToCoastSeparatesLandFromSea(
   check: CheckReporter,
   hydrology: HydrologyWorld,
+  landCells: Cells,
 ): void {
-  const landCells = landCellsAround(hydrology);
   check(
     'distance to coast puts land at or above 0.5 and sea below it',
     landCells.every(([x, y]) => fieldAt(hydrology.evaluator, 'coast', x, y) >= 0.5),
@@ -128,8 +132,8 @@ function checkDistanceToCoastSeparatesLandFromSea(
 function checkFlowAccumulationYieldsARiverNetworkThatReachesTheSea(
   check: CheckReporter,
   hydrology: HydrologyWorld,
+  flowRiverCells: Cells,
 ): void {
-  const flowRiverCells = riverCellsOfNode(hydrology, 'rivers');
   check('flow accumulation yields a river network', flowRiverCells.length > 0);
   check(
     'every flow-derived river cell continues into another river cell or the sea',
@@ -146,8 +150,8 @@ function checkFlowAccumulationYieldsARiverNetworkThatReachesTheSea(
 function checkRiverFlowOnlyGrowsDownstream(
   check: CheckReporter,
   hydrology: HydrologyWorld,
+  flowRiverCells: Cells,
 ): void {
-  const flowRiverCells = riverCellsOfNode(hydrology, 'rivers');
   check(
     'river flow only grows downstream inside a chunk',
     flowRiverCells.filter(([x, y]) => isInsideOwnChunk(x, y)).every(([x, y]) => {
@@ -164,22 +168,22 @@ function checkRiverFlowOnlyGrowsDownstream(
 function checkRiversWidenWithTheMaxWidthKnob(
   check: CheckReporter,
   hydrology: HydrologyWorld,
+  flowRiverCells: Cells,
 ): void {
-  const flowRiverCells = riverCellsOfNode(hydrology, 'rivers');
   const wideRiverCells = riverCellsOfNode(hydrology, 'wideRivers').length;
   check('rivers widen with the max width knob', wideRiverCells > flowRiverCells.length);
 }
 
-function landCellsAround(hydrology: HydrologyWorld): Array<[number, number]> {
-  const landCells: Array<[number, number]> = [];
+function landCellsAround(hydrology: HydrologyWorld): Cells {
+  const landCells: Cells = [];
   for (let y = -SPAN; y < SPAN; y++) {
     for (let x = -SPAN; x < SPAN; x++) if (fieldAt(hydrology.evaluator, 'terrain', x, y) >= 0.5) landCells.push([x, y]);
   }
   return landCells;
 }
 
-function riverCellsOfNode(hydrology: HydrologyWorld, nodeId: string): Array<[number, number]> {
-  const cells: Array<[number, number]> = [];
+function riverCellsOfNode(hydrology: HydrologyWorld, nodeId: string): Cells {
+  const cells: Cells = [];
   for (let y = -SPAN; y < SPAN; y++) {
     for (let x = -SPAN; x < SPAN; x++) if (tileAtNode(hydrology.evaluator, nodeId, x, y) !== EMPTY_TILE) cells.push([x, y]);
   }
