@@ -11,7 +11,7 @@ export function PickupNotices() {
   useForgetNoticesAfterAWhile(pickupFeed, notices);
   if (notices.length === 0) return null;
   return (
-    <div className="pointer-events-none absolute bottom-3 left-3 flex flex-col gap-1">
+    <div className="flex flex-col gap-1">
       {notices.map((notice) => (
         <span
           key={notice.id}

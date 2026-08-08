@@ -7,6 +7,7 @@ import { InteractPrompt } from './InteractPrompt';
 import { FpsBadge } from './performance/FpsBadge';
 import { PickupNotices } from './PickupNotices';
 import { PlayerInventoryOverlay } from './PlayerInventoryOverlay';
+import { TileHoverDetails } from './TileHoverDetails';
 import { usesView3d, type ViewMode } from './viewMode';
 
 export function WorldStage({ mode }: { mode: ViewMode }) {
@@ -49,7 +50,10 @@ export function WorldStage({ mode }: { mode: ViewMode }) {
         className={classes('absolute inset-0', mode !== 'agent-character' && 'hidden')}
       />
       {usesView3d(mode) && <InteractPrompt />}
-      <PickupNotices />
+      <div className="pointer-events-none absolute bottom-3 left-3 flex flex-col items-start gap-1">
+        <PickupNotices />
+        <TileHoverDetails />
+      </div>
       <PlayerInventoryOverlay />
       <ChatComposer />
       <FpsBadge />

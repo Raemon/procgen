@@ -1,5 +1,4 @@
 import type { Marker, WorldSampler } from '../procgen/worldSampler';
-import { EMPTY_TILE } from '../procgen/values/chunkValues';
 import { pointOverlayLookup } from '../world/render/ascii/asciiCells';
 import { viewportCenteredOn } from '../world/render/ascii/asciiViewport';
 import type { ReadOnlyTileAssets } from '../frontend/readOnlyAssets';
@@ -8,8 +7,8 @@ import {
   DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
   characterViewSize,
   clampSightRadiusTiles,
-  isWithinCharacterSight,
 } from '../world/vision/characterSight';
+import { BLANK_GLYPH, SELF_GLYPH, observedTileAt } from './observedTile';
 import type { MarkerSource } from '../world/render/markerSource';
 import {
   actionWithinReach,
@@ -23,9 +22,8 @@ export interface ObservedOverlay extends MarkerSource, ActionOfferingCells {}
 export const NO_OVERLAY: ObservedOverlay = { markersIn: () => [], actionAt: () => null };
 
 export const GOD_VIEW_SIZE = 33;
-export const SELF_GLYPH = '@';
-export const BLANK_GLYPH = ' ';
-export const UNKNOWN_TILE_GLYPH = '?';
+
+export { BLANK_GLYPH, SELF_GLYPH, UNKNOWN_TILE_GLYPH } from './observedTile';
 
 export interface LegendEntry {
   glyph: string;
@@ -98,30 +96,22 @@ function observedGlyph(
   x: number,
   y: number,
 ): string {
-  if (x === pose.x && y === pose.y) return SELF_GLYPH;
-  if (
-    mode === 'character' &&
-    !isWithinCharacterSight(pose.facing, x - pose.x, y - pose.y, sightRadiusTiles)
-  ) {
-    return BLANK_GLYPH;
-  }
-  const marker = markers.get(`${x},${y}`);
-  if (marker) return collectLegend(legend, marker.glyph, marker.tag, null);
-  return tileGlyph(sampler, tileAssets, legend, x, y);
+  const observed = observedTileAt(
+    sampler,
+    tileAssets,
+    markers,
+    pose,
+    mode,
+    sightRadiusTiles,
+    x,
+    y,
+  );
+  if (theWholeGridSharesOneLegendEntryFor(observed.glyph)) return observed.glyph;
+  return collectLegend(legend, observed.glyph, observed.meaning, observed.walkable);
 }
 
-function tileGlyph(
-  sampler: WorldSampler,
-  tileAssets: ReadOnlyTileAssets,
-  legend: Map<string, LegendEntry>,
-  x: number,
-  y: number,
-): string {
-  const tileId = sampler.tileAt(x, y);
-  if (tileId === EMPTY_TILE) return BLANK_GLYPH;
-  const tile = tileAssets.byId(tileId);
-  if (!tile) return collectLegend(legend, UNKNOWN_TILE_GLYPH, 'unrecognized tile', null);
-  return collectLegend(legend, tile.symbol, tile.name, tile.walkable);
+function theWholeGridSharesOneLegendEntryFor(glyph: string): boolean {
+  return glyph === SELF_GLYPH || glyph === BLANK_GLYPH;
 }
 
 function collectLegend(
