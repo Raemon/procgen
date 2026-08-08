@@ -1,38 +1,32 @@
-import { barPainter, discPainter } from '../painters/shapePainters';
 import { stackedPainters, type PixelPainter } from '../pixelCanvas';
-import { gridLength, gridPoint, MASK_INK } from './billboardGrid';
+import { boughPainter, trunkPainter } from './barkInk';
 import type { BillboardPalette } from './billboardPalette';
-import { roundedInk, shadedThroughMask, stemInk } from './billboardShading';
+import { canopyPainter, type CanopyLobe } from './canopyShapes';
+
+const TRUNK_THICKNESS = 0.11;
+const TRUNK_TOP = 0.46;
+const BOUGHS = [
+  { across: 0.29, down: 0.5 },
+  { across: 0.71, down: 0.55 },
+] as const;
+
+const CROWN: readonly CanopyLobe[] = [
+  { across: 0.47, down: 0.34, radius: 0.27 },
+  { across: 0.26, down: 0.45, radius: 0.19 },
+  { across: 0.72, down: 0.5, radius: 0.17 },
+  { across: 0.6, down: 0.17, radius: 0.17 },
+  { across: 0.36, down: 0.19, radius: 0.13 },
+  { across: 0.79, down: 0.34, radius: 0.11 },
+];
 
 export function broadleafPainter(
   size: number,
   palette: BillboardPalette,
   seed: number,
 ): PixelPainter {
-  return stackedPainters(trunkPainter(size, palette), canopyPainter(size, palette, seed));
-}
-
-function trunkPainter(size: number, palette: BillboardPalette): PixelPainter {
-  return shadedThroughMask(
-    barPainter(
-      gridPoint(size, 0.5, 1),
-      gridPoint(size, 0.5, 0.5),
-      gridLength(size, 0.13),
-      MASK_INK,
-    ),
-    stemInk(palette, size),
-  );
-}
-
-function canopyPainter(size: number, palette: BillboardPalette, seed: number): PixelPainter {
-  return shadedThroughMask(canopyMask(size), roundedInk(palette, size, seed));
-}
-
-function canopyMask(size: number): PixelPainter {
   return stackedPainters(
-    discPainter(gridPoint(size, 0.5, 0.38), gridLength(size, 0.29), MASK_INK),
-    discPainter(gridPoint(size, 0.3, 0.47), gridLength(size, 0.2), MASK_INK),
-    discPainter(gridPoint(size, 0.7, 0.47), gridLength(size, 0.2), MASK_INK),
-    discPainter(gridPoint(size, 0.5, 0.18), gridLength(size, 0.19), MASK_INK),
+    trunkPainter(size, palette, seed, TRUNK_THICKNESS, TRUNK_TOP),
+    ...BOUGHS.map((reach) => boughPainter(size, palette, seed, reach)),
+    canopyPainter(size, palette, seed, CROWN),
   );
 }

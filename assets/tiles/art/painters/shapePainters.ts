@@ -51,6 +51,13 @@ export function ringPainter(
   return (x, y) => (isWithinRing({ x, y }, centre, outerRadius, innerRadius) ? color : null);
 }
 
+export function convexPolygonPainter(
+  corners: readonly PixelPoint[],
+  color: string,
+): PixelPainter {
+  return (x, y) => (isInsideCorners({ x, y }, corners) ? color : null);
+}
+
 export function barPainter(
   from: PixelPoint,
   to: PixelPoint,
@@ -72,6 +79,17 @@ function isWithinRing(
 ): boolean {
   const distance = distanceBetween(point, centre);
   return distance <= outerRadius && distance >= innerRadius;
+}
+
+function isInsideCorners(point: PixelPoint, corners: readonly PixelPoint[]): boolean {
+  const sides = corners.map((corner, index) =>
+    sideOfEdge(point, corner, corners[(index + 1) % corners.length]!),
+  );
+  return sides.every((side) => side >= 0) || sides.every((side) => side <= 0);
+}
+
+function sideOfEdge(point: PixelPoint, from: PixelPoint, to: PixelPoint): number {
+  return (to.x - from.x) * (point.y - from.y) - (to.y - from.y) * (point.x - from.x);
 }
 
 function distanceBetween(point: PixelPoint, other: PixelPoint): number {

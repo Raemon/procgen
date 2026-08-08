@@ -1,5 +1,6 @@
 import type * as THREE from 'three';
 import { billboardHeightOfTile, billboardKindOfTile } from '../assets/tiles/art/billboards/billboardKind';
+import { billboardPalette } from '../assets/tiles/art/billboards/billboardPalette';
 import { markerBillboardArt } from '../assets/tiles/art/billboards/markerBillboardArt';
 import { TILE_ART_SIZE } from '../assets/tiles/art/artSize';
 import { defaultTiles } from '../assets/tiles/defaultTiles';
@@ -19,6 +20,7 @@ export function checkMarkerBillboardInvariants(check: CheckReporter): void {
   checkScatteredPropsDrawCrossedQuadsRatherThanACube(check);
   checkBillboardsKeepTheirSpriteUndistorted(check);
   checkEveryPropTilePaintsAStandingSilhouette(check);
+  checkEveryBillboardIsLitFromOneSide(check);
   checkPropArtIsSharedSoItsTexturesAreBuiltOnce(check);
   checkMarkersWithoutATileStayPins(check);
   checkMarkersReachTheShapeTheirLookAsksFor(check);
@@ -84,6 +86,27 @@ function checkEveryPropTilePaintsAStandingSilhouette(check: CheckReporter): void
     'the tile catalogue still sorts its props into every billboard silhouette',
     new Set(propTiles().map(billboardKindOfTile)).size === 5,
   );
+}
+
+function checkEveryBillboardIsLitFromOneSide(check: CheckReporter): void {
+  const arts = propTiles().map((tile) => ({ tile, pixels: markerBillboardArt(tile).north ?? [] }));
+  check(
+    'a billboard shades itself across a whole ramp rather than painting one flat colour',
+    arts.every((one) => new Set(one.pixels.filter((ink) => ink !== null)).size >= 4),
+  );
+  check(
+    'a moonlit rim only catches the edges facing the light, never the body of the sprite',
+    arts.every((one) => inkShareOf(one.pixels, billboardPalette(one.tile.color, 0).rim) < 0.3),
+  );
+  check(
+    'every billboard keeps its unlit side, so nothing reads as a flat cutout',
+    arts.every((one) => inkShareOf(one.pixels, billboardPalette(one.tile.color, 0).deep) > 0.02),
+  );
+}
+
+function inkShareOf(pixels: FacePixels, ink: string): number {
+  const painted = paintedCount(pixels);
+  return painted === 0 ? 0 : pixels.filter((one) => one === ink).length / painted;
 }
 
 function checkPropArtIsSharedSoItsTexturesAreBuiltOnce(check: CheckReporter): void {
