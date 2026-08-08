@@ -1,5 +1,11 @@
 [
   {
+    "wallTileId": 20,
+    "trimTileId": 26,
+    "roofSlopeTileId": 22,
+    "roofRidgeTileId": 23,
+    "floorTileId": 25,
+    "pathTileId": 17,
     "id": 0,
     "name": "stonewold",
     "roleBindings": {
@@ -40,17 +46,17 @@
         24
       ]
     },
-    "wallTileId": 20,
-    "trimTileId": 26,
-    "roofSlopeTileId": 22,
-    "roofRidgeTileId": 23,
-    "floorTileId": 25,
-    "pathTileId": 17,
     "roofStyle": 1,
     "storyLayers": 3,
     "windowEvery": 3
   },
   {
+    "wallTileId": 30,
+    "trimTileId": 31,
+    "roofSlopeTileId": 32,
+    "roofRidgeTileId": 33,
+    "floorTileId": 34,
+    "pathTileId": 16,
     "id": 1,
     "name": "thatchmere",
     "roleBindings": {
@@ -91,12 +97,6 @@
         24
       ]
     },
-    "wallTileId": 30,
-    "trimTileId": 31,
-    "roofSlopeTileId": 32,
-    "roofRidgeTileId": 33,
-    "floorTileId": 34,
-    "pathTileId": 16,
     "roofStyle": 0,
     "storyLayers": 2,
     "windowEvery": 4
