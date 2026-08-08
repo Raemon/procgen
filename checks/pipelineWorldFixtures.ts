@@ -1,3 +1,4 @@
+import '../procgen/nodes';
 import { CHUNK_SIZE } from '../procgen/chunk';
 import { PipelineEvaluator } from '../procgen/eval/evaluator';
 import type { PipelineState } from '../procgen/pipeline/pipelineState';
@@ -23,6 +24,10 @@ export function worldFromState(state: PipelineState): {
 
 export function islandsState(): PipelineState {
   return sanitizePipeline(examplePipelines()[0]!.state);
+}
+
+export function earthlikeState(): PipelineState {
+  return sanitizePipeline(examplePipelines()[6]!.state);
 }
 
 export function stateOfNodes(nodes: Array<Record<string, unknown>>): PipelineState {

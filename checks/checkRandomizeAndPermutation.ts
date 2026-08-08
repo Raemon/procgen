@@ -1,3 +1,4 @@
+import '../procgen/nodes';
 import { nodeTypeOf } from '../procgen/nodeRegistry';
 import { emptyPipeline, type PipelineState } from '../procgen/pipeline/pipelineState';
 import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';

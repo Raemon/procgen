@@ -1,3 +1,4 @@
+import '../procgen/nodes';
 import type { PipelineState } from '../procgen/pipeline/pipelineState';
 import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
 import { examplePipelines } from '../procgen/presets/examplePipelines';
@@ -8,11 +9,7 @@ import { sanitizeTemplates } from '../procgen/templates/nodeTemplate';
 import { nodeFolderRuns } from '../procgen/panel/nodeFolderRuns';
 import { asField } from '../procgen/values/valueAccess';
 import type { CheckReporter } from './checkReporter';
-import { worldFromState } from './pipelineWorldFixtures';
-
-function earthlikeState(): PipelineState {
-  return sanitizePipeline(examplePipelines()[6]!.state);
-}
+import { earthlikeState, worldFromState } from './pipelineWorldFixtures';
 
 export function checkTemplates(check: CheckReporter): void {
   const templates = builtInTemplates();

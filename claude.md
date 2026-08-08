@@ -10,7 +10,7 @@ All json files should be pretty-print formatted.
 
 Whenever you report back to a user, always end with a direct link to a running server
 
-When adding or changing procgen node types, keep the determinism rules — a node's output must be a pure function of (world seed, node, chunk coordinates, inputs), never of time, Math.random, or which chunks happened to generate first — and extend checks/checkProcgenInvariants.ts with checks for new nodes.
+When adding or changing procgen node types, keep the determinism rules — a node's output must be a pure function of (world seed, node, chunk coordinates, inputs), never of time, Math.random, or which chunks happened to generate first — and add a check module for the new nodes alongside checks/checkTerrainFieldNodes.ts, registered in the checks/checkProcgenInvariants.ts aggregator.
 
 Documentation is generated, never written. GET /docs renders the codebase page and GET /api/v1/docs renders the agent API, both from the live registries. A sentence about this codebase belongs in a check claim, where a failing assertion falsifies it, or it does not get written down. checks/checkDocumentationHasNotRegrown.ts enforces this, and claude.md is its only allowlisted exception.
 

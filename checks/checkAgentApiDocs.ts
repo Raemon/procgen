@@ -1,15 +1,13 @@
+import '../procgen/nodes';
+import '../abilities/index';
 import { FAILURES } from '../agents/failures';
 import { nodeTypesJson } from '../agents/nodeCatalog';
 import { buildApiDocs, everyAbility } from '../api/docs/apiDocs';
 import { allNodeTypes } from '../procgen/nodeRegistry';
-import {
-  DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
-  characterViewSize,
-} from '../world/vision/characterSight';
+import { DEFAULT_CHARACTER_SIGHT_RADIUS_TILES } from '../world/vision/characterSight';
+import { CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT } from './checkAgentObservation';
 import type { CheckReporter } from './checkReporter';
 import { tileAssets } from './pipelineWorldFixtures';
-
-const CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT = characterViewSize();
 
 export function checkAgentApiDocs(check: CheckReporter): void {
   const agentDocs = buildApiDocs(tileAssets);

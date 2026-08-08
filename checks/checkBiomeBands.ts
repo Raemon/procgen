@@ -1,3 +1,4 @@
+import '../procgen/nodes';
 import type { PipelineState } from '../procgen/pipeline/pipelineState';
 import { EMPTY_TILE } from '../procgen/values/chunkValues';
 import type { CheckReporter } from './checkReporter';

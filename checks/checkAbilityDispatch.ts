@@ -1,3 +1,4 @@
+import '../abilities/index';
 import { emptyPipeline } from '../procgen/pipeline/pipelineState';
 import { PipelineStore } from '../procgen/pipeline/pipelineStore';
 import { RandomizeHistory } from '../procgen/randomize/randomizeHistory';

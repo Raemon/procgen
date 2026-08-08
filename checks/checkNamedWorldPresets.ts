@@ -1,3 +1,4 @@
+import '../procgen/nodes';
 import type { PipelineState } from '../procgen/pipeline/pipelineState';
 import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
 import { examplePipelines } from '../procgen/presets/examplePipelines';
@@ -5,11 +6,13 @@ import { sanitizeWorldPresets } from '../procgen/presets/worldPreset';
 import { asField } from '../procgen/values/valueAccess';
 import { WorldSampler } from '../procgen/worldSampler';
 import type { CheckReporter } from './checkReporter';
-import { fieldBytes, tileBytes, tileIdsInRegion, worldFromState } from './pipelineWorldFixtures';
-
-function earthlikeState(): PipelineState {
-  return sanitizePipeline(examplePipelines()[6]!.state);
-}
+import {
+  earthlikeState,
+  fieldBytes,
+  tileBytes,
+  tileIdsInRegion,
+  worldFromState,
+} from './pipelineWorldFixtures';
 
 function presetStateNamed(name: string): PipelineState {
   return sanitizePipeline(examplePipelines().find((preset) => preset.name === name)!.state);

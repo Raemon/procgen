@@ -1,3 +1,4 @@
+import '../procgen/nodes';
 import { Vector3 } from 'three';
 import { buildObservation, GOD_VIEW_SIZE, SELF_GLYPH } from '../agents/observation';
 import { observationText } from '../agents/observationText';
@@ -23,7 +24,7 @@ import { createCharacterFog } from '../world/render/view3d/worldScene';
 import type { CheckReporter } from './checkReporter';
 import { islandsState, tileAssets, worldFromState } from './pipelineWorldFixtures';
 
-const CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT = characterViewSize();
+export const CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT = characterViewSize();
 
 function firstPersonCamera(
   x = 0,

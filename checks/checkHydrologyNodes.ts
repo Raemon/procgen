@@ -1,3 +1,4 @@
+import '../procgen/nodes';
 import { CHUNK_SIZE } from '../procgen/chunk';
 import type { PipelineState } from '../procgen/pipeline/pipelineState';
 import { EMPTY_TILE } from '../procgen/values/chunkValues';

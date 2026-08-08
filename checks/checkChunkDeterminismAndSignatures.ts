@@ -1,3 +1,4 @@
+import '../procgen/nodes';
 import { CHUNK_SIZE } from '../procgen/chunk';
 import { computeNodeSignatures } from '../procgen/pipeline/nodeSignatures';
 import { asPoints } from '../procgen/values/valueAccess';

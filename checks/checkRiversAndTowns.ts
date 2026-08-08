@@ -1,3 +1,4 @@
+import '../procgen/nodes';
 import { CHUNK_SIZE } from '../procgen/chunk';
 import { PipelineEvaluator } from '../procgen/eval/evaluator';
 import type { PipelineState } from '../procgen/pipeline/pipelineState';

@@ -1,3 +1,4 @@
+import '../procgen/nodes';
 import type { PipelineState } from '../procgen/pipeline/pipelineState';
 import type { CheckReporter } from './checkReporter';
 import { fieldAt, stateOfNodes, worldFromState } from './pipelineWorldFixtures';

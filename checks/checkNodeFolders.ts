@@ -1,3 +1,4 @@
+import '../procgen/nodes';
 import { computeNodeSignatures } from '../procgen/pipeline/nodeSignatures';
 import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
 import { nodeFolderRuns } from '../procgen/panel/nodeFolderRuns';

@@ -1,3 +1,4 @@
+import '../procgen/nodes';
 import { CHUNK_SIZE } from '../procgen/chunk';
 import { CARVER_CHOICES } from '../procgen/nodes/maze/mazeCarvers';
 import type { PipelineState } from '../procgen/pipeline/pipelineState';

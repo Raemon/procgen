@@ -1,3 +1,4 @@
+import '../procgen/nodes';
 import { emptyPipeline } from '../procgen/pipeline/pipelineState';
 import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
 import { examplePipelines } from '../procgen/presets/examplePipelines';

@@ -1,3 +1,4 @@
+import '../procgen/nodes';
 import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
 import { examplePipelines } from '../procgen/presets/examplePipelines';
 import type { CheckReporter } from './checkReporter';

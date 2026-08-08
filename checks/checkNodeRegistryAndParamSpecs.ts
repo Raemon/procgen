@@ -1,3 +1,4 @@
+import '../procgen/nodes';
 import { allNodeTypes } from '../procgen/nodeRegistry';
 import { defaultParams, isKnobParamSpec, outputKindOf } from '../procgen/nodeType';
 import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
