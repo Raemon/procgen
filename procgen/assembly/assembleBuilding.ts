@@ -1,4 +1,4 @@
-import { wallLayersOf, type Culture } from '../../assets/cultures/cultureDef';
+import { MIN_STORY_LAYERS, wallLayersOf, type Culture } from '../../assets/cultures/cultureDef';
 import type { PieceRole } from '../../assets/pieces/pieceDef';
 import { hashString } from '../random/hashString';
 import { mulberry32, type RandomStream } from '../random/mulberry32';
@@ -15,13 +15,13 @@ import {
 import type { BuildingSpec, PaintVoxel } from './buildingSpec';
 import { furnishingSpotsOf } from './buildingStories';
 import {
-  FIRST_WALL_LAYER,
   FLOOR_LAYER,
   paintDoorColumn,
   paintTile,
   paintWallColumn,
 } from './buildingTileFallback';
 import type { PieceSource } from './pieceSource';
+import { paintClippedToStory, wallStoriesOf, type WallStory } from './wallStories';
 
 interface AssembledBuilding {
   spec: BuildingSpec;
@@ -31,6 +31,7 @@ interface AssembledBuilding {
   boxes: RoomBox[];
   door: ShellCell | null;
   wallLayers: number;
+  storyLayers: number;
 }
 
 export function assembleBuilding(
@@ -63,6 +64,7 @@ function plannedBuilding(
     boxes,
     door: doorCellOf(boxes, spec.facing, rng),
     wallLayers: wallLayersOf(culture, massingRulesFor(spec.program).stories),
+    storyLayers: Math.max(MIN_STORY_LAYERS, culture.storyLayers),
   };
 }
 
@@ -81,13 +83,35 @@ function paintFloorCell(building: AssembledBuilding, cell: ShellCell): void {
 }
 
 function paintShellCell(building: AssembledBuilding, cell: ShellCell): void {
-  const role = shellPieceRoleOf(building, cell);
-  const piece = pieceAt(building, cell, role);
+  const groundRole = shellPieceRoleOf(building, cell);
   const world = worldCellOf(building.spec, cell.x, cell.y);
-  if (piece) {
-    return stampPieceThroughPaint(piece, cell.facing, world.x, world.y, FIRST_WALL_LAYER, building.paint);
+  if (!pieceAt(building, cell, groundRole)) return paintShellTiles(building, cell, groundRole, world);
+  for (const story of wallStoriesOf(building.wallLayers, building.storyLayers)) {
+    paintShellStory(building, cell, world, story);
   }
-  paintShellTiles(building, cell, role, world);
+}
+
+function paintShellStory(
+  building: AssembledBuilding,
+  cell: ShellCell,
+  world: { x: number; y: number },
+  story: WallStory,
+): void {
+  const role = storyPieceRoleOf(building, cell, story);
+  const piece = pieceAt(building, cell, role);
+  const paint = paintClippedToStory(building.paint, story);
+  if (piece) return stampPieceThroughPaint(piece, cell.facing, world.x, world.y, story.baseLayer, paint);
+  paintWallColumn(paint, world.x, world.y, story.topLayer, shellTileOf(building.culture, role), cell.facing);
+}
+
+function storyPieceRoleOf(
+  building: AssembledBuilding,
+  cell: ShellCell,
+  story: WallStory,
+): PieceRole {
+  const role = shellPieceRoleOf(building, cell);
+  if (story.isGroundStory) return role;
+  return role === 'door' ? 'wallSegment' : role;
 }
 
 function paintShellTiles(
