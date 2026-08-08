@@ -29,10 +29,12 @@ import {
   ceilingShape,
   floorShape,
   markerShape,
+  shapedShape,
   standingFixtureShape,
   voxelShape,
   type TileShape,
 } from './tileShapes';
+import { groupedByShapeAndFacing } from './shapedPlacementGroups';
 
 export { disposeMeshChildren } from './disposeMeshResources';
 
@@ -69,7 +71,14 @@ function terrainMeshes(
     ...meshesForShape(insideChunk(around.floors, minX, minY), floorShape(), field),
     ...meshesForShape(insideChunk(around.blocks, minX, minY), blockShape(), field),
     ...meshesForShape(insideChunk(around.voxels, minX, minY), voxelShape(), field),
+    ...shapedMeshes(insideChunk(around.shaped, minX, minY)),
   ];
+}
+
+function shapedMeshes(placements: readonly TilePlacement[]): THREE.InstancedMesh[] {
+  return groupedByShapeAndFacing(placements).flatMap((solid) =>
+    meshesForShape(solid.placements, shapedShape(solid.shape, solid.facing)),
+  );
 }
 
 function terrainOccluders(around: ChunkSurroundings): ShapedPlacements[] {

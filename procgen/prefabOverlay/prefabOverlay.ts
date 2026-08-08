@@ -30,12 +30,12 @@ export class PrefabOverlay {
     this.cache.clear();
   }
 
-  columnAt(worldX: number, worldY: number): VoxelColumn | null {
+  packedColumnAt(worldX: number, worldY: number): VoxelColumn | null {
     const chunkX = chunkCoordOfCell(worldX);
     const chunkY = chunkCoordOfCell(worldY);
     const cellX = worldX - chunkOrigin(chunkX);
     const cellY = worldY - chunkOrigin(chunkY);
-    return this.columnsForChunk(chunkX, chunkY).columnAt(cellY * CHUNK_SIZE + cellX);
+    return this.columnsForChunk(chunkX, chunkY).packedColumnAt(cellY * CHUNK_SIZE + cellX);
   }
 
   columnsForChunk(chunkX: number, chunkY: number): ChunkVoxelColumns {

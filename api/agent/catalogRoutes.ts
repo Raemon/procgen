@@ -115,6 +115,7 @@ function tileJson(tile: ReturnType<ServerWorld['tileAssets']['all']>[number]) {
     color: tile.color,
     walkable: tile.walkable,
     height: tile.height,
+    shape: tile.shape,
     light: tile.light,
     light_ink: tile.lightInk,
     has_face_art: tile.faceArt !== null,

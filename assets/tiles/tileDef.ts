@@ -1,5 +1,6 @@
 import { clampLightRadius, DEFAULT_LIGHT_INK } from '../../world/light/lightEmission';
 import type { CubeFaceArt } from './tileFaceArt';
+import { DEFAULT_TILE_SHAPE, type TileShapeKind } from './tileShapeKind';
 import { WALKABLE_TILE_HEIGHT } from './tileHeight';
 
 export type TileRole = 'water' | 'sand' | 'grass' | 'tree' | 'rock';
@@ -12,6 +13,7 @@ export interface TileDef {
   walkable: boolean;
   height: number;
   role: TileRole | null;
+  shape: TileShapeKind;
   faceArt: CubeFaceArt | null;
   light: number;
   lightInk: string;
@@ -26,6 +28,7 @@ export function newTileWithId(id: number): TileDef {
     walkable: true,
     height: WALKABLE_TILE_HEIGHT,
     role: null,
+    shape: DEFAULT_TILE_SHAPE,
     faceArt: null,
     light: 0,
     lightInk: DEFAULT_LIGHT_INK,

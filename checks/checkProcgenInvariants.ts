@@ -12,6 +12,7 @@ import { checkTileArtMipInvariants } from './checkTileArtMipInvariants';
 import { checkSharedItemAndCreatureArtInvariants } from './checkSharedItemAndCreatureArtInvariants';
 import { checkTileArtStorageInvariants } from './checkTileArtStorageInvariants';
 import { checkHiddenTileFaceCulling } from './checkHiddenTileFaceCulling';
+import { checkShapedTileInvariants } from './checkShapedTileInvariants';
 import { checkPresentationFoldersAreTheOnlyDomCode } from './checkPresentationFoldersAreTheOnlyDomCode';
 import { checkDesignBetsStillHold } from './checkDesignBetsStillHold';
 import { checkPuzzleInvariants } from './checkPuzzleInvariants';
@@ -1526,7 +1527,7 @@ function abilityWorld() {
     regionSampler: {
       tileAt: () => 0,
       elevationAt: () => 0,
-      voxelColumnAt: () => null,
+      packedVoxelColumnAt: () => null,
     },
     actor: {
       pose: () => pose,
@@ -1991,6 +1992,7 @@ describe('tile art mips', () => checkTileArtMipInvariants(check));
 describe('shared item and creature art', () => checkSharedItemAndCreatureArtInvariants(check));
 describe('tile art storage', () => checkTileArtStorageInvariants(check));
 describe('hidden tile faces', () => checkHiddenTileFaceCulling(check));
+describe('shaped tiles and per-voxel facing', () => checkShapedTileInvariants(check));
 describe('puzzle rooms', () => checkPuzzleInvariants(check));
 describe('the dom boundary', () => checkPresentationFoldersAreTheOnlyDomCode(check));
 describe('documentation', () => {

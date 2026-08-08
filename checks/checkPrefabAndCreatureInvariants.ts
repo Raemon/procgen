@@ -11,6 +11,7 @@ import { EMPTY_TILE } from '../procgen/values/chunkValues';
 import { WorldSampler } from '../procgen/worldSampler';
 import { prefabFromWorldRegion } from '../assets/prefabs/captureRegionAsPrefab';
 import { EMPTY_VOXEL, voxelAt, type Prefab } from '../assets/prefabs/prefabDef';
+import { tileIdOfVoxel } from '../procgen/prefabOverlay/packedVoxel';
 import { PrefabAssets } from '../assets/prefabs/prefabAssets';
 import { resizedPrefab } from '../assets/prefabs/prefabResize';
 import { rotatedDepth, rotatedPrefab, rotatedWidth } from '../assets/prefabs/prefabRotation';
@@ -89,7 +90,7 @@ function checkPrefabStamping(
   check(
     'stamped prefab columns stand as tall as the prefab that made them',
     everyFootprintCell(prefab, (x, y) => {
-      const column = world.sampler.voxelColumnAt(originX + x, originY + y) ?? [];
+      const column = world.sampler.packedVoxelColumnAt(originX + x, originY + y) ?? [];
       return column.length <= prefab.layers && columnMatchesPrefab(column, prefab, x, y);
     }),
   );
@@ -103,7 +104,8 @@ function checkPrefabStamping(
   );
   check(
     'stacked prefab voxels become 2.5D blocks above the ground',
-    placements.length > 0 && placements.every((placement) => placement.elevation >= 0),
+    placements.voxels.length > 0 &&
+      placements.voxels.every((placement) => placement.elevation >= 0),
   );
   check(
     'the ascii view shows the topmost voxel of a stamped prefab',
@@ -285,9 +287,10 @@ function topVoxelOfPrefab(prefab: Prefab): number {
 }
 
 function columnMatchesPrefab(column: number[], prefab: Prefab, x: number, y: number): boolean {
-  return column.every(
-    (tileId, layer) => tileId === EMPTY_TILE || tileId === voxelAt(prefab, x, y, layer),
-  );
+  return column.every((packed, layer) => {
+    const tileId = tileIdOfVoxel(packed);
+    return tileId === EMPTY_TILE || tileId === voxelAt(prefab, x, y, layer);
+  });
 }
 
 function everyCell(

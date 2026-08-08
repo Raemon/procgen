@@ -1,6 +1,7 @@
 import { EMPTY_TILE } from '../../../procgen/values/chunkValues';
 import type { WorldSampler } from '../../../procgen/worldSampler';
 import type { ReadOnlyTileAssets } from '../../../frontend/readOnlyAssets';
+import { DEFAULT_TILE_SHAPE } from '../../../assets/tiles/tileShapeKind';
 import { glowOfEmitter } from './selfLitGlow';
 import type { TilePlacement } from './tilePlacements';
 
@@ -44,5 +45,7 @@ function addCeilingCell(
     faceArt: tile.faceArt,
     glow: glowOfEmitter(tile),
     sunkenAsWater: false,
+    shape: DEFAULT_TILE_SHAPE,
+    facing: 0,
   });
 }

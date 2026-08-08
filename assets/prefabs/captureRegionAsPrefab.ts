@@ -1,5 +1,6 @@
 import { blankVoxels, EMPTY_VOXEL, MAX_PREFAB_LAYERS, MAX_PREFAB_SIDE, withCenteredAnchor, type Prefab } from './prefabDef';
 import { paintVoxel } from './prefabPainting';
+import { tileIdOfVoxel } from '../../procgen/prefabOverlay/packedVoxel';
 
 export interface WorldRegion {
   minX: number;
@@ -11,7 +12,7 @@ export interface WorldRegion {
 export interface RegionSampler {
   tileAt(x: number, y: number): number;
   elevationAt(x: number, y: number): number;
-  voxelColumnAt(x: number, y: number): number[] | null;
+  packedVoxelColumnAt(x: number, y: number): number[] | null;
 }
 
 export function regionSize(region: WorldRegion): { width: number; depth: number } {
@@ -57,7 +58,7 @@ function tallestColumn(
   groundLayers: number[],
 ): number {
   const heights = mapCells(width, depth, (x, y, index) => {
-    const column = sampler.voxelColumnAt(region.minX + x, region.minY + y);
+    const column = sampler.packedVoxelColumnAt(region.minX + x, region.minY + y);
     return groundLayers[index]! + Math.max(1, column?.length ?? 0);
   });
   return Math.max(1, ...heights);
@@ -73,7 +74,13 @@ function fillCapturedVoxels(
     const worldX = region.minX + x;
     const worldY = region.minY + y;
     fillGroundColumn(prefab, x, y, groundLayers[index]!, sampler.tileAt(worldX, worldY));
-    overlayPrefabColumn(prefab, x, y, groundLayers[index]!, sampler.voxelColumnAt(worldX, worldY));
+    overlayPrefabColumn(
+      prefab,
+      x,
+      y,
+      groundLayers[index]!,
+      sampler.packedVoxelColumnAt(worldX, worldY),
+    );
   });
 }
 
@@ -96,7 +103,8 @@ function overlayPrefabColumn(
   column: number[] | null,
 ): void {
   if (!column) return;
-  column.forEach((tileId, layer) => {
+  column.forEach((packed, layer) => {
+    const tileId = tileIdOfVoxel(packed);
     if (tileId !== EMPTY_VOXEL) paintVoxel(prefab, x, y, groundLayer + layer, tileId);
   });
 }

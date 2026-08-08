@@ -434,7 +434,7 @@ function abilityWorld() {
     randomizeHistory: new RandomizeHistory(),
     groundItems: NO_GROUND_ITEMS,
     puzzles: new PuzzleWorld(store, () => true),
-    regionSampler: { tileAt: () => 0, elevationAt: () => 0, voxelColumnAt: () => null },
+    regionSampler: { tileAt: () => 0, elevationAt: () => 0, packedVoxelColumnAt: () => null },
     actor: {
       pose: () => ({ x: 0, y: 0, facing: 0 }),
       tryStep: () => true,

@@ -76,7 +76,11 @@ function onlyTilePlacements(tile: TileDef) {
 }
 
 function samplerOfOneTile(tile: TileDef): WorldSampler {
-  return { tileAt: () => tile.id, elevationAt: () => 0 } as unknown as WorldSampler;
+  return {
+    tileAt: () => tile.id,
+    elevationAt: () => 0,
+    groundFacingAt: () => 0,
+  } as unknown as WorldSampler;
 }
 
 function tilesetOfOneTile(tile: TileDef): ReadOnlyTileAssets {

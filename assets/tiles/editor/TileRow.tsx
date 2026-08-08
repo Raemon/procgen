@@ -18,6 +18,7 @@ import { deleteTileTip, TILE_HEIGHT_TIP, TILE_NAME_TIP, walkableTip } from './he
 import { FaceArtToggle } from './FaceArtToggle';
 import { ScaledArtStrip } from './ScaledArtStrip';
 import { SymbolInput } from './SymbolInput';
+import { TileShapeSelect } from './TileShapeSelect';
 
 export function TileRow({ tile }: { tile: TileDef }) {
   const { perform } = useAppRuntime();
@@ -52,6 +53,12 @@ export function TileRow({ tile }: { tile: TileDef }) {
           ×
         </Button>
       </div>
+      {artOpen && (
+        <TileShapeSelect
+          tile={tile}
+          onPick={(shape) => perform('set_tile_shape', { tile_id: tile.id, shape })}
+        />
+      )}
       {artOpen && (
         <LightKnobRows
           emitter={tile}

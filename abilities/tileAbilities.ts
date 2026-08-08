@@ -1,6 +1,7 @@
 import { clampLightRadius, MAX_LIGHT_RADIUS } from '../world/light/lightEmission';
 import { isCubeFaceArt } from '../assets/tiles/tileFaceArt';
 import type { EditableTileFields } from '../assets/tiles/tileAssets';
+import { TILE_SHAPE_KINDS } from '../assets/tiles/tileShapeKind';
 import {
   abilityFailed,
   abilitySucceeded,
@@ -76,6 +77,29 @@ registerTileAbility({
       return abilitySucceeded(`removed tile ${tileId}`);
     }),
 });
+
+registerTileAbility({
+  action: 'set_tile_shape',
+  humanControl: 'assets panel, tiles tab: the shape dropdown on a tile row',
+  description: `Choose the solid this tile draws as in the 3-D view. Shapes are: ${listOf(TILE_SHAPE_KINDS)}. Everything but cube leaves part of the cell open and is turned by the per-voxel facing.`,
+  params: {
+    tile_id: { kind: 'int', help: TILE_ID_HELP },
+    shape: { kind: 'int', help: `index into the shape list: ${TILE_SHAPE_KINDS.map((kind, index) => `${index}=${kind}`).join(', ')}` },
+  },
+  example: { action: 'set_tile_shape', tile_id: 3, shape: 1 },
+  apply: (context, params) => setTileShape(context, params),
+});
+
+function setTileShape(context: AbilityContext, params: Record<string, unknown>): AbilityResult {
+  return withTile(context, params, (tileId) => {
+    const read = readInt(params, 'shape');
+    if (!read.ok) return read.failure;
+    const shape = TILE_SHAPE_KINDS[read.value];
+    if (!shape) return abilityFailed('invalid_value', `shape must be one of: ${listOf(TILE_SHAPE_KINDS.map((_, index) => index))}`);
+    context.tileAssets.update(tileId, { shape });
+    return abilitySucceeded(`tile ${tileId} draws as ${shape}`);
+  });
+}
 
 function withTile(
   context: AbilityContext,

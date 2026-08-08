@@ -1,14 +1,14 @@
 import * as THREE from 'three';
 import { tileBoxGeometry } from './tileBoxGeometry';
 import { EVERY_FACE } from './culling/visibleFaceMask';
+import { rememberedSharedGeometry } from './sharedGeometryCache';
 
 interface FaceSelection {
   indices: number[];
   groups: THREE.GeometryGroup[];
 }
 
-const geometriesByShape = new Map<string, THREE.BufferGeometry>();
-const shared = new Set<THREE.BufferGeometry>();
+export { isSharedTileGeometry } from './sharedGeometryCache';
 
 export function sharedTileBoxGeometry(
   width: number,
@@ -16,22 +16,9 @@ export function sharedTileBoxGeometry(
   depth: number,
   faces: number,
 ): THREE.BufferGeometry {
-  return remembered(`box:${width}:${height}:${depth}:${faces}`, () =>
+  return rememberedSharedGeometry(`box:${width}:${height}:${depth}:${faces}`, () =>
     boxWithOnlyTheseFaces(tileBoxGeometry(width, height, depth), faces),
   );
-}
-
-export function isSharedTileGeometry(geometry: THREE.BufferGeometry): boolean {
-  return shared.has(geometry);
-}
-
-function remembered(key: string, build: () => THREE.BufferGeometry): THREE.BufferGeometry {
-  const cached = geometriesByShape.get(key);
-  if (cached) return cached;
-  const geometry = build();
-  geometriesByShape.set(key, geometry);
-  shared.add(geometry);
-  return geometry;
 }
 
 function boxWithOnlyTheseFaces(box: THREE.BoxGeometry, faces: number): THREE.BufferGeometry {

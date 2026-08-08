@@ -10,35 +10,40 @@ export interface PlacementGroup {
   placements: TilePlacement[];
 }
 
-type GroupsBySurface = Map<CubeFaceArt | string, Map<number, PlacementGroup>>;
+type GroupsBySurface = Map<CubeFaceArt | string, Map<string, PlacementGroup>>;
 
 export function groupsOfLikeSurfaceAndFaces(faced: readonly FacedPlacement[]): PlacementGroup[] {
   const bySurface: GroupsBySurface = new Map();
   for (const one of faced) addToGroup(bySurface, one.placement, one.faces);
-  return [...bySurface.values()].flatMap((byFaces) => [...byFaces.values()]);
+  return [...bySurface.values()].flatMap((bySolid) => [...bySolid.values()]);
 }
 
 function addToGroup(bySurface: GroupsBySurface, placement: TilePlacement, faces: number): void {
-  const byFaces = groupsSharingSurface(bySurface, placement);
-  const group = byFaces.get(faces) ?? {
+  const bySolid = groupsSharingSurface(bySurface, placement);
+  const key = solidKey(placement, faces);
+  const group = bySolid.get(key) ?? {
     art: placement.faceArt,
     baseColor: placement.baseColor,
     glow: placement.glow,
     faces,
     placements: [],
   };
-  byFaces.set(faces, group);
+  bySolid.set(key, group);
   group.placements.push(placement);
+}
+
+function solidKey(placement: TilePlacement, faces: number): string {
+  return `${faces}:${placement.shape}:${placement.facing}`;
 }
 
 function groupsSharingSurface(
   bySurface: GroupsBySurface,
   placement: TilePlacement,
-): Map<number, PlacementGroup> {
+): Map<string, PlacementGroup> {
   const key = placement.faceArt ?? flatSurfaceKey(placement);
-  const byFaces = bySurface.get(key) ?? new Map<number, PlacementGroup>();
-  bySurface.set(key, byFaces);
-  return byFaces;
+  const bySolid = bySurface.get(key) ?? new Map<string, PlacementGroup>();
+  bySurface.set(key, bySolid);
+  return bySolid;
 }
 
 function flatSurfaceKey(placement: TilePlacement): string {

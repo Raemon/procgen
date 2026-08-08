@@ -8,7 +8,8 @@ import { markerAppearance } from './display/markerAppearance';
 import type { PipelineEvaluator } from './eval/evaluator';
 import type { NodeInstance } from './pipeline/pipelineState';
 import type { PipelineStore } from './pipeline/pipelineStore';
-import { topVoxelOf, type VoxelColumn } from './prefabOverlay/chunkVoxelColumns';
+import { topPackedVoxelOf, type VoxelColumn } from './prefabOverlay/chunkVoxelColumns';
+import { tileIdOfVoxel } from './prefabOverlay/packedVoxel';
 import { PrefabOverlay, NO_PREFABS, type PrefabSource } from './prefabOverlay/prefabOverlay';
 import type { PrefabPlacement } from './prefabOverlay/prefabPlacement';
 import { buildSampledChunk } from './sampling/buildSampledChunk';
@@ -82,12 +83,16 @@ export class WorldSampler {
     return this.sampledChunkOfCell(x, y).tiles[cellIndexInChunk(x, y)]!;
   }
 
-  voxelColumnAt(x: number, y: number): VoxelColumn | null {
-    return this.sampledChunkOfCell(x, y).columns.columnAt(cellIndexInChunk(x, y));
+  packedVoxelColumnAt(x: number, y: number): VoxelColumn | null {
+    return this.sampledChunkOfCell(x, y).columns.packedColumnAt(cellIndexInChunk(x, y));
   }
 
-  topVoxelAt(x: number, y: number): number {
-    return topVoxelOf(this.voxelColumnAt(x, y));
+  topVoxelTileIdAt(x: number, y: number): number {
+    return tileIdOfVoxel(topPackedVoxelOf(this.packedVoxelColumnAt(x, y)));
+  }
+
+  groundFacingAt(x: number, y: number): number {
+    return this.sampledChunkOfCell(x, y).groundFacing[cellIndexInChunk(x, y)]!;
   }
 
   ceilingTileAt(x: number, y: number): number {

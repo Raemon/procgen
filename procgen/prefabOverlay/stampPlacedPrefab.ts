@@ -2,7 +2,10 @@ import { EMPTY_VOXEL, voxelAt } from '../../assets/prefabs/prefabDef';
 import { rotatedDepth, rotatedWidth, unrotatedCell } from '../../assets/prefabs/prefabRotation';
 import { CHUNK_SIZE } from '../chunk';
 import type { ChunkVoxelColumns } from './chunkVoxelColumns';
+import { packedVoxel } from './packedVoxel';
 import type { PlacedPrefab } from './prefabPlacement';
+
+const PREFABS_HAVE_NO_FACING_YET = 0;
 
 export function stampPlacedPrefabIntoChunk(
   placed: PlacedPrefab,
@@ -34,6 +37,8 @@ function stampColumn(
   const cellIndex = cellY * CHUNK_SIZE + cellX;
   for (let layer = 0; layer < placed.prefab.layers; layer++) {
     const tileId = voxelAt(placed.prefab, source.x, source.y, layer);
-    if (tileId !== EMPTY_VOXEL) into.paint(cellIndex, layer, tileId);
+    if (tileId !== EMPTY_VOXEL) {
+      into.paint(cellIndex, layer, packedVoxel(tileId, PREFABS_HAVE_NO_FACING_YET));
+    }
   }
 }

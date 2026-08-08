@@ -1,6 +1,7 @@
 import type { Marker, WorldSampler } from '../../../procgen/worldSampler';
 import { withTransparency } from '../../../assets/tiles/inkColor';
 import { WALKABLE_TILE_HEIGHT } from '../../../assets/tiles/tileHeight';
+import { DEFAULT_TILE_SHAPE } from '../../../assets/tiles/tileShapeKind';
 import { NO_EXTRA_MARKERS, type MarkerSource } from '../markerSource';
 import type { TilePlacement } from './tilePlacements';
 
@@ -48,5 +49,7 @@ function placementForMarker(marker: Marker, elevation: number): TilePlacement {
     faceArt: marker.faceArt,
     glow: 0,
     sunkenAsWater: false,
+    shape: DEFAULT_TILE_SHAPE,
+    facing: 0,
   };
 }

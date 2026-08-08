@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { blankCubeFaceArt, type CubeFaceArt } from '../assets/tiles/tileFaceArt';
 import { TRANSPARENT_INK } from '../assets/tiles/inkColor';
+import { DEFAULT_TILE_SHAPE } from '../assets/tiles/tileShapeKind';
 import { TileAssets } from '../assets/tiles/tileAssets';
 import { PipelineEvaluator } from '../procgen/eval/evaluator';
 import { PipelineStore } from '../procgen/pipeline/pipelineStore';
@@ -327,6 +328,8 @@ function placementPainted(baseColor: string, faceArt: CubeFaceArt | null): TileP
     faceArt,
     glow: 0,
     sunkenAsWater: false,
+    shape: DEFAULT_TILE_SHAPE,
+    facing: 0,
   };
 }
 
