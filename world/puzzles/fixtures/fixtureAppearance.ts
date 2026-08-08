@@ -13,6 +13,7 @@ export interface FixtureLook {
   tag: string;
   faceArt: CubeFaceArt | null;
   standingHeight?: number;
+  seeThroughUnpaintedArt?: boolean;
 }
 
 const FLAT = { faceArt: null };
@@ -61,9 +62,10 @@ const LOOKS: Record<PuzzleFixtureKind, { off: FixtureLook; on: FixtureLook }> = 
     on: {
       glyph: "'",
       color: '#6fb98a',
-      tag: 'unlocked door',
+      tag: 'unlocked door, standing open',
       faceArt: DOOR_FACE_ART.on,
       standingHeight: DOOR_STANDS_TALL,
+      seeThroughUnpaintedArt: true,
     },
   },
 };

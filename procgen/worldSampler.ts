@@ -23,6 +23,7 @@ export interface Marker {
   faceArt: CubeFaceArt | null;
   tag: string;
   standingHeight?: number;
+  seeThroughUnpaintedArt?: boolean;
 }
 
 export interface CreatureSpawn {
