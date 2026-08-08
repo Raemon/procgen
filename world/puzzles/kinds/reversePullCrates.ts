@@ -1,7 +1,7 @@
 import type { RandomStream } from '../../../procgen/random/mulberry32';
 import {
-  canWalkBetween,
   cellKey,
+  cellsReachableFrom,
   isOpenFloor,
   CRATE_DIRECTIONS,
   type CrateFloorSpace,
@@ -14,6 +14,12 @@ export interface PullableRoom extends CrateFloorSpace {
   player: Cell;
 }
 
+interface ReversePull {
+  entrance: Cell;
+  solution: CratePush[];
+  whereThePlayerCanGetTo: Set<string>;
+}
+
 const ATTEMPTS_PER_PULL = 8;
 
 export function reversePullCrates(
@@ -23,16 +29,23 @@ export function reversePullCrates(
   rng: RandomStream,
 ): CratePush[] {
   const plates = new Set([...room.crates.values()].map(cellKey));
-  const solution: CratePush[] = [];
+  const run = aRunStartingAtTheDoorway(room, entrances[0]!);
   const crateIds = [...room.crates.keys()];
   const attempts = pulls * ATTEMPTS_PER_PULL;
-  for (let attempt = 0; attempt < attempts && solution.length < pulls; attempt++) {
+  for (let attempt = 0; attempt < attempts && run.solution.length < pulls; attempt++) {
     const crateId = crateIds[Math.floor(rng() * crateIds.length)]!;
-    const direction = CRATE_DIRECTIONS[Math.floor(rng() * CRATE_DIRECTIONS.length)]!;
-    keepThePullIfItStaysSolvable(room, entrances, solution, crateId, direction);
+    keepThePullIfItStaysSolvable(room, run, crateId, aDirectionAtRandom(rng));
   }
-  dragEveryCrateOffAPlate(room, entrances, solution, plates, rng);
-  return solution;
+  dragEveryCrateOffAPlate(room, run, plates, rng);
+  return run.solution;
+}
+
+export function everyDoorwayCanRunTheSolution(
+  room: PullableRoom,
+  entrances: readonly Cell[],
+  solution: readonly CratePush[],
+): boolean {
+  return entrances.every((entrance) => forwardSolutionWorks(room, entrance, solution));
 }
 
 export function cratesStillOnPlates(room: PullableRoom, plates: ReadonlySet<string>): string[] {
@@ -41,10 +54,21 @@ export function cratesStillOnPlates(room: PullableRoom, plates: ReadonlySet<stri
     .map(([crateId]) => crateId);
 }
 
+function aRunStartingAtTheDoorway(room: PullableRoom, entrance: Cell): ReversePull {
+  return {
+    entrance,
+    solution: [],
+    whereThePlayerCanGetTo: cellsReachableFrom(room, entrance),
+  };
+}
+
+function aDirectionAtRandom(rng: RandomStream): { dx: number; dy: number } {
+  return CRATE_DIRECTIONS[Math.floor(rng() * CRATE_DIRECTIONS.length)]!;
+}
+
 function dragEveryCrateOffAPlate(
   room: PullableRoom,
-  entrances: readonly Cell[],
-  solution: CratePush[],
+  run: ReversePull,
   plates: ReadonlySet<string>,
   rng: RandomStream,
 ): void {
@@ -53,40 +77,50 @@ function dragEveryCrateOffAPlate(
     const resting = cratesStillOnPlates(room, plates);
     if (resting.length === 0) return;
     const crateId = resting[Math.floor(rng() * resting.length)]!;
-    const direction = CRATE_DIRECTIONS[Math.floor(rng() * CRATE_DIRECTIONS.length)]!;
-    keepThePullIfItStaysSolvable(room, entrances, solution, crateId, direction);
+    keepThePullIfItStaysSolvable(room, run, crateId, aDirectionAtRandom(rng));
   }
 }
 
 function keepThePullIfItStaysSolvable(
   room: PullableRoom,
-  entrances: readonly Cell[],
-  solution: CratePush[],
+  run: ReversePull,
   crateId: string,
   direction: { dx: number; dy: number },
 ): void {
   const wasAt = room.crates.get(crateId)!;
   const stoodAt = room.player;
+  if (!thePullIsWorthTrying(room, run, wasAt, direction)) return;
   const pulled = pullOneCrateBackwards(room, crateId, direction);
-  if (!pulled) return;
-  solution.unshift(pulled);
-  if (entrances.every((entrance) => forwardSolutionWorks(room, entrance, solution))) return;
-  solution.shift();
+  const nowReachable = cellsReachableFrom(room, run.entrance);
+  if (nowReachable.has(cellKey(room.player))) {
+    run.solution.unshift(pulled);
+    run.whereThePlayerCanGetTo = nowReachable;
+    return;
+  }
   room.crates.set(crateId, wasAt);
   room.player = stoodAt;
+}
+
+function thePullIsWorthTrying(
+  room: PullableRoom,
+  run: ReversePull,
+  crateIsAt: Cell,
+  direction: { dx: number; dy: number },
+): boolean {
+  const crateGoesTo = { x: crateIsAt.x - direction.dx, y: crateIsAt.y - direction.dy };
+  const playerStandsAt = { x: crateIsAt.x - 2 * direction.dx, y: crateIsAt.y - 2 * direction.dy };
+  if (!isOpenFloor(room, crateGoesTo) || !isOpenFloor(room, playerStandsAt)) return false;
+  if (!run.whereThePlayerCanGetTo.has(cellKey(playerStandsAt))) return false;
+  return run.solution.length === 0 || run.whereThePlayerCanGetTo.has(cellKey(crateGoesTo));
 }
 
 function pullOneCrateBackwards(
   room: PullableRoom,
   crateId: string,
   direction: { dx: number; dy: number },
-): CratePush | null {
+): CratePush {
   const crate = room.crates.get(crateId)!;
-  const crateGoesTo = { x: crate.x - direction.dx, y: crate.y - direction.dy };
-  const playerStandsAt = { x: crate.x - 2 * direction.dx, y: crate.y - 2 * direction.dy };
-  if (!isOpenFloor(room, crateGoesTo) || !isOpenFloor(room, playerStandsAt)) return null;
-  if (!canWalkBetween(room, room.player, playerStandsAt)) return null;
-  room.crates.set(crateId, crateGoesTo);
-  room.player = playerStandsAt;
+  room.crates.set(crateId, { x: crate.x - direction.dx, y: crate.y - direction.dy });
+  room.player = { x: crate.x - 2 * direction.dx, y: crate.y - 2 * direction.dy };
   return { crateId, dx: direction.dx, dy: direction.dy };
 }
