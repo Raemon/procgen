@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import type { OccluderBox } from './culling/occluderBox';
-import type { PlacementPosition, PlacementVerticalScale } from './instancedTileMesh';
+import type { PlacementPosition, PlacementScale } from './instancedTileMesh';
 import { shapeFillsCell, type TileShapeKind } from '../../../assets/tiles/tileShapeKind';
+import { sharedCrossedQuadGeometry } from './crossedQuadGeometry';
 import { sharedTileBoxGeometry } from './sharedTileGeometries';
 import { shapedTileGeometry } from './shapedTileGeometries';
 import type { TilePlacement } from './tilePlacements';
@@ -17,7 +18,7 @@ const BLOCK_SIDE = 0.95;
 export interface TileShape {
   geometry(faces: number): THREE.BufferGeometry;
   positionOf: PlacementPosition;
-  verticalScaleOf?: PlacementVerticalScale;
+  scaleOf?: PlacementScale;
   occluderBoxOf?: (placement: TilePlacement) => OccluderBox;
 }
 
@@ -60,7 +61,15 @@ export function standingFixtureShape(): TileShape {
   return {
     geometry: (faces) => sharedTileBoxGeometry(1, 1, 1, faces),
     positionOf: (p) => [p.x + 0.5, p.elevation + p.height / 2, p.y + 0.5],
-    verticalScaleOf: (p) => p.height,
+    scaleOf: (p) => [1, p.height, 1],
+  };
+}
+
+export function billboardShape(): TileShape {
+  return {
+    geometry: () => sharedCrossedQuadGeometry(),
+    positionOf: (p) => [p.x + 0.5, p.elevation + p.height / 2, p.y + 0.5],
+    scaleOf: (p) => [p.height, p.height, p.height],
   };
 }
 

@@ -34,6 +34,7 @@ export interface Marker {
   faceArt: CubeFaceArt | null;
   tag: string;
   standingHeight?: number;
+  billboardHeight?: number;
   seeThroughUnpaintedArt?: boolean;
 }
 

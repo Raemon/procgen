@@ -26,6 +26,7 @@ import { EVERY_FACE, visibleFacesOf } from './culling/visibleFaceMask';
 import { foldRareFaceVariants, type FacedPlacement } from './culling/foldRareFaceVariants';
 import { groupsOfLikeSurfaceAndFaces, type PlacementGroup } from './placementGroups';
 import {
+  billboardShape,
   blockShape,
   ceilingShape,
   floorShape,
@@ -56,6 +57,7 @@ export function buildChunkMeshGroup(
   group.add(
     ...terrainMeshes(around, minX, minY),
     ...meshesForShape(markers.pins, markerShape()),
+    ...meshesForShape(markers.billboards, billboardShape()),
     ...meshesForShape(markers.standingFixtures, standingFixtureShape()),
     ceilingGroup(around, minX, minY),
   );
@@ -146,7 +148,7 @@ function groupMesh(group: PlacementGroup, shape: TileShape): THREE.InstancedMesh
     surface ? tileSurfaceMaterials(surface, MAX_FACE_ART_SIZE) : groupMaterials(group),
     group.placements,
     shape.positionOf,
-    shape.verticalScaleOf,
+    shape.scaleOf,
   );
   if (mesh && surface) rememberTileSurface(mesh, surface);
   return mesh;

@@ -32,6 +32,7 @@ import { checkGeneratedAssetInvariants } from './checkGeneratedAssetInvariants';
 import { checkPieceInvariants } from './checkPieceInvariants';
 import { checkVillageInvariants } from './checkVillageInvariants';
 import { checkShapedTileInvariants } from './checkShapedTileInvariants';
+import { checkMarkerBillboardInvariants } from './checkMarkerBillboardInvariants';
 import { checkPresentationFoldersAreTheOnlyDomCode } from './checkPresentationFoldersAreTheOnlyDomCode';
 import { checkDesignBetsStillHold } from './checkDesignBetsStillHold';
 import { checkEveryApiSurfaceIsDescribed } from './checkEveryApiSurfaceIsDescribed';
@@ -70,6 +71,7 @@ describe('the mutation boundary', () => checkOnlyTheAbilityLayerCanMutate(check)
 describe('tile art mips', () => checkTileArtMipInvariants(check));
 describe('tile art storage', () => checkTileArtStorageInvariants(check));
 describe('shaped tiles and per-voxel facing', () => checkShapedTileInvariants(check));
+describe('scattered prop billboards', () => checkMarkerBillboardInvariants(check));
 describe('pieces', () => checkPieceInvariants(check));
 describe('villages', () => checkVillageInvariants(check));
 describe('generated asset kits', () => checkGeneratedAssetInvariants(check));

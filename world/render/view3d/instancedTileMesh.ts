@@ -3,7 +3,7 @@ import { opaqueInk } from '../../../assets/tiles/inkColor';
 import type { TilePlacement } from './tilePlacements';
 
 export type PlacementPosition = (placement: TilePlacement) => [number, number, number];
-export type PlacementVerticalScale = (placement: TilePlacement) => number;
+export type PlacementScale = (placement: TilePlacement) => [number, number, number];
 
 const placedAt = new THREE.Matrix4();
 const stretched = new THREE.Vector3();
@@ -14,12 +14,12 @@ export function instancedTileMesh(
   material: THREE.Material | THREE.Material[],
   placements: readonly TilePlacement[],
   positionOf: PlacementPosition,
-  verticalScaleOf?: PlacementVerticalScale,
+  scaleOf?: PlacementScale,
 ): THREE.InstancedMesh | null {
   if (placements.length === 0) return null;
   const mesh = new THREE.InstancedMesh(geometry, material, placements.length);
   placements.forEach((placement, index) =>
-    writeInstance(mesh, index, placement, positionOf, verticalScaleOf),
+    writeInstance(mesh, index, placement, positionOf, scaleOf),
   );
   mesh.instanceMatrix.needsUpdate = true;
   if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
@@ -31,13 +31,13 @@ function writeInstance(
   index: number,
   placement: TilePlacement,
   positionOf: PlacementPosition,
-  verticalScaleOf?: PlacementVerticalScale,
+  scaleOf?: PlacementScale,
 ): void {
   const [x, y, z] = positionOf(placement);
-  const verticalScale = verticalScaleOf?.(placement) ?? 1;
+  const [scaleX, scaleY, scaleZ] = scaleOf?.(placement) ?? [1, 1, 1];
   mesh.setMatrixAt(
     index,
-    placedAt.makeTranslation(x, y, z).scale(stretched.set(1, verticalScale, 1)),
+    placedAt.makeTranslation(x, y, z).scale(stretched.set(scaleX, scaleY, scaleZ)),
   );
   mesh.setColorAt(index, instanceTint(placement));
 }
