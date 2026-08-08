@@ -5,7 +5,7 @@
     "symbol": "~",
     "color": "#3a6ea5",
     "walkable": false,
-    "height": 1,
+    "height": 0.5,
     "role": "water",
     "faceArt": {
       "size": 32,
@@ -43195,7 +43195,7 @@
     "symbol": "≈",
     "color": "#1c3c69",
     "walkable": false,
-    "height": 1,
+    "height": 0.5,
     "role": null,
     "faceArt": {
       "size": 32,
