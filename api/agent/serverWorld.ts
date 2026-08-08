@@ -123,7 +123,7 @@ function buildServerWorld(
     isWalkable,
     stepRules: {
       isWalkableAt: tileIsWalkable,
-      clearTheWay: (x, y, dx, dy) => puzzles.clearTheWay(x, y, dx, dy),
+      clearTheWay: (x, y, dx, dy, mayPush) => puzzles.clearTheWay(x, y, dx, dy, mayPush),
     },
     spawn: () => nearestWalkable(0, 0, SPAWN_SEARCH_RADIUS, isWalkable) ?? { x: 0, y: 0 },
   };

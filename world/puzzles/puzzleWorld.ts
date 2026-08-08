@@ -4,7 +4,7 @@ import type { Marker } from '../../procgen/worldSampler';
 import type { ReadOnlyPipelineStore } from '../../frontend/readOnlyLibraries';
 import { fixtureLook } from './fixtures/fixtureAppearance';
 import type { PuzzleFixture } from './fixtures/puzzleFixture';
-import { pushCrate, type WalkableProbe } from './interaction/pushCrate';
+import { crateCanBePushed, pushCrate, type WalkableProbe } from './interaction/pushCrate';
 import { reportDoor, useFixture, type UseOutcome } from './interaction/useFixture';
 import { puzzleKnobsFromPipeline } from './puzzleKnobsFromPipeline';
 import { buildPuzzleRoom } from './rooms/buildPuzzleRoom';
@@ -15,7 +15,10 @@ import {
   type PuzzleRoomLayout,
 } from './rooms/puzzleRoomLayout';
 import { fixtureIsOn, livePosition, roomIsSolved } from './state/fixtureSignals';
+import { sameKnobs } from './sameKnobs';
 import { PuzzleState } from './state/puzzleState';
+
+const ROOMS_KEPT = 512;
 
 export class PuzzleWorld {
   private readonly rooms = new Map<string, PuzzleRoomLayout>();
@@ -55,13 +58,20 @@ export class PuzzleWorld {
     return layout !== null && this.blockerAt(layout, x, y) !== null;
   }
 
-  clearTheWay(x: number, y: number, dx: number, dy: number): boolean {
+  clearTheWay(x: number, y: number, dx: number, dy: number, mayPush = true): boolean {
     const layout = this.roomAt(x, y);
     if (!layout) return true;
     const blocker = this.blockerAt(layout, x, y);
     if (!blocker) return true;
-    if (blocker.kind !== 'crate') return false;
+    if (blocker.kind !== 'crate' || !mayPush) return false;
     return pushCrate(layout, this.state, blocker, dx, dy, this.tileIsWalkable);
+  }
+
+  couldPushInto(x: number, y: number, dx: number, dy: number): boolean {
+    const layout = this.roomAt(x, y);
+    const blocker = layout && this.blockerAt(layout, x, y);
+    if (!layout || blocker?.kind !== 'crate') return false;
+    return crateCanBePushed(layout, this.state, blocker, dx, dy, this.tileIsWalkable);
   }
 
   use(x: number, y: number): UseOutcome {
@@ -105,7 +115,9 @@ export class PuzzleWorld {
   }
 
   private rereadPipeline(): void {
-    this.knobs = puzzleKnobsFromPipeline(this.store);
+    const fresh = puzzleKnobsFromPipeline(this.store);
+    if (sameKnobs(fresh, this.knobs)) return;
+    this.knobs = fresh;
     this.rooms.clear();
   }
 
@@ -115,6 +127,7 @@ export class PuzzleWorld {
     const known = this.rooms.get(key);
     if (known) return known;
     const built = buildPuzzleRoom(this.knobs, roomX, roomY);
+    if (this.rooms.size >= ROOMS_KEPT) this.rooms.clear();
     this.rooms.set(key, built);
     return built;
   }

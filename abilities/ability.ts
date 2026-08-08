@@ -16,7 +16,7 @@ export type AbilityGroup = 'movement' | 'senses' | 'pipeline' | 'library' | 'wor
 
 export interface AbilityActor {
   pose(): { x: number; y: number; facing: FacingIndex };
-  tryStep(dx: number, dy: number): boolean;
+  tryStep(dx: number, dy: number, mayPush?: boolean): boolean;
   turn(eighthTurns: number): void;
   sightRadiusTiles(): number;
   setSightRadiusTiles(radius: number): void;

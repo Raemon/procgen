@@ -8,7 +8,7 @@ export function puzzleLabyrinth(): ExamplePipeline {
   return {
     name: 'puzzle labyrinth',
     description:
-      'A labyrinth you open rather than walk. The maze is carved over the chambers themselves, so it has dead ends and loops, and every corridor ends in a locked door that only opens once one of the two chambers it joins has been solved. You wake in the empty chamber at the origin; the chambers around it are levers, the ring beyond that keys, the ring beyond that crates and pressure plates, and everything further out mixes the three and keeps adding pieces. Because no corridor skips a ring, you cannot meet a crate before you have met a lever and a key, whichever way the maze takes you. Press F to work a lever or take a key, walk into a crate to push it, and R to reset a chamber you have wedged shut.',
+      'A labyrinth you open rather than walk. The maze is carved over the chambers themselves, so it has dead ends and loops, and every corridor ends in a locked door that only opens once one of the two chambers it joins has been solved. You wake in the empty chamber at the origin; the chambers around it are levers, the ring beyond that keys, the ring beyond that crates and pressure plates, and everything further out mixes the three, adding pieces until the ninth ring, past which every chamber is drawn at that same top difficulty. Because no corridor skips a ring, you cannot meet a crate before you have met a lever and a key, whichever way the maze takes you. Press F to work a lever or take a key, walk into a crate to push it, and R to reset a chamber you have wedged shut.',
     state: {
       seed: 8721,
       daylight: 1,

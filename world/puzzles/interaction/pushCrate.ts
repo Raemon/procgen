@@ -6,7 +6,7 @@ import type { PuzzleState } from '../state/puzzleState';
 
 export type WalkableProbe = (x: number, y: number) => boolean;
 
-export function pushCrate(
+export function crateCanBePushed(
   layout: PuzzleRoomLayout,
   state: PuzzleState,
   crate: PuzzleFixture,
@@ -15,13 +15,34 @@ export function pushCrate(
   tileIsWalkable: WalkableProbe,
 ): boolean {
   if (dx !== 0 && dy !== 0) return false;
-  const from = livePosition(layout, state, crate);
-  const to = { x: from.x + dx, y: from.y + dy };
+  const to = crateWouldLandOn(layout, state, crate, dx, dy);
   if (!rectContains(layout.interior, to.x, to.y)) return false;
   if (!tileIsWalkable(to.x, to.y)) return false;
-  if (somethingStandsAt(layout, state, to.x, to.y, crate)) return false;
-  state.moveCrate(fixtureIdIn(layout, crate.id), to);
+  return !somethingStandsAt(layout, state, to.x, to.y, crate);
+}
+
+export function pushCrate(
+  layout: PuzzleRoomLayout,
+  state: PuzzleState,
+  crate: PuzzleFixture,
+  dx: number,
+  dy: number,
+  tileIsWalkable: WalkableProbe,
+): boolean {
+  if (!crateCanBePushed(layout, state, crate, dx, dy, tileIsWalkable)) return false;
+  state.moveCrate(fixtureIdIn(layout, crate.id), crateWouldLandOn(layout, state, crate, dx, dy));
   return true;
+}
+
+function crateWouldLandOn(
+  layout: PuzzleRoomLayout,
+  state: PuzzleState,
+  crate: PuzzleFixture,
+  dx: number,
+  dy: number,
+): { x: number; y: number } {
+  const from = livePosition(layout, state, crate);
+  return { x: from.x + dx, y: from.y + dy };
 }
 
 function somethingStandsAt(

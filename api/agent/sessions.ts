@@ -72,10 +72,10 @@ export function sessionPose(session: AgentSession): AgentPose {
 export function sessionActor(session: AgentSession, rules: StepRules): AbilityActor {
   return {
     pose: () => sessionPose(session),
-    tryStep: (dx, dy) => {
+    tryStep: (dx, dy, mayPush = true) => {
       const nextX = session.x + dx;
       const nextY = session.y + dy;
-      if (!stepIsAllowed(rules, nextX, nextY, dx, dy)) return false;
+      if (!stepIsAllowed(rules, nextX, nextY, dx, dy, mayPush)) return false;
       session.x = nextX;
       session.y = nextY;
       return true;

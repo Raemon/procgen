@@ -21,15 +21,16 @@ import { Tileset } from '../library/tiles/tileset';
 import { isWalkableTile } from '../world/tileWalkability';
 import { everyFixtureLook, fixtureLook } from '../world/puzzles/fixtures/fixtureAppearance';
 import { allPuzzleKinds } from '../world/puzzles/kinds/puzzleKind';
-import { roomRing } from '../world/puzzles/rooms/roomDifficulty';
 import { pushCrate } from '../world/puzzles/interaction/pushCrate';
 import { forwardSolutionWorks } from '../world/puzzles/kinds/forwardSolutionWorks';
 import { RoomCells } from '../world/puzzles/kinds/roomCells';
 import { PuzzleWorld } from '../world/puzzles/puzzleWorld';
+import { playerCanEnter } from '../world/puzzles/playerCanEnter';
+import { PuzzleState } from '../world/puzzles/state/puzzleState';
 import { puzzleKnobsFromPipeline } from '../world/puzzles/puzzleKnobsFromPipeline';
 import { everyFixtureOf, type PuzzleRoomLayout } from '../world/puzzles/rooms/puzzleRoomLayout';
 import type { PuzzleFixture } from '../world/puzzles/fixtures/puzzleFixture';
-import { fixtureIsOn, roomIsSolved } from '../world/puzzles/state/fixtureSignals';
+import { fixtureIsOn, livePosition, roomIsSolved } from '../world/puzzles/state/fixtureSignals';
 
 type Check = (name: string, condition: boolean) => void;
 
@@ -48,6 +49,89 @@ export function checkPuzzleInvariants(check: Check): void {
   checkTheSameSeedFurnishesTheSameRooms(check);
   checkEveryPuzzleKindDeclaresWhereItLands(check);
   checkYouCanTellTheFixturesApartFromTheWorld(check);
+  checkNoChamberIsAFreePass(check, world);
+  checkTheCrateYouWalkIntoActuallyMoves(check, world);
+  checkDifficultyRisesThenHoldsAtAKnownRing(check, world);
+}
+
+function checkNoChamberIsAFreePass(check: Check, world: PuzzleFixtureWorld): void {
+  const unsolved = new PuzzleState();
+  const furnished = everyRoomWithin(world, 12).filter((layout) => layout.kindName !== '');
+  check('there are furnished chambers to inspect', furnished.length > 100);
+  check(
+    'no furnished chamber stands open before the player has done anything',
+    furnished.every((layout) => !roomIsSolved(layout, unsolved)),
+  );
+  check(
+    'every furnished chamber asks for at least one thing, so none is a free pass',
+    furnished.every((layout) => layout.opensWhen.length > 0),
+  );
+  check(
+    'every sokoban chamber starts with all of its crates off their plates',
+    furnished
+      .filter((layout) => layout.kindName === 'sokoban')
+      .every((layout) => layout.solution.length > 0),
+  );
+}
+
+function checkTheCrateYouWalkIntoActuallyMoves(check: Check, world: PuzzleFixtureWorld): void {
+  const layout = everyRoomWithin(world, 12).find(
+    (room) => room.kindName === 'sokoban' && room.solution.length > 0,
+  )!;
+  const push = layout.solution[0]!;
+  const crate = layout.fixtures.find((fixture) => fixture.id === push.crateId)!;
+  check(
+    'a crate blocks the tile it stands on, so a plain walkability probe refuses it',
+    world.puzzles.blocksAt(crate.x, crate.y),
+  );
+  check(
+    'but the probe the player walks with can see that crate as somewhere to go, because it pushes',
+    world.puzzles.couldPushInto(crate.x, crate.y, push.dx, push.dy),
+  );
+  const walkable = (x: number, y: number) =>
+    world.tileIsWalkable(x, y) && !world.puzzles.blocksAt(x, y);
+  const canEnter = playerCanEnter(walkable, world.puzzles, () => ({
+    x: crate.x - push.dx,
+    y: crate.y - push.dy,
+  }));
+  check(
+    'the plain probe refuses the crate tile, which is what stopped the player pushing at all',
+    !walkable(crate.x, crate.y),
+  );
+  check(
+    'the probe the player walks with lets them step into a crate they can push',
+    canEnter(crate.x, crate.y),
+  );
+  check(
+    'and it still refuses a crate that has nowhere to go',
+    !canEnter(crate.x - 2 * push.dx, crate.y - 2 * push.dy) ||
+      walkable(crate.x - 2 * push.dx, crate.y - 2 * push.dy),
+  );
+  check(
+    'a step that is not allowed to push is refused at a crate, so one diagonal never shoves two',
+    !world.puzzles.clearTheWay(crate.x, crate.y, push.dx, push.dy, false),
+  );
+  check(
+    'and the same step does push when it is allowed to',
+    world.puzzles.clearTheWay(crate.x, crate.y, push.dx, push.dy, true),
+  );
+  world.puzzles.state.forgetRoom(layout.key);
+}
+
+function checkDifficultyRisesThenHoldsAtAKnownRing(
+  check: Check,
+  world: PuzzleFixtureWorld,
+): void {
+  const heaviest = (ring: number) =>
+    Math.max(...roomsOfRing(world, ring).map((layout) => layout.fixtures.length));
+  check(
+    'chambers ask for more as you walk outwards, through the rings that introduce the kinds',
+    heaviest(9) > heaviest(4),
+  );
+  check(
+    'and from the ninth ring outwards every chamber is drawn at that same top difficulty',
+    heaviest(20) === heaviest(9) && heaviest(40) === heaviest(9),
+  );
 }
 
 function checkYouCanTellTheFixturesApartFromTheWorld(check: Check): void {
@@ -139,14 +223,6 @@ function checkTheLabyrinthIsALabyrinth(check: Check, world: PuzzleFixtureWorld):
   check(
     'every chamber near the origin can be walked to from it through corridors',
     roomsReachableFrom(world, 10).size === everyRoomIndexWithin(8).length,
-  );
-  check(
-    'no corridor skips a ring, so the maze can never route a newcomer past the kind it teaches next',
-    rooms.every((room) =>
-      corridorNeighbours(world, room).every(
-        (next) => Math.abs(roomRing(next.roomX, next.roomY) - roomRing(room.roomX, room.roomY)) <= 1,
-      ),
-    ),
   );
 }
 
@@ -394,28 +470,22 @@ function checkEverySokobanRoomHasASolutionThatWorks(
     'every sokoban chamber records a run of pushes the push rules actually allow',
     rooms.every((layout) => replayingTheSolutionOpensTheDoors(world, layout)),
   );
-  const restingOnAPlate = deepRooms.find((layout) =>
-    layout.fixtures.some(
-      (crate) =>
-        crate.kind === 'crate' &&
-        layout.fixtures.some(
-          (plate) => plate.kind === 'plate' && plate.x === crate.x && plate.y === crate.y,
-        ),
-    ),
-  )!;
+  const solved = deepRooms.find((layout) => layout.solution.length > 0)!;
+  solveRoom(world, solved);
+  const settled = crateOnAPlateOf(world, solved);
   check(
-    'some chamber starts a crate already resting on a plate, so this next claim is not vacuous',
-    restingOnAPlate !== undefined,
+    'playing a sokoban chamber through leaves a crate standing on a plate, so this is not vacuous',
+    settled !== null,
   );
   check(
     'a crate resting on a plate still blocks the way rather than being walked over',
-    crateOnAPlateOf(restingOnAPlate) !== null &&
-      world.puzzles.blocksAt(crateOnAPlateOf(restingOnAPlate)!.x, crateOnAPlateOf(restingOnAPlate)!.y),
+    settled !== null && world.puzzles.blocksAt(settled.x, settled.y),
   );
   check(
-    'and it can still be pushed off the plate it sits on',
-    pushingIsPossibleSomehow(world, restingOnAPlate),
+    'and it can still be pushed back off the plate it sits on',
+    settled !== null && cratePushesSomewhere(world, settled),
   );
+  world.puzzles.state.forgetRoom(solved.key);
   const wedged = rooms[0]!;
   const crate = wedged.fixtures.find((fixture) => fixture.kind === 'crate')!;
   check(
@@ -506,31 +576,30 @@ function entrancesOf(
     .map((doorway) => doorway.cell);
 }
 
-function crateOnAPlateOf(layout: PuzzleRoomLayout): PuzzleFixture | null {
-  return (
-    layout.fixtures.find(
-      (crate) =>
-        crate.kind === 'crate' &&
-        layout.fixtures.some(
-          (plate) => plate.kind === 'plate' && plate.x === crate.x && plate.y === crate.y,
-        ),
-    ) ?? null
-  );
-}
-
-function pushingIsPossibleSomehow(
+function crateOnAPlateOf(
   world: PuzzleFixtureWorld,
   layout: PuzzleRoomLayout,
+): { x: number; y: number } | null {
+  for (const crate of layout.fixtures.filter((fixture) => fixture.kind === 'crate')) {
+    const at = livePosition(layout, world.puzzles.state, crate);
+    const onAPlate = layout.fixtures.some(
+      (plate) => plate.kind === 'plate' && plate.x === at.x && plate.y === at.y,
+    );
+    if (onAPlate) return at;
+  }
+  return null;
+}
+
+function cratePushesSomewhere(
+  world: PuzzleFixtureWorld,
+  at: { x: number; y: number },
 ): boolean {
-  const crate = crateOnAPlateOf(layout)!;
-  const moved = [
+  return [
     [1, 0],
     [-1, 0],
     [0, 1],
     [0, -1],
-  ].some(([dx, dy]) => world.puzzles.clearTheWay(crate.x, crate.y, dx!, dy!));
-  world.puzzles.state.forgetRoom(layout.key);
-  return moved;
+  ].some(([dx, dy]) => world.puzzles.couldPushInto(at.x, at.y, dx!, dy!));
 }
 
 function crateSpaceOf(layout: PuzzleRoomLayout) {

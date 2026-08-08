@@ -24,6 +24,7 @@ import { PrefabLibrary } from '../library/prefabs/prefabLibrary';
 import { debounce } from './debounce';
 import { CaptureTool } from '../world/capture/captureTool';
 import { PuzzleWorld } from '../world/puzzles/puzzleWorld';
+import { playerCanEnter } from '../world/puzzles/playerCanEnter';
 import { isWalkableTile } from '../world/tileWalkability';
 import { Tileset } from '../library/tiles/tileset';
 import { World } from '../world/world';
@@ -86,8 +87,14 @@ export function createAppRuntime(): AppRuntime {
   const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileset, sampler.tileAt(x, y));
   const puzzles = new PuzzleWorld(store, tileIsWalkable);
   const isWalkableAt = (x: number, y: number) => tileIsWalkable(x, y) && !puzzles.blocksAt(x, y);
-  const world = new World(isWalkableAt, (x, y, dx, dy) => puzzles.clearTheWay(x, y, dx, dy));
-  const net = new MultiplayerSession(world, store, isWalkableAt);
+  const world = new World(isWalkableAt, (x, y, dx, dy, mayPush) =>
+    puzzles.clearTheWay(x, y, dx, dy, mayPush),
+  );
+  const walkIntoCratesToPushThem = playerCanEnter(isWalkableAt, puzzles, () => ({
+    x: world.playerX,
+    y: world.playerY,
+  }));
+  const net = new MultiplayerSession(world, store, walkIntoCratesToPushThem);
   const chatComposer = new ChatComposerState();
   const playerInventoryPanel = new PlayerInventoryPanelState();
   const pickupFeed = new PickupFeed();
@@ -140,7 +147,7 @@ export function createAppRuntime(): AppRuntime {
         puzzles,
         actor: {
           pose: () => ({ x: world.playerX, y: world.playerY, facing: world.facing }),
-          tryStep: (dx, dy) => world.tryStep(dx, dy),
+          tryStep: (dx, dy, mayPush) => world.tryStep(dx, dy, mayPush),
           turn: (eighthTurns) => world.turn(eighthTurns),
           sightRadiusTiles: () => world.sightRadiusTiles,
           setSightRadiusTiles: (radius) => world.setSightRadiusTiles(radius),

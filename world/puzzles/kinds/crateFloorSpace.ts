@@ -20,15 +20,22 @@ export function cellKey(cell: Cell): string {
 export function isOpenFloor(space: CrateFloorSpace, cell: Cell): boolean {
   if (!space.cells.contains(cell.x, cell.y)) return false;
   if (space.pillars.has(cellKey(cell))) return false;
-  return ![...space.crates.values()].some((crate) => crate.x === cell.x && crate.y === cell.y);
+  return !aCrateSitsOn(space, cell);
+}
+
+function aCrateSitsOn(space: CrateFloorSpace, cell: Cell): boolean {
+  for (const crate of space.crates.values()) {
+    if (crate.x === cell.x && crate.y === cell.y) return true;
+  }
+  return false;
 }
 
 export function canWalkBetween(space: CrateFloorSpace, from: Cell, goal: Cell): boolean {
   if (!isOpenFloor(space, from) || !isOpenFloor(space, goal)) return false;
   const seen = new Set<string>([cellKey(from)]);
   const queue: Cell[] = [from];
-  while (queue.length > 0) {
-    const here = queue.shift()!;
+  for (let read = 0; read < queue.length; read++) {
+    const here = queue[read]!;
     if (here.x === goal.x && here.y === goal.y) return true;
     for (const step of CRATE_DIRECTIONS) {
       const next = { x: here.x + step.dx, y: here.y + step.dy };

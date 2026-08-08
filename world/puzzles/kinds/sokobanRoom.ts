@@ -1,12 +1,18 @@
 import { fixture, type PuzzleFixture } from '../fixtures/puzzleFixture';
-import { registerPuzzleKind, type FurnishContext, type FurnishedRoom } from './puzzleKind';
-import { reversePullCrates, type PullableRoom } from './reversePullCrates';
+import {
+  nothingToSolve,
+  registerPuzzleKind,
+  type FurnishContext,
+  type FurnishedRoom,
+} from './puzzleKind';
+import { cratesStillOnPlates, reversePullCrates, type PullableRoom } from './reversePullCrates';
 import { releaseWalkingRoom, scatterPillars } from './scatterPillars';
-import type { Cell } from './roomCells';
+import { RoomCells, type Cell } from './roomCells';
 
 const MOST_CRATES = 3;
 const MOST_PILLARS = 5;
 const MOST_PULLS_PER_CRATE = 6;
+const CELLS_PER_CRATE = 8;
 
 registerPuzzleKind({
   name: 'sokoban',
@@ -15,17 +21,60 @@ registerPuzzleKind({
   furnish: furnishSokobanRoom,
 });
 
+const FURNISH_ATTEMPTS = 8;
+
 function furnishSokobanRoom(context: FurnishContext): FurnishedRoom {
-  const pillars = scatterPillars(context, pillarCount(context.level));
-  const plates = placePlates(context);
+  for (const demand of demandsToTry(context)) {
+    for (let attempt = 0; attempt < FURNISH_ATTEMPTS; attempt++) {
+      const room = layOutCratesAndPlates(freshCells(context), demand);
+      if (room) return room;
+    }
+  }
+  return nothingToSolve();
+}
+
+interface CrateDemand {
+  crates: number;
+  pillars: number;
+}
+
+function demandsToTry(context: FurnishContext): CrateDemand[] {
+  const roomiest = roomForCrates(context);
+  const demands: CrateDemand[] = [];
+  for (let crates = Math.min(crateCount(context.level), roomiest); crates >= 1; crates--) {
+    for (let pillars = pillarCount(context.level); pillars >= 0; pillars -= 2) {
+      demands.push({ crates, pillars: Math.max(0, pillars) });
+    }
+    demands.push({ crates, pillars: 0 });
+  }
+  return demands;
+}
+
+function roomForCrates(context: FurnishContext): number {
+  return Math.max(1, Math.floor(context.cells.freeCells().length / CELLS_PER_CRATE));
+}
+
+function freshCells(context: FurnishContext): FurnishContext {
+  return { ...context, cells: new RoomCells(context.cells.interior) };
+}
+
+function layOutCratesAndPlates(
+  context: FurnishContext,
+  demand: CrateDemand,
+): FurnishedRoom | null {
+  const pillars = scatterPillars(context, demand.pillars);
+  const plates = placePlates(context, demand.crates);
   releaseWalkingRoom(context);
   const room = crateRoomStartingSolved(context, pillars, plates);
+  const plateCells = new Set(plates.map((plate) => `${plate.x},${plate.y}`));
   const solution = reversePullCrates(
     room,
     context.entrances,
     pullCount(context.level) * plates.length,
     context.rng,
   );
+  if (cratesStillOnPlates(room, plateCells).length > 0) return null;
+  if (solution.length === 0) return null;
   return {
     fixtures: [...pillars, ...plates, ...cratesAsFixtures(room)],
     opensWhen: plates.map((plate) => plate.id),
@@ -33,9 +82,9 @@ function furnishSokobanRoom(context: FurnishContext): FurnishedRoom {
   };
 }
 
-function placePlates(context: FurnishContext): PuzzleFixture[] {
+function placePlates(context: FurnishContext, wanted: number): PuzzleFixture[] {
   const plates: PuzzleFixture[] = [];
-  for (let index = 0; index < crateCount(context.level); index++) {
+  for (let index = 0; index < wanted; index++) {
     const cell = context.cells.takeCentreThenSpread(context.rng, context.level === 0 && index === 0);
     if (cell) plates.push(fixture(`plate${index}`, 'plate', cell));
   }

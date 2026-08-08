@@ -78,11 +78,15 @@ export const PUZZLE_ROOM_PARAMS: Record<keyof Omit<PuzzleRoomKnobs, 'seed'>, Kno
     default: 1,
   },
   corridor: {
-    kind: 'int',
+    kind: 'choice',
     label: 'corridor width',
-    help: 'Width of the corridors joining neighbouring chambers, and therefore how wide each locked doorway is.',
-    min: 1,
-    max: 7,
+    help: 'Width of the corridors joining neighbouring chambers, and therefore how wide each locked doorway is. Corridors are centred on the doorway, so only odd widths exist.',
+    options: [
+      { value: 1, label: '1 tile', help: 'Single file: a crate or a closed door fills the whole doorway.' },
+      { value: 3, label: '3 tiles', help: 'Room to walk two abreast, and a doorway three doors wide.' },
+      { value: 5, label: '5 tiles', help: 'A hall rather than a corridor.' },
+      { value: 7, label: '7 tiles', help: 'As wide as a small chamber; the doors read as a gatehouse.' },
+    ],
     default: 1,
   },
   fillBetween: {

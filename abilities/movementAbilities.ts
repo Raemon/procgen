@@ -100,9 +100,10 @@ function vectorStep(facing: FacingIndex): Step {
 }
 
 function stepBy(context: AbilityContext, step: Step): AbilityResult {
+  const mayPush = step[0] === 0 || step[1] === 0;
   let moved = false;
   slideAlongEachAxis(step, (dx, dy) => {
-    if (context.actor.tryStep(dx, dy)) moved = true;
+    if (context.actor.tryStep(dx, dy, mayPush)) moved = true;
   });
   const pose = context.actor.pose();
   if (!moved) return abilityFailed('blocked', `nothing gave way from (${pose.x},${pose.y})`);

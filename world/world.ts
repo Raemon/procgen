@@ -11,7 +11,13 @@ const SNAP_SEARCH_RADIUS = 64;
 
 export type WalkabilityProbe = (x: number, y: number) => boolean;
 
-export type ObstacleResolver = (x: number, y: number, dx: number, dy: number) => boolean;
+export type ObstacleResolver = (
+  x: number,
+  y: number,
+  dx: number,
+  dy: number,
+  mayPush: boolean,
+) => boolean;
 
 export class World {
   playerX = 0;
@@ -37,11 +43,11 @@ export class World {
     this.events.emit('player-turned');
   }
 
-  tryStep(dx: number, dy: number): boolean {
+  tryStep(dx: number, dy: number, mayPush = true): boolean {
     const nextX = this.playerX + dx;
     const nextY = this.playerY + dy;
     const rules = { isWalkableAt: this.isWalkableAt, clearTheWay: this.clearTheWay };
-    if (!stepIsAllowed(rules, nextX, nextY, dx, dy)) return false;
+    if (!stepIsAllowed(rules, nextX, nextY, dx, dy, mayPush)) return false;
     this.playerX = nextX;
     this.playerY = nextY;
     this.events.emit('player-moved');
