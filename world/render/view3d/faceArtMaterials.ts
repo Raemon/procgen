@@ -3,33 +3,41 @@ import { faceArtPlan, type FaceArtPlan } from '../../../assets/tiles/faceArtFace
 import { facePixelsAt, frameMsOf } from '../../../assets/tiles/faceArtFrames';
 import { isTransparentInk } from '../../../assets/tiles/inkColor';
 import {
-  faceGridSize,
+  MAX_FACE_ART_SIZE,
   type CubeFace,
   type CubeFaceArt,
-  type FacePixels,
 } from '../../../assets/tiles/tileFaceArt';
-import { paintFacePixels } from '../paintFacePixels';
 import { playFaceArtFrames, type FaceArtFrameTextures } from './faceArtAnimations';
-import { normalTextureFromHeights } from './normalTextureFromHeights';
+import { faceArtColorTexture, faceArtMipLevel, faceArtNormalTexture } from './faceArtTextures';
+import { drawsNormalMapAt } from './tileDetailBudget';
 
 const BOX_FACE_ORDER = ['east', 'west', 'top', 'bottom', 'south', 'north'] as const;
 const NORMAL_RELIEF = 0.85;
 
-export function cubeFaceMaterials(art: CubeFaceArt, baseColor: string): THREE.Material[] {
-  return BOX_FACE_ORDER.map((face) => faceMaterial(art, face, baseColor));
+export function cubeFaceMaterials(
+  art: CubeFaceArt,
+  baseColor: string,
+  sideBudget: number = MAX_FACE_ART_SIZE,
+): THREE.Material[] {
+  return BOX_FACE_ORDER.map((face) => faceMaterial(art, face, baseColor, sideBudget));
 }
 
-export function sideFaceMaterial(art: CubeFaceArt, baseColor: string): THREE.Material {
-  return faceMaterial(art, 'north', baseColor);
+export function sideFaceMaterial(
+  art: CubeFaceArt,
+  baseColor: string,
+  sideBudget: number = MAX_FACE_ART_SIZE,
+): THREE.Material {
+  return faceMaterial(art, 'north', baseColor, sideBudget);
 }
 
 function faceMaterial(
   art: CubeFaceArt,
   face: CubeFace,
   baseColor: string,
+  sideBudget: number,
 ): THREE.MeshLambertMaterial {
   const seeThrough = isTransparentInk(baseColor);
-  const frames = faceFrameTextures(art, face, baseColor, faceArtPlan(art, face));
+  const frames = faceFrameTextures(art, face, baseColor, sideBudget, faceArtPlan(art, face));
   const material = new THREE.MeshLambertMaterial({
     map: frames[0]!.map,
     normalMap: frames[0]!.normalMap,
@@ -46,28 +54,29 @@ function faceFrameTextures(
   art: CubeFaceArt,
   face: CubeFace,
   baseColor: string,
+  sideBudget: number,
   plan: FaceArtPlan,
 ): FaceArtFrameTextures[] {
   return plan.frames.map((frame) => ({
-    map: facePixelsTexture(facePixelsAt(art, { face, frame, layer: 'color' }), baseColor),
-    normalMap: plan.embossed
-      ? normalTextureFromHeights(facePixelsAt(art, { face, frame, layer: 'height' }))
-      : null,
+    map: faceArtColorTexture(
+      facePixelsAt(art, { face, frame, layer: 'color' }),
+      baseColor,
+      sideBudget,
+    ),
+    normalMap: reliefTexture(art, { face, frame }, baseColor, sideBudget, plan),
   }));
 }
 
-function facePixelsTexture(pixels: FacePixels, baseColor: string): THREE.CanvasTexture {
-  const canvas = document.createElement('canvas');
-  canvas.width = canvas.height = faceGridSize(pixels);
-  paintFacePixels(canvas.getContext('2d')!, pixels, baseColor, 1);
-  return pixelCrispTexture(canvas);
-}
-
-function pixelCrispTexture(canvas: HTMLCanvasElement): THREE.CanvasTexture {
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-  texture.magFilter = THREE.NearestFilter;
-  texture.minFilter = THREE.NearestFilter;
-  texture.colorSpace = THREE.SRGBColorSpace;
-  return texture;
+function reliefTexture(
+  art: CubeFaceArt,
+  slot: { face: CubeFace; frame: number },
+  baseColor: string,
+  sideBudget: number,
+  plan: FaceArtPlan,
+): THREE.Texture | null {
+  const colorPixels = facePixelsAt(art, { ...slot, layer: 'color' });
+  if (!plan.embossed || !drawsNormalMapAt(faceArtMipLevel(colorPixels, baseColor, sideBudget))) {
+    return null;
+  }
+  return faceArtNormalTexture(facePixelsAt(art, { ...slot, layer: 'height' }));
 }

@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { opaqueInk } from '../../../assets/tiles/inkColor';
-import { disposeMaterials } from './disposeMeshResources';
 import type { TilePlacement } from './tilePlacements';
 
 export type PlacementPosition = (placement: TilePlacement) => [number, number, number];
@@ -15,7 +14,6 @@ export function instancedTileMesh(
 ): THREE.InstancedMesh | null {
   if (placements.length === 0) {
     geometry.dispose();
-    disposeMaterials(material);
     return null;
   }
   const mesh = new THREE.InstancedMesh(geometry, material, placements.length);

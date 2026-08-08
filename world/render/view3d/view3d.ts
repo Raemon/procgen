@@ -26,6 +26,7 @@ import { SelectionBox } from './selectionBox';
 import { speechBubbleAnchors } from './speechBubbleAnchors';
 import { SpeechBubbleLabels } from './speechBubbleLabels';
 import { streamingRadiusChunks } from './streamingRadius';
+import { disposeSharedTileSurfaces } from './tileSurfaces';
 import { clampSightRadiusTiles, isWithinSightRadius } from '../../vision/characterSight';
 
 const MAX_FRAME_MS = 100;
@@ -110,6 +111,7 @@ export class View3D {
     this.worldLights.dispose();
     this.speechLabels.dispose();
     this.streamer.dispose();
+    disposeSharedTileSurfaces();
     this.renderer.dispose();
     this.canvas.remove();
   }
@@ -144,6 +146,7 @@ export class View3D {
     this.creatureMeshes.forgetSprites();
     this.remotePlayerMeshes.forgetSprites();
     this.characterSprites.dispose();
+    disposeSharedTileSurfaces();
   }
 
   private viewYaw(): number {
@@ -288,6 +291,11 @@ export class View3D {
 
   private streamAroundCameraFocus(): void {
     const focus = this.focusPoint();
+    this.streamer.detailFromCamera(
+      this.activeCamera(),
+      this.renderer.domElement.clientHeight,
+      this.focusGroundHeight(),
+    );
     const radiusTiles =
       this.cameraStyle === 'god'
         ? this.followCamera.visibleGroundRadiusTiles()

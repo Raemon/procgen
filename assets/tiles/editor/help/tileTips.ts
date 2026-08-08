@@ -36,6 +36,21 @@ export const TILE_HEIGHT_TIP: TooltipContent = {
 export function deleteTileTip(tile: TileDef): TooltipContent {
   return {
     title: `delete ${tile.name}`,
-    body: 'Removes the tile from the library. Nodes still pointing at it fall back to empty.',
+    body: 'Removes the tile from the tile assets. Nodes still pointing at it fall back to empty.',
+  };
+}
+
+export const SCALED_ART_STRIP_TIP: TooltipContent = {
+  title: 'scaled down copies',
+  body: 'Every painted face is kept at half sizes all the way down to one pixel of its average color. The 3-D view draws whichever copy the tile is big enough on screen to need, and stops shading relief once it is drawing a scaled down one.',
+};
+
+export function scaledArtTip(side: number): TooltipContent {
+  return {
+    title: `${side}×${side}`,
+    body:
+      side === 1
+        ? 'The whole face averaged into one pixel — what a tile too far away to cover a screen pixel is drawn as.'
+        : `The copy drawn once a tile covers fewer than ${side * 2} screen pixels.`,
   };
 }

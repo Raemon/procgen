@@ -15,6 +15,7 @@ import { usePersistedUiSet } from '../../../frontend/uiState/usePersistedUiSet';
 import { tooltipHandlers } from '../../../frontend/tooltips/tooltipHandlers';
 import { deleteTileTip, TILE_HEIGHT_TIP, TILE_NAME_TIP, walkableTip } from './help/tileTips';
 import { FaceArtToggle } from './FaceArtToggle';
+import { ScaledArtStrip } from './ScaledArtStrip';
 import { SymbolInput } from './SymbolInput';
 
 export function TileRow({ tile }: { tile: TileDef }) {
@@ -55,6 +56,9 @@ export function TileRow({ tile }: { tile: TileDef }) {
           emitter={tile}
           onChange={(patch) => perform('update_tile', { tile_id: tile.id, ...patch })}
         />
+      )}
+      {artOpen && tile.faceArt && (
+        <ScaledArtStrip pixels={tile.faceArt.top} baseColor={tile.color} />
       )}
       {artOpen && (
         <PixelArtEditor
