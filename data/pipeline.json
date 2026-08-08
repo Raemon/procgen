@@ -1,23 +1,23 @@
 {
-  "seed": 3106,
+  "seed": 8721,
   "daylight": 0,
   "nodes": [
     {
       "id": "n1",
       "type": "mazeChunk",
-      "label": "labyrinth",
-      "comment": "The delve itself: one maze spanning 2x2 chunks so corridors run further than a single chunk, and the rooms knob turned up so a third of the lattice opens into chambers instead of pure corridor. Two doors per edge plus braiding keep loops in it, which matters far more when you can only see as far as your torch.",
+      "label": "warren",
+      "comment": "The rock the chambers are cut into, carved down to its finest pitch: one-tile corridors between one-tile walls, so the space left between chambers reads as a dense warren rather than empty rock. It only shows where the puzzle layer above leaves a cell empty, which is exactly the band between the chambers. Wandering it never bypasses a door, because a chamber keeps its wall ring whatever lies outside it and both mouths of every corridor are doored.",
       "folder": "the delve",
       "enabled": true,
       "params": {
-        "corridor": 3,
-        "wall": 2,
-        "mazeChunks": 2,
+        "corridor": 1,
+        "wall": 1,
+        "mazeChunks": 1,
         "carver": 0,
-        "braid": 0.25,
+        "braid": 0.15,
         "doorsPerEdge": 2,
-        "rooms": 0.35,
-        "roomCells": 4,
+        "rooms": 0.1,
+        "roomCells": 2,
         "wallTile": 17,
         "floorTile": 9
       },
@@ -28,52 +28,21 @@
     },
     {
       "id": "n2",
-      "type": "noiseField",
-      "label": "heat",
-      "comment": "Hidden plumbing for the lava below: a field whose rare high patches decide where the rock is still molten.",
+      "type": "puzzleRooms",
+      "label": "puzzle chambers",
+      "comment": "Nine-tile chambers on a twenty-one-tile lattice, so a chamber plus its wall ring leaves ten tiles of warren between neighbours and the corridors are short enough to see the far door from the near one. Every corridor is doored at both mouths, so opening onto the warren costs the chambers nothing. \"Solid between rooms\" is off so that warren shows through. Which puzzle furnishes a chamber comes from how far it is from the origin, so the first chamber anyone meets is one lever in the middle of an empty room whichever way they walk out of the spawn.",
       "folder": "the delve",
       "enabled": true,
       "params": {
-        "scale": 0.09,
-        "octaves": 3
-      },
-      "inputs": {},
-      "display": {
-        "mode": "hidden"
-      }
-    },
-    {
-      "id": "n3",
-      "type": "thresholdTiles",
-      "label": "lava seams",
-      "comment": "The only thing in this world that lights itself: lava only above 0.86, so it is rare, and everything below is left empty so the labyrinth shows through. Lava is the tile that carries a light radius, which is why these seams read as orange pools in the dark.",
-      "folder": "the delve",
-      "enabled": true,
-      "params": {
-        "threshold": 0.86,
-        "belowTile": -1,
-        "aboveTile": 21
-      },
-      "inputs": {
-        "source": "n2"
-      },
-      "display": {
-        "mode": "tileLayer"
-      }
-    },
-    {
-      "id": "n4",
-      "type": "landmarkRoom",
-      "label": "seed chamber",
-      "comment": "Stamped last of the floor layers so nothing overwrites it: a guaranteed 13x13 cobbled chamber at the origin, where the player spawns. No wall ring, so wherever the labyrinth already ran a corridor into this square it stays open and you can walk out.",
-      "folder": "where you wake up",
-      "enabled": true,
-      "params": {
-        "x": 0,
-        "y": 0,
-        "width": 13,
-        "height": 13,
-        "wallThickness": 0,
+        "roomTiles": 9,
+        "roomSpacing": 21,
+        "regionRooms": 5,
+        "carver": 0,
+        "braid": 0.25,
+        "doorsPerEdge": 1,
+        "wall": 1,
+        "corridor": 1,
+        "fillBetween": 0,
         "floorTile": 15,
         "wallTile": 17
       },
@@ -83,10 +52,10 @@
       }
     },
     {
-      "id": "n5",
+      "id": "n3",
       "type": "landmarkPoint",
       "label": "torch",
-      "comment": "One point, two tiles east of the spawn, bound to the torch item. The torch is what makes the rest of the world visible: walk over it and the character carries its light with her.",
+      "comment": "One point, two tiles east of the spawn, bound to the torch item. With daylight at 0 and a roof over everything, this torch is the only thing that makes the delve visible: walk over it and the character carries its light with her.",
       "folder": "where you wake up",
       "enabled": true,
       "params": {
@@ -100,10 +69,10 @@
       }
     },
     {
-      "id": "n6",
+      "id": "n4",
       "type": "constantField",
       "label": "everywhere",
-      "comment": "A flat 1 over every cell — the simplest way to say \"all of it\" to the threshold below, which is what makes the roof cover the whole world rather than patches of it.",
+      "comment": "A flat 1 over every cell — the simplest way to say \"all of it\" to the threshold below, which is what makes the roof cover the whole delve rather than patches of it.",
       "folder": "the roof",
       "enabled": true,
       "params": {
@@ -115,10 +84,10 @@
       }
     },
     {
-      "id": "n7",
+      "id": "n5",
       "type": "thresholdTiles",
       "label": "rock roof",
-      "comment": "Every cell is above the threshold, so every cell gets rock, and the ceiling display hangs it 2 tiles up, which is exactly where the stone walls of the labyrinth end: any higher and the roof floats over a gap the walls never reach, out of the first-person view and past the haze, which reads as no roof at all. Ceilings only draw in first person, so the god camera can still look down into the delve.",
+      "comment": "Every cell is above the threshold, so every cell gets rock, and the ceiling display hangs it 2 tiles up, which is exactly where the stone walls end: any higher and the roof floats over a gap the walls never reach, which reads as no roof at all. Ceilings only draw in first person, so the god camera can still look down into the delve.",
       "folder": "the roof",
       "enabled": true,
       "params": {
@@ -127,7 +96,7 @@
         "aboveTile": 4
       },
       "inputs": {
-        "source": "n6"
+        "source": "n4"
       },
       "display": {
         "mode": "ceiling",

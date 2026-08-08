@@ -21,6 +21,7 @@ export interface Marker {
   color: string;
   faceArt: CubeFaceArt | null;
   tag: string;
+  standingHeight?: number;
 }
 
 export interface CreatureSpawn {

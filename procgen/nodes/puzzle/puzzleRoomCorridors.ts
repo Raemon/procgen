@@ -59,6 +59,16 @@ export function southGateBand(roomX: number, roomY: number, knobs: PuzzleRoomKno
   return { ...floor, maxY: floor.minY };
 }
 
+export function westGateBand(roomX: number, roomY: number, knobs: PuzzleRoomKnobs): Band {
+  const floor = eastCorridorFloor(roomX - 1, roomY, knobs);
+  return { ...floor, minX: floor.maxX };
+}
+
+export function northGateBand(roomX: number, roomY: number, knobs: PuzzleRoomKnobs): Band {
+  const floor = southCorridorFloor(roomX, roomY - 1, knobs);
+  return { ...floor, minY: floor.maxY };
+}
+
 export function bandCells(band: Band): { x: number; y: number }[] {
   const cells: { x: number; y: number }[] = [];
   for (let y = band.minY; y <= band.maxY; y++) {

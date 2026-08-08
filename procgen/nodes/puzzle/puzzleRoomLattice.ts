@@ -1,4 +1,3 @@
-import { CHUNK_SIZE } from '../../chunk';
 import type { PuzzleRoomKnobs } from './puzzleRoomKnobs';
 
 export interface RoomRect {
@@ -9,7 +8,7 @@ export interface RoomRect {
 }
 
 export function roomBlockSize(knobs: PuzzleRoomKnobs): number {
-  return knobs.roomChunks * CHUNK_SIZE;
+  return knobs.roomSpacing;
 }
 
 export function roomIndexOfCell(cell: number, knobs: PuzzleRoomKnobs): number {
