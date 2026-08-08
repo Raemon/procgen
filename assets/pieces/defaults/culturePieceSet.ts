@@ -25,9 +25,16 @@ export interface CulturePieceTiles {
   chimneyCap: number;
 }
 
+export interface CulturePieceVariation {
+  chimneyLayers: number;
+}
+
+const DEFAULT_VARIATION: CulturePieceVariation = { chimneyLayers: 3 };
+
 export function culturePieceBlueprints(
   names: CulturePieceNames,
   tiles: CulturePieceTiles,
+  variation: CulturePieceVariation = DEFAULT_VARIATION,
 ): PieceBlueprint[] {
   return [
     wallRunOf(names, tiles),
@@ -38,7 +45,7 @@ export function culturePieceBlueprints(
     roofRidgeOf(names, tiles),
     gableEndOf(names, tiles),
     floorSlabOf(names, tiles),
-    chimneyOf(names, tiles),
+    chimneyOf(names, tiles, variation),
   ];
 }
 
@@ -130,13 +137,25 @@ function floorSlabOf(names: CulturePieceNames, tiles: CulturePieceTiles): PieceB
   };
 }
 
-function chimneyOf(names: CulturePieceNames, tiles: CulturePieceTiles): PieceBlueprint {
+function chimneyOf(
+  names: CulturePieceNames,
+  tiles: CulturePieceTiles,
+  variation: CulturePieceVariation,
+): PieceBlueprint {
+  const stack = chimneyStackOf(tiles, variation.chimneyLayers);
   return {
     name: names.chimney,
     role: 'chimney',
     width: 1,
     depth: 1,
-    layers: 3,
-    paint: (piece) => paintColumn(piece, 0, 0, [tiles.chimney, tiles.chimney, tiles.chimneyCap]),
+    layers: stack.length,
+    paint: (piece) => paintColumn(piece, 0, 0, stack),
   };
+}
+
+const SHORTEST_CHIMNEY_LAYERS = 2;
+
+function chimneyStackOf(tiles: CulturePieceTiles, layers: number): number[] {
+  const height = Math.max(SHORTEST_CHIMNEY_LAYERS, layers);
+  return [...new Array<number>(height - 1).fill(tiles.chimney), tiles.chimneyCap];
 }

@@ -4,6 +4,7 @@ import '../procgen/nodes';
 import { checkLandmarkAndCeilingInvariants } from './checkLandmarkAndCeilingInvariants';
 import { checkTileArtMipInvariants } from './checkTileArtMipInvariants';
 import { checkTileArtStorageInvariants } from './checkTileArtStorageInvariants';
+import { checkGeneratedAssetInvariants } from './checkGeneratedAssetInvariants';
 import { checkPieceInvariants } from './checkPieceInvariants';
 import { checkVillageInvariants } from './checkVillageInvariants';
 import { checkShapedTileInvariants } from './checkShapedTileInvariants';
@@ -1889,6 +1890,7 @@ describe('tile art storage', () => checkTileArtStorageInvariants(check));
 describe('shaped tiles and per-voxel facing', () => checkShapedTileInvariants(check));
 describe('pieces', () => checkPieceInvariants(check));
 describe('villages', () => checkVillageInvariants(check));
+describe('generated asset kits', () => checkGeneratedAssetInvariants(check));
 describe('the dom boundary', () => checkPresentationFoldersAreTheOnlyDomCode(check));
 describe('documentation', () => {
   checkDocumentationHasNotRegrown(check);
