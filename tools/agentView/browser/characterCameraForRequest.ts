@@ -13,7 +13,9 @@ export function characterCameraForRequest(
   request: WorldViewRequest,
   sampler: WorldSampler,
 ): FramedCamera {
-  const sightRadius = clampSightRadiusTiles(DEFAULT_CHARACTER_SIGHT_RADIUS_TILES);
+  const sightRadius = clampSightRadiusTiles(
+    request.sightRadiusTiles ?? DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
+  );
   const eyes = zoomedCharacterCamera(request);
   eyes.setAspect(request.width / request.height);
   eyes.setSightRadiusTiles(sightRadius);

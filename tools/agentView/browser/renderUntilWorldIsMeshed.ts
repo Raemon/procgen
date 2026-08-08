@@ -2,27 +2,27 @@ import type { HeadlessWorldView } from './headlessWorldView';
 import { textureLoadingIdle } from './textureLoadingIdle';
 
 const MAX_FRAMES = 3000;
-const SETTLING_FRAMES = 3;
+const PAINTED_FRAMES_AFTER_STREAMING = 3;
 const FRAME_GAP_MS = 4;
 
 export async function renderUntilWorldIsMeshed(view: HeadlessWorldView): Promise<number> {
   const texturesIdle = textureLoadingIdle();
   for (let frames = 1; frames <= MAX_FRAMES; frames++) {
-    view.renderFrame();
+    view.streamFrame();
     if (view.builtChunkCount() >= view.neededChunkCount() && texturesIdle()) {
-      return frames + (await renderSettlingFrames(view));
+      return frames + (await paintSettledFrames(view));
     }
     await nextFrameGap();
   }
   throw new Error(unfinishedSceneMessage(view));
 }
 
-async function renderSettlingFrames(view: HeadlessWorldView): Promise<number> {
-  for (let frame = 0; frame < SETTLING_FRAMES; frame++) {
+async function paintSettledFrames(view: HeadlessWorldView): Promise<number> {
+  for (let frame = 0; frame < PAINTED_FRAMES_AFTER_STREAMING; frame++) {
     await nextFrameGap();
-    view.renderFrame();
+    view.paintFrame();
   }
-  return SETTLING_FRAMES;
+  return PAINTED_FRAMES_AFTER_STREAMING;
 }
 
 function nextFrameGap(): Promise<void> {

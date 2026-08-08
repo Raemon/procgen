@@ -12,6 +12,8 @@ export interface WorldViewRequest {
   fieldOfViewDeg: number | null;
   width: number;
   height: number;
+  showCeilings: boolean;
+  sightRadiusTiles: number | null;
 }
 
 export const DEFAULT_WORLD_NAME = 'thatchmere vale';

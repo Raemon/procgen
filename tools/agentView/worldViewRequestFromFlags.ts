@@ -33,6 +33,8 @@ export function worldViewCommandFromArgv(argv: readonly string[]): WorldViewComm
       fieldOfViewDeg: optionalNumberFlag(flags, 'fov'),
       width: numberFlag(flags, 'width', DEFAULT_WIDTH),
       height: numberFlag(flags, 'height', DEFAULT_HEIGHT),
+      showCeilings: flags.get('ceilings') === 'true',
+      sightRadiusTiles: optionalNumberFlag(flags, 'sight'),
     },
     outputPath: flags.get('out') ?? DEFAULT_OUTPUT_PATH,
   };

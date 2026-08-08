@@ -33,6 +33,7 @@ export class HeadlessWorldView {
     );
     this.lights = new WorldLights(this.scene, tileLightsOnlyDeps(world));
     this.applyCharacterSightline();
+    if (request.showCeilings) this.streamer.showCeilings(true);
   }
 
   canvasElement(): HTMLCanvasElement {
@@ -53,11 +54,15 @@ export class HeadlessWorldView {
     return { drawCalls: render.calls, triangles: render.triangles };
   }
 
-  renderFrame(): void {
+  streamFrame(): void {
     this.daylight.setLevel(this.world.store.daylight());
     this.framedCamera.update();
     this.streamAroundFocus();
     this.lights.syncAround(this.request.x, this.request.y);
+  }
+
+  paintFrame(): void {
+    this.streamFrame();
     this.renderer.render(this.scene, this.framedCamera.camera);
   }
 
