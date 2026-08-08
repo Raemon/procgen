@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { CHUNK_SIZE, chunkCoordOfCell, chunkKey, chunkOrigin } from '../../../procgen/chunk';
 import type { WorldSampler } from '../../../procgen/worldSampler';
 import type { ReadOnlyTileAssets } from '../../../frontend/readOnlyAssets';
+import { measureWork } from '../../../perf/workTimers';
 import type { MarkerSource } from '../markerSource';
 import { applyTileSideBudget } from './chunkDetail';
 import { disposeMeshChildren } from './disposeMeshResources';
@@ -93,12 +94,8 @@ export class ChunkMeshStreamer {
     const existing = this.builtChunks.get(key);
     if (existing && existing.version === this.version) return false;
     if (existing) this.dropChunk(key);
-    const group = buildChunkMeshGroup(
-      this.sampler,
-      this.tileAssets,
-      chunkX,
-      chunkY,
-      this.extraMarkers,
+    const group = measureWork('chunk meshing', () =>
+      buildChunkMeshGroup(this.sampler, this.tileAssets, chunkX, chunkY, this.extraMarkers),
     );
     this.applyCeilingVisibility(group);
     this.root.add(group);

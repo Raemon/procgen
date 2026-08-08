@@ -10,8 +10,17 @@ import {
   clampSightRadiusTiles,
   isWithinCharacterSight,
 } from '../world/vision/characterSight';
-import { NO_EXTRA_MARKERS, type MarkerSource } from '../world/render/markerSource';
+import type { MarkerSource } from '../world/render/markerSource';
+import {
+  actionWithinReach,
+  interactPrompt,
+  type ActionOfferingCells,
+} from '../world/puzzles/interaction/actionWithinReach';
 import type { AgentMode, AgentPose } from './agentMode';
+
+export interface ObservedOverlay extends MarkerSource, ActionOfferingCells {}
+
+export const NO_OVERLAY: ObservedOverlay = { markersIn: () => [], actionAt: () => null };
 
 export const GOD_VIEW_SIZE = 33;
 export const SELF_GLYPH = '@';
@@ -32,6 +41,7 @@ export interface AgentObservation {
   sightRadiusTiles: number | null;
   view: string[];
   legend: LegendEntry[];
+  interaction: string | null;
 }
 
 export function viewSizeFor(
@@ -47,12 +57,12 @@ export function buildObservation(
   pose: AgentPose,
   mode: AgentMode,
   sightRadiusTiles: number = DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
-  extraMarkers: MarkerSource = NO_EXTRA_MARKERS,
+  overlay: ObservedOverlay = NO_OVERLAY,
 ): AgentObservation {
   const radius = clampSightRadiusTiles(sightRadiusTiles);
   const size = viewSizeFor(mode, radius);
   const viewport = viewportCenteredOn(pose.x, pose.y, size, size);
-  const markers = pointOverlayLookup(sampler, viewport, extraMarkers);
+  const markers = pointOverlayLookup(sampler, viewport, overlay);
   const legend = new Map<string, LegendEntry>();
   addFixedLegendEntries(legend, mode, radius);
   const view: string[] = [];
@@ -73,6 +83,7 @@ export function buildObservation(
     sightRadiusTiles: mode === 'character' ? radius : null,
     view,
     legend: [...legend.values()],
+    interaction: interactPrompt(actionWithinReach(overlay, pose)),
   };
 }
 

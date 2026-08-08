@@ -18,6 +18,10 @@ export function flatPainter(color: string): PixelPainter {
   return () => color;
 }
 
+export function quarterTurned(painter: PixelPainter): PixelPainter {
+  return (x, y) => painter(y, x);
+}
+
 export function wrapped(value: number, size: number): number {
   return ((value % size) + size) % size;
 }

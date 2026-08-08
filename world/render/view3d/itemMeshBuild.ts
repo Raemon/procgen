@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { BILLBOARD, LYING_FLAT, type ItemDef } from '../../../assets/items/itemDef';
-import { dominantPixelColor } from '../../../assets/tiles/dominantFaceColor';
 import type { SpriteArt } from '../../../assets/tiles/spriteArt';
 import { cubeFaceMaterials } from './faceArtMaterials';
 import { lambertFromInk } from './inkMaterial';
@@ -50,12 +49,8 @@ export function itemHalfHeight(item: ItemDef): number {
 
 export function itemMaterials(item: ItemDef): THREE.Material | THREE.Material[] {
   const surfaces = itemSurfaces(item);
-  glowSelfLit(surfaces, glowOfEmitter(item), rimGlowInk(item));
+  glowSelfLit(surfaces, glowOfEmitter(item));
   return surfaces;
-}
-
-function rimGlowInk(item: ItemDef): string | undefined {
-  return item.sprite ? dominantPixelColor(item.sprite) ?? undefined : undefined;
 }
 
 function itemSurfaces(item: ItemDef): THREE.Material | THREE.Material[] {

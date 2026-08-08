@@ -37,6 +37,7 @@ import {
 import { itemLightSourcesInRect } from '../world/light/itemLightSources';
 import { clampLightRadius, emitsLight, MAX_LIGHT_RADIUS } from '../world/light/lightEmission';
 import { tileLightSourcesInRect } from '../world/light/tileLightSources';
+import { SceneLightSources } from '../world/light/sceneLightSources';
 import { defaultTiles } from '../assets/tiles/defaultTiles';
 import { tilesFromStoredJson } from '../assets/tiles/tileStorage';
 import { blockLayersOfTile } from '../assets/tiles/tileHeight';
@@ -46,17 +47,17 @@ import { isWalkableTile } from '../world/tileWalkability';
 import { TileAssets } from '../assets/tiles/tileAssets';
 import type { CheckReporter } from './checkCharacterBillboardInvariants';
 
-const PRESET_NAME = 'underground labyrinth';
-const LAVA_TILE = 21;
+const PRESET_NAME = 'puzzle labyrinth';
 const REACH_SPAN = 64;
 const INNER_SPAN = 32;
 const LIGHT_SCAN_SPAN = 96;
 
-export function checkUndergroundLightInvariants(check: CheckReporter): void {
+export function checkDelveDarknessInvariants(check: CheckReporter): void {
   checkLightIsAKnobOnBlocksAndItems(check);
-  checkTheUndergroundWorldIsRoofedAndConnected(check);
+  checkTheDelveIsRoofedAndLightless(check);
   checkNothingIsLitButWhatEmits(check);
   checkTheTorchCanBePickedUpAndCarried(check);
+  checkTheCarriedLightGlidesRatherThanHoppingTileToTile(check);
   checkWalkingOverTheTorchStowsItWithoutAKeypress(check);
 }
 
@@ -105,25 +106,22 @@ function checkLightIsAKnobOnBlocksAndItems(check: CheckReporter): void {
   );
 }
 
-function checkTheUndergroundWorldIsRoofedAndConnected(check: CheckReporter): void {
-  const { state, sampler, tileAssets } = undergroundWorld();
-  const lavaBlocks = tilePlacementsForRect(
-    sampler,
-    tileAssets,
-    -LIGHT_SCAN_SPAN,
-    -LIGHT_SCAN_SPAN,
-    LIGHT_SCAN_SPAN * 2,
-    LIGHT_SCAN_SPAN * 2,
-  ).blocks.filter(
-    (placement) => placement.faceArt === tileAssets.byId(LAVA_TILE)?.faceArt,
-  );
+function checkTheDelveIsRoofedAndLightless(check: CheckReporter): void {
+  const { state, sampler, tileAssets } = delveWorld();
   check(
-    'the lava seams lighting the delve are placed as glowing surfaces, not dark ones',
-    lavaBlocks.length > 0 && lavaBlocks.every((placement) => placement.glow > 0),
+    'nothing built into the delve glows, so the torch is the only light in it',
+    tilePlacementsForRect(
+      sampler,
+      tileAssets,
+      -LIGHT_SCAN_SPAN,
+      -LIGHT_SCAN_SPAN,
+      LIGHT_SCAN_SPAN * 2,
+      LIGHT_SCAN_SPAN * 2,
+    ).blocks.every((placement) => placement.glow === 0),
   );
-  check('the underground world turns the sky off entirely', state.daylight === 0);
+  check('the delve turns the sky off entirely', state.daylight === 0);
   check(
-    'every cell of the underground world has a ceiling over it',
+    'every cell of the delve has a ceiling over it',
     everyCellInSpan(CHUNK_SIZE, (x, y) => sampler.ceilingTileAt(x, y) !== EMPTY_TILE),
   );
   const roofHeight = sampler.ceilingHeightAt(0, 0);
@@ -148,22 +146,22 @@ function checkTheUndergroundWorldIsRoofedAndConnected(check: CheckReporter): voi
     largestOpenSquare(sampler, tileAssets) >= 6,
   );
   check(
-    'the player wakes in a floored seed chamber',
+    'the player wakes in a floored chamber wide enough to turn around in',
     isWalkableTile(tileAssets, sampler.tileAt(0, 0)) &&
-      everyCellInSpan(5, (x, y) => isWalkableTile(tileAssets, sampler.tileAt(x, y))),
+      everyCellInSpan(4, (x, y) => isWalkableTile(tileAssets, sampler.tileAt(x, y))),
   );
   check(
-    'every open cell of the delve is reachable on foot from the seed chamber',
-    reachableFloorCount(sampler, tileAssets) === walkableCount(sampler, tileAssets),
-  );
-  check(
-    'the delve is mostly open ground rather than solid rock',
+    'the warren the chambers sit in is walkable ground rather than solid rock',
     walkableCount(sampler, tileAssets) > (INNER_SPAN * 2 + 1) ** 2 * 0.3,
+  );
+  check(
+    'the ground you can reach without opening a door reaches past the chamber you wake in',
+    reachableFloorCount(sampler, tileAssets) > 13 ** 2,
   );
 }
 
 function checkNothingIsLitButWhatEmits(check: CheckReporter): void {
-  const { sampler, tileAssets, items } = undergroundWorld();
+  const { sampler, tileAssets, items } = delveWorld();
   const rect = { minX: -CHUNK_SIZE, minY: -CHUNK_SIZE, maxX: CHUNK_SIZE, maxY: CHUNK_SIZE };
   const wide = {
     minX: -LIGHT_SCAN_SPAN,
@@ -171,11 +169,9 @@ function checkNothingIsLitButWhatEmits(check: CheckReporter): void {
     maxX: LIGHT_SCAN_SPAN,
     maxY: LIGHT_SCAN_SPAN,
   };
-  const tileLights = tileLightSourcesInRect(sampler, tileAssets, wide);
   check(
-    'the only blocks lighting the delve are the lava seams',
-    tileLights.length > 0 &&
-      tileLights.every((source) => sampler.tileAt(source.x, source.y) === LAVA_TILE),
+    'no block anywhere in the delve lights itself, so darkness is the default',
+    tileLightSourcesInRect(sampler, tileAssets, wide).length === 0,
   );
   const itemLights = itemLightSourcesInRect(sampler, items, rect);
   check(
@@ -185,7 +181,7 @@ function checkNothingIsLitButWhatEmits(check: CheckReporter): void {
 }
 
 function checkTheTorchCanBePickedUpAndCarried(check: CheckReporter): void {
-  const world = undergroundWorld();
+  const world = delveWorld();
   const carrier = playerCharacterDef(world.creatures)!;
   check(
     'a character carrying nothing that glows emits no light',
@@ -215,8 +211,30 @@ function checkTheTorchCanBePickedUpAndCarried(check: CheckReporter): void {
   check('an item already taken cannot be picked up again', !twice.ok);
 }
 
+function checkTheCarriedLightGlidesRatherThanHoppingTileToTile(check: CheckReporter): void {
+  const world = delveWorld();
+  world.pose.x = 2;
+  world.act('character', 'pick_up');
+  const lights = new SceneLightSources({
+    sampler: world.sampler,
+    tileAssets: world.tileAssets,
+    creatures: world.creatures,
+    items: world.items,
+    activeCreatures: () => [],
+  });
+  const midHop = lights.around(2.5, 0.25);
+  check(
+    'the torch she carries is the only light left in the delve once she has taken it',
+    midHop.length === 1,
+  );
+  check(
+    'and it sits exactly where she is mid-step, rather than snapping to the tile under her',
+    midHop[0]!.x === 2.5 && midHop[0]!.y === 0.25,
+  );
+}
+
 function checkWalkingOverTheTorchStowsItWithoutAKeypress(check: CheckReporter): void {
-  const world = undergroundWorld();
+  const world = delveWorld();
   const feed = new PickupFeed();
   const walkOver = new WalkOverPickup(
     { creatures: world.creatures, items: world.items, groundItems: world.groundItems },
@@ -252,7 +270,7 @@ function checkWalkingOverTheTorchStowsItWithoutAKeypress(check: CheckReporter): 
   );
 }
 
-function undergroundWorld() {
+function delveWorld() {
   const state = sanitizePipeline(
     examplePipelines().find((preset) => preset.name === PRESET_NAME)!.state,
   );

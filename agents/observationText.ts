@@ -6,10 +6,26 @@ import {
 import type { AgentObservation, LegendEntry } from './observation';
 
 export function observationText(obs: AgentObservation): string {
-  return [...headerLines(obs), '', ...obs.view, '', 'legend:', ...legendLines(obs.legend)].join(
-    '\n',
-  );
+  return [
+    ...headerLines(obs),
+    '',
+    ...obs.view,
+    '',
+    'legend:',
+    ...legendLines(obs.legend),
+    ...interactionLines(obs),
+  ].join('\n');
 }
+
+function interactionLines(obs: AgentObservation): string[] {
+  if (obs.interaction === null) return [];
+  return ['', `${obs.interaction} (the '${USE_ACTION[obs.mode]}' action)`];
+}
+
+const USE_ACTION: Record<AgentObservation['mode'], string> = {
+  god: 'use_fixture',
+  character: 'use',
+};
 
 function headerLines(obs: AgentObservation): string[] {
   const half = Math.floor(obs.viewSize / 2);

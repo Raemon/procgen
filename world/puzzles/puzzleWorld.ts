@@ -4,6 +4,7 @@ import type { Marker } from '../../procgen/worldSampler';
 import type { ReadOnlyPipelineStore } from '../../frontend/readOnlyAssets';
 import { fixtureLook } from './fixtures/fixtureAppearance';
 import type { PuzzleFixture } from './fixtures/puzzleFixture';
+import { fixtureAction } from './interaction/fixtureAction';
 import { crateCanBePushed, pushCrate, type WalkableProbe } from './interaction/pushCrate';
 import { reportDoor, useFixture, type UseOutcome } from './interaction/useFixture';
 import { puzzleKnobsFromPipeline } from './puzzleKnobsFromPipeline';
@@ -72,6 +73,13 @@ export class PuzzleWorld {
     const blocker = layout && this.blockerAt(layout, x, y);
     if (!layout || blocker?.kind !== 'crate') return false;
     return crateCanBePushed(layout, this.state, blocker, dx, dy, this.tileIsWalkable);
+  }
+
+  actionAt(x: number, y: number): string | null {
+    const layout = this.roomAt(x, y);
+    const fixture = layout && this.fixtureAt(layout, x, y);
+    if (!layout || !fixture) return null;
+    return fixtureAction(fixture.kind, this.fixtureReadsAsDone(layout, fixture));
   }
 
   use(x: number, y: number): UseOutcome {
@@ -161,7 +169,7 @@ export class PuzzleWorld {
       const at = livePosition(layout, this.state, fixture);
       if (at.x < minX || at.x > maxX || at.y < minY || at.y > maxY) continue;
       const look = fixtureLook(fixture.kind, this.fixtureReadsAsDone(layout, fixture));
-      into.push({ x: at.x, y: at.y, faceArt: null, ...look });
+      into.push({ x: at.x, y: at.y, ...look });
     }
   }
 

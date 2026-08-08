@@ -12,6 +12,7 @@ import { createWorldHost } from '../multiplayer/game/worldHost';
 import { mountAgentApi } from '../api/agentApiRoute';
 import { mountPersistRoutes } from '../api/persistRoutes';
 import { mountCodebaseDocs } from '../api/codebaseDocsRoute';
+import { mountServerLoadRoute } from '../api/serverLoadRoute';
 import { Router, sendJson } from '../api/router';
 import { serveStatic } from './staticFiles';
 import type { Connection } from '../multiplayer/host/connection';
@@ -39,6 +40,7 @@ async function main(): Promise<void> {
   const router = new Router();
   mountPersistRoutes(router, docs, docSyncDeps);
   mountCodebaseDocs(router);
+  const stopWatchingServerLoad = mountServerLoadRoute(router);
   mountAgentApi(router, agentState, docs, () => afterWorldPersistedByAgent(docSyncDeps));
   router.get('/healthz', (_req, res) =>
     sendJson(res, 200, {
@@ -77,6 +79,7 @@ async function main(): Promise<void> {
   installShutdown(async () => {
     loop.stop();
     writeBehind.stop();
+    stopWatchingServerLoad();
     detachWebSocket();
     await writeBehind.flush();
     await store.disconnect();

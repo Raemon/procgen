@@ -441,7 +441,13 @@
           "tags": []
         }
       ],
-      "placements": [],
+      "placements": [
+        {
+          "itemId": 5,
+          "x": 0,
+          "y": 0
+        }
+      ],
       "background": null
     },
     "billboardArt": "moonlit-dwarf",

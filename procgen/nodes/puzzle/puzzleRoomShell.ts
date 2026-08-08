@@ -23,8 +23,14 @@ export function puzzleShellAt(
   const reaching = corridorsReaching(knobs, maze, roomX, roomY);
   if (reaching.some((floor) => bandContains(floor, x, y))) return 'floor';
   if (isWallRing(knobs, roomX, roomY, x, y)) return 'wall';
-  if (reaching.some((floor) => bandContains(corridorLining(floor, knobs), x, y))) return 'wall';
+  if (corridorsAreLined(knobs) && reaching.some((floor) => bandContains(corridorLining(floor, knobs), x, y))) {
+    return 'wall';
+  }
   return 'outside';
+}
+
+function corridorsAreLined(knobs: PuzzleRoomKnobs): boolean {
+  return knobs.fillBetween !== 0;
 }
 
 function isWallRing(

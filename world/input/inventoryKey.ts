@@ -1,7 +1,7 @@
 import type { PlayerInventoryPanelState } from '../../assets/items/inventory/playerInventoryPanelState';
 import { hasModifier, isTypingInFormControl } from './movementKeys';
 
-const INVENTORY_KEY = 'KeyE';
+const INVENTORY_KEY = 'KeyI';
 
 export interface InventoryKeyDeps {
   panel: PlayerInventoryPanelState;

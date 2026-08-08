@@ -67,7 +67,8 @@ export function buildChunkMeshGroup(
     ...meshesForShape(blocks, blockShape()),
     ...meshesForShape(voxels, voxelShape()),
     ...meshesForShape(trees, treeShape()),
-    ...meshesForShape(markers, markerShape()),
+    ...meshesForShape(markers.pins, markerShape()),
+    ...meshesForShape(markers.standingFixtures, standingFixtureShape()),
     ceilingGroup(sampler, tileAssets, minX, minY),
   );
   return group;
@@ -136,6 +137,15 @@ function markerShape(): ShapeSpec {
     geometry: () => new THREE.ConeGeometry(0.24, MARKER_HEIGHT, 5),
     faces: 'side',
     positionOf: (p) => [p.x + 0.5, p.elevation + MARKER_HEIGHT / 2, p.y + 0.5],
+  };
+}
+
+function standingFixtureShape(): ShapeSpec {
+  return {
+    geometry: () => tileBoxGeometry(1, 1, 1),
+    faces: 'cube',
+    positionOf: (p) => [p.x + 0.5, p.elevation + p.height / 2, p.y + 0.5],
+    verticalScaleOf: (p) => p.height,
   };
 }
 

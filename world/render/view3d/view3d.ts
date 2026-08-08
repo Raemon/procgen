@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import type { CharacterMotion } from '../../../assets/characters/characterFrame';
+import { reportGpuSceneLoad, type GpuSceneLoad } from '../../../perf/gpuSceneLoad';
+import { measureWork } from '../../../perf/workTimers';
 import { facingYawRadians } from '../../facing';
 import type { CameraView } from './cameraView';
 import { listenForCaptureDrag } from '../../capture/listenForCaptureDrag';
@@ -56,6 +58,7 @@ export class View3D {
   private readonly worldLights: WorldLights;
   private readonly speechLabels: SpeechBubbleLabels;
   private readonly resizeObserver = new ResizeObserver(() => this.resize());
+  private readonly stopReportingGpuLoad = reportGpuSceneLoad(() => this.gpuSceneLoad());
   private animationFrame = 0;
   private lastFrameTime = 0;
   private elapsedSeconds = 0;
@@ -101,6 +104,7 @@ export class View3D {
 
   dispose(): void {
     cancelAnimationFrame(this.animationFrame);
+    this.stopReportingGpuLoad();
     this.resizeObserver.disconnect();
     this.creatureMeshes.dispose();
     this.itemMeshes.dispose();
@@ -125,6 +129,17 @@ export class View3D {
     this.characterCamera.snapOnNextFrame();
     this.followCamera.snapToFocusOnNextUpdate();
     this.resize();
+  }
+
+  private gpuSceneLoad(): GpuSceneLoad {
+    const info = this.renderer.info;
+    return {
+      drawCalls: info.render.calls,
+      triangles: info.render.triangles,
+      geometries: info.memory.geometries,
+      textures: info.memory.textures,
+      programs: info.programs?.length ?? 0,
+    };
   }
 
   yawQuadrant(): number {
@@ -218,14 +233,14 @@ export class View3D {
     advanceFaceArtAnimations(this.elapsedSeconds);
     const view = { yaw: this.viewYaw(), seconds: this.elapsedSeconds };
     this.placePlayer(view);
-    this.creatureMeshes.syncTo(this.deps.sim, view);
+    measureWork('creature meshes', () => this.creatureMeshes.syncTo(this.deps.sim, view));
     this.remotePlayerMeshes.syncTo(this.deps.remotePlayers, dtSeconds, view);
     this.selectionBox.showRegion(this.deps.capture.selectedRegion(), this.focusGroundHeight());
     this.updateActiveCamera(dtSeconds);
     this.streamAroundCameraFocus();
     this.lightAroundPlayer();
     this.showSpeechBubbles();
-    this.renderer.render(this.scene, this.activeCamera());
+    measureWork('gpu submit', () => this.renderer.render(this.scene, this.activeCamera()));
   }
 
   private showSpeechBubbles(): void {
@@ -286,7 +301,9 @@ export class View3D {
 
   private lightAroundPlayer(): void {
     this.daylight.setLevel(this.deps.store.daylight());
-    this.worldLights.syncAround(this.easedPlayer.x, this.easedPlayer.y);
+    measureWork('world lights', () =>
+      this.worldLights.syncAround(this.easedPlayer.x, this.easedPlayer.y),
+    );
   }
 
   private streamAroundCameraFocus(): void {
@@ -301,7 +318,7 @@ export class View3D {
         ? this.followCamera.visibleGroundRadiusTiles()
         : this.sightRadiusTiles();
     this.streamer.streamAround(focus.x, focus.y, streamingRadiusChunks(radiusTiles));
-    this.itemMeshes.syncAround(focus.x, focus.y, radiusTiles);
+    measureWork('item meshes', () => this.itemMeshes.syncAround(focus.x, focus.y, radiusTiles));
   }
 
   private placePlayer(view: CameraView): void {
