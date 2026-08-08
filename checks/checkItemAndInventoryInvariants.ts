@@ -32,6 +32,9 @@ import { TemplateLibrary } from '../procgen/templates/templateLibrary';
 import { WorldSampler } from '../procgen/worldSampler';
 import { asciiSnapshot } from '../world/render/ascii/asciiSnapshot';
 import { itemGeometry, itemHalfHeight } from '../world/render/view3d/itemMeshBuild';
+import { spriteRimMaterial } from '../world/render/view3d/spriteRimMaterial';
+import { glowOfEmitter, glowSelfLit } from '../world/render/view3d/selfLitGlow';
+import { spriteEdgeRuns } from '../library/tiles/spriteEdgeRuns';
 import { blankSpriteArt, isSpriteArt } from '../library/tiles/spriteArt';
 import { Tileset } from '../library/tiles/tileset';
 
@@ -135,6 +138,53 @@ function checkSpriteSlabs(check: CheckReporter, upright: ItemDef): void {
   );
   const blank = itemGeometry({ ...upright, sprite: blankSpriteArt() });
   check('a blank sprite extrudes no rim at all', blank.groups.length === 1);
+  checkRimColours(check);
+}
+
+function checkRimColours(check: CheckReporter): void {
+  const torch = new ItemLibrary().all().find((item) => item.name === 'torch')!;
+  const runs = spriteEdgeRuns(torch.sprite!);
+  const faces = rimFaceColours(itemGeometry(torch));
+  check(
+    'every extruded rim face carries the colour of the pixel it came from',
+    faces.length === runs.length &&
+      runs.every((run, index) => sameHue(faces[index]!, inkColour(run.ink))),
+  );
+  check(
+    'a glowing item lights its rim per pixel instead of washing it one tint',
+    glowingRimEmissive(torch).getHex() === UNTINTED_RIM,
+  );
+}
+
+const UNTINTED_RIM = 0xffffff;
+
+function glowingRimEmissive(torch: ItemDef): THREE.Color {
+  const rim = spriteRimMaterial();
+  glowSelfLit([rim], glowOfEmitter(torch));
+  return rim.emissive;
+}
+
+function rimFaceColours(slab: THREE.BufferGeometry): THREE.Color[] {
+  const rimGroup = slab.groups[1]!;
+  const colours = slab.getAttribute('color');
+  const faces: THREE.Color[] = [];
+  for (let vertex = rimGroup.start; vertex < rimGroup.start + rimGroup.count; vertex += SQUARE_RIM_VERTICES)
+    faces.push(new THREE.Color().fromBufferAttribute(colours, vertex));
+  return faces;
+}
+
+function inkColour(ink: string): THREE.Color {
+  return new THREE.Color().setStyle(ink, THREE.SRGBColorSpace);
+}
+
+function sameHue(shaded: THREE.Color, ink: THREE.Color): boolean {
+  const shade = shaded.r / ink.r;
+  return (
+    shade > 0 &&
+    shade <= 1 &&
+    Math.abs(shaded.g - ink.g * shade) < 1e-6 &&
+    Math.abs(shaded.b - ink.b * shade) < 1e-6
+  );
 }
 
 const SQUARE_RIM_VERTICES = 6;
