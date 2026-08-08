@@ -3,7 +3,10 @@ import {
   bandCells,
   eastGateBand,
 } from '../procgen/nodes/puzzle/puzzleRoomCorridors';
-import type { PuzzleRoomKnobs } from '../procgen/nodes/puzzle/puzzleRoomKnobs';
+import {
+  PUZZLE_ROOMS_NODE_TYPE,
+  type PuzzleRoomKnobs,
+} from '../procgen/nodes/puzzle/puzzleRoomKnobs';
 import {
   doorwayCentreOffset,
   rectContains,
@@ -15,13 +18,22 @@ import type { RoomLatticeMaze } from '../procgen/nodes/puzzle/roomLatticeMaze';
 import { PipelineEvaluator } from '../procgen/eval/evaluator';
 import { PipelineStore } from '../procgen/pipeline/pipelineStore';
 import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
+import type { PipelineState } from '../procgen/pipeline/pipelineState';
 import { examplePipelines } from '../procgen/presets/examplePipelines';
 import { WorldSampler } from '../procgen/worldSampler';
 import { Tileset } from '../library/tiles/tileset';
+import { buildObservation } from '../agents/observation';
+import { observationText } from '../agents/observationText';
 import { isWalkableTile } from '../world/tileWalkability';
 import { everyFixtureLook, fixtureLook } from '../world/puzzles/fixtures/fixtureAppearance';
 import { allPuzzleKinds } from '../world/puzzles/kinds/puzzleKind';
 import { pushCrate } from '../world/puzzles/interaction/pushCrate';
+import {
+  actionWithinReach,
+  interactPrompt,
+  INTERACT_KEY,
+} from '../world/puzzles/interaction/actionWithinReach';
+import { USE_KEY } from '../world/input/useFixtureInput';
 import { forwardSolutionWorks } from '../world/puzzles/kinds/forwardSolutionWorks';
 import {
   chanceToRuinTheRoom,
@@ -36,8 +48,13 @@ import { PuzzleWorld } from '../world/puzzles/puzzleWorld';
 import { playerCanEnter } from '../world/puzzles/playerCanEnter';
 import { PuzzleState } from '../world/puzzles/state/puzzleState';
 import { puzzleKnobsFromPipeline } from '../world/puzzles/puzzleKnobsFromPipeline';
-import { everyFixtureOf, type PuzzleRoomLayout } from '../world/puzzles/rooms/puzzleRoomLayout';
+import {
+  everyFixtureOf,
+  everyGateOf,
+  type PuzzleRoomLayout,
+} from '../world/puzzles/rooms/puzzleRoomLayout';
 import type { PuzzleFixture } from '../world/puzzles/fixtures/puzzleFixture';
+import { roomAcrossTheGate } from '../world/puzzles/rooms/puzzleRoomLayout';
 import { fixtureIsOn, livePosition, roomIsSolved } from '../world/puzzles/state/fixtureSignals';
 
 type Check = (name: string, condition: boolean) => void;
@@ -62,6 +79,65 @@ export function checkPuzzleInvariants(check: Check): void {
   checkAWrongPushCanCostYouTheRoom(check, world);
   checkTheSearchAsksForMoreRuinUntilItsCeiling(check);
   checkDifficultyRisesThenHoldsAtAKnownRing(check, world);
+  checkThePromptOffersOnlyWhatPressingTheKeyWouldDo(check, world);
+}
+
+function checkThePromptOffersOnlyWhatPressingTheKeyWouldDo(
+  check: Check,
+  world: PuzzleFixtureWorld,
+): void {
+  check(
+    'the key the prompt names is the key the browser actually listens for',
+    USE_KEY === `Key${INTERACT_KEY}`,
+  );
+  const spawn = roomInteriorRect(0, 0, world.knobs);
+  check(
+    'standing in the empty chamber you wake in, nothing offers you an action',
+    actionWithinReach(world.puzzles, { x: spawn.x + 1, y: spawn.y + 1, facing: 0 }) === null,
+  );
+  const lever = theFirstLeverInTheLabyrinth(world);
+  check(
+    'standing on an unpulled lever offers pulling it',
+    actionWithinReach(world.puzzles, { x: lever.x, y: lever.y, facing: 0 }) === 'pull the lever',
+  );
+  check(
+    'and so does standing one tile north of it and facing south, the same reach the use ability has',
+    actionWithinReach(world.puzzles, { x: lever.x, y: lever.y - 1, facing: 4 }) ===
+      'pull the lever',
+  );
+  check(
+    'the prompt reads as an instruction naming that key',
+    interactPrompt('pull the lever') === 'press [F] to pull the lever',
+  );
+  check(
+    'an agent standing on that lever is told about it in its observation, not just the human',
+    observationText(
+      buildObservation(
+        world.sampler,
+        new Tileset(),
+        { x: lever.x, y: lever.y, facing: 0 },
+        'character',
+        undefined,
+        world.puzzles,
+      ),
+    ).includes('press [F] to pull the lever'),
+  );
+  check(
+    'pressing the key where the prompt offered an action does that action',
+    world.puzzles.use(lever.x, lever.y).ok,
+  );
+  check(
+    'and the offer is withdrawn once the lever has been pulled',
+    actionWithinReach(world.puzzles, { x: lever.x, y: lever.y, facing: 0 }) === null,
+  );
+}
+
+function theFirstLeverInTheLabyrinth(world: PuzzleFixtureWorld): PuzzleFixture {
+  for (const layout of everyRoomWithin(world, 4)) {
+    const lever = layout.fixtures.find((fixture) => fixture.kind === 'lever');
+    if (lever) return lever;
+  }
+  throw new Error('the labyrinth has no lever to reach for');
 }
 
 interface CrateFloorStudy {
@@ -269,12 +345,14 @@ interface PuzzleFixtureWorld {
   maze: RoomLatticeMaze;
   puzzles: PuzzleWorld;
   sampler: WorldSampler;
+  shellSampler: WorldSampler;
   tileIsWalkable(x: number, y: number): boolean;
 }
 
 function puzzleWorldFromPreset(): PuzzleFixtureWorld {
   const preset = examplePipelines().find((example) => example.name === PUZZLE_PRESET_NAME)!;
-  const store = new PipelineStore(sanitizePipeline(preset.state));
+  const state = sanitizePipeline(preset.state);
+  const store = new PipelineStore(state);
   const tileset = new Tileset();
   const sampler = new WorldSampler(store, new PipelineEvaluator(store), tileset);
   const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileset, sampler.tileAt(x, y));
@@ -284,8 +362,18 @@ function puzzleWorldFromPreset(): PuzzleFixtureWorld {
     maze: roomLatticeMazeFor(knobs),
     puzzles: new PuzzleWorld(store, tileIsWalkable),
     sampler,
+    shellSampler: samplerOfPuzzleRoomsAlone(state, tileset),
     tileIsWalkable,
   };
+}
+
+function samplerOfPuzzleRoomsAlone(state: PipelineState, tileset: Tileset): WorldSampler {
+  const shellOnly = {
+    ...state,
+    nodes: state.nodes.filter((node) => node.type === PUZZLE_ROOMS_NODE_TYPE),
+  };
+  const store = new PipelineStore(shellOnly);
+  return new WorldSampler(store, new PipelineEvaluator(store), tileset);
 }
 
 function checkTheShellIsSolidExceptWhereItLetsYouThrough(
@@ -311,12 +399,90 @@ function checkTheShellIsSolidExceptWhereItLetsYouThrough(
       world.tileIsWalkable(cell.x, cell.y),
     ),
   );
+  const runs = everyWarrenRunWithEveryDoorShut(world);
   check(
-    'nothing between the chambers is left empty, so the doors are the only way through',
-    cellsBetweenRooms(world).every(
-      (cell) => world.sampler.tileAt(cell.x, cell.y) !== EMPTY_TILE,
+    'the warren between the chambers is one long run to wander, not a scatter of sealed nooks',
+    Math.max(...runs.map((run) => run.size)) > 1000,
+  );
+  check(
+    'and no amount of wandering it gets you into a chamber, so a door is the only way in',
+    runs.every(
+      (run) => chambersTouching(run, world, ROOMS_THE_WARREN_IS_SCANNED_OVER).size === 0,
     ),
   );
+}
+
+const ROOMS_THE_WARREN_IS_SCANNED_OVER = 3;
+
+function everyWarrenRunWithEveryDoorShut(world: PuzzleFixtureWorld): Set<string>[] {
+  const standable = groundWithEveryDoorShut(world);
+  const span = ROOMS_THE_WARREN_IS_SCANNED_OVER * world.knobs.roomSpacing;
+  const claimed = new Set<string>();
+  const runs: Set<string>[] = [];
+  for (const cell of everyCellWithin(span)) {
+    if (claimed.has(`${cell.x},${cell.y}`) || !standable(cell.x, cell.y)) continue;
+    if (puzzleShellAt(world.knobs, world.maze, cell.x, cell.y) !== 'outside') continue;
+    const run = floodFrom(cell.x, cell.y, standable, span);
+    for (const key of run) claimed.add(key);
+    runs.push(run);
+  }
+  return runs;
+}
+
+function groundWithEveryDoorShut(
+  world: PuzzleFixtureWorld,
+): (x: number, y: number) => boolean {
+  const shut = new Set(
+    everyRoomIndexWithin(ROOMS_THE_WARREN_IS_SCANNED_OVER + 1)
+      .flatMap((room) => everyFixtureOf(world.puzzles.roomAt(...roomCentre(room, world.knobs))!))
+      .filter((fixture) => fixture.kind === 'gate')
+      .map((gate) => `${gate.x},${gate.y}`),
+  );
+  return (x, y) => world.tileIsWalkable(x, y) && !shut.has(`${x},${y}`);
+}
+
+function chambersTouching(
+  reached: Set<string>,
+  world: PuzzleFixtureWorld,
+  roomSpan: number,
+): Set<string> {
+  const found = new Set<string>();
+  for (const room of everyRoomIndexWithin(roomSpan)) {
+    const interior = roomInteriorRect(room.roomX, room.roomY, world.knobs);
+    const inside = everyCellOfRoom(interior).some((cell) => reached.has(`${cell.x},${cell.y}`));
+    if (inside) found.add(`${room.roomX},${room.roomY}`);
+  }
+  return found;
+}
+
+function floodFrom(
+  startX: number,
+  startY: number,
+  canStandOn: (x: number, y: number) => boolean,
+  span: number,
+): Set<string> {
+  const reached = new Set([`${startX},${startY}`]);
+  const queue: [number, number][] = [[startX, startY]];
+  while (queue.length > 0) {
+    const [x, y] = queue.pop()!;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+      const [nextX, nextY] = [x + dx, y + dy];
+      if (Math.abs(nextX) > span || Math.abs(nextY) > span) continue;
+      const key = `${nextX},${nextY}`;
+      if (reached.has(key) || !canStandOn(nextX, nextY)) continue;
+      reached.add(key);
+      queue.push([nextX, nextY]);
+    }
+  }
+  return reached;
+}
+
+function roomCentre(
+  room: { roomX: number; roomY: number },
+  knobs: PuzzleRoomKnobs,
+): [number, number] {
+  const interior = roomInteriorRect(room.roomX, room.roomY, knobs);
+  return [interior.x + Math.floor(interior.width / 2), interior.y + Math.floor(interior.height / 2)];
 }
 
 function checkTheLabyrinthIsALabyrinth(check: Check, world: PuzzleFixtureWorld): void {
@@ -342,17 +508,25 @@ function checkTheNodeAndTheRuntimeAgreeOnTheShell(
   check: Check,
   world: PuzzleFixtureWorld,
 ): void {
-  const disagreements = everyCellWithin(40).filter(
-    (cell) => tileIsFloor(world, cell.x, cell.y) !== shellIsFloor(world, cell.x, cell.y),
+  const shellCells = everyCellWithin(40).filter(
+    (cell) => puzzleShellAt(world.knobs, world.maze, cell.x, cell.y) !== 'outside',
   );
   check(
     'the tiles the node paints are the shell the runtime believes it laid out, seed and all',
-    disagreements.length === 0,
+    shellCells.every(
+      (cell) => world.tileIsWalkable(cell.x, cell.y) === shellIsFloor(world, cell.x, cell.y),
+    ),
+  );
+  check(
+    'the node leaves every cell outside the shell to whatever layer lies underneath',
+    cellsBetweenRooms(world).every(
+      (cell) => nodeOnlyTileAt(world, cell.x, cell.y) === EMPTY_TILE,
+    ),
   );
 }
 
-function tileIsFloor(world: PuzzleFixtureWorld, x: number, y: number): boolean {
-  return world.tileIsWalkable(x, y);
+function nodeOnlyTileAt(world: PuzzleFixtureWorld, x: number, y: number): number {
+  return world.shellSampler.tileAt(x, y);
 }
 
 function shellIsFloor(world: PuzzleFixtureWorld, x: number, y: number): boolean {
@@ -458,18 +632,19 @@ function doorwaysTouching(
   roomX: number,
   roomY: number,
 ): Doorway[] {
-  const own = roomAtIndex(world, roomX, roomY);
-  const west = roomAtIndex(world, roomX - 1, roomY);
-  const north = roomAtIndex(world, roomX, roomY - 1);
-  return [
-    ...[...own.gates.east, ...own.gates.south].map((gate) => ({ layout: own, gate })),
-    ...west.gates.east.map((gate) => ({ layout: west, gate })),
-    ...north.gates.south.map((gate) => ({ layout: north, gate })),
-  ];
+  const layout = roomAtIndex(world, roomX, roomY);
+  return everyGateOf(layout).map((gate) => ({ layout, gate }));
+}
+
+function doorwayLeadsTo(doorway: Doorway, roomX: number, roomY: number): boolean {
+  const across = roomAcrossTheGate(doorway.layout, doorway.gate);
+  return across.roomX === roomX && across.roomY === roomY;
 }
 
 function stepThroughDoorway(doorway: Doorway): [number, number] {
-  return doorway.layout.gates.east.includes(doorway.gate) ? [1, 0] : [0, 1];
+  const { layout, gate } = doorway;
+  const across = roomAcrossTheGate(layout, gate);
+  return [across.roomX - layout.roomX, across.roomY - layout.roomY];
 }
 
 function checkDoorsStayShutUntilTheRoomIsDone(check: Check, world: PuzzleFixtureWorld): void {
@@ -512,7 +687,7 @@ function checkTheWayOutOpensInEveryDirection(check: Check, world: PuzzleFixtureW
   );
   const nextRoom = firstNeighbourOfTheStart(world);
   const onward = doorwaysTouching(world, nextRoom.roomX, nextRoom.roomY).filter(
-    (doorway) => !fromTheStart.some((start) => start.gate === doorway.gate),
+    (doorway) => !doorwayLeadsTo(doorway, 0, 0),
   );
   check(
     'the chamber you walk into is sealed on its far sides until you solve it',
@@ -531,10 +706,6 @@ function firstNeighbourOfTheStart(world: PuzzleFixtureWorld): {
   roomY: number;
 } {
   return corridorNeighbours(world, { roomX: 0, roomY: 0 })[0]!;
-}
-
-function everyGateOf(layout: PuzzleRoomLayout): PuzzleFixture[] {
-  return [...layout.gates.east, ...layout.gates.south];
 }
 
 function solveRoom(world: PuzzleFixtureWorld, layout: PuzzleRoomLayout): void {

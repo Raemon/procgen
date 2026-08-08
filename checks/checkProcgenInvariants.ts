@@ -5,7 +5,7 @@ import { checkCharacterBillboardInvariants } from './checkCharacterBillboardInva
 import { checkItemAndInventoryInvariants } from './checkItemAndInventoryInvariants';
 import { checkPlayerCharacterInvariants } from './checkPlayerCharacterInvariants';
 import { checkLandmarkAndCeilingInvariants } from './checkLandmarkAndCeilingInvariants';
-import { checkUndergroundLightInvariants } from './checkUndergroundLightInvariants';
+import { checkDelveDarknessInvariants } from './checkDelveDarknessInvariants';
 import { checkPrefabAndCreatureInvariants } from './checkPrefabAndCreatureInvariants';
 import { checkTileHeightInvariants } from './checkTileHeightInvariants';
 import { checkPresentationFoldersAreTheOnlyDomCode } from './checkPresentationFoldersAreTheOnlyDomCode';
@@ -14,6 +14,7 @@ import { checkPuzzleInvariants } from './checkPuzzleInvariants';
 import { checkEveryApiSurfaceIsDescribed } from './checkEveryApiSurfaceIsDescribed';
 import { checkClaudeMdPointsAtThingsThatExist } from './checkClaudeMdPointsAtThingsThatExist';
 import { checkDocumentationHasNotRegrown } from './checkDocumentationHasNotRegrown';
+import { checkPerformanceReadouts } from './checkPerformanceReadouts';
 import { cameraRelativeStep } from '../world/input/cameraRelativeStep';
 import { PipelineEvaluator } from '../procgen/eval/evaluator';
 import { allNodeTypes } from '../procgen/nodeRegistry';
@@ -750,7 +751,7 @@ check(
 tileset.update(grass.id, { faceArt: shippedGrassArt });
 
 tileset.update(treeId, { faceArt: art });
-const markerPlacements = markerPlacementsForRect(sampled.sampler, -48, -48, 96, 96);
+const markerPlacements = markerPlacementsForRect(sampled.sampler, -48, -48, 96, 96).pins;
 check(
   'marker placements carry the sourced tile face art',
   markerPlacements.length > 0 && markerPlacements.every((p) => p.faceArt === art),
@@ -1990,6 +1991,7 @@ describe('documentation', () => {
 describe('the design bets', () => checkDesignBetsStillHold(check));
 describe('the api surface', () => checkEveryApiSurfaceIsDescribed(check));
 describe('landmarks and ceilings', () => checkLandmarkAndCeilingInvariants(check));
-describe('underground light', () => checkUndergroundLightInvariants(check));
+describe('delve darkness', () => checkDelveDarknessInvariants(check));
+describe('performance readouts', () => checkPerformanceReadouts(check));
 
 

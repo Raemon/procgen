@@ -1,389 +1,79 @@
 {
-  "seed": 314,
-  "daylight": 1,
+  "seed": 8721,
+  "daylight": 0,
   "nodes": [
     {
       "id": "n1",
-      "type": "tectonicUplift",
-      "label": "plates",
-      "comment": "One set of continents shared by every climate zone — the point of this world is that the same terrain reads utterly differently at each latitude.",
-      "folder": "plates & ranges",
+      "type": "mazeChunk",
+      "label": "warren",
+      "comment": "The rock the chambers are cut into, carved down to its finest pitch: one-tile corridors between one-tile walls, so the space left between chambers reads as a dense warren rather than empty rock. It only shows where the puzzle layer above leaves a cell empty, which is exactly the band between the chambers. Wandering it never bypasses a door, because a chamber keeps its wall ring whatever lies outside it and both mouths of every corridor are doored.",
+      "folder": "the delve",
       "enabled": true,
       "params": {
-        "plateSize": 288,
-        "oceanFraction": 0.55,
-        "beltWidth": 64,
-        "rangeHeight": 0.32,
-        "landHeight": 0.58,
-        "basinDepth": 0.34
+        "corridor": 1,
+        "wall": 1,
+        "mazeChunks": 1,
+        "carver": 0,
+        "braid": 0.15,
+        "doorsPerEdge": 2,
+        "rooms": 0.1,
+        "roomCells": 2,
+        "wallTile": 17,
+        "floorTile": 9
       },
       "inputs": {},
       "display": {
-        "mode": "hidden"
+        "mode": "tileLayer"
       }
     },
     {
       "id": "n2",
-      "type": "terrainNoise",
-      "label": "warp x",
-      "comment": "East-west displacement for the warp that bends plate edges into coastlines.",
-      "folder": "plates & ranges",
+      "type": "puzzleRooms",
+      "label": "puzzle chambers",
+      "comment": "Nine-tile chambers on a twenty-one-tile lattice, so a chamber plus its wall ring leaves ten tiles of warren between neighbours and the corridors are short enough to see the far door from the near one. Every corridor is doored at both mouths, so opening onto the warren costs the chambers nothing. \"Solid between rooms\" is off so that warren shows through. Which puzzle furnishes a chamber comes from how far it is from the origin, so the first chamber anyone meets is one lever in the middle of an empty room whichever way they walk out of the spawn.",
+      "folder": "the delve",
       "enabled": true,
       "params": {
-        "scale": 0.004,
-        "style": 0,
-        "octaves": 4,
-        "lacunarity": 2,
-        "gain": 0.5
+        "roomTiles": 9,
+        "roomSpacing": 21,
+        "regionRooms": 5,
+        "carver": 0,
+        "braid": 0.25,
+        "doorsPerEdge": 1,
+        "wall": 1,
+        "corridor": 1,
+        "fillBetween": 0,
+        "floorTile": 15,
+        "wallTile": 17
       },
       "inputs": {},
       "display": {
-        "mode": "hidden"
+        "mode": "tileLayer"
       }
     },
     {
       "id": "n3",
-      "type": "terrainNoise",
-      "label": "warp y",
-      "comment": "North-south displacement at a slightly different scale so the axes stay independent.",
-      "folder": "plates & ranges",
+      "type": "landmarkPoint",
+      "label": "torch",
+      "comment": "One point, two tiles east of the spawn, bound to the torch item. With daylight at 0 and a roof over everything, this torch is the only thing that makes the delve visible: walk over it and the character carries its light with her.",
+      "folder": "where you wake up",
       "enabled": true,
       "params": {
-        "scale": 0.0045,
-        "style": 0,
-        "octaves": 4,
-        "lacunarity": 2,
-        "gain": 0.5
+        "x": 2,
+        "y": 0
       },
       "inputs": {},
       "display": {
-        "mode": "hidden"
+        "mode": "items",
+        "itemId": 5
       }
     },
     {
       "id": "n4",
-      "type": "domainWarp",
-      "label": "warped plates",
-      "comment": "Plate bisectors become headlands, bays and island arcs.",
-      "folder": "plates & ranges",
-      "enabled": true,
-      "params": {
-        "strength": 100
-      },
-      "inputs": {
-        "source": "n1",
-        "offsetX": "n2",
-        "offsetY": "n3"
-      },
-      "display": {
-        "mode": "hidden"
-      }
-    },
-    {
-      "id": "n5",
-      "type": "hypsometricCurve",
-      "label": "belt mask",
-      "comment": "The curve as a switch: pivoted above continental crust, it is 1 inside uplift belts and 0 elsewhere — the mask that confines the ridged noise to the ranges.",
-      "folder": "plates & ranges",
-      "enabled": true,
-      "params": {
-        "seaLevel": 0.72,
-        "steepness": 25
-      },
-      "inputs": {
-        "source": "n4"
-      },
-      "display": {
-        "mode": "hidden"
-      }
-    },
-    {
-      "id": "n6",
-      "type": "terrainNoise",
-      "label": "ridges",
-      "comment": "Sharp-crested noise for the mountain belts, masked below so the plains stay smooth.",
-      "folder": "plates & ranges",
-      "enabled": true,
-      "params": {
-        "scale": 0.01,
-        "style": 1,
-        "octaves": 7,
-        "lacunarity": 2.1,
-        "gain": 0.5
-      },
-      "inputs": {},
-      "display": {
-        "mode": "hidden"
-      }
-    },
-    {
-      "id": "n7",
-      "type": "blendFields",
-      "label": "ranges in the belts",
-      "comment": "Jagged relief only where the belt mask allows. These peaks matter later: altitude cools them below the polar cut, so snowcaps appear at any latitude without a single snow-line knob.",
-      "folder": "plates & ranges",
-      "enabled": true,
-      "params": {
-        "weight": 0.8
-      },
-      "inputs": {
-        "a": "n4",
-        "b": "n6",
-        "mask": "n5"
-      },
-      "display": {
-        "mode": "hidden"
-      }
-    },
-    {
-      "id": "n8",
-      "type": "terrainNoise",
-      "label": "rolling detail",
-      "comment": "The unremarkable hills everywhere else.",
-      "folder": "plates & ranges",
-      "enabled": true,
-      "params": {
-        "scale": 0.02,
-        "style": 0,
-        "octaves": 5,
-        "lacunarity": 2,
-        "gain": 0.5
-      },
-      "inputs": {},
-      "display": {
-        "mode": "hidden"
-      }
-    },
-    {
-      "id": "n9",
-      "type": "blendFields",
-      "label": "rolling relief",
-      "comment": "A light unmasked pass so the lowlands are textured, not flat.",
-      "folder": "plates & ranges",
-      "enabled": true,
-      "params": {
-        "weight": 0.16
-      },
-      "inputs": {
-        "a": "n7",
-        "b": "n8",
-        "mask": null
-      },
-      "display": {
-        "mode": "hidden"
-      }
-    },
-    {
-      "id": "n10",
-      "type": "hypsometricCurve",
-      "label": "basins & platform",
-      "comment": "Deep ocean basins, low continental platform, steep shelf between — Earth’s elevation histogram.",
-      "folder": "plates & ranges",
-      "enabled": true,
-      "params": {
-        "seaLevel": 0.5,
-        "steepness": 9
-      },
-      "inputs": {
-        "source": "n9"
-      },
-      "display": {
-        "mode": "hidden"
-      }
-    },
-    {
-      "id": "n11",
-      "type": "flowAccumulation",
-      "label": "drainage",
-      "comment": "Rain routed downhill over the whole world. The same drainage feeds temperate rivers, the frozen rivers under the cap, and the desert’s lifeline — climate only changes how each stretch is dressed.",
-      "folder": "rivers & valleys",
-      "enabled": true,
-      "params": {
-        "seaLevel": 0.5,
-        "catchmentScale": 3000,
-        "fillPits": 1,
-        "windowRadius": 40
-      },
-      "inputs": {
-        "elevation": "n10"
-      },
-      "display": {
-        "mode": "hidden"
-      }
-    },
-    {
-      "id": "n12",
-      "type": "carveValleys",
-      "label": "eroded terrain",
-      "comment": "The terrain everything stands on: valleys cut in proportion to the water they carry. The width-6 taper also digs the floodplains the desert farmland will later claim.",
-      "folder": "rivers & valleys",
-      "enabled": true,
-      "params": {
-        "depth": 0.08,
-        "minFlow": 0.4,
-        "valleyWidth": 6
-      },
-      "inputs": {
-        "elevation": "n10",
-        "flow": "n11"
-      },
-      "display": {
-        "mode": "elevation",
-        "heightScale": 8
-      }
-    },
-    {
-      "id": "n13",
-      "type": "coastDistance",
-      "label": "coast distance",
-      "comment": "Shoreline distance for even-width beaches, measured on the uneroded terrain.",
-      "folder": "rivers & valleys",
-      "enabled": true,
-      "params": {
-        "seaLevel": 0.5,
-        "range": 32
-      },
-      "inputs": {
-        "elevation": "n10"
-      },
-      "display": {
-        "mode": "hidden"
-      }
-    },
-    {
-      "id": "n14",
-      "type": "slopeField",
-      "label": "steepness",
-      "comment": "Grade of the mountainsides, so every biome can trade soil for bare rock on its cliffs.",
-      "folder": "rivers & valleys",
-      "enabled": true,
-      "params": {
-        "radius": 3,
-        "gain": 12
-      },
-      "inputs": {
-        "source": "n12"
-      },
-      "display": {
-        "mode": "hidden"
-      }
-    },
-    {
-      "id": "n15",
-      "type": "customScript",
-      "label": "script: latitude",
-      "comment": "The node this world hinges on, and nothing built in can make it: warmth as a function of world Y alone. The pole sits at y = −768, the equator at y = +768, so walking south is walking through climates. Every zone boundary downstream is a band of this one gradient.",
-      "folder": "climate",
-      "enabled": true,
-      "params": {
-        "outputKind": "field",
-        "code": "const field = ctx.newField();\nconst poleY = -768;\nconst equatorY = 768;\nfor (let y = 0; y < ctx.size; y++) {\n  const southwardness = (ctx.originY + y - poleY) / (equatorY - poleY);\n  const warmth = Math.max(0, Math.min(1, southwardness));\n  for (let x = 0; x < ctx.size; x++) {\n    field[y * ctx.size + x] = warmth;\n  }\n}\nreturn field;"
-      },
-      "inputs": {
-        "a": null,
-        "b": null
-      },
-      "display": {
-        "mode": "hidden"
-      }
-    },
-    {
-      "id": "n16",
-      "type": "terrainNoise",
-      "label": "climate wobble",
-      "comment": "Weather is not a ruler: this bends the zone borders so the treeline meanders.",
-      "folder": "climate",
-      "enabled": true,
-      "params": {
-        "scale": 0.012,
-        "style": 0,
-        "octaves": 3,
-        "lacunarity": 2,
-        "gain": 0.5
-      },
-      "inputs": {},
-      "display": {
-        "mode": "hidden"
-      }
-    },
-    {
-      "id": "n17",
-      "type": "blendFields",
-      "label": "wobbled latitude",
-      "comment": "A fifth of wobble is enough — the gradient must stay in charge or the zones dissolve.",
-      "folder": "climate",
-      "enabled": true,
-      "params": {
-        "weight": 0.22
-      },
-      "inputs": {
-        "a": "n15",
-        "b": "n16",
-        "mask": null
-      },
-      "display": {
-        "mode": "hidden"
-      }
-    },
-    {
-      "id": "n18",
       "type": "constantField",
-      "label": "sea level",
-      "comment": "The 0.5 reference the lapse-rate subtraction below measures altitude from.",
-      "folder": "climate",
-      "enabled": true,
-      "params": {
-        "value": 0.5
-      },
-      "inputs": {},
-      "display": {
-        "mode": "hidden"
-      }
-    },
-    {
-      "id": "n19",
-      "type": "combineFields",
-      "label": "height above sea",
-      "comment": "Clamped subtract: zero at sea and below, rising with the land. Pure altitude, no latitude.",
-      "folder": "climate",
-      "enabled": true,
-      "params": {
-        "operation": 1,
-        "clamp": 1
-      },
-      "inputs": {
-        "a": "n12",
-        "b": "n18"
-      },
-      "display": {
-        "mode": "hidden"
-      }
-    },
-    {
-      "id": "n20",
-      "type": "combineFields",
-      "label": "temperature",
-      "comment": "Latitude minus altitude — the lapse rate. This is why high ranges wear polar snow even in the warm south, with no node ever told where mountains are.",
-      "folder": "climate",
-      "enabled": true,
-      "params": {
-        "operation": 1,
-        "clamp": 1
-      },
-      "inputs": {
-        "a": "n17",
-        "b": "n19"
-      },
-      "display": {
-        "mode": "hidden"
-      }
-    },
-    {
-      "id": "n21",
-      "type": "constantField",
-      "label": "one",
-      "comment": "A constant 1 so the next node can flip temperature into coldness.",
-      "folder": "climate",
+      "label": "everywhere",
+      "comment": "A flat 1 over every cell — the simplest way to say \"all of it\" to the threshold below, which is what makes the roof cover the whole delve rather than patches of it.",
+      "folder": "the roof",
       "enabled": true,
       "params": {
         "value": 1
@@ -394,444 +84,23 @@
       }
     },
     {
-      "id": "n22",
-      "type": "combineFields",
-      "label": "coldness",
-      "comment": "Region masks only test “at least”, so the cold biomes need cold to be the thing that is high. Taiga claims coldness ≥ 0.62, the cap claims ≥ 0.8.",
-      "folder": "climate",
-      "enabled": true,
-      "params": {
-        "operation": 1,
-        "clamp": 1
-      },
-      "inputs": {
-        "a": "n21",
-        "b": "n20"
-      },
-      "display": {
-        "mode": "hidden"
-      }
-    },
-    {
-      "id": "n23",
-      "type": "biomeBands",
-      "label": "temperate heartland",
-      "comment": "The base coat, region unwired so it paints the whole world; the desert, taiga and cap overpaint their own latitudes on top. Snow line at 1 because snow here is climate’s job, not height’s.",
-      "folder": "biomes",
-      "enabled": true,
-      "params": {
-        "seaLevel": 0.5,
-        "deepDrop": 0.06,
-        "shoreBand": 0.05,
-        "rockAbove": 0.45,
-        "snowLine": 1,
-        "regionAtLeast": 0.5,
-        "deepTile": 5,
-        "waterTile": 0,
-        "shoreTile": 1,
-        "groundTile": 2,
-        "rockTile": 4,
-        "snowTile": 7
-      },
-      "inputs": {
-        "elevation": "n12",
-        "steepness": "n14",
-        "shoreDistance": "n13",
-        "region": null
-      },
-      "display": {
-        "mode": "tileLayer"
-      }
-    },
-    {
-      "id": "n24",
-      "type": "biomeBands",
-      "label": "southern desert",
-      "comment": "Same terrain, hot region: the ground tile is simply sand. Rock still breaks through on the steeps, so desert ranges read as bare stone over dunes.",
-      "folder": "biomes",
-      "enabled": true,
-      "params": {
-        "seaLevel": 0.5,
-        "deepDrop": 0.06,
-        "shoreBand": 0.05,
-        "rockAbove": 0.5,
-        "snowLine": 1,
-        "regionAtLeast": 0.72,
-        "deepTile": 5,
-        "waterTile": 0,
-        "shoreTile": 1,
-        "groundTile": 1,
-        "rockTile": 4,
-        "snowTile": 7
-      },
-      "inputs": {
-        "elevation": "n12",
-        "steepness": "n14",
-        "shoreDistance": "n13",
-        "region": "n20"
-      },
-      "display": {
-        "mode": "tileLayer"
-      }
-    },
-    {
-      "id": "n25",
-      "type": "hypsometricCurve",
-      "label": "desert switch",
-      "comment": "Near 1 where temperature passes the desert cut, near 0 elsewhere — a mask for the floodplain trick below.",
-      "folder": "biomes",
-      "enabled": true,
-      "params": {
-        "seaLevel": 0.72,
-        "steepness": 30
-      },
-      "inputs": {
-        "source": "n20"
-      },
-      "display": {
-        "mode": "hidden"
-      }
-    },
-    {
-      "id": "n26",
-      "type": "combineFields",
-      "label": "carved depth",
-      "comment": "Uneroded minus eroded terrain: nonzero exactly where the rivers dug, and the valley taper makes it a band around each channel, not a line on it.",
-      "folder": "biomes",
-      "enabled": true,
-      "params": {
-        "operation": 1,
-        "clamp": 1
-      },
-      "inputs": {
-        "a": "n10",
-        "b": "n12"
-      },
-      "display": {
-        "mode": "hidden"
-      }
-    },
-    {
-      "id": "n27",
-      "type": "combineFields",
-      "label": "desert floodplain",
-      "comment": "The carved band gated to the hot zone — the only places a desert can farm.",
-      "folder": "biomes",
-      "enabled": true,
-      "params": {
-        "operation": 2,
-        "clamp": 1
-      },
-      "inputs": {
-        "a": "n26",
-        "b": "n25"
-      },
-      "display": {
-        "mode": "hidden"
-      }
-    },
-    {
-      "id": "n28",
+      "id": "n5",
       "type": "thresholdTiles",
-      "label": "river verges",
-      "comment": "Farmland wherever the desert floodplain is deep enough: a green ribbon tracing every desert river from the mountains to the sea, painted before the river so the water flows through its fields.",
-      "folder": "biomes",
+      "label": "rock roof",
+      "comment": "Every cell is above the threshold, so every cell gets rock, and the ceiling display hangs it 2 tiles up, which is exactly where the stone walls end: any higher and the roof floats over a gap the walls never reach, which reads as no roof at all. Ceilings only draw in first person, so the god camera can still look down into the delve.",
+      "folder": "the roof",
       "enabled": true,
       "params": {
-        "threshold": 0.02,
+        "threshold": 0.5,
         "belowTile": -1,
-        "aboveTile": 11
+        "aboveTile": 4
       },
       "inputs": {
-        "source": "n27"
+        "source": "n4"
       },
       "display": {
-        "mode": "tileLayer"
-      }
-    },
-    {
-      "id": "n29",
-      "type": "biomeBands",
-      "label": "taiga",
-      "comment": "The cold belt: gravel shores instead of beaches, snow from 0.86 up, grass below for the pines to stand on. Painted before the rivers so its waterways stay open — only the cap freezes over.",
-      "folder": "biomes",
-      "enabled": true,
-      "params": {
-        "seaLevel": 0.5,
-        "deepDrop": 0.06,
-        "shoreBand": 0.04,
-        "rockAbove": 0.5,
-        "snowLine": 0.86,
-        "regionAtLeast": 0.62,
-        "deepTile": 5,
-        "waterTile": 0,
-        "shoreTile": 9,
-        "groundTile": 2,
-        "rockTile": 4,
-        "snowTile": 7
-      },
-      "inputs": {
-        "elevation": "n12",
-        "steepness": "n14",
-        "shoreDistance": "n13",
-        "region": "n22"
-      },
-      "display": {
-        "mode": "tileLayer"
-      }
-    },
-    {
-      "id": "n30",
-      "type": "riverFromFlow",
-      "label": "rivers",
-      "comment": "One drainage network for the whole planet, painted after the warm and cold-belt biomes but before the polar cap — so temperate and taiga rivers run open, while the cap buries its rivers under ice, which is exactly where frozen rivers belong.",
-      "folder": "biomes",
-      "enabled": true,
-      "params": {
-        "minFlow": 0.55,
-        "maxWidth": 5,
-        "seaLevel": 0.5,
-        "riverTile": 0
-      },
-      "inputs": {
-        "flow": "n11",
-        "elevation": "n12"
-      },
-      "display": {
-        "mode": "tileLayer"
-      }
-    },
-    {
-      "id": "n31",
-      "type": "biomeBands",
-      "label": "polar cap",
-      "comment": "Snow line 0 turns all land to snow, and the water tile is ice: the shallow sea freezes into pack ice while the deep stays black open water. Because temperature already subtracted altitude, this same region claims the high summits of every range on the planet.",
-      "folder": "biomes",
-      "enabled": true,
-      "params": {
-        "seaLevel": 0.5,
-        "deepDrop": 0.1,
-        "shoreBand": 0.04,
-        "rockAbove": 0.55,
-        "snowLine": 0,
-        "regionAtLeast": 0.8,
-        "deepTile": 5,
-        "waterTile": 6,
-        "shoreTile": 7,
-        "groundTile": 7,
-        "rockTile": 4,
-        "snowTile": 7
-      },
-      "inputs": {
-        "elevation": "n12",
-        "steepness": "n14",
-        "shoreDistance": "n13",
-        "region": "n22"
-      },
-      "display": {
-        "mode": "tileLayer"
-      }
-    },
-    {
-      "id": "n32",
-      "type": "riverTowns",
-      "label": "river towns",
-      "comment": "Mouths and confluences across every zone — trading towns in the heartland, oasis ports on the desert rivers, and the odd frozen way station in the north.",
-      "folder": "life & trade",
-      "enabled": true,
-      "params": {
-        "seaLevel": 0.5,
-        "spacing": 16
-      },
-      "inputs": {
-        "rivers": "n30",
-        "elevation": "n12"
-      },
-      "display": {
-        "mode": "markers",
-        "tileId": -1,
-        "glyph": "⌂",
-        "color": "#e0b06a"
-      }
-    },
-    {
-      "id": "n33",
-      "type": "hypsometricCurve",
-      "label": "land switch",
-      "comment": "Near 1 on land, near 0 at sea — multiplied into the climate fields so nothing spawns in the water.",
-      "folder": "life & trade",
-      "enabled": true,
-      "params": {
-        "seaLevel": 0.52,
-        "steepness": 30
-      },
-      "inputs": {
-        "source": "n12"
-      },
-      "display": {
-        "mode": "hidden"
-      }
-    },
-    {
-      "id": "n34",
-      "type": "combineFields",
-      "label": "warmth on land",
-      "comment": "Temperature gated to dry ground: one mask whose bands are the warm-side habitats.",
-      "folder": "life & trade",
-      "enabled": true,
-      "params": {
-        "operation": 2,
-        "clamp": 1
-      },
-      "inputs": {
-        "a": "n20",
-        "b": "n33"
-      },
-      "display": {
-        "mode": "hidden"
-      }
-    },
-    {
-      "id": "n35",
-      "type": "combineFields",
-      "label": "cold on land",
-      "comment": "The same trick for the cold side, for pines, wolves and the tundra stones.",
-      "folder": "life & trade",
-      "enabled": true,
-      "params": {
-        "operation": 2,
-        "clamp": 1
-      },
-      "inputs": {
-        "a": "n22",
-        "b": "n33"
-      },
-      "display": {
-        "mode": "hidden"
-      }
-    },
-    {
-      "id": "n36",
-      "type": "scatterPoints",
-      "label": "pine taiga",
-      "comment": "A dense scatter of pines across the cold-but-not-polar band — the forest that gives the taiga its name, thinning to nothing at the tundra edge.",
-      "folder": "life & trade",
-      "enabled": true,
-      "params": {
-        "density": 0.12,
-        "maskAtLeast": 0.62,
-        "maskAtMost": 0.8
-      },
-      "inputs": {
-        "mask": "n35"
-      },
-      "display": {
-        "mode": "markers",
-        "tileId": 14,
-        "glyph": "♣",
-        "color": "#234f36"
-      }
-    },
-    {
-      "id": "n37",
-      "type": "scatterPoints",
-      "label": "cottages",
-      "comment": "Farmsteads across the mild middle band, where the climate does not fight the farmer.",
-      "folder": "life & trade",
-      "enabled": true,
-      "params": {
-        "density": 0.002,
-        "maskAtLeast": 0.45,
-        "maskAtMost": 0.6
-      },
-      "inputs": {
-        "mask": "n34"
-      },
-      "display": {
-        "mode": "prefabs",
-        "prefabId": 0,
-        "rotation": -1
-      }
-    },
-    {
-      "id": "n38",
-      "type": "scatterPoints",
-      "label": "deer",
-      "comment": "The temperate herds, spanning a slightly wider band than the cottages.",
-      "folder": "life & trade",
-      "enabled": true,
-      "params": {
-        "density": 0.007,
-        "maskAtLeast": 0.42,
-        "maskAtMost": 0.62
-      },
-      "inputs": {
-        "mask": "n34"
-      },
-      "display": {
-        "mode": "creatures",
-        "creatureId": 0
-      }
-    },
-    {
-      "id": "n39",
-      "type": "scatterPoints",
-      "label": "wolves",
-      "comment": "Hunting the same cold band the pines grow in, and a little beyond it into the tundra.",
-      "folder": "life & trade",
-      "enabled": true,
-      "params": {
-        "density": 0.0015,
-        "maskAtLeast": 0.62,
-        "maskAtMost": 0.85
-      },
-      "inputs": {
-        "mask": "n35"
-      },
-      "display": {
-        "mode": "creatures",
-        "creatureId": 2
-      }
-    },
-    {
-      "id": "n40",
-      "type": "scatterPoints",
-      "label": "desert hares",
-      "comment": "The only wildlife that thrives past the desert cut — quick, small, and sparse.",
-      "folder": "life & trade",
-      "enabled": true,
-      "params": {
-        "density": 0.004,
-        "maskAtLeast": 0.75,
-        "maskAtMost": 1
-      },
-      "inputs": {
-        "mask": "n34"
-      },
-      "display": {
-        "mode": "creatures",
-        "creatureId": 1
-      }
-    },
-    {
-      "id": "n41",
-      "type": "scatterPoints",
-      "label": "stones of the last thaw",
-      "comment": "Standing stones on the tundra strip between taiga and cap — markers someone raised at the edge of the habitable world.",
-      "folder": "life & trade",
-      "enabled": true,
-      "params": {
-        "density": 0.0005,
-        "maskAtLeast": 0.78,
-        "maskAtMost": 0.88
-      },
-      "inputs": {
-        "mask": "n35"
-      },
-      "display": {
-        "mode": "prefabs",
-        "prefabId": 2,
-        "rotation": -1
+        "mode": "ceiling",
+        "height": 2
       }
     }
   ]

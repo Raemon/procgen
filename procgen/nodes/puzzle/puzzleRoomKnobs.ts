@@ -8,7 +8,7 @@ export const PUZZLE_LATTICE_LABEL = 'lattice';
 export interface PuzzleRoomKnobs {
   seed: number;
   roomTiles: number;
-  roomChunks: number;
+  roomSpacing: number;
   regionRooms: number;
   carver: number;
   braid: number;
@@ -29,13 +29,13 @@ export const PUZZLE_ROOM_PARAMS: Record<keyof Omit<PuzzleRoomKnobs, 'seed'>, Kno
     max: 29,
     default: 13,
   },
-  roomChunks: {
+  roomSpacing: {
     kind: 'int',
-    label: 'chunks per room',
-    help: 'Side length, in 32-tile chunks, of the block each chamber sits in. Raise it to space the chambers further apart and lengthen the corridors between them.',
-    min: 1,
-    max: 4,
-    default: 1,
+    label: 'room spacing',
+    help: 'Distance in tiles between the centres of neighbouring chambers. Lower it to pack the chambers together and shorten the corridors; anything left over after the chamber and its wall ring is the space the labyrinth underneath gets to fill.',
+    min: 9,
+    max: 128,
+    default: 32,
   },
   regionRooms: {
     kind: 'int',
@@ -92,7 +92,7 @@ export const PUZZLE_ROOM_PARAMS: Record<keyof Omit<PuzzleRoomKnobs, 'seed'>, Kno
   fillBetween: {
     kind: 'toggle',
     label: 'solid between rooms',
-    help: 'On, everything outside the chambers and corridors is filled with the wall tile, so the doors are the only way through. Off, the space between is left empty for a labyrinth layer underneath to show through — the doors still gate their own chambers, but the world around them opens up.',
+    help: 'On, everything outside the chambers and corridors is filled with the wall tile and each corridor is lined with it. Off, the space between is left empty for a labyrinth layer underneath to show through and the corridors open onto it, so you can wander that labyrinth freely — the chambers stay sealed either way, because a wall ring surrounds each one and both mouths of every corridor are doored.',
     default: 1,
   },
   floorTile: {
@@ -114,7 +114,7 @@ export function puzzleRoomKnobsFrom(
   return {
     seed,
     roomTiles: params.roomTiles as number,
-    roomChunks: params.roomChunks as number,
+    roomSpacing: params.roomSpacing as number,
     regionRooms: params.regionRooms as number,
     carver: params.carver as number,
     braid: params.braid as number,

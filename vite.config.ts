@@ -12,6 +12,7 @@ export default defineConfig({
       '/ws': { target: GAME_SERVER.replace('http', 'ws'), ws: true },
       '/api/v1': { target: GAME_SERVER },
       '/docs': { target: GAME_SERVER },
+      '/perf': { target: GAME_SERVER },
       '/persist': { target: GAME_SERVER },
     },
   },

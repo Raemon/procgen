@@ -1,4 +1,5 @@
 import { NO_ITEMS, type ItemSource } from '../library/items/itemLibrary';
+import { measureWork } from '../perf/workTimers';
 import { TakenItemSpawns } from '../library/items/pickups/takenItemSpawns';
 import type { CubeFaceArt } from '../library/tiles/tileFaceArt';
 import type { Tileset } from '../library/tiles/tileset';
@@ -21,6 +22,7 @@ export interface Marker {
   color: string;
   faceArt: CubeFaceArt | null;
   tag: string;
+  standingHeight?: number;
 }
 
 export interface CreatureSpawn {
@@ -145,16 +147,18 @@ export class WorldSampler {
     const chunkX = chunkCoordOfCell(x);
     const chunkY = chunkCoordOfCell(y);
     return this.sampledChunks.at(chunkX, chunkY, () =>
-      buildSampledChunk(
-        this.evaluator,
-        {
-          tileLayers: this.displayedNodes('tileLayer'),
-          ceilings: this.displayedNodes('ceiling'),
-          elevation: this.lastElevationNode(),
-        },
-        this.prefabOverlay.columnsForChunk(chunkX, chunkY),
-        chunkX,
-        chunkY,
+      measureWork('procgen chunk sampling', () =>
+        buildSampledChunk(
+          this.evaluator,
+          {
+            tileLayers: this.displayedNodes('tileLayer'),
+            ceilings: this.displayedNodes('ceiling'),
+            elevation: this.lastElevationNode(),
+          },
+          this.prefabOverlay.columnsForChunk(chunkX, chunkY),
+          chunkX,
+          chunkY,
+        ),
       ),
     );
   }

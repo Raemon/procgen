@@ -25,6 +25,7 @@ export const TOP_LEVEL_FOLDERS = [
   { name: 'multiplayer', role: 'both halves of the wire between browser and host' },
   { name: 'server', role: 'the process that hosts the game, the api and the built client' },
   { name: 'frontend', role: 'the app frame the panels mount into, and the controls they share' },
+  { name: 'perf', role: 'the probes behind the fps badge: frame, work, browser and server load' },
   { name: 'checks', role: 'the executable specification run by npm run check' },
   { name: 'tools', role: 'generators, previews, benchmarks and world rolls' },
 ] as const;

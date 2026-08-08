@@ -2,7 +2,9 @@ import '../kinds/index';
 import {
   bandCells,
   eastGateBand,
+  northGateBand,
   southGateBand,
+  westGateBand,
   type Band,
 } from '../../../procgen/nodes/puzzle/puzzleRoomCorridors';
 import type { PuzzleRoomKnobs } from '../../../procgen/nodes/puzzle/puzzleRoomKnobs';
@@ -88,6 +90,12 @@ function gatesOf(
       : [],
     south: maze.hasSouthCorridor(roomX, roomY)
       ? doorsAcross(southGateBand(roomX, roomY, knobs), 'gateSouth')
+      : [],
+    west: maze.hasEastCorridor(roomX - 1, roomY)
+      ? doorsAcross(westGateBand(roomX, roomY, knobs), 'gateWest')
+      : [],
+    north: maze.hasSouthCorridor(roomX, roomY - 1)
+      ? doorsAcross(northGateBand(roomX, roomY, knobs), 'gateNorth')
       : [],
   };
 }
