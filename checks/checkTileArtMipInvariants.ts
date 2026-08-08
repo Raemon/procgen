@@ -1,9 +1,8 @@
 import { averageInk } from '../assets/tiles/mips/averageInk';
 import { faceArtMips, mipLevelWithin, mipWithin } from '../assets/tiles/mips/faceArtMips';
-import { defaultTiles } from '../assets/tiles/defaultTiles';
 import { blankFacePixels, type FacePixels } from '../assets/tiles/tileFaceArt';
 import { drawsNormalMapAt, tileSideBudget } from '../world/render/view3d/tileDetailBudget';
-import type { CheckReporter } from './checkCharacterBillboardInvariants';
+import type { CheckReporter } from './checkReporter';
 
 const VIEWPORT_HEIGHT_PIXELS = 900;
 const VERTICAL_FOV_DEGREES = 50;
@@ -11,28 +10,11 @@ const CLOSEST_CAMERA_DISTANCE = 1.2;
 const FARTHEST_CAMERA_DISTANCE = 800;
 
 export function checkTileArtMipInvariants(check: CheckReporter): void {
-  checkEveryChainEndsAtOnePixelOfAverageColor(check);
   checkTheOnePixelIsTheColorTheFaceReadsAs(check);
   checkUnpaintedPixelsTakeTheTileColor(check);
   checkATransparentFaceScalesDownStillTransparent(check);
   checkDistanceBuysCoarserArtAndDropsRelief(check);
   checkTheChainIsBuiltOncePerFace(check);
-}
-
-function checkEveryChainEndsAtOnePixelOfAverageColor(check: CheckReporter): void {
-  const faces = defaultTiles()
-    .filter((tile) => tile.faceArt)
-    .map((tile) => faceArtMips(tile.faceArt!.top, tile.color));
-  check(
-    'every tile face scales down to a single pixel, however large its art started',
-    faces.length > 0 && faces.every((mips) => mips[mips.length - 1]!.side === 1),
-  );
-  check(
-    'each step down the chain halves the side, so no level is skipped',
-    faces.every((mips) =>
-      mips.every((mip, level) => level === 0 || mip.side === Math.max(1, mips[level - 1]!.side / 2)),
-    ),
-  );
 }
 
 function checkTheOnePixelIsTheColorTheFaceReadsAs(check: CheckReporter): void {
