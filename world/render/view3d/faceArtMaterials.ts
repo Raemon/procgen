@@ -22,14 +22,6 @@ export function cubeFaceMaterials(
   return BOX_FACE_ORDER.map((face) => faceMaterial(art, face, baseColor, sideBudget));
 }
 
-export function sideFaceMaterial(
-  art: CubeFaceArt,
-  baseColor: string,
-  sideBudget: number = MAX_FACE_ART_SIZE,
-): THREE.Material {
-  return faceMaterial(art, 'north', baseColor, sideBudget);
-}
-
 function faceMaterial(
   art: CubeFaceArt,
   face: CubeFace,

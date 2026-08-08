@@ -46,10 +46,10 @@ function checkBlocksStackOneCubePerUnitOfHeight(check: CheckReporter): void {
     'the stacked cubes sit one unit apart, starting at the ground',
     blocks[0]!.elevation === 0 && blocks[1]!.elevation === 1,
   );
-  const { trees } = onlyTilePlacements(tileNamed('pine tree'));
+  const pine = onlyTilePlacements(tileNamed('pine tree'));
   check(
-    'a tree is drawn as a single cone as tall as the tile says',
-    trees.length === 1 && trees[0]!.height === tileNamed('pine tree').height,
+    'a tree stacks cubes like any other blocker, one per rounded unit of height',
+    pine.floors.length === 1 && pine.blocks.length === 3,
   );
 }
 

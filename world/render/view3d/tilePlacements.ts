@@ -2,11 +2,7 @@ import { EMPTY_TILE } from '../../../procgen/values/chunkValues';
 import type { WorldSampler } from '../../../procgen/worldSampler';
 import { glowOfEmitter } from './selfLitGlow';
 import type { TileDef } from '../../../assets/tiles/tileDef';
-import {
-  blockLayersOfTile,
-  storedTileHeight,
-  WALKABLE_TILE_HEIGHT,
-} from '../../../assets/tiles/tileHeight';
+import { blockLayersOfTile, storedTileHeight } from '../../../assets/tiles/tileHeight';
 import type { CubeFaceArt } from '../../../assets/tiles/tileFaceArt';
 import type { ReadOnlyTileAssets } from '../../../frontend/readOnlyAssets';
 
@@ -25,12 +21,10 @@ export interface TilePlacement {
 export interface TilePlacementsByShape {
   floors: TilePlacement[];
   blocks: TilePlacement[];
-  trees: TilePlacement[];
 }
 
 const WATER_SHADE = 0.7;
 const BLOCK_FLOOR_SHADE = 0.8;
-const FALLBACK_TREE_GROUND = '#3c5a34';
 
 export function tilePlacementsForRect(
   sampler: WorldSampler,
@@ -40,7 +34,7 @@ export function tilePlacementsForRect(
   width: number,
   height: number,
 ): TilePlacementsByShape {
-  const shapes: TilePlacementsByShape = { floors: [], blocks: [], trees: [] };
+  const shapes: TilePlacementsByShape = { floors: [], blocks: [] };
   for (let y = minY; y < minY + height; y++) {
     for (let x = minX; x < minX + width; x++) {
       addCellToShapes(shapes, sampler, tileAssets, x, y);
@@ -59,22 +53,18 @@ function addCellToShapes(
   const tileId = sampler.tileAt(x, y);
   if (tileId === EMPTY_TILE) return;
   const tile = tileAssets.byId(tileId);
-  if (tile) addTileToShapes(shapes, tile, tileAssets, x, y, sampler.elevationAt(x, y));
+  if (tile) addTileToShapes(shapes, tile, x, y, sampler.elevationAt(x, y));
 }
 
 function addTileToShapes(
   shapes: TilePlacementsByShape,
   tile: TileDef,
-  tileAssets: ReadOnlyTileAssets,
   x: number,
   y: number,
   elevation: number,
 ): void {
   if (tile.role === 'water') {
     shapes.floors.push(placement(x, y, elevation, tile, WATER_SHADE, true));
-  } else if (tile.role === 'tree') {
-    shapes.floors.push(groundUnderTree(tileAssets, x, y, elevation));
-    shapes.trees.push(placement(x, y, elevation, tile, 1, false));
   } else if (tileStandsAsSolidBlock(tile)) {
     shapes.floors.push(placement(x, y, elevation, tile, BLOCK_FLOOR_SHADE, false));
     for (const layerElevation of blockLayerElevations(tile, elevation)) {
@@ -91,26 +81,6 @@ export function tileStandsAsSolidBlock(tile: TileDef): boolean {
 
 function blockLayerElevations(tile: TileDef, elevation: number): number[] {
   return Array.from({ length: blockLayersOfTile(tile) }, (_, layer) => elevation + layer);
-}
-
-function groundUnderTree(
-  tileAssets: ReadOnlyTileAssets,
-  x: number,
-  y: number,
-  elevation: number,
-): TilePlacement {
-  const grass = tileAssets.byRole('grass');
-  return {
-    x,
-    y,
-    elevation,
-    height: WALKABLE_TILE_HEIGHT,
-    baseColor: grass?.color ?? FALLBACK_TREE_GROUND,
-    shade: 1,
-    faceArt: grass?.faceArt ?? null,
-    glow: glowOfEmitter(grass),
-    sunkenAsWater: false,
-  };
 }
 
 function placement(

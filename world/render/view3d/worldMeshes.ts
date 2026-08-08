@@ -10,7 +10,7 @@ import {
   type PlacementVerticalScale,
 } from './instancedTileMesh';
 import { MAX_FACE_ART_SIZE } from '../../../assets/tiles/tileFaceArt';
-import { tileSurfaceMaterials, type TileSurface, type TileSurfaceFaces } from './tileSurfaces';
+import { tileSurfaceMaterials, type TileSurface } from './tileSurfaces';
 import { rememberTileSurface } from './chunkDetail';
 import { glowSelfLit } from './selfLitGlow';
 import { tileBoxGeometry } from './tileBoxGeometry';
@@ -26,11 +26,11 @@ const FLOOR_THICKNESS = 0.1;
 const WATER_DROP = 0.22;
 const BLOCK_LAYER_HEIGHT = 1;
 const MARKER_HEIGHT = 0.7;
+const MARKER_WIDTH = 0.48;
 export const CEILING_GROUP_NAME = 'ceiling';
 
 interface ShapeSpec {
   geometry(): THREE.BufferGeometry;
-  faces: TileSurfaceFaces;
   positionOf: PlacementPosition;
   verticalScaleOf?: PlacementVerticalScale;
 }
@@ -51,7 +51,7 @@ export function buildChunkMeshGroup(
 ): THREE.Group {
   const minX = chunkOrigin(chunkX);
   const minY = chunkOrigin(chunkY);
-  const { floors, blocks, trees } = tilePlacementsForRect(
+  const { floors, blocks } = tilePlacementsForRect(
     sampler,
     tileAssets,
     minX,
@@ -66,7 +66,6 @@ export function buildChunkMeshGroup(
     ...meshesForShape(floors, floorShape()),
     ...meshesForShape(blocks, blockShape()),
     ...meshesForShape(voxels, voxelShape()),
-    ...meshesForShape(trees, treeShape()),
     ...meshesForShape(markers.pins, markerShape()),
     ...meshesForShape(markers.standingFixtures, standingFixtureShape()),
     ceilingGroup(sampler, tileAssets, minX, minY),
@@ -90,7 +89,6 @@ function ceilingGroup(
 function ceilingShape(): ShapeSpec {
   return {
     geometry: () => tileBoxGeometry(1, BLOCK_LAYER_HEIGHT, 1),
-    faces: 'cube',
     positionOf: (p) => [p.x + 0.5, p.elevation + BLOCK_LAYER_HEIGHT / 2, p.y + 0.5],
   };
 }
@@ -98,7 +96,6 @@ function ceilingShape(): ShapeSpec {
 function voxelShape(): ShapeSpec {
   return {
     geometry: () => tileBoxGeometry(1, BLOCK_LAYER_HEIGHT, 1),
-    faces: 'cube',
     positionOf: (p) => [p.x + 0.5, p.elevation + BLOCK_LAYER_HEIGHT / 2, p.y + 0.5],
   };
 }
@@ -106,7 +103,6 @@ function voxelShape(): ShapeSpec {
 function floorShape(): ShapeSpec {
   return {
     geometry: () => tileBoxGeometry(1, FLOOR_THICKNESS, 1),
-    faces: 'cube',
     positionOf: (p) => [
       p.x + 0.5,
       p.elevation + (p.sunkenAsWater ? -WATER_DROP : 0) - FLOOR_THICKNESS / 2,
@@ -118,24 +114,13 @@ function floorShape(): ShapeSpec {
 function blockShape(): ShapeSpec {
   return {
     geometry: () => tileBoxGeometry(0.95, BLOCK_LAYER_HEIGHT, 0.95),
-    faces: 'cube',
     positionOf: (p) => [p.x + 0.5, p.elevation + BLOCK_LAYER_HEIGHT / 2, p.y + 0.5],
-  };
-}
-
-function treeShape(): ShapeSpec {
-  return {
-    geometry: () => new THREE.ConeGeometry(0.42, 1, 7),
-    faces: 'side',
-    positionOf: (p) => [p.x + 0.5, p.elevation + p.height / 2, p.y + 0.5],
-    verticalScaleOf: (p) => p.height,
   };
 }
 
 function markerShape(): ShapeSpec {
   return {
-    geometry: () => new THREE.ConeGeometry(0.24, MARKER_HEIGHT, 5),
-    faces: 'side',
+    geometry: () => tileBoxGeometry(MARKER_WIDTH, MARKER_HEIGHT, MARKER_WIDTH),
     positionOf: (p) => [p.x + 0.5, p.elevation + MARKER_HEIGHT / 2, p.y + 0.5],
   };
 }
@@ -143,7 +128,6 @@ function markerShape(): ShapeSpec {
 function standingFixtureShape(): ShapeSpec {
   return {
     geometry: () => tileBoxGeometry(1, 1, 1),
-    faces: 'cube',
     positionOf: (p) => [p.x + 0.5, p.elevation + p.height / 2, p.y + 0.5],
     verticalScaleOf: (p) => p.height,
   };
@@ -157,7 +141,7 @@ function meshesForShape(placements: TilePlacement[], shape: ShapeSpec): THREE.In
 
 function groupMesh(group: PlacementGroup, shape: ShapeSpec): THREE.InstancedMesh | null {
   if (group.placements.length === 0) return null;
-  const surface = surfaceOf(group, shape.faces);
+  const surface = surfaceOf(group);
   const mesh = instancedTileMesh(
     shape.geometry(),
     surface ? tileSurfaceMaterials(surface, MAX_FACE_ART_SIZE) : untexturedMaterial(group),
@@ -169,9 +153,9 @@ function groupMesh(group: PlacementGroup, shape: ShapeSpec): THREE.InstancedMesh
   return mesh;
 }
 
-function surfaceOf(group: PlacementGroup, faces: TileSurfaceFaces): TileSurface | null {
+function surfaceOf(group: PlacementGroup): TileSurface | null {
   if (!group.art) return null;
-  return { art: group.art, baseColor: group.baseColor, glow: group.glow, faces };
+  return { art: group.art, baseColor: group.baseColor, glow: group.glow };
 }
 
 function untexturedMaterial(group: PlacementGroup): THREE.Material {

@@ -3,16 +3,13 @@ import type { CubeFaceArt } from '../../../assets/tiles/tileFaceArt';
 import { opaqueInk } from '../../../assets/tiles/inkColor';
 import { stopFaceArtAnimation } from './faceArtAnimations';
 import { disposeSharedFaceArtTextures } from './faceArtTextures';
-import { cubeFaceMaterials, sideFaceMaterial } from './faceArtMaterials';
+import { cubeFaceMaterials } from './faceArtMaterials';
 import { glowSelfLit } from './selfLitGlow';
-
-export type TileSurfaceFaces = 'cube' | 'side';
 
 export interface TileSurface {
   art: CubeFaceArt;
   baseColor: string;
   glow: number;
-  faces: TileSurfaceFaces;
 }
 
 type SurfaceMaterials = THREE.Material | THREE.Material[];
@@ -26,7 +23,7 @@ export function tileSurfaceMaterials(
 ): SurfaceMaterials {
   const byVariant = materialsByArt.get(surface.art) ?? new Map<string, SurfaceMaterials>();
   materialsByArt.set(surface.art, byVariant);
-  const key = `${surface.baseColor}|${surface.glow}|${surface.faces}|${sideBudget}`;
+  const key = `${surface.baseColor}|${surface.glow}|${sideBudget}`;
   const cached = byVariant.get(key);
   if (cached) return cached;
   const materials = builtSurface(surface, sideBudget);
@@ -45,10 +42,7 @@ export function disposeSharedTileSurfaces(): void {
 }
 
 function builtSurface(surface: TileSurface, sideBudget: number): SurfaceMaterials {
-  const materials =
-    surface.faces === 'cube'
-      ? cubeFaceMaterials(surface.art, surface.baseColor, sideBudget)
-      : sideFaceMaterial(surface.art, surface.baseColor, sideBudget);
+  const materials = cubeFaceMaterials(surface.art, surface.baseColor, sideBudget);
   glowSelfLit(materials, surface.glow, opaqueInk(surface.baseColor));
   for (const single of Array.isArray(materials) ? materials : [materials])
     builtMaterials.add(single);
