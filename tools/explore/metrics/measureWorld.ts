@@ -14,7 +14,8 @@ import { markerEncountersAlongPath, type MarkerEncounter } from './markerEncount
 import { noveltySpread, noveltyTimeline, type NoveltyEvent } from './noveltyTimeline';
 import { uniqueVisitedPerStep } from './pathMobility';
 import { tileEntropyBits } from './tileVariety';
-import { scoreWorld, type WorldMeasurements, type WorldScore } from './worldScore';
+import type { WorldMeasurements } from './worldMeasurements';
+import { scoreWorld, type WorldScore } from './worldScore';
 
 export interface WorldMeasurementResult {
   trace: ExplorationTrace;

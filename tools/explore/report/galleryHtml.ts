@@ -1,4 +1,5 @@
-import type { WorldMeasurements, WorldScore } from '../metrics/worldScore';
+import type { WorldMeasurements } from '../metrics/worldMeasurements';
+import type { WorldScore } from '../metrics/worldScore';
 
 export interface GalleryWorld {
   rank: number;
