@@ -6,6 +6,10 @@ import {
 import type { AgentObservation, LegendEntry } from './observation';
 
 export function observationText(obs: AgentObservation): string {
+  return observationLines(obs).join('\n');
+}
+
+export function observationLines(obs: AgentObservation): string[] {
   return [
     ...headerLines(obs),
     '',
@@ -14,7 +18,11 @@ export function observationText(obs: AgentObservation): string {
     'legend:',
     ...legendLines(obs.legend),
     ...interactionLines(obs),
-  ].join('\n');
+  ];
+}
+
+export function viewFirstLineIndex(obs: AgentObservation): number {
+  return headerLines(obs).length + 1;
 }
 
 function interactionLines(obs: AgentObservation): string[] {
@@ -66,7 +74,12 @@ function legendLines(legend: readonly LegendEntry[]): string[] {
   );
 }
 
+export function walkabilityPhrase(walkable: boolean | null): string | null {
+  if (walkable === null) return null;
+  return walkable ? 'you can walk here' : 'blocks you';
+}
+
 function walkabilitySuffix(walkable: boolean | null): string {
-  if (walkable === null) return '';
-  return walkable ? ' (you can walk here)' : ' (blocks you)';
+  const phrase = walkabilityPhrase(walkable);
+  return phrase === null ? '' : ` (${phrase})`;
 }

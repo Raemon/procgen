@@ -23,6 +23,7 @@ import { WorldSampler } from '../procgen/worldSampler';
 import { PrefabAssets } from '../assets/prefabs/prefabAssets';
 import { debounce } from './debounce';
 import { CaptureTool } from '../world/capture/captureTool';
+import { HoveredTile } from '../world/hover/hoveredTile';
 import { PuzzleWorld } from '../world/puzzles/puzzleWorld';
 import { playerCanEnter } from '../world/puzzles/playerCanEnter';
 import { isWalkableTile } from '../world/tileWalkability';
@@ -61,6 +62,7 @@ export interface AppRuntime {
   sim: CreatureSim;
   clock: CreatureClock;
   capture: CaptureTool;
+  hoveredTile: HoveredTile;
   puzzles: PuzzleWorld;
   renderers: WorldRenderers;
   perform(action: string, params?: Record<string, unknown>): AbilityResult;
@@ -102,6 +104,7 @@ export function createAppRuntime(): AppRuntime {
   const sim = new CreatureSim({ sampler, creatureAssets: creatures, world, isWalkableAt });
   const clock = new CreatureClock(sim);
   const renderers = new WorldRenderers();
+  const hoveredTile = new HoveredTile();
   const worldChanged = new ChangeNotifier();
   const randomizeHistory = new RandomizeHistory();
   let playerMode: AbilityMode = 'god';
@@ -214,6 +217,7 @@ export function createAppRuntime(): AppRuntime {
     sim,
     clock,
     capture,
+    hoveredTile,
     puzzles,
     renderers,
     perform,
