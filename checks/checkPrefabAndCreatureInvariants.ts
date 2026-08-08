@@ -32,7 +32,7 @@ export function checkPrefabAndCreatureInvariants(check: CheckReporter): void {
   checkPrefabStamping(check, tileAssets, prefabs, cottage);
   checkCaptureRoundTrip(check, tileAssets, prefabs, cottage);
   checkCreatureSim(check, tileAssets, prefabs);
-  checkEmberMarchesLibraryEntries(check, tileAssets);
+  checkEmberMarchesAssets(check, tileAssets);
   check(
     'points nodes can be displayed as markers, prefabs or creatures',
     ['markers', 'prefabs', 'creatures'].every((mode) =>
@@ -160,7 +160,7 @@ function checkCaptureRoundTrip(
   );
 }
 
-function checkEmberMarchesLibraryEntries(check: CheckReporter, tileAssets: TileAssets): void {
+function checkEmberMarchesAssets(check: CheckReporter, tileAssets: TileAssets): void {
   const walkableByName = (name: string) =>
     tileAssets.all().find((tile) => tile.name === name)?.walkable;
   check(
@@ -227,7 +227,7 @@ function steppedSim(
   const isWalkableAt = (x: number, y: number) => isWalkableTile(tileAssets, world.sampler.tileAt(x, y));
   const sim = new CreatureSim({
     sampler: world.sampler,
-    library: creatures,
+    creatureAssets: creatures,
     world: { playerX: 0, playerY: 0 },
     isWalkableAt,
   });

@@ -4,11 +4,11 @@ import { isCharacter, type CreatureDef } from '../creatures/creatureDef';
 
 export const PLAYER_CHARACTER_ID = 8;
 
-export function playerCharacterDef(library: ReadOnlyCreatureAssets): CreatureDef | null {
+export function playerCharacterDef(creatureAssets: ReadOnlyCreatureAssets): CreatureDef | null {
   return (
-    library.all().find((creature) => creature.billboardArt === MOONLIT_DWARF_ART) ??
-    library.byId(PLAYER_CHARACTER_ID) ??
-    library.all().find(isCharacter) ??
+    creatureAssets.all().find((creature) => creature.billboardArt === MOONLIT_DWARF_ART) ??
+    creatureAssets.byId(PLAYER_CHARACTER_ID) ??
+    creatureAssets.all().find(isCharacter) ??
     null
   );
 }

@@ -22,7 +22,7 @@ export class CreatureMeshes {
 
   constructor(
     root: THREE.Group,
-    private readonly library: ReadOnlyCreatureAssets,
+    private readonly creatureAssets: ReadOnlyCreatureAssets,
     private readonly sampler: WorldSampler,
     private readonly sprites: CharacterSpriteAssets,
   ) {
@@ -41,7 +41,7 @@ export class CreatureMeshes {
   syncTo(sim: CreatureSim, view: CameraView): void {
     const live = new Set<string>();
     for (const creature of sim.active()) {
-      const def = this.library.byId(creature.creatureId);
+      const def = this.creatureAssets.byId(creature.creatureId);
       if (!def) continue;
       live.add(creature.key);
       this.placeMesh(creature, def, view);

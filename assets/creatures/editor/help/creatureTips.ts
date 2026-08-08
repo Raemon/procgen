@@ -57,6 +57,6 @@ export function creatureBehaviorTip(creature: CreatureDef): TooltipContent {
 export function deleteCreatureTip(creature: CreatureDef): TooltipContent {
   return {
     title: `delete ${creature.name}`,
-    body: 'Removes the creature from the library. Nodes bound to it stop spawning anything.',
+    body: 'Removes the creature from the creature assets. Nodes bound to it stop spawning anything.',
   };
 }

@@ -1,7 +1,7 @@
 import { examplePipelines } from '../../procgen/presets/examplePipelines';
 import { nodeTypesJson, pipelineJson } from '../../agents/nodeCatalog';
 import { failure, json, type ApiResponse } from './apiMessages';
-import { creatureJson, inventoryJson, itemJson } from './libraryJson';
+import { creatureJson, inventoryJson, itemJson } from './assetJson';
 import { registerRoute } from './routeRegistry';
 import type { ServerWorld } from './serverWorld';
 

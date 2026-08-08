@@ -99,7 +99,7 @@ export function createAppRuntime(): AppRuntime {
   const playerInventoryPanel = new PlayerInventoryPanelState();
   const pickupFeed = new PickupFeed();
   const walkOverPickup = new WalkOverPickup({ creatures, items, groundItems }, pickupFeed);
-  const sim = new CreatureSim({ sampler, library: creatures, world, isWalkableAt });
+  const sim = new CreatureSim({ sampler, creatureAssets: creatures, world, isWalkableAt });
   const clock = new CreatureClock(sim);
   const renderers = new WorldRenderers();
   const worldChanged = new ChangeNotifier();

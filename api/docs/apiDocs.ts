@@ -41,7 +41,7 @@ An agent is created in one of two modes and stays in it for life.
 - **god** — a {{GOD_SIZE}}x{{GOD_SIZE}} window centered on you. You see every
   generated tile in the window, and your facing is stated in the observation.
   You move by absolute compass steps, and you can REBUILD THE WORLD: the
-  pipeline, library and world actions below are the whole world editor.
+  pipeline, asset and world actions below are the whole world editor.
 - **character** — a {{CHARACTER_SIZE}}x{{CHARACTER_SIZE}} window centered on
   you, but you only see the half-disc in front of you: tiles behind you are
   blank, and so is everything past your {{SIGHT_RADIUS}}-tile sight radius,
@@ -113,7 +113,7 @@ observation is regenerated from it.
 | --- | --- | --- | --- |
 {{PIPELINE_ACTIONS}}
 
-## Actions — the libraries (god mode)
+## Actions — the assets (god mode)
 
 Tiles, items, prefabs, creatures and characters are the vocabulary the pipeline
 draws from. A node references them by id, so create the definition first, then
@@ -129,7 +129,7 @@ items carrying one of its tags, with a sprite layered underneath.
 
 | action | params | the human control | what it does |
 | --- | --- | --- | --- |
-{{LIBRARY_ACTIONS}}
+{{ASSET_ACTIONS}}
 
 ## Actions — whole worlds (god mode)
 
@@ -221,7 +221,7 @@ const GROUP_OF_PLACEHOLDER: Readonly<Record<string, AbilityGroup>> = {
   MOVEMENT_ACTIONS: 'movement',
   SENSES_ACTIONS: 'senses',
   PIPELINE_ACTIONS: 'pipeline',
-  LIBRARY_ACTIONS: 'assets',
+  ASSET_ACTIONS: 'assets',
   WORLD_ACTIONS: 'world',
 };
 

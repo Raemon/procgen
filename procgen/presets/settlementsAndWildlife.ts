@@ -4,7 +4,7 @@ export function settlementsAndWildlife(): ExamplePipeline {
   return {
     name: 'settlements & wildlife',
     description:
-      'Island terrain with the library on top: cottages and watchtowers stamped as prefabs, deer and wolves spawned as creatures.',
+      'Island terrain with the assets on top: cottages and watchtowers stamped as prefabs, deer and wolves spawned as creatures.',
     state: {
       seed: 4242,
       nodes: [
