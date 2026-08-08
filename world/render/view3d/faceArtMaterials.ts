@@ -19,10 +19,6 @@ export function cubeFaceMaterials(art: CubeFaceArt, baseColor: string): THREE.Ma
   return BOX_FACE_ORDER.map((face) => faceMaterial(art, face, baseColor));
 }
 
-export function sideFaceMaterial(art: CubeFaceArt, baseColor: string): THREE.Material {
-  return faceMaterial(art, 'north', baseColor);
-}
-
 function faceMaterial(
   art: CubeFaceArt,
   face: CubeFace,

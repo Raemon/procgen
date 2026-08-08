@@ -4,7 +4,7 @@ import type { WorldSampler } from '../../../procgen/worldSampler';
 import { isTransparentInk, opaqueInk } from '../../../library/tiles/inkColor';
 import type { CubeFaceArt } from '../../../library/tiles/tileFaceArt';
 import type { ReadOnlyTileset } from '../../../frontend/readOnlyLibraries';
-import { cubeFaceMaterials, sideFaceMaterial } from './faceArtMaterials';
+import { cubeFaceMaterials } from './faceArtMaterials';
 import {
   instancedTileMesh,
   type PlacementPosition,
@@ -24,6 +24,7 @@ const FLOOR_THICKNESS = 0.1;
 const WATER_DROP = 0.22;
 const BLOCK_LAYER_HEIGHT = 1;
 const MARKER_HEIGHT = 0.7;
+const MARKER_WIDTH = 0.48;
 export const CEILING_GROUP_NAME = 'ceiling';
 
 interface ShapeSpec {
@@ -49,7 +50,7 @@ export function buildChunkMeshGroup(
 ): THREE.Group {
   const minX = chunkOrigin(chunkX);
   const minY = chunkOrigin(chunkY);
-  const { floors, blocks, trees } = tilePlacementsForRect(
+  const { floors, blocks } = tilePlacementsForRect(
     sampler,
     tileset,
     minX,
@@ -64,7 +65,6 @@ export function buildChunkMeshGroup(
     ...meshesForShape(floors, floorShape()),
     ...meshesForShape(blocks, blockShape()),
     ...meshesForShape(voxels, voxelShape()),
-    ...meshesForShape(trees, treeShape()),
     ...meshesForShape(markers.pins, markerShape()),
     ...meshesForShape(markers.standingFixtures, standingFixtureShape()),
     ceilingGroup(sampler, tileset, minX, minY),
@@ -121,19 +121,10 @@ function blockShape(): ShapeSpec {
   };
 }
 
-function treeShape(): ShapeSpec {
-  return {
-    geometry: () => new THREE.ConeGeometry(0.42, 1, 7),
-    artMaterials: sideFaceMaterial,
-    positionOf: (p) => [p.x + 0.5, p.elevation + p.height / 2, p.y + 0.5],
-    verticalScaleOf: (p) => p.height,
-  };
-}
-
 function markerShape(): ShapeSpec {
   return {
-    geometry: () => new THREE.ConeGeometry(0.24, MARKER_HEIGHT, 5),
-    artMaterials: sideFaceMaterial,
+    geometry: () => tileBoxGeometry(MARKER_WIDTH, MARKER_HEIGHT, MARKER_WIDTH),
+    artMaterials: cubeFaceMaterials,
     positionOf: (p) => [p.x + 0.5, p.elevation + MARKER_HEIGHT / 2, p.y + 0.5],
   };
 }
