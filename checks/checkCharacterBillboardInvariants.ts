@@ -2,8 +2,8 @@ import '../abilities/index';
 import { performAbility } from '../abilities/performAbility';
 import { DEFAULT_CHARACTER_SIGHT_RADIUS_TILES } from '../world/vision/characterSight';
 import type { AbilityContext, AbilityResult } from '../abilities/ability';
-import { humanoidBillboard } from '../library/creatures/art/humanoidBillboard';
-import { WANDERING_TRADER_PALETTE } from '../library/creatures/art/humanoidPalette';
+import { humanoidBillboard } from '../assets/creatures/art/humanoidBillboard';
+import { WANDERING_TRADER_PALETTE } from '../assets/creatures/art/humanoidPalette';
 import {
   CHARACTER_ANIMATIONS,
   CHARACTER_ROTATIONS,
@@ -12,26 +12,26 @@ import {
   framesOf,
   hasAnyFrame,
   type CharacterBillboard,
-} from '../library/characters/characterBillboard';
-import { headingRadians, viewRelativeRotation } from '../library/characters/characterFacing';
-import { characterFrame } from '../library/characters/characterFrame';
-import { sanitizeCharacterBillboard } from '../library/characters/sanitizeCharacterBillboard';
-import { CreatureLibrary } from '../library/creatures/creatureLibrary';
-import { NO_GROUND_ITEMS } from '../library/items/pickups/groundItems';
+} from '../assets/characters/characterBillboard';
+import { headingRadians, viewRelativeRotation } from '../assets/characters/characterFacing';
+import { characterFrame } from '../assets/characters/characterFrame';
+import { sanitizeCharacterBillboard } from '../assets/characters/sanitizeCharacterBillboard';
+import { CreatureAssets } from '../assets/creatures/creatureAssets';
+import { NO_GROUND_ITEMS } from '../assets/items/pickups/groundItems';
 import { PuzzleWorld } from '../world/puzzles/puzzleWorld';
-import { creaturesFromStoredJson } from '../library/creatures/creatureStorage';
-import { CHARACTER } from '../library/creatures/entityKinds';
+import { creaturesFromStoredJson } from '../assets/creatures/creatureStorage';
+import { CHARACTER } from '../assets/creatures/entityKinds';
 import { moveCreatureTowardTarget } from '../world/creatureSim/moveCreatureTowardTarget';
 import { spawnedCreature } from '../world/creatureSim/creatureInstance';
-import { ItemLibrary } from '../library/items/itemLibrary';
-import { PrefabLibrary } from '../library/prefabs/prefabLibrary';
+import { ItemAssets } from '../assets/items/itemAssets';
+import { PrefabAssets } from '../assets/prefabs/prefabAssets';
 import { emptyPipeline } from '../procgen/pipeline/pipelineState';
 import { PipelineStore } from '../procgen/pipeline/pipelineStore';
 import { WorldPresetLibrary } from '../procgen/presets/worldPresetLibrary';
 import { RandomizeHistory } from '../procgen/randomize/randomizeHistory';
 import { TemplateLibrary } from '../procgen/templates/templateLibrary';
-import { isSpriteArt } from '../library/tiles/spriteArt';
-import { Tileset } from '../library/tiles/tileset';
+import { isSpriteArt } from '../assets/tiles/spriteArt';
+import { TileAssets } from '../assets/tiles/tileAssets';
 
 export interface CheckReporter {
   (name: string, condition: boolean): void;
@@ -141,7 +141,7 @@ function checkDefaultCharacterArt(check: CheckReporter): void {
     'the five rotations are drawn differently from one another',
     new Set(CHARACTER_ROTATIONS.map((rotation) => JSON.stringify(framesOf(billboard, rotation, 'idle')[0]))).size === 5,
   );
-  const creatures = new CreatureLibrary();
+  const creatures = new CreatureAssets();
   const trader = creatures.all().find((creature) => creature.kind === CHARACTER)!;
   check('the default character ships with billboard sprites', trader.billboard !== null);
   check(
@@ -151,7 +151,7 @@ function checkDefaultCharacterArt(check: CheckReporter): void {
 }
 
 function checkBillboardStorage(check: CheckReporter): void {
-  const creatures = new CreatureLibrary();
+  const creatures = new CreatureAssets();
   const reloaded = creaturesFromStoredJson(JSON.parse(JSON.stringify(creatures.all())))!;
   const trader = reloaded.find((creature) => creature.kind === CHARACTER)!;
   check(
@@ -190,7 +190,7 @@ function checkHeadingFromMotion(check: CheckReporter): void {
       Math.abs(headingRadians(1, 0) - QUARTER) < 1e-9 &&
       Math.abs(headingRadians(0, 1) - Math.PI) < 1e-9,
   );
-  const def = new CreatureLibrary().all()[0]!;
+  const def = new CreatureAssets().all()[0]!;
   const walker = spawnedCreature('test:0,0', def.id, 0, 0);
   walker.targetX = 0;
   walker.targetY = 10;
@@ -312,13 +312,13 @@ function billboardOf(world: ReturnType<typeof abilityWorld>, creatureId: number)
 
 function abilityWorld() {
   const store = new PipelineStore(emptyPipeline());
-  const creatures = new CreatureLibrary();
+  const creatures = new CreatureAssets();
   const context: AbilityContext = {
     store,
-    tileset: new Tileset(),
-    prefabs: new PrefabLibrary(() => -1),
+    tileAssets: new TileAssets(),
+    prefabs: new PrefabAssets(() => -1),
     creatures,
-    items: new ItemLibrary(),
+    items: new ItemAssets(),
     templates: new TemplateLibrary([]),
     worldPresets: new WorldPresetLibrary([]),
     randomizeHistory: new RandomizeHistory(),

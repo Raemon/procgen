@@ -14,7 +14,7 @@ export class WorldLights {
     this.pool = new PointLightPool(root, MAX_LIVE_LIGHTS);
     this.sources = new SceneLightSources({
       sampler: deps.sampler,
-      tileset: deps.tileset,
+      tileAssets: deps.tileAssets,
       creatures: deps.creatures,
       items: deps.items,
       activeCreatures: () => deps.sim.active(),

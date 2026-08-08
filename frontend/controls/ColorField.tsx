@@ -1,4 +1,4 @@
-import { isTransparentInk, opaqueInk, withTransparency } from '../../library/tiles/inkColor';
+import { isTransparentInk, opaqueInk, withTransparency } from '../../assets/tiles/inkColor';
 import type { TooltipContent } from '../tooltips/tooltipContent';
 import { tooltipHandlers } from '../tooltips/tooltipHandlers';
 import { IconButton } from './IconButton';

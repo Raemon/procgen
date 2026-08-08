@@ -1,6 +1,6 @@
 import type { Marker, WorldSampler } from '../../../procgen/worldSampler';
 import type { CellPoint } from '../../../world/nearestWalkable';
-import type { Tileset } from '../../../library/tiles/tileset';
+import type { TileAssets } from '../../../assets/tiles/tileAssets';
 import { asciiCellAt, pointOverlayLookup, type AsciiCell } from '../../../world/render/ascii/asciiCells';
 import { viewportCenteredOn, type AsciiViewport } from '../../../world/render/ascii/asciiViewport';
 
@@ -9,21 +9,21 @@ const THUMB_ROWS = 56;
 
 export function thumbnailHtml(
   sampler: WorldSampler,
-  tileset: Tileset,
+  tileAssets: TileAssets,
   center: CellPoint,
 ): string {
   const viewport = viewportCenteredOn(center.x, center.y, THUMB_COLUMNS, THUMB_ROWS);
   const markers = pointOverlayLookup(sampler, viewport);
   const rows: string[] = [];
   for (let row = 0; row < viewport.rows; row++) {
-    rows.push(thumbnailRow(sampler, tileset, markers, viewport, center, row));
+    rows.push(thumbnailRow(sampler, tileAssets, markers, viewport, center, row));
   }
   return rows.join('\n');
 }
 
 function thumbnailRow(
   sampler: WorldSampler,
-  tileset: Tileset,
+  tileAssets: TileAssets,
   markers: Map<string, Marker>,
   viewport: AsciiViewport,
   center: CellPoint,
@@ -34,7 +34,7 @@ function thumbnailRow(
   for (let column = 0; column < viewport.columns; column++) {
     const x = viewport.originX + column;
     const y = viewport.originY + row;
-    const cell = asciiCellAt(sampler, tileset, markers, x, y, x === center.x && y === center.y);
+    const cell = asciiCellAt(sampler, tileAssets, markers, x, y, x === center.x && y === center.y);
     run = extendRun(spans, run, cell);
   }
   flushRun(spans, run);

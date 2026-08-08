@@ -5,7 +5,7 @@ import {
   type PuzzleRoomKnobs,
 } from '../../procgen/nodes/puzzle/puzzleRoomKnobs';
 import { labelSeed } from '../../procgen/random/labelSeed';
-import type { ReadOnlyPipelineStore } from '../../frontend/readOnlyLibraries';
+import type { ReadOnlyPipelineStore } from '../../frontend/readOnlyAssets';
 
 export function puzzleKnobsFromPipeline(store: ReadOnlyPipelineStore): PuzzleRoomKnobs | null {
   const painted = store

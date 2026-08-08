@@ -6,21 +6,21 @@ const SOURCE_ROOTS = [
   'agents',
   'api',
   'frontend',
-  'library',
+  'assets',
   'multiplayer',
   'procgen',
   'server',
   'world',
 ];
 
-const PANEL_AND_CHROME_ROOTS = ['agents', 'frontend', 'library', 'procgen', 'world'];
+const PANEL_AND_CHROME_ROOTS = ['agents', 'assets', 'frontend', 'procgen', 'world'];
 
-const MUTABLE_LIBRARIES = [
+const MUTABLE_COLLECTIONS = [
   'PipelineStore',
-  'Tileset',
-  'PrefabLibrary',
-  'CreatureLibrary',
-  'ItemLibrary',
+  'TileAssets',
+  'PrefabAssets',
+  'CreatureAssets',
+  'ItemAssets',
   'TemplateLibrary',
   'WorldPresetLibrary',
   'World',
@@ -28,25 +28,25 @@ const MUTABLE_LIBRARIES = [
   'PuzzleState',
 ];
 
-const MAY_HOLD_A_MUTABLE_LIBRARY = [
+const MAY_HOLD_A_MUTABLE_COLLECTION = [
   'abilities/',
   'api/',
-  'library/',
+  'assets/',
   'procgen/',
   'world/',
   'frontend/appRuntime.ts',
-  'frontend/readOnlyLibraries.ts',
+  'frontend/readOnlyAssets.ts',
 ];
 
 export function checkOnlyTheAbilityLayerCanMutate(
   check: (name: string, condition: boolean) => void,
 ): void {
-  const offenders = SOURCE_ROOTS.flatMap(sourceFiles).filter(importsAMutableLibrary);
+  const offenders = SOURCE_ROOTS.flatMap(sourceFiles).filter(importsAMutableCollection);
   if (offenders.length > 0) {
-    console.log(`     files holding a mutable library outside the ability layer:\n       ${offenders.join('\n       ')}`);
+    console.log(`     files holding a mutable collection outside the ability layer:\n       ${offenders.join('\n       ')}`);
   }
   check(
-    'only the ability layer and the runtime can hold a mutable library',
+    'only the ability layer and the runtime can hold a mutable collection',
     offenders.length === 0,
   );
   check(
@@ -67,10 +67,10 @@ function sourceFiles(root: string): string[] {
   return found;
 }
 
-function importsAMutableLibrary(path: string): boolean {
-  if (MAY_HOLD_A_MUTABLE_LIBRARY.some((allowed) => path.startsWith(allowed))) return false;
+function importsAMutableCollection(path: string): boolean {
+  if (MAY_HOLD_A_MUTABLE_COLLECTION.some((allowed) => path.startsWith(allowed))) return false;
   const source = readFileSync(path, 'utf8');
-  return valueImportedNames(source).some((name) => MUTABLE_LIBRARIES.includes(name));
+  return valueImportedNames(source).some((name) => MUTABLE_COLLECTIONS.includes(name));
 }
 
 function valueImportedNames(source: string): string[] {

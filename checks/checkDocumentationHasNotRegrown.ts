@@ -10,7 +10,7 @@ const SEARCHED_ROOTS = [
   'data',
   'docs',
   'frontend',
-  'library',
+  'assets',
   'multiplayer',
   'perf',
   'procgen',

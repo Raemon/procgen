@@ -1,6 +1,6 @@
 import type { Marker, WorldSampler } from '../../../procgen/worldSampler';
 import { EMPTY_TILE } from '../../../procgen/values/chunkValues';
-import type { ReadOnlyTileset } from '../../../frontend/readOnlyLibraries';
+import type { ReadOnlyTileAssets } from '../../../frontend/readOnlyAssets';
 import { NO_EXTRA_MARKERS, type MarkerSource } from '../markerSource';
 import type { AsciiViewport } from './asciiViewport';
 
@@ -37,7 +37,7 @@ export function pointOverlayLookup(
 
 export function asciiCellAt(
   sampler: WorldSampler,
-  tileset: ReadOnlyTileset,
+  tileAssets: ReadOnlyTileAssets,
   markers: Map<string, Marker>,
   x: number,
   y: number,
@@ -46,18 +46,18 @@ export function asciiCellAt(
   if (isPlayerHere) return { glyph: PLAYER_GLYPH, ink: PLAYER_INK };
   const marker = markers.get(`${x},${y}`);
   if (marker) return { glyph: marker.glyph, ink: marker.color };
-  return tileCell(sampler, tileset, x, y);
+  return tileCell(sampler, tileAssets, x, y);
 }
 
 function tileCell(
   sampler: WorldSampler,
-  tileset: ReadOnlyTileset,
+  tileAssets: ReadOnlyTileAssets,
   x: number,
   y: number,
 ): AsciiCell | null {
   const tileId = visibleTileAt(sampler, x, y);
   if (tileId === EMPTY_TILE) return null;
-  const tile = tileset.byId(tileId);
+  const tile = tileAssets.byId(tileId);
   return { glyph: tile?.symbol ?? UNKNOWN_GLYPH, ink: tile?.color ?? UNKNOWN_INK };
 }
 

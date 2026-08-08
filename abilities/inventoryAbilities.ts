@@ -1,5 +1,5 @@
-import type { CreatureDef } from '../library/creatures/creatureDef';
-import { CHARACTER } from '../library/creatures/entityKinds';
+import type { CreatureDef } from '../assets/creatures/creatureDef';
+import { CHARACTER } from '../assets/creatures/entityKinds';
 import {
   blankInventory,
   clampSide,
@@ -8,7 +8,7 @@ import {
   slotAt,
   withSlotAt,
   type InventoryDef,
-} from '../library/items/inventory/inventoryDef';
+} from '../assets/items/inventory/inventoryDef';
 import {
   placementCovering,
   placementRefusal,
@@ -16,7 +16,7 @@ import {
   REFUSAL_HINTS,
   withItemPlaced,
   withoutPlacementCovering,
-} from '../library/items/inventory/inventoryPlacement';
+} from '../assets/items/inventory/inventoryPlacement';
 import {
   abilityFailed,
   abilitySucceeded,
@@ -36,12 +36,12 @@ const SLOT_Y_HELP = 'inventory row, 0 at the top';
 function registerInventoryAbility(
   spec: Omit<AbilitySpec, 'mode' | 'group' | 'changesWorld'>,
 ): AbilitySpec {
-  return registerAbility({ ...spec, mode: 'god', group: 'library', changesWorld: true });
+  return registerAbility({ ...spec, mode: 'god', group: 'assets', changesWorld: true });
 }
 
 registerInventoryAbility({
   action: 'set_inventory',
-  humanControl: 'library panel, characters tab: the inventory width and height knobs',
+  humanControl: 'assets panel, characters tab: the inventory width and height knobs',
   description:
     'Give a creature an inventory grid, or resize the one it has. Slots that survive a resize keep their usable flag and tags; items that no longer fit are dropped.',
   params: {
@@ -55,7 +55,7 @@ registerInventoryAbility({
 
 registerInventoryAbility({
   action: 'clear_inventory',
-  humanControl: 'library panel, characters tab: remove inventory',
+  humanControl: 'assets panel, characters tab: remove inventory',
   description: 'Take the inventory grid away entirely, dropping its slots, tags and items.',
   params: { creature_id: { kind: 'int', help: CREATURE_ID_HELP } },
   example: { action: 'clear_inventory', creature_id: 7 },
@@ -68,7 +68,7 @@ registerInventoryAbility({
 
 registerInventoryAbility({
   action: 'update_inventory_slot',
-  humanControl: 'library panel, characters tab: click a slot in the inventory grid',
+  humanControl: 'assets panel, characters tab: click a slot in the inventory grid',
   description:
     'Mark one slot usable or dead, and set the tags that filter it. A slot with no tags accepts any item; a tagged slot only accepts items carrying one of its tags.',
   params: {
@@ -84,7 +84,7 @@ registerInventoryAbility({
 
 registerInventoryAbility({
   action: 'set_inventory_background',
-  humanControl: 'library panel, characters tab: the inventory backdrop art editor',
+  humanControl: 'assets panel, characters tab: the inventory backdrop art editor',
   description:
     'Layer pixel art under the whole inventory grid. The square sprite is stretched across the grid and the slots draw on top of it.',
   params: {
@@ -100,7 +100,7 @@ registerInventoryAbility({
 
 registerInventoryAbility({
   action: 'place_inventory_item',
-  humanControl: 'library panel, characters tab: pick an item, then click a slot',
+  humanControl: 'assets panel, characters tab: pick an item, then click a slot',
   description:
     'Put an item in the grid with its top-left corner at that slot. It must fit inside the grid, cover only usable slots that accept its tags, and not overlap another item.',
   params: {
@@ -115,7 +115,7 @@ registerInventoryAbility({
 
 registerInventoryAbility({
   action: 'remove_inventory_item',
-  humanControl: 'library panel, characters tab: click a placed item in the inventory grid',
+  humanControl: 'assets panel, characters tab: click a placed item in the inventory grid',
   description: 'Take whichever item covers that slot back out of the grid.',
   params: {
     creature_id: { kind: 'int', help: CREATURE_ID_HELP },

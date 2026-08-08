@@ -1,5 +1,5 @@
 import type { CreatureSpawn, WorldSampler } from '../../procgen/worldSampler';
-import type { CreatureLibrary } from '../../library/creatures/creatureLibrary';
+import type { CreatureAssets } from '../../assets/creatures/creatureAssets';
 import { spawnedCreature, spawnKeyOf, type CreatureInstance } from './creatureInstance';
 import { retargetCreature, type SimWorldView } from './creatureTargets';
 import { moveCreatureTowardTarget, type WalkabilityProbe } from './moveCreatureTowardTarget';
@@ -11,7 +11,7 @@ const MAX_ACTIVE_CREATURES = 400;
 
 export interface CreatureSimDeps {
   sampler: WorldSampler;
-  library: CreatureLibrary;
+  creatureAssets: CreatureAssets;
   world: SimWorldView;
   isWalkableAt: WalkabilityProbe;
 }
@@ -37,7 +37,7 @@ export class CreatureSim {
   }
 
   private stepOne(creature: CreatureInstance, dtSeconds: number): void {
-    const def = this.deps.library.byId(creature.creatureId);
+    const def = this.deps.creatureAssets.byId(creature.creatureId);
     if (!def) return;
     retargetCreature(creature, def, this.deps.world, dtSeconds);
     moveCreatureTowardTarget(creature, def, this.deps.isWalkableAt, dtSeconds);
@@ -67,7 +67,7 @@ export class CreatureSim {
 
   private spawnIfNew(spawn: CreatureSpawn): void {
     const key = spawnKeyOf(spawn.tag, spawn.x, spawn.y);
-    if (this.creatures.has(key) || !this.deps.library.byId(spawn.creatureId)) return;
+    if (this.creatures.has(key) || !this.deps.creatureAssets.byId(spawn.creatureId)) return;
     this.creatures.set(key, spawnedCreature(key, spawn.creatureId, spawn.x, spawn.y));
   }
 

@@ -25,11 +25,11 @@ const MODE_HELP: Record<DisplayMode, string> = {
   markers:
     'Draws each point on top of the terrain — a glyph in ASCII, a cone in 2.5D — styled from a tile or a custom glyph and color.',
   prefabs:
-    'Stamps a prefab from the library at every point, anchored on its centre cell. Voxels above ground stack into the world and block movement like any other tile.',
+    'Stamps a prefab asset at every point, anchored on its centre cell. Voxels above ground stack into the world and block movement like any other tile.',
   creatures:
-    'Spawns a creature from the library at every point near the player. Creatures move by their behaviour instead of being baked into the map.',
+    'Spawns a creature asset at every point near the player. Creatures move by their behaviour instead of being baked into the map.',
   items:
-    'Floats an item from the library above every point: a thickened billboard or a cube, drawn from the item art and never blocking movement.',
+    'Floats an item asset above every point: a thickened billboard or a cube, drawn from the item art and never blocking movement.',
 };
 
 export function displayModeTooltip(kind: ValueKind): TooltipContent {
@@ -65,10 +65,10 @@ export function markerTileTooltip(): TooltipContent {
     options: [
       {
         name: '(custom glyph)',
-        meaning: 'Style markers with the glyph and color fields below, independent of the tileset.',
+        meaning: 'Style markers with the glyph and color fields below, independent of the tile assets.',
       },
       {
-        name: 'tileset tiles',
+        name: 'tile assets',
         meaning: "Borrow the tile's symbol and color, so tile edits restyle these markers live.",
       },
     ],

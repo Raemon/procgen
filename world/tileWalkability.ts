@@ -1,7 +1,7 @@
 import { EMPTY_TILE } from '../procgen/values/chunkValues';
-import type { Tileset } from '../library/tiles/tileset';
+import type { TileAssets } from '../assets/tiles/tileAssets';
 
-export function isWalkableTile(tileset: Tileset, tileId: number): boolean {
+export function isWalkableTile(tileAssets: TileAssets, tileId: number): boolean {
   if (tileId === EMPTY_TILE) return true;
-  return tileset.byId(tileId)?.walkable ?? true;
+  return tileAssets.byId(tileId)?.walkable ?? true;
 }

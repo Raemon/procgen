@@ -1,4 +1,4 @@
-import { packHex } from '../../library/tiles/art/packedHex';
+import { packHex } from '../../assets/tiles/art/packedHex';
 
 export function paintPixelsAsImage(
   ctx: CanvasRenderingContext2D,

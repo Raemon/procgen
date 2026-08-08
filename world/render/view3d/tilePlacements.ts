@@ -1,10 +1,10 @@
 import { EMPTY_TILE } from '../../../procgen/values/chunkValues';
 import type { WorldSampler } from '../../../procgen/worldSampler';
 import { glowOfEmitter } from './selfLitGlow';
-import type { TileDef } from '../../../library/tiles/tileDef';
-import { blockLayersOfTile, storedTileHeight } from '../../../library/tiles/tileHeight';
-import type { CubeFaceArt } from '../../../library/tiles/tileFaceArt';
-import type { ReadOnlyTileset } from '../../../frontend/readOnlyLibraries';
+import type { TileDef } from '../../../assets/tiles/tileDef';
+import { blockLayersOfTile, storedTileHeight } from '../../../assets/tiles/tileHeight';
+import type { CubeFaceArt } from '../../../assets/tiles/tileFaceArt';
+import type { ReadOnlyTileAssets } from '../../../frontend/readOnlyAssets';
 
 export interface TilePlacement {
   x: number;
@@ -28,7 +28,7 @@ const BLOCK_FLOOR_SHADE = 0.8;
 
 export function tilePlacementsForRect(
   sampler: WorldSampler,
-  tileset: ReadOnlyTileset,
+  tileAssets: ReadOnlyTileAssets,
   minX: number,
   minY: number,
   width: number,
@@ -37,7 +37,7 @@ export function tilePlacementsForRect(
   const shapes: TilePlacementsByShape = { floors: [], blocks: [] };
   for (let y = minY; y < minY + height; y++) {
     for (let x = minX; x < minX + width; x++) {
-      addCellToShapes(shapes, sampler, tileset, x, y);
+      addCellToShapes(shapes, sampler, tileAssets, x, y);
     }
   }
   return shapes;
@@ -46,13 +46,13 @@ export function tilePlacementsForRect(
 function addCellToShapes(
   shapes: TilePlacementsByShape,
   sampler: WorldSampler,
-  tileset: ReadOnlyTileset,
+  tileAssets: ReadOnlyTileAssets,
   x: number,
   y: number,
 ): void {
   const tileId = sampler.tileAt(x, y);
   if (tileId === EMPTY_TILE) return;
-  const tile = tileset.byId(tileId);
+  const tile = tileAssets.byId(tileId);
   if (tile) addTileToShapes(shapes, tile, x, y, sampler.elevationAt(x, y));
 }
 

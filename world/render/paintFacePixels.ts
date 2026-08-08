@@ -1,4 +1,4 @@
-import { faceGridSize, type FacePixels } from '../../library/tiles/tileFaceArt';
+import { faceGridSize, type FacePixels } from '../../assets/tiles/tileFaceArt';
 import { paintPixelsAsImage } from './paintPixelsAsImage';
 
 export function paintFacePixels(

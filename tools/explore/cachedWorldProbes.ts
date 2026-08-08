@@ -1,5 +1,5 @@
 import type { WorldSampler } from '../../procgen/worldSampler';
-import type { Tileset } from '../../library/tiles/tileset';
+import type { TileAssets } from '../../assets/tiles/tileAssets';
 import { isWalkableTile } from '../../world/tileWalkability';
 import { cellKey } from './explorationTrace';
 
@@ -18,6 +18,6 @@ export function cachedTileIdProbe(sampler: WorldSampler): TileIdProbe {
   };
 }
 
-export function walkableProbeFrom(tileIdAt: TileIdProbe, tileset: Tileset): WalkableProbe {
-  return (x, y) => isWalkableTile(tileset, tileIdAt(x, y));
+export function walkableProbeFrom(tileIdAt: TileIdProbe, tileAssets: TileAssets): WalkableProbe {
+  return (x, y) => isWalkableTile(tileAssets, tileIdAt(x, y));
 }

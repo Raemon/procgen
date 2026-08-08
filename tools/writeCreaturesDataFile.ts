@@ -1,6 +1,6 @@
 import { writeFileSync } from 'node:fs';
-import { creaturesAsStoredJson } from '../library/creatures/creatureStorage';
-import { defaultCreatures } from '../library/creatures/defaultCreatures';
+import { creaturesAsStoredJson } from '../assets/creatures/creatureStorage';
+import { defaultCreatures } from '../assets/creatures/defaultCreatures';
 
 const OUTPUT_PATH = 'data/creatures.json';
 

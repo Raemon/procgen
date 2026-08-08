@@ -21,10 +21,10 @@ import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
 import type { PipelineState } from '../procgen/pipeline/pipelineState';
 import { examplePipelines } from '../procgen/presets/examplePipelines';
 import { WorldSampler } from '../procgen/worldSampler';
-import { Tileset } from '../library/tiles/tileset';
+import { TileAssets } from '../assets/tiles/tileAssets';
 import { buildObservation } from '../agents/observation';
 import { observationText } from '../agents/observationText';
-import { isTransparentInk } from '../library/tiles/inkColor';
+import { isTransparentInk } from '../assets/tiles/inkColor';
 import { markerPlacementsForRect } from '../world/render/view3d/markerPlacements';
 import type { TilePlacement } from '../world/render/view3d/tilePlacements';
 import { isWalkableTile } from '../world/tileWalkability';
@@ -118,7 +118,7 @@ function checkThePromptOffersOnlyWhatPressingTheKeyWouldDo(
     observationText(
       buildObservation(
         world.sampler,
-        new Tileset(),
+        new TileAssets(),
         { x: lever.x, y: lever.y, facing: 0 },
         'character',
         undefined,
@@ -367,7 +367,7 @@ function doorPlacementAt(world: PuzzleFixtureWorld, doorway: Doorway): TilePlace
 }
 
 function checkYouCanTellTheFixturesApartFromTheWorld(check: Check): void {
-  const tileGlyphs = new Set(new Tileset().all().map((tile) => tile.symbol));
+  const tileGlyphs = new Set(new TileAssets().all().map((tile) => tile.symbol));
   check(
     'no fixture is drawn with a glyph a tile already uses, so a door never reads as a wall',
     everyFixtureLook().every((look) => !tileGlyphs.has(look.glyph)),
@@ -397,27 +397,27 @@ function puzzleWorldFromPreset(): PuzzleFixtureWorld {
   const preset = examplePipelines().find((example) => example.name === PUZZLE_PRESET_NAME)!;
   const state = sanitizePipeline(preset.state);
   const store = new PipelineStore(state);
-  const tileset = new Tileset();
-  const sampler = new WorldSampler(store, new PipelineEvaluator(store), tileset);
-  const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileset, sampler.tileAt(x, y));
+  const tileAssets = new TileAssets();
+  const sampler = new WorldSampler(store, new PipelineEvaluator(store), tileAssets);
+  const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileAssets, sampler.tileAt(x, y));
   const knobs = puzzleKnobsFromPipeline(store)!;
   return {
     knobs,
     maze: roomLatticeMazeFor(knobs),
     puzzles: new PuzzleWorld(store, tileIsWalkable),
     sampler,
-    shellSampler: samplerOfPuzzleRoomsAlone(state, tileset),
+    shellSampler: samplerOfPuzzleRoomsAlone(state, tileAssets),
     tileIsWalkable,
   };
 }
 
-function samplerOfPuzzleRoomsAlone(state: PipelineState, tileset: Tileset): WorldSampler {
+function samplerOfPuzzleRoomsAlone(state: PipelineState, tileAssets: TileAssets): WorldSampler {
   const shellOnly = {
     ...state,
     nodes: state.nodes.filter((node) => node.type === PUZZLE_ROOMS_NODE_TYPE),
   };
   const store = new PipelineStore(shellOnly);
-  return new WorldSampler(store, new PipelineEvaluator(store), tileset);
+  return new WorldSampler(store, new PipelineEvaluator(store), tileAssets);
 }
 
 function checkTheShellIsSolidExceptWhereItLetsYouThrough(

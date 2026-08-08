@@ -3,8 +3,8 @@ import { buildObservation, type ObservedOverlay } from '../../../agents/observat
 import { observationText } from '../../../agents/observationText';
 import { measureWork } from '../../../perf/workTimers';
 import type { WorldSampler } from '../../../procgen/worldSampler';
-import type { ReadOnlyTileset } from '../../../frontend/readOnlyLibraries';
-import type { ReadOnlyWorld } from '../../../frontend/readOnlyLibraries';
+import type { ReadOnlyTileAssets } from '../../../frontend/readOnlyAssets';
+import type { ReadOnlyWorld } from '../../../frontend/readOnlyAssets';
 
 const AGENT_TEXT_CLASSES =
   'absolute inset-0 m-0 overflow-auto whitespace-pre p-4 font-mono text-[13px] leading-[1.15] text-emerald-100/90';
@@ -16,7 +16,7 @@ export class AgentTextView {
     container: HTMLElement,
     private readonly world: ReadOnlyWorld,
     private readonly sampler: WorldSampler,
-    private readonly tileset: ReadOnlyTileset,
+    private readonly tileAssets: ReadOnlyTileAssets,
     private readonly mode: AgentMode,
     private readonly puzzles: ObservedOverlay,
   ) {
@@ -37,7 +37,7 @@ export class AgentTextView {
     return observationText(
       buildObservation(
         this.sampler,
-        this.tileset,
+        this.tileAssets,
         pose,
         this.mode,
         this.world.sightRadiusTiles,

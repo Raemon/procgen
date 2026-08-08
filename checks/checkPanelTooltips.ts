@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
-const PANEL_SOURCE_ROOTS = ['agents', 'frontend', 'library', 'procgen', 'world'];
+const PANEL_SOURCE_ROOTS = ['agents', 'assets', 'frontend', 'procgen', 'world'];
 const NATIVE_TITLE_ATTRIBUTE = /\stitle=[{"]/;
 
 const offenders = PANEL_SOURCE_ROOTS.flatMap(componentFilesUnder).filter(usesNativeTitle);

@@ -1,5 +1,5 @@
-import { headingRadians } from '../../library/characters/characterFacing';
-import type { CreatureDef } from '../../library/creatures/creatureDef';
+import { headingRadians } from '../../assets/characters/characterFacing';
+import type { CreatureDef } from '../../assets/creatures/creatureDef';
 import { distanceBetween, type CreatureInstance } from './creatureInstance';
 
 const MAX_STEP_PER_TICK = 0.5;

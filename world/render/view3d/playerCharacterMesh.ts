@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import type { ReadOnlyCreatureLibrary } from '../../../frontend/readOnlyLibraries';
-import type { CharacterMotion } from '../../../library/characters/characterFrame';
-import { playerCharacterDef } from '../../../library/characters/playerCharacter';
+import type { ReadOnlyCreatureAssets } from '../../../frontend/readOnlyAssets';
+import type { CharacterMotion } from '../../../assets/characters/characterFrame';
+import { playerCharacterDef } from '../../../assets/characters/playerCharacter';
 import type { CameraView } from './cameraView';
 import { characterQuadMesh, dressCharacterQuad } from './characterQuad';
 import type { CharacterSpriteAssets } from './characterSpriteAssets';
@@ -24,7 +24,7 @@ export class PlayerCharacterMesh {
   private readonly capsule: THREE.Mesh;
 
   constructor(
-    private readonly creatures: ReadOnlyCreatureLibrary,
+    private readonly creatures: ReadOnlyCreatureAssets,
     private readonly sprites: CharacterSpriteAssets,
     private readonly tint?: number,
   ) {

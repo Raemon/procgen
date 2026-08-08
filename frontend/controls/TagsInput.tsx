@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { normalizedTags } from '../../library/items/itemDef';
+import { normalizedTags } from '../../assets/items/itemDef';
 import type { TooltipContent } from '../tooltips/tooltipContent';
 import { tooltipHandlers } from '../tooltips/tooltipHandlers';
 import { classes } from './classes';

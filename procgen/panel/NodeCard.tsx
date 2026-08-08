@@ -27,7 +27,7 @@ export function NodeCard({
   index: number;
   dropMarker: DropMarker;
 }) {
-  const { perform, tileset } = useAppRuntime();
+  const { perform, tileAssets } = useAppRuntime();
   const collapsedCards = usePersistedUiSet(PERSISTED_UI_KEYS.collapsedNodeCards);
   const collapsed = collapsedCards.has(node.id);
   const def = nodeTypeOf(node.type);
@@ -67,7 +67,7 @@ export function NodeCard({
                 <ParamRow
                   key={name}
                   spec={spec}
-                  tileset={tileset}
+                  tileAssets={tileAssets}
                   value={node.params[name]!}
                   onChange={(value) => perform('set_param', { node_id: node.id, param: name, value })}
                 />

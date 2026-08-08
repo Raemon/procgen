@@ -11,10 +11,10 @@ import {
   type CharacterAnimation,
   type CharacterBillboard,
   type CharacterRotation,
-} from '../library/characters/characterBillboard';
-import { clampFps } from '../library/characters/sanitizeCharacterBillboard';
-import { CHARACTER } from '../library/creatures/entityKinds';
-import type { SpriteArt } from '../library/tiles/spriteArt';
+} from '../assets/characters/characterBillboard';
+import { clampFps } from '../assets/characters/sanitizeCharacterBillboard';
+import { CHARACTER } from '../assets/creatures/entityKinds';
+import type { SpriteArt } from '../assets/tiles/spriteArt';
 import {
   abilityFailed,
   abilitySucceeded,
@@ -32,12 +32,12 @@ const CREATURE_ID_HELP = 'id of an existing creature or character — see GET /a
 function registerCharacterArtAbility(
   spec: Omit<AbilitySpec, 'mode' | 'group' | 'changesWorld'>,
 ): AbilitySpec {
-  return registerAbility({ ...spec, mode: 'god', group: 'library', changesWorld: true });
+  return registerAbility({ ...spec, mode: 'god', group: 'assets', changesWorld: true });
 }
 
 registerCharacterArtAbility({
   action: 'set_character_frame',
-  humanControl: 'library panel, characters tab: paint a frame in the sprites editor',
+  humanControl: 'assets panel, characters tab: paint a frame in the sprites editor',
   description:
     'Paint one frame of one animation of one rotation. Passing the frame after the last one appends it; the character grows a billboard the first time you do this, and the 2.5D view stops drawing it as a cube.',
   params: {
@@ -63,7 +63,7 @@ registerCharacterArtAbility({
 
 registerCharacterArtAbility({
   action: 'remove_character_frame',
-  humanControl: 'library panel, characters tab: ✕ on a frame in the sprites editor',
+  humanControl: 'assets panel, characters tab: ✕ on a frame in the sprites editor',
   description:
     'Drop one frame from one animation. Removing the last frame everywhere takes the billboard away and the character goes back to a cube.',
   params: {
@@ -84,7 +84,7 @@ registerCharacterArtAbility({
 
 registerCharacterArtAbility({
   action: 'set_character_animation_fps',
-  humanControl: 'library panel, characters tab: the idle and moving fps knobs',
+  humanControl: 'assets panel, characters tab: the idle and moving fps knobs',
   description: 'How fast one of the two animations plays, in frames per second (0-30).',
   params: {
     creature_id: { kind: 'int', help: CREATURE_ID_HELP },
@@ -97,7 +97,7 @@ registerCharacterArtAbility({
 
 registerCharacterArtAbility({
   action: 'clear_character_billboard',
-  humanControl: 'library panel, characters tab: clear sprites',
+  humanControl: 'assets panel, characters tab: clear sprites',
   description:
     'Throw away every frame of every rotation. The character falls back to the cube art creatures use.',
   params: { creature_id: { kind: 'int', help: CREATURE_ID_HELP } },

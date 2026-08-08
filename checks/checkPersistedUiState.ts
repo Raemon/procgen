@@ -10,7 +10,7 @@ const { persistedUiValue, subscribeToPersistedUiValue, writePersistedUiValue } =
 );
 const { toggledMembers } = await import('../frontend/uiState/toggledMembers');
 
-const LIBRARY_TABS = ['tiles', 'prefabs', 'creatures'] as const;
+const ASSET_KINDS = ['tiles', 'prefabs', 'creatures'] as const;
 
 checkAToggleReachesStorage();
 checkTheNextLoadReadsWhatStorageHolds();
@@ -30,10 +30,10 @@ function checkAToggleReachesStorage(): void {
 }
 
 function checkTheNextLoadReadsWhatStorageHolds(): void {
-  storage.setItem('procgen.ui.library.tab.v1', JSON.stringify('creatures'));
+  storage.setItem('procgen.ui.assets.tab.v1', JSON.stringify('creatures'));
   storage.setItem('procgen.ui.panel.widths.v1', JSON.stringify({ library: 310 }));
   assert(
-    persistedUiValue('library.tab', 'tiles', isOneOf(LIBRARY_TABS)) === 'creatures',
+    persistedUiValue('assets.tab', 'tiles', isOneOf(ASSET_KINDS)) === 'creatures',
     'the tab selected last session is the tab that opens',
   );
   assert(
@@ -45,7 +45,7 @@ function checkTheNextLoadReadsWhatStorageHolds(): void {
 function checkStorageHoldingTheWrongShapeFallsBackToTheDefault(): void {
   storage.setItem('stale.tab', JSON.stringify('a tab that no longer exists'));
   assert(
-    persistedUiValue('stale.tab', 'tiles', isOneOf(LIBRARY_TABS)) === 'tiles',
+    persistedUiValue('stale.tab', 'tiles', isOneOf(ASSET_KINDS)) === 'tiles',
     'a stored value that fails its guard is replaced by the default',
   );
   storage.setItem('procgen.ui.corrupt.widths.v1', '{not json');

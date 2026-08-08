@@ -3,12 +3,12 @@ import {
   regionSize,
   type RegionSampler,
   type WorldRegion,
-} from '../../library/prefabs/captureRegionAsPrefab';
-import type { Prefab } from '../../library/prefabs/prefabDef';
-import type { PrefabLibrary } from '../../library/prefabs/prefabLibrary';
+} from '../../assets/prefabs/captureRegionAsPrefab';
+import type { Prefab } from '../../assets/prefabs/prefabDef';
+import type { PrefabAssets } from '../../assets/prefabs/prefabAssets';
 
 export function capturePrefabFromWorld(
-  prefabs: PrefabLibrary,
+  prefabs: PrefabAssets,
   sampler: RegionSampler,
   region: WorldRegion,
 ): Prefab {

@@ -1,4 +1,4 @@
-import { stowSpawnedItem } from '../library/items/pickups/stowItems';
+import { stowSpawnedItem } from '../assets/items/pickups/stowItems';
 import {
   abilityFailed,
   abilitySucceeded,

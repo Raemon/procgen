@@ -1,6 +1,6 @@
 import { EMPTY_TILE } from '../../../procgen/values/chunkValues';
 import type { WorldSampler } from '../../../procgen/worldSampler';
-import type { ReadOnlyTileset } from '../../../frontend/readOnlyLibraries';
+import type { ReadOnlyTileAssets } from '../../../frontend/readOnlyAssets';
 import { glowOfEmitter } from './selfLitGlow';
 import type { TilePlacement } from './tilePlacements';
 
@@ -8,7 +8,7 @@ const CEILING_LAYER_HEIGHT = 1;
 
 export function ceilingPlacementsForRect(
   sampler: WorldSampler,
-  tileset: ReadOnlyTileset,
+  tileAssets: ReadOnlyTileAssets,
   minX: number,
   minY: number,
   width: number,
@@ -17,7 +17,7 @@ export function ceilingPlacementsForRect(
   const placements: TilePlacement[] = [];
   for (let y = minY; y < minY + height; y++) {
     for (let x = minX; x < minX + width; x++) {
-      addCeilingCell(placements, sampler, tileset, x, y);
+      addCeilingCell(placements, sampler, tileAssets, x, y);
     }
   }
   return placements;
@@ -26,13 +26,13 @@ export function ceilingPlacementsForRect(
 function addCeilingCell(
   into: TilePlacement[],
   sampler: WorldSampler,
-  tileset: ReadOnlyTileset,
+  tileAssets: ReadOnlyTileAssets,
   x: number,
   y: number,
 ): void {
   const tileId = sampler.ceilingTileAt(x, y);
   if (tileId === EMPTY_TILE) return;
-  const tile = tileset.byId(tileId);
+  const tile = tileAssets.byId(tileId);
   if (!tile) return;
   into.push({
     x,

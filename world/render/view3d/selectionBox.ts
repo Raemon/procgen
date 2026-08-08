@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { WorldRegion } from '../../../library/prefabs/captureRegionAsPrefab';
+import type { WorldRegion } from '../../../assets/prefabs/captureRegionAsPrefab';
 
 const SELECTION_INK = 0xffd86a;
 const BOX_HEIGHT = 4;

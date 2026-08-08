@@ -1,6 +1,6 @@
 import { hashString } from '../../procgen/random/hashString';
-import { CHASE, FLEE, GUARD, IDLE, PATROL } from '../../library/creatures/behaviorKinds';
-import type { CreatureDef } from '../../library/creatures/creatureDef';
+import { CHASE, FLEE, GUARD, IDLE, PATROL } from '../../assets/creatures/behaviorKinds';
+import type { CreatureDef } from '../../assets/creatures/creatureDef';
 import { distanceBetween, type CreatureInstance } from './creatureInstance';
 
 const PAUSE_SECONDS = 1.6;

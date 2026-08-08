@@ -9,7 +9,7 @@ import { preloadPersistedFiles } from './persistence/repoFileStore';
 
 void preloadPersistedFiles([
   'pipeline',
-  'tileset',
+  'tiles',
   'templates',
   'worldPresets',
   'prefabs',

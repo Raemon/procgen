@@ -1,6 +1,6 @@
-import { CreatureLibrary } from '../library/creatures/creatureLibrary';
+import { CreatureAssets } from '../assets/creatures/creatureAssets';
 import { CreatureSim } from '../world/creatureSim/creatureSim';
-import { WANDER } from '../library/creatures/behaviorKinds';
+import { WANDER } from '../assets/creatures/behaviorKinds';
 import { PipelineEvaluator } from '../procgen/eval/evaluator';
 import { PipelineStore } from '../procgen/pipeline/pipelineStore';
 import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
@@ -9,14 +9,14 @@ import { displayModesForKind } from '../procgen/display/displayBinding';
 import { asPoints } from '../procgen/values/valueAccess';
 import { EMPTY_TILE } from '../procgen/values/chunkValues';
 import { WorldSampler } from '../procgen/worldSampler';
-import { prefabFromWorldRegion } from '../library/prefabs/captureRegionAsPrefab';
-import { EMPTY_VOXEL, voxelAt, type Prefab } from '../library/prefabs/prefabDef';
-import { PrefabLibrary } from '../library/prefabs/prefabLibrary';
-import { resizedPrefab } from '../library/prefabs/prefabResize';
-import { rotatedDepth, rotatedPrefab, rotatedWidth } from '../library/prefabs/prefabRotation';
+import { prefabFromWorldRegion } from '../assets/prefabs/captureRegionAsPrefab';
+import { EMPTY_VOXEL, voxelAt, type Prefab } from '../assets/prefabs/prefabDef';
+import { PrefabAssets } from '../assets/prefabs/prefabAssets';
+import { resizedPrefab } from '../assets/prefabs/prefabResize';
+import { rotatedDepth, rotatedPrefab, rotatedWidth } from '../assets/prefabs/prefabRotation';
 import { asciiSnapshot } from '../world/render/ascii/asciiSnapshot';
 import { voxelPlacementsForRect } from '../world/render/view3d/voxelPlacements';
-import { Tileset } from '../library/tiles/tileset';
+import { TileAssets } from '../assets/tiles/tileAssets';
 import { isWalkableTile } from '../world/tileWalkability';
 
 export interface CheckReporter {
@@ -24,15 +24,15 @@ export interface CheckReporter {
 }
 
 export function checkPrefabAndCreatureInvariants(check: CheckReporter): void {
-  const tileset = new Tileset();
-  const prefabs = new PrefabLibrary((name) => tileIdByName(tileset, name));
+  const tileAssets = new TileAssets();
+  const prefabs = new PrefabAssets((name) => tileIdByName(tileAssets, name));
   const cottage = prefabs.all()[0]!;
 
   checkPrefabGeometry(check, cottage);
-  checkPrefabStamping(check, tileset, prefabs, cottage);
-  checkCaptureRoundTrip(check, tileset, prefabs, cottage);
-  checkCreatureSim(check, tileset, prefabs);
-  checkEmberMarchesLibraryEntries(check, tileset);
+  checkPrefabStamping(check, tileAssets, prefabs, cottage);
+  checkCaptureRoundTrip(check, tileAssets, prefabs, cottage);
+  checkCreatureSim(check, tileAssets, prefabs);
+  checkEmberMarchesAssets(check, tileAssets);
   check(
     'points nodes can be displayed as markers, prefabs or creatures',
     ['markers', 'prefabs', 'creatures'].every((mode) =>
@@ -69,11 +69,11 @@ function checkPrefabGeometry(check: CheckReporter, prefab: Prefab): void {
 
 function checkPrefabStamping(
   check: CheckReporter,
-  tileset: Tileset,
-  prefabs: PrefabLibrary,
+  tileAssets: TileAssets,
+  prefabs: PrefabAssets,
   prefab: Prefab,
 ): void {
-  const world = stampedWorld(tileset, prefabs, prefab.id);
+  const world = stampedWorld(tileAssets, prefabs, prefab.id);
   const point = firstPoint(world.evaluator);
   check('the prefab test world scatters at least one stamp point', point !== null);
   if (!point) return;
@@ -95,7 +95,7 @@ function checkPrefabStamping(
   );
   const placements = voxelPlacementsForRect(
     world.sampler,
-    tileset,
+    tileAssets,
     originX,
     originY,
     prefab.width,
@@ -107,8 +107,8 @@ function checkPrefabStamping(
   );
   check(
     'the ascii view shows the topmost voxel of a stamped prefab',
-    asciiSnapshot(world.sampler, tileset, point.x, point.y, 3, 3).includes(
-      tileset.byId(topVoxelOfPrefab(prefab))?.symbol ?? '\u0000',
+    asciiSnapshot(world.sampler, tileAssets, point.x, point.y, 3, 3).includes(
+      tileAssets.byId(topVoxelOfPrefab(prefab))?.symbol ?? '\u0000',
     ),
   );
   check(
@@ -116,19 +116,19 @@ function checkPrefabStamping(
     everyFootprintCell(prefab, (x, y) => {
       const ground = voxelAt(prefab, x, y, 0);
       if (ground === EMPTY_VOXEL) return true;
-      const walkable = tileset.byId(ground)?.walkable ?? true;
-      return isWalkableTile(tileset, world.sampler.tileAt(originX + x, originY + y)) === walkable;
+      const walkable = tileAssets.byId(ground)?.walkable ?? true;
+      return isWalkableTile(tileAssets, world.sampler.tileAt(originX + x, originY + y)) === walkable;
     }),
   );
 }
 
 function checkCaptureRoundTrip(
   check: CheckReporter,
-  tileset: Tileset,
-  prefabs: PrefabLibrary,
+  tileAssets: TileAssets,
+  prefabs: PrefabAssets,
   prefab: Prefab,
 ): void {
-  const world = stampedWorld(tileset, prefabs, prefab.id);
+  const world = stampedWorld(tileAssets, prefabs, prefab.id);
   const point = firstPoint(world.evaluator);
   if (!point) return;
   const originX = point.x - prefab.anchorX;
@@ -160,31 +160,31 @@ function checkCaptureRoundTrip(
   );
 }
 
-function checkEmberMarchesLibraryEntries(check: CheckReporter, tileset: Tileset): void {
+function checkEmberMarchesAssets(check: CheckReporter, tileAssets: TileAssets): void {
   const walkableByName = (name: string) =>
-    tileset.all().find((tile) => tile.name === name)?.walkable;
+    tileAssets.all().find((tile) => tile.name === name)?.walkable;
   check(
-    'the ember tiles ship with the tileset: walkable ash, blocking hedge, scorched stone and charred tree',
+    'the ember tiles ship with the tile assets: walkable ash, blocking hedge, scorched stone and charred tree',
     walkableByName('ash') === true &&
       walkableByName('scorched stone') === false &&
       walkableByName('hedge') === false &&
       walkableByName('charred tree') === false,
   );
-  const creatures = new CreatureLibrary();
+  const creatures = new CreatureAssets();
   const byName = (name: string) => creatures.all().find((creature) => creature.name === name);
   check(
-    'the ember marches creatures ship with the library, and only the wisp phases',
+    'the ember marches creatures ship with the creature assets, and only the wisp phases',
     byName('ash hound')?.phasing === 0 &&
       byName('fen heron')?.phasing === 0 &&
       byName('ember wisp')?.phasing === 1,
   );
 }
 
-function checkCreatureSim(check: CheckReporter, tileset: Tileset, prefabs: PrefabLibrary): void {
-  const creatures = new CreatureLibrary();
+function checkCreatureSim(check: CheckReporter, tileAssets: TileAssets, prefabs: PrefabAssets): void {
+  const creatures = new CreatureAssets();
   const wanderer = creatures.all().find((creature) => creature.behavior === WANDER)!;
-  const first = steppedSim(tileset, prefabs, creatures, wanderer.id);
-  const second = steppedSim(tileset, prefabs, creatures, wanderer.id);
+  const first = steppedSim(tileAssets, prefabs, creatures, wanderer.id);
+  const second = steppedSim(tileAssets, prefabs, creatures, wanderer.id);
   check('creature spawns appear around the player', first.sim.active().length > 0);
   check(
     'the same world and seed step creatures to the same places',
@@ -206,28 +206,28 @@ function checkCreatureSim(check: CheckReporter, tileset: Tileset, prefabs: Prefa
       .active()
       .every((creature) =>
         isWalkableTile(
-          tileset,
+          tileAssets,
           first.sampler.tileAt(Math.round(creature.x), Math.round(creature.y)),
         ),
       ),
   );
 }
 
-function stampedWorld(tileset: Tileset, prefabs: PrefabLibrary, prefabId: number) {
-  return worldFrom(tileset, prefabs, pointsPipeline({ mode: 'prefabs', prefabId, rotation: 0 }));
+function stampedWorld(tileAssets: TileAssets, prefabs: PrefabAssets, prefabId: number) {
+  return worldFrom(tileAssets, prefabs, pointsPipeline({ mode: 'prefabs', prefabId, rotation: 0 }));
 }
 
 function steppedSim(
-  tileset: Tileset,
-  prefabs: PrefabLibrary,
-  creatures: CreatureLibrary,
+  tileAssets: TileAssets,
+  prefabs: PrefabAssets,
+  creatures: CreatureAssets,
   creatureId: number,
 ) {
-  const world = worldFrom(tileset, prefabs, pointsPipeline({ mode: 'creatures', creatureId }));
-  const isWalkableAt = (x: number, y: number) => isWalkableTile(tileset, world.sampler.tileAt(x, y));
+  const world = worldFrom(tileAssets, prefabs, pointsPipeline({ mode: 'creatures', creatureId }));
+  const isWalkableAt = (x: number, y: number) => isWalkableTile(tileAssets, world.sampler.tileAt(x, y));
   const sim = new CreatureSim({
     sampler: world.sampler,
-    library: creatures,
+    creatureAssets: creatures,
     world: { playerX: 0, playerY: 0 },
     isWalkableAt,
   });
@@ -235,10 +235,10 @@ function steppedSim(
   return { sim, sampler: world.sampler };
 }
 
-function worldFrom(tileset: Tileset, prefabs: PrefabLibrary, state: PipelineState) {
+function worldFrom(tileAssets: TileAssets, prefabs: PrefabAssets, state: PipelineState) {
   const store = new PipelineStore(state);
   const evaluator = new PipelineEvaluator(store);
-  return { store, evaluator, sampler: new WorldSampler(store, evaluator, tileset, prefabs) };
+  return { store, evaluator, sampler: new WorldSampler(store, evaluator, tileAssets, prefabs) };
 }
 
 function pointsPipeline(display: unknown): PipelineState {
@@ -318,6 +318,6 @@ function positionsOf(sim: CreatureSim): string {
   );
 }
 
-function tileIdByName(tileset: Tileset, name: string): number {
-  return tileset.all().find((tile) => tile.name === name)?.id ?? -1;
+function tileIdByName(tileAssets: TileAssets, name: string): number {
+  return tileAssets.all().find((tile) => tile.name === name)?.id ?? -1;
 }

@@ -128,7 +128,7 @@ function cavesAndMonsters(): ExamplePipeline {
           type: 'scatterPoints',
           label: 'monsters',
           comment:
-            'Mask ≤ 0.45 keeps monsters strictly inside open floor (walls start at 0.52), and the sparse density makes each encounter matter. Custom glyph instead of a tile because no tileset tile means "monster".',
+            'Mask ≤ 0.45 keeps monsters strictly inside open floor (walls start at 0.52), and the sparse density makes each encounter matter. Custom glyph instead of a tile because no tile asset means "monster".',
           enabled: true,
           params: { density: 0.012, maskAtLeast: 0, maskAtMost: 0.45 },
           inputs: { mask: 'n1' },

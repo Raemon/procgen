@@ -4,8 +4,8 @@ import {
   frameKey,
   type CharacterFrame,
   type CharacterMotion,
-} from '../../../library/characters/characterFrame';
-import type { CreatureDef } from '../../../library/creatures/creatureDef';
+} from '../../../assets/characters/characterFrame';
+import type { CreatureDef } from '../../../assets/creatures/creatureDef';
 import type { CameraView } from './cameraView';
 import type { CharacterSpriteAssets } from './characterSpriteAssets';
 import { characterQuadFit, type CharacterQuadFit } from './characterQuadFit';

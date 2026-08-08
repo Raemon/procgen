@@ -5,10 +5,10 @@ import {
   normalizedTags,
   ORIENTATION_CHOICES,
   RENDER_CHOICES,
-} from '../library/items/itemDef';
-import type { ItemPatch } from '../library/items/itemLibrary';
+} from '../assets/items/itemDef';
+import type { ItemPatch } from '../assets/items/itemAssets';
 import { clampLightRadius, MAX_LIGHT_RADIUS } from '../world/light/lightEmission';
-import { isSpriteArt } from '../library/tiles/spriteArt';
+import { isSpriteArt } from '../assets/tiles/spriteArt';
 import {
   abilityFailed,
   abilitySucceeded,
@@ -25,12 +25,12 @@ const ITEM_ID_HELP = 'id of an existing item — see GET /api/v1/items';
 function registerItemAbility(
   spec: Omit<AbilitySpec, 'mode' | 'group' | 'changesWorld'>,
 ): AbilitySpec {
-  return registerAbility({ ...spec, mode: 'god', group: 'library', changesWorld: true });
+  return registerAbility({ ...spec, mode: 'god', group: 'assets', changesWorld: true });
 }
 
 registerItemAbility({
   action: 'add_item',
-  humanControl: 'library panel, items tab: + add item',
+  humanControl: 'assets panel, items tab: + add item',
   description:
     'Create an item definition — pixel art plus how it is drawn in the world and how much inventory space it takes.',
   params: {},
@@ -43,7 +43,7 @@ registerItemAbility({
 
 registerItemAbility({
   action: 'duplicate_item',
-  humanControl: 'library panel, items tab: ⧉ on an item row',
+  humanControl: 'assets panel, items tab: ⧉ on an item row',
   description: 'Copy an item definition with its art, render knobs, footprint and tags.',
   params: { item_id: { kind: 'int', help: ITEM_ID_HELP } },
   example: { action: 'duplicate_item', item_id: 0 },
@@ -58,7 +58,7 @@ registerItemAbility({
 
 registerItemAbility({
   action: 'update_item',
-  humanControl: 'library panel, items tab: the fields and knobs on an item row',
+  humanControl: 'assets panel, items tab: the fields and knobs on an item row',
   description:
     "Change an item's art, how it is drawn in the world, the inventory space it takes, or the tags that decide which slots accept it. Only the fields you pass change.",
   params: {
@@ -98,7 +98,7 @@ registerItemAbility({
 
 registerItemAbility({
   action: 'remove_item',
-  humanControl: 'library panel, items tab: ✕ on an item row',
+  humanControl: 'assets panel, items tab: ✕ on an item row',
   description:
     'Delete an item definition. Nodes bound to it stop spawning it and inventories holding it drop it.',
   params: { item_id: { kind: 'int', help: ITEM_ID_HELP } },

@@ -1,6 +1,6 @@
-import { leverIdleFaceArt, leverThrownFaceArt } from '../../../library/tiles/art/fixtures/leverArt';
-import { lockedDoorFaceArt } from '../../../library/tiles/art/fixtures/lockedDoorArt';
-import { openDoorwayFaceArt } from '../../../library/tiles/art/fixtures/openDoorwayArt';
+import { leverIdleFaceArt, leverThrownFaceArt } from '../../../assets/tiles/art/fixtures/leverArt';
+import { lockedDoorFaceArt } from '../../../assets/tiles/art/fixtures/lockedDoorArt';
+import { openDoorwayFaceArt } from '../../../assets/tiles/art/fixtures/openDoorwayArt';
 export const DOOR_FACE_ART = { off: lockedDoorFaceArt(), on: openDoorwayFaceArt() };
 export const LEVER_FACE_ART = { off: leverIdleFaceArt(), on: leverThrownFaceArt() };
 

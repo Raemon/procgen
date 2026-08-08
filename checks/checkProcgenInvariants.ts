@@ -8,6 +8,7 @@ import { checkLandmarkAndCeilingInvariants } from './checkLandmarkAndCeilingInva
 import { checkDelveDarknessInvariants } from './checkDelveDarknessInvariants';
 import { checkPrefabAndCreatureInvariants } from './checkPrefabAndCreatureInvariants';
 import { checkTileHeightInvariants } from './checkTileHeightInvariants';
+import { checkTileArtMipInvariants } from './checkTileArtMipInvariants';
 import { checkPresentationFoldersAreTheOnlyDomCode } from './checkPresentationFoldersAreTheOnlyDomCode';
 import { checkDesignBetsStillHold } from './checkDesignBetsStillHold';
 import { checkPuzzleInvariants } from './checkPuzzleInvariants';
@@ -52,21 +53,21 @@ import { worldPanForDrag } from '../world/render/view3d/dragToWorldPan';
 import { streamingRadiusChunks } from '../world/render/view3d/streamingRadius';
 import { markerPlacementsForRect } from '../world/render/view3d/markerPlacements';
 import { tilePlacementsForRect } from '../world/render/view3d/tilePlacements';
-import { floodFillFacePixels } from '../library/pixelArtEditor/ops/floodFillFacePixels';
+import { floodFillFacePixels } from '../assets/pixelArtEditor/ops/floodFillFacePixels';
 import {
   copyFaceToAllSides,
   sideFacesMatch,
-} from '../library/pixelArtEditor/ops/linkedSideFaces';
-import { mirroredPixelIndices } from '../library/pixelArtEditor/ops/mirroredPixelIndices';
-import { resizeCubeFaceArt } from '../library/pixelArtEditor/ops/resizeFaceArt';
-import { shiftFacePixelsWithWrap } from '../library/pixelArtEditor/ops/shiftFacePixelsWithWrap';
-import { upgradeStoredFaceArt } from '../library/tiles/legacyFaceArt';
+} from '../assets/pixelArtEditor/ops/linkedSideFaces';
+import { mirroredPixelIndices } from '../assets/pixelArtEditor/ops/mirroredPixelIndices';
+import { resizeCubeFaceArt } from '../assets/pixelArtEditor/ops/resizeFaceArt';
+import { shiftFacePixelsWithWrap } from '../assets/pixelArtEditor/ops/shiftFacePixelsWithWrap';
+import { upgradeStoredFaceArt } from '../assets/tiles/legacyFaceArt';
 import {
   isTransparentInk,
   opaqueInk,
   TRANSPARENT_INK,
   withTransparency,
-} from '../library/tiles/inkColor';
+} from '../assets/tiles/inkColor';
 import {
   blankCubeFaceArt,
   blankFacePixels,
@@ -74,7 +75,7 @@ import {
   isCubeFaceArt,
   isEntirelyBlank,
   SIDE_FACES,
-} from '../library/tiles/tileFaceArt';
+} from '../assets/tiles/tileFaceArt';
 import {
   faceArtWithFrameInserted,
   faceArtWithFrameRemoved,
@@ -83,14 +84,14 @@ import {
   frameCount,
   frameMsOf,
   isAnimated,
-} from '../library/tiles/faceArtFrames';
-import { FLAT_HEIGHT_INK, heightInk, heightOfInk } from '../library/tiles/faceArtHeight';
-import { faceArtPlan } from '../library/tiles/faceArtFacePlan';
+} from '../assets/tiles/faceArtFrames';
+import { FLAT_HEIGHT_INK, heightInk, heightOfInk } from '../assets/tiles/faceArtHeight';
+import { faceArtPlan } from '../assets/tiles/faceArtFacePlan';
 import { normalTextureFromHeights } from '../world/render/view3d/normalTextureFromHeights';
 import { tileBoxGeometry } from '../world/render/view3d/tileBoxGeometry';
-import { scrolledWaves, wavePainter } from '../library/tiles/art/painters/wavePainter';
-import { defaultTiles } from '../library/tiles/defaultTiles';
-import { Tileset } from '../library/tiles/tileset';
+import { scrolledWaves, wavePainter } from '../assets/tiles/art/painters/wavePainter';
+import { defaultTiles } from '../assets/tiles/defaultTiles';
+import { TileAssets } from '../assets/tiles/tileAssets';
 import { isWalkableTile } from '../world/tileWalkability';
 import { World } from '../world/world';
 import '../abilities/index';
@@ -100,11 +101,11 @@ import { buildApiDocs, everyAbility } from '../api/docs/apiDocs';
 import { checkOnlyTheAbilityLayerCanMutate } from './checkAbilityLayerIsTheOnlyMutator';
 import { TemplateLibrary } from '../procgen/templates/templateLibrary';
 import { WorldPresetLibrary } from '../procgen/presets/worldPresetLibrary';
-import { CreatureLibrary } from '../library/creatures/creatureLibrary';
-import { ItemLibrary } from '../library/items/itemLibrary';
-import { NO_GROUND_ITEMS } from '../library/items/pickups/groundItems';
+import { CreatureAssets } from '../assets/creatures/creatureAssets';
+import { ItemAssets } from '../assets/items/itemAssets';
+import { NO_GROUND_ITEMS } from '../assets/items/pickups/groundItems';
 import { PuzzleWorld } from '../world/puzzles/puzzleWorld';
-import { PrefabLibrary } from '../library/prefabs/prefabLibrary';
+import { PrefabAssets } from '../assets/prefabs/prefabAssets';
 import { FAILURES } from '../agents/failures';
 import { nodeTypesJson } from '../agents/nodeCatalog';
 import { buildObservation, GOD_VIEW_SIZE, SELF_GLYPH } from '../agents/observation';
@@ -147,7 +148,7 @@ function firstPersonCamera(
 function round(value: number): number {
   return Math.round(value * 1000) / 1000;
 }
-const tileset = new Tileset();
+const tileAssets = new TileAssets();
 
 function check(name: string, condition: boolean): void {
   test(name, () => assert.ok(condition));
@@ -160,7 +161,7 @@ function worldFromState(state: PipelineState): {
 } {
   const store = new PipelineStore(state);
   const evaluator = new PipelineEvaluator(store);
-  return { store, evaluator, sampler: new WorldSampler(store, evaluator, tileset) };
+  return { store, evaluator, sampler: new WorldSampler(store, evaluator, tileAssets) };
 }
 
 function islandsState(): PipelineState {
@@ -290,18 +291,18 @@ check(
   treeMarkers.length > 0 && treeMarkers.every((m) => m.tag === 'n5'),
 );
 check(
-  'tile-sourced markers take symbol and color from the tileset',
+  'tile-sourced markers take symbol and color from the tile assets',
   treeMarkers.every((m) => m.glyph === '♠' && m.color === '#2d6a34'),
 );
 
-const treeId = tileset.idForRole('tree');
-tileset.update(treeId, { symbol: 'T', color: '#123456' });
+const treeId = tileAssets.idForRole('tree');
+tileAssets.update(treeId, { symbol: 'T', color: '#123456' });
 const editedTreeMarker = sampled.sampler.markersIn(-64, -64, 63, 63)[0]!;
 check(
   'editing a tile restyles the markers that source it',
   editedTreeMarker.glyph === 'T' && editedTreeMarker.color === '#123456',
 );
-tileset.update(treeId, { symbol: '♠', color: '#2d6a34' });
+tileAssets.update(treeId, { symbol: '♠', color: '#2d6a34' });
 
 sampled.store.setEnabled('n3', false);
 check('disabling a node removes its tile layer', !tileIdsInRegion(sampled.sampler, 48).has(2));
@@ -654,8 +655,8 @@ check(
 healing.removeNode(baseNoise.id);
 check('deleting a node with no upstream leaves consumers unwired', tailCombine.inputs.a === null);
 
-check('empty void is walkable', isWalkableTile(tileset, EMPTY_TILE));
-check('water is not walkable', !isWalkableTile(tileset, 0));
+check('empty void is walkable', isWalkableTile(tileAssets, EMPTY_TILE));
+check('water is not walkable', !isWalkableTile(tileAssets, 0));
 
 const caves = worldFromState(sanitizePipeline(examplePipelines()[1]!.state));
 const monsterMarkers = caves.sampler.markersIn(-64, -64, 63, 63);
@@ -663,16 +664,16 @@ check(
   'custom markers keep their own glyph and color',
   monsterMarkers.length > 0 && monsterMarkers.every((m) => m.glyph === 'M' && m.color === '#ff4444'),
 );
-const world = new World((x, y) => isWalkableTile(tileset, caves.sampler.tileAt(x, y)));
+const world = new World((x, y) => isWalkableTile(tileAssets, caves.sampler.tileAt(x, y)));
 world.ensurePlayerOnWalkableGround();
 check(
   'player stands on walkable ground after a world change',
-  isWalkableTile(tileset, caves.sampler.tileAt(world.playerX, world.playerY)),
+  isWalkableTile(tileAssets, caves.sampler.tileAt(world.playerX, world.playerY)),
 );
 const blockedWorld = new World(() => false);
 check('a refused step leaves the player in place', !blockedWorld.tryStep(1, 0) && blockedWorld.playerX === 0);
 
-const snapshot = asciiSnapshot(caves.sampler, tileset, world.playerX, world.playerY, 31, 21);
+const snapshot = asciiSnapshot(caves.sampler, tileAssets, world.playerX, world.playerY, 31, 21);
 const snapshotRows = snapshot.split('\n');
 check('ascii snapshot has the requested dimensions', snapshotRows.length === 21 && snapshotRows[0]!.length === 31);
 check('ascii snapshot marks the player once', snapshot.split(PLAYER_GLYPH).length === 2);
@@ -737,26 +738,26 @@ check('painting one side unmatches the sides', !sideFacesMatch(splitSides));
 const relinked = copyFaceToAllSides(splitSides, 'north');
 check('relinking copies one side everywhere', sideFacesMatch(relinked) && relinked.west[0] === '#ff0000');
 
-const grass = tileset.byRole('grass')!;
+const grass = tileAssets.byRole('grass')!;
 const shippedGrassArt = grass.faceArt;
-tileset.update(grass.id, { faceArt: art });
-const placements = tilePlacementsForRect(sampled.sampler, tileset, -48, -48, 96, 96);
+tileAssets.update(grass.id, { faceArt: art });
+const placements = tilePlacementsForRect(sampled.sampler, tileAssets, -48, -48, 96, 96);
 check('placements carry the tile face art', placements.floors.some((p) => p.faceArt === art));
-tileset.update(grass.id, { faceArt: null });
-const strippedPlacements = tilePlacementsForRect(sampled.sampler, tileset, -48, -48, 96, 96);
+tileAssets.update(grass.id, { faceArt: null });
+const strippedPlacements = tilePlacementsForRect(sampled.sampler, tileAssets, -48, -48, 96, 96);
 check(
   'tiles without art stay flat-colored',
   strippedPlacements.floors.some((p) => p.faceArt === null),
 );
-tileset.update(grass.id, { faceArt: shippedGrassArt });
+tileAssets.update(grass.id, { faceArt: shippedGrassArt });
 
-tileset.update(treeId, { faceArt: art });
+tileAssets.update(treeId, { faceArt: art });
 const markerPlacements = markerPlacementsForRect(sampled.sampler, -48, -48, 96, 96).pins;
 check(
   'marker placements carry the sourced tile face art',
   markerPlacements.length > 0 && markerPlacements.every((p) => p.faceArt === art),
 );
-tileset.update(treeId, { faceArt: defaultTiles()[treeId]?.faceArt ?? null });
+tileAssets.update(treeId, { faceArt: defaultTiles()[treeId]?.faceArt ?? null });
 
 const stillArt = blankCubeFaceArt(4);
 const twoFrames = faceArtWithFrameInserted(stillArt, 0);
@@ -964,7 +965,7 @@ check('a close camera streams the minimum chunk radius', streamingRadiusChunks(8
 check('zooming out streams more chunks', streamingRadiusChunks(120) > streamingRadiusChunks(40));
 check('streaming radius stays capped when zoomed way out', streamingRadiusChunks(100000) === 6);
 
-const randomizeTileIds = tileset.all().map((tile) => tile.id);
+const randomizeTileIds = tileAssets.all().map((tile) => tile.id);
 
 function paramWithinSpec(nodeType: string, name: string, value: unknown): boolean {
   const spec = nodeTypeOf(nodeType)?.params[name];
@@ -1323,7 +1324,7 @@ check(
 
 
 const agentWorld = worldFromState(islandsState());
-const godObs = buildObservation(agentWorld.sampler, tileset, { x: 0, y: 0, facing: 0 }, 'god');
+const godObs = buildObservation(agentWorld.sampler, tileAssets, { x: 0, y: 0, facing: 0 }, 'god');
 check('god observation grid is GOD_VIEW_SIZE² with @ at the center', (() => {
   const center = Math.floor(GOD_VIEW_SIZE / 2);
   return (
@@ -1334,7 +1335,7 @@ check('god observation grid is GOD_VIEW_SIZE² with @ at the center', (() => {
 })());
 check('god observation states its facing', godObs.facing === 'north');
 
-const charObs = buildObservation(agentWorld.sampler, tileset, { x: 0, y: 0, facing: 0 }, 'character');
+const charObs = buildObservation(agentWorld.sampler, tileAssets, { x: 0, y: 0, facing: 0 }, 'character');
 check('character observation never states a facing', charObs.facing === null);
 check('character observation blanks everything behind the agent', (() => {
   const center = Math.floor(CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT / 2);
@@ -1407,7 +1408,7 @@ check('every facing rotates the blank half of the character view', (() => {
   for (let facing = 0; facing < 8; facing++) {
     const obs = buildObservation(
       agentWorld.sampler,
-      tileset,
+      tileAssets,
       { x: 0, y: 0, facing: facing as FacingIndex },
       'character',
     );
@@ -1426,7 +1427,7 @@ check('every facing rotates the blank half of the character view', (() => {
 check('character legend appears only for visible glyphs plus the fixed entries', charObs.legend.every((entry) => entry.glyph === '@' || entry.glyph === ' ' || charObs.view.some((row) => row.includes(entry.glyph))));
 
 const WIDE_SIGHT_RADIUS = 24;
-const wideObs = buildObservation(agentWorld.sampler, tileset, { x: 0, y: 0, facing: 0 }, 'character', WIDE_SIGHT_RADIUS);
+const wideObs = buildObservation(agentWorld.sampler, tileAssets, { x: 0, y: 0, facing: 0 }, 'character', WIDE_SIGHT_RADIUS);
 check('a widened sight radius widens the observation grid to match', wideObs.viewSize === characterViewSize(WIDE_SIGHT_RADIUS) && wideObs.view.length === wideObs.viewSize && wideObs.view.every((row) => row.length === wideObs.viewSize));
 check('a widened observation reports the radius it was built with', wideObs.sightRadiusTiles === WIDE_SIGHT_RADIUS && observationText(wideObs).includes(`${WIDE_SIGHT_RADIUS} tiles`));
 check('a widened sight radius still blanks everything behind and past the fog', (() => {
@@ -1476,12 +1477,12 @@ check('haze always starts before the fog closes, at every radius agents may pick
   return true;
 })());
 
-const agentDocs = buildApiDocs(tileset);
+const agentDocs = buildApiDocs(tileAssets);
 check('api docs state the character sight radius and grid size', agentDocs.includes(`${DEFAULT_CHARACTER_SIGHT_RADIUS_TILES}-tile sight radius`) && agentDocs.includes(`${CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT}x${CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT}`));
 check('api docs render with no unfilled placeholder', !/\{\{\w+\}\}/.test(agentDocs));
 check('api docs list every ability of both modes', everyAbility().every((spec) => agentDocs.includes(`\`${spec.action}\``)));
 check('api docs list every failure code', FAILURES.every((failure) => agentDocs.includes(`\`${failure.code}\``)));
-check("api docs legend names every tileset symbol", tileset.all().every((tile) => agentDocs.includes(`'${tile.symbol}' = ${tile.name}`)));
+check("api docs legend names every tile asset symbol", tileAssets.all().every((tile) => agentDocs.includes(`'${tile.symbol}' = ${tile.name}`)));
 check('api docs list every registered node type', allNodeTypes().every((def) => agentDocs.includes(`\`${def.type}\``)));
 check('api docs render an example body for every ability that takes params', everyAbility().filter((spec) => Object.keys(spec.params).length > 0).every((spec) => agentDocs.includes(JSON.stringify(spec.example))));
 check('api docs name the human control for every ability', everyAbility().every((spec) => agentDocs.includes(spec.humanControl)));
@@ -1503,16 +1504,16 @@ check('observation text and json carry the same grid', observationText(charObs).
 
 function abilityWorld() {
   const store = new PipelineStore(emptyPipeline());
-  const abilityTileset = new Tileset();
-  const prefabs = new PrefabLibrary(() => -1);
+  const abilityTiles = new TileAssets();
+  const prefabs = new PrefabAssets(() => -1);
   const pose = { x: 0, y: 0, facing: 0 as FacingIndex };
   const sight: { radius: number } = { radius: DEFAULT_CHARACTER_SIGHT_RADIUS_TILES };
   const context = {
     store,
-    tileset: abilityTileset,
+    tileAssets: abilityTiles,
     prefabs,
-    creatures: new CreatureLibrary(),
-    items: new ItemLibrary(),
+    creatures: new CreatureAssets(),
+    items: new ItemAssets(),
     templates: new TemplateLibrary([]),
     worldPresets: new WorldPresetLibrary([]),
     randomizeHistory: new RandomizeHistory(),
@@ -1531,7 +1532,7 @@ function abilityWorld() {
       setSightRadiusTiles: (radius: number) => (sight.radius = clampSightRadiusTiles(radius)),
     },
   };
-  return { context, store, pose, sight, prefabs, tileset: abilityTileset };
+  return { context, store, pose, sight, prefabs, tileAssets: abilityTiles };
 }
 
 const abilities = abilityWorld();
@@ -1636,7 +1637,7 @@ check('set_seed reseeds the pipeline', (() => {
   const result = act('god', 'set_seed', { seed: 777 });
   return result.ok && abilities.store.seed() === 777;
 })());
-check('set_display rejects a prefab id the library does not have', (() => {
+check('set_display rejects a prefab id the prefab assets do not have', (() => {
   const added = act('god', 'add_node', { type: 'scatterPoints' });
   const points = abilities.store.nodes()[abilities.store.nodes().length - 1]!;
   const bad = act('god', 'set_display', { node_id: points.id, display: 'prefabs', prefab_id: 9999 });
@@ -1648,14 +1649,14 @@ check('remove_node deletes and reports', (() => {
   return result.ok && abilities.store.nodes().every((node) => node.id !== thresholdId);
 })());
 check('tiles can be created and edited through abilities', (() => {
-  const before = abilities.tileset.all().length;
+  const before = abilities.tileAssets.all().length;
   const added = act('god', 'add_tile');
-  const tileId = abilities.tileset.all()[abilities.tileset.all().length - 1]!.id;
+  const tileId = abilities.tileAssets.all()[abilities.tileAssets.all().length - 1]!.id;
   const named = act('god', 'update_tile', { tile_id: tileId, name: 'test tile', walkable: 0 });
-  const tile = abilities.tileset.byId(tileId)!;
+  const tile = abilities.tileAssets.byId(tileId)!;
   return (
     added.ok && named.ok &&
-    abilities.tileset.all().length === before + 1 &&
+    abilities.tileAssets.all().length === before + 1 &&
     tile.name === 'test tile' && tile.walkable === false
   );
 })());
@@ -1663,7 +1664,7 @@ check('prefabs can be built voxel by voxel through abilities', (() => {
   const added = act('god', 'add_prefab');
   const prefab = abilities.prefabs.all()[abilities.prefabs.all().length - 1]!;
   const sized = act('god', 'resize_prefab', { prefab_id: prefab.id, width: 3, depth: 3, layers: 2 });
-  const groundTile = abilities.tileset.all()[0]!.id;
+  const groundTile = abilities.tileAssets.all()[0]!.id;
   const painted = act('god', 'paint_prefab', { prefab_id: prefab.id, x: 1, y: 1, layer: 1, tile_id: groundTile });
   const outside = act('god', 'paint_prefab', { prefab_id: prefab.id, x: 9, y: 9, layer: 0, tile_id: groundTile });
   const filled = act('god', 'fill_prefab_layer', { prefab_id: prefab.id, layer: 0, tile_id: groundTile });
@@ -1982,6 +1983,7 @@ describe('items and inventories', () => checkItemAndInventoryInvariants(check));
 describe('character billboards', () => checkCharacterBillboardInvariants(check));
 describe('the player character', () => checkPlayerCharacterInvariants(check));
 describe('tile heights', () => checkTileHeightInvariants(check));
+describe('tile art mips', () => checkTileArtMipInvariants(check));
 describe('puzzle rooms', () => checkPuzzleInvariants(check));
 describe('the dom boundary', () => checkPresentationFoldersAreTheOnlyDomCode(check));
 describe('documentation', () => {

@@ -4,13 +4,15 @@ import type { Store } from './db';
 
 export const PERSISTED_DOC_NAMES = [
   'pipeline',
-  'tileset',
+  'tiles',
   'templates',
   'worldPresets',
   'prefabs',
   'creatures',
   'items',
 ];
+
+const DOC_NAMES_BEFORE_THE_ASSETS_RENAME: Record<string, string> = { tiles: 'tileset' };
 
 export function isPersistedDocName(name: string): boolean {
   return PERSISTED_DOC_NAMES.includes(name);
@@ -41,7 +43,7 @@ async function loadDocs(store: Store, root: string): Promise<Map<string, unknown
   const docs = new Map<string, unknown>();
   const fromDb = await readAllDocs(store);
   for (const name of PERSISTED_DOC_NAMES) {
-    const stored = fromDb.get(name);
+    const stored = fromDb.get(name) ?? fromDb.get(DOC_NAMES_BEFORE_THE_ASSETS_RENAME[name] ?? name);
     if (stored !== undefined) {
       docs.set(name, stored);
       continue;

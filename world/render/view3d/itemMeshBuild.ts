@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { BILLBOARD, LYING_FLAT, type ItemDef } from '../../../library/items/itemDef';
-import type { SpriteArt } from '../../../library/tiles/spriteArt';
+import { BILLBOARD, LYING_FLAT, type ItemDef } from '../../../assets/items/itemDef';
+import type { SpriteArt } from '../../../assets/tiles/spriteArt';
 import { cubeFaceMaterials } from './faceArtMaterials';
 import { lambertFromInk } from './inkMaterial';
 import { glowOfEmitter, glowSelfLit } from './selfLitGlow';

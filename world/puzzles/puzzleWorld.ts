@@ -1,7 +1,7 @@
 import type { PuzzleRoomKnobs } from '../../procgen/nodes/puzzle/puzzleRoomKnobs';
 import { roomIndexOfCell, roomKey } from '../../procgen/nodes/puzzle/puzzleRoomLattice';
 import type { Marker } from '../../procgen/worldSampler';
-import type { ReadOnlyPipelineStore } from '../../frontend/readOnlyLibraries';
+import type { ReadOnlyPipelineStore } from '../../frontend/readOnlyAssets';
 import { fixtureLook } from './fixtures/fixtureAppearance';
 import type { PuzzleFixture } from './fixtures/puzzleFixture';
 import { fixtureAction } from './interaction/fixtureAction';

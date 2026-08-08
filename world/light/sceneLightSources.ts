@@ -1,9 +1,9 @@
-import { playerCharacterDef } from '../../library/characters/playerCharacter';
+import { playerCharacterDef } from '../../assets/characters/playerCharacter';
 import type {
-  ReadOnlyCreatureLibrary,
-  ReadOnlyItemLibrary,
-  ReadOnlyTileset,
-} from '../../frontend/readOnlyLibraries';
+  ReadOnlyCreatureAssets,
+  ReadOnlyItemAssets,
+  ReadOnlyTileAssets,
+} from '../../frontend/readOnlyAssets';
 import type { CreatureInstance } from '../creatureSim/creatureInstance';
 import type { WorldSampler } from '../../procgen/worldSampler';
 import { carriedLightSourceOf, carriedLightSourcesOfCreatures } from './characterLightSources';
@@ -15,9 +15,9 @@ const STATIC_LIGHT_RECT_TILES = 24;
 
 export interface LitScene {
   sampler: WorldSampler;
-  tileset: ReadOnlyTileset;
-  creatures: ReadOnlyCreatureLibrary;
-  items: ReadOnlyItemLibrary;
+  tileAssets: ReadOnlyTileAssets;
+  creatures: ReadOnlyCreatureAssets;
+  items: ReadOnlyItemAssets;
   activeCreatures(): readonly CreatureInstance[];
 }
 
@@ -43,7 +43,7 @@ export class SceneLightSources {
     if (key === this.staticRectKey) return;
     this.staticRectKey = key;
     this.staticSources = [
-      ...tileLightSourcesInRect(this.scene.sampler, this.scene.tileset, rect),
+      ...tileLightSourcesInRect(this.scene.sampler, this.scene.tileAssets, rect),
       ...itemLightSourcesInRect(this.scene.sampler, this.scene.items, rect),
     ];
   }

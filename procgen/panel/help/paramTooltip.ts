@@ -20,7 +20,7 @@ function tileOptions(): TooltipOption[] {
   return [
     { name: '(empty)', meaning: 'Paints nothing, so layers listed above this node stay visible in those cells.' },
     {
-      name: 'tileset tiles',
+      name: 'tile assets',
       meaning: 'Paints that tile. Its symbol and colors come from the tile panel, so tile edits restyle the world live.',
     },
   ];

@@ -79,7 +79,7 @@ function PrefabRows({
       <KnobRow label="prefab">
         <Select
           value={String(binding.prefabId)}
-          options={libraryOptions('(none)', prefabs.all())}
+          options={assetOptions('(none)', prefabs.all())}
           onChange={(value) => perform('set_display', { node_id: node.id, display: 'prefabs', prefab_id: Number(value) })}
         />
       </KnobRow>
@@ -107,7 +107,7 @@ function CreatureRows({
     <KnobRow label="creature">
       <Select
         value={String(binding.creatureId)}
-        options={libraryOptions('(none)', creatures.all())}
+        options={assetOptions('(none)', creatures.all())}
         onChange={(value) => perform('set_display', { node_id: node.id, display: 'creatures', creature_id: Number(value) })}
       />
     </KnobRow>
@@ -127,14 +127,14 @@ function ItemRows({
     <KnobRow label="item">
       <Select
         value={String(binding.itemId)}
-        options={libraryOptions('(none)', items.all())}
+        options={assetOptions('(none)', items.all())}
         onChange={(value) => perform('set_display', { node_id: node.id, display: 'items', item_id: Number(value) })}
       />
     </KnobRow>
   );
 }
 
-function libraryOptions(
+function assetOptions(
   noneText: string,
   entries: readonly { id: number; name: string }[],
 ): { value: string; text: string }[] {
@@ -177,13 +177,13 @@ function CeilingHeightRow({ node, height }: { node: NodeInstance; height: number
 }
 
 function MarkerRows({ node, binding }: { node: NodeInstance; binding: MarkerBinding }) {
-  const { perform, tileset } = useAppRuntime();
+  const { perform, tileAssets } = useAppRuntime();
   return (
     <>
       <KnobRow label="tile" tip={markerTileTooltip()}>
         <Select
           value={String(binding.tileId)}
-          options={tileSelectOptions(tileset, '(custom glyph)')}
+          options={tileSelectOptions(tileAssets, '(custom glyph)')}
           onChange={(value) => perform('set_display', { node_id: node.id, display: 'markers', tile_id: Number(value) })}
         />
       </KnobRow>

@@ -5,12 +5,12 @@ import { AgentsPanel } from '../agents/panel/AgentsPanel';
 import { AgentsRail } from '../agents/panel/AgentsRail';
 import { ProcgenPanel } from '../procgen/panel/ProcgenPanel';
 import { ProcgenRail } from '../procgen/panel/ProcgenRail';
-import { LibraryPanel } from '../library/panel/LibraryPanel';
-import { LibraryRail } from '../library/panel/LibraryRail';
+import { AssetsPanel } from '../assets/panel/AssetsPanel';
+import { AssetsRail } from '../assets/panel/AssetsRail';
 import {
   AgentLogIcon,
   AgentsIcon,
-  LibraryIcon,
+  AssetsIcon,
   ProcgenIcon,
 } from './icons/panelIcons';
 import type { TooltipContent } from './tooltips/tooltipContent';
@@ -78,13 +78,13 @@ function visibleColumns(
 ): Column[] {
   const columns: Column[] = [
     {
-      key: 'library',
-      tip: PANEL_TIPS.library,
-      title: 'library',
-      icon: <LibraryIcon />,
+      key: 'assets',
+      tip: PANEL_TIPS.assets,
+      title: 'assets',
+      icon: <AssetsIcon />,
       tone: 'bg-panel',
-      body: <LibraryPanel />,
-      rail: <LibraryRail />,
+      body: <AssetsPanel />,
+      rail: <AssetsRail />,
     },
     {
       key: 'procgen',

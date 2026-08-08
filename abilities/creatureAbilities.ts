@@ -1,7 +1,7 @@
-import { BEHAVIOR_CHOICES } from '../library/creatures/behaviorKinds';
-import { CHARACTER, ENTITY_KIND_CHOICES, isEntityKind } from '../library/creatures/entityKinds';
-import type { CreaturePatch } from '../library/creatures/creatureLibrary';
-import { blankInventory } from '../library/items/inventory/inventoryDef';
+import { BEHAVIOR_CHOICES } from '../assets/creatures/behaviorKinds';
+import { CHARACTER, ENTITY_KIND_CHOICES, isEntityKind } from '../assets/creatures/entityKinds';
+import type { CreaturePatch } from '../assets/creatures/creatureAssets';
+import { blankInventory } from '../assets/items/inventory/inventoryDef';
 import {
   abilityFailed,
   abilitySucceeded,
@@ -18,12 +18,12 @@ const CREATURE_ID_HELP = 'id of an existing creature — see GET /api/v1/creatur
 function registerCreatureAbility(
   spec: Omit<AbilitySpec, 'mode' | 'group' | 'changesWorld'>,
 ): AbilitySpec {
-  return registerAbility({ ...spec, mode: 'god', group: 'library', changesWorld: true });
+  return registerAbility({ ...spec, mode: 'god', group: 'assets', changesWorld: true });
 }
 
 registerCreatureAbility({
   action: 'add_creature',
-  humanControl: 'library panel, creatures tab: + add creature',
+  humanControl: 'assets panel, creatures tab: + add creature',
   description:
     'Create a creature definition. Bind it to a points node with set_display to put it in the world.',
   params: {},
@@ -36,7 +36,7 @@ registerCreatureAbility({
 
 registerCreatureAbility({
   action: 'add_character',
-  humanControl: 'library panel, characters tab: + add character',
+  humanControl: 'assets panel, characters tab: + add character',
   description:
     'Create a character: a creature in every respect — same look, movement and spawning — that starts with an empty inventory grid. Reshape the grid with set_inventory.',
   params: {},
@@ -51,7 +51,7 @@ registerCreatureAbility({
 
 registerCreatureAbility({
   action: 'duplicate_creature',
-  humanControl: 'library panel, creatures tab: ⧉ on a creature row',
+  humanControl: 'assets panel, creatures tab: ⧉ on a creature row',
   description: 'Copy a creature definition with all its knobs.',
   params: { creature_id: { kind: 'int', help: CREATURE_ID_HELP } },
   example: { action: 'duplicate_creature', creature_id: 0 },
@@ -66,7 +66,7 @@ registerCreatureAbility({
 
 registerCreatureAbility({
   action: 'update_creature',
-  humanControl: 'library panel, creatures tab: the fields and knobs on a creature row',
+  humanControl: 'assets panel, creatures tab: the fields and knobs on a creature row',
   description:
     "Change a creature's look or how it moves. Only the fields you pass change.",
   params: {
@@ -90,7 +90,7 @@ registerCreatureAbility({
 
 registerCreatureAbility({
   action: 'remove_creature',
-  humanControl: 'library panel, creatures tab: ✕ on a creature row',
+  humanControl: 'assets panel, creatures tab: ✕ on a creature row',
   description: 'Delete a creature definition. Nodes bound to it stop spawning anything.',
   params: { creature_id: { kind: 'int', help: CREATURE_ID_HELP } },
   example: { action: 'remove_creature', creature_id: 3 },

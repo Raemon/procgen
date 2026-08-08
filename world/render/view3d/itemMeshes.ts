@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import type { ReadOnlyItemLibrary } from '../../../frontend/readOnlyLibraries';
-import type { ItemDef } from '../../../library/items/itemDef';
+import type { ReadOnlyItemAssets } from '../../../frontend/readOnlyAssets';
+import type { ItemDef } from '../../../assets/items/itemDef';
 import type { ItemSpawn, WorldSampler } from '../../../procgen/worldSampler';
 import { disposeMeshResources } from './disposeMeshResources';
 import { itemGeometry, itemHalfHeight, itemMaterials } from './itemMeshBuild';
@@ -12,7 +12,7 @@ export class ItemMeshes {
 
   constructor(
     root: THREE.Group,
-    private readonly library: ReadOnlyItemLibrary,
+    private readonly itemAssets: ReadOnlyItemAssets,
     private readonly sampler: WorldSampler,
   ) {
     root.add(this.group);
@@ -39,7 +39,7 @@ export class ItemMeshes {
   private showSpawns(spawns: readonly ItemSpawn[]): void {
     const live = new Set<string>();
     for (const spawn of spawns) {
-      const item = this.library.byId(spawn.itemId);
+      const item = this.itemAssets.byId(spawn.itemId);
       if (!item) continue;
       const key = `${spawn.x},${spawn.y},${spawn.itemId}`;
       live.add(key);

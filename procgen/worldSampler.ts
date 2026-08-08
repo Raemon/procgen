@@ -1,8 +1,8 @@
-import { NO_ITEMS, type ItemSource } from '../library/items/itemLibrary';
+import { NO_ITEMS, type ItemSource } from '../assets/items/itemAssets';
 import { measureWork } from '../perf/workTimers';
-import { TakenItemSpawns } from '../library/items/pickups/takenItemSpawns';
-import type { CubeFaceArt } from '../library/tiles/tileFaceArt';
-import type { Tileset } from '../library/tiles/tileset';
+import { TakenItemSpawns } from '../assets/items/pickups/takenItemSpawns';
+import type { CubeFaceArt } from '../assets/tiles/tileFaceArt';
+import type { TileAssets } from '../assets/tiles/tileAssets';
 import { cellIndexInChunk, chunkCoordOfCell } from './chunk';
 import { markerAppearance } from './display/markerAppearance';
 import type { PipelineEvaluator } from './eval/evaluator';
@@ -62,7 +62,7 @@ export class WorldSampler {
   constructor(
     private readonly store: PipelineStore,
     private readonly evaluator: PipelineEvaluator,
-    private readonly tileset: Tileset,
+    private readonly tileAssets: TileAssets,
     prefabs: PrefabSource = NO_PREFABS,
     private readonly items: ItemSource = NO_ITEMS,
     private readonly takenItems: TakenItemSpawns = new TakenItemSpawns(),
@@ -225,7 +225,7 @@ export class WorldSampler {
     into: Marker[],
   ): void {
     if (node.display.mode !== 'markers') return;
-    const look = markerAppearance(this.tileset, node.display);
+    const look = markerAppearance(this.tileAssets, node.display);
     for (const point of this.pointsInRect(node, minX, minY, maxX, maxY)) {
       into.push({ x: point.x, y: point.y, ...look, tag: point.tag });
     }

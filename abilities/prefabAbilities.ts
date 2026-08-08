@@ -1,16 +1,16 @@
-import { prefabFromWorldRegion, regionSize, type WorldRegion } from '../library/prefabs/captureRegionAsPrefab';
+import { prefabFromWorldRegion, regionSize, type WorldRegion } from '../assets/prefabs/captureRegionAsPrefab';
 import {
   isInsidePrefab,
   MAX_PREFAB_LAYERS,
   MAX_PREFAB_SIDE,
   withCenteredAnchor,
   type Prefab,
-} from '../library/prefabs/prefabDef';
-import { paintVoxel } from '../library/prefabs/prefabPainting';
-import { floodFilledIndices } from '../library/prefabs/editor/ops/floodFillLayer';
-import { resizedPrefab } from '../library/prefabs/prefabResize';
-import { rotatedPrefab } from '../library/prefabs/prefabRotation';
-import type { PrefabPatch } from '../library/prefabs/prefabLibrary';
+} from '../assets/prefabs/prefabDef';
+import { paintVoxel } from '../assets/prefabs/prefabPainting';
+import { floodFilledIndices } from '../assets/prefabs/editor/ops/floodFillLayer';
+import { resizedPrefab } from '../assets/prefabs/prefabResize';
+import { rotatedPrefab } from '../assets/prefabs/prefabRotation';
+import type { PrefabPatch } from '../assets/prefabs/prefabAssets';
 import {
   abilityFailed,
   abilitySucceeded,
@@ -26,12 +26,12 @@ const PREFAB_ID_HELP = 'id of an existing prefab — see GET /api/v1/prefabs';
 function registerPrefabAbility(
   spec: Omit<AbilitySpec, 'mode' | 'group' | 'changesWorld'>,
 ): AbilitySpec {
-  return registerAbility({ ...spec, mode: 'god', group: 'library', changesWorld: true });
+  return registerAbility({ ...spec, mode: 'god', group: 'assets', changesWorld: true });
 }
 
 registerPrefabAbility({
   action: 'add_prefab',
-  humanControl: 'library panel, prefabs tab: + add prefab',
+  humanControl: 'assets panel, prefabs tab: + add prefab',
   description:
     'Create an empty prefab: a width × depth × layers box of tile ids you fill with paint_prefab.',
   params: {},
@@ -44,7 +44,7 @@ registerPrefabAbility({
 
 registerPrefabAbility({
   action: 'duplicate_prefab',
-  humanControl: 'library panel, prefabs tab: ⧉ on a prefab row',
+  humanControl: 'assets panel, prefabs tab: ⧉ on a prefab row',
   description: 'Copy a prefab with all its voxels.',
   params: { prefab_id: { kind: 'int', help: PREFAB_ID_HELP } },
   example: { action: 'duplicate_prefab', prefab_id: 0 },
@@ -59,7 +59,7 @@ registerPrefabAbility({
 
 registerPrefabAbility({
   action: 'rename_prefab',
-  humanControl: 'library panel, prefabs tab: the name field on a prefab row',
+  humanControl: 'assets panel, prefabs tab: the name field on a prefab row',
   description: 'Rename a prefab. Nodes bind prefabs by id, so renaming is safe.',
   params: {
     prefab_id: { kind: 'int', help: PREFAB_ID_HELP },
@@ -77,7 +77,7 @@ registerPrefabAbility({
 
 registerPrefabAbility({
   action: 'resize_prefab',
-  humanControl: 'library panel, prefabs tab: the size steppers',
+  humanControl: 'assets panel, prefabs tab: the size steppers',
   description:
     'Change a prefab\'s box. Voxels outside the new box are dropped; new space starts empty.',
   params: {
@@ -103,7 +103,7 @@ registerPrefabAbility({
 
 registerPrefabAbility({
   action: 'rotate_prefab',
-  humanControl: 'library panel, prefabs tab: the rotate button',
+  humanControl: 'assets panel, prefabs tab: the rotate button',
   description: 'Turn a prefab a quarter turn clockwise, swapping its width and depth.',
   params: { prefab_id: { kind: 'int', help: PREFAB_ID_HELP } },
   example: { action: 'rotate_prefab', prefab_id: 0 },
@@ -116,7 +116,7 @@ registerPrefabAbility({
 
 registerPrefabAbility({
   action: 'paint_prefab',
-  humanControl: 'library panel, prefabs tab: painting on the layer canvas',
+  humanControl: 'assets panel, prefabs tab: painting on the layer canvas',
   description:
     'Paint one voxel of a prefab. Layer 0 is the ground layer; tile_id -1 erases the voxel.',
   params: {
@@ -124,7 +124,7 @@ registerPrefabAbility({
     x: { kind: 'int', help: 'east-west cell, 0 at the west edge' },
     y: { kind: 'int', help: 'north-south cell, 0 at the north edge' },
     layer: { kind: 'int', help: 'height, 0 at the ground' },
-    tile_id: { kind: 'int', help: 'a tileset id to place, or -1 to erase' },
+    tile_id: { kind: 'int', help: 'a tile asset id to place, or -1 to erase' },
   },
   example: { action: 'paint_prefab', prefab_id: 0, x: 2, y: 2, layer: 1, tile_id: 8 },
   apply: (context, params) => withPrefab(context, params, (prefab) => paintPrefab(context, prefab, params)),
@@ -132,7 +132,7 @@ registerPrefabAbility({
 
 registerPrefabAbility({
   action: 'flood_fill_prefab',
-  humanControl: 'library panel, prefabs tab: the fill tool on the layer canvas',
+  humanControl: 'assets panel, prefabs tab: the fill tool on the layer canvas',
   description:
     'Flood fill one layer of a prefab from a starting cell, replacing every connected voxel that matches it.',
   params: {
@@ -140,7 +140,7 @@ registerPrefabAbility({
     x: { kind: 'int', help: 'east-west cell to start from' },
     y: { kind: 'int', help: 'north-south cell to start from' },
     layer: { kind: 'int', help: 'height, 0 at the ground' },
-    tile_id: { kind: 'int', help: 'a tileset id to flood with, or -1 to erase' },
+    tile_id: { kind: 'int', help: 'a tile asset id to flood with, or -1 to erase' },
   },
   example: { action: 'flood_fill_prefab', prefab_id: 0, x: 0, y: 0, layer: 0, tile_id: 8 },
   apply: (context, params) =>
@@ -153,12 +153,12 @@ registerPrefabAbility({
 
 registerPrefabAbility({
   action: 'fill_prefab_layer',
-  humanControl: 'library panel, prefabs tab: the clear-layer button',
+  humanControl: 'assets panel, prefabs tab: the clear-layer button',
   description: 'Set every voxel of one layer of a prefab at once. tile_id -1 clears the layer.',
   params: {
     prefab_id: { kind: 'int', help: PREFAB_ID_HELP },
     layer: { kind: 'int', help: 'height, 0 at the ground' },
-    tile_id: { kind: 'int', help: 'a tileset id to fill with, or -1 to clear' },
+    tile_id: { kind: 'int', help: 'a tile asset id to fill with, or -1 to clear' },
   },
   example: { action: 'fill_prefab_layer', prefab_id: 0, layer: 0, tile_id: -1 },
   apply: (context, params) =>
@@ -171,7 +171,7 @@ registerPrefabAbility({
 
 registerPrefabAbility({
   action: 'set_prefab_voxels',
-  humanControl: 'library panel, prefabs tab: paste layer and undo',
+  humanControl: 'assets panel, prefabs tab: paste layer and undo',
   description:
     "Replace a prefab's whole voxel array — the bulk write behind paste and undo. It must be exactly width × depth × layers long.",
   params: {
@@ -184,7 +184,7 @@ registerPrefabAbility({
 
 registerPrefabAbility({
   action: 'remove_prefab',
-  humanControl: 'library panel, prefabs tab: ✕ on a prefab row',
+  humanControl: 'assets panel, prefabs tab: ✕ on a prefab row',
   description: 'Delete a prefab. Nodes bound to it stop stamping anything.',
   params: { prefab_id: { kind: 'int', help: PREFAB_ID_HELP } },
   example: { action: 'remove_prefab', prefab_id: 2 },
@@ -302,10 +302,10 @@ function rejectUnpaintableCell(
       `(${cell.x},${cell.y},${cell.layer}) is outside prefab ${prefab.id} — it is ${prefab.width}×${prefab.depth}×${prefab.layers}`,
     );
   }
-  if (cell.tileId !== -1 && !context.tileset.byId(cell.tileId)) {
+  if (cell.tileId !== -1 && !context.tileAssets.byId(cell.tileId)) {
     return abilityFailed(
       'invalid_value',
-      `tile_id must be -1 or one of: ${listOf(context.tileset.all().map((tile) => tile.id))}`,
+      `tile_id must be -1 or one of: ${listOf(context.tileAssets.all().map((tile) => tile.id))}`,
     );
   }
   return null;

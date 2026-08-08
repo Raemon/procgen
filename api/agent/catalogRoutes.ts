@@ -1,7 +1,7 @@
 import { examplePipelines } from '../../procgen/presets/examplePipelines';
 import { nodeTypesJson, pipelineJson } from '../../agents/nodeCatalog';
 import { failure, json, type ApiResponse } from './apiMessages';
-import { creatureJson, inventoryJson, itemJson } from './libraryJson';
+import { creatureJson, inventoryJson, itemJson } from './assetJson';
 import { registerRoute } from './routeRegistry';
 import type { ServerWorld } from './serverWorld';
 
@@ -26,10 +26,10 @@ registerRoute({
 registerRoute({
   method: 'GET',
   path: '/tiles',
-  summary: 'the tileset: what every glyph in an observation means',
+  summary: 'the tile assets: what every glyph in an observation means',
   body: {},
   query: {},
-  handle: ({ access }) => json(200, { tiles: access.current().tileset.all().map(tileJson) }),
+  handle: ({ access }) => json(200, { tiles: access.current().tileAssets.all().map(tileJson) }),
 });
 
 registerRoute({
@@ -53,7 +53,7 @@ registerRoute({
 registerRoute({
   method: 'GET',
   path: '/prefabs',
-  summary: 'the prefab library: structures a points node can stamp',
+  summary: 'the prefab assets: structures a points node can stamp',
   body: {},
   query: {},
   handle: ({ access }) => json(200, { prefabs: access.current().prefabs.all().map(prefabJson) }),
@@ -63,7 +63,7 @@ registerRoute({
   method: 'GET',
   path: '/creatures',
   summary:
-    'the creature library: creatures and characters a points node can spawn, and whether each carries an inventory',
+    'the creature assets: creatures and characters a points node can spawn, and whether each carries an inventory',
   body: {},
   query: {},
   handle: ({ access }) => json(200, { creatures: access.current().creatures.all().map(creatureJson) }),
@@ -72,7 +72,7 @@ registerRoute({
 registerRoute({
   method: 'GET',
   path: '/items',
-  summary: 'the item library: items a points node can scatter and a character can carry',
+  summary: 'the item assets: items a points node can scatter and a character can carry',
   body: {},
   query: {},
   handle: ({ access }) => json(200, { items: access.current().items.all().map(itemJson) }),
@@ -107,7 +107,7 @@ function prefabJson(prefab: { id: number; name: string; width: number; depth: nu
   };
 }
 
-function tileJson(tile: ReturnType<ServerWorld['tileset']['all']>[number]) {
+function tileJson(tile: ReturnType<ServerWorld['tileAssets']['all']>[number]) {
   return {
     id: tile.id,
     name: tile.name,

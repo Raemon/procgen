@@ -1,31 +1,35 @@
 import * as THREE from 'three';
-import { faceArtPlan, type FaceArtPlan } from '../../../library/tiles/faceArtFacePlan';
-import { facePixelsAt, frameMsOf } from '../../../library/tiles/faceArtFrames';
-import { isTransparentInk } from '../../../library/tiles/inkColor';
+import { faceArtPlan, type FaceArtPlan } from '../../../assets/tiles/faceArtFacePlan';
+import { facePixelsAt, frameMsOf } from '../../../assets/tiles/faceArtFrames';
+import { isTransparentInk, unpaintedInk } from '../../../assets/tiles/inkColor';
 import {
-  faceGridSize,
+  MAX_FACE_ART_SIZE,
   type CubeFace,
   type CubeFaceArt,
-  type FacePixels,
-} from '../../../library/tiles/tileFaceArt';
-import { paintFacePixels } from '../paintFacePixels';
+} from '../../../assets/tiles/tileFaceArt';
 import { playFaceArtFrames, type FaceArtFrameTextures } from './faceArtAnimations';
-import { normalTextureFromHeights } from './normalTextureFromHeights';
+import { faceArtColorTexture, faceArtMipLevel, faceArtNormalTexture } from './faceArtTextures';
+import { drawsNormalMapAt } from './tileDetailBudget';
 
 const BOX_FACE_ORDER = ['east', 'west', 'top', 'bottom', 'south', 'north'] as const;
 const NORMAL_RELIEF = 0.85;
 
-export function cubeFaceMaterials(art: CubeFaceArt, baseColor: string): THREE.Material[] {
-  return BOX_FACE_ORDER.map((face) => faceMaterial(art, face, baseColor));
+export function cubeFaceMaterials(
+  art: CubeFaceArt,
+  baseColor: string,
+  sideBudget: number = MAX_FACE_ART_SIZE,
+): THREE.Material[] {
+  return BOX_FACE_ORDER.map((face) => faceMaterial(art, face, baseColor, sideBudget));
 }
 
 function faceMaterial(
   art: CubeFaceArt,
   face: CubeFace,
   baseColor: string,
+  sideBudget: number,
 ): THREE.MeshLambertMaterial {
   const seeThrough = isTransparentInk(baseColor);
-  const frames = faceFrameTextures(art, face, baseColor, faceArtPlan(art, face));
+  const frames = faceFrameTextures(art, face, unpaintedInk(baseColor), sideBudget, faceArtPlan(art, face));
   const material = new THREE.MeshLambertMaterial({
     map: frames[0]!.map,
     normalMap: frames[0]!.normalMap,
@@ -41,33 +45,30 @@ function faceMaterial(
 function faceFrameTextures(
   art: CubeFaceArt,
   face: CubeFace,
-  baseColor: string,
+  unpainted: string | null,
+  sideBudget: number,
   plan: FaceArtPlan,
 ): FaceArtFrameTextures[] {
   return plan.frames.map((frame) => ({
-    map: facePixelsTexture(facePixelsAt(art, { face, frame, layer: 'color' }), unpaintedAs(baseColor)),
-    normalMap: plan.embossed
-      ? normalTextureFromHeights(facePixelsAt(art, { face, frame, layer: 'height' }))
-      : null,
+    map: faceArtColorTexture(
+      facePixelsAt(art, { face, frame, layer: 'color' }),
+      unpainted,
+      sideBudget,
+    ),
+    normalMap: reliefTexture(art, { face, frame }, unpainted, sideBudget, plan),
   }));
 }
 
-function unpaintedAs(baseColor: string): string | null {
-  return isTransparentInk(baseColor) ? null : baseColor;
-}
-
-function facePixelsTexture(pixels: FacePixels, unpainted: string | null): THREE.CanvasTexture {
-  const canvas = document.createElement('canvas');
-  canvas.width = canvas.height = faceGridSize(pixels);
-  paintFacePixels(canvas.getContext('2d')!, pixels, unpainted, 1);
-  return pixelCrispTexture(canvas);
-}
-
-function pixelCrispTexture(canvas: HTMLCanvasElement): THREE.CanvasTexture {
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-  texture.magFilter = THREE.NearestFilter;
-  texture.minFilter = THREE.NearestFilter;
-  texture.colorSpace = THREE.SRGBColorSpace;
-  return texture;
+function reliefTexture(
+  art: CubeFaceArt,
+  slot: { face: CubeFace; frame: number },
+  unpainted: string | null,
+  sideBudget: number,
+  plan: FaceArtPlan,
+): THREE.Texture | null {
+  const colorPixels = facePixelsAt(art, { ...slot, layer: 'color' });
+  if (!plan.embossed || !drawsNormalMapAt(faceArtMipLevel(colorPixels, unpainted, sideBudget))) {
+    return null;
+  }
+  return faceArtNormalTexture(facePixelsAt(art, { ...slot, layer: 'height' }));
 }

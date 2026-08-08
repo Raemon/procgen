@@ -1,4 +1,4 @@
-import type { CubeFaceArt } from '../../../library/tiles/tileFaceArt';
+import type { CubeFaceArt } from '../../../assets/tiles/tileFaceArt';
 import {
   DOOR_FACE_ART,
   DOOR_STANDS_TALL,

@@ -17,7 +17,7 @@ import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
 import { randomWorldPipeline } from '../procgen/randomize/randomWorldPipeline';
 import { WorldSampler } from '../procgen/worldSampler';
 import { mulberry32 } from '../procgen/random/mulberry32';
-import { Tileset } from '../library/tiles/tileset';
+import { TileAssets } from '../assets/tiles/tileAssets';
 
 const ROLL_COUNT = Number(process.argv[2] ?? 16);
 const ROLL_SEED = Number(process.argv[3] ?? 20260806);
@@ -37,15 +37,15 @@ interface RankedWorld {
   sampler: WorldSampler;
 }
 
-const tileset = tilesetFromRepoData();
-const candidates = [currentPipelineCandidate(), ...rolledCandidates(tileset)];
-const { ranked, unmeasurable } = measureCandidates(candidates, tileset);
+const tileAssets = tilesetFromRepoData();
+const candidates = [currentPipelineCandidate(), ...rolledCandidates(tileAssets)];
+const { ranked, unmeasurable } = measureCandidates(candidates, tileAssets);
 writeGallery(ranked);
 printRanking(ranked, unmeasurable);
 
-function tilesetFromRepoData(): Tileset {
-  seedPersistedFile('tileset', JSON.parse(readFileSync('data/tileset.json', 'utf8')));
-  return new Tileset();
+function tilesetFromRepoData(): TileAssets {
+  seedPersistedFile('tiles', JSON.parse(readFileSync('data/tiles.json', 'utf8')));
+  return new TileAssets();
 }
 
 function currentPipelineCandidate(): Candidate {
@@ -53,9 +53,9 @@ function currentPipelineCandidate(): Candidate {
   return { index: 0, title: 'current data/pipeline.json', state };
 }
 
-function rolledCandidates(activeTileset: Tileset): Candidate[] {
+function rolledCandidates(activeTiles: TileAssets): Candidate[] {
   const rng = mulberry32(ROLL_SEED);
-  const tileIds = activeTileset.all().map((tile) => tile.id);
+  const tileIds = activeTiles.all().map((tile) => tile.id);
   return Array.from({ length: ROLL_COUNT }, (_, i) => ({
     index: i + 1,
     title: `roll ${i + 1}`,
@@ -65,12 +65,12 @@ function rolledCandidates(activeTileset: Tileset): Candidate[] {
 
 function measureCandidates(
   all: Candidate[],
-  activeTileset: Tileset,
+  activeTiles: TileAssets,
 ): { ranked: RankedWorld[]; unmeasurable: Candidate[] } {
   const ranked: RankedWorld[] = [];
   const unmeasurable: Candidate[] = [];
   for (const candidate of all) {
-    const world = measuredCandidate(candidate, activeTileset);
+    const world = measuredCandidate(candidate, activeTiles);
     if (world) ranked.push(world);
     else unmeasurable.push(candidate);
   }
@@ -78,10 +78,10 @@ function measureCandidates(
   return { ranked, unmeasurable };
 }
 
-function measuredCandidate(candidate: Candidate, activeTileset: Tileset): RankedWorld | null {
+function measuredCandidate(candidate: Candidate, activeTiles: TileAssets): RankedWorld | null {
   const store = new PipelineStore(candidate.state);
-  const sampler = new WorldSampler(store, new PipelineEvaluator(store), activeTileset);
-  const result = measureWorld(sampler, activeTileset, WALK_LIMITS);
+  const sampler = new WorldSampler(store, new PipelineEvaluator(store), activeTiles);
+  const result = measureWorld(sampler, activeTiles, WALK_LIMITS);
   if (!result) return null;
   console.log(`measured ${candidate.title}: ${measurementSummaryLine(result)}`);
   return { candidate, result, sampler };
@@ -107,7 +107,7 @@ function galleryWorldOf(world: RankedWorld, position: number): GalleryWorld {
     exhaustedRegion: world.result.trace.exhaustedRegion,
     score: world.result.score,
     measurements: world.result.measurements,
-    thumbnail: thumbnailHtml(world.sampler, tileset, world.result.trace.spawn),
+    thumbnail: thumbnailHtml(world.sampler, tileAssets, world.result.trace.spawn),
     pipelineFileName: `world-${String(world.candidate.index).padStart(2, '0')}.pipeline.json`,
     pipelineJson: JSON.stringify(world.candidate.state, null, 2) + '\n',
   };

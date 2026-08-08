@@ -1,4 +1,4 @@
-import type { Prefab } from '../../library/prefabs/prefabDef';
+import type { Prefab } from '../../assets/prefabs/prefabDef';
 import { CHUNK_SIZE, chunkCoordOfCell, chunkKey, chunkOrigin } from '../chunk';
 import { ChunkVoxelColumns, type VoxelColumn } from './chunkVoxelColumns';
 import { placedPrefabOf, type PrefabPlacement } from './prefabPlacement';

@@ -31,7 +31,7 @@ export const VIEW_MODE_TIPS: Readonly<Record<ViewMode, TooltipContent>> = {
 
 export const CAPTURE_TIP: TooltipContent = {
   title: 'capture',
-  body: 'Drag a rectangle over the world to lift that section — tiles, stacked prefab voxels and terrain height — into a new prefab in the library. Esc leaves capture mode.',
+  body: 'Drag a rectangle over the world to lift that section — tiles, stacked prefab voxels and terrain height — into a new prefab asset. Esc leaves capture mode.',
 };
 
 export const SIGHT_RANGE_TIP: TooltipContent = {

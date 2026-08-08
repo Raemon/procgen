@@ -1,18 +1,18 @@
-import type { CreatureLibrary } from '../library/creatures/creatureLibrary';
-import type { ItemLibrary } from '../library/items/itemLibrary';
-import type { GroundItems } from '../library/items/pickups/groundItems';
-import type { PrefabLibrary } from '../library/prefabs/prefabLibrary';
+import type { CreatureAssets } from '../assets/creatures/creatureAssets';
+import type { ItemAssets } from '../assets/items/itemAssets';
+import type { GroundItems } from '../assets/items/pickups/groundItems';
+import type { PrefabAssets } from '../assets/prefabs/prefabAssets';
 import type { PuzzleWorld } from '../world/puzzles/puzzleWorld';
-import type { RegionSampler } from '../library/prefabs/captureRegionAsPrefab';
+import type { RegionSampler } from '../assets/prefabs/captureRegionAsPrefab';
 import type { PipelineStore } from '../procgen/pipeline/pipelineStore';
 import type { WorldPresetLibrary } from '../procgen/presets/worldPresetLibrary';
 import type { RandomizeHistory } from '../procgen/randomize/randomizeHistory';
 import type { TemplateLibrary } from '../procgen/templates/templateLibrary';
-import type { Tileset } from '../library/tiles/tileset';
+import type { TileAssets } from '../assets/tiles/tileAssets';
 import type { FacingIndex } from '../world/facing';
 
 export type AbilityMode = 'god' | 'character';
-export type AbilityGroup = 'movement' | 'senses' | 'pipeline' | 'library' | 'world';
+export type AbilityGroup = 'movement' | 'senses' | 'pipeline' | 'assets' | 'world';
 
 export interface AbilityActor {
   pose(): { x: number; y: number; facing: FacingIndex };
@@ -24,10 +24,10 @@ export interface AbilityActor {
 
 export interface AbilityContext {
   store: PipelineStore;
-  tileset: Tileset;
-  prefabs: PrefabLibrary;
-  creatures: CreatureLibrary;
-  items: ItemLibrary;
+  tileAssets: TileAssets;
+  prefabs: PrefabAssets;
+  creatures: CreatureAssets;
+  items: ItemAssets;
   templates: TemplateLibrary;
   worldPresets: WorldPresetLibrary;
   randomizeHistory: RandomizeHistory;

@@ -1,10 +1,10 @@
 import { writeFileSync } from 'node:fs';
-import { defaultTiles } from '../library/tiles/defaultTiles';
-import { faceArtPlan } from '../library/tiles/faceArtFacePlan';
-import { facePixelsAt, frameCount } from '../library/tiles/faceArtFrames';
-import { heightOfInk } from '../library/tiles/faceArtHeight';
-import { faceGridSize, type CubeFaceArt, type FacePixels } from '../library/tiles/tileFaceArt';
-import type { TileDef } from '../library/tiles/tileDef';
+import { defaultTiles } from '../assets/tiles/defaultTiles';
+import { faceArtPlan } from '../assets/tiles/faceArtFacePlan';
+import { facePixelsAt, frameCount } from '../assets/tiles/faceArtFrames';
+import { heightOfInk } from '../assets/tiles/faceArtHeight';
+import { faceGridSize, type CubeFaceArt, type FacePixels } from '../assets/tiles/tileFaceArt';
+import type { TileDef } from '../assets/tiles/tileDef';
 import {
   blankSheet,
   hexToRgb,

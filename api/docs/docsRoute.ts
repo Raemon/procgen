@@ -12,7 +12,7 @@ registerRoute({
   handle: ({ access }) => ({
     status: 200,
     contentType: 'text/markdown',
-    body: buildApiDocs(access.current().tileset),
+    body: buildApiDocs(access.current().tileAssets),
   }),
 });
 

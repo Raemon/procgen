@@ -1,11 +1,11 @@
 import type { WorldSampler } from '../../procgen/worldSampler';
-import type { ReadOnlyItemLibrary } from '../../frontend/readOnlyLibraries';
+import type { ReadOnlyItemAssets } from '../../frontend/readOnlyAssets';
 import { emitsLight, lightSourceAt, type LightSource } from './lightEmission';
 import type { LightRect } from './tileLightSources';
 
 export function itemLightSourcesInRect(
   sampler: WorldSampler,
-  items: ReadOnlyItemLibrary,
+  items: ReadOnlyItemAssets,
   rect: LightRect,
 ): LightSource[] {
   const sources: LightSource[] = [];

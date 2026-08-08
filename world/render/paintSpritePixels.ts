@@ -1,4 +1,4 @@
-import { spriteGridSize, type SpriteArt } from '../../library/tiles/spriteArt';
+import { spriteGridSize, type SpriteArt } from '../../assets/tiles/spriteArt';
 import { paintPixelsAsImage } from './paintPixelsAsImage';
 
 export function paintSpritePixels(

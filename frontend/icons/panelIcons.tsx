@@ -1,6 +1,6 @@
 import { Icon } from './Icon';
 
-export function LibraryIcon({ size }: { size?: number }) {
+export function AssetsIcon({ size }: { size?: number }) {
   return (
     <Icon size={size}>
       <path d="M12 3 3 7.5l9 4.5 9-4.5L12 3Z" />

@@ -2,7 +2,7 @@ import type { Marker, WorldSampler } from '../procgen/worldSampler';
 import { EMPTY_TILE } from '../procgen/values/chunkValues';
 import { pointOverlayLookup } from '../world/render/ascii/asciiCells';
 import { viewportCenteredOn } from '../world/render/ascii/asciiViewport';
-import type { ReadOnlyTileset } from '../frontend/readOnlyLibraries';
+import type { ReadOnlyTileAssets } from '../frontend/readOnlyAssets';
 import { FACING_NAMES } from '../world/facing';
 import {
   DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
@@ -53,7 +53,7 @@ export function viewSizeFor(
 
 export function buildObservation(
   sampler: WorldSampler,
-  tileset: ReadOnlyTileset,
+  tileAssets: ReadOnlyTileAssets,
   pose: AgentPose,
   mode: AgentMode,
   sightRadiusTiles: number = DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
@@ -71,7 +71,7 @@ export function buildObservation(
     for (let column = 0; column < size; column++) {
       const x = viewport.originX + column;
       const y = viewport.originY + row;
-      line += observedGlyph(sampler, tileset, markers, legend, pose, mode, radius, x, y);
+      line += observedGlyph(sampler, tileAssets, markers, legend, pose, mode, radius, x, y);
     }
     view.push(line);
   }
@@ -89,7 +89,7 @@ export function buildObservation(
 
 function observedGlyph(
   sampler: WorldSampler,
-  tileset: ReadOnlyTileset,
+  tileAssets: ReadOnlyTileAssets,
   markers: Map<string, Marker>,
   legend: Map<string, LegendEntry>,
   pose: AgentPose,
@@ -107,19 +107,19 @@ function observedGlyph(
   }
   const marker = markers.get(`${x},${y}`);
   if (marker) return collectLegend(legend, marker.glyph, marker.tag, null);
-  return tileGlyph(sampler, tileset, legend, x, y);
+  return tileGlyph(sampler, tileAssets, legend, x, y);
 }
 
 function tileGlyph(
   sampler: WorldSampler,
-  tileset: ReadOnlyTileset,
+  tileAssets: ReadOnlyTileAssets,
   legend: Map<string, LegendEntry>,
   x: number,
   y: number,
 ): string {
   const tileId = sampler.tileAt(x, y);
   if (tileId === EMPTY_TILE) return BLANK_GLYPH;
-  const tile = tileset.byId(tileId);
+  const tile = tileAssets.byId(tileId);
   if (!tile) return collectLegend(legend, UNKNOWN_TILE_GLYPH, 'unrecognized tile', null);
   return collectLegend(legend, tile.symbol, tile.name, tile.walkable);
 }

@@ -1,11 +1,11 @@
-import type { ReadOnlyTileset } from '../../frontend/readOnlyLibraries';
+import type { ReadOnlyTileAssets } from '../../frontend/readOnlyAssets';
 
 export function tileSelectOptions(
-  tileset: ReadOnlyTileset,
+  tileAssets: ReadOnlyTileAssets,
   noTileText: string,
 ): { value: string; text: string }[] {
   return [
     { value: '-1', text: noTileText },
-    ...tileset.all().map((tile) => ({ value: String(tile.id), text: `${tile.symbol} ${tile.name}` })),
+    ...tileAssets.all().map((tile) => ({ value: String(tile.id), text: `${tile.symbol} ${tile.name}` })),
   ];
 }

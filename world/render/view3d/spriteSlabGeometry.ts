@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { spriteGridSize, type SpriteArt } from '../../../library/tiles/spriteArt';
-import { spriteEdgeRuns, type SpriteEdgeRun, type SpriteEdgeSide } from '../../../library/tiles/spriteEdgeRuns';
-import { opaqueInk } from '../../../library/tiles/inkColor';
+import { spriteGridSize, type SpriteArt } from '../../../assets/tiles/spriteArt';
+import { spriteEdgeRuns, type SpriteEdgeRun, type SpriteEdgeSide } from '../../../assets/tiles/spriteEdgeRuns';
+import { opaqueInk } from '../../../assets/tiles/inkColor';
 import { QuadBuffer, type Quad } from './quadBuffer';
 
 export const SPRITE_ART_MATERIAL = 0;

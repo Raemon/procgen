@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { CharacterMotion } from '../../../library/characters/characterFrame';
+import type { CharacterMotion } from '../../../assets/characters/characterFrame';
 import { reportGpuSceneLoad, type GpuSceneLoad } from '../../../perf/gpuSceneLoad';
 import { measureWork } from '../../../perf/workTimers';
 import { facingYawRadians } from '../../facing';
@@ -28,6 +28,7 @@ import { SelectionBox } from './selectionBox';
 import { speechBubbleAnchors } from './speechBubbleAnchors';
 import { SpeechBubbleLabels } from './speechBubbleLabels';
 import { streamingRadiusChunks } from './streamingRadius';
+import { disposeSharedTileSurfaces } from './tileSurfaces';
 import { clampSightRadiusTiles, isWithinSightRadius } from '../../vision/characterSight';
 
 const MAX_FRAME_MS = 100;
@@ -75,7 +76,7 @@ export class View3D {
     this.streamer = new ChunkMeshStreamer(
       this.worldGroup,
       deps.sampler,
-      deps.tileset,
+      deps.tileAssets,
       deps.puzzles,
     );
     this.creatureMeshes = new CreatureMeshes(
@@ -114,6 +115,7 @@ export class View3D {
     this.worldLights.dispose();
     this.speechLabels.dispose();
     this.streamer.dispose();
+    disposeSharedTileSurfaces();
     this.renderer.dispose();
     this.canvas.remove();
   }
@@ -159,6 +161,7 @@ export class View3D {
     this.creatureMeshes.forgetSprites();
     this.remotePlayerMeshes.forgetSprites();
     this.characterSprites.dispose();
+    disposeSharedTileSurfaces();
   }
 
   private viewYaw(): number {
@@ -305,6 +308,11 @@ export class View3D {
 
   private streamAroundCameraFocus(): void {
     const focus = this.focusPoint();
+    this.streamer.detailFromCamera(
+      this.activeCamera(),
+      this.renderer.domElement.clientHeight,
+      this.focusGroundHeight(),
+    );
     const radiusTiles =
       this.cameraStyle === 'god'
         ? this.followCamera.visibleGroundRadiusTiles()

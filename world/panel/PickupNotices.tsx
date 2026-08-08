@@ -1,6 +1,6 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import { useAppRuntime } from '../../frontend/appRuntimeContext';
-import type { PickupFeed, PickupNotice } from '../../library/items/pickups/pickupFeed';
+import type { PickupFeed, PickupNotice } from '../../assets/items/pickups/pickupFeed';
 import { classes } from '../../frontend/controls/classes';
 
 const NOTICE_LIFETIME_MS = 2600;

@@ -2,9 +2,9 @@ import type { TooltipContent } from '../tooltips/tooltipContent';
 import type { PanelKey } from '../usePanelLayout';
 
 export const PANEL_TIPS: Readonly<Record<PanelKey, TooltipContent>> = {
-  library: {
-    title: 'library',
-    body: 'The raw material every world is built from: tiles, prefab stamps and creatures. Procgen nodes reference these by name, so an edit here shows up everywhere the entry is used.',
+  assets: {
+    title: 'assets',
+    body: 'Every asset a world is built from: tiles, items, prefab stamps, creatures and characters. Procgen nodes reference assets by name, so an edit here shows up everywhere the asset is used.',
   },
   procgen: {
     title: 'procgen',

@@ -16,7 +16,7 @@ export interface FileEntry {
 }
 
 export const TOP_LEVEL_FOLDERS = [
-  { name: 'library', role: 'the library panel: the definitions a world is assembled from' },
+  { name: 'assets', role: 'the assets panel: every asset a world is assembled from' },
   { name: 'procgen', role: 'the procgen panel: the node pipeline that generates the world' },
   { name: 'agents', role: 'the agents panel: what an agent perceives and how a run is driven' },
   { name: 'world', role: 'the world view: how the world is rendered, walked and simulated' },
