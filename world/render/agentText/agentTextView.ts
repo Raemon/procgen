@@ -1,6 +1,7 @@
 import type { AgentMode } from '../../../agents/agentMode';
 import { buildObservation } from '../../../agents/observation';
 import { observationText } from '../../../agents/observationText';
+import { measureWork } from '../../../perf/workTimers';
 import type { WorldSampler } from '../../../procgen/worldSampler';
 import type { ReadOnlyTileset } from '../../../frontend/readOnlyLibraries';
 import type { ReadOnlyWorld } from '../../../frontend/readOnlyLibraries';
@@ -29,8 +30,12 @@ export class AgentTextView {
   }
 
   draw(): void {
+    this.pre.textContent = measureWork('ascii view', () => this.observationLines());
+  }
+
+  private observationLines(): string {
     const pose = { x: this.world.playerX, y: this.world.playerY, facing: this.world.facing };
-    this.pre.textContent = observationText(
+    return observationText(
       buildObservation(
         this.sampler,
         this.tileset,

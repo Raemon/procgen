@@ -2,7 +2,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 const PANEL_ROOTS = ['agents', 'library', 'procgen', 'world'];
-const HEADLESS_ROOTS = ['abilities', 'api', 'multiplayer', 'server'];
+const HEADLESS_ROOTS = ['abilities', 'api', 'multiplayer', 'server', 'perf'];
 const EVERY_ROOT = [...PANEL_ROOTS, ...HEADLESS_ROOTS, 'frontend', 'checks', 'tools'];
 const PRESENTATION_FOLDER_NAMES = ['panel', 'ui', 'view3d'];
 const BROWSER_PACKAGES = /from '(three|react|react-dom)(\/[^']*)?'/;
@@ -22,13 +22,13 @@ export function checkPresentationFoldersAreTheOnlyDomCode(
   const headlessStrays = HEADLESS_ROOTS.flatMap(sourceFiles).filter(importsABrowserPackage);
   reportStrays('headless folders', headlessStrays);
   check(
-    'the ability layer, the api, the wire and the server never reach for react or three',
+    'the ability layer, the api, the wire, the server and the perf probes never reach for react or three',
     headlessStrays.length === 0,
   );
 
   check(
     'every top-level folder is named by this check, so none can drift out of its coverage',
-    EVERY_ROOT.every(existsAsDirectory) && EVERY_ROOT.length === 11,
+    EVERY_ROOT.every(existsAsDirectory) && EVERY_ROOT.length === 12,
   );
 }
 
