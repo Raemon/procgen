@@ -4,6 +4,7 @@ import type { TilePlacement } from './tilePlacements';
 
 export interface PlacementGroup {
   art: CubeFaceArt | null;
+  textureId: string | null;
   baseColor: string;
   glow: number;
   faces: number;
@@ -23,6 +24,7 @@ function addToGroup(bySurface: GroupsBySurface, placement: TilePlacement, faces:
   const key = solidKey(placement, faces);
   const group = bySolid.get(key) ?? {
     art: placement.faceArt,
+    textureId: placement.textureId,
     baseColor: placement.baseColor,
     glow: placement.glow,
     faces,
@@ -40,10 +42,14 @@ function groupsSharingSurface(
   bySurface: GroupsBySurface,
   placement: TilePlacement,
 ): Map<string, PlacementGroup> {
-  const key = placement.faceArt ?? flatSurfaceKey(placement);
+  const key = placement.faceArt ?? texturedSurfaceKey(placement) ?? flatSurfaceKey(placement);
   const bySolid = bySurface.get(key) ?? new Map<string, PlacementGroup>();
   bySurface.set(key, bySolid);
   return bySolid;
+}
+
+function texturedSurfaceKey(placement: TilePlacement): string | null {
+  return placement.textureId === null ? null : `png:${placement.textureId}:${placement.glow}`;
 }
 
 function flatSurfaceKey(placement: TilePlacement): string {

@@ -19,6 +19,7 @@ export interface TilePlacement {
   baseColor: string;
   shade: number;
   faceArt: CubeFaceArt | null;
+  textureId: string | null;
   glow: number;
   sunkenAsWater: boolean;
   shape: TileShapeKind;
@@ -120,6 +121,7 @@ function placement(
     baseColor: tile.color,
     shade,
     faceArt: tile.faceArt,
+    textureId: tile.textureId,
     glow: glowOfEmitter(tile),
     sunkenAsWater,
     shape: tile.shape,

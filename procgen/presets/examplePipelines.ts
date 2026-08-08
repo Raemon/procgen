@@ -5,6 +5,7 @@ import { fallenMetropolis } from './fallenMetropolis';
 import { poleToEquator } from './poleToEquator';
 import { puzzleLabyrinth } from './puzzleLabyrinth';
 import { settlementsAndWildlife } from './settlementsAndWildlife';
+import { thatchmereVale } from './thatchmereVale';
 
 export type { ExamplePipeline };
 
@@ -22,6 +23,7 @@ export function examplePipelines(): ExamplePipeline[] {
     poleToEquator(),
     emberMarches(),
     puzzleLabyrinth(),
+    thatchmereVale(),
   ];
 }
 

@@ -22,6 +22,7 @@ function withValidatedFields(tile: TileDef): TileDef {
     height: storedTileHeight(tile),
     shape: isTileShapeKind(tile.shape) ? tile.shape : DEFAULT_TILE_SHAPE,
     faceArt: faceArtFromStoredShape(tile.faceArt),
+    textureId: typeof tile.textureId === 'string' ? tile.textureId : null,
   };
 }
 

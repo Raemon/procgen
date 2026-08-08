@@ -72,6 +72,7 @@ function voxelPlacement(
     elevation,
     height: WALKABLE_TILE_HEIGHT,
     baseColor: tile.color,
+    textureId: tile.textureId,
     shade: 1,
     faceArt: tile.faceArt,
     glow: glowOfEmitter(tile),

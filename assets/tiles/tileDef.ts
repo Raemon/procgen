@@ -15,6 +15,7 @@ export interface TileDef {
   role: TileRole | null;
   shape: TileShapeKind;
   faceArt: CubeFaceArt | null;
+  textureId: string | null;
   light: number;
   lightInk: string;
 }
@@ -30,6 +31,7 @@ export function newTileWithId(id: number): TileDef {
     role: null,
     shape: DEFAULT_TILE_SHAPE,
     faceArt: null,
+    textureId: null,
     light: 0,
     lightInk: DEFAULT_LIGHT_INK,
   };

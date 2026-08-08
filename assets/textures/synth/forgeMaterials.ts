@@ -12,18 +12,18 @@ function ironPlate(id: string): MaterialSynth {
   return sameOnEveryFace(
     id,
     (x, y) => ironColor(x, y, seed),
-    (x, y) => 0.5 + 0.2 * wrappedFbm(x, y, 19, 2, seed) + (rivetAt(x, y, seed) > 0 ? 0.3 : 0),
+    (x, y) => 0.5 + 0.2 * wrappedFbm(x, y, 19, 2, seed) + (rivetAt(x, y) > 0 ? 0.3 : 0),
   );
 }
 
 function ironColor(x: number, y: number, seed: number): Rgb {
   const scuff = wrappedFbm(x, y, 13, 3, seed);
   const base = mixed([58, 58, 62], [84, 80, 78], scuff);
-  const rivet = rivetAt(x, y, seed);
+  const rivet = rivetAt(x, y);
   return grimed(rivet > 0 ? shaded(base, 1.3) : base, x, y, seed + 9, 0.5);
 }
 
-function rivetAt(x: number, y: number, seed: number): number {
+function rivetAt(x: number, y: number): number {
   const grid = 6;
   const centerX = (Math.floor(x * grid) + 0.5) / grid;
   const centerY = (Math.floor(y * grid) + 0.5) / grid;

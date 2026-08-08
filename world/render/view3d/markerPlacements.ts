@@ -47,6 +47,7 @@ function placementForMarker(marker: Marker, elevation: number): TilePlacement {
     baseColor: withTransparency(marker.color, marker.seeThroughUnpaintedArt === true),
     shade: 1,
     faceArt: marker.faceArt,
+    textureId: null,
     glow: 0,
     sunkenAsWater: false,
     shape: DEFAULT_TILE_SHAPE,
