@@ -49,7 +49,7 @@ export function checkNamedWorldPresets(check: CheckReporter): void {
   const watersAgain = worldFromState(presetStateNamed('mountains, lakes & rapids'));
   check(
     'the mountains, lakes & rapids preset survives sanitize with all nodes',
-    presetStateNamed('mountains, lakes & rapids').nodes.length === 19,
+    presetStateNamed('mountains, lakes & rapids').nodes.length === 28,
   );
   check(
     'the mountains, lakes & rapids preset regenerates identically from the same seed',
