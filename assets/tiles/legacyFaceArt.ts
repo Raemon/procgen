@@ -1,19 +1,12 @@
-import {
-  isCubeFaceArt,
-  isFacePixels,
-  type CubeFaceArt,
-  type FacePixels,
-} from './tileFaceArt';
+import { isFacePixels, type CubeFaceArt, type FacePixels } from './tileFaceArt';
 
 const LEGACY_SIZE = 8;
 const LEGACY_FACES = ['top', 'sides', 'bottom'] as const;
 
 type LegacyFaceArt = Record<(typeof LEGACY_FACES)[number], FacePixels>;
 
-export function upgradeStoredFaceArt(value: unknown): CubeFaceArt | null {
-  if (isCubeFaceArt(value)) return value;
-  if (isLegacyFaceArt(value)) return spreadLegacySidesToCompassFaces(value);
-  return null;
+export function legacyFaceArtUpgraded(value: unknown): CubeFaceArt | null {
+  return isLegacyFaceArt(value) ? spreadLegacySidesToCompassFaces(value) : null;
 }
 
 function spreadLegacySidesToCompassFaces(legacy: LegacyFaceArt): CubeFaceArt {

@@ -1,10 +1,10 @@
 import '../../procgen/nodes';
 import { CreatureAssets } from '../../assets/creatures/creatureAssets';
-import { creaturesFromStoredJson } from '../../assets/creatures/creatureStorage';
+import { creaturesAsStoredJson, creaturesFromStoredJson } from '../../assets/creatures/creatureStorage';
 import { ItemAssets } from '../../assets/items/itemAssets';
 import { groundItemsOf, type GroundItems } from '../../assets/items/pickups/groundItems';
 import { TakenItemSpawns } from '../../assets/items/pickups/takenItemSpawns';
-import { itemsFromStoredJson } from '../../assets/items/itemStorage';
+import { itemsAsStoredJson, itemsFromStoredJson } from '../../assets/items/itemStorage';
 import { PrefabAssets } from '../../assets/prefabs/prefabAssets';
 import { prefabsFromStoredJson } from '../../assets/prefabs/prefabStorage';
 import { PipelineEvaluator } from '../../procgen/eval/evaluator';
@@ -20,7 +20,7 @@ import { PuzzleWorld } from '../../world/puzzles/puzzleWorld';
 import { PuzzleState } from '../../world/puzzles/state/puzzleState';
 import { isWalkableTile } from '../../world/tileWalkability';
 import { TileAssets } from '../../assets/tiles/tileAssets';
-import { tilesFromStoredJson } from '../../assets/tiles/tileStorage';
+import { tilesAsStoredJson, tilesFromStoredJson } from '../../assets/tiles/tileStorage';
 import { sanitizeTemplates } from '../../procgen/templates/nodeTemplate';
 import { sanitizeWorldPresets } from '../../procgen/presets/worldPreset';
 
@@ -61,10 +61,10 @@ export interface DocSink {
 
 export function persistWorld(docs: DocSink, world: ServerWorld): void {
   docs.write('pipeline', world.store.snapshot());
-  docs.write('tiles', world.tileAssets.all());
+  docs.write('tiles', tilesAsStoredJson(world.tileAssets.all()));
   docs.write('prefabs', world.prefabs.all());
-  docs.write('creatures', world.creatures.all());
-  docs.write('items', world.items.all());
+  docs.write('creatures', creaturesAsStoredJson(world.creatures.all()));
+  docs.write('items', itemsAsStoredJson(world.items.all()));
   docs.write('templates', world.templates.savedTemplates());
   docs.write('worldPresets', world.worldPresets.savedPresets());
 }

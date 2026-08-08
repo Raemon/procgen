@@ -1,6 +1,10 @@
 import { sanitizeInventory } from '../items/inventory/sanitizeInventory';
 import { readPersistedFile, writePersistedFile } from '../../frontend/persistence/repoFileStore';
-import { upgradeStoredFaceArt } from '../tiles/legacyFaceArt';
+import {
+  defWithCompactFaceArt,
+  faceArtFromStoredShape,
+  type StoredArtOf,
+} from '../tiles/storage/storedFaceArt';
 import { builtInBillboard, isBuiltInBillboardArt } from './art/builtInBillboards';
 import { sanitizeCharacterBillboard } from '../characters/sanitizeCharacterBillboard';
 import { CHARACTER_BODY, CREATURE_BODY, type CreatureDef } from './creatureDef';
@@ -22,8 +26,8 @@ export function storeCreatures(creatures: readonly CreatureDef[]): void {
   writePersistedFile(FILE_NAME, creaturesAsStoredJson(creatures));
 }
 
-export function creaturesAsStoredJson(creatures: readonly CreatureDef[]): CreatureDef[] {
-  return creatures.map(withoutGeneratedFrames);
+export function creaturesAsStoredJson(creatures: readonly CreatureDef[]): StoredArtOf<CreatureDef>[] {
+  return creatures.map(withoutGeneratedFrames).map(defWithCompactFaceArt);
 }
 
 function withoutGeneratedFrames(creature: CreatureDef): CreatureDef {
@@ -38,7 +42,7 @@ function withValidatedArt(stored: CreatureDef): CreatureDef {
   return {
     ...creature,
     ...bodySizeOfStoredCreature(creature, kind, size),
-    faceArt: upgradeStoredFaceArt(creature.faceArt),
+    faceArt: faceArtFromStoredShape(creature.faceArt),
     kind,
     inventory: sanitizeInventory(creature.inventory),
     billboardArt,

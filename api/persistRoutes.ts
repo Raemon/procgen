@@ -1,23 +1,28 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { afterDocChanged, type DocSyncDeps } from '../multiplayer/game/docSync';
 import { isPersistedDocName, type DocStore } from '../server/persistence/docsRepo';
+import { sendPossiblyGzipped } from '../server/sendPossiblyGzipped';
 import type { Router } from './router';
 
 export function mountPersistRoutes(router: Router, docs: DocStore, deps: DocSyncDeps): void {
   router.mount('/persist', (req, res, url) => {
     const name = url.pathname.replace(/^\/persist\//, '');
     if (!isPersistedDocName(name)) return endWithStatus(res, 404);
-    if (req.method === 'GET') return sendDoc(docs, name, res);
+    if (req.method === 'GET') return sendDoc(docs, name, req, res);
     if (req.method === 'PUT') return receiveDoc(docs, deps, name, req, res);
     endWithStatus(res, 405);
   });
 }
 
-function sendDoc(docs: DocStore, name: string, res: ServerResponse): void {
+function sendDoc(
+  docs: DocStore,
+  name: string,
+  req: IncomingMessage,
+  res: ServerResponse,
+): void {
   const json = docs.read(name);
   if (json === null) return endWithStatus(res, 404);
-  res.writeHead(200, { 'content-type': 'application/json' });
-  res.end(JSON.stringify(json));
+  sendPossiblyGzipped(req, res, 'application/json', JSON.stringify(json));
 }
 
 function receiveDoc(
