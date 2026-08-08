@@ -8,9 +8,7 @@ import { hashString } from '../../../procgen/random/hashString';
 import type { CameraView } from './cameraView';
 import { characterQuadMesh, dressCharacterQuad, isCharacterQuad } from './characterQuad';
 import { CharacterSpriteAssets } from './characterSpriteAssets';
-import { disposeMeshResources } from './disposeMeshResources';
-import { cubeFaceMaterials } from './faceArtMaterials';
-import { lambertFromInk } from './inkMaterial';
+import { creatureBodyGeometry, creatureBodyMaterials } from './creatureSurfaces';
 
 const ANIMATION_SPREAD_SECONDS = 4;
 
@@ -88,10 +86,6 @@ export class CreatureMeshes {
     const mesh = this.meshes.get(key);
     if (!mesh) return;
     this.group.remove(mesh);
-    disposeMeshResources(mesh, {
-      keepMaterials: isCharacterQuad(mesh),
-      keepGeometry: isCharacterQuad(mesh),
-    });
     this.meshes.delete(key);
   }
 }
@@ -102,10 +96,5 @@ function animationClock(creature: CreatureInstance, view: CameraView): number {
 }
 
 function cubeMesh(def: CreatureDef): THREE.Mesh {
-  return new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), creatureMaterial(def));
-}
-
-function creatureMaterial(def: CreatureDef): THREE.Material | THREE.Material[] {
-  if (def.faceArt) return cubeFaceMaterials(def.faceArt, def.color);
-  return lambertFromInk(def.color);
+  return new THREE.Mesh(creatureBodyGeometry(), creatureBodyMaterials(def));
 }

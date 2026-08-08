@@ -9,6 +9,7 @@ import { checkDelveDarknessInvariants } from './checkDelveDarknessInvariants';
 import { checkPrefabAndCreatureInvariants } from './checkPrefabAndCreatureInvariants';
 import { checkTileHeightInvariants } from './checkTileHeightInvariants';
 import { checkTileArtMipInvariants } from './checkTileArtMipInvariants';
+import { checkSharedItemAndCreatureArtInvariants } from './checkSharedItemAndCreatureArtInvariants';
 import { checkPresentationFoldersAreTheOnlyDomCode } from './checkPresentationFoldersAreTheOnlyDomCode';
 import { checkDesignBetsStillHold } from './checkDesignBetsStillHold';
 import { checkPuzzleInvariants } from './checkPuzzleInvariants';
@@ -1984,6 +1985,7 @@ describe('character billboards', () => checkCharacterBillboardInvariants(check))
 describe('the player character', () => checkPlayerCharacterInvariants(check));
 describe('tile heights', () => checkTileHeightInvariants(check));
 describe('tile art mips', () => checkTileArtMipInvariants(check));
+describe('shared item and creature art', () => checkSharedItemAndCreatureArtInvariants(check));
 describe('puzzle rooms', () => checkPuzzleInvariants(check));
 describe('the dom boundary', () => checkPresentationFoldersAreTheOnlyDomCode(check));
 describe('documentation', () => {

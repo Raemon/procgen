@@ -2,11 +2,12 @@ import * as THREE from 'three';
 import type { ReadOnlyItemAssets } from '../../../frontend/readOnlyAssets';
 import type { ItemDef } from '../../../assets/items/itemDef';
 import type { ItemSpawn, WorldSampler } from '../../../procgen/worldSampler';
-import { disposeMeshResources } from './disposeMeshResources';
-import { itemGeometry, itemHalfHeight, itemMaterials } from './itemMeshBuild';
+import { instancedItemMesh, type ItemStandingPoint } from './instancedItemMesh';
+import { itemHalfHeight } from './itemMeshBuild';
+import { itemSurface } from './itemSurfaces';
 
 export class ItemMeshes {
-  private readonly meshes = new Map<string, THREE.Mesh>();
+  private readonly meshes = new Map<number, THREE.InstancedMesh>();
   private readonly group = new THREE.Group();
   private lastRect = '';
 
@@ -37,36 +38,47 @@ export class ItemMeshes {
   }
 
   private showSpawns(spawns: readonly ItemSpawn[]): void {
-    const live = new Set<string>();
-    for (const spawn of spawns) {
-      const item = this.itemAssets.byId(spawn.itemId);
-      if (!item) continue;
-      const key = `${spawn.x},${spawn.y},${spawn.itemId}`;
-      live.add(key);
-      if (!this.meshes.has(key)) this.addMesh(key, item, spawn);
+    this.clear();
+    for (const [itemId, itemSpawns] of spawnsByItemId(spawns)) {
+      const item = this.itemAssets.byId(itemId);
+      if (item) this.addInstances(item, itemSpawns);
     }
-    for (const key of [...this.meshes.keys()]) if (!live.has(key)) this.dropMesh(key);
   }
 
-  private addMesh(key: string, item: ItemDef, spawn: ItemSpawn): void {
-    const mesh = new THREE.Mesh(itemGeometry(item), itemMaterials(item));
-    const elevation = this.sampler.elevationAt(spawn.x, spawn.y);
-    mesh.position.set(spawn.x + 0.5, elevation + item.hover + itemHalfHeight(item), spawn.y + 0.5);
-    this.meshes.set(key, mesh);
+  private addInstances(item: ItemDef, spawns: readonly ItemSpawn[]): void {
+    const mesh = instancedItemMesh(
+      itemSurface(item),
+      spawns.map((spawn) => this.standingPointOf(item, spawn)),
+    );
+    this.meshes.set(item.id, mesh);
     this.group.add(mesh);
   }
 
-  private dropMesh(key: string): void {
-    const mesh = this.meshes.get(key);
-    if (!mesh) return;
-    this.group.remove(mesh);
-    disposeMeshResources(mesh);
-    this.meshes.delete(key);
+  private standingPointOf(item: ItemDef, spawn: ItemSpawn): ItemStandingPoint {
+    return {
+      x: spawn.x + 0.5,
+      y: this.sampler.elevationAt(spawn.x, spawn.y) + item.hover + itemHalfHeight(item),
+      z: spawn.y + 0.5,
+    };
   }
 
   private clear(): void {
-    for (const key of [...this.meshes.keys()]) this.dropMesh(key);
+    for (const mesh of this.meshes.values()) {
+      this.group.remove(mesh);
+      mesh.dispose();
+    }
+    this.meshes.clear();
   }
+}
+
+function spawnsByItemId(spawns: readonly ItemSpawn[]): Map<number, ItemSpawn[]> {
+  const grouped = new Map<number, ItemSpawn[]>();
+  for (const spawn of spawns) {
+    const forItem = grouped.get(spawn.itemId) ?? [];
+    if (forItem.length === 0) grouped.set(spawn.itemId, forItem);
+    forItem.push(spawn);
+  }
+  return grouped;
 }
 
 function rectAround(centerX: number, centerY: number, radiusTiles: number) {
