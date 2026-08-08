@@ -5,9 +5,8 @@ import {
   persistWorld,
   type DocSink,
   type DocSource,
-  type ServerWorld,
-  type WorldAccess,
-} from './serverWorld';
+} from './persistedServerWorld';
+import type { ServerWorld, WorldAccess } from './serverWorld';
 import type { SessionStore } from './sessions';
 
 export interface AgentApiState {

@@ -1,5 +1,6 @@
 import type { AgentApiState } from '../../api/agent/nodeEntry';
-import { currentServerWorld, type DocSource, type ServerWorld } from '../../api/agent/serverWorld';
+import { currentServerWorld, type DocSource } from '../../api/agent/persistedServerWorld';
+import type { ServerWorld } from '../../api/agent/serverWorld';
 
 export interface WorldHost {
   current(): ServerWorld;

@@ -1,4 +1,5 @@
-import { persistWorld, type ServerWorld } from '../api/agent/serverWorld';
+import { persistWorld } from '../api/agent/persistedServerWorld';
+import type { ServerWorld } from '../api/agent/serverWorld';
 import { compactFaceArtOf } from '../assets/tiles/storage/compactFaceArtEncode';
 import { isCompactFaceArt } from '../assets/tiles/storage/compactFaceArtShape';
 import { faceArtFromStoredShape } from '../assets/tiles/storage/storedFaceArt';

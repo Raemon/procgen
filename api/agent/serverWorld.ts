@@ -1,36 +1,30 @@
 import '../../procgen/nodes';
-import { CreatureAssets } from '../../assets/creatures/creatureAssets';
-import { creaturesAsStoredJson, creaturesFromStoredJson } from '../../assets/creatures/creatureStorage';
-import { ItemAssets } from '../../assets/items/itemAssets';
+import type { CreatureAssets } from '../../assets/creatures/creatureAssets';
+import type { ItemAssets } from '../../assets/items/itemAssets';
 import { groundItemsOf, type GroundItems } from '../../assets/items/pickups/groundItems';
 import { TakenItemSpawns } from '../../assets/items/pickups/takenItemSpawns';
-import { itemsAsStoredJson, itemsFromStoredJson } from '../../assets/items/itemStorage';
-import { CultureAssets } from '../../assets/cultures/cultureAssets';
-import { culturesFromStoredJson } from '../../assets/cultures/cultureStorage';
-import { PieceAssets } from '../../assets/pieces/pieceAssets';
-import { piecesFromStoredJson } from '../../assets/pieces/pieceStorage';
-import { PipelineEvaluator } from '../../procgen/eval/evaluator';
-import { PipelineStore } from '../../procgen/pipeline/pipelineStore';
-import { WorldPresetLibrary } from '../../procgen/presets/worldPresetLibrary';
+import type { CultureAssets } from '../../assets/cultures/cultureAssets';
+import type { PieceAssets } from '../../assets/pieces/pieceAssets';
+import type { PipelineEvaluator } from '../../procgen/eval/evaluator';
+import type { PipelineStore } from '../../procgen/pipeline/pipelineStore';
+import type { WorldPresetLibrary } from '../../procgen/presets/worldPresetLibrary';
 import { RandomizeHistory } from '../../procgen/randomize/randomizeHistory';
-import { TemplateLibrary } from '../../procgen/templates/templateLibrary';
-import { sanitizePipeline } from '../../procgen/pipeline/sanitizePipeline';
+import type { TemplateLibrary } from '../../procgen/templates/templateLibrary';
 import { WorldSampler } from '../../procgen/worldSampler';
 import { nearestWalkable } from '../../world/nearestWalkable';
 import type { StepRules } from '../../world/sim/stepIsAllowed';
 import { PuzzleWorld } from '../../world/puzzles/puzzleWorld';
 import { PuzzleState } from '../../world/puzzles/state/puzzleState';
 import { isWalkableTile } from '../../world/tileWalkability';
-import { TileAssets } from '../../assets/tiles/tileAssets';
-import { tilesAsStoredJson, tilesFromStoredJson } from '../../assets/tiles/tileStorage';
-import { sanitizeTemplates } from '../../procgen/templates/nodeTemplate';
-import { sanitizeWorldPresets } from '../../procgen/presets/worldPreset';
+import type { TileAssets } from '../../assets/tiles/tileAssets';
+import type { ServerWorldAssets } from './serverWorldAssets';
 
 const SPAWN_SEARCH_RADIUS = 128;
 
 export interface ServerWorld {
   stamp: string;
   sampler: WorldSampler;
+  evaluator: PipelineEvaluator;
   tileAssets: TileAssets;
   store: PipelineStore;
   pieces: PieceAssets;
@@ -53,56 +47,27 @@ export interface WorldAccess {
   persistWorld(world: ServerWorld): void;
 }
 
-export interface DocSource {
-  read(name: string): unknown;
-  stamp(): string;
+export interface CarriedWorldState {
+  randomizeHistory: RandomizeHistory;
+  takenItems: TakenItemSpawns;
+  puzzleState: PuzzleState;
 }
 
-export interface DocSink {
-  write(name: string, json: unknown): void;
+export function freshWorldState(): CarriedWorldState {
+  return {
+    randomizeHistory: new RandomizeHistory(),
+    takenItems: new TakenItemSpawns(),
+    puzzleState: new PuzzleState(),
+  };
 }
 
-export function persistWorld(docs: DocSink, world: ServerWorld): void {
-  docs.write('pipeline', world.store.snapshot());
-  docs.write('tiles', tilesAsStoredJson(world.tileAssets.all()));
-  docs.write('pieces', world.pieces.all());
-  docs.write('cultures', world.cultures.all());
-  docs.write('creatures', creaturesAsStoredJson(world.creatures.all()));
-  docs.write('items', itemsAsStoredJson(world.items.all()));
-  docs.write('templates', world.templates.savedTemplates());
-  docs.write('worldPresets', world.worldPresets.savedPresets());
-}
-
-export function currentServerWorld(docs: DocSource, previous: ServerWorld | null): ServerWorld {
-  const stamp = docs.stamp();
-  if (previous && previous.stamp === stamp) return previous;
-  return buildServerWorld(
-    docs,
-    stamp,
-    previous?.randomizeHistory ?? new RandomizeHistory(),
-    previous?.takenItems ?? new TakenItemSpawns(),
-    previous?.puzzles.state ?? new PuzzleState(),
-  );
-}
-
-function buildServerWorld(
-  docs: DocSource,
+export function assembleServerWorld(
   stamp: string,
-  randomizeHistory: RandomizeHistory,
-  takenItems: TakenItemSpawns,
-  puzzleState: PuzzleState,
+  assets: ServerWorldAssets,
+  carried: CarriedWorldState,
 ): ServerWorld {
-  const tileAssets = new TileAssets(tilesFromStoredJson(docs.read('tiles')) ?? undefined);
-  const pieces = new PieceAssets(piecesFromStoredJson(docs.read('pieces')) ?? undefined);
-  const cultures = new CultureAssets(culturesFromStoredJson(docs.read('cultures')) ?? undefined);
-  const creatures = new CreatureAssets(
-    creaturesFromStoredJson(docs.read('creatures')) ?? undefined,
-  );
-  const items = new ItemAssets(itemsFromStoredJson(docs.read('items')) ?? undefined);
-  const templates = new TemplateLibrary(sanitizeTemplates(docs.read('templates')));
-  const worldPresets = new WorldPresetLibrary(sanitizeWorldPresets(docs.read('worldPresets')));
-  const store = new PipelineStore(sanitizePipeline(docs.read('pipeline')));
-  const evaluator = new PipelineEvaluator(store);
+  const { store, evaluator, tileAssets, pieces, cultures, items } = assets;
+  const { randomizeHistory, takenItems, puzzleState } = carried;
   const sampler = new WorldSampler(
     store,
     evaluator,
@@ -116,18 +81,11 @@ function buildServerWorld(
   const puzzles = new PuzzleWorld(store, tileIsWalkable, puzzleState);
   const isWalkable = (x: number, y: number) => tileIsWalkable(x, y) && !puzzles.blocksAt(x, y);
   return {
+    ...assets,
     stamp,
     sampler,
     puzzles,
     groundItems: groundItemsOf(sampler, takenItems),
-    tileAssets,
-    store,
-    pieces,
-    cultures,
-    creatures,
-    items,
-    templates,
-    worldPresets,
     randomizeHistory,
     takenItems,
     isWalkable,
@@ -138,4 +96,3 @@ function buildServerWorld(
     spawn: () => nearestWalkable(0, 0, SPAWN_SEARCH_RADIUS, isWalkable) ?? { x: 0, y: 0 },
   };
 }
-

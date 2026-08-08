@@ -1,16 +1,13 @@
-import { existsSync, readFileSync } from 'node:fs';
-import { seedPersistedFile } from '../frontend/persistence/repoFileStore';
-import { PipelineEvaluator } from '../procgen/eval/evaluator';
-import { PipelineStore } from '../procgen/pipeline/pipelineStore';
-import { loadStoredPipeline } from '../procgen/pipeline/pipelineStorage';
-import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
+import { headlessServerWorld } from '../api/agent/headless/headlessServerWorld';
+import { storedJsonFromRepoDataFiles } from '../api/agent/headless/storedJsonFromRepoDataFiles';
+import type { ServerWorld } from '../api/agent/serverWorld';
+import type { PipelineEvaluator } from '../procgen/eval/evaluator';
 import type { PipelineState } from '../procgen/pipeline/pipelineState';
-import { WorldSampler } from '../procgen/worldSampler';
-import { CultureAssets } from '../assets/cultures/cultureAssets';
-import { PieceAssets } from '../assets/pieces/pieceAssets';
-import { TileAssets } from '../assets/tiles/tileAssets';
-import { NO_ITEMS } from '../assets/items/itemAssets';
-import { TakenItemSpawns } from '../assets/items/pickups/takenItemSpawns';
+import type { PipelineStore } from '../procgen/pipeline/pipelineStore';
+import type { WorldSampler } from '../procgen/worldSampler';
+import type { CultureAssets } from '../assets/cultures/cultureAssets';
+import type { PieceAssets } from '../assets/pieces/pieceAssets';
+import type { TileAssets } from '../assets/tiles/tileAssets';
 
 export interface HeadlessWorld {
   tileAssets: TileAssets;
@@ -21,42 +18,23 @@ export interface HeadlessWorld {
   sampler: WorldSampler;
 }
 
-const SEEDED_ASSET_FILES = ['tiles', 'pieces', 'cultures'];
-
 export function worldFromRepoData(): HeadlessWorld {
-  seedAssetFiles();
-  seedFromRepoData('pipeline');
-  return worldAround(new PipelineStore(loadStoredPipeline()));
+  return headlessWorldParts(headlessServerWorld(storedJsonFromRepoDataFiles()));
 }
 
 export function worldFromPipelineState(state: PipelineState): HeadlessWorld {
-  seedAssetFiles();
-  return worldAround(new PipelineStore(sanitizePipeline(state)));
-}
-
-function seedAssetFiles(): void {
-  for (const name of SEEDED_ASSET_FILES) seedFromRepoData(name);
-}
-
-function seedFromRepoData(name: string): void {
-  const path = `data/${name}.json`;
-  if (!existsSync(path)) return;
-  seedPersistedFile(name, JSON.parse(readFileSync(path, 'utf8')));
-}
-
-function worldAround(store: PipelineStore): HeadlessWorld {
-  const tileAssets = new TileAssets();
-  const pieceAssets = new PieceAssets();
-  const cultureAssets = new CultureAssets();
-  const evaluator = new PipelineEvaluator(store);
-  const sampler = new WorldSampler(
-    store,
-    evaluator,
-    tileAssets,
-    pieceAssets,
-    NO_ITEMS,
-    new TakenItemSpawns(),
-    cultureAssets,
+  return headlessWorldParts(
+    headlessServerWorld(storedJsonFromRepoDataFiles({ pipeline: state })),
   );
-  return { tileAssets, pieceAssets, cultureAssets, store, evaluator, sampler };
+}
+
+function headlessWorldParts(world: ServerWorld): HeadlessWorld {
+  return {
+    tileAssets: world.tileAssets,
+    pieceAssets: world.pieces,
+    cultureAssets: world.cultures,
+    store: world.store,
+    evaluator: world.evaluator,
+    sampler: world.sampler,
+  };
 }

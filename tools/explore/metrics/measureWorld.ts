@@ -1,5 +1,5 @@
 import type { WorldSampler } from '../../../procgen/worldSampler';
-import type { TileAssets } from '../../../assets/tiles/tileAssets';
+import type { ServerWorld } from '../../../api/agent/serverWorld';
 import {
   cachedTileIdProbe,
   walkableProbeFrom,
@@ -7,8 +7,8 @@ import {
   type WalkableProbe,
 } from '../cachedWorldProbes';
 import { stepsTaken, type ExplorationTrace, type WalkLimits } from '../explorationTrace';
-import { exploreFromSpawn } from '../explorerWalk';
 import { spawnNearOrigin } from '../spawnPoint';
+import type { WorldDriver } from '../drivers/worldDriver';
 import { deadEndRatio } from './deadEndRatio';
 import { markerEncountersAlongPath, type MarkerEncounter } from './markerEncounters';
 import { noveltySpread, noveltyTimeline, type NoveltyEvent } from './noveltyTimeline';
@@ -24,17 +24,18 @@ export interface WorldMeasurementResult {
   score: WorldScore;
 }
 
-export function measureWorld(
-  sampler: WorldSampler,
-  tileAssets: TileAssets,
+export async function measureWorld(
+  world: ServerWorld,
   limits: WalkLimits,
-): WorldMeasurementResult | null {
-  const tileIdAt = cachedTileIdProbe(sampler);
-  const isWalkableAt = walkableProbeFrom(tileIdAt, tileAssets);
+  driver: WorldDriver,
+  seed: number,
+): Promise<WorldMeasurementResult | null> {
+  const tileIdAt = cachedTileIdProbe(world.sampler);
+  const isWalkableAt = walkableProbeFrom(tileIdAt, world.tileAssets);
   const spawn = spawnNearOrigin(isWalkableAt);
   if (!spawn) return null;
-  const trace = exploreFromSpawn(isWalkableAt, spawn, limits);
-  return measuredTrace(sampler, trace, tileIdAt, isWalkableAt);
+  const trace = await driver.explore({ world, spawn, isWalkableAt, limits, seed });
+  return measuredTrace(world.sampler, trace, tileIdAt, isWalkableAt);
 }
 
 function measuredTrace(

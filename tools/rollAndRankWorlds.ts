@@ -2,6 +2,8 @@ import '../procgen/nodes';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { stepsTaken } from './explore/explorationTrace';
+import { driverFromEnvironment } from './explore/drivers/driverFromEnvironment';
+import type { WorldDriver } from './explore/drivers/worldDriver';
 import {
   measureWorld,
   measurementSummaryLine,
@@ -9,13 +11,12 @@ import {
 } from './explore/metrics/measureWorld';
 import { thumbnailHtml } from './explore/report/asciiThumbnail';
 import { galleryPageHtml, type GalleryWorld } from './explore/report/galleryHtml';
+import { headlessServerWorld } from '../api/agent/headless/headlessServerWorld';
+import type { ServerWorld } from '../api/agent/serverWorld';
 import { seedPersistedFile } from '../frontend/persistence/repoFileStore';
-import { PipelineEvaluator } from '../procgen/eval/evaluator';
 import type { PipelineState } from '../procgen/pipeline/pipelineState';
-import { PipelineStore } from '../procgen/pipeline/pipelineStore';
 import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
 import { randomWorldPipeline } from '../procgen/randomize/randomWorldPipeline';
-import { WorldSampler } from '../procgen/worldSampler';
 import { mulberry32 } from '../procgen/random/mulberry32';
 import { TileAssets } from '../assets/tiles/tileAssets';
 
@@ -34,17 +35,19 @@ interface Candidate {
 interface RankedWorld {
   candidate: Candidate;
   result: WorldMeasurementResult;
-  sampler: WorldSampler;
+  world: ServerWorld;
 }
 
+const tilesJson: unknown = JSON.parse(readFileSync('data/tiles.json', 'utf8'));
 const tileAssets = tilesetFromRepoData();
+const driver = driverFromEnvironment(process.env, ROLL_SEED);
 const candidates = [currentPipelineCandidate(), ...rolledCandidates(tileAssets)];
-const { ranked, unmeasurable } = measureCandidates(candidates, tileAssets);
+const { ranked, unmeasurable } = await measureCandidates(candidates, driver);
 writeGallery(ranked);
 printRanking(ranked, unmeasurable);
 
 function tilesetFromRepoData(): TileAssets {
-  seedPersistedFile('tiles', JSON.parse(readFileSync('data/tiles.json', 'utf8')));
+  seedPersistedFile('tiles', tilesJson);
   return new TileAssets();
 }
 
@@ -63,14 +66,22 @@ function rolledCandidates(activeTiles: TileAssets): Candidate[] {
   }));
 }
 
-function measureCandidates(
+function candidateWorld(candidate: Candidate): ServerWorld {
+  return headlessServerWorld((name) => {
+    if (name === 'tiles') return tilesJson;
+    if (name === 'pipeline') return candidate.state;
+    return null;
+  });
+}
+
+async function measureCandidates(
   all: Candidate[],
-  activeTiles: TileAssets,
-): { ranked: RankedWorld[]; unmeasurable: Candidate[] } {
+  worldDriver: WorldDriver,
+): Promise<{ ranked: RankedWorld[]; unmeasurable: Candidate[] }> {
   const ranked: RankedWorld[] = [];
   const unmeasurable: Candidate[] = [];
   for (const candidate of all) {
-    const world = measuredCandidate(candidate, activeTiles);
+    const world = await measuredCandidate(candidate, worldDriver);
     if (world) ranked.push(world);
     else unmeasurable.push(candidate);
   }
@@ -78,13 +89,15 @@ function measureCandidates(
   return { ranked, unmeasurable };
 }
 
-function measuredCandidate(candidate: Candidate, activeTiles: TileAssets): RankedWorld | null {
-  const store = new PipelineStore(candidate.state);
-  const sampler = new WorldSampler(store, new PipelineEvaluator(store), activeTiles);
-  const result = measureWorld(sampler, activeTiles, WALK_LIMITS);
+async function measuredCandidate(
+  candidate: Candidate,
+  worldDriver: WorldDriver,
+): Promise<RankedWorld | null> {
+  const world = candidateWorld(candidate);
+  const result = await measureWorld(world, WALK_LIMITS, worldDriver, candidate.state.seed);
   if (!result) return null;
   console.log(`measured ${candidate.title}: ${measurementSummaryLine(result)}`);
-  return { candidate, result, sampler };
+  return { candidate, result, world };
 }
 
 function writeGallery(ranked: RankedWorld[]): void {
@@ -107,7 +120,7 @@ function galleryWorldOf(world: RankedWorld, position: number): GalleryWorld {
     exhaustedRegion: world.result.trace.exhaustedRegion,
     score: world.result.score,
     measurements: world.result.measurements,
-    thumbnail: thumbnailHtml(world.sampler, tileAssets, world.result.trace.spawn),
+    thumbnail: thumbnailHtml(world.world.sampler, tileAssets, world.result.trace.spawn),
     pipelineFileName: `world-${String(world.candidate.index).padStart(2, '0')}.pipeline.json`,
     pipelineJson: JSON.stringify(world.candidate.state, null, 2) + '\n',
   };
@@ -119,7 +132,7 @@ function nodeSummaryOf(state: PipelineState): string {
 }
 
 function generatedLabel(): string {
-  return `${ROLL_COUNT} rolls from rng seed ${ROLL_SEED}, plus the current pipeline · ${STEP_BUDGET}-step explorer budget · generated ${new Date().toISOString()}`;
+  return `${ROLL_COUNT} rolls from rng seed ${ROLL_SEED}, plus the current pipeline · ${STEP_BUDGET}-step ${driver.name} budget · generated ${new Date().toISOString()}`;
 }
 
 function resultsJson(worlds: GalleryWorld[]): string {
