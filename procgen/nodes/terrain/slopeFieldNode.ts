@@ -1,3 +1,4 @@
+import { cellsSpanningTiles } from '../../cellStride';
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { fieldValue, type ChunkValue } from '../../values/chunkValues';
@@ -39,24 +40,30 @@ registerNodeType({
 
 function slopeChunk(ctx: ChunkGenCtx): ChunkValue {
   const out = ctx.newField();
-  const radius = ctx.params.radius as number;
-  const window = gatherFieldWindow(ctx, 'source', radius + 1);
+  const radiusCells = cellsSpanningTiles(ctx.params.radius as number, ctx.stride);
+  const window = gatherFieldWindow(ctx, 'source', radiusCells + 1);
   if (!window) return fieldValue(out);
   const gain = ctx.params.gain as number;
+  const spanInTiles = 2 * radiusCells * ctx.stride;
   for (let i = 0; i < out.length; i++) {
-    out[i] = steepnessAt(window, ctx.originX + (i % ctx.size), ctx.originY + Math.floor(i / ctx.size), radius, gain);
+    const cellX = ctx.originX + (i % ctx.size);
+    const cellY = ctx.originY + Math.floor(i / ctx.size);
+    out[i] = steepnessAt(window, cellX, cellY, radiusCells, spanInTiles, gain);
   }
   return fieldValue(out);
 }
 
 function steepnessAt(
   window: FieldWindow,
-  worldX: number,
-  worldY: number,
-  radius: number,
+  cellX: number,
+  cellY: number,
+  radiusCells: number,
+  spanInTiles: number,
   gain: number,
 ): number {
-  const acrossX = windowValueAt(window, worldX + radius, worldY) - windowValueAt(window, worldX - radius, worldY);
-  const acrossY = windowValueAt(window, worldX, worldY + radius) - windowValueAt(window, worldX, worldY - radius);
-  return Math.min(1, (Math.hypot(acrossX, acrossY) / (2 * radius)) * gain);
+  const acrossX =
+    windowValueAt(window, cellX + radiusCells, cellY) - windowValueAt(window, cellX - radiusCells, cellY);
+  const acrossY =
+    windowValueAt(window, cellX, cellY + radiusCells) - windowValueAt(window, cellX, cellY - radiusCells);
+  return Math.min(1, (Math.hypot(acrossX, acrossY) / spanInTiles) * gain);
 }
