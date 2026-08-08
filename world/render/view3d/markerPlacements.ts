@@ -1,4 +1,5 @@
 import type { Marker, WorldSampler } from '../../../procgen/worldSampler';
+import { withTransparency } from '../../../library/tiles/inkColor';
 import { WALKABLE_TILE_HEIGHT } from '../../../library/tiles/tileHeight';
 import { NO_EXTRA_MARKERS, type MarkerSource } from '../markerSource';
 import type { TilePlacement } from './tilePlacements';
@@ -42,7 +43,7 @@ function placementForMarker(marker: Marker, elevation: number): TilePlacement {
     y: marker.y,
     elevation,
     height: marker.standingHeight ?? WALKABLE_TILE_HEIGHT,
-    baseColor: marker.color,
+    baseColor: withTransparency(marker.color, marker.seeThroughUnpaintedArt === true),
     shade: 1,
     faceArt: marker.faceArt,
     glow: 0,
