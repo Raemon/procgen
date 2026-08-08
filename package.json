@@ -31,6 +31,7 @@
     "tiles:write": "esbuild tools/writeTilesetDataFile.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
     "pieces:write": "esbuild tools/writePiecesDataFile.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
     "cultures:write": "esbuild tools/writeCulturesDataFile.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
+    "assets:generate": "esbuild tools/generateRandomAssets.ts --bundle --format=esm --platform=node --log-level=error --outfile=dist/generateRandomAssets.mjs && node dist/generateRandomAssets.mjs",
     "village:probe": "esbuild tools/probeVillageSnapshot.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module",
     "village:overhead": "esbuild tools/renderVillageOverhead.ts --bundle --format=esm --platform=node --log-level=error | node --input-type=module"
   },
