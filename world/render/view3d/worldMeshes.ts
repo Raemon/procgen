@@ -1,46 +1,42 @@
 import * as THREE from 'three';
-import { CHUNK_SIZE, chunkOrigin } from '../../../procgen/chunk';
+import { chunkOrigin, CHUNK_SIZE } from '../../../procgen/chunk';
 import type { WorldSampler } from '../../../procgen/worldSampler';
 import { isTransparentInk, opaqueInk } from '../../../assets/tiles/inkColor';
-import type { CubeFaceArt } from '../../../assets/tiles/tileFaceArt';
 import type { ReadOnlyTileAssets } from '../../../frontend/readOnlyAssets';
-import {
-  instancedTileMesh,
-  type PlacementPosition,
-  type PlacementVerticalScale,
-} from './instancedTileMesh';
+import { instancedTileMesh } from './instancedTileMesh';
 import { MAX_FACE_ART_SIZE } from '../../../assets/tiles/tileFaceArt';
 import { tileSurfaceMaterials, type TileSurface } from './tileSurfaces';
 import { rememberTileSurface } from './chunkDetail';
 import { glowSelfLit } from './selfLitGlow';
-import { tileBoxGeometry } from './tileBoxGeometry';
-import { ceilingPlacementsForRect } from './ceilingPlacements';
 import { markerPlacementsForRect } from './markerPlacements';
 import { NO_EXTRA_MARKERS, type MarkerSource } from '../markerSource';
-import { tilePlacementsForRect, type TilePlacement } from './tilePlacements';
-import { voxelPlacementsForRect } from './voxelPlacements';
+import type { TilePlacement } from './tilePlacements';
+import {
+  insideChunk,
+  placementsAroundChunk,
+  type ChunkSurroundings,
+} from './culling/chunkSurroundings';
+import type { ChunkOccluderField } from './culling/chunkOccluderField';
+import {
+  occluderFieldOfPlacements,
+  type ShapedPlacements,
+} from './culling/occluderFieldOfPlacements';
+import { EVERY_FACE, visibleFacesOf } from './culling/visibleFaceMask';
+import { foldRareFaceVariants, type FacedPlacement } from './culling/foldRareFaceVariants';
+import { groupsOfLikeSurfaceAndFaces, type PlacementGroup } from './placementGroups';
+import {
+  blockShape,
+  ceilingShape,
+  floorShape,
+  markerShape,
+  standingFixtureShape,
+  voxelShape,
+  type TileShape,
+} from './tileShapes';
 
 export { disposeMeshChildren } from './disposeMeshResources';
 
-const FLOOR_THICKNESS = 0.1;
-const WATER_DROP = 0.22;
-const BLOCK_LAYER_HEIGHT = 1;
-const MARKER_HEIGHT = 0.7;
-const MARKER_WIDTH = 0.48;
 export const CEILING_GROUP_NAME = 'ceiling';
-
-interface ShapeSpec {
-  geometry(): THREE.BufferGeometry;
-  positionOf: PlacementPosition;
-  verticalScaleOf?: PlacementVerticalScale;
-}
-
-interface PlacementGroup {
-  art: CubeFaceArt | null;
-  baseColor: string;
-  glow: number;
-  placements: TilePlacement[];
-}
 
 export function buildChunkMeshGroup(
   sampler: WorldSampler,
@@ -51,99 +47,92 @@ export function buildChunkMeshGroup(
 ): THREE.Group {
   const minX = chunkOrigin(chunkX);
   const minY = chunkOrigin(chunkY);
-  const { floors, blocks } = tilePlacementsForRect(
-    sampler,
-    tileAssets,
-    minX,
-    minY,
-    CHUNK_SIZE,
-    CHUNK_SIZE,
-  );
+  const around = placementsAroundChunk(sampler, tileAssets, minX, minY);
   const markers = markerPlacementsForRect(sampler, minX, minY, CHUNK_SIZE, CHUNK_SIZE, extraMarkers);
-  const voxels = voxelPlacementsForRect(sampler, tileAssets, minX, minY, CHUNK_SIZE, CHUNK_SIZE);
   const group = new THREE.Group();
   group.add(
-    ...meshesForShape(floors, floorShape()),
-    ...meshesForShape(blocks, blockShape()),
-    ...meshesForShape(voxels, voxelShape()),
+    ...terrainMeshes(around, minX, minY),
     ...meshesForShape(markers.pins, markerShape()),
     ...meshesForShape(markers.standingFixtures, standingFixtureShape()),
-    ceilingGroup(sampler, tileAssets, minX, minY),
+    ceilingGroup(around, minX, minY),
   );
   return group;
 }
 
-function ceilingGroup(
-  sampler: WorldSampler,
-  tileAssets: ReadOnlyTileAssets,
+function terrainMeshes(
+  around: ChunkSurroundings,
   minX: number,
   minY: number,
-): THREE.Group {
-  const placements = ceilingPlacementsForRect(sampler, tileAssets, minX, minY, CHUNK_SIZE, CHUNK_SIZE);
+): THREE.InstancedMesh[] {
+  const field = occluderFieldOfPlacements(around.window, terrainOccluders(around));
+  return [
+    ...meshesForShape(insideChunk(around.floors, minX, minY), floorShape(), field),
+    ...meshesForShape(insideChunk(around.blocks, minX, minY), blockShape(), field),
+    ...meshesForShape(insideChunk(around.voxels, minX, minY), voxelShape(), field),
+  ];
+}
+
+function terrainOccluders(around: ChunkSurroundings): ShapedPlacements[] {
+  return [
+    { placements: around.floors, shape: floorShape() },
+    { placements: around.blocks, shape: blockShape() },
+    { placements: around.voxels, shape: voxelShape() },
+  ];
+}
+
+function ceilingGroup(around: ChunkSurroundings, minX: number, minY: number): THREE.Group {
+  const field = occluderFieldOfPlacements(around.window, [
+    { placements: around.ceilings, shape: ceilingShape() },
+  ]);
   const group = new THREE.Group();
   group.name = CEILING_GROUP_NAME;
-  group.add(...meshesForShape(placements, ceilingShape()));
+  const meshes = meshesForShape(insideChunk(around.ceilings, minX, minY), ceilingShape(), field);
+  if (meshes.length > 0) group.add(...meshes);
   return group;
 }
 
-function ceilingShape(): ShapeSpec {
-  return {
-    geometry: () => tileBoxGeometry(1, BLOCK_LAYER_HEIGHT, 1),
-    positionOf: (p) => [p.x + 0.5, p.elevation + BLOCK_LAYER_HEIGHT / 2, p.y + 0.5],
-  };
-}
-
-function voxelShape(): ShapeSpec {
-  return {
-    geometry: () => tileBoxGeometry(1, BLOCK_LAYER_HEIGHT, 1),
-    positionOf: (p) => [p.x + 0.5, p.elevation + BLOCK_LAYER_HEIGHT / 2, p.y + 0.5],
-  };
-}
-
-function floorShape(): ShapeSpec {
-  return {
-    geometry: () => tileBoxGeometry(1, FLOOR_THICKNESS, 1),
-    positionOf: (p) => [
-      p.x + 0.5,
-      p.elevation + (p.sunkenAsWater ? -WATER_DROP : 0) - FLOOR_THICKNESS / 2,
-      p.y + 0.5,
-    ],
-  };
-}
-
-function blockShape(): ShapeSpec {
-  return {
-    geometry: () => tileBoxGeometry(0.95, BLOCK_LAYER_HEIGHT, 0.95),
-    positionOf: (p) => [p.x + 0.5, p.elevation + BLOCK_LAYER_HEIGHT / 2, p.y + 0.5],
-  };
-}
-
-function markerShape(): ShapeSpec {
-  return {
-    geometry: () => tileBoxGeometry(MARKER_WIDTH, MARKER_HEIGHT, MARKER_WIDTH),
-    positionOf: (p) => [p.x + 0.5, p.elevation + MARKER_HEIGHT / 2, p.y + 0.5],
-  };
-}
-
-function standingFixtureShape(): ShapeSpec {
-  return {
-    geometry: () => tileBoxGeometry(1, 1, 1),
-    positionOf: (p) => [p.x + 0.5, p.elevation + p.height / 2, p.y + 0.5],
-    verticalScaleOf: (p) => p.height,
-  };
-}
-
-function meshesForShape(placements: TilePlacement[], shape: ShapeSpec): THREE.InstancedMesh[] {
-  return groupsOfLikeSurface(placements)
+function meshesForShape(
+  placements: readonly TilePlacement[],
+  shape: TileShape,
+  field?: ChunkOccluderField,
+): THREE.InstancedMesh[] {
+  return groupsOfLikeSurfaceAndFaces(foldRareFaceVariants(facedPlacements(placements, shape, field)))
     .map((group) => groupMesh(group, shape))
     .filter((mesh): mesh is THREE.InstancedMesh => mesh !== null);
 }
 
-function groupMesh(group: PlacementGroup, shape: ShapeSpec): THREE.InstancedMesh | null {
+function facedPlacements(
+  placements: readonly TilePlacement[],
+  shape: TileShape,
+  field: ChunkOccluderField | undefined,
+): FacedPlacement[] {
+  const faced: FacedPlacement[] = [];
+  for (const placement of placements) {
+    if (!showsAnySurface(placement)) continue;
+    const faces = visibleFacesOfPlacement(placement, shape, field);
+    if (faces !== 0) faced.push({ placement, faces });
+  }
+  return faced;
+}
+
+function showsAnySurface(placement: TilePlacement): boolean {
+  return placement.faceArt !== null || !isTransparentInk(placement.baseColor);
+}
+
+function visibleFacesOfPlacement(
+  placement: TilePlacement,
+  shape: TileShape,
+  field: ChunkOccluderField | undefined,
+): number {
+  if (!field || !shape.occluderBoxOf) return EVERY_FACE;
+  return visibleFacesOf(field, placement.x, placement.y, shape.occluderBoxOf(placement));
+}
+
+function groupMesh(group: PlacementGroup, shape: TileShape): THREE.InstancedMesh | null {
   if (group.placements.length === 0) return null;
   const surface = surfaceOf(group);
   const mesh = instancedTileMesh(
-    shape.geometry(),
+    shape.geometry(group.faces),
     surface ? tileSurfaceMaterials(surface, MAX_FACE_ART_SIZE) : untexturedMaterial(group),
     group.placements,
     shape.positionOf,
@@ -162,32 +151,4 @@ function untexturedMaterial(group: PlacementGroup): THREE.Material {
   const material = new THREE.MeshLambertMaterial();
   glowSelfLit(material, group.glow, opaqueInk(group.baseColor));
   return material;
-}
-
-function groupsOfLikeSurface(placements: TilePlacement[]): PlacementGroup[] {
-  const groups = new Map<CubeFaceArt | string, PlacementGroup>();
-  for (const placement of placements) {
-    if (!placement.faceArt && isTransparentInk(placement.baseColor)) continue;
-    addToGroup(groups, placement);
-  }
-  return [...groups.values()];
-}
-
-function addToGroup(
-  groups: Map<CubeFaceArt | string, PlacementGroup>,
-  placement: TilePlacement,
-): void {
-  const key = placement.faceArt ?? flatSurfaceKey(placement);
-  const group = groups.get(key) ?? {
-    art: placement.faceArt,
-    baseColor: placement.baseColor,
-    glow: placement.glow,
-    placements: [],
-  };
-  groups.set(key, group);
-  group.placements.push(placement);
-}
-
-function flatSurfaceKey(placement: TilePlacement): string {
-  return placement.glow > 0 ? `glowing:${placement.baseColor}:${placement.glow}` : 'unlit';
 }

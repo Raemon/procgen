@@ -11,6 +11,7 @@ import { checkTileHeightInvariants } from './checkTileHeightInvariants';
 import { checkTileArtMipInvariants } from './checkTileArtMipInvariants';
 import { checkSharedItemAndCreatureArtInvariants } from './checkSharedItemAndCreatureArtInvariants';
 import { checkTileArtStorageInvariants } from './checkTileArtStorageInvariants';
+import { checkHiddenTileFaceCulling } from './checkHiddenTileFaceCulling';
 import { checkPresentationFoldersAreTheOnlyDomCode } from './checkPresentationFoldersAreTheOnlyDomCode';
 import { checkDesignBetsStillHold } from './checkDesignBetsStillHold';
 import { checkPuzzleInvariants } from './checkPuzzleInvariants';
@@ -1989,6 +1990,7 @@ describe('tile heights', () => checkTileHeightInvariants(check));
 describe('tile art mips', () => checkTileArtMipInvariants(check));
 describe('shared item and creature art', () => checkSharedItemAndCreatureArtInvariants(check));
 describe('tile art storage', () => checkTileArtStorageInvariants(check));
+describe('hidden tile faces', () => checkHiddenTileFaceCulling(check));
 describe('puzzle rooms', () => checkPuzzleInvariants(check));
 describe('the dom boundary', () => checkPresentationFoldersAreTheOnlyDomCode(check));
 describe('documentation', () => {

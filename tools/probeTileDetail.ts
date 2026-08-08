@@ -1,12 +1,7 @@
-import { readFileSync } from 'node:fs';
 import * as THREE from 'three';
 import '../procgen/nodes';
-import { seedPersistedFile } from '../frontend/persistence/repoFileStore';
-import { PipelineEvaluator } from '../procgen/eval/evaluator';
-import { PipelineStore } from '../procgen/pipeline/pipelineStore';
-import { loadStoredPipeline } from '../procgen/pipeline/pipelineStorage';
-import { WorldSampler } from '../procgen/worldSampler';
-import { TileAssets } from '../assets/tiles/tileAssets';
+import { worldFromRepoData } from './headlessWorld';
+import { stubTheCanvasTexturesAreRasterizedOnto } from './stubCanvasForHeadlessTextures';
 import { applyTileSideBudget } from '../world/render/view3d/chunkDetail';
 import { disposeMeshChildren } from '../world/render/view3d/disposeMeshResources';
 import { tileSideBudget } from '../world/render/view3d/tileDetailBudget';
@@ -60,29 +55,4 @@ function groupHolding(child: THREE.Object3D): THREE.Group {
   const holder = new THREE.Group();
   holder.add(child);
   return holder;
-}
-
-function worldFromRepoData() {
-  seedPersistedFile('tiles', JSON.parse(readFileSync('data/tiles.json', 'utf8')));
-  seedPersistedFile('pipeline', JSON.parse(readFileSync('data/pipeline.json', 'utf8')));
-  const tileAssets = new TileAssets();
-  const store = new PipelineStore(loadStoredPipeline());
-  return { tileAssets, sampler: new WorldSampler(store, new PipelineEvaluator(store), tileAssets) };
-}
-
-function stubTheCanvasTexturesAreRasterizedOnto(): void {
-  (globalThis as unknown as { document: unknown }).document = {
-    createElement: () => ({
-      width: 0,
-      height: 0,
-      getContext: () => ({
-        clearRect() {},
-        fillRect() {},
-        putImageData() {},
-        createImageData: (width: number, height: number) => ({
-          data: new Uint8ClampedArray(width * height * 4),
-        }),
-      }),
-    }),
-  };
 }
