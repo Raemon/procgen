@@ -34,6 +34,7 @@ export function mountWorldViews(
     tileAssets,
     'god',
     runtime.puzzles,
+    runtime.hoveredTile,
   );
   const agentCharacterView = new AgentTextView(
     slots.agentCharacter,
@@ -42,6 +43,7 @@ export function mountWorldViews(
     tileAssets,
     'character',
     runtime.puzzles,
+    runtime.hoveredTile,
   );
 
   const unregister = [
@@ -117,6 +119,7 @@ export function mountWorldViews(
     onModeChanged: (mode) => {
       runtime.setPlayerMode(isCharacterControlled(mode) ? 'character' : 'god');
       view3d.setCameraStyle(mode === 'character' ? 'character' : 'god');
+      runtime.hoveredTile.clear();
     },
   };
 }
@@ -136,6 +139,7 @@ function worldViewDepsOf(runtime: AppRuntime): WorldViewDeps {
     items: runtime.items,
     sim: runtime.sim,
     capture: runtime.capture,
+    hoveredTile: runtime.hoveredTile,
     remotePlayers: runtime.net.remotePlayers,
     speech: runtime.net.speech,
   };

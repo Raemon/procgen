@@ -5,6 +5,7 @@ import { measureWork } from '../../../perf/workTimers';
 import { facingYawRadians } from '../../facing';
 import type { CameraView } from './cameraView';
 import { listenForCaptureDrag } from '../../capture/listenForCaptureDrag';
+import { listenForTileHover } from '../../hover/listenForTileHover';
 import { listenForDragPan } from '../camera/dragPanListener';
 import { listenForWheelZoom } from '../camera/wheelZoomListener';
 import { containerSize, devicePixelRatioCapped, isCollapsed } from '../canvasSurface';
@@ -97,6 +98,7 @@ export class View3D {
     this.speechLabels = new SpeechBubbleLabels(container);
     this.listenForCameraGestures();
     listenForCaptureDrag(this.canvas, deps.capture, (x, y) => this.cellAtPixel(x, y));
+    listenForTileHover(this.canvas, deps.hoveredTile, (x, y) => this.cellAtPixel(x, y));
     this.resizeObserver.observe(container);
     this.resize();
     this.animationFrame = requestAnimationFrame(this.onFrame);

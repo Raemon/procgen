@@ -17,6 +17,7 @@ import { checkEveryApiSurfaceIsDescribed } from './checkEveryApiSurfaceIsDescrib
 import { checkClaudeMdPointsAtThingsThatExist } from './checkClaudeMdPointsAtThingsThatExist';
 import { checkDocumentationHasNotRegrown } from './checkDocumentationHasNotRegrown';
 import { checkPerformanceReadouts } from './checkPerformanceReadouts';
+import { checkTileHoverReadout } from './checkTileHoverReadout';
 import { cameraRelativeStep } from '../world/input/cameraRelativeStep';
 import { PipelineEvaluator } from '../procgen/eval/evaluator';
 import { allNodeTypes } from '../procgen/nodeRegistry';
@@ -1997,5 +1998,6 @@ describe('the api surface', () => checkEveryApiSurfaceIsDescribed(check));
 describe('landmarks and ceilings', () => checkLandmarkAndCeilingInvariants(check));
 describe('delve darkness', () => checkDelveDarknessInvariants(check));
 describe('performance readouts', () => checkPerformanceReadouts(check));
+describe('the hovered tile readout', () => checkTileHoverReadout(check));
 
 
