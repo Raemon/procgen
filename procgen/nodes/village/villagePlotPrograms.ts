@@ -23,8 +23,9 @@ export function programForSlot(choice: PlotProgramChoice, hashSeed: VillageHashS
 
 function wantedProgramOf(choice: PlotProgramChoice, hashSeed: VillageHashSeed): number {
   if (choice.slotIndex === 0 && weightOf(choice, TOWN_HALL) > 0) return TOWN_HALL;
-  if (choice.ring === 0 && weightOf(choice, INN) > 0) return INN;
-  if (choice.ring === 1 && weightOf(choice, SMITHY) > 0) return SMITHY;
+  const civicSlot = choice.slotIndex - 1;
+  if (civicSlot < weightOf(choice, INN)) return INN;
+  if (civicSlot < weightOf(choice, INN) + weightOf(choice, SMITHY)) return SMITHY;
   return outerProgramOf(choice, hashSeed);
 }
 
