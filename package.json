@@ -22,6 +22,7 @@
     "chunk:load": "bash tools/runTool.sh probeChunkDrawLoad",
     "tiles:detail": "bash tools/runTool.sh probeTileDetail",
     "items:draws": "bash tools/runTool.sh probeItemAndCreatureDraws",
+    "billboards:preview": "bash tools/runTool.sh renderBillboardSheet",
     "characters:preview": "bash tools/runTool.sh renderCharacterSheet",
     "perf": "bash tools/runTool.sh benchmarkWorldPerf",
     "dwarf:preview": "bash tools/runTool.sh renderDwarfPortrait",
