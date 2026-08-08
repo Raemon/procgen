@@ -1,7 +1,5 @@
 import '../procgen/nodes';
-import type { PipelineState } from '../procgen/pipeline/pipelineState';
 import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
-import { examplePipelines } from '../procgen/presets/examplePipelines';
 import { builtInTemplates } from '../procgen/templates/builtInTemplates';
 import { stampTemplateInto } from '../procgen/templates/stampTemplate';
 import { templateFromNodes } from '../procgen/templates/templateFromNodes';
