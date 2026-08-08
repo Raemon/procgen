@@ -9,7 +9,8 @@ export const MODE_LABELS: Record<DisplayMode, string> = {
   ceiling: 'ceiling',
   elevation: 'elevation',
   markers: 'markers',
-  prefabs: 'prefabs',
+  pieces: 'pieces',
+  structures: 'structures',
   creatures: 'creatures',
   items: 'items',
 };
@@ -24,8 +25,10 @@ const MODE_HELP: Record<DisplayMode, string> = {
     'Uses the field as 2.5D ground height, multiplied by the height slider. The last enabled elevation node wins.',
   markers:
     'Draws each point on top of the terrain — a glyph in ASCII, a cone in 2.5D — styled from a tile or a custom glyph and color.',
-  prefabs:
-    'Stamps a prefab asset at every point, anchored on its centre cell. Voxels above ground stack into the world and block movement like any other tile.',
+  pieces:
+    'Stamps a piece asset at every point, anchored on its centre cell. Voxels above ground stack into the world and block movement like any other tile.',
+  structures:
+    'Reserves each point for a culture\u2019s assembled building. The assembler that grows pieces into a structure lands in a later phase, so these points stamp nothing yet.',
   creatures:
     'Spawns a creature asset at every point near the player. Creatures move by their behaviour instead of being baked into the map.',
   items:
@@ -47,7 +50,7 @@ export function ceilingHeightTooltip(): TooltipContent {
   };
 }
 
-export function prefabRotationTooltip(): TooltipContent {
+export function pieceRotationTooltip(): TooltipContent {
   return {
     title: 'rotation',
     body: 'How each stamped copy is turned. Random rotation is a stable hash of the point, so the same seed always turns each copy the same way.',

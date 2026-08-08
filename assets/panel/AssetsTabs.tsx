@@ -18,10 +18,17 @@ const TABS: { tab: AssetKind; tip: TooltipContent }[] = [
     },
   },
   {
-    tab: 'prefabs',
+    tab: 'pieces',
     tip: {
-      title: 'prefabs',
+      title: 'pieces',
       body: 'Voxel stamps — buildings, ruins, rock formations — painted layer by layer or captured straight out of the world view.',
+    },
+  },
+  {
+    tab: 'cultures',
+    tip: {
+      title: 'cultures',
+      body: 'How a village builds: the tiles and role-bound pieces the assembler raises walls, roofs and floors from.',
     },
   },
   {

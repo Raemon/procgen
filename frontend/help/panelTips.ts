@@ -4,7 +4,7 @@ import type { PanelKey } from '../usePanelLayout';
 export const PANEL_TIPS: Readonly<Record<PanelKey, TooltipContent>> = {
   assets: {
     title: 'assets',
-    body: 'Every asset a world is built from: tiles, items, prefab stamps, creatures and characters. Procgen nodes reference assets by name, so an edit here shows up everywhere the asset is used.',
+    body: 'Every asset a world is built from: tiles, items, piece stamps, creatures and characters. Procgen nodes reference assets by name, so an edit here shows up everywhere the asset is used.',
   },
   procgen: {
     title: 'procgen',

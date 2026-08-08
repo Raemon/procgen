@@ -62,6 +62,6 @@ function tileCell(
 }
 
 function visibleTileAt(sampler: WorldSampler, x: number, y: number): number {
-  const topVoxel = sampler.topVoxelAt(x, y);
+  const topVoxel = sampler.topVoxelTileIdAt(x, y);
   return topVoxel === EMPTY_TILE ? sampler.tileAt(x, y) : topVoxel;
 }

@@ -8,6 +8,7 @@ import { MAX_FACE_ART_SIZE } from '../../../assets/tiles/tileFaceArt';
 import { tileSurfaceMaterials, type TileSurface } from './tileSurfaces';
 import { rememberTileSurface } from './chunkDetail';
 import { glowSelfLit } from './selfLitGlow';
+import { pngCubeMaterials } from './pngFaceMaterials';
 import { markerPlacementsForRect } from './markerPlacements';
 import { NO_EXTRA_MARKERS, type MarkerSource } from '../markerSource';
 import type { TilePlacement } from './tilePlacements';
@@ -29,10 +30,12 @@ import {
   ceilingShape,
   floorShape,
   markerShape,
+  shapedShape,
   standingFixtureShape,
   voxelShape,
   type TileShape,
 } from './tileShapes';
+import { groupedByShapeAndFacing } from './shapedPlacementGroups';
 
 export { disposeMeshChildren } from './disposeMeshResources';
 
@@ -69,7 +72,14 @@ function terrainMeshes(
     ...meshesForShape(insideChunk(around.floors, minX, minY), floorShape(), field),
     ...meshesForShape(insideChunk(around.blocks, minX, minY), blockShape(), field),
     ...meshesForShape(insideChunk(around.voxels, minX, minY), voxelShape(), field),
+    ...shapedMeshes(insideChunk(around.shaped, minX, minY)),
   ];
+}
+
+function shapedMeshes(placements: readonly TilePlacement[]): THREE.InstancedMesh[] {
+  return groupedByShapeAndFacing(placements).flatMap((solid) =>
+    meshesForShape(solid.placements, shapedShape(solid.shape, solid.facing)),
+  );
 }
 
 function terrainOccluders(around: ChunkSurroundings): ShapedPlacements[] {
@@ -116,7 +126,7 @@ function facedPlacements(
 }
 
 function showsAnySurface(placement: TilePlacement): boolean {
-  return placement.faceArt !== null || !isTransparentInk(placement.baseColor);
+  return placement.faceArt !== null || placement.textureId !== null || !isTransparentInk(placement.baseColor);
 }
 
 function visibleFacesOfPlacement(
@@ -133,7 +143,7 @@ function groupMesh(group: PlacementGroup, shape: TileShape): THREE.InstancedMesh
   const surface = surfaceOf(group);
   const mesh = instancedTileMesh(
     shape.geometry(group.faces),
-    surface ? tileSurfaceMaterials(surface, MAX_FACE_ART_SIZE) : untexturedMaterial(group),
+    surface ? tileSurfaceMaterials(surface, MAX_FACE_ART_SIZE) : groupMaterials(group),
     group.placements,
     shape.positionOf,
     shape.verticalScaleOf,
@@ -145,6 +155,11 @@ function groupMesh(group: PlacementGroup, shape: TileShape): THREE.InstancedMesh
 function surfaceOf(group: PlacementGroup): TileSurface | null {
   if (!group.art) return null;
   return { art: group.art, baseColor: group.baseColor, glow: group.glow };
+}
+
+function groupMaterials(group: PlacementGroup): THREE.Material | THREE.Material[] {
+  if (group.textureId !== null) return pngCubeMaterials(group.textureId, group.baseColor, group.glow);
+  return untexturedMaterial(group);
 }
 
 function untexturedMaterial(group: PlacementGroup): THREE.Material {

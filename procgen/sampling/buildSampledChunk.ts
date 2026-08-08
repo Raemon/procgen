@@ -1,7 +1,8 @@
 import { CELLS_PER_CHUNK } from '../chunk';
 import type { PipelineEvaluator } from '../eval/evaluator';
 import type { NodeInstance } from '../pipeline/pipelineState';
-import type { ChunkVoxelColumns } from '../prefabOverlay/chunkVoxelColumns';
+import { facingOfVoxel, tileIdOfVoxel } from '../structureOverlay/packedVoxel';
+import type { ChunkVoxelColumns } from '../structureOverlay/chunkVoxelColumns';
 import { EMPTY_TILE } from '../values/chunkValues';
 import { asField, asTiles } from '../values/valueAccess';
 import { mergedCeiling } from './mergedCeiling';
@@ -20,29 +21,44 @@ export function buildSampledChunk(
   chunkX: number,
   chunkY: number,
 ): SampledChunk {
+  const ground = mergedGround(evaluator, nodes.tileLayers, columns, chunkX, chunkY);
   return {
-    tiles: mergedTiles(evaluator, nodes.tileLayers, columns, chunkX, chunkY),
+    tiles: ground.tiles,
+    groundFacing: ground.facing,
     elevation: scaledElevation(evaluator, nodes.elevation, chunkX, chunkY),
     columns,
     ceiling: mergedCeiling(evaluator, nodes.ceilings, chunkX, chunkY),
   };
 }
 
-function mergedTiles(
+interface MergedGround {
+  tiles: Int32Array;
+  facing: Uint8Array;
+}
+
+function mergedGround(
   evaluator: PipelineEvaluator,
   tileLayerNodes: readonly NodeInstance[],
   columns: ChunkVoxelColumns,
   chunkX: number,
   chunkY: number,
-): Int32Array {
-  const merged = new Int32Array(CELLS_PER_CHUNK).fill(EMPTY_TILE);
+): MergedGround {
+  const ground: MergedGround = {
+    tiles: new Int32Array(CELLS_PER_CHUNK).fill(EMPTY_TILE),
+    facing: new Uint8Array(CELLS_PER_CHUNK),
+  };
   for (const node of tileLayerNodes) {
-    overlayTileLayer(merged, evaluator, node, chunkX, chunkY);
+    overlayTileLayer(ground.tiles, evaluator, node, chunkX, chunkY);
   }
-  columns.forEachGroundVoxel((cellIndex, tileId) => {
-    merged[cellIndex] = tileId;
+  overlayGroundVoxels(ground, columns);
+  return ground;
+}
+
+function overlayGroundVoxels(ground: MergedGround, columns: ChunkVoxelColumns): void {
+  columns.forEachGroundPackedVoxel((cellIndex, packed) => {
+    ground.tiles[cellIndex] = tileIdOfVoxel(packed);
+    ground.facing[cellIndex] = facingOfVoxel(packed);
   });
-  return merged;
 }
 
 function overlayTileLayer(

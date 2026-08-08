@@ -13,9 +13,14 @@ export function useRerenderOnTileAssetChange(): void {
   useRerenderWhen(useCallback((listener: () => void) => tileAssets.onChange(listener), [tileAssets]));
 }
 
-export function useRerenderOnPrefabChange(): void {
-  const { prefabs } = useAppRuntime();
-  useRerenderWhen(useCallback((listener: () => void) => prefabs.onChange(listener), [prefabs]));
+export function useRerenderOnPieceChange(): void {
+  const { pieces } = useAppRuntime();
+  useRerenderWhen(useCallback((listener: () => void) => pieces.onChange(listener), [pieces]));
+}
+
+export function useRerenderOnCultureChange(): void {
+  const { cultures } = useAppRuntime();
+  useRerenderWhen(useCallback((listener: () => void) => cultures.onChange(listener), [cultures]));
 }
 
 export function useRerenderOnCreatureChange(): void {

@@ -489,7 +489,7 @@ export function poleToEquator(): ExamplePipeline {
           enabled: true,
           params: { density: 0.002, maskAtLeast: 0.45, maskAtMost: 0.6 },
           inputs: { mask: 'n34' },
-          display: { mode: 'prefabs', prefabId: 0, rotation: -1 },
+          display: { mode: 'pieces', pieceId: 0, rotation: -1 },
         },
         {
           id: 'n38',
@@ -534,7 +534,7 @@ export function poleToEquator(): ExamplePipeline {
           enabled: true,
           params: { density: 0.0005, maskAtLeast: 0.78, maskAtMost: 0.88 },
           inputs: { mask: 'n35' },
-          display: { mode: 'prefabs', prefabId: 2, rotation: -1 },
+          display: { mode: 'pieces', pieceId: 2, rotation: -1 },
         },
       ],
     },

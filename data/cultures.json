@@ -1,0 +1,104 @@
+[
+  {
+    "id": 0,
+    "name": "stonewold",
+    "roleBindings": {
+      "wallSegment": [
+        0
+      ],
+      "wallCorner": [
+        1
+      ],
+      "window": [
+        2
+      ],
+      "door": [
+        3
+      ],
+      "roofEdge": [
+        4
+      ],
+      "roofRidge": [
+        5
+      ],
+      "roofGableEnd": [
+        6
+      ],
+      "floor": [
+        7
+      ],
+      "chimney": [
+        8
+      ],
+      "furnishing": [
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24
+      ]
+    },
+    "wallTileId": 20,
+    "trimTileId": 26,
+    "roofSlopeTileId": 22,
+    "roofRidgeTileId": 23,
+    "floorTileId": 25,
+    "pathTileId": 17,
+    "roofStyle": 1,
+    "storyLayers": 3,
+    "windowEvery": 3
+  },
+  {
+    "id": 1,
+    "name": "thatchmere",
+    "roleBindings": {
+      "wallSegment": [
+        9
+      ],
+      "wallCorner": [
+        10
+      ],
+      "window": [
+        11
+      ],
+      "door": [
+        12
+      ],
+      "roofEdge": [
+        13
+      ],
+      "roofRidge": [
+        14
+      ],
+      "roofGableEnd": [
+        15
+      ],
+      "floor": [
+        16
+      ],
+      "chimney": [
+        17
+      ],
+      "furnishing": [
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24
+      ]
+    },
+    "wallTileId": 30,
+    "trimTileId": 31,
+    "roofSlopeTileId": 32,
+    "roofRidgeTileId": 33,
+    "floorTileId": 34,
+    "pathTileId": 16,
+    "roofStyle": 0,
+    "storyLayers": 2,
+    "windowEvery": 4
+  }
+]

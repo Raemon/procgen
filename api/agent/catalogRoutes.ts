@@ -2,6 +2,8 @@ import { examplePipelines } from '../../procgen/presets/examplePipelines';
 import { nodeTypesJson, pipelineJson } from '../../agents/nodeCatalog';
 import { failure, json, type ApiResponse } from './apiMessages';
 import { creatureJson, inventoryJson, itemJson } from './assetJson';
+import type { Culture } from '../../assets/cultures/cultureDef';
+import type { Piece } from '../../assets/pieces/pieceDef';
 import { registerRoute } from './routeRegistry';
 import type { ServerWorld } from './serverWorld';
 
@@ -52,11 +54,20 @@ registerRoute({
 
 registerRoute({
   method: 'GET',
-  path: '/prefabs',
-  summary: 'the prefab assets: structures a points node can stamp',
+  path: '/pieces',
+  summary: 'the piece assets: role-tagged voxel boxes a points node can stamp',
   body: {},
   query: {},
-  handle: ({ access }) => json(200, { prefabs: access.current().prefabs.all().map(prefabJson) }),
+  handle: ({ access }) => json(200, { pieces: access.current().pieces.all().map(pieceJson) }),
+});
+
+registerRoute({
+  method: 'GET',
+  path: '/cultures',
+  summary: 'the culture assets: the tiles, role-bound pieces and proportions a village is built from',
+  body: {},
+  query: {},
+  handle: ({ access }) => json(200, { cultures: access.current().cultures.all().map(cultureJson) }),
 });
 
 registerRoute({
@@ -97,13 +108,25 @@ function creatureInventory(world: ServerWorld, creatureId: number): ApiResponse 
   return json(200, { creature_id: creatureId, inventory: inventoryJson(creature.inventory) });
 }
 
-function prefabJson(prefab: { id: number; name: string; width: number; depth: number; layers: number }) {
+function cultureJson(culture: Culture) {
   return {
-    id: prefab.id,
-    name: prefab.name,
-    width: prefab.width,
-    depth: prefab.depth,
-    layers: prefab.layers,
+    id: culture.id,
+    name: culture.name,
+    roleBindings: culture.roleBindings,
+    roofStyle: culture.roofStyle,
+    storyLayers: culture.storyLayers,
+    windowEvery: culture.windowEvery,
+  };
+}
+
+function pieceJson(piece: Piece) {
+  return {
+    id: piece.id,
+    name: piece.name,
+    role: piece.role,
+    width: piece.width,
+    depth: piece.depth,
+    layers: piece.layers,
   };
 }
 
@@ -115,6 +138,7 @@ function tileJson(tile: ReturnType<ServerWorld['tileAssets']['all']>[number]) {
     color: tile.color,
     walkable: tile.walkable,
     height: tile.height,
+    shape: tile.shape,
     light: tile.light,
     light_ink: tile.lightInk,
     has_face_art: tile.faceArt !== null,

@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 import type { OccluderBox } from './culling/occluderBox';
 import type { PlacementPosition, PlacementVerticalScale } from './instancedTileMesh';
+import { shapeFillsCell, type TileShapeKind } from '../../../assets/tiles/tileShapeKind';
 import { sharedTileBoxGeometry } from './sharedTileGeometries';
+import { shapedTileGeometry } from './shapedTileGeometries';
 import type { TilePlacement } from './tilePlacements';
 
 export const FLOOR_THICKNESS = 0.1;
@@ -25,6 +27,14 @@ export function ceilingShape(): TileShape {
 
 export function voxelShape(): TileShape {
   return cubeShape(1);
+}
+
+export function shapedShape(kind: TileShapeKind, facing: number): TileShape {
+  if (shapeFillsCell(kind)) return cubeShape(1);
+  return {
+    geometry: (faces) => shapedTileGeometry(kind, facing, faces),
+    positionOf: (p) => [p.x + 0.5, p.elevation + BLOCK_LAYER_HEIGHT / 2, p.y + 0.5],
+  };
 }
 
 export function blockShape(): TileShape {

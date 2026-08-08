@@ -1,9 +1,17 @@
-import { EMPTY_TILE } from '../../../procgen/values/chunkValues';
 import type { WorldSampler } from '../../../procgen/worldSampler';
 import type { ReadOnlyTileAssets } from '../../../frontend/readOnlyAssets';
+import { EMPTY_VOXEL } from '../../../assets/pieces/pieceDef';
+import { facingOfVoxel, tileIdOfVoxel } from '../../../procgen/structureOverlay/packedVoxel';
 import { blockLayersOfTile, WALKABLE_TILE_HEIGHT } from '../../../assets/tiles/tileHeight';
+import { shapeFillsCell } from '../../../assets/tiles/tileShapeKind';
+import type { TileDef } from '../../../assets/tiles/tileDef';
 import { glowOfEmitter } from './selfLitGlow';
 import { tileStandsAsSolidBlock, type TilePlacement } from './tilePlacements';
+
+export interface VoxelPlacementsByShape {
+  voxels: TilePlacement[];
+  shaped: TilePlacement[];
+}
 
 export function voxelPlacementsForRect(
   sampler: WorldSampler,
@@ -12,41 +20,66 @@ export function voxelPlacementsForRect(
   minY: number,
   width: number,
   height: number,
-): TilePlacement[] {
-  const placements: TilePlacement[] = [];
+): VoxelPlacementsByShape {
+  const shapes: VoxelPlacementsByShape = { voxels: [], shaped: [] };
   for (let y = minY; y < minY + height; y++) {
     for (let x = minX; x < minX + width; x++) {
-      collectColumn(placements, sampler, tileAssets, x, y);
+      collectColumn(shapes, sampler, tileAssets, x, y);
     }
   }
-  return placements;
+  return shapes;
 }
 
 function collectColumn(
-  into: TilePlacement[],
+  into: VoxelPlacementsByShape,
   sampler: WorldSampler,
   tileAssets: ReadOnlyTileAssets,
   x: number,
   y: number,
 ): void {
-  const column = sampler.voxelColumnAt(x, y);
+  const column = sampler.packedVoxelColumnAt(x, y);
   if (!column || column.length < 2) return;
   const groundElevation = sampler.elevationAt(x, y) + standingHeightOfGround(sampler, tileAssets, x, y);
   for (let layer = 1; layer < column.length; layer++) {
-    const tile = tileAssets.byId(column[layer] ?? EMPTY_TILE);
-    if (!tile) continue;
-    into.push({
-      x,
-      y,
-      elevation: groundElevation + layer - 1,
-      height: WALKABLE_TILE_HEIGHT,
-      baseColor: tile.color,
-      shade: 1,
-      faceArt: tile.faceArt,
-      glow: glowOfEmitter(tile),
-      sunkenAsWater: false,
-    });
+    collectVoxel(into, tileAssets, x, y, groundElevation + layer - 1, column[layer] ?? EMPTY_VOXEL);
   }
+}
+
+function collectVoxel(
+  into: VoxelPlacementsByShape,
+  tileAssets: ReadOnlyTileAssets,
+  x: number,
+  y: number,
+  elevation: number,
+  packed: number,
+): void {
+  const tile = tileAssets.byId(tileIdOfVoxel(packed));
+  if (!tile) return;
+  const placement = voxelPlacement(tile, x, y, elevation, facingOfVoxel(packed));
+  (shapeFillsCell(tile.shape) ? into.voxels : into.shaped).push(placement);
+}
+
+function voxelPlacement(
+  tile: TileDef,
+  x: number,
+  y: number,
+  elevation: number,
+  facing: number,
+): TilePlacement {
+  return {
+    x,
+    y,
+    elevation,
+    height: WALKABLE_TILE_HEIGHT,
+    baseColor: tile.color,
+    textureId: tile.textureId,
+    shade: 1,
+    faceArt: tile.faceArt,
+    glow: glowOfEmitter(tile),
+    sunkenAsWater: false,
+    shape: tile.shape,
+    facing,
+  };
 }
 
 function standingHeightOfGround(

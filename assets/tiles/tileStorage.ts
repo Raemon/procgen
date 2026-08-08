@@ -2,6 +2,7 @@ import { readPersistedFile, writePersistedFile } from '../../frontend/persistenc
 import { defWithCompactFaceArt, faceArtFromStoredShape, type StoredArtOf } from './storage/storedFaceArt';
 import { tileWithSanitizedLight, type TileDef } from './tileDef';
 import { storedTileHeight } from './tileHeight';
+import { DEFAULT_TILE_SHAPE, isTileShapeKind } from './tileShapeKind';
 
 const FILE_NAME = 'tiles';
 
@@ -16,7 +17,13 @@ export function tilesFromStoredJson(parsed: unknown): TileDef[] | null {
 }
 
 function withValidatedFields(tile: TileDef): TileDef {
-  return { ...tile, height: storedTileHeight(tile), faceArt: faceArtFromStoredShape(tile.faceArt) };
+  return {
+    ...tile,
+    height: storedTileHeight(tile),
+    shape: isTileShapeKind(tile.shape) ? tile.shape : DEFAULT_TILE_SHAPE,
+    faceArt: faceArtFromStoredShape(tile.faceArt),
+    textureId: typeof tile.textureId === 'string' ? tile.textureId : null,
+  };
 }
 
 export function storeTiles(tiles: readonly TileDef[]): void {

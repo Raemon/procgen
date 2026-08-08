@@ -4,6 +4,9 @@ import '../procgen/nodes';
 import { checkLandmarkAndCeilingInvariants } from './checkLandmarkAndCeilingInvariants';
 import { checkTileArtMipInvariants } from './checkTileArtMipInvariants';
 import { checkTileArtStorageInvariants } from './checkTileArtStorageInvariants';
+import { checkPieceInvariants } from './checkPieceInvariants';
+import { checkVillageInvariants } from './checkVillageInvariants';
+import { checkShapedTileInvariants } from './checkShapedTileInvariants';
 import { checkPresentationFoldersAreTheOnlyDomCode } from './checkPresentationFoldersAreTheOnlyDomCode';
 import { checkDesignBetsStillHold } from './checkDesignBetsStillHold';
 import { checkEveryApiSurfaceIsDescribed } from './checkEveryApiSurfaceIsDescribed';
@@ -94,7 +97,8 @@ import { CreatureAssets } from '../assets/creatures/creatureAssets';
 import { ItemAssets } from '../assets/items/itemAssets';
 import { NO_GROUND_ITEMS } from '../assets/items/pickups/groundItems';
 import { PuzzleWorld } from '../world/puzzles/puzzleWorld';
-import { PrefabAssets } from '../assets/prefabs/prefabAssets';
+import { PieceAssets } from '../assets/pieces/pieceAssets';
+import { CultureAssets } from '../assets/cultures/cultureAssets';
 import { FAILURES } from '../agents/failures';
 import { nodeTypesJson } from '../agents/nodeCatalog';
 import { buildObservation, GOD_VIEW_SIZE, SELF_GLYPH } from '../agents/observation';
@@ -1405,13 +1409,15 @@ check('observation text and json carry the same grid', observationText(charObs).
 function abilityWorld() {
   const store = new PipelineStore(emptyPipeline());
   const abilityTiles = new TileAssets();
-  const prefabs = new PrefabAssets();
+  const pieces = new PieceAssets();
+  const cultures = new CultureAssets();
   const pose = { x: 0, y: 0, facing: 0 as FacingIndex };
   const sight: { radius: number } = { radius: DEFAULT_CHARACTER_SIGHT_RADIUS_TILES };
   const context = {
     store,
     tileAssets: abilityTiles,
-    prefabs,
+    pieces,
+    cultures,
     creatures: new CreatureAssets(),
     items: new ItemAssets(),
     templates: new TemplateLibrary([]),
@@ -1422,7 +1428,7 @@ function abilityWorld() {
     regionSampler: {
       tileAt: () => 0,
       elevationAt: () => 0,
-      voxelColumnAt: () => null,
+      packedVoxelColumnAt: () => null,
     },
     actor: {
       pose: () => pose,
@@ -1432,7 +1438,7 @@ function abilityWorld() {
       setSightRadiusTiles: (radius: number) => (sight.radius = clampSightRadiusTiles(radius)),
     },
   };
-  return { context, store, pose, sight, prefabs, tileAssets: abilityTiles };
+  return { context, store, pose, sight, pieces, tileAssets: abilityTiles };
 }
 
 const abilities = abilityWorld();
@@ -1537,10 +1543,10 @@ check('set_seed reseeds the pipeline', (() => {
   const result = act('god', 'set_seed', { seed: 777 });
   return result.ok && abilities.store.seed() === 777;
 })());
-check('set_display rejects a prefab id the prefab assets do not have', (() => {
+check('set_display rejects a piece id the piece assets do not have', (() => {
   const added = act('god', 'add_node', { type: 'scatterPoints' });
   const points = abilities.store.nodes()[abilities.store.nodes().length - 1]!;
-  const bad = act('god', 'set_display', { node_id: points.id, display: 'prefabs', prefab_id: 9999 });
+  const bad = act('god', 'set_display', { node_id: points.id, display: 'pieces', piece_id: 9999 });
   const good = act('god', 'set_display', { node_id: points.id, display: 'creatures', creature_id: -1 });
   return added.ok && !bad.ok && bad.code === 'invalid_value' && good.ok;
 })());
@@ -1560,15 +1566,15 @@ check('tiles can be created and edited through abilities', (() => {
     tile.name === 'test tile' && tile.walkable === false
   );
 })());
-check('prefabs can be built voxel by voxel through abilities', (() => {
-  const added = act('god', 'add_prefab');
-  const prefab = abilities.prefabs.all()[abilities.prefabs.all().length - 1]!;
-  const sized = act('god', 'resize_prefab', { prefab_id: prefab.id, width: 3, depth: 3, layers: 2 });
+check('pieces can be built voxel by voxel through abilities', (() => {
+  const added = act('god', 'add_piece');
+  const piece = abilities.pieces.all()[abilities.pieces.all().length - 1]!;
+  const sized = act('god', 'resize_piece', { piece_id: piece.id, width: 3, depth: 3, layers: 2 });
   const groundTile = abilities.tileAssets.all()[0]!.id;
-  const painted = act('god', 'paint_prefab', { prefab_id: prefab.id, x: 1, y: 1, layer: 1, tile_id: groundTile });
-  const outside = act('god', 'paint_prefab', { prefab_id: prefab.id, x: 9, y: 9, layer: 0, tile_id: groundTile });
-  const filled = act('god', 'fill_prefab_layer', { prefab_id: prefab.id, layer: 0, tile_id: groundTile });
-  const after = abilities.prefabs.byId(prefab.id)!;
+  const painted = act('god', 'paint_piece', { piece_id: piece.id, x: 1, y: 1, layer: 1, tile_id: groundTile });
+  const outside = act('god', 'paint_piece', { piece_id: piece.id, x: 9, y: 9, layer: 0, tile_id: groundTile });
+  const filled = act('god', 'fill_piece_layer', { piece_id: piece.id, layer: 0, tile_id: groundTile });
+  const after = abilities.pieces.byId(piece.id)!;
   return (
     added.ok && sized.ok && painted.ok && filled.ok && !outside.ok &&
     after.width === 3 && after.layers === 2 &&
@@ -1601,10 +1607,10 @@ check('a roll can be seeded and undone', (() => {
   const undone = act('god', 'undo_randomize');
   return rolled.ok && undone.ok && JSON.stringify(abilities.store.snapshot()) === before;
 })());
-check('capture_region lifts world tiles into a new prefab', (() => {
-  const before = abilities.prefabs.all().length;
+check('capture_region lifts world tiles into a new piece', (() => {
+  const before = abilities.pieces.all().length;
   const captured = act('god', 'capture_region', { min_x: 0, min_y: 0, max_x: 3, max_y: 3 });
-  return captured.ok && abilities.prefabs.all().length === before + 1;
+  return captured.ok && abilities.pieces.all().length === before + 1;
 })());
 check('every ability is reachable through the API dispatcher', everyAbility().every((spec) => abilityFor(spec.mode, spec.action) === spec));
 check('character mode owns nothing but its own movement and senses, never the world editor', abilitiesForMode('character').every((spec) => spec.group === 'movement' || spec.group === 'senses'));
@@ -1880,6 +1886,9 @@ check(
 
 describe('tile art mips', () => checkTileArtMipInvariants(check));
 describe('tile art storage', () => checkTileArtStorageInvariants(check));
+describe('shaped tiles and per-voxel facing', () => checkShapedTileInvariants(check));
+describe('pieces', () => checkPieceInvariants(check));
+describe('villages', () => checkVillageInvariants(check));
 describe('the dom boundary', () => checkPresentationFoldersAreTheOnlyDomCode(check));
 describe('documentation', () => {
   checkDocumentationHasNotRegrown(check);

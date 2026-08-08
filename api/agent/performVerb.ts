@@ -29,7 +29,8 @@ export function performVerb(
     {
       store: world.store,
       tileAssets: world.tileAssets,
-      prefabs: world.prefabs,
+      pieces: world.pieces,
+      cultures: world.cultures,
       creatures: world.creatures,
       items: world.items,
       templates: world.templates,

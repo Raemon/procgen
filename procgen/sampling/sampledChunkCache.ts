@@ -1,8 +1,9 @@
-import type { ChunkVoxelColumns } from '../prefabOverlay/chunkVoxelColumns';
+import type { ChunkVoxelColumns } from '../structureOverlay/chunkVoxelColumns';
 import type { CeilingChunk } from './mergedCeiling';
 
 export interface SampledChunk {
   tiles: Int32Array;
+  groundFacing: Uint8Array;
   elevation: Float32Array;
   columns: ChunkVoxelColumns;
   ceiling: CeilingChunk;

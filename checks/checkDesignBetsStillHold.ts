@@ -9,7 +9,7 @@ import {
 } from '../world/vision/characterSight';
 
 const PROTOCOL_SOURCE = 'multiplayer/client/protocol.ts';
-const TERRAIN_WORDS = ['tile', 'chunk', 'voxel', 'height', 'elevation', 'prefab', 'terrain'];
+const TERRAIN_WORDS = ['tile', 'chunk', 'voxel', 'height', 'elevation', 'piece', 'terrain'];
 const VIEW_STATE_WORDS = ['camera', 'zoom', 'pan', 'panel_width', 'view_mode', 'collapse'];
 
 export function checkDesignBetsStillHold(check: (name: string, condition: boolean) => void): void {

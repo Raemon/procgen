@@ -1,0 +1,572 @@
+[
+  {
+    "id": 0,
+    "name": "granite wall run",
+    "role": "wallSegment",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      21,
+      20,
+      20
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 1,
+    "name": "granite corner quoin",
+    "role": "wallCorner",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      20,
+      20,
+      20
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 2,
+    "name": "granite shuttered wall",
+    "role": "window",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      21,
+      27,
+      20
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 3,
+    "name": "iron-strapped granite doorway",
+    "role": "door",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      28,
+      28,
+      26
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 4,
+    "name": "slate shingle eave",
+    "role": "roofEdge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      22
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 5,
+    "name": "slate ridge cap",
+    "role": "roofRidge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      23
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 6,
+    "name": "granite gable end",
+    "role": "roofGableEnd",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      20,
+      22
+    ],
+    "facings": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": 7,
+    "name": "oak plank floor slab",
+    "role": "floor",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      25
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 8,
+    "name": "granite chimney stack",
+    "role": "chimney",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      29,
+      29,
+      21
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 9,
+    "name": "wattle wall run",
+    "role": "wallSegment",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      37,
+      30,
+      30
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 10,
+    "name": "wattle corner post",
+    "role": "wallCorner",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      30,
+      30,
+      30
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 11,
+    "name": "wattle small-paned wall",
+    "role": "window",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      37,
+      36,
+      30
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 12,
+    "name": "oak-planked doorway",
+    "role": "door",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      35,
+      35,
+      31
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 13,
+    "name": "thatch eave course",
+    "role": "roofEdge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      32
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 14,
+    "name": "thatch ridge bundle",
+    "role": "roofRidge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      33
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 15,
+    "name": "thatch gable end",
+    "role": "roofGableEnd",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      30,
+      32
+    ],
+    "facings": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": 16,
+    "name": "rammed earth floor slab",
+    "role": "floor",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      34
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 17,
+    "name": "clay chimney stack",
+    "role": "chimney",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      38,
+      38,
+      37
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 18,
+    "name": "smithy forge and anvil",
+    "role": "furnishing",
+    "width": 2,
+    "depth": 2,
+    "layers": 3,
+    "anchorX": 1,
+    "anchorY": 1,
+    "voxels": [
+      19,
+      19,
+      19,
+      19,
+      39,
+      40,
+      29,
+      45,
+      -1,
+      -1,
+      29,
+      -1
+    ],
+    "facings": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 19,
+    "name": "oak bench",
+    "role": "furnishing",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      19,
+      41
+    ],
+    "facings": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": 20,
+    "name": "lantern post",
+    "role": "furnishing",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      19,
+      26,
+      42
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 21,
+    "name": "stacked firewood",
+    "role": "furnishing",
+    "width": 2,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 1,
+    "anchorY": 0,
+    "voxels": [
+      19,
+      19,
+      45,
+      45,
+      45,
+      -1
+    ],
+    "facings": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 22,
+    "name": "flowering garden bed",
+    "role": "furnishing",
+    "width": 2,
+    "depth": 2,
+    "layers": 2,
+    "anchorX": 1,
+    "anchorY": 1,
+    "voxels": [
+      44,
+      44,
+      44,
+      44,
+      -1,
+      8,
+      8,
+      -1
+    ],
+    "facings": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 23,
+    "name": "stone village well",
+    "role": "furnishing",
+    "width": 2,
+    "depth": 2,
+    "layers": 3,
+    "anchorX": 1,
+    "anchorY": 1,
+    "voxels": [
+      18,
+      18,
+      18,
+      18,
+      43,
+      43,
+      43,
+      43,
+      26,
+      -1,
+      -1,
+      26
+    ],
+    "facings": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 24,
+    "name": "awninged market stall",
+    "role": "furnishing",
+    "width": 3,
+    "depth": 3,
+    "layers": 3,
+    "anchorX": 1,
+    "anchorY": 1,
+    "voxels": [
+      19,
+      19,
+      19,
+      19,
+      19,
+      19,
+      19,
+      19,
+      19,
+      26,
+      -1,
+      26,
+      -1,
+      -1,
+      -1,
+      26,
+      -1,
+      26,
+      46,
+      46,
+      46,
+      46,
+      46,
+      46,
+      46,
+      46,
+      46
+    ],
+    "facings": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  }
+]

@@ -17,6 +17,7 @@ export interface ChunkSurroundings {
   blocks: TilePlacement[];
   voxels: TilePlacement[];
   ceilings: TilePlacement[];
+  shaped: TilePlacement[];
 }
 
 const BORDER = 1;
@@ -30,11 +31,14 @@ export function placementsAroundChunk(
 ): ChunkSurroundings {
   const [fromX, fromY] = [minX - BORDER, minY - BORDER];
   const tiles = tilePlacementsForRect(sampler, tileAssets, fromX, fromY, SPAN, SPAN);
+  const voxels = voxelPlacementsForRect(sampler, tileAssets, fromX, fromY, SPAN, SPAN);
   return {
     window: { originX: fromX, originY: fromY, span: SPAN },
-    ...tiles,
-    voxels: voxelPlacementsForRect(sampler, tileAssets, fromX, fromY, SPAN, SPAN),
+    floors: tiles.floors,
+    blocks: tiles.blocks,
+    voxels: voxels.voxels,
     ceilings: ceilingPlacementsForRect(sampler, tileAssets, fromX, fromY, SPAN, SPAN),
+    shaped: [...tiles.shaped, ...voxels.shaped],
   };
 }
 
