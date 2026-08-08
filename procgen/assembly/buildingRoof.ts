@@ -1,6 +1,12 @@
 import { GABLE_ROOF } from '../../assets/cultures/cultureDef';
 import type { RoomBox } from './buildingMassing';
-import { FACING_EAST, FACING_NORTH, FACING_SOUTH, FACING_WEST } from './buildingSpec';
+import {
+  FACING_EAST,
+  FACING_NORTH,
+  FACING_SOUTH,
+  FACING_WEST,
+  oppositeFacing,
+} from './buildingSpec';
 
 export interface RoofVoxel {
   x: number;
@@ -34,7 +40,17 @@ function roofVoxelAt(
   const slopes = roofStyle === GABLE_ROOF ? gableSlopes(box, x, y) : hipSlopes(box, x, y);
   const nearest = slopes.reduce((best, slope) => (slope.rise < best.rise ? slope : best));
   const peak = Math.min(...slopes.map((slope) => maxRiseOf(slope)));
-  return { x, y, layer: baseLayer + nearest.rise, facing: nearest.facing, isRidge: nearest.rise >= peak };
+  return {
+    x,
+    y,
+    layer: baseLayer + nearest.rise,
+    facing: risingStepFacingOf(nearest),
+    isRidge: nearest.rise >= peak,
+  };
+}
+
+function risingStepFacingOf(slope: RoofSlope): number {
+  return oppositeFacing(slope.facing);
 }
 
 interface RoofSlope {

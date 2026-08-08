@@ -25,6 +25,10 @@ export function normalizedFacing(facing: number): number {
   return ((Math.round(facing) % 4) + 4) % 4;
 }
 
+export function oppositeFacing(facing: number): number {
+  return normalizedFacing(facing + 2);
+}
+
 export function stepOfFacing(facing: number): readonly [number, number] {
   return FACING_STEPS[normalizedFacing(facing)]!;
 }

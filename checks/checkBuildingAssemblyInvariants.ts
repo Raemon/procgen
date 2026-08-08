@@ -1,10 +1,11 @@
-import { wallLayersOf, type Culture } from '../assets/cultures/cultureDef';
+import { GABLE_ROOF, HIP_ROOF, wallLayersOf, type Culture } from '../assets/cultures/cultureDef';
 import type { Piece } from '../assets/pieces/pieceDef';
 import { assembleBuilding } from '../procgen/assembly/assembleBuilding';
 import { footprintWithYard, massingFor } from '../procgen/assembly/buildingMassing';
 import { BUILDING_PROGRAMS, massingRulesFor } from '../procgen/assembly/buildingPrograms';
+import { roofVoxelsOf, type RoofVoxel } from '../procgen/assembly/buildingRoof';
 import { doorCellOf, shellCellsOf, type ShellCell } from '../procgen/assembly/buildingShell';
-import type { BuildingSpec } from '../procgen/assembly/buildingSpec';
+import { stepOfFacing, type BuildingSpec } from '../procgen/assembly/buildingSpec';
 import { buildingSeedKeyAt, specToTag, tagToSpec } from '../procgen/assembly/buildingSpecTag';
 import { FIRST_WALL_LAYER, FLOOR_LAYER } from '../procgen/assembly/buildingTileFallback';
 import { NO_PIECES, type PieceSource } from '../procgen/assembly/pieceSource';
@@ -24,6 +25,7 @@ const WALL_PIECE_LAYERS = 3;
 const WALL_PIECE_ID = 41;
 const WALL_PIECE_TILE_ID = 11;
 const STRADDLING_ANCHOR = { x: 28, y: 28 };
+const ROOF_CHECK_BOX = { x: 0, y: 0, width: 9, depth: 7 };
 
 interface PaintedVoxel {
   x: number;
@@ -37,6 +39,7 @@ export function checkBuildingAssemblyInvariants(check: CheckReporter): void {
   checkMassingStaysInsideTheOverlayReach(check);
   checkTilesAloneStillBuildAWholeBuilding(check);
   checkWallPiecesStackUpToTheRoofTheyCarry(check);
+  checkRoofStepsRiseTowardTheRidgeTheyMeet(check);
   checkABuildingLooksTheSameFromEveryChunkItStraddles(check);
   checkSpecsSurviveTheirWorldPointTag(check);
 }
@@ -124,6 +127,32 @@ function anyWallTileAbove(painted: Map<string, number>, wallLayers: number): boo
 
 function layerOfKey(key: string): number {
   return Number(key.split(',')[2]);
+}
+
+function checkRoofStepsRiseTowardTheRidgeTheyMeet(check: CheckReporter): void {
+  const leaking = roofStylesWithSlopesStepping().filter((roof) => roof.leaks.length > 0);
+  check(
+    'every stepped roof course raises its step toward the course above, not the eave below',
+    leaking.length === 0,
+  );
+}
+
+function roofStylesWithSlopesStepping(): { style: number; leaks: RoofVoxel[] }[] {
+  return [GABLE_ROOF, HIP_ROOF].map((style) => ({
+    style,
+    leaks: slopesFacingDownhill(roofVoxelsOf(ROOF_CHECK_BOX, style, FIRST_WALL_LAYER)),
+  }));
+}
+
+function slopesFacingDownhill(voxels: readonly RoofVoxel[]): RoofVoxel[] {
+  const layerByCell = new Map(voxels.map((voxel) => [`${voxel.x},${voxel.y}`, voxel.layer]));
+  return voxels.filter((voxel) => !voxel.isRidge && stepsAwayFromTheRise(voxel, layerByCell));
+}
+
+function stepsAwayFromTheRise(voxel: RoofVoxel, layerByCell: Map<string, number>): boolean {
+  const step = stepOfFacing(voxel.facing);
+  const beyond = layerByCell.get(`${voxel.x + step[0]},${voxel.y + step[1]}`);
+  return beyond !== undefined && beyond < voxel.layer;
 }
 
 function everyLayerPainted(
