@@ -135,9 +135,9 @@ export function thatchmereVale(): ExamplePipeline {
           label: 'vale villages',
           folder: 'thatchmere villages',
           comment:
-            'Villages answer to the land: only the gentle inhabited band from 0.50 to 0.62 can hold one, which is clear of the marsh and well below the scree. Spacing 128 puts roughly one village every two chunks of walking, so you cross fields between them instead of tripping over the next roof.',
+            'Villages answer to the land: only the gentle inhabited band from 0.50 to 0.62 can hold one, which is clear of the marsh and well below the scree. Spacing 160 puts roughly one village every two and a half chunks of walking, so you cross fields between them instead of tripping over the next roof.',
           enabled: true,
-          params: { maskAtLeast: 0.5, maskAtMost: 0.62, spacing: 128 },
+          params: { maskAtLeast: 0.5, maskAtMost: 0.62, spacing: 160 },
           inputs: { mask: 'n1' },
           display: { mode: 'markers', tileId: -1, glyph: '⌂', color: '#e0c48a' },
         },
@@ -150,7 +150,7 @@ export function thatchmereVale(): ExamplePipeline {
             'The same centers and the same layout knobs as the plots below, which is what makes the paving line up with the houses. Cobbles for the street, flagstones for the square where the two lanes cross.',
           enabled: true,
           params: {
-            radius: 56,
+            radius: 72,
             plotCells: 16,
             streetWidth: 3,
             streetTile: defaultTileId('cobbled street'),
@@ -165,10 +165,10 @@ export function thatchmereVale(): ExamplePipeline {
           label: 'vale houses',
           folder: 'thatchmere villages',
           comment:
-            'One tagged plot per building, bound to thatchmere so every point grows into a wattle-walled, thatch-roofed house assembled from the piece library. Plots are 16 tiles square because that is the smallest plot a town hall fits in; below that the plaza slot quietly falls back to a cottage. Cottages dominate, with a smithy on the second ring and an inn on the first.',
+            'One tagged plot per building, bound to thatchmere so every point grows into a wattle-walled, thatch-roofed house assembled from the piece library. Plots are 16 tiles square because that is the smallest plot a town hall fits in; below that the plaza slot quietly falls back to a cottage. The rings do the zoning: the town hall on the plaza, inns around it, the workshop ring of smithies behind them, and houses on everything further out.',
           enabled: true,
           params: {
-            radius: 56,
+            radius: 72,
             plotCells: 16,
             streetWidth: 3,
             cottageWeight: 5,
@@ -216,7 +216,7 @@ export function thatchmereVale(): ExamplePipeline {
           label: 'hamlet houses',
           folder: 'stonewold hamlets',
           comment:
-            'Bound to stonewold: granite walls, slate hips and taller stories. No town hall and no inn up here — the weights leave the hamlet as cottages, dwellings and the smithy that a hill settlement actually needs.',
+            'Bound to stonewold: granite walls, slate hips and the taller stories that the extra story layer buys. Every civic weight is zero, so a hamlet comes out as nothing but cottages and dwellings, which is the whole difference between a hamlet and the town down in the vale.',
           enabled: true,
           params: {
             radius: 26,
@@ -224,7 +224,7 @@ export function thatchmereVale(): ExamplePipeline {
             streetWidth: 3,
             cottageWeight: 5,
             dwellingWeight: 2,
-            smithyWeight: 1,
+            smithyWeight: 0,
             innWeight: 0,
             townHallWeight: 0,
           },

@@ -9,6 +9,7 @@
     "role": "water",
     "shape": "cube",
     "faceArt": null,
+    "textureId": "stillWater",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -22,6 +23,7 @@
     "role": "sand",
     "shape": "cube",
     "faceArt": null,
+    "textureId": "duneSand",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -35,6 +37,7 @@
     "role": "grass",
     "shape": "cube",
     "faceArt": null,
+    "textureId": "meadowTurf",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -48,6 +51,7 @@
     "role": "tree",
     "shape": "cube",
     "faceArt": null,
+    "textureId": null,
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -61,6 +65,7 @@
     "role": "rock",
     "shape": "cube",
     "faceArt": null,
+    "textureId": "fieldstone",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -74,6 +79,7 @@
     "role": null,
     "shape": "cube",
     "faceArt": null,
+    "textureId": "stillWater",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -87,6 +93,7 @@
     "role": null,
     "shape": "cube",
     "faceArt": null,
+    "textureId": "stillWater",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -100,6 +107,7 @@
     "role": null,
     "shape": "cube",
     "faceArt": null,
+    "textureId": "grassTurf",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -113,6 +121,7 @@
     "role": null,
     "shape": "cube",
     "faceArt": null,
+    "textureId": "meadowTurf",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -126,6 +135,7 @@
     "role": null,
     "shape": "cube",
     "faceArt": null,
+    "textureId": "troddenEarth",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -139,6 +149,7 @@
     "role": null,
     "shape": "cube",
     "faceArt": null,
+    "textureId": "forestLoam",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -152,6 +163,7 @@
     "role": null,
     "shape": "cube",
     "faceArt": null,
+    "textureId": "scree",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -165,6 +177,7 @@
     "role": null,
     "shape": "cube",
     "faceArt": null,
+    "textureId": "forestLoam",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -178,6 +191,7 @@
     "role": "tree",
     "shape": "cube",
     "faceArt": null,
+    "textureId": null,
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -191,6 +205,7 @@
     "role": null,
     "shape": "cube",
     "faceArt": null,
+    "textureId": null,
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -204,6 +219,7 @@
     "role": "tree",
     "shape": "cube",
     "faceArt": null,
+    "textureId": null,
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -217,6 +233,7 @@
     "role": null,
     "shape": "cube",
     "faceArt": null,
+    "textureId": "troddenEarth",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -230,6 +247,7 @@
     "role": null,
     "shape": "cube",
     "faceArt": null,
+    "textureId": "cobbles",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -243,6 +261,7 @@
     "role": null,
     "shape": "cube",
     "faceArt": null,
+    "textureId": "flagstone",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -256,6 +275,7 @@
     "role": null,
     "shape": "cube",
     "faceArt": null,
+    "textureId": "gravel",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -269,6 +289,7 @@
     "role": null,
     "shape": "cube",
     "faceArt": null,
+    "textureId": "dressedGranite",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -282,6 +303,7 @@
     "role": null,
     "shape": "slabLower",
     "faceArt": null,
+    "textureId": "dressedGranite",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -295,6 +317,7 @@
     "role": null,
     "shape": "stairs",
     "faceArt": null,
+    "textureId": "slateShingle",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -308,6 +331,7 @@
     "role": null,
     "shape": "ramp",
     "faceArt": null,
+    "textureId": "slateShingle",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -321,6 +345,7 @@
     "role": null,
     "shape": "stairs",
     "faceArt": null,
+    "textureId": "dressedGranite",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -334,6 +359,7 @@
     "role": null,
     "shape": "slabLower",
     "faceArt": null,
+    "textureId": "oakPlank",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -347,6 +373,7 @@
     "role": null,
     "shape": "panel",
     "faceArt": null,
+    "textureId": "oakBeam",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -360,6 +387,7 @@
     "role": null,
     "shape": "panel",
     "faceArt": null,
+    "textureId": "oakBeam",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -373,6 +401,7 @@
     "role": null,
     "shape": "panel",
     "faceArt": null,
+    "textureId": "oakPlank",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -386,6 +415,7 @@
     "role": null,
     "shape": "cube",
     "faceArt": null,
+    "textureId": "dressedGranite",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -399,6 +429,7 @@
     "role": null,
     "shape": "cube",
     "faceArt": null,
+    "textureId": "limewashWattle",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -412,6 +443,7 @@
     "role": null,
     "shape": "panel",
     "faceArt": null,
+    "textureId": "oakBeam",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -425,6 +457,7 @@
     "role": null,
     "shape": "stairs",
     "faceArt": null,
+    "textureId": "thatch",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -438,6 +471,7 @@
     "role": null,
     "shape": "ramp",
     "faceArt": null,
+    "textureId": "thatch",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -451,6 +485,7 @@
     "role": null,
     "shape": "slabLower",
     "faceArt": null,
+    "textureId": "rammedEarth",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -464,6 +499,7 @@
     "role": null,
     "shape": "panel",
     "faceArt": null,
+    "textureId": "oakPlank",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -477,6 +513,7 @@
     "role": null,
     "shape": "panel",
     "faceArt": null,
+    "textureId": "oakBeam",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -490,6 +527,7 @@
     "role": null,
     "shape": "slabLower",
     "faceArt": null,
+    "textureId": "fieldstone",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -503,6 +541,7 @@
     "role": null,
     "shape": "cube",
     "faceArt": null,
+    "textureId": "rammedEarth",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -516,6 +555,7 @@
     "role": null,
     "shape": "slabLower",
     "faceArt": null,
+    "textureId": "forgeCoals",
     "light": 5,
     "lightInk": "#ff8a3c"
   },
@@ -529,6 +569,7 @@
     "role": null,
     "shape": "cube",
     "faceArt": null,
+    "textureId": "rivetedIron",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -542,6 +583,7 @@
     "role": null,
     "shape": "slabLower",
     "faceArt": null,
+    "textureId": "oakPlank",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -555,6 +597,7 @@
     "role": null,
     "shape": "panel",
     "faceArt": null,
+    "textureId": "oakBeam",
     "light": 7,
     "lightInk": "#ffcf7a"
   },
@@ -568,6 +611,7 @@
     "role": null,
     "shape": "cube",
     "faceArt": null,
+    "textureId": "fieldstone",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -581,6 +625,7 @@
     "role": null,
     "shape": "cube",
     "faceArt": null,
+    "textureId": "forestLoam",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -594,6 +639,7 @@
     "role": null,
     "shape": "cube",
     "faceArt": null,
+    "textureId": "oakBeam",
     "light": 0,
     "lightInk": "#ffb14a"
   },
@@ -607,6 +653,7 @@
     "role": null,
     "shape": "panel",
     "faceArt": null,
+    "textureId": "oakPlank",
     "light": 0,
     "lightInk": "#ffb14a"
   }
