@@ -7,6 +7,7 @@ import type { TilePlacement } from './tilePlacements';
 
 export interface MarkerPlacementsByShape {
   pins: TilePlacement[];
+  billboards: TilePlacement[];
   standingFixtures: TilePlacement[];
 }
 
@@ -18,12 +19,16 @@ export function markerPlacementsForRect(
   height: number,
   extraMarkers: MarkerSource = NO_EXTRA_MARKERS,
 ): MarkerPlacementsByShape {
-  const shapes: MarkerPlacementsByShape = { pins: [], standingFixtures: [] };
+  const shapes: MarkerPlacementsByShape = { pins: [], billboards: [], standingFixtures: [] };
   for (const marker of markersInRect(sampler, minX, minY, width, height, extraMarkers)) {
-    const placement = placementForMarker(marker, sampler.elevationAt(marker.x, marker.y));
-    (marker.standingHeight ? shapes.standingFixtures : shapes.pins).push(placement);
+    shapes[shapeBucketOf(marker)].push(placementForMarker(marker, sampler.elevationAt(marker.x, marker.y)));
   }
   return shapes;
+}
+
+function shapeBucketOf(marker: Marker): keyof MarkerPlacementsByShape {
+  if (marker.standingHeight) return 'standingFixtures';
+  return marker.billboardHeight ? 'billboards' : 'pins';
 }
 
 function markersInRect(
@@ -43,7 +48,7 @@ function placementForMarker(marker: Marker, elevation: number): TilePlacement {
     x: marker.x,
     y: marker.y,
     elevation,
-    height: marker.standingHeight ?? WALKABLE_TILE_HEIGHT,
+    height: marker.standingHeight ?? marker.billboardHeight ?? WALKABLE_TILE_HEIGHT,
     baseColor: withTransparency(marker.color, marker.seeThroughUnpaintedArt === true),
     shade: 1,
     faceArt: marker.faceArt,
