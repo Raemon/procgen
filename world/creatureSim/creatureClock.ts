@@ -1,3 +1,4 @@
+import { measureWork } from '../../perf/workTimers';
 import type { CreatureSim } from './creatureSim';
 
 const MAX_TICK_SECONDS = 0.1;
@@ -43,7 +44,7 @@ export class CreatureClock {
     this.frame = requestAnimationFrame(this.onFrame);
     const dtSeconds = this.elapsedSeconds(nowMs);
     if (!this.running || dtSeconds <= 0) return;
-    this.sim.step(dtSeconds);
+    measureWork('creature sim', () => this.sim.step(dtSeconds));
     this.requestRedrawAtInterval(dtSeconds);
   };
 

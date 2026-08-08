@@ -12,6 +12,7 @@ const SEARCHED_ROOTS = [
   'frontend',
   'library',
   'multiplayer',
+  'perf',
   'procgen',
   'server',
   'tools',

@@ -8,4 +8,5 @@ export const PERSISTED_UI_KEYS = {
   hintsVisible: 'ui.hintsVisible',
   collapsedNodeCards: 'procgen.collapsedNodeCards',
   collapsedNodeFolders: 'procgen.collapsedNodeFolders',
+  performancePanelOpen: 'world.performancePanelOpen',
 } as const;

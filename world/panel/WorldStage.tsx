@@ -4,6 +4,7 @@ import { ChatComposer } from '../chat/ui/ChatComposer';
 import { classes } from '../../frontend/controls/classes';
 import { mountWorldViews, type MountedWorldViews } from './mountWorldViews';
 import { InteractPrompt } from './InteractPrompt';
+import { FpsBadge } from './performance/FpsBadge';
 import { PickupNotices } from './PickupNotices';
 import { PlayerInventoryOverlay } from './PlayerInventoryOverlay';
 import { usesView3d, type ViewMode } from './viewMode';
@@ -51,6 +52,7 @@ export function WorldStage({ mode }: { mode: ViewMode }) {
       <PickupNotices />
       <PlayerInventoryOverlay />
       <ChatComposer />
+      <FpsBadge />
     </div>
   );
 }
