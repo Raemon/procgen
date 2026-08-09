@@ -5,11 +5,11 @@ import { classes } from '../../../frontend/controls/classes';
 import { HINT_CLASSES } from '../../../frontend/controls/fieldClasses';
 import { PanelHint } from '../../../frontend/help/PanelHint';
 import { exampleWorlds } from '../../exampleWorlds';
-import type { PipelineState } from '../../../procgen/pipeline/pipelineState';
 import { deleteWorldTip, loadWorldTip } from '../../help/libraryTips';
 import { WORLD_SELECTED } from '../../librarySelection';
 import { useLibrarySelection } from '../useLibrarySelection';
 import type { StoredWorldKey } from '../../worldKeys';
+import { NodeBandSummary } from './NodeBandSummary';
 import { NothingHere } from './NothingHere';
 
 export function StoredWorldDetail({ world }: { world: StoredWorldKey }) {
@@ -44,7 +44,7 @@ export function StoredWorldDetail({ world }: { world: StoredWorldKey }) {
     <>
       <h3 className="mb-1 text-sm text-ink">{stored.name}</h3>
       <p className={classes(HINT_CLASSES, 'mb-2')}>{stored.description}</p>
-      <NodeSummary state={stored.state} />
+      <NodeBandSummary nodes={stored.state.nodes} />
       <div className="mt-2 flex gap-1.5">
         <Button className="flex-1" tip={loadWorldTip(stored.name)} onClick={loadIntoTheEditor}>
           load into this world
@@ -65,21 +65,5 @@ export function StoredWorldDetail({ world }: { world: StoredWorldKey }) {
         editing.
       </PanelHint>
     </>
-  );
-}
-
-function NodeSummary({ state }: { state: PipelineState }) {
-  return (
-    <ol className="flex flex-col gap-1">
-      {state.nodes.map((node) => (
-        <li
-          key={node.id}
-          className="rounded border border-panel-edge bg-field px-1.5 py-1 text-xs text-ink"
-        >
-          <span>{node.label}</span>
-          <span className="ml-1.5 text-[10px] text-ink-dim">{node.type}</span>
-        </li>
-      ))}
-    </ol>
   );
 }

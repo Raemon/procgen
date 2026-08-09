@@ -75,6 +75,13 @@ export function stampGroupTip(name: string): TooltipContent {
   };
 }
 
+export function openGroupTip(name: string): TooltipContent {
+  return {
+    title: `open ${name}`,
+    body: 'Opens the node group these nodes were filed under, in place of this detail view.',
+  };
+}
+
 export function forgetGroupTip(name: string): TooltipContent {
   return {
     title: `forget ${name}`,
