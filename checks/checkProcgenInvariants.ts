@@ -11,6 +11,7 @@ import { checkPipelineSanitizeAndEditing } from './checkPipelineSanitizeAndEditi
 import { checkAsciiSnapshotAndPlayerFooting } from './checkAsciiSnapshotAndPlayerFooting';
 import { checkFaceArtEditingOps } from './checkFaceArtEditingOps';
 import { checkTileSurfaceRendering } from './checkTileSurfaceRendering';
+import { checkGroundHidesWhatIsUnderIt } from './checkGroundHidesWhatIsUnderIt';
 import { checkInkTransparency } from './checkInkTransparency';
 import { checkCameraMovementAndZoom } from './checkCameraMovementAndZoom';
 import { checkViewRecentering } from './checkViewRecentering';
@@ -56,6 +57,7 @@ describe('pipeline sanitize and editing', () => checkPipelineSanitizeAndEditing(
 describe('the ascii snapshot', () => checkAsciiSnapshotAndPlayerFooting(check));
 describe('face art editing', () => checkFaceArtEditingOps(check));
 describe('tile surfaces', () => checkTileSurfaceRendering(check));
+describe('the depth of ground', () => checkGroundHidesWhatIsUnderIt(check));
 describe('transparent ink', () => checkInkTransparency(check));
 describe('camera movement and zoom', () => checkCameraMovementAndZoom(check));
 describe('view recentering', () => checkViewRecentering(check));

@@ -305,7 +305,7 @@ export function mountainsLakesAndRapids(): ExamplePipeline {
           label: 'conifers',
           folder: 'the cover',
           comment:
-            'Billboards are the only things in this view with real vertical geometry and their own colour — ground is drawn as a thin flat slab, so a hillside of grass is one uniform green whatever its height. Trees are what stops the land reading as a painted sheet. Pines take the upper band, below the snow line.',
+            'Billboards are the only things in this view with their own colour — ground stands a block deep, which walls off the void under a slope but leaves a hillside of grass one uniform green whatever its height. Trees are what stops the land reading as a stack of painted sheets. Pines take the upper band, below the snow line.',
           enabled: true,
           params: { density: 0.05, maskAtLeast: 0.63, maskAtMost: 0.78 },
           inputs: { mask: 'dimpled' },

@@ -7,7 +7,7 @@ import { sharedTileBoxGeometry } from './sharedTileGeometries';
 import { shapedTileGeometry } from './shapedTileGeometries';
 import type { TilePlacement } from './tilePlacements';
 
-export const FLOOR_THICKNESS = 0.1;
+export const GROUND_DEPTH = 1;
 export const WATER_DROP = 0.22;
 export const BLOCK_LAYER_HEIGHT = 1;
 
@@ -44,9 +44,9 @@ export function blockShape(): TileShape {
 
 export function floorShape(): TileShape {
   return {
-    geometry: (faces) => sharedTileBoxGeometry(1, FLOOR_THICKNESS, 1, faces),
-    positionOf: (p) => [p.x + 0.5, floorTopOf(p) - FLOOR_THICKNESS / 2, p.y + 0.5],
-    occluderBoxOf: (p) => ({ bottom: floorTopOf(p) - FLOOR_THICKNESS, top: floorTopOf(p), width: 1 }),
+    geometry: (faces) => sharedTileBoxGeometry(1, GROUND_DEPTH, 1, faces),
+    positionOf: (p) => [p.x + 0.5, floorTopOf(p) - GROUND_DEPTH / 2, p.y + 0.5],
+    occluderBoxOf: (p) => ({ bottom: floorTopOf(p) - GROUND_DEPTH, top: floorTopOf(p), width: 1 }),
   };
 }
 
