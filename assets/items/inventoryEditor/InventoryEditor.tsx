@@ -16,6 +16,8 @@ import { Select } from '../../../frontend/controls/Select';
 import { TagsInput } from '../../../frontend/controls/TagsInput';
 import { DIM_READOUT_CLASSES } from '../../../frontend/controls/fieldClasses';
 import { PanelHint } from '../../../frontend/help/PanelHint';
+import { PERSISTED_UI_KEYS } from '../../../frontend/uiState/persistedUiKeys';
+import { usePersistedUiSet } from '../../../frontend/uiState/usePersistedUiSet';
 import { SpriteArtEditor } from '../../pixelArtEditor/SpriteArtEditor';
 import { InventoryGrid, type GridCell } from './InventoryGrid';
 import { INVENTORY_MODES, type InventoryEditorMode } from './inventoryEditorMode';
@@ -212,11 +214,16 @@ function SlotTagsRow({
 
 function BackdropRow({ creature, inventory }: { creature: CreatureDef; inventory: InventoryDef }) {
   const { perform } = useAppRuntime();
-  const [open, setOpen] = useState(false);
+  const openBackdrops = usePersistedUiSet(PERSISTED_UI_KEYS.openInventoryBackdrops);
+  const open = openBackdrops.has(String(creature.id));
   return (
     <>
       <div className="mt-2 flex items-center gap-1.5">
-        <Button className="px-2 py-0.5 text-[11px]" active={open} onClick={() => setOpen(!open)}>
+        <Button
+          className="px-2 py-0.5 text-[11px]"
+          active={open}
+          onClick={() => openBackdrops.toggle(String(creature.id))}
+        >
           backdrop
         </Button>
         <span className={DIM_READOUT_CLASSES}>

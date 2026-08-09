@@ -5,4 +5,4 @@ export const COLOR_INPUT_CLASSES =
 
 export const HINT_CLASSES = 'text-[11px] leading-relaxed text-ink-dim';
 
-export const DIM_READOUT_CLASSES = HINT_CLASSES;
+export const DIM_READOUT_CLASSES = 'text-[11px] leading-relaxed text-ink-dim';

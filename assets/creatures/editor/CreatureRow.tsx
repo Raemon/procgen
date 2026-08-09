@@ -27,10 +27,7 @@ import {
   MAKE_PLAIN_CREATURE_TIP,
 } from './help/creatureTips';
 import { CreatureBehaviorKnobs } from './CreatureBehaviorKnobs';
-
-const CREATURE_PANELS = ['none', 'behavior', 'art', 'inventory', 'sprites'] as const;
-
-type OpenPanel = (typeof CREATURE_PANELS)[number];
+import { CREATURE_PANELS, type CreaturePanel } from './creaturePanels';
 
 export function CreatureRow({ creature }: { creature: CreatureDef }) {
   const { perform } = useAppRuntime();
@@ -41,7 +38,7 @@ export function CreatureRow({ creature }: { creature: CreatureDef }) {
   const openPanel = openPanels.valueOf(String(creature.id)) ?? 'none';
   const edit = (patch: Record<string, unknown>) =>
     perform('update_creature', { creature_id: creature.id, ...patch });
-  const toggle = (panel: Exclude<OpenPanel, 'none'>) =>
+  const toggle = (panel: Exclude<CreaturePanel, 'none'>) =>
     openPanels.set(String(creature.id), openPanel === panel ? 'none' : panel);
   return (
     <div className="mb-1.5">

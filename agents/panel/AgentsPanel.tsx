@@ -115,7 +115,7 @@ export function AgentsPanel({
               {...tooltipHandlers(BUDGET_TIP)}
             />
           </label>
-          <span>at list prices; the run stops when it runs out</span>
+          <PanelHint>at list prices; the run stops when it runs out</PanelHint>
         </div>
       </div>
       <div className="mt-2.5 flex flex-col gap-1.5">

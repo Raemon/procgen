@@ -1,5 +1,5 @@
 import { classes } from '../../../frontend/controls/classes';
-import { DIM_READOUT_CLASSES, FIELD_CLASSES } from '../../../frontend/controls/fieldClasses';
+import { FIELD_CLASSES, HINT_CLASSES } from '../../../frontend/controls/fieldClasses';
 import { PIECE_ROLES } from '../../pieces/pieceDef';
 import { GABLE_ROOF, piecesBoundToRole, type Culture } from '../cultureDef';
 
@@ -8,9 +8,9 @@ export function CultureRow({ culture }: { culture: Culture }) {
     <div className="mb-1.5">
       <div className="flex items-center gap-1.5">
         <span className={classes(FIELD_CLASSES, 'min-w-0 flex-1')}>{culture.name}</span>
-        <span className={DIM_READOUT_CLASSES}>{proportionsOf(culture)}</span>
+        <span className={HINT_CLASSES}>{proportionsOf(culture)}</span>
       </div>
-      <p className={classes(DIM_READOUT_CLASSES, 'mt-0.5')}>{boundRolesOf(culture)}</p>
+      <p className={classes(HINT_CLASSES, 'mt-0.5')}>{boundRolesOf(culture)}</p>
     </div>
   );
 }
