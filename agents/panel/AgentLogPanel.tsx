@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { classes } from '../../frontend/controls/classes';
-import { HINT_CLASSES } from '../../frontend/controls/fieldClasses';
+import { DIM_READOUT_CLASSES } from '../../frontend/controls/fieldClasses';
 import type { WireTranscriptEntry } from './agentsApiClient';
 import { useTranscript } from './useTranscript';
 
@@ -19,9 +19,9 @@ export function AgentLogPanel({ selectedId }: { selectedId: string }) {
   useEffect(() => scrollOwnPanelToBottom(bottom.current), [entries.length]);
   return (
     <>
-      {runStatus && <p className={`${HINT_CLASSES} mb-1.5`}>run · {runStatus}</p>}
+      {runStatus && <p className={`${DIM_READOUT_CLASSES} mb-1.5`}>run · {runStatus}</p>}
       {entries.length === 0 ? (
-        <p className={HINT_CLASSES}>No transcript yet — start a run.</p>
+        <p className={DIM_READOUT_CLASSES}>No transcript yet — start a run.</p>
       ) : (
         <div className="flex flex-col gap-1 text-xs">
           {entries.map((entry) => (
