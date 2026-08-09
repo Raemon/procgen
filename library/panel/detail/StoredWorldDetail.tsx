@@ -8,6 +8,8 @@ import { exampleWorlds } from '../../exampleWorlds';
 import type { PipelineState } from '../../../procgen/pipeline/pipelineState';
 import { deleteWorldTip, loadWorldTip } from '../../help/libraryTips';
 import { WORLD_SELECTED } from '../../librarySelection';
+import { worldThumbnails } from '../../worldThumbnails';
+import { exampleWorldKey, savedWorldKey } from '../../worldKeys';
 import { useLibrarySelection } from '../useLibrarySelection';
 import type { StoredWorldKey } from '../../worldKeys';
 import { NothingHere } from './NothingHere';
@@ -31,12 +33,14 @@ export function StoredWorldDetail({ world }: { world: StoredWorldKey }) {
   function loadIntoTheEditor(): void {
     if (!window.confirm('Replace the current pipeline?')) return;
     perform('load_preset', { name: world.name });
+    worldThumbnails.captureOnceTheWorldSettles(keyOf(world));
     backToTheWorldBeingEdited();
   }
 
   function deleteThisWorld(): void {
     if (!window.confirm(`Delete your saved world "${world.name}"?`)) return;
     perform('delete_preset', { name: world.name });
+    worldThumbnails.forget(keyOf(world));
     backToTheWorldBeingEdited();
   }
 
@@ -66,6 +70,10 @@ export function StoredWorldDetail({ world }: { world: StoredWorldKey }) {
       </PanelHint>
     </>
   );
+}
+
+function keyOf(world: StoredWorldKey): string {
+  return world.saved ? savedWorldKey(world.name) : exampleWorldKey(world.name);
 }
 
 function NodeSummary({ state }: { state: PipelineState }) {

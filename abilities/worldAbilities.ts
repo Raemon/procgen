@@ -4,6 +4,7 @@ import { examplePipelines } from '../procgen/presets/examplePipelines';
 import { permutedNodeCombination } from '../procgen/randomize/permuteNodeCombination';
 import { permutedSliderParams } from '../procgen/randomize/permuteSliderParams';
 import { randomWorldPipeline } from '../procgen/randomize/randomWorldPipeline';
+import { copyNameFor } from '../procgen/presets/copyName';
 import { stampTemplateInto } from '../procgen/templates/stampTemplate';
 import { templateFromNodes } from '../procgen/templates/templateFromNodes';
 import { mulberry32, type RandomStream } from '../procgen/random/mulberry32';
@@ -87,6 +88,16 @@ registerWorldAbility({
 });
 
 registerWorldAbility({
+  action: 'duplicate_preset',
+  humanControl: 'asset library, worlds folder: ⧉ on a world',
+  description:
+    'Copy a world — a built-in example or one you saved — into your saved worlds under a free name. The world you are editing is untouched.',
+  params: { name: { kind: 'text', help: 'the world to copy — see GET /api/v1/presets' } },
+  example: { action: 'duplicate_preset', name: 'islands' },
+  apply: (context, params) => duplicatePreset(context, params),
+});
+
+registerWorldAbility({
   action: 'delete_preset',
   humanControl: 'asset library, worlds folder: ✕ on a saved world',
   description: 'Delete one of your saved presets. Built-in examples cannot be deleted.',
@@ -124,6 +135,15 @@ registerWorldAbility({
   },
   example: { action: 'save_template', name: 'coastline', node_ids: ['n1', 'n2'] },
   apply: (context, params) => saveTemplate(context, params),
+});
+
+registerWorldAbility({
+  action: 'duplicate_template',
+  humanControl: 'asset library, node groups folder: ⧉ on a group',
+  description: 'Copy a node group — built-in or saved — into your saved groups under a free name.',
+  params: { name: { kind: 'text', help: 'the group to copy — see GET /api/v1/templates' } },
+  example: { action: 'duplicate_template', name: 'rivers' },
+  apply: (context, params) => duplicateTemplate(context, params),
 });
 
 registerWorldAbility({
@@ -249,6 +269,43 @@ function savePreset(context: AbilityContext, params: Record<string, unknown>): A
     state: sanitizePipeline(context.store.snapshot()),
   });
   return abilitySucceeded(`saved preset '${name.value}'`);
+}
+
+function duplicatePreset(context: AbilityContext, params: Record<string, unknown>): AbilityResult {
+  const name = readText(params, 'name');
+  if (!name.ok) return name.failure;
+  const original = worldPresetNamed(context, name.value);
+  if (!original) {
+    return abilityFailed('unknown_preset', `name must be one of: ${listOf(presetNames(context))}`);
+  }
+  const copy = copyNameFor(original.name, presetNames(context));
+  context.worldPresets.save({
+    name: copy,
+    description: original.description,
+    state: sanitizePipeline(original.state),
+  });
+  return abilitySucceeded(`copied world '${original.name}' as '${copy}'`);
+}
+
+function worldPresetNamed(context: AbilityContext, name: string) {
+  return (
+    examplePipelines().find((preset) => preset.name === name) ?? context.worldPresets.byName(name)
+  );
+}
+
+function duplicateTemplate(context: AbilityContext, params: Record<string, unknown>): AbilityResult {
+  const name = readText(params, 'name');
+  if (!name.ok) return name.failure;
+  const original = context.templates.byName(name.value);
+  if (!original) {
+    return abilityFailed(
+      'unknown_template',
+      `name must be one of: ${listOf(context.templates.all().map((each) => each.name))}`,
+    );
+  }
+  const copy = copyNameFor(original.name, context.templates.all().map((each) => each.name));
+  context.templates.save({ ...original, name: copy });
+  return abilitySucceeded(`copied group '${original.name}' as '${copy}'`);
 }
 
 function deletePreset(context: AbilityContext, params: Record<string, unknown>): AbilityResult {

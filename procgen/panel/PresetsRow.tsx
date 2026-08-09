@@ -6,6 +6,9 @@ import type { WorldPreset } from '../presets/worldPreset';
 import { Button } from '../../frontend/controls/Button';
 import { KnobRow } from '../../frontend/controls/KnobRow';
 import { Select, type SelectOption } from '../../frontend/controls/Select';
+import { CURRENT_WORLD } from '../../library/librarySelection';
+import { savedWorldKey } from '../../library/worldKeys';
+import { worldThumbnails } from '../../library/worldThumbnails';
 import { CLEAR_PIPELINE_TIP, SAVE_PRESET_TIP } from './help/pipelineTips';
 import { presetsTooltip } from './help/presetsTooltip';
 
@@ -82,6 +85,7 @@ function saveCurrentPipeline(
   if (!name) return;
   if (library.byName(name) && !window.confirm(`Overwrite your saved preset "${name}"?`)) return;
   perform('save_preset', { name });
+  worldThumbnails.copy(CURRENT_WORLD, savedWorldKey(name));
 }
 
 function deleteSavedPreset(perform: Perform, library: ReadOnlyWorldPresetLibrary): void {

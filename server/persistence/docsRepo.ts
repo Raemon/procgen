@@ -10,9 +10,10 @@ export const PERSISTED_DOC_NAMES = [
   'creatures',
   'items',
   'uiState',
+  'worldThumbnails',
 ];
 
-const DOCS_WRITTEN_ONLY_BY_THE_APP = ['uiState'];
+const DOCS_WRITTEN_ONLY_BY_THE_APP = ['uiState', 'worldThumbnails'];
 
 const DOC_NAMES_BEFORE_THE_ASSETS_RENAME: Record<string, string> = { tiles: 'tileset' };
 
