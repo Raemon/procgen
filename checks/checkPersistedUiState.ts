@@ -24,6 +24,7 @@ const ASSET_EDITOR_ROOT = 'assets';
 const DRAWER_STATE_IN_A_BARE_USE_STATE = /const \[[^\]]*(?:open|Open|panel|Panel)[^\]]*\] = useState/;
 const POPUPS_THAT_SHOULD_NOT_SURVIVE_A_RELOAD = ['assets/tiles/editor/SymbolInput.tsx'];
 const CULTURE_PANELS = ['none', 'tiles', 'proportions', 'pieces'] as const;
+const REMOVES_ITS_ASSET = /perform\('remove_\w+'/;
 
 checkAToggleReachesTheUiStateDoc();
 checkTheNextLoadReadsWhatTheDocHolds();
@@ -34,6 +35,7 @@ checkCollapsingEveryCardReplacesWhateverWasCollapsed();
 checkForgettingARowLeavesNoPanelEntryBehind();
 checkGuardsAcceptOnlyTheShapesTheUiPersists();
 checkNoAssetEditorKeepsItsOpenDrawerToItself();
+checkEveryRowThatForgetsAnAssetForgetsItsDrawerToo();
 checkTheOpenItemPanelSurvivesTheNextLoad();
 checkTheOpenBackdropDrawerSurvivesTheNextLoad();
 checkADrawerNamingAPanelThatIsGoneOpensNothing();
@@ -133,6 +135,21 @@ function checkNoAssetEditorKeepsItsOpenDrawerToItself(): void {
       DRAWER_STATE_IN_A_BARE_USE_STATE.test(readFileSync(path, 'utf8')),
     ),
     'every popup excused from persisting still keeps its own open state, so the excuse list cannot go stale',
+  );
+}
+
+function checkEveryRowThatForgetsAnAssetForgetsItsDrawerToo(): void {
+  const rowsHoldingADrawer = assetEditorComponents()
+    .map((path) => ({ path, source: readFileSync(path, 'utf8') }))
+    .filter((file) => file.source.includes('usePersistedOpenPanel'));
+  const leaking = rowsHoldingADrawer
+    .filter((file) => REMOVES_ITS_ASSET.test(file.source))
+    .filter((file) => !file.source.includes('forgetRow()'))
+    .map((file) => file.path);
+  if (leaking.length > 0) console.error(`  drawer entries left behind on delete: ${leaking.join(', ')}`);
+  assert(
+    rowsHoldingADrawer.length > 0 && leaking.length === 0,
+    'every row that deletes its asset forgets its drawer, so a later asset handed the same id does not inherit it',
   );
 }
 

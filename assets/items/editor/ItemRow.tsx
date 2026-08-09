@@ -16,9 +16,8 @@ import {
   ITEM_NAME_TIP,
   itemShapeTip,
 } from './help/itemTips';
-import { isOneOf } from '../../../frontend/uiState/persistedUiGuards';
 import { PERSISTED_UI_KEYS } from '../../../frontend/uiState/persistedUiKeys';
-import { usePersistedUiRecord } from '../../../frontend/uiState/usePersistedUiRecord';
+import { usePersistedOpenPanel } from '../../../frontend/uiState/usePersistedOpenPanel';
 import { tooltipHandlers } from '../../../frontend/tooltips/tooltipHandlers';
 import { ITEM_PANELS, type ItemPanel } from './itemPanels';
 import { ItemRenderKnobs } from './ItemRenderKnobs';
@@ -26,11 +25,16 @@ import { ItemSpritePreview } from './ItemSpritePreview';
 
 export function ItemRow({ item }: { item: ItemDef }) {
   const { perform } = useAppRuntime();
-  const openPanels = usePersistedUiRecord(PERSISTED_UI_KEYS.openItemPanels, isOneOf(ITEM_PANELS));
-  const openPanel = openPanels.valueOf(String(item.id)) ?? 'none';
+  const { openPanel, toggle, forgetRow } = usePersistedOpenPanel<Exclude<ItemPanel, 'none'>>(
+    PERSISTED_UI_KEYS.openItemPanels,
+    ITEM_PANELS,
+    item.id,
+  );
   const edit = (patch: Record<string, unknown>) => perform('update_item', { item_id: item.id, ...patch });
-  const toggle = (panel: Exclude<ItemPanel, 'none'>) =>
-    openPanels.set(String(item.id), openPanel === panel ? 'none' : panel);
+  const removeItem = () => {
+    forgetRow();
+    perform('remove_item', { item_id: item.id });
+  };
   return (
     <div className="mb-1.5">
       <div className="flex items-center gap-1.5">
@@ -69,7 +73,7 @@ export function ItemRow({ item }: { item: ItemDef }) {
         <Button
           className="px-2 py-0.5 hover:border-danger-edge hover:text-danger-ink"
           tip={deleteItemTip(item)}
-          onClick={() => perform('remove_item', { item_id: item.id })}
+          onClick={removeItem}
         >
           ×
         </Button>
