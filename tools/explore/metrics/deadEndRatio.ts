@@ -1,6 +1,8 @@
-import type { CellPoint } from '../../../world/nearestWalkable';
+import type { CellPoint } from '../../../world/cellPoint';
 import type { WalkableProbe } from '../cachedWorldProbes';
-import { CARDINAL_STEPS, cellFromKey, type ExplorationTrace } from '../explorationTrace';
+import { CARDINAL_STEPS } from '../../../world/cardinalSteps';
+import { cellFromKey } from '../../../world/cellPoint';
+import type { ExplorationTrace } from '../explorationTrace';
 
 export function deadEndRatio(trace: ExplorationTrace, isWalkableAt: WalkableProbe): number {
   let deadEnds = 0;

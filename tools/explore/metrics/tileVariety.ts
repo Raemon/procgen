@@ -1,5 +1,6 @@
 import type { TileIdProbe } from '../cachedWorldProbes';
-import { cellFromKey, cellKey, type ExplorationTrace } from '../explorationTrace';
+import { cellFromKey, cellKey } from '../../../world/cellPoint';
+import type { ExplorationTrace } from '../explorationTrace';
 
 export function tileEntropyBits(trace: ExplorationTrace, tileIdAt: TileIdProbe): number {
   const counts = tileCountsOverSeenCells(trace, tileIdAt);

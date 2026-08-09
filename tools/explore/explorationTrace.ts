@@ -1,4 +1,4 @@
-import type { CellPoint } from '../../world/nearestWalkable';
+import type { CellPoint } from '../../world/cellPoint';
 
 export interface ExplorationTrace {
   spawn: CellPoint;
@@ -10,22 +10,6 @@ export interface ExplorationTrace {
 export interface WalkLimits {
   stepBudget: number;
   radiusCap: number;
-}
-
-export const CARDINAL_STEPS = [
-  { dx: 0, dy: -1 },
-  { dx: 1, dy: 0 },
-  { dx: 0, dy: 1 },
-  { dx: -1, dy: 0 },
-] as const;
-
-export function cellKey(x: number, y: number): string {
-  return `${x},${y}`;
-}
-
-export function cellFromKey(key: string): CellPoint {
-  const [x, y] = key.split(',').map(Number);
-  return { x: x ?? 0, y: y ?? 0 };
 }
 
 export function stepsTaken(trace: ExplorationTrace): number {

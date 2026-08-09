@@ -194,7 +194,7 @@ export function createAppRuntime(): AppRuntime {
   function applyWorldChange(): void {
     sampler.invalidateStructureOverlay();
     sim.forget();
-    world.ensurePlayerOnWalkableGround();
+    world.ensurePlayerHasRoomToMove();
     renderers.redrawAll();
     worldChanged.emit();
   }

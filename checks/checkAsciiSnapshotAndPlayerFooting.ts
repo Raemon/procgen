@@ -20,7 +20,7 @@ export function checkAsciiSnapshotAndPlayerFooting(check: CheckReporter): void {
     monsterMarkers.length > 0 && monsterMarkers.every((m) => m.glyph === 'M' && m.color === '#ff4444'),
   );
   const world = new World((x, y) => isWalkableTile(tileAssets, caves.sampler.tileAt(x, y)));
-  world.ensurePlayerOnWalkableGround();
+  world.ensurePlayerHasRoomToMove();
   check(
     'player stands on walkable ground after a world change',
     isWalkableTile(tileAssets, caves.sampler.tileAt(world.playerX, world.playerY)),

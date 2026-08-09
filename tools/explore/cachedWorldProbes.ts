@@ -1,7 +1,7 @@
 import type { WorldSampler } from '../../procgen/worldSampler';
 import type { TileAssets } from '../../assets/tiles/tileAssets';
 import { isWalkableTile } from '../../world/tileWalkability';
-import { cellKey } from './explorationTrace';
+import { cellKey } from '../../world/cellPoint';
 
 export type TileIdProbe = (x: number, y: number) => number;
 export type WalkableProbe = (x: number, y: number) => boolean;

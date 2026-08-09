@@ -1,11 +1,7 @@
-import type { CellPoint } from '../../world/nearestWalkable';
+import type { CellPoint } from '../../world/cellPoint';
 import type { WalkableProbe } from './cachedWorldProbes';
-import {
-  cellKey,
-  stepsTaken,
-  type ExplorationTrace,
-  type WalkLimits,
-} from './explorationTrace';
+import { cellKey } from '../../world/cellPoint';
+import { stepsTaken, type ExplorationTrace, type WalkLimits } from './explorationTrace';
 import { legToNearestUnvisited } from './legToNearestUnvisited';
 
 export function exploreFromSpawn(

@@ -1,12 +1,7 @@
-import type { CellPoint } from '../../world/nearestWalkable';
+import { CARDINAL_STEPS } from '../../world/cardinalSteps';
+import { cellFromKey, cellKey, type CellPoint } from '../../world/cellPoint';
 import type { WalkableProbe } from './cachedWorldProbes';
-import {
-  CARDINAL_STEPS,
-  cellFromKey,
-  cellKey,
-  type ExplorationTrace,
-  type WalkLimits,
-} from './explorationTrace';
+import type { ExplorationTrace, WalkLimits } from './explorationTrace';
 
 export function legToNearestUnvisited(
   isWalkableAt: WalkableProbe,

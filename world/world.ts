@@ -1,5 +1,6 @@
 import { turnedFacing, type FacingIndex } from './facing';
-import { nearestWalkable } from './nearestWalkable';
+import { spotIsTooPennedInToStandIn } from './spawn/spawnRoominess';
+import { spawnWithRoomToMove } from './spawn/spawnWithRoomToMove';
 import {
   DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
   clampSightRadiusTiles,
@@ -64,9 +65,13 @@ export class World {
     if (turned) this.events.emit('player-turned');
   }
 
-  ensurePlayerOnWalkableGround(): void {
-    if (this.isWalkableAt(this.playerX, this.playerY)) return;
-    const spot = nearestWalkable(this.playerX, this.playerY, SNAP_SEARCH_RADIUS, this.isWalkableAt);
+  ensurePlayerHasRoomToMove(): void {
+    if (!spotIsTooPennedInToStandIn(this.isWalkableAt, { x: this.playerX, y: this.playerY })) return;
+    const spot = spawnWithRoomToMove(
+      this.isWalkableAt,
+      { x: this.playerX, y: this.playerY },
+      SNAP_SEARCH_RADIUS,
+    );
     if (!spot) return;
     this.playerX = spot.x;
     this.playerY = spot.y;

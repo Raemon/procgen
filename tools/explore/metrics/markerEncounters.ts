@@ -1,6 +1,7 @@
-import type { CellPoint } from '../../../world/nearestWalkable';
+import type { CellPoint } from '../../../world/cellPoint';
 import type { Marker, WorldSampler } from '../../../procgen/worldSampler';
-import { cellKey, type ExplorationTrace } from '../explorationTrace';
+import { cellKey } from '../../../world/cellPoint';
+import type { ExplorationTrace } from '../explorationTrace';
 
 const SIGHT_RADIUS = 2;
 

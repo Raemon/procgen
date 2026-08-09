@@ -1,5 +1,5 @@
 import type { Marker, WorldSampler } from '../../../procgen/worldSampler';
-import type { CellPoint } from '../../../world/nearestWalkable';
+import type { CellPoint } from '../../../world/cellPoint';
 import type { TileAssets } from '../../../assets/tiles/tileAssets';
 import { asciiCellAt, pointOverlayLookup, type AsciiCell } from '../../../world/render/ascii/asciiCells';
 import { viewportCenteredOn, type AsciiViewport } from '../../../world/render/ascii/asciiViewport';

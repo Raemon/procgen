@@ -16,7 +16,7 @@ import { RandomizeHistory } from '../../procgen/randomize/randomizeHistory';
 import { TemplateLibrary } from '../../procgen/templates/templateLibrary';
 import { sanitizePipeline } from '../../procgen/pipeline/sanitizePipeline';
 import { WorldSampler } from '../../procgen/worldSampler';
-import { nearestWalkable } from '../../world/nearestWalkable';
+import { spawnWithRoomToMove } from '../../world/spawn/spawnWithRoomToMove';
 import type { StepRules } from '../../world/sim/stepIsAllowed';
 import { PuzzleWorld } from '../../world/puzzles/puzzleWorld';
 import { PuzzleState } from '../../world/puzzles/state/puzzleState';
@@ -135,7 +135,7 @@ function buildServerWorld(
       isWalkableAt: tileIsWalkable,
       clearTheWay: (x, y, dx, dy, mayPush) => puzzles.clearTheWay(x, y, dx, dy, mayPush),
     },
-    spawn: () => nearestWalkable(0, 0, SPAWN_SEARCH_RADIUS, isWalkable) ?? { x: 0, y: 0 },
+    spawn: () => spawnWithRoomToMove(isWalkable, { x: 0, y: 0 }, SPAWN_SEARCH_RADIUS) ?? { x: 0, y: 0 },
   };
 }
 

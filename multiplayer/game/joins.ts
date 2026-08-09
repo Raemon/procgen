@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import type { HelloMsg } from '../client/protocol';
-import { nearestWalkable } from '../../world/nearestWalkable';
+import { spotIsTooPennedInToStandIn } from '../../world/spawn/spawnRoominess';
+import { spawnWithRoomToMove } from '../../world/spawn/spawnWithRoomToMove';
 import { signToken, verifyToken } from '../host/auth';
 import type { Connection } from '../host/connection';
 import { loadCharacter } from '../../server/persistence/characterRepo';
@@ -51,14 +52,14 @@ function adoptFromDuplicateLogin(characterId: string, deps: WsDeps): Entity {
 async function spawnedEntity(characterId: string, name: string, deps: WsDeps): Promise<Entity> {
   const world = deps.worldHost.current();
   const saved = await loadCharacter(deps.store, characterId);
-  const spot = walkableSpot(world, saved?.x ?? null, saved?.y ?? null);
+  const spot = spotWithRoomToMove(world, saved?.x ?? null, saved?.y ?? null);
   return deps.registry.add(characterId, name, 'player', spot.x, spot.y, saved?.facing ?? 0);
 }
 
-function walkableSpot(world: ServerWorld, x: number | null, y: number | null): { x: number; y: number } {
+function spotWithRoomToMove(world: ServerWorld, x: number | null, y: number | null): { x: number; y: number } {
   if (x === null || y === null) return world.spawn();
-  if (world.isWalkable(x, y)) return { x, y };
-  return nearestWalkable(x, y, SNAP_SEARCH_RADIUS, world.isWalkable) ?? world.spawn();
+  if (!spotIsTooPennedInToStandIn(world.isWalkable, { x, y })) return { x, y };
+  return spawnWithRoomToMove(world.isWalkable, { x, y }, SNAP_SEARCH_RADIUS) ?? world.spawn();
 }
 
 function sendWelcome(conn: Connection, deps: WsDeps, characterId: string): void {

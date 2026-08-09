@@ -1,4 +1,5 @@
-import { nearestWalkable } from '../../world/nearestWalkable';
+import { spotIsTooPennedInToStandIn } from '../../world/spawn/spawnRoominess';
+import { spawnWithRoomToMove } from '../../world/spawn/spawnWithRoomToMove';
 import type { Connection } from '../host/connection';
 import { PERSISTED_DOC_NAMES } from '../../server/persistence/docsRepo';
 import type { EntityRegistry } from './entities';
@@ -14,12 +15,12 @@ export interface DocSyncDeps {
 
 export function afterDocChanged(deps: DocSyncDeps, name: string): void {
   broadcastDocChanged(deps.connections, name);
-  snapEntitiesToWalkableGround(deps);
+  snapEntitiesToGroundWithRoom(deps);
 }
 
 export function afterWorldPersistedByAgent(deps: DocSyncDeps): void {
   for (const name of PERSISTED_DOC_NAMES) broadcastDocChanged(deps.connections, name);
-  snapEntitiesToWalkableGround(deps);
+  snapEntitiesToGroundWithRoom(deps);
 }
 
 function broadcastDocChanged(connections: Set<Connection>, name: string): void {
@@ -28,11 +29,12 @@ function broadcastDocChanged(connections: Set<Connection>, name: string): void {
   }
 }
 
-function snapEntitiesToWalkableGround(deps: DocSyncDeps): void {
+function snapEntitiesToGroundWithRoom(deps: DocSyncDeps): void {
   const world = deps.worldHost.current();
   for (const entity of deps.registry.byId.values()) {
-    if (entity.kind !== 'player' || world.isWalkable(entity.x, entity.y)) continue;
-    const spot = nearestWalkable(entity.x, entity.y, SNAP_SEARCH_RADIUS, world.isWalkable) ?? world.spawn();
+    if (entity.kind !== 'player' || !spotIsTooPennedInToStandIn(world.isWalkable, entity)) continue;
+    const spot =
+      spawnWithRoomToMove(world.isWalkable, entity, SNAP_SEARCH_RADIUS) ?? world.spawn();
     deps.registry.moveTo(entity, spot.x, spot.y);
   }
 }
