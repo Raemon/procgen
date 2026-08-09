@@ -1,13 +1,20 @@
-import { readJson, writeJson } from '../../frontend/persistence/localJsonStore';
+import {
+  persistedUiValue,
+  writePersistedUiValue,
+} from '../../frontend/uiState/persistedUiStore';
 import { VIEW_MODES, type ViewMode } from './viewMode';
 
-const VIEW_MODE_KEY = 'procgen.worldView.mode';
+const VIEW_MODE_KEY = 'worldView.mode';
+const FALLBACK_VIEW_MODE: ViewMode = '3d-god';
 
 export function lastUsedViewMode(): ViewMode {
-  const stored = readJson<string>(VIEW_MODE_KEY);
-  return VIEW_MODES.find((entry) => entry.id === stored)?.id ?? '3d-god';
+  return persistedUiValue<ViewMode>(VIEW_MODE_KEY, FALLBACK_VIEW_MODE, isViewMode);
 }
 
 export function rememberViewMode(mode: ViewMode): void {
-  writeJson(VIEW_MODE_KEY, mode);
+  writePersistedUiValue(VIEW_MODE_KEY, mode);
+}
+
+function isViewMode(value: unknown): value is ViewMode {
+  return VIEW_MODES.some((entry) => entry.id === value);
 }

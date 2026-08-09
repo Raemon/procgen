@@ -17,24 +17,15 @@ export interface Store {
 }
 
 export async function initStore(databaseUrl: string | null): Promise<Store> {
-  if (!databaseUrl) {
-    console.log('[db] DATABASE_URL not set — running in-memory (no persistence).');
-    return memoryStore();
-  }
+  if (!databaseUrl) throw new Error(NO_DATABASE_URL);
   return connectedStore();
 }
 
-function memoryStore(): Store {
-  return { enabled: false, disconnect: async () => {} };
-}
+const NO_DATABASE_URL =
+  'DATABASE_URL is not set. The database is the only store for worlds and assets, so the server cannot start without it. Point DATABASE_URL at a Postgres, run `npx prisma db push`, then `npm run docs:seed` to load the repo asset library into it.';
 
 async function connectedStore(): Promise<Store> {
-  try {
-    const mod = (await import('@prisma/client')) as unknown as { PrismaClient: new () => PrismaLike };
-    const prisma = new mod.PrismaClient();
-    return { enabled: true, prisma, disconnect: () => prisma.$disconnect() };
-  } catch (err) {
-    console.warn('[db] Failed to load @prisma/client; falling back to in-memory.', err);
-    return memoryStore();
-  }
+  const mod = (await import('@prisma/client')) as unknown as { PrismaClient: new () => PrismaLike };
+  const prisma = new mod.PrismaClient();
+  return { enabled: true, prisma, disconnect: () => prisma.$disconnect() };
 }

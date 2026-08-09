@@ -18,6 +18,7 @@
     "check:nodefilter": "esbuild checks/checkNodeTypeFilter.ts --bundle --format=esm --platform=node --log-level=error --outfile=dist/checkNodeTypeFilter.mjs && node dist/checkNodeTypeFilter.mjs",
     "check": "esbuild checks/checkProcgenInvariants.ts --bundle --format=esm --platform=node --log-level=error --external:typescript --outfile=dist/checks.mjs && node --test-reporter=spec dist/checks.mjs",
     "roll": "esbuild tools/rollAndRankWorlds.ts --bundle --format=esm --platform=node --log-level=error --outfile=dist/rollAndRankWorlds.mjs && node dist/rollAndRankWorlds.mjs",
+    "docs:seed": "npx tsx tools/seedDocsFromDataFiles.ts",
     "pipeline:write": "bash tools/runTool.sh writePipelineDataFile",
     "chunk:load": "bash tools/runTool.sh probeChunkDrawLoad",
     "tiles:detail": "bash tools/runTool.sh probeTileDetail",

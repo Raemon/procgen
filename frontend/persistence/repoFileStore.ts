@@ -1,35 +1,38 @@
-import { readJson, writeJson } from './localJsonStore';
-
 const WRITE_DEBOUNCE_MS = 400;
 
+const DOCS_THE_WORLD_CANNOT_OPEN_WITHOUT = ['pipeline', 'tiles', 'pieces', 'cultures'];
+
 const preloaded = new Map<string, unknown>();
-let serverAvailable = false;
-const writeTimers = new Map<string, number>();
+const unreachable = new Set<string>();
+const writeTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
 export async function preloadPersistedFiles(names: string[]): Promise<void> {
   await Promise.all(names.map(preloadOne));
+  reportDocsTheServerNeverGave(names);
 }
 
 async function preloadOne(name: string): Promise<void> {
   try {
     const response = await fetch(`/persist/${name}`);
-    if (response.ok) {
-      serverAvailable = true;
-      preloaded.set(name, await response.json());
-      return;
-    }
-    if (response.status === 404) {
-      serverAvailable = true;
-      migrateLocalStorageToFile(name);
-    }
+    if (response.ok) preloaded.set(name, await response.json());
   } catch {
-    return;
+    unreachable.add(name);
   }
 }
 
-function migrateLocalStorageToFile(name: string): void {
-  const stored = readJson<unknown>(localStorageKeyOf(name));
-  if (stored !== null) pushToServer(name, stored);
+function reportDocsTheServerNeverGave(names: readonly string[]): void {
+  if (unreachable.size > 0) {
+    return console.error(
+      `[persist] The game server did not answer for ${[...unreachable].join(', ')}. Nothing is stored in this browser, so start the server before loading the app.`,
+    );
+  }
+  const missing = names.filter(
+    (name) => !preloaded.has(name) && DOCS_THE_WORLD_CANNOT_OPEN_WITHOUT.includes(name),
+  );
+  if (missing.length === 0) return;
+  console.error(
+    `[persist] The database holds no ${missing.join(', ')}, so the world opens without them. Run \`npm run docs:seed\` to load the repo data files into it.`,
+  );
 }
 
 export function seedPersistedFile(name: string, value: unknown): void {
@@ -37,21 +40,13 @@ export function seedPersistedFile(name: string, value: unknown): void {
 }
 
 export function readPersistedFile<T>(name: string): T | null {
-  if (preloaded.has(name)) return preloaded.get(name) as T;
-  return readJson<T>(localStorageKeyOf(name));
+  return preloaded.has(name) ? (preloaded.get(name) as T) : null;
 }
 
 export function writePersistedFile(name: string, value: unknown): void {
-  if (!serverAvailable) {
-    writeJson(localStorageKeyOf(name), value);
-    return;
-  }
   preloaded.set(name, value);
   clearTimeout(writeTimers.get(name));
-  writeTimers.set(
-    name,
-    window.setTimeout(() => pushToServer(name, value), WRITE_DEBOUNCE_MS),
-  );
+  writeTimers.set(name, setTimeout(() => pushToServer(name, value), WRITE_DEBOUNCE_MS));
 }
 
 function pushToServer(name: string, value: unknown): void {
@@ -59,9 +54,7 @@ function pushToServer(name: string, value: unknown): void {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(value),
-  }).catch(() => writeJson(localStorageKeyOf(name), value));
-}
-
-function localStorageKeyOf(name: string): string {
-  return `procgen.${name}.v1`;
+  }).catch(() =>
+    console.error(`[persist] Could not save ${name}: the game server did not accept the write.`),
+  );
 }
