@@ -30,7 +30,7 @@ function registerItemAbility(
 
 registerItemAbility({
   action: 'add_item',
-  humanControl: 'library, items folder: + add item',
+  humanControl: 'asset library, items folder: + add item',
   description:
     'Create an item definition — pixel art plus how it is drawn in the world and how much inventory space it takes.',
   params: {},

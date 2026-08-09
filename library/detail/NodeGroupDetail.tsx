@@ -5,7 +5,9 @@ import { classes } from '../../frontend/controls/classes';
 import { HINT_CLASSES } from '../../frontend/controls/fieldClasses';
 import { PanelHint } from '../../frontend/help/PanelHint';
 import type { NodeTemplate } from '../../procgen/templates/nodeTemplate';
+import { scrollNodeCardIntoView } from '../../procgen/panel/scrollNodeCardIntoView';
 import { forgetGroupTip, stampGroupTip } from '../help/libraryTips';
+import { WORLD_SELECTED } from '../librarySelection';
 import { useLibrarySelection } from '../useLibrarySelection';
 import { NothingHere } from './NothingHere';
 
@@ -19,11 +21,12 @@ export function NodeGroupDetail({ name }: { name: string }) {
   const group = templates.byName(name);
   if (!group) return <NothingHere what="node group" />;
 
-  function stampIntoPipeline(): void {
+  function stampIntoTheWorld(): void {
     const before = store.nodes().map((node) => node.id);
     perform('stamp_template', { name });
+    select(WORLD_SELECTED.folder, WORLD_SELECTED.key);
     const added = store.nodes().find((node) => !before.includes(node.id));
-    if (added) select('pipeline', added.id);
+    if (added) scrollNodeCardIntoView(added.id);
   }
 
   return (
@@ -32,8 +35,8 @@ export function NodeGroupDetail({ name }: { name: string }) {
       <p className={classes(HINT_CLASSES, 'mb-2')}>{group.description}</p>
       <NodeChain group={group} />
       <div className="mt-2 flex gap-1.5">
-        <Button className="flex-1" tip={stampGroupTip(name)} onClick={stampIntoPipeline}>
-          stamp into pipeline
+        <Button className="flex-1" tip={stampGroupTip(name)} onClick={stampIntoTheWorld}>
+          stamp into this world
         </Button>
         {saved.some((each) => each.name === name) && (
           <Button
@@ -46,8 +49,8 @@ export function NodeGroupDetail({ name }: { name: string }) {
         )}
       </div>
       <PanelHint className="mt-2">
-        Stamping inserts these nodes at the end of the pipeline with the wiring between them
-        already made, filed under a folder of their own. Wires that pointed outside the group are
+        Stamping inserts these nodes at the end of the world you are editing, wiring between them
+        already made, filed under a folder band of its own. Wires that pointed outside the group are
         left open for you to fill.
       </PanelHint>
     </>

@@ -30,7 +30,7 @@ function registerNodeAbility(
 
 registerNodeAbility({
   action: 'add_node',
-  humanControl: 'library, pipeline folder: + add node',
+  humanControl: 'detail panel, world: + add node',
   description:
     'Create a node of the given type. Its inputs auto-wire to the nearest matching earlier nodes.',
   params: {
@@ -75,7 +75,7 @@ registerNodeAbility({
 
 registerNodeAbility({
   action: 'move_node',
-  humanControl: 'library, pipeline folder: drag ⠿ to reorder',
+  humanControl: 'detail panel, world: drag ⠿ to reorder',
   description:
     'Reorder a node. Nodes run top to bottom, and a node may only consume earlier nodes.',
   params: {
@@ -143,7 +143,7 @@ registerNodeAbility({
 
 registerNodeAbility({
   action: 'set_folder',
-  humanControl: 'library, pipeline folder: folder band above a run of nodes',
+  humanControl: 'detail panel, world: folder band above a run of nodes',
   description:
     'Put a node in a named folder. Neighbouring nodes sharing a folder are grouped in the panel.',
   params: {

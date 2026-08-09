@@ -3,12 +3,12 @@ import type { PanelKey } from '../usePanelLayout';
 
 export const PANEL_TIPS: Readonly<Record<PanelKey, TooltipContent>> = {
   library: {
-    title: 'library',
-    body: 'Folders holding everything a world is built from: tiles, items, piece stamps, cultures, creatures and characters, the bookmarked node groups, and the pipeline generating this world. Pick anything to open it in the detail column.',
+    title: 'asset library',
+    body: 'Folders of every kind of asset a world is made of — worlds themselves, tiles, items, piece stamps, cultures, creatures, characters, and the bookmarked node groups. Pick anything to open it in the detail column.',
   },
   detail: {
     title: 'detail',
-    body: 'Whatever is selected in the library, opened for editing: a tile to paint, a piece to carve, a node to tune, or the world settings the whole pipeline runs under.',
+    body: 'Whatever is selected in the asset library, opened for editing: a world and the nodes generating it, a tile to paint, a piece to carve, a node group to stamp.',
   },
   agents: {
     title: 'agents',

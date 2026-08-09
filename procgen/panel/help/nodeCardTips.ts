@@ -18,17 +18,12 @@ export const NODE_NOTES_TIP: TooltipContent = {
 
 export const NODE_FOLDER_TIP: TooltipContent = {
   title: 'folder',
-  body: 'Library-only grouping. Adjacent nodes sharing a folder name fold into one band that can be collapsed or bookmarked as a node group; nothing about generation changes.',
+  body: 'Grouping for the editor only. Adjacent nodes sharing a folder name fold into one band that can be collapsed or sent to the asset library as a node group; nothing about generation changes.',
 };
 
 export const FOLDER_NAME_TIP: TooltipContent = {
   title: 'folder name',
-  body: 'Renaming retags every node in the band. Grouping is for the library only and never changes what is generated.',
-};
-
-export const SAVE_TEMPLATE_TIP: TooltipContent = {
-  title: 'bookmark as a node group',
-  body: 'Files this band in the node groups folder for reuse: wiring inside the folder is preserved, wiring to nodes outside it is left open for the next stamp to fill.',
+  body: 'Renaming retags every node in the band, and names the node group if you send it to the asset library. Grouping never changes what is generated.',
 };
 
 export const UNGROUP_TIP: TooltipContent = {
@@ -43,10 +38,10 @@ export function nodeEnabledTip(node: NodeInstance): TooltipContent {
   };
 }
 
-export function nodeTypeTip(node: NodeInstance, typeTitle: string): TooltipContent {
+export function collapseCardTip(node: NodeInstance, typeTitle: string): TooltipContent {
   return {
     title: `${node.label} · ${typeTitle}`,
-    body: 'What kind of node this is. The type is fixed once added — delete and add another to change it.',
+    body: 'Click to fold this card down to its icon, or open it back up.',
   };
 }
 

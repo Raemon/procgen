@@ -34,7 +34,7 @@ function registerPieceAbility(
 
 registerPieceAbility({
   action: 'add_piece',
-  humanControl: 'library, pieces folder: + add piece',
+  humanControl: 'asset library, pieces folder: + add piece',
   description:
     'Create an empty piece: a width × depth × layers box of tile ids you fill with paint_piece.',
   params: {},

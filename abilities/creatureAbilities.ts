@@ -23,7 +23,7 @@ function registerCreatureAbility(
 
 registerCreatureAbility({
   action: 'add_creature',
-  humanControl: 'library, creatures folder: + add creature',
+  humanControl: 'asset library, creatures folder: + add creature',
   description:
     'Create a creature definition. Bind it to a points node with set_display to put it in the world.',
   params: {},
@@ -36,7 +36,7 @@ registerCreatureAbility({
 
 registerCreatureAbility({
   action: 'add_character',
-  humanControl: 'library, characters folder: + add character',
+  humanControl: 'asset library, characters folder: + add character',
   description:
     'Create a character: a creature in every respect — same look, movement and spawning — that starts with an empty inventory grid. Reshape the grid with set_inventory.',
   params: {},

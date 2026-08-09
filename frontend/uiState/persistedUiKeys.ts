@@ -6,6 +6,7 @@ export const PERSISTED_UI_KEYS = {
   openTileArt: 'assets.openTileArt',
   openCreaturePanels: 'assets.openCreaturePanels',
   hintsVisible: 'ui.hintsVisible',
+  collapsedNodeCards: 'procgen.collapsedNodeCards',
   collapsedNodeFolders: 'procgen.collapsedNodeFolders',
   performancePanelOpen: 'world.performancePanelOpen',
 } as const;

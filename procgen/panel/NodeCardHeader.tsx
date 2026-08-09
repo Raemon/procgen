@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type DragEvent } from 'react';
 import { useAppRuntime } from '../../frontend/appRuntimeContext';
 import type { NodeInstance } from '../pipeline/pipelineState';
 import { Button } from '../../frontend/controls/Button';
@@ -6,29 +6,56 @@ import { classes } from '../../frontend/controls/classes';
 import { REVEALED_ON_ROW_HOVER } from '../../frontend/controls/revealOnRowHover';
 import { tooltipHandlers } from '../../frontend/tooltips/tooltipHandlers';
 import {
+  collapseCardTip,
   deleteNodeTip,
+  DRAG_HANDLE_TIP,
   duplicateNodeTip,
   NODE_LABEL_TIP,
   nodeEnabledTip,
-  nodeTypeTip,
 } from './help/nodeCardTips';
+import { NODE_ID_MIME } from './nodeDragTransfer';
 import { NodeTypeIcon } from './nodeTypeIcon';
 
-export function NodeCardHeader({ node, typeTitle }: { node: NodeInstance; typeTitle: string }) {
+export function NodeCardHeader({
+  node,
+  typeTitle,
+  collapsed,
+  onToggleCollapsed,
+}: {
+  node: NodeInstance;
+  typeTitle: string;
+  collapsed: boolean;
+  onToggleCollapsed(): void;
+}) {
   const { perform } = useAppRuntime();
+  if (collapsed) {
+    return (
+      <div className="flex items-center gap-[5px]">
+        <DragHandle nodeId={node.id} />
+        <TypeIconButton
+          node={node}
+          typeTitle={typeTitle}
+          collapsed
+          onToggleCollapsed={onToggleCollapsed}
+        />
+      </div>
+    );
+  }
   return (
     <div className="mb-2 flex items-center gap-[5px]">
-      <span className="p-1 text-ink-dim" {...tooltipHandlers(nodeTypeTip(node, typeTitle))}>
-        <NodeTypeIcon type={node.type} size={16} />
-      </span>
+      <DragHandle nodeId={node.id} />
+      <TypeIconButton
+        node={node}
+        typeTitle={typeTitle}
+        collapsed={false}
+        onToggleCollapsed={onToggleCollapsed}
+      />
       <input
         type="checkbox"
         className="accent-accent"
         aria-label="enabled"
         checked={node.enabled}
-        onChange={(event) =>
-          perform(event.target.checked ? 'enable_node' : 'disable_node', { node_id: node.id })
-        }
+        onChange={(event) => perform(event.target.checked ? 'enable_node' : 'disable_node', { node_id: node.id })}
         {...tooltipHandlers(nodeEnabledTip(node))}
       />
       <NodeLabelInput node={node} />
@@ -51,6 +78,53 @@ export function NodeCardHeader({ node, typeTitle }: { node: NodeInstance; typeTi
       </Button>
     </div>
   );
+}
+
+function TypeIconButton({
+  node,
+  typeTitle,
+  collapsed,
+  onToggleCollapsed,
+}: {
+  node: NodeInstance;
+  typeTitle: string;
+  collapsed: boolean;
+  onToggleCollapsed(): void;
+}) {
+  return (
+    <button
+      type="button"
+      className={classes(
+        'cursor-pointer rounded border border-transparent p-1 hover:border-panel-edge hover:text-ink',
+        collapsed ? 'text-ink' : 'text-ink-dim',
+      )}
+      aria-label={`${node.label} · ${typeTitle}`}
+      onClick={onToggleCollapsed}
+      {...tooltipHandlers(collapseCardTip(node, typeTitle))}
+    >
+      <NodeTypeIcon type={node.type} size={16} />
+    </button>
+  );
+}
+
+function DragHandle({ nodeId }: { nodeId: string }) {
+  return (
+    <span
+      draggable
+      className="cursor-grab px-[3px] py-0.5 text-xs text-ink-dim select-none hover:text-ink active:cursor-grabbing"
+      onDragStart={(event) => startCardDrag(event, nodeId)}
+      {...tooltipHandlers(DRAG_HANDLE_TIP)}
+    >
+      ⠿
+    </span>
+  );
+}
+
+function startCardDrag(event: DragEvent<HTMLElement>, nodeId: string): void {
+  const card = event.currentTarget.closest<HTMLElement>('[data-node-id]');
+  event.dataTransfer.setData(NODE_ID_MIME, nodeId);
+  event.dataTransfer.effectAllowed = 'move';
+  if (card) event.dataTransfer.setDragImage(card, 16, 16);
 }
 
 function NodeLabelInput({ node }: { node: NodeInstance }) {

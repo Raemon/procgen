@@ -13,7 +13,7 @@ export function NodeGroupsFolder() {
   );
   const groups = [...templates.builtIn(), ...saved];
   return (
-    <LibraryFolder folder="groups" tip={FOLDER_TIPS.groups} count={groups.length}>
+    <LibraryFolder folder="groups" label="node groups" tip={FOLDER_TIPS.groups} count={groups.length}>
       {groups.map((group) => (
         <LibraryRow
           key={group.name}

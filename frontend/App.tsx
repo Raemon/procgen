@@ -80,7 +80,7 @@ function visibleColumns(
     {
       key: 'library',
       tip: PANEL_TIPS.library,
-      title: 'library',
+      title: 'asset library',
       icon: <LibraryIcon />,
       tone: 'bg-panel',
       body: <LibraryPanel />,

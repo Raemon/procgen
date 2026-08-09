@@ -27,7 +27,7 @@ function registerCultureAbility(
 
 registerCultureAbility({
   action: 'add_culture',
-  humanControl: 'library, cultures folder: + add culture',
+  humanControl: 'asset library, cultures folder: + add culture',
   description:
     'Create a culture: the building vocabulary — tiles, piece roles and proportions — that the assembler builds a village with.',
   params: {},

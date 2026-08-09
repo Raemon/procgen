@@ -1,13 +1,14 @@
 import type { LibrarySelection } from '../librarySelection';
 import { useLibrarySelection } from '../useLibrarySelection';
+import { storedWorldOf } from '../worldKeys';
 import { CreatureDetail } from './CreatureDetail';
 import { CultureDetail } from './CultureDetail';
+import { CurrentWorldDetail } from './CurrentWorldDetail';
 import { ItemDetail } from './ItemDetail';
-import { NodeDetail } from './NodeDetail';
 import { NodeGroupDetail } from './NodeGroupDetail';
 import { PieceDetail } from './PieceDetail';
+import { StoredWorldDetail } from './StoredWorldDetail';
 import { TileDetail } from './TileDetail';
-import { WorldDetail } from './WorldDetail';
 
 export function DetailPanel() {
   const [selection] = useLibrarySelection();
@@ -17,8 +18,8 @@ export function DetailPanel() {
 function detailFor(selection: LibrarySelection) {
   const id = Number(selection.key);
   switch (selection.folder) {
-    case 'world':
-      return <WorldDetail />;
+    case 'worlds':
+      return worldDetail(selection.key);
     case 'tiles':
       return <TileDetail id={id} />;
     case 'items':
@@ -33,7 +34,10 @@ function detailFor(selection: LibrarySelection) {
       return <CreatureDetail id={id} character />;
     case 'groups':
       return <NodeGroupDetail name={selection.key} />;
-    case 'pipeline':
-      return <NodeDetail nodeId={selection.key} />;
   }
+}
+
+function worldDetail(key: string) {
+  const stored = storedWorldOf(key);
+  return stored ? <StoredWorldDetail world={stored} /> : <CurrentWorldDetail />;
 }

@@ -22,7 +22,7 @@ function registerTileAbility(
 
 registerTileAbility({
   action: 'add_tile',
-  humanControl: 'library, tiles folder: + add tile',
+  humanControl: 'asset library, tiles folder: + add tile',
   description:
     'Create a tile type. Procgen nodes reference tiles by id, so add the tile before pointing a node at it.',
   params: {},

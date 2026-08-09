@@ -1,6 +1,6 @@
 import { ASSET_KINDS, type AssetKind } from '../assets/asset';
 
-export const LIBRARY_FOLDERS = ['world', ...ASSET_KINDS, 'groups', 'pipeline'] as const;
+export const LIBRARY_FOLDERS = ['worlds', ...ASSET_KINDS, 'groups'] as const;
 
 export type LibraryFolder = (typeof LIBRARY_FOLDERS)[number];
 
@@ -9,7 +9,9 @@ export interface LibrarySelection {
   key: string;
 }
 
-export const WORLD_SELECTED: LibrarySelection = { folder: 'world', key: '' };
+export const CURRENT_WORLD = '';
+
+export const WORLD_SELECTED: LibrarySelection = { folder: 'worlds', key: CURRENT_WORLD };
 
 export function isLibrarySelection(value: unknown): value is LibrarySelection {
   if (typeof value !== 'object' || value === null) return false;

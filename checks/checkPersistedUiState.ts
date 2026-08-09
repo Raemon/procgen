@@ -14,8 +14,9 @@ const { persistedUiValue, subscribeToPersistedUiValue, writePersistedUiValue } =
 );
 const { toggledMembers } = await import('../frontend/uiState/toggledMembers');
 const { isLibrarySelection } = await import('../library/librarySelection');
+type LibrarySelection = import('../library/librarySelection').LibrarySelection;
 
-const WORLD_SELECTED = { folder: 'world', key: '' } as const;
+const WORLD_SELECTED: LibrarySelection = { folder: 'worlds', key: '' };
 
 checkAToggleReachesTheUiStateDoc();
 checkTheNextLoadReadsWhatTheDocHolds();
@@ -56,7 +57,7 @@ function checkTheNextLoadReadsWhatTheDocHolds(): void {
 function checkADocHoldingTheWrongShapeFallsBackToTheDefault(): void {
   seedUiState({ 'stale.selection': { folder: 'a folder that no longer exists' }, 'corrupt.widths': 'not a record' });
   assert(
-    persistedUiValue('stale.selection', WORLD_SELECTED, isLibrarySelection).folder === 'world',
+    persistedUiValue('stale.selection', WORLD_SELECTED, isLibrarySelection).folder === 'worlds',
     'a stored value that fails its guard is replaced by the default',
   );
   assert(
@@ -82,9 +83,9 @@ function checkTogglingAMemberAddsThenRemovesIt(): void {
 
 function checkOpeningFoldersReplacesWhateverWasOpen(): void {
   seedUiState({ 'library.openFolders': ['tiles'] });
-  writePersistedUiValue('library.openFolders', ['tiles', 'pieces', 'pipeline']);
+  writePersistedUiValue('library.openFolders', ['tiles', 'pieces', 'groups']);
   assert(
-    JSON.stringify(storedUiState()['library.openFolders']) === '["tiles","pieces","pipeline"]',
+    JSON.stringify(storedUiState()['library.openFolders']) === '["tiles","pieces","groups"]',
     'opening folders stores the whole set rather than merging with the old one',
   );
 }
@@ -94,7 +95,7 @@ function checkGuardsAcceptOnlyTheShapesTheUiPersists(): void {
   assert(isNumberOrNull(null) && isNumberOrNull(3) && !isNumberOrNull('3'), 'a width may be unset');
   assert(isStringArray(['a']) && !isStringArray(['a', 2]), 'a string array holds only strings');
   assert(
-    isLibrarySelection({ folder: 'pipeline', key: 'n1' }) && !isLibrarySelection({ folder: 'nope', key: '' }),
+    isLibrarySelection({ folder: 'worlds', key: 'saved:my archipelago' }) && !isLibrarySelection({ folder: 'nope', key: '' }),
     'a selection names a folder the library actually has',
   );
 }

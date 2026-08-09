@@ -66,7 +66,7 @@ registerWorldAbility({
 
 registerWorldAbility({
   action: 'load_preset',
-  humanControl: 'detail panel, world: presets dropdown',
+  humanControl: 'asset library, worlds folder: load into this world — or the presets dropdown on a world',
   description:
     'Replace the whole pipeline with a named preset — one of the built-in examples or one you saved.',
   params: { name: { kind: 'text', help: 'a preset name — see GET /api/v1/presets' } },
@@ -88,7 +88,7 @@ registerWorldAbility({
 
 registerWorldAbility({
   action: 'delete_preset',
-  humanControl: 'detail panel, world: presets dropdown, delete a saved preset',
+  humanControl: 'asset library, worlds folder: ✕ on a saved world',
   description: 'Delete one of your saved presets. Built-in examples cannot be deleted.',
   params: { name: { kind: 'text', help: 'the saved preset name' } },
   example: { action: 'delete_preset', name: 'my archipelago' },
@@ -97,7 +97,7 @@ registerWorldAbility({
 
 registerWorldAbility({
   action: 'stamp_template',
-  humanControl: 'library, groups folder: stamp into pipeline',
+  humanControl: 'asset library, node groups folder: stamp into this world',
   description:
     'Insert a saved group of wired nodes into the pipeline, renamed so its ids do not collide and filed under its own folder.',
   params: {
@@ -114,7 +114,7 @@ registerWorldAbility({
 
 registerWorldAbility({
   action: 'save_template',
-  humanControl: 'library, pipeline folder: ⤓ on a folder band',
+  humanControl: 'detail panel, world: ⤓ library on a folder band',
   description:
     'Save a run of nodes as a reusable template. Wires that point outside the group are dropped.',
   params: {

@@ -1,7 +1,11 @@
 import type { TooltipContent } from '../../frontend/tooltips/tooltipContent';
 import type { LibraryFolder } from '../librarySelection';
 
-export const FOLDER_TIPS: Readonly<Record<Exclude<LibraryFolder, 'world'>, TooltipContent>> = {
+export const FOLDER_TIPS: Readonly<Record<LibraryFolder, TooltipContent>> = {
+  worlds: {
+    title: 'worlds',
+    body: 'Whole worlds: the one you are editing, the examples that ship with the editor, and the ones you have saved. A world is the pipeline of nodes that generates it, seed and daylight included.',
+  },
   tiles: {
     title: 'tiles',
     body: 'The materials every other asset is built from: symbol, walkability and cube art.',
@@ -28,17 +32,36 @@ export const FOLDER_TIPS: Readonly<Record<Exclude<LibraryFolder, 'world'>, Toolt
   },
   groups: {
     title: 'node groups',
-    body: 'Bookmarked groups of procgen nodes that function together, with the wiring between them already made. Stamp one into the pipeline, or save a pipeline folder here to reuse it later.',
-  },
-  pipeline: {
-    title: 'pipeline',
-    body: 'The nodes generating this world, running top to bottom. Drag ⠿ to reorder, and give adjacent nodes the same folder name to band them together.',
+    body: 'Bookmarked groups of procgen nodes that function together, with the wiring between them already made. Stamp one into the world you are editing, or send a folder band from that world back here to reuse it.',
   },
 };
 
-export const WORLD_ROW_TIP: TooltipContent = {
-  title: 'world',
-  body: 'The settings the whole pipeline runs under: seed, daylight, saved presets and the randomize rolls.',
+export const CURRENT_WORLD_TIP: TooltipContent = {
+  title: 'this world',
+  body: 'The world you are editing: its seed, its daylight, and the nodes generating it. Opens as the full pipeline in the detail column.',
+};
+
+export function savedWorldTip(name: string, description: string, saved: boolean): TooltipContent {
+  return { title: saved ? `★ ${name}` : name, body: description };
+}
+
+export function loadWorldTip(name: string): TooltipContent {
+  return {
+    title: `load ${name}`,
+    body: 'Replaces every node in the world you are editing with this one. Asks first; assets are left alone.',
+  };
+}
+
+export function deleteWorldTip(name: string): TooltipContent {
+  return {
+    title: `delete ${name}`,
+    body: 'Drops this saved world. The world you are editing is untouched.',
+  };
+}
+
+export const SEND_BAND_TO_LIBRARY_TIP: TooltipContent = {
+  title: 'send to the asset library',
+  body: 'Files this band in the node groups folder as a group you can stamp into any world. Wiring inside the folder is kept; wiring to nodes outside it is left open for the next stamp to fill.',
 };
 
 export function openFolderTip(folder: string, closedTip: TooltipContent): TooltipContent {
@@ -48,7 +71,7 @@ export function openFolderTip(folder: string, closedTip: TooltipContent): Toolti
 export function stampGroupTip(name: string): TooltipContent {
   return {
     title: `stamp ${name}`,
-    body: 'Inserts this group at the end of the pipeline, renamed so its ids do not collide and filed under its own folder.',
+    body: 'Inserts this group at the end of the world you are editing, renamed so its ids do not collide and filed under its own folder band.',
   };
 }
 
