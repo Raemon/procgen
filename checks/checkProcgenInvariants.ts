@@ -43,6 +43,7 @@ import { checkClaudeMdPointsAtThingsThatExist } from './checkClaudeMdPointsAtThi
 import { checkDocumentationHasNotRegrown } from './checkDocumentationHasNotRegrown';
 import { checkPerformanceReadouts } from './checkPerformanceReadouts';
 import { checkTileHoverReadout } from './checkTileHoverReadout';
+import { checkPanelHintsRespectTheToggle } from './checkPanelHintsRespectTheToggle';
 
 function check(name: string, condition: boolean): void {
   test(name, () => assert.ok(condition));
@@ -91,3 +92,4 @@ describe('the api surface', () => checkEveryApiSurfaceIsDescribed(check));
 describe('landmarks and ceilings', () => checkLandmarkAndCeilingInvariants(check));
 describe('performance readouts', () => checkPerformanceReadouts(check));
 describe('the hovered tile readout', () => checkTileHoverReadout(check));
+describe('panel hints', () => checkPanelHintsRespectTheToggle(check));

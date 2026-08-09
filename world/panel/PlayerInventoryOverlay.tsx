@@ -3,7 +3,7 @@ import { useAppRuntime } from '../../frontend/appRuntimeContext';
 import { useRerenderOnCreatureChange, useRerenderOnItemChange } from '../../frontend/rerenderHooks';
 import { playerCharacterDef } from '../../assets/characters/playerCharacter';
 import { InventoryKeyInput } from '../input/inventoryKey';
-import { HINT_CLASSES } from '../../frontend/controls/fieldClasses';
+import { DIM_READOUT_CLASSES } from '../../frontend/controls/fieldClasses';
 import { CarriedItemsGrid } from './CarriedItemsGrid';
 
 export function PlayerInventoryOverlay() {
@@ -28,12 +28,12 @@ export function PlayerInventoryOverlay() {
       <div className="pointer-events-auto rounded border border-panel-edge bg-panel p-3 shadow-[0_6px_24px_rgba(0,0,0,0.6)]">
         <div className="mb-2 flex items-baseline gap-2">
           <span className="text-ink">{carrier?.name ?? 'no character'}</span>
-          <span className={HINT_CLASSES}>I or Esc closes</span>
+          <span className={DIM_READOUT_CLASSES}>I or Esc closes</span>
         </div>
         {carrier?.inventory ? (
           <CarriedItemsGrid inventory={carrier.inventory} items={items} />
         ) : (
-          <p className={HINT_CLASSES}>This character has no bag to carry anything in.</p>
+          <p className={DIM_READOUT_CLASSES}>This character has no bag to carry anything in.</p>
         )}
       </div>
     </div>

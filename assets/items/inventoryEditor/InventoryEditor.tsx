@@ -14,8 +14,8 @@ import {
 } from './help/inventoryTips';
 import { Select } from '../../../frontend/controls/Select';
 import { TagsInput } from '../../../frontend/controls/TagsInput';
-import { classes } from '../../../frontend/controls/classes';
-import { HINT_CLASSES } from '../../../frontend/controls/fieldClasses';
+import { DIM_READOUT_CLASSES } from '../../../frontend/controls/fieldClasses';
+import { PanelHint } from '../../../frontend/help/PanelHint';
 import { SpriteArtEditor } from '../../pixelArtEditor/SpriteArtEditor';
 import { InventoryGrid, type GridCell } from './InventoryGrid';
 import { INVENTORY_MODES, type InventoryEditorMode } from './inventoryEditorMode';
@@ -25,7 +25,7 @@ export function InventoryEditor({ creature }: { creature: CreatureDef }) {
   if (!creature.inventory) {
     return (
       <div className="mt-1.5 rounded border border-art-edge bg-art-panel p-2">
-        <p className={HINT_CLASSES}>This creature carries nothing.</p>
+        <p className={DIM_READOUT_CLASSES}>This creature carries nothing.</p>
         <Button
           className="mt-1.5"
           onClick={() => perform('set_inventory', { creature_id: creature.id, width: 6, height: 4 })}
@@ -115,7 +115,9 @@ function InventoryPanel({
         </KnobRow>
       )}
       <BackdropRow creature={creature} inventory={inventory} />
-      <p className={classes(HINT_CLASSES, 'mt-2')}>{INVENTORY_MODES.find((entry) => entry.mode === mode)!.help}</p>
+      <PanelHint className="mt-2">
+        {INVENTORY_MODES.find((entry) => entry.mode === mode)!.help}
+      </PanelHint>
     </div>
   );
 }
@@ -186,7 +188,7 @@ function SlotTagsRow({
   creatureId: number;
 }) {
   const { perform } = useAppRuntime();
-  if (!selected) return <p className={classes(HINT_CLASSES, 'mt-2')}>Click a slot to tag it.</p>;
+  if (!selected) return <PanelHint className="mt-2">Click a slot to tag it.</PanelHint>;
   const slot = slotAt(inventory, selected.x, selected.y);
   if (!slot) return null;
   return (
@@ -217,7 +219,7 @@ function BackdropRow({ creature, inventory }: { creature: CreatureDef; inventory
         <Button className="px-2 py-0.5 text-[11px]" active={open} onClick={() => setOpen(!open)}>
           backdrop
         </Button>
-        <span className={HINT_CLASSES}>
+        <span className={DIM_READOUT_CLASSES}>
           {inventory.background ? 'art layered under the grid' : 'no art under the grid'}
         </span>
       </div>

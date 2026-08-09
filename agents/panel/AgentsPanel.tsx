@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '../../frontend/controls/Button';
 import { Select } from '../../frontend/controls/Select';
-import { FIELD_CLASSES, HINT_CLASSES } from '../../frontend/controls/fieldClasses';
+import { DIM_READOUT_CLASSES, FIELD_CLASSES } from '../../frontend/controls/fieldClasses';
 import { PanelHint } from '../../frontend/help/PanelHint';
 import type { AgentMode } from '../agentMode';
 import { createAgent, deleteAgent, startRun, stopRun, type RosterAgent } from './agentsApiClient';
@@ -101,7 +101,7 @@ export function AgentsPanel({
           onChange={(event) => setSettings({ ...settings, goal: event.target.value })}
           {...tooltipHandlers(GOAL_TIP)}
         />
-        <div className={`${HINT_CLASSES} flex items-center gap-1.5`}>
+        <div className={`${DIM_READOUT_CLASSES} flex items-center gap-1.5`}>
           <label className="flex items-center gap-1.5">
             budget $
             <input
