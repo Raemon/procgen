@@ -1,16 +1,149 @@
 {
-  "seed": 8123,
+  "seed": 3,
   "daylight": 1,
   "nodes": [
     {
-      "id": "n1",
-      "type": "terrainNoise",
-      "label": "vale relief",
-      "comment": "The one field the whole vale answers to. A gentle scale and five octaves give long pasture slopes rather than islands, and every layer below — coast, woods, villages, becks — reads this node so nothing can disagree about where the ground is.",
-      "folder": "the vale",
+      "id": "plates",
+      "type": "tectonicUplift",
+      "label": "plates",
+      "comment": "Continents and ocean basins before any noise touches them. A land height of 0.6 against sea level 0.5 leaves a narrow margin, so the noise below is what decides which continental edges drown into bays.",
+      "folder": "the ranges",
       "enabled": true,
       "params": {
-        "scale": 0.006,
+        "plateSize": 256,
+        "oceanFraction": 0.55,
+        "beltWidth": 64,
+        "rangeHeight": 0.34,
+        "landHeight": 0.6,
+        "basinDepth": 0.34
+      },
+      "inputs": {},
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "warpX",
+      "type": "terrainNoise",
+      "label": "warp x",
+      "comment": "How far east or west to displace the plate field. Separate from the y axis so the displacement swirls rather than slides.",
+      "folder": "the ranges",
+      "enabled": true,
+      "params": {
+        "scale": 0.004,
+        "style": 0,
+        "octaves": 4,
+        "lacunarity": 2,
+        "gain": 0.5
+      },
+      "inputs": {},
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "warpY",
+      "type": "terrainNoise",
+      "label": "warp y",
+      "comment": "The north-south half of the same displacement, at a slightly different scale so the two axes never line up into a diagonal grain.",
+      "folder": "the ranges",
+      "enabled": true,
+      "params": {
+        "scale": 0.0045,
+        "style": 0,
+        "octaves": 4,
+        "lacunarity": 2,
+        "gain": 0.5
+      },
+      "inputs": {},
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "warpedPlates",
+      "type": "domainWarp",
+      "label": "warped plates",
+      "comment": "Plate boundaries are straight bisectors, which no real coast is. Displacing the field turns them into headlands, bays and offshore islands without changing a single elevation value.",
+      "folder": "the ranges",
+      "enabled": true,
+      "params": {
+        "strength": 110
+      },
+      "inputs": {
+        "source": "plates",
+        "offsetX": "warpX",
+        "offsetY": "warpY"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "beltMask",
+      "type": "hypsometricCurve",
+      "label": "belt mask",
+      "comment": "A curve used as a switch: pivoted above continental crust but below the uplift belts, it reads near 1 inside a mountain belt and near 0 everywhere else. This is what keeps jagged noise on the ranges.",
+      "folder": "the ranges",
+      "enabled": true,
+      "params": {
+        "seaLevel": 0.72,
+        "steepness": 25
+      },
+      "inputs": {
+        "source": "warpedPlates"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "ridges",
+      "type": "terrainNoise",
+      "label": "ridges",
+      "comment": "Ridged noise, each octave folded at its midline so crests are sharp and flanks are steep. Masked to the belts below, or it would ridge the whole world.",
+      "folder": "the ranges",
+      "enabled": true,
+      "params": {
+        "scale": 0.01,
+        "style": 1,
+        "octaves": 7,
+        "lacunarity": 2.1,
+        "gain": 0.5
+      },
+      "inputs": {},
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "ranges",
+      "type": "blendFields",
+      "label": "ranges in the belts",
+      "comment": "Mixes ridged noise into the plate uplift only where the belt mask allows. The weight is kept well under half deliberately: a blend leans toward whichever side it weights, so a heavy weight would replace the uplift with noise averaging near the middle and flatten the belt into a plateau. At this weight the ridges ride on top of the uplift instead.",
+      "folder": "the ranges",
+      "enabled": true,
+      "params": {
+        "weight": 0.38
+      },
+      "inputs": {
+        "a": "warpedPlates",
+        "b": "ridges",
+        "mask": "beltMask"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "hillNoise",
+      "type": "terrainNoise",
+      "label": "hill noise",
+      "comment": "The unremarkable relief between the ranges: rises, hollows, and the wobble that gives the coastline its small-scale shape. The hollows matter here — they are what later fills as lakes.",
+      "folder": "the hills",
+      "enabled": true,
+      "params": {
+        "scale": 0.018,
         "style": 0,
         "octaves": 5,
         "lacunarity": 2,
@@ -18,337 +151,298 @@
       },
       "inputs": {},
       "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "hills",
+      "type": "blendFields",
+      "label": "rolling hills",
+      "comment": "A light unmasked pass over everything, kept low so it textures the terrain rather than competing with the plate structure.",
+      "folder": "the hills",
+      "enabled": true,
+      "params": {
+        "weight": 0.2
+      },
+      "inputs": {
+        "a": "ranges",
+        "b": "hillNoise",
+        "mask": null
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "terrain",
+      "type": "hypsometricCurve",
+      "label": "basins & platform",
+      "comment": "Earth has two typical elevations with a steep slope between them and almost nothing sitting exactly at sea level. This pushes the blended field into that shape, which is what stops the map being fringed with shallows everywhere.",
+      "folder": "the hills",
+      "enabled": true,
+      "params": {
+        "seaLevel": 0.5,
+        "steepness": 9
+      },
+      "inputs": {
+        "source": "hills"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "flow",
+      "type": "flowAccumulation",
+      "label": "drainage",
+      "comment": "One unit of rain on every cell, routed downhill after the pits are flooded shut. Below the channel threshold the water spreads across several neighbours the way runoff really does; above it the watercourse commits to one path, which is what keeps trunks from fraying into speckle.",
+      "folder": "the water",
+      "enabled": true,
+      "params": {
+        "seaLevel": 0.5,
+        "catchmentScale": 2200,
+        "fillPits": 1,
+        "windowRadius": 48
+      },
+      "inputs": {
+        "elevation": "terrain"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "eroded",
+      "type": "carveValleys",
+      "label": "eroded terrain",
+      "comment": "Rivers cut in proportion to what they carry, so channels sit in valleys and the ground between them reads as ridges because it is what did not get cut away.",
+      "folder": "the water",
+      "enabled": true,
+      "params": {
+        "depth": 0.14,
+        "minFlow": 0.62,
+        "valleyWidth": 7
+      },
+      "inputs": {
+        "elevation": "terrain",
+        "flow": "flow"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "seaFloor",
+      "type": "constantField",
+      "label": "sea level",
+      "comment": "One flat value at sea level. Used twice: as the floor the ocean surface is lifted to, and as the level the basins below are pulled toward.",
+      "folder": "the hollows",
+      "enabled": true,
+      "params": {
+        "value": 0.5
+      },
+      "inputs": {},
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "basinNoise",
+      "type": "terrainNoise",
+      "label": "basin noise",
+      "comment": "The frequency here is the whole trick. A scooped hollow only holds water if its sides fall faster than the hillside it sits on rises, so a broad gentle dip just tilts downhill and drains. Patches a few dozen tiles across are compact enough to win that race.",
+      "folder": "the hollows",
+      "enabled": true,
+      "params": {
+        "scale": 0.03,
+        "style": 0,
+        "octaves": 3,
+        "lacunarity": 2,
+        "gain": 0.5
+      },
+      "inputs": {},
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "basinMask",
+      "type": "hypsometricCurve",
+      "label": "basin mask",
+      "comment": "The same curve-as-a-switch trick the mountain belts use, pivoted high so only the top of the noise survives. That leaves scattered closed islands of mask rather than a connected web, which matters: a hollow open along one side is a valley, and only a hollow closed on every side holds water.",
+      "folder": "the hollows",
+      "enabled": true,
+      "params": {
+        "seaLevel": 0.62,
+        "steepness": 40
+      },
+      "inputs": {
+        "source": "basinNoise"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "dimpled",
+      "type": "blendFields",
+      "label": "scooped basins",
+      "comment": "Pulls the ground toward sea level inside those islands, scooping shallow closed hollows into the landscape. Nothing else here can make one: the hypsometric curve is monotonic so it cannot invent a pit, and fill depressions can only flood hollows that already exist. It runs after the valleys are cut on purpose — scooped first, the rivers simply carve an outlet through every basin and drain it, which is exactly what happened before this node sat here.",
+      "folder": "the hollows",
+      "enabled": true,
+      "params": {
+        "weight": 0.8
+      },
+      "inputs": {
+        "a": "eroded",
+        "b": "seaFloor",
+        "mask": "basinMask"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "lakeSurface",
+      "type": "fillDepressions",
+      "label": "lake surface",
+      "comment": "Floods every closed hollow up to the point it would spill from. This is also the elevation the world is built on, and that is deliberate: inside a basin the flooded surface is flat, so the lake sits at one level instead of draping over its own bed.",
+      "folder": "the water",
+      "enabled": true,
+      "params": {
+        "seaLevel": 0.5,
+        "maxFill": 0.18,
+        "windowRadius": 64
+      },
+      "inputs": {
+        "elevation": "dimpled"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "surface",
+      "type": "combineFields",
+      "label": "water surface",
+      "comment": "The elevation the world is actually built on, and the reason the sea is flat. Filling depressions leaves everything at or below sea level untouched, because those cells already drain to the ocean — so the raw flooded field still slopes all the way down the sea bed, and painting ocean tiles onto it would render the sea as a ramp descending into a hole. Taking the higher of the flooded surface and sea level puts every ocean cell at one height while leaving all the land, and every inland lake perched above sea level, exactly as the flooding left them.",
+      "folder": "the water",
+      "enabled": true,
+      "params": {
+        "operation": 4,
+        "clamp": 1
+      },
+      "inputs": {
+        "a": "lakeSurface",
+        "b": "seaFloor"
+      },
+      "display": {
         "mode": "elevation",
-        "heightScale": 4
+        "heightScale": 55
       }
     },
     {
-      "id": "n2",
-      "type": "thresholdTiles",
-      "label": "sea & strand",
-      "comment": "The base coat, so every cell starts painted: sea water below 0.42 and shore sand above. Everything after this only overrides parts of it.",
-      "folder": "the vale",
+      "id": "steepness",
+      "type": "slopeField",
+      "label": "steepness",
+      "comment": "Bare rock and broken water are both questions about grade rather than height. Radius 3 measures the slope of a mountainside instead of the roughness of single cells.",
+      "folder": "the surface",
       "enabled": true,
       "params": {
-        "threshold": 0.42,
-        "belowTile": 0,
-        "aboveTile": 1
+        "radius": 3,
+        "gain": 8
       },
       "inputs": {
-        "source": "n1"
+        "source": "dimpled"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "coast",
+      "type": "coastDistance",
+      "label": "coast distance",
+      "comment": "Measured from the eroded terrain so beaches follow the shore rather than the local gradient, and river valleys do not count as coastline.",
+      "folder": "the surface",
+      "enabled": true,
+      "params": {
+        "seaLevel": 0.5,
+        "range": 24
+      },
+      "inputs": {
+        "elevation": "dimpled"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "land",
+      "type": "biomeBands",
+      "label": "land & ocean",
+      "comment": "The whole tile mapping on one card: ocean, shelf, beach, meadow, the bare rock that only clings to steep ground, and snow on the summits.",
+      "folder": "the surface",
+      "enabled": true,
+      "params": {
+        "seaLevel": 0.5,
+        "deepDrop": 0.07,
+        "shoreBand": 0.05,
+        "rockAbove": 0.3,
+        "snowLine": 0.88,
+        "regionAtLeast": 0.5,
+        "deepTile": 0,
+        "waterTile": 5,
+        "shoreTile": 1,
+        "groundTile": 2,
+        "rockTile": 4,
+        "snowTile": 49
+      },
+      "inputs": {
+        "elevation": "dimpled",
+        "steepness": "steepness",
+        "shoreDistance": "coast",
+        "region": null
       },
       "display": {
         "mode": "tileLayer"
       }
     },
     {
-      "id": "n3",
-      "type": "thresholdTiles",
-      "label": "shallows",
-      "comment": "A thin band of shallow water above the deep, painted below 0.40 and left empty above, so the coast reads as a beach shelving into the sea instead of a wall of blue.",
-      "folder": "the vale",
+      "id": "rivers",
+      "type": "riverFromFlow",
+      "label": "rivers",
+      "comment": "Painted under the lakes, so a river running into a basin becomes the lake rather than a channel drawn across it. Every cell above the flow threshold is water, so courses branch upstream, merge downstream, and widen toward the mouth.",
+      "folder": "the water",
       "enabled": true,
       "params": {
-        "threshold": 0.4,
-        "belowTile": -1,
-        "aboveTile": 5
-      },
-      "inputs": {
-        "source": "n1"
-      },
-      "display": {
-        "mode": "tileLayer"
-      }
-    },
-    {
-      "id": "n4",
-      "type": "thresholdTiles",
-      "label": "marsh",
-      "comment": "A wet band immediately above the tideline: everything over 0.43 is fen until the pasture layer below overrides it at 0.45, which leaves exactly the two-tile margin where the becks spill out.",
-      "folder": "the vale",
-      "enabled": true,
-      "params": {
-        "threshold": 0.43,
-        "belowTile": -1,
-        "aboveTile": 12
-      },
-      "inputs": {
-        "source": "n1"
-      },
-      "display": {
-        "mode": "tileLayer"
-      }
-    },
-    {
-      "id": "n5",
-      "type": "thresholdTiles",
-      "label": "pasture",
-      "comment": "Grass only above 0.45, which leaves a sand strand two or three tiles wide along the whole shore for the villages to sit back from.",
-      "folder": "the vale",
-      "enabled": true,
-      "params": {
-        "threshold": 0.45,
-        "belowTile": -1,
-        "aboveTile": 2
-      },
-      "inputs": {
-        "source": "n1"
-      },
-      "display": {
-        "mode": "tileLayer"
-      }
-    },
-    {
-      "id": "n6",
-      "type": "thresholdTiles",
-      "label": "upper pasture",
-      "comment": "A second, paler grass above 0.56. Two grasses rather than one is what stops the middle of the map reading as a single flat green.",
-      "folder": "the vale",
-      "enabled": true,
-      "params": {
-        "threshold": 0.56,
-        "belowTile": -1,
-        "aboveTile": 7
-      },
-      "inputs": {
-        "source": "n1"
-      },
-      "display": {
-        "mode": "tileLayer"
-      }
-    },
-    {
-      "id": "n7",
-      "type": "thresholdTiles",
-      "label": "fell scree",
-      "comment": "Loose stone above 0.70 where the pasture gives out, so the fells have a skirt of scree before the bare rock starts.",
-      "folder": "the vale",
-      "enabled": true,
-      "params": {
-        "threshold": 0.7,
-        "belowTile": -1,
-        "aboveTile": 11
-      },
-      "inputs": {
-        "source": "n1"
-      },
-      "display": {
-        "mode": "tileLayer"
-      }
-    },
-    {
-      "id": "n8",
-      "type": "thresholdTiles",
-      "label": "fell rock",
-      "comment": "Granite outcrop above 0.76 — the band the stonewold hamlets are masked to sit just below, so the hamlets read as hill settlements under the crags.",
-      "folder": "the vale",
-      "enabled": true,
-      "params": {
-        "threshold": 0.76,
-        "belowTile": -1,
-        "aboveTile": 4
-      },
-      "inputs": {
-        "source": "n1"
-      },
-      "display": {
-        "mode": "tileLayer"
-      }
-    },
-    {
-      "id": "n9",
-      "type": "riverTiles",
-      "label": "becks",
-      "comment": "Springs on ground above 0.62 traced downhill to the same 0.42 sea level the coast uses, so every beck ends in a mouth on the strand rather than stopping in a field. A little meander keeps them from looking surveyed.",
-      "folder": "water",
-      "enabled": true,
-      "params": {
-        "sourceDensity": 0.0025,
-        "minSourceHeight": 0.62,
-        "seaLevel": 0.42,
-        "maxLength": 120,
-        "meander": 0.05,
+        "minFlow": 0.42,
+        "maxWidth": 8,
+        "seaLevel": 0.5,
         "riverTile": 6
       },
       "inputs": {
-        "elevation": "n1"
+        "flow": "flow",
+        "elevation": "dimpled"
       },
       "display": {
         "mode": "tileLayer"
       }
     },
     {
-      "id": "n10",
-      "type": "villageCenters",
-      "label": "vale villages",
-      "comment": "Villages answer to the land: only the gentle inhabited band from 0.50 to 0.62 can hold one, which is clear of the marsh and well below the scree. Spacing 160 puts roughly one village every two and a half chunks of walking, so you cross fields between them instead of tripping over the next roof.",
-      "folder": "thatchmere villages",
-      "enabled": true,
-      "params": {
-        "maskAtLeast": 0.5,
-        "maskAtMost": 0.62,
-        "spacing": 160
-      },
-      "inputs": {
-        "mask": "n1"
-      },
-      "display": {
-        "mode": "markers",
-        "tileId": -1,
-        "glyph": "⌂",
-        "color": "#e0c48a"
-      }
-    },
-    {
-      "id": "n11",
-      "type": "villageStreets",
-      "label": "vale lanes",
-      "comment": "The same centers and the same layout knobs as the plots below, which is what makes the paving line up with the houses. Cobbles for the street, flagstones for the square where the two lanes cross.",
-      "folder": "thatchmere villages",
-      "enabled": true,
-      "params": {
-        "radius": 72,
-        "plotCells": 16,
-        "streetWidth": 3,
-        "streetTile": 17,
-        "plazaTile": 18
-      },
-      "inputs": {
-        "centers": "n10"
-      },
-      "display": {
-        "mode": "tileLayer"
-      }
-    },
-    {
-      "id": "n12",
-      "type": "villagePlots",
-      "label": "vale houses",
-      "comment": "One tagged plot per building, bound to thatchmere so every point grows into a wattle-walled, thatch-roofed house assembled from the piece library. Plots are 16 tiles square because that is the smallest plot a town hall fits in; below that the plaza slot quietly falls back to a cottage. The rings do the zoning: the town hall on the plaza, inns around it, the workshop ring of smithies behind them, and houses on everything further out.",
-      "folder": "thatchmere villages",
-      "enabled": true,
-      "params": {
-        "radius": 72,
-        "plotCells": 16,
-        "streetWidth": 3,
-        "cottageWeight": 5,
-        "dwellingWeight": 3,
-        "smithyWeight": 2,
-        "innWeight": 1,
-        "townHallWeight": 1
-      },
-      "inputs": {
-        "centers": "n10"
-      },
-      "display": {
-        "mode": "structures",
-        "cultureId": 1
-      }
-    },
-    {
-      "id": "n13",
-      "type": "villageCenters",
-      "label": "fell hamlets",
-      "comment": "A second, tighter band from 0.63 to 0.71 — the shoulder of the fell between the pasture and the scree. Because the band never overlaps the vale band, the two cultures can never found a village on the same ground.",
-      "folder": "stonewold hamlets",
-      "enabled": true,
-      "params": {
-        "maskAtLeast": 0.63,
-        "maskAtMost": 0.71,
-        "spacing": 112
-      },
-      "inputs": {
-        "mask": "n1"
-      },
-      "display": {
-        "mode": "markers",
-        "tileId": -1,
-        "glyph": "⌂",
-        "color": "#a8b0b6"
-      }
-    },
-    {
-      "id": "n14",
-      "type": "villageStreets",
-      "label": "hamlet lanes",
-      "comment": "A quarter of the vale radius and 10-tile plots, so a hamlet is one short street rather than a town. Same cobble and flagstone paving, because the quarry that dressed the walls also paved the lane.",
-      "folder": "stonewold hamlets",
-      "enabled": true,
-      "params": {
-        "radius": 26,
-        "plotCells": 10,
-        "streetWidth": 3,
-        "streetTile": 17,
-        "plazaTile": 18
-      },
-      "inputs": {
-        "centers": "n13"
-      },
-      "display": {
-        "mode": "tileLayer"
-      }
-    },
-    {
-      "id": "n15",
-      "type": "villagePlots",
-      "label": "hamlet houses",
-      "comment": "Bound to stonewold: granite walls, slate hips and the taller stories that the extra story layer buys. Every civic weight is zero, so a hamlet comes out as nothing but cottages and dwellings, which is the whole difference between a hamlet and the town down in the vale.",
-      "folder": "stonewold hamlets",
-      "enabled": true,
-      "params": {
-        "radius": 26,
-        "plotCells": 10,
-        "streetWidth": 3,
-        "cottageWeight": 5,
-        "dwellingWeight": 2,
-        "smithyWeight": 0,
-        "innWeight": 0,
-        "townHallWeight": 0
-      },
-      "inputs": {
-        "centers": "n13"
-      },
-      "display": {
-        "mode": "structures",
-        "cultureId": 0
-      }
-    },
-    {
-      "id": "n16",
+      "id": "conifers",
       "type": "scatterPoints",
-      "label": "oak woods",
-      "comment": "Oaks on the lower slopes only, in the same band the villages take, so the woods and the fields interleave and every village has timber within walking distance.",
-      "folder": "woods & wildlife",
+      "label": "conifers",
+      "comment": "Billboards are the only things in this view with their own colour — ground stands a block deep, which walls off the void under a slope but leaves a hillside of grass one uniform green whatever its height. Trees are what stops the land reading as a stack of painted sheets. Pines take the upper band, below the snow line.",
+      "folder": "the cover",
       "enabled": true,
       "params": {
         "density": 0.05,
-        "maskAtLeast": 0.5,
-        "maskAtMost": 0.63
+        "maskAtLeast": 0.63,
+        "maskAtMost": 0.78
       },
       "inputs": {
-        "mask": "n1"
-      },
-      "display": {
-        "mode": "markers",
-        "tileId": 3,
-        "glyph": "♠",
-        "color": "#41663c"
-      }
-    },
-    {
-      "id": "n17",
-      "type": "scatterPoints",
-      "label": "pine ridges",
-      "comment": "Pines take over above the oaks, from 0.64 to the scree line, which is how a real treeline reads: the species changes before the trees stop.",
-      "folder": "woods & wildlife",
-      "enabled": true,
-      "params": {
-        "density": 0.04,
-        "maskAtLeast": 0.64,
-        "maskAtMost": 0.72
-      },
-      "inputs": {
-        "mask": "n1"
+        "mask": "dimpled"
       },
       "display": {
         "mode": "markers",
@@ -358,65 +452,69 @@
       }
     },
     {
-      "id": "n18",
+      "id": "broadleaf",
       "type": "scatterPoints",
-      "label": "meadow flowers",
-      "comment": "A thin scatter of flowers across the damp lower pasture. Cheap and unstructured on purpose: its only job is to break up the green where the eye rests longest.",
-      "folder": "woods & wildlife",
+      "label": "broadleaf wood",
+      "comment": "Oaks on the lower slopes and valley floors, where it is warmer and the ground is worked by rivers rather than frost.",
+      "folder": "the cover",
       "enabled": true,
       "params": {
-        "density": 0.03,
-        "maskAtLeast": 0.46,
-        "maskAtMost": 0.55
+        "density": 0.055,
+        "maskAtLeast": 0.53,
+        "maskAtMost": 0.65
       },
       "inputs": {
-        "mask": "n1"
+        "mask": "dimpled"
       },
       "display": {
         "mode": "markers",
-        "tileId": 8,
-        "glyph": "❀",
-        "color": "#8aa165"
+        "tileId": 3,
+        "glyph": "♠",
+        "color": "#41663c"
       }
     },
     {
-      "id": "n19",
+      "id": "scrub",
       "type": "scatterPoints",
-      "label": "deer",
-      "comment": "Spawn cells rather than positions: each point near the player becomes one deer browsing the wood margin between the oaks and the fields.",
-      "folder": "woods & wildlife",
+      "label": "scrub",
+      "comment": "Hazel filling the gaps between the two woods, so the treeline is a gradient rather than a hard edge.",
+      "folder": "the cover",
       "enabled": true,
       "params": {
-        "density": 0.008,
-        "maskAtLeast": 0.5,
-        "maskAtMost": 0.66
+        "density": 0.03,
+        "maskAtLeast": 0.6,
+        "maskAtMost": 0.72
       },
       "inputs": {
-        "mask": "n1"
+        "mask": "dimpled"
       },
       "display": {
-        "mode": "creatures",
-        "creatureId": 0
+        "mode": "markers",
+        "tileId": 14,
+        "glyph": "%",
+        "color": "#4e7443"
       }
     },
     {
-      "id": "n20",
+      "id": "boulders",
       "type": "scatterPoints",
-      "label": "fen herons",
-      "comment": "Masked to the wet band just above the tideline, so herons are found standing in the marsh the way they should be and never up on the fell.",
-      "folder": "woods & wildlife",
+      "label": "boulders",
+      "comment": "Rock scattered on the steep ground above the treeline, drawn as boulders because the tile it is styled from has the rock role.",
+      "folder": "the cover",
       "enabled": true,
       "params": {
-        "density": 0.004,
-        "maskAtLeast": 0.43,
-        "maskAtMost": 0.47
+        "density": 0.02,
+        "maskAtLeast": 0.78,
+        "maskAtMost": 1
       },
       "inputs": {
-        "mask": "n1"
+        "mask": "dimpled"
       },
       "display": {
-        "mode": "creatures",
-        "creatureId": 6
+        "mode": "markers",
+        "tileId": 4,
+        "glyph": "#",
+        "color": "#8b8c87"
       }
     }
   ]
