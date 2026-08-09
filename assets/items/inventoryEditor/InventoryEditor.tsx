@@ -3,6 +3,7 @@ import { useAppRuntime } from '../../../frontend/appRuntimeContext';
 import { useRerenderOnItemChange } from '../../../frontend/rerenderHooks';
 import type { CreatureDef } from '../../creatures/creatureDef';
 import { MAX_INVENTORY_SIDE, slotAt, type InventoryDef } from '../inventory/inventoryDef';
+import { DrawerPanel } from '../../../frontend/controls/DrawerPanel';
 import { Button } from '../../../frontend/controls/Button';
 import { KnobRow } from '../../../frontend/controls/KnobRow';
 import type { TooltipContent } from '../../../frontend/tooltips/tooltipContent';
@@ -24,7 +25,7 @@ export function InventoryEditor({ creature }: { creature: CreatureDef }) {
   const { perform } = useAppRuntime();
   if (!creature.inventory) {
     return (
-      <div className="mt-1.5 rounded border border-art-edge bg-art-panel p-2">
+      <DrawerPanel>
         <p className={HINT_CLASSES}>This creature carries nothing.</p>
         <Button
           className="mt-1.5"
@@ -32,7 +33,7 @@ export function InventoryEditor({ creature }: { creature: CreatureDef }) {
         >
           + give it an inventory
         </Button>
-      </div>
+      </DrawerPanel>
     );
   }
   return <InventoryPanel creature={creature} inventory={creature.inventory} />;
@@ -69,7 +70,7 @@ function InventoryPanel({
   }
 
   return (
-    <div className="mt-1.5 rounded border border-art-edge bg-art-panel p-2">
+    <DrawerPanel>
       <SizeRow creature={creature} inventory={inventory} />
       <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
         {INVENTORY_MODES.map((entry) => (
@@ -116,7 +117,7 @@ function InventoryPanel({
       )}
       <BackdropRow creature={creature} inventory={inventory} />
       <p className={classes(HINT_CLASSES, 'mt-2')}>{INVENTORY_MODES.find((entry) => entry.mode === mode)!.help}</p>
-    </div>
+    </DrawerPanel>
   );
 }
 

@@ -13,6 +13,7 @@ import {
 } from '../characterBillboard';
 import type { CreatureDef } from '../../creatures/creatureDef';
 import { blankSpriteArt, type SpriteArt } from '../../tiles/spriteArt';
+import { DrawerPanel } from '../../../frontend/controls/DrawerPanel';
 import { Button } from '../../../frontend/controls/Button';
 import { KnobRow } from '../../../frontend/controls/KnobRow';
 import { Slider } from '../../../frontend/controls/Slider';
@@ -42,7 +43,7 @@ export function CharacterSpritesEditor({ character }: { character: CreatureDef }
       sprite,
     });
   return (
-    <div className="mt-1.5 rounded border border-art-edge bg-art-panel p-2">
+    <DrawerPanel>
       <TabRow
         values={CHARACTER_ROTATIONS}
         active={rotation}
@@ -105,7 +106,7 @@ export function CharacterSpritesEditor({ character }: { character: CreatureDef }
           the mirrored half flipped.
         </span>
       </div>
-    </div>
+    </DrawerPanel>
   );
 }
 

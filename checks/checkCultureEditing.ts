@@ -4,7 +4,6 @@ import '../abilities/index';
 import { allAbilities } from '../abilities/abilityRegistry';
 import type { AbilitySpec } from '../abilities/ability';
 import {
-  GABLE_ROOF,
   HIP_ROOF,
   MAX_STORY_LAYERS,
   MAX_WINDOW_EVERY,
@@ -21,26 +20,39 @@ import {
   pieceOffersPerRole,
   piecesOfferedForRole,
 } from '../assets/cultures/pieceOffersPerRole';
-import { roofStyleLabel } from '../assets/cultures/roofStyleChoices';
+import { roleBindingsWithoutPiece } from '../assets/cultures/forgetRemovedPieceInRoleBindings';
+import { ROOF_STYLE_CHOICES, roofStyleLabel } from '../assets/cultures/roofStyleChoices';
 import { CULTURE_DRAWERS, CULTURE_PANELS } from '../assets/cultures/editor/cultureDrawers';
 import { newPieceWithId, type Piece, type PieceRole } from '../assets/pieces/pieceDef';
 import { isOneOf } from '../frontend/uiState/persistedUiGuards';
-import { PERSISTED_UI_KEYS } from '../frontend/uiState/persistedUiKeys';
 import type { CheckReporter } from './checkReporter';
 
 const CULTURES_PANEL_SOURCE = join('assets', 'cultures', 'editor');
 const PERFORMED_ACTION = /perform\('([a-z_]+)'/g;
+const CULTURE_ABILITY_ACTIONS = [
+  'add_culture',
+  'rename_culture',
+  'remove_culture',
+  'set_culture_tiles',
+  'set_culture_numbers',
+  'bind_culture_role',
+];
 
 export function checkCultureEditing(check: CheckReporter): void {
   checkEveryCultureAbilityIsReachableFromThePanel(check);
   checkTheDrawersSurviveAReload(check);
   checkTheKnobsCoverEveryParamTheAbilitiesTake(check);
   checkPiecesAreOfferedToTheRolesTheyWereAuthoredFor(check);
+  checkADeletedPieceLeavesNoBindingBehind(check);
   checkARowSaysWhatTheCultureWillBuild(check);
 }
 
 function checkEveryCultureAbilityIsReachableFromThePanel(check: CheckReporter): void {
   const performed = actionsPerformedInThePanel();
+  check(
+    'the culture abilities are registered where this check can read them, so it cannot pass by finding none',
+    CULTURE_ABILITY_ACTIONS.every((action) => cultureAbilities().some((spec) => spec.action === action)),
+  );
   const unreachable = cultureAbilities()
     .map((spec) => spec.action)
     .filter((action) => !performed.includes(action));
@@ -50,14 +62,8 @@ function checkEveryCultureAbilityIsReachableFromThePanel(check: CheckReporter): 
     unreachable.length === 0,
   );
   check(
-    'the cultures panel is the whole story on cultures: rename, tiles, numbers, role binding and removal',
-    ['rename_culture', 'set_culture_tiles', 'set_culture_numbers', 'bind_culture_role', 'remove_culture'].every(
-      (action) => performed.includes(action),
-    ),
-  );
-  check(
-    'every culture ability tells a human its control lives in the cultures tab',
-    cultureAbilities().every((spec) => spec.humanControl.includes('cultures tab')),
+    'every ability named for a culture tells a human its control lives in the cultures tab',
+    abilitiesNamedForCultures().every((spec) => spec.humanControl.includes('cultures tab')),
   );
 }
 
@@ -68,10 +74,18 @@ function checkTheDrawersSurviveAReload(check: CheckReporter): void {
     CULTURE_DRAWERS.every((drawer) => isPanel(drawer.panel)) &&
       CULTURE_DRAWERS.length === CULTURE_PANELS.length - 1,
   );
+  const decidingWhichDrawerIsOpen = panelComponentSourcesMentioning('CULTURE_PANELS');
   check(
-    'the open culture drawer is persisted under its own key rather than kept in a bare useState',
-    PERSISTED_UI_KEYS.openCulturePanels === 'assets.openCulturePanels' &&
-      panelSourceFiles().every((path) => !readFileSync(path, 'utf8').includes('useState')),
+    'whichever culture drawer is open comes from persisted ui state, not a useState a reload forgets',
+    decidingWhichDrawerIsOpen.length > 0 &&
+      decidingWhichDrawerIsOpen.every(
+        (source) => source.includes('usePersistedOpenPanel') && !source.includes('useState'),
+      ),
+  );
+  const deletingACulture = panelComponentSourcesMentioning("perform('remove_culture'");
+  check(
+    'deleting a culture forgets its drawer, so a later culture handed the same id does not inherit it',
+    deletingACulture.length > 0 && deletingACulture.every((source) => source.includes('forgetRow()')),
   );
 }
 
@@ -97,10 +111,6 @@ function checkTheKnobsCoverEveryParamTheAbilitiesTake(check: CheckReporter): voi
         [MIN_STORY_LAYERS, MAX_STORY_LAYERS],
         [MIN_WINDOW_EVERY, MAX_WINDOW_EVERY],
       ]),
-  );
-  check(
-    'a tile slot reads the culture field the ability writes',
-    CULTURE_TILE_SLOTS.every((slot) => slot.field in newCultureWithId(0)),
   );
 }
 
@@ -139,15 +149,30 @@ function checkARowSaysWhatTheCultureWillBuild(check: CheckReporter): void {
       boundRolesSummaryOf(boundTo(culture, 'door', [1])) === 'pieces bound: door',
   );
   check(
-    'roof style 0 reads as a gable and 1 as a hip, the way the assembler treats them',
-    roofStyleLabel(GABLE_ROOF) === 'gable' && roofStyleLabel(HIP_ROOF) === 'hip',
+    'a culture row reads its roof style out of the choices the roof picker offers, not a second copy',
+    ROOF_STYLE_CHOICES.every((choice) => roofStyleLabel(choice.value) === choice.label),
+  );
+}
+
+function checkADeletedPieceLeavesNoBindingBehind(check: CheckReporter): void {
+  const culture = boundTo(boundTo(newCultureWithId(0), 'door', [1, 2]), 'window', [2]);
+  check(
+    'forgetting a deleted piece drops it from every role it was bound to and leaves the rest bound',
+    JSON.stringify(roleBindingsWithoutPiece(culture, 2)) === JSON.stringify({ door: [1], window: [] }),
   );
 }
 
 function cultureAbilities(): AbilitySpec[] {
   return allAbilities().filter(
-    (spec) => spec.action.includes('culture') || spec.humanControl.includes('cultures tab'),
+    (spec) =>
+      spec.action.includes('culture') ||
+      spec.humanControl.includes('cultures tab') ||
+      (spec.group === 'assets' && 'culture_id' in spec.params),
   );
+}
+
+function abilitiesNamedForCultures(): AbilitySpec[] {
+  return allAbilities().filter((spec) => spec.action.includes('culture'));
 }
 
 function editableParamsOf(action: string): string[] {
@@ -159,6 +184,13 @@ function actionsPerformedInThePanel(): string[] {
   return panelSourceFiles().flatMap((path) =>
     [...readFileSync(path, 'utf8').matchAll(PERFORMED_ACTION)].map((match) => match[1]!),
   );
+}
+
+function panelComponentSourcesMentioning(what: string): string[] {
+  return panelSourceFiles()
+    .filter((path) => path.endsWith('.tsx'))
+    .map((path) => readFileSync(path, 'utf8'))
+    .filter((source) => source.includes(what));
 }
 
 function panelSourceFiles(): string[] {

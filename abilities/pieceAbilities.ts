@@ -1,3 +1,4 @@
+import { forgetRemovedPieceInRoleBindings } from '../assets/cultures/forgetRemovedPieceInRoleBindings';
 import { pieceFromWorldRegion, regionSize, type WorldRegion } from '../assets/pieces/captureRegionAsPiece';
 import {
   isInsidePiece,
@@ -220,12 +221,14 @@ registerPieceAbility({
 registerPieceAbility({
   action: 'remove_piece',
   humanControl: 'assets panel, pieces tab: ✕ on a piece row',
-  description: 'Delete a piece. Nodes bound to it stop stamping anything.',
+  description:
+    'Delete a piece. Nodes bound to it stop stamping anything, and cultures that bound it to a building role fall back to their tiles.',
   params: { piece_id: { kind: 'int', help: PIECE_ID_HELP } },
   example: { action: 'remove_piece', piece_id: 2 },
   apply: (context, params) =>
     withPiece(context, params, (piece) => {
       context.pieces.remove(piece.id);
+      forgetRemovedPieceInRoleBindings(context.cultures, piece.id);
       return abilitySucceeded(`removed piece ${piece.id}`);
     }),
 });

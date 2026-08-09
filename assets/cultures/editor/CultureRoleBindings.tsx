@@ -1,9 +1,9 @@
 import { useAppRuntime } from '../../../frontend/appRuntimeContext';
+import { DrawerPanel } from '../../../frontend/controls/DrawerPanel';
 import { PanelHint } from '../../../frontend/help/PanelHint';
 import { useRerenderOnPieceChange } from '../../../frontend/rerenderHooks';
 import type { Culture } from '../cultureDef';
 import { pieceOffersPerRole } from '../pieceOffersPerRole';
-import { CultureDrawer } from './CultureDrawer';
 import { CultureRoleBindingRow } from './CultureRoleBindingRow';
 
 export function CultureRoleBindings({ culture }: { culture: Culture }) {
@@ -11,7 +11,7 @@ export function CultureRoleBindings({ culture }: { culture: Culture }) {
   useRerenderOnPieceChange();
   const offers = pieceOffersPerRole(pieces.all(), culture);
   return (
-    <CultureDrawer>
+    <DrawerPanel>
       {offers.map((offer) => (
         <CultureRoleBindingRow
           key={offer.role}
@@ -31,6 +31,6 @@ export function CultureRoleBindings({ culture }: { culture: Culture }) {
         assembler rolls between them per cell; leave a role unbound and it is painted from the
         culture tiles instead.
       </PanelHint>
-    </CultureDrawer>
+    </DrawerPanel>
   );
 }

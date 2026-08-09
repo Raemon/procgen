@@ -9,6 +9,7 @@ import { ItemAssets } from '../assets/items/itemAssets';
 import { NO_GROUND_ITEMS } from '../assets/items/pickups/groundItems';
 import { PieceAssets } from '../assets/pieces/pieceAssets';
 import { CultureAssets } from '../assets/cultures/cultureAssets';
+import { MAX_STORY_LAYERS, piecesBoundToRole } from '../assets/cultures/cultureDef';
 import { TileAssets } from '../assets/tiles/tileAssets';
 import { PuzzleWorld } from '../world/puzzles/puzzleWorld';
 import { turnedFacing, type FacingIndex } from '../world/facing';
@@ -62,6 +63,16 @@ export function checkAbilityDispatch(check: CheckReporter): void {
   const abilities = abilityWorld();
   const act = (mode: 'god' | 'character', action: string, params: Record<string, unknown> = {}) =>
     performAbility(abilities.context, mode, action, params);
+  const addedCulture = () => {
+    act('god', 'add_culture');
+    const cultures = abilities.context.cultures.all();
+    return cultures[cultures.length - 1]!;
+  };
+  const addedPiece = () => {
+    act('god', 'add_piece');
+    const pieces = abilities.pieces.all();
+    return pieces[pieces.length - 1]!;
+  };
 
   check('an ability is refused to a mode that does not own it', (() => {
     const characterCompass = act('character', 'step_north');
@@ -208,8 +219,7 @@ export function checkAbilityDispatch(check: CheckReporter): void {
     return added.ok && tuned.ok && !badBehavior.ok && after.behavior === 3 && after.speed === 2.5;
   })());
   check('a culture can be named, tiled, proportioned and bound to pieces through abilities', (() => {
-    const added = act('god', 'add_culture');
-    const culture = abilities.context.cultures.all()[abilities.context.cultures.all().length - 1]!;
+    const culture = addedCulture();
     const piece = abilities.pieces.all()[0]!;
     const tileId = abilities.tileAssets.all()[0]!.id;
     const named = act('god', 'rename_culture', { culture_id: culture.id, name: 'hill folk' });
@@ -219,17 +229,32 @@ export function checkAbilityDispatch(check: CheckReporter): void {
     const badRole = act('god', 'bind_culture_role', { culture_id: culture.id, role: 'gargoyle', piece_ids: [] });
     const after = abilities.context.cultures.byId(culture.id)!;
     return (
-      added.ok && named.ok && tiled.ok && shaped.ok && bound.ok && !badRole.ok &&
+      named.ok && tiled.ok && shaped.ok && bound.ok && !badRole.ok &&
       after.name === 'hill folk' && after.wallTileId === tileId &&
-      after.roofStyle === 1 && after.storyLayers === 6 &&
+      after.roofStyle === 1 && after.storyLayers === MAX_STORY_LAYERS &&
       JSON.stringify(after.roleBindings.door) === JSON.stringify([piece.id])
     );
   })());
   check('removing a culture takes it out of the culture assets', (() => {
-    const culture = abilities.context.cultures.all()[abilities.context.cultures.all().length - 1]!;
+    const culture = addedCulture();
     const removed = act('god', 'remove_culture', { culture_id: culture.id });
     const again = act('god', 'remove_culture', { culture_id: culture.id });
-    return removed.ok && !again.ok && again.code === 'unknown_culture';
+    return (
+      removed.ok && !again.ok && again.code === 'unknown_culture' &&
+      abilities.context.cultures.byId(culture.id) === undefined
+    );
+  })());
+  check('deleting a piece unbinds it from the culture roles it was bound to, so no binding dangles', (() => {
+    const culture = addedCulture();
+    const piece = addedPiece();
+    const bound = act('god', 'bind_culture_role', {
+      culture_id: culture.id,
+      role: 'door',
+      piece_ids: [piece.id],
+    });
+    const removed = act('god', 'remove_piece', { piece_id: piece.id });
+    const after = abilities.context.cultures.byId(culture.id)!;
+    return bound.ok && removed.ok && piecesBoundToRole(after, 'door').length === 0;
   })());
   check('presets and templates round-trip through abilities', (() => {
     const saved = act('god', 'save_preset', { name: 'check preset' });

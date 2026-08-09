@@ -11,9 +11,8 @@ import { CharacterSpritesEditor } from '../../characters/editor/CharacterSprites
 import { InventoryEditor } from '../../items/inventoryEditor/InventoryEditor';
 import { PixelArtEditor } from '../../pixelArtEditor/PixelArtEditor';
 import { SymbolInput } from '../../tiles/editor/SymbolInput';
-import { isOneOf } from '../../../frontend/uiState/persistedUiGuards';
 import { PERSISTED_UI_KEYS } from '../../../frontend/uiState/persistedUiKeys';
-import { usePersistedUiRecord } from '../../../frontend/uiState/usePersistedUiRecord';
+import { usePersistedOpenPanel } from '../../../frontend/uiState/usePersistedOpenPanel';
 import { tooltipHandlers } from '../../../frontend/tooltips/tooltipHandlers';
 import {
   CHARACTER_BAG_TIP,
@@ -34,15 +33,17 @@ type OpenPanel = (typeof CREATURE_PANELS)[number];
 
 export function CreatureRow({ creature }: { creature: CreatureDef }) {
   const { perform } = useAppRuntime();
-  const openPanels = usePersistedUiRecord(
+  const { openPanel, toggle, forgetRow } = usePersistedOpenPanel<Exclude<OpenPanel, 'none'>>(
     PERSISTED_UI_KEYS.openCreaturePanels,
-    isOneOf(CREATURE_PANELS),
+    CREATURE_PANELS,
+    creature.id,
   );
-  const openPanel = openPanels.valueOf(String(creature.id)) ?? 'none';
   const edit = (patch: Record<string, unknown>) =>
     perform('update_creature', { creature_id: creature.id, ...patch });
-  const toggle = (panel: Exclude<OpenPanel, 'none'>) =>
-    openPanels.set(String(creature.id), openPanel === panel ? 'none' : panel);
+  const removeCreature = () => {
+    forgetRow();
+    perform('remove_creature', { creature_id: creature.id });
+  };
   return (
     <div className="mb-1.5">
       <div className={classes(ROW_HOVER_GROUP, 'flex items-center gap-1.5')}>
@@ -113,7 +114,7 @@ export function CreatureRow({ creature }: { creature: CreatureDef }) {
             'px-2 py-0.5 hover:border-danger-edge hover:text-danger-ink',
           )}
           tip={deleteCreatureTip(creature)}
-          onClick={() => perform('remove_creature', { creature_id: creature.id })}
+          onClick={removeCreature}
         >
           ×
         </Button>

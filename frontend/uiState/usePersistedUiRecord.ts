@@ -1,10 +1,6 @@
 import { isRecordOf } from './persistedUiGuards';
+import { persistedUiRecordOf, type PersistedUiRecord } from './persistedUiRecordOf';
 import { usePersistedUiValue } from './usePersistedUiValue';
-
-export interface PersistedUiRecord<T> {
-  valueOf(id: string): T | undefined;
-  set(id: string, value: T): void;
-}
 
 const NO_ENTRIES = {};
 
@@ -17,8 +13,5 @@ export function usePersistedUiRecord<T>(
     NO_ENTRIES,
     isRecordOf(isEntry),
   );
-  return {
-    valueOf: (id) => entries[id],
-    set: (id, value) => setEntries({ ...entries, [id]: value }),
-  };
+  return persistedUiRecordOf(entries, setEntries);
 }

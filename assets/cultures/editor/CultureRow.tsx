@@ -4,9 +4,8 @@ import { classes } from '../../../frontend/controls/classes';
 import { FIELD_CLASSES, HINT_CLASSES } from '../../../frontend/controls/fieldClasses';
 import { REVEALED_ON_ROW_HOVER, ROW_HOVER_GROUP } from '../../../frontend/controls/revealOnRowHover';
 import { tooltipHandlers } from '../../../frontend/tooltips/tooltipHandlers';
-import { isOneOf } from '../../../frontend/uiState/persistedUiGuards';
 import { PERSISTED_UI_KEYS } from '../../../frontend/uiState/persistedUiKeys';
-import { usePersistedUiRecord } from '../../../frontend/uiState/usePersistedUiRecord';
+import { usePersistedOpenPanel } from '../../../frontend/uiState/usePersistedOpenPanel';
 import type { Culture } from '../cultureDef';
 import { boundRolesSummaryOf, proportionsSummaryOf } from '../cultureSummary';
 import { CULTURE_DRAWERS, CULTURE_PANELS, type CulturePanel } from './cultureDrawers';
@@ -17,13 +16,15 @@ import { CULTURE_NAME_TIP, deleteCultureTip } from './help/cultureTips';
 
 export function CultureRow({ culture }: { culture: Culture }) {
   const { perform } = useAppRuntime();
-  const openPanels = usePersistedUiRecord(
+  const { openPanel, toggle, forgetRow } = usePersistedOpenPanel<Exclude<CulturePanel, 'none'>>(
     PERSISTED_UI_KEYS.openCulturePanels,
-    isOneOf(CULTURE_PANELS),
+    CULTURE_PANELS,
+    culture.id,
   );
-  const openPanel = openPanels.valueOf(String(culture.id)) ?? 'none';
-  const toggle = (panel: Exclude<CulturePanel, 'none'>) =>
-    openPanels.set(String(culture.id), openPanel === panel ? 'none' : panel);
+  const removeCulture = () => {
+    forgetRow();
+    perform('remove_culture', { culture_id: culture.id });
+  };
   return (
     <div className="mb-1.5">
       <div className={classes(ROW_HOVER_GROUP, 'flex items-center gap-1.5')}>
@@ -54,7 +55,7 @@ export function CultureRow({ culture }: { culture: Culture }) {
             'px-2 py-0.5 hover:border-danger-edge hover:text-danger-ink',
           )}
           tip={deleteCultureTip(culture)}
-          onClick={() => perform('remove_culture', { culture_id: culture.id })}
+          onClick={removeCulture}
         >
           ×
         </Button>

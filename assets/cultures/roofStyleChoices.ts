@@ -20,5 +20,6 @@ export const ROOF_STYLE_CHOICES: readonly RoofStyleChoice[] = [
 ];
 
 export function roofStyleLabel(roofStyle: number): string {
-  return roofStyle === HIP_ROOF ? 'hip' : 'gable';
+  const chosen = ROOF_STYLE_CHOICES.find((choice) => choice.value === roofStyle);
+  return (chosen ?? ROOF_STYLE_CHOICES[0]!).label;
 }
