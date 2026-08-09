@@ -1,4 +1,6 @@
-import { readJson, writeJson } from '../persistence/localJsonStore';
+import { readPersistedFile, writePersistedFile } from '../persistence/repoFileStore';
+
+const UI_STATE_DOC = 'uiState';
 
 type Listener = () => void;
 
@@ -16,7 +18,7 @@ export function persistedUiValue<T>(
 
 export function writePersistedUiValue<T>(key: string, value: T): void {
   snapshots.set(key, value);
-  writeJson(storageKeyOf(key), value);
+  writePersistedFile(UI_STATE_DOC, { ...storedUiState(), [key]: value });
   for (const listener of listeners.get(key) ?? []) listener();
 }
 
@@ -32,10 +34,10 @@ function storedOrFallback<T>(
   fallback: T,
   isValid: (value: unknown) => value is T,
 ): T {
-  const stored = readJson<unknown>(storageKeyOf(key));
+  const stored = storedUiState()[key];
   return isValid(stored) ? stored : fallback;
 }
 
-function storageKeyOf(key: string): string {
-  return `procgen.ui.${key}.v1`;
+function storedUiState(): Record<string, unknown> {
+  return readPersistedFile<Record<string, unknown>>(UI_STATE_DOC) ?? {};
 }

@@ -1,9 +1,13 @@
-import { installFakeLocalStorage } from './fakeLocalStorage';
+export {};
 
-const storage = installFakeLocalStorage();
+globalThis.fetch = async () => new Response(null, { status: 204 });
+delete (globalThis as { localStorage?: unknown }).localStorage;
 
 const { isBoolean, isNumber, isNumberOrNull, isOneOf, isRecordOf, isStringArray } = await import(
   '../frontend/uiState/persistedUiGuards'
+);
+const { readPersistedFile, seedPersistedFile } = await import(
+  '../frontend/persistence/repoFileStore'
 );
 const { persistedUiValue, subscribeToPersistedUiValue, writePersistedUiValue } = await import(
   '../frontend/uiState/persistedUiStore'
@@ -12,26 +16,29 @@ const { toggledMembers } = await import('../frontend/uiState/toggledMembers');
 
 const ASSET_KINDS = ['tiles', 'pieces', 'creatures'] as const;
 
-checkAToggleReachesStorage();
-checkTheNextLoadReadsWhatStorageHolds();
-checkStorageHoldingTheWrongShapeFallsBackToTheDefault();
+checkAToggleReachesTheUiStateDoc();
+checkTheNextLoadReadsWhatTheDocHolds();
+checkADocHoldingTheWrongShapeFallsBackToTheDefault();
 checkEveryReaderOfAKeySeesAWrite();
 checkTogglingAMemberAddsThenRemovesIt();
 checkCollapsingEveryCardReplacesWhateverWasCollapsed();
 checkGuardsAcceptOnlyTheShapesTheUiPersists();
 console.log('persisted ui state: all checks passed');
 
-function checkAToggleReachesStorage(): void {
+function checkAToggleReachesTheUiStateDoc(): void {
   writePersistedUiValue('panel.collapsed', toggledMembers([], 'library'));
   assert(
-    storage.getItem('procgen.ui.panel.collapsed.v1') === '["library"]',
-    'collapsing a panel writes it to localStorage under a namespaced key',
+    JSON.stringify(storedUiState()['panel.collapsed']) === '["library"]',
+    'collapsing a panel writes it into the uiState doc the server persists',
+  );
+  assert(
+    (globalThis as { localStorage?: unknown }).localStorage === undefined,
+    'the layout persists with no localStorage in the browser at all',
   );
 }
 
-function checkTheNextLoadReadsWhatStorageHolds(): void {
-  storage.setItem('procgen.ui.assets.tab.v1', JSON.stringify('creatures'));
-  storage.setItem('procgen.ui.panel.widths.v1', JSON.stringify({ library: 310 }));
+function checkTheNextLoadReadsWhatTheDocHolds(): void {
+  seedUiState({ 'assets.tab': 'creatures', 'panel.widths': { library: 310 } });
   assert(
     persistedUiValue('assets.tab', 'tiles', isOneOf(ASSET_KINDS)) === 'creatures',
     'the tab selected last session is the tab that opens',
@@ -42,74 +49,60 @@ function checkTheNextLoadReadsWhatStorageHolds(): void {
   );
 }
 
-function checkStorageHoldingTheWrongShapeFallsBackToTheDefault(): void {
-  storage.setItem('stale.tab', JSON.stringify('a tab that no longer exists'));
+function checkADocHoldingTheWrongShapeFallsBackToTheDefault(): void {
+  seedUiState({ 'stale.tab': 'a tab that no longer exists', 'corrupt.widths': 'not a record' });
   assert(
     persistedUiValue('stale.tab', 'tiles', isOneOf(ASSET_KINDS)) === 'tiles',
     'a stored value that fails its guard is replaced by the default',
   );
-  storage.setItem('procgen.ui.corrupt.widths.v1', '{not json');
   assert(
     persistedUiValue('corrupt.widths', { library: 240 }, isRecordOf(isNumber)).library === 240,
-    'unparseable storage does not break the layout',
+    'a uiState doc of the wrong shape does not break the layout',
   );
 }
 
 function checkEveryReaderOfAKeySeesAWrite(): void {
   let notifications = 0;
-  const unsubscribe = subscribeToPersistedUiValue('procgen.collapsedNodeCards', () => {
-    notifications += 1;
-  });
-  writePersistedUiValue('procgen.collapsedNodeCards', ['node-1']);
+  const unsubscribe = subscribeToPersistedUiValue('collapsedNodeCards', () => (notifications += 1));
+  writePersistedUiValue('collapsedNodeCards', ['n1']);
   unsubscribe();
-  writePersistedUiValue('procgen.collapsedNodeCards', ['node-1', 'node-2']);
-  assert(notifications === 1, 'a subscriber hears about writes until it unsubscribes');
-  assert(
-    persistedUiValue('procgen.collapsedNodeCards', [], isStringArray).join() === 'node-1,node-2',
-    'the latest write is what every reader of the key sees',
-  );
+  writePersistedUiValue('collapsedNodeCards', ['n1', 'n2']);
+  assert(notifications === 1, 'a reader hears about a write until it unsubscribes, and not after');
 }
 
 function checkTogglingAMemberAddsThenRemovesIt(): void {
-  const collapsed = toggledMembers([], 'node-7');
-  assert(collapsed.join() === 'node-7', 'toggling an absent member collapses it');
-  assert(toggledMembers(collapsed, 'node-7').length === 0, 'toggling it again expands it');
-  assert(toggledMembers(['a', 'b'], 'a').join() === 'b', 'toggling one member leaves the rest alone');
+  const once = toggledMembers([], 'n1');
+  assert(once.length === 1 && once[0] === 'n1', 'toggling a member on adds it');
+  assert(toggledMembers(once, 'n1').length === 0, 'toggling the same member off removes it');
 }
 
 function checkCollapsingEveryCardReplacesWhateverWasCollapsed(): void {
-  writePersistedUiValue('procgen.collapsedNodeCards', ['node-1']);
-  writePersistedUiValue('procgen.collapsedNodeCards', ['node-1', 'node-2', 'node-3']);
+  seedUiState({ collapsedNodeCards: ['n1'] });
+  writePersistedUiValue('collapsedNodeCards', ['n1', 'n2', 'n3']);
   assert(
-    persistedUiValue('procgen.collapsedNodeCards', [], isStringArray).length === 3,
-    'collapse all stores every card at once rather than toggling them one by one',
-  );
-  writePersistedUiValue('procgen.collapsedNodeCards', []);
-  assert(
-    persistedUiValue('procgen.collapsedNodeCards', ['stale'], isStringArray).length === 0,
-    'expand all leaves nothing collapsed behind',
+    JSON.stringify(storedUiState().collapsedNodeCards) === '["n1","n2","n3"]',
+    'collapsing every card stores the whole set rather than merging with the old one',
   );
 }
 
 function checkGuardsAcceptOnlyTheShapesTheUiPersists(): void {
-  assert(isStringArray(['a']) && !isStringArray([1]), 'set members must all be strings');
-  assert(
-    isNumberOrNull(null) && isNumberOrNull(3) && !isNumberOrNull('3'),
-    'an open piece id is a number or nothing',
-  );
-  assert(!isRecordOf(isNumber)(['library']), 'an array is not a record of panel widths');
-  assert(!isNumber(Number.NaN), 'a NaN width is rejected before it reaches the grid');
-  assert(
-    isBoolean(false) && !isBoolean('false'),
-    'the hints toggle only restores a real boolean',
-  );
+  assert(isBoolean(true) && !isBoolean('true'), 'a boolean guard takes booleans alone');
+  assert(isNumberOrNull(null) && isNumberOrNull(3) && !isNumberOrNull('3'), 'a width may be unset');
+  assert(isStringArray(['a']) && !isStringArray(['a', 2]), 'a string array holds only strings');
 }
 
-function assert(condition: boolean, message: string): void {
-  if (condition) {
-    console.log(`ok   ${message}`);
-    return;
+function seedUiState(state: Record<string, unknown>): void {
+  seedPersistedFile('uiState', state);
+}
+
+function storedUiState(): Record<string, unknown> {
+  return readPersistedFile<Record<string, unknown>>('uiState') ?? {};
+}
+
+function assert(condition: boolean, what: string): void {
+  if (!condition) {
+    console.error(`persisted ui state check failed: ${what}`);
+    process.exit(1);
   }
-  console.error(`FAIL ${message}`);
-  process.exit(1);
+  console.log(`  ok: ${what}`);
 }

@@ -43,8 +43,8 @@ export class MultiplayerSession {
     this.localSim.start();
   }
 
-  connect(name: string): void {
-    this.client.connect(name);
+  connect(): void {
+    this.client.connect();
   }
 
   disconnect(): void {

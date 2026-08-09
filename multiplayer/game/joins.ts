@@ -1,7 +1,5 @@
 import { randomBytes } from 'node:crypto';
-import type { HelloMsg } from '../client/protocol';
 import { nearestWalkable } from '../../world/nearestWalkable';
-import { signToken, verifyToken } from '../host/auth';
 import type { Connection } from '../host/connection';
 import { loadCharacter } from '../../server/persistence/characterRepo';
 import type { ServerWorld } from '../../api/agent/serverWorld';
@@ -10,15 +8,14 @@ import type { Entity } from './entities';
 
 const SNAP_SEARCH_RADIUS = 64;
 
-export async function joinConnection(conn: Connection, hello: HelloMsg, deps: WsDeps): Promise<void> {
-  const name = sanitizeName(hello.name);
-  const characterId = resumedCharacterId(hello, deps) ?? mintCharacterId();
+export async function joinConnection(conn: Connection, deps: WsDeps): Promise<void> {
+  const characterId = conn.characterId;
   const entity = deps.registry.findByCharacterId(characterId)
     ? adoptFromDuplicateLogin(characterId, deps)
-    : await spawnedEntity(characterId, name, deps);
+    : await spawnedEntity(characterId, deps);
   conn.entity = entity;
   conn.state = 'PLAYING';
-  sendWelcome(conn, deps, characterId);
+  sendWelcome(conn, deps);
 }
 
 export function leaveConnection(conn: Connection, deps: WsDeps): void {
@@ -28,14 +25,6 @@ export function leaveConnection(conn: Connection, deps: WsDeps): void {
   deps.registry.remove(conn.entity.id);
   deps.feed.forgetEntityEverywhere(conn.entity.id);
   conn.entity = null;
-}
-
-function resumedCharacterId(hello: HelloMsg, deps: WsDeps): string | null {
-  return hello.token ? verifyToken(deps.config.serverSecret, hello.token) : null;
-}
-
-function mintCharacterId(): string {
-  return 'p_' + randomBytes(9).toString('base64url');
 }
 
 function adoptFromDuplicateLogin(characterId: string, deps: WsDeps): Entity {
@@ -48,11 +37,16 @@ function adoptFromDuplicateLogin(characterId: string, deps: WsDeps): Entity {
   return entity;
 }
 
-async function spawnedEntity(characterId: string, name: string, deps: WsDeps): Promise<Entity> {
+async function spawnedEntity(characterId: string, deps: WsDeps): Promise<Entity> {
   const world = deps.worldHost.current();
   const saved = await loadCharacter(deps.store, characterId);
   const spot = walkableSpot(world, saved?.x ?? null, saved?.y ?? null);
+  const name = sanitizeName(saved?.name) ?? mintPlayerName();
   return deps.registry.add(characterId, name, 'player', spot.x, spot.y, saved?.facing ?? 0);
+}
+
+function mintPlayerName(): string {
+  return 'wanderer-' + randomBytes(3).toString('hex');
 }
 
 function walkableSpot(world: ServerWorld, x: number | null, y: number | null): { x: number; y: number } {
@@ -61,7 +55,7 @@ function walkableSpot(world: ServerWorld, x: number | null, y: number | null): {
   return nearestWalkable(x, y, SNAP_SEARCH_RADIUS, world.isWalkable) ?? world.spawn();
 }
 
-function sendWelcome(conn: Connection, deps: WsDeps, characterId: string): void {
+function sendWelcome(conn: Connection, deps: WsDeps): void {
   const entity = conn.entity!;
   conn.send({
     t: 'welcome',
@@ -69,12 +63,11 @@ function sendWelcome(conn: Connection, deps: WsDeps, characterId: string): void 
     x: entity.x,
     y: entity.y,
     facing: entity.facing,
-    token: signToken(deps.config.serverSecret, characterId),
   });
   deps.feed.sendFullSnapshotTo(conn, deps.loop.tick);
 }
 
-function sanitizeName(raw: unknown): string {
+function sanitizeName(raw: unknown): string | null {
   const cleaned = typeof raw === 'string' ? raw.replace(/[^\p{L}\p{N} _-]/gu, '').trim().slice(0, 24) : '';
-  return cleaned === '' ? 'wanderer' : cleaned;
+  return cleaned === '' ? null : cleaned;
 }

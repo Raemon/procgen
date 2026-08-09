@@ -24,7 +24,7 @@ import { WriteBehind } from './persistence/writeBehind';
 async function main(): Promise<void> {
   const config = loadServerConfig();
   const store = await initStore(config.databaseUrl);
-  const docs = await createDocStore(store, config.root);
+  const docs = await createDocStore(store);
 
   const agentState = newAgentApiState();
   const worldHost = createWorldHost(agentState, docs);
