@@ -23,7 +23,7 @@ function registerCreatureAbility(
 
 registerCreatureAbility({
   action: 'add_creature',
-  humanControl: 'assets panel, creatures tab: + add creature',
+  humanControl: 'library, creatures folder: + add creature',
   description:
     'Create a creature definition. Bind it to a points node with set_display to put it in the world.',
   params: {},
@@ -36,7 +36,7 @@ registerCreatureAbility({
 
 registerCreatureAbility({
   action: 'add_character',
-  humanControl: 'assets panel, characters tab: + add character',
+  humanControl: 'library, characters folder: + add character',
   description:
     'Create a character: a creature in every respect — same look, movement and spawning — that starts with an empty inventory grid. Reshape the grid with set_inventory.',
   params: {},
@@ -51,7 +51,7 @@ registerCreatureAbility({
 
 registerCreatureAbility({
   action: 'duplicate_creature',
-  humanControl: 'assets panel, creatures tab: ⧉ on a creature row',
+  humanControl: 'detail panel, creatures: ⧉ on a creature row',
   description: 'Copy a creature definition with all its knobs.',
   params: { creature_id: { kind: 'int', help: CREATURE_ID_HELP } },
   example: { action: 'duplicate_creature', creature_id: 0 },
@@ -66,7 +66,7 @@ registerCreatureAbility({
 
 registerCreatureAbility({
   action: 'update_creature',
-  humanControl: 'assets panel, creatures tab: the fields and knobs on a creature row',
+  humanControl: 'detail panel, creatures: the fields and knobs on a creature row',
   description:
     "Change a creature's look or how it moves. Only the fields you pass change.",
   params: {
@@ -90,7 +90,7 @@ registerCreatureAbility({
 
 registerCreatureAbility({
   action: 'remove_creature',
-  humanControl: 'assets panel, creatures tab: ✕ on a creature row',
+  humanControl: 'detail panel, creatures: ✕ on a creature row',
   description: 'Delete a creature definition. Nodes bound to it stop spawning anything.',
   params: { creature_id: { kind: 'int', help: CREATURE_ID_HELP } },
   example: { action: 'remove_creature', creature_id: 3 },

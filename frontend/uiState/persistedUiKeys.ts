@@ -1,12 +1,11 @@
 export const PERSISTED_UI_KEYS = {
   panelWidths: 'panel.widths',
   collapsedPanels: 'panel.collapsed',
-  assetKind: 'assets.tab',
+  librarySelection: 'library.selection',
+  openLibraryFolders: 'library.openFolders',
   openTileArt: 'assets.openTileArt',
   openCreaturePanels: 'assets.openCreaturePanels',
-  openPieceId: 'assets.openPieceId',
   hintsVisible: 'ui.hintsVisible',
-  collapsedNodeCards: 'procgen.collapsedNodeCards',
   collapsedNodeFolders: 'procgen.collapsedNodeFolders',
   performancePanelOpen: 'world.performancePanelOpen',
 } as const;

@@ -15,7 +15,7 @@ If a function is more than 5 lines and definitely if it's more than 10, see if y
 
 Whenever you report back to a user, always end with a direct link to a running server
 
-When adding or changing procgen node types, follow docs/authoring-nodes.md and keep the determinism rules; extend scripts/checkProcgenInvariants.ts with checks for new nodes.
+When adding or changing procgen node types, follow docs/authoring-nodes.md and keep the determinism rules; extend checks/checkProcgenInvariants.ts with checks for new nodes.
 
 Node types follow the knob typology: every field is either 
 - a numeric knob (number / int / choice / toggle — all stored as numbers

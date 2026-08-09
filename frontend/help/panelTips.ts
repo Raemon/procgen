@@ -2,13 +2,13 @@ import type { TooltipContent } from '../tooltips/tooltipContent';
 import type { PanelKey } from '../usePanelLayout';
 
 export const PANEL_TIPS: Readonly<Record<PanelKey, TooltipContent>> = {
-  assets: {
-    title: 'assets',
-    body: 'Every asset a world is built from: tiles, items, piece stamps, creatures and characters. Procgen nodes reference assets by name, so an edit here shows up everywhere the asset is used.',
+  library: {
+    title: 'library',
+    body: 'Folders holding everything a world is built from: tiles, items, piece stamps, cultures, creatures and characters, the bookmarked node groups, and the pipeline generating this world. Pick anything to open it in the detail column.',
   },
-  procgen: {
-    title: 'procgen',
-    body: 'The pipeline that generates the world. Nodes run top to bottom; each one turns the values above it into new values, and its display setting decides what reaches the map.',
+  detail: {
+    title: 'detail',
+    body: 'Whatever is selected in the library, opened for editing: a tile to paint, a piece to carve, a node to tune, or the world settings the whole pipeline runs under.',
   },
   agents: {
     title: 'agents',

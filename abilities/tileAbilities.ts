@@ -22,7 +22,7 @@ function registerTileAbility(
 
 registerTileAbility({
   action: 'add_tile',
-  humanControl: 'assets panel, tiles tab: + add tile',
+  humanControl: 'library, tiles folder: + add tile',
   description:
     'Create a tile type. Procgen nodes reference tiles by id, so add the tile before pointing a node at it.',
   params: {},
@@ -35,7 +35,7 @@ registerTileAbility({
 
 registerTileAbility({
   action: 'update_tile',
-  humanControl: 'assets panel, tiles tab: the fields on a tile row',
+  humanControl: 'detail panel, tiles: the fields on a tile row',
   description:
     "Change a tile's look or walkability. Only the fields you pass change; walkable decides whether anyone can stand on it.",
   params: {
@@ -67,7 +67,7 @@ registerTileAbility({
 
 registerTileAbility({
   action: 'remove_tile',
-  humanControl: 'assets panel, tiles tab: ✕ on a tile row',
+  humanControl: 'detail panel, tiles: ✕ on a tile row',
   description: 'Delete a tile type. Nodes still pointing at its id fall back to drawing nothing.',
   params: { tile_id: { kind: 'int', help: TILE_ID_HELP } },
   example: { action: 'remove_tile', tile_id: 7 },
@@ -80,7 +80,7 @@ registerTileAbility({
 
 registerTileAbility({
   action: 'set_tile_shape',
-  humanControl: 'assets panel, tiles tab: the shape dropdown on a tile row',
+  humanControl: 'detail panel, tiles: the shape dropdown on a tile row',
   description: `Choose the solid this tile draws as in the 3-D view. Shapes are: ${listOf(TILE_SHAPE_KINDS)}. Everything but cube leaves part of the cell open and is turned by the per-voxel facing.`,
   params: {
     tile_id: { kind: 'int', help: TILE_ID_HELP },

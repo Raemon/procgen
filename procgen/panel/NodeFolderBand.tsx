@@ -31,7 +31,7 @@ export function NodeFolderBand({
       )}
     >
       <FolderHeader run={run} collapsed={collapsed} onToggleCollapsed={onToggleCollapsed} />
-      {collapsed ? <CollapsedSummary run={run} /> : <div className="flex flex-col gap-2.5">{children}</div>}
+      {collapsed ? <CollapsedSummary run={run} /> : <div className="flex flex-col gap-1">{children}</div>}
     </section>
   );
 }

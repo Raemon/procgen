@@ -5,8 +5,8 @@ import { PERSISTED_UI_KEYS } from '../../frontend/uiState/persistedUiKeys';
 import { usePersistedUiSet } from '../../frontend/uiState/usePersistedUiSet';
 import { DROP_INDEX_ATTRIBUTE, insertionIndexAt } from './nodeInsertionIndex';
 import { carriesNodeId, draggedNodeId } from './nodeDragTransfer';
-import { NodeCard, type DropMarker } from './NodeCard';
 import { NodeFolderBand } from './NodeFolderBand';
+import { NodeRow, type DropMarker } from './NodeRow';
 import { nodeFolderRuns, type NodeRun } from './nodeFolderRuns';
 
 export function NodeList() {
@@ -24,21 +24,24 @@ export function NodeList() {
     setDropIndex(insertionIndexAt(list.current, event.clientY, nodes.length));
   }
 
-  function dropCard(event: DragEvent<HTMLDivElement>): void {
+  function dropRow(event: DragEvent<HTMLDivElement>): void {
     const nodeId = draggedNodeId(event.dataTransfer);
     if (!nodeId) return;
     event.preventDefault();
     setDropIndex(null);
-    perform('move_node', { node_id: nodeId, before_node_id: nodes[insertionIndexAt(list.current, event.clientY, nodes.length)]?.id });
+    perform('move_node', {
+      node_id: nodeId,
+      before_node_id: nodes[insertionIndexAt(list.current, event.clientY, nodes.length)]?.id,
+    });
   }
 
   return (
     <div
       ref={list}
-      className="my-3 flex flex-col gap-2.5"
+      className="flex flex-col gap-1"
       onDragOver={showDropTarget}
       onDragLeave={(event) => clearMarkerWhenLeavingList(event, list.current, setDropIndex)}
-      onDrop={dropCard}
+      onDrop={dropRow}
     >
       {runs.map((run) => (
         <RunView
@@ -73,13 +76,13 @@ function RunView({
   onToggleCollapsed(): void;
 }) {
   if (run.folder === '') {
-    return <CardInRun run={run} offset={0} nodeCount={nodeCount} dropIndex={dropIndex} />;
+    return <RowInRun run={run} offset={0} nodeCount={nodeCount} dropIndex={dropIndex} />;
   }
   return (
     <div {...(collapsed ? { [DROP_INDEX_ATTRIBUTE]: run.startIndex } : {})}>
       <NodeFolderBand run={run} collapsed={collapsed} onToggleCollapsed={onToggleCollapsed}>
         {run.nodes.map((_, offset) => (
-          <CardInRun
+          <RowInRun
             key={run.nodes[offset]!.id}
             run={run}
             offset={offset}
@@ -92,7 +95,7 @@ function RunView({
   );
 }
 
-function CardInRun({
+function RowInRun({
   run,
   offset,
   nodeCount,
@@ -105,7 +108,7 @@ function CardInRun({
 }) {
   const index = run.startIndex + offset;
   return (
-    <NodeCard
+    <NodeRow
       node={run.nodes[offset]!}
       index={index}
       dropMarker={dropMarkerFor(index, nodeCount, dropIndex)}

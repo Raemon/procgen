@@ -25,7 +25,7 @@ function registerWorldAbility(
 
 registerWorldAbility({
   action: 'set_seed',
-  humanControl: 'procgen panel: world seed row',
+  humanControl: 'detail panel, world: world seed row',
   description: 'Reseed the world. The same pipeline and the same seed always regenerate the same world.',
   params: { seed: { kind: 'int', help: 'any integer' } },
   example: { action: 'set_seed', seed: 20260806 },
@@ -39,7 +39,7 @@ registerWorldAbility({
 
 registerWorldAbility({
   action: 'set_daylight',
-  humanControl: 'procgen panel: daylight row',
+  humanControl: 'detail panel, world: daylight row',
   description:
     'Set how much light the sky gives this world, 0 to 1. At 0 nothing is lit until a tile, an item or a character carrying a light emits some — the setting for caves and underground worlds.',
   params: { daylight: { kind: 'number', help: '0 for pitch dark, 1 for full daylight' } },
@@ -54,7 +54,7 @@ registerWorldAbility({
 
 registerWorldAbility({
   action: 'clear_pipeline',
-  humanControl: 'procgen panel: clear',
+  humanControl: 'detail panel, world: clear',
   description: 'Remove every node, leaving an empty world to build from zero.',
   params: {},
   example: { action: 'clear_pipeline' },
@@ -66,7 +66,7 @@ registerWorldAbility({
 
 registerWorldAbility({
   action: 'load_preset',
-  humanControl: 'procgen panel: presets dropdown',
+  humanControl: 'detail panel, world: presets dropdown',
   description:
     'Replace the whole pipeline with a named preset — one of the built-in examples or one you saved.',
   params: { name: { kind: 'text', help: 'a preset name — see GET /api/v1/presets' } },
@@ -76,7 +76,7 @@ registerWorldAbility({
 
 registerWorldAbility({
   action: 'save_preset',
-  humanControl: 'procgen panel: presets save button',
+  humanControl: 'detail panel, world: presets save button',
   description: 'Save the whole current pipeline as a named preset. An existing name is overwritten.',
   params: {
     name: { kind: 'text', help: 'the preset name' },
@@ -88,7 +88,7 @@ registerWorldAbility({
 
 registerWorldAbility({
   action: 'delete_preset',
-  humanControl: 'procgen panel: presets dropdown, delete a saved preset',
+  humanControl: 'detail panel, world: presets dropdown, delete a saved preset',
   description: 'Delete one of your saved presets. Built-in examples cannot be deleted.',
   params: { name: { kind: 'text', help: 'the saved preset name' } },
   example: { action: 'delete_preset', name: 'my archipelago' },
@@ -97,7 +97,7 @@ registerWorldAbility({
 
 registerWorldAbility({
   action: 'stamp_template',
-  humanControl: 'procgen panel: + template menu',
+  humanControl: 'library, groups folder: stamp into pipeline',
   description:
     'Insert a saved group of wired nodes into the pipeline, renamed so its ids do not collide and filed under its own folder.',
   params: {
@@ -114,7 +114,7 @@ registerWorldAbility({
 
 registerWorldAbility({
   action: 'save_template',
-  humanControl: 'procgen panel: save a folder as a template',
+  humanControl: 'library, pipeline folder: ⤓ on a folder band',
   description:
     'Save a run of nodes as a reusable template. Wires that point outside the group are dropped.',
   params: {
@@ -128,7 +128,7 @@ registerWorldAbility({
 
 registerWorldAbility({
   action: 'delete_template',
-  humanControl: 'procgen panel: ✕ on a saved template in the + template menu',
+  humanControl: 'detail panel, node group: ✕',
   description: 'Delete one of your saved templates. Built-in templates cannot be deleted.',
   params: { name: { kind: 'text', help: 'the saved template name' } },
   example: { action: 'delete_template', name: 'coastline' },
@@ -143,19 +143,19 @@ const ROLLS: readonly {
 }[] = [
   {
     action: 'randomize_world',
-    humanControl: 'procgen panel: 🎲 world',
+    humanControl: 'detail panel, world: 🎲 world',
     description: 'Replace the pipeline with a freshly rolled node combination.',
     roll: (context, rng) => randomWorldPipeline(rng, tileIdsOf(context)),
   },
   {
     action: 'randomize_sliders',
-    humanControl: 'procgen panel: ~ sliders',
+    humanControl: 'detail panel, world: ~ sliders',
     description: 'Nudge every numeric parameter of the current nodes.',
     roll: (context, rng) => permutedSliderParams(context.store.snapshot(), rng),
   },
   {
     action: 'randomize_nodes',
-    humanControl: 'procgen panel: ⇄ nodes',
+    humanControl: 'detail panel, world: ⇄ nodes',
     description: 'Mutate the node combination: swap, add, remove or rewire a node or two.',
     roll: (context, rng) => permutedNodeCombination(context.store.snapshot(), rng, tileIdsOf(context)),
   },
@@ -176,7 +176,7 @@ for (const entry of ROLLS) {
 
 registerWorldAbility({
   action: 'undo_randomize',
-  humanControl: 'procgen panel: undo',
+  humanControl: 'detail panel, world: undo',
   description: 'Restore the pipeline from before the last roll.',
   params: {},
   example: { action: 'undo_randomize' },

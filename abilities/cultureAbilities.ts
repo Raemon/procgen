@@ -27,7 +27,7 @@ function registerCultureAbility(
 
 registerCultureAbility({
   action: 'add_culture',
-  humanControl: 'assets panel, cultures tab: + add culture',
+  humanControl: 'library, cultures folder: + add culture',
   description:
     'Create a culture: the building vocabulary — tiles, piece roles and proportions — that the assembler builds a village with.',
   params: {},
@@ -40,7 +40,7 @@ registerCultureAbility({
 
 registerCultureAbility({
   action: 'rename_culture',
-  humanControl: 'assets panel, cultures tab: the name on a culture row',
+  humanControl: 'detail panel, cultures: the name on a culture row',
   description: 'Rename a culture. Nodes bind cultures by id, so renaming is safe.',
   params: {
     culture_id: { kind: 'int', help: CULTURE_ID_HELP },
@@ -58,7 +58,7 @@ registerCultureAbility({
 
 registerCultureAbility({
   action: 'remove_culture',
-  humanControl: 'assets panel, cultures tab: ✕ on a culture row',
+  humanControl: 'detail panel, cultures: ✕ on a culture row',
   description: 'Delete a culture. Points bound to it stop growing buildings.',
   params: { culture_id: { kind: 'int', help: CULTURE_ID_HELP } },
   example: { action: 'remove_culture', culture_id: 1 },
@@ -71,7 +71,7 @@ registerCultureAbility({
 
 registerCultureAbility({
   action: 'set_culture_tiles',
-  humanControl: 'assets panel, cultures tab: the tile pickers on a culture row',
+  humanControl: 'detail panel, cultures: the tile pickers on a culture row',
   description:
     'Choose the tiles a culture builds from. These are what the assembler paints wherever no piece is bound, so a culture with tiles alone still yields a whole building.',
   params: {
@@ -93,7 +93,7 @@ registerCultureAbility({
 
 registerCultureAbility({
   action: 'set_culture_numbers',
-  humanControl: 'assets panel, cultures tab: the roof, story and window steppers',
+  humanControl: 'detail panel, cultures: the roof, story and window steppers',
   description:
     'Set the proportions of a culture: roof style 0 for a gable and 1 for a hip, wall layers per story, and how often a window interrupts a wall.',
   params: {
@@ -120,7 +120,7 @@ registerCultureAbility({
 
 registerCultureAbility({
   action: 'bind_culture_role',
-  humanControl: 'assets panel, cultures tab: the piece list beside a role',
+  humanControl: 'detail panel, cultures: the piece list beside a role',
   description:
     'Bind the pieces a culture may use for one building role. The assembler picks between them per cell, and falls back to plain tiles for any role left unbound.',
   params: {

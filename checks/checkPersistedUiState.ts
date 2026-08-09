@@ -3,7 +3,7 @@ export {};
 globalThis.fetch = async () => new Response(null, { status: 204 });
 delete (globalThis as { localStorage?: unknown }).localStorage;
 
-const { isBoolean, isNumber, isNumberOrNull, isOneOf, isRecordOf, isStringArray } = await import(
+const { isBoolean, isNumber, isNumberOrNull, isRecordOf, isStringArray } = await import(
   '../frontend/uiState/persistedUiGuards'
 );
 const { readPersistedFile, seedPersistedFile } = await import(
@@ -13,15 +13,16 @@ const { persistedUiValue, subscribeToPersistedUiValue, writePersistedUiValue } =
   '../frontend/uiState/persistedUiStore'
 );
 const { toggledMembers } = await import('../frontend/uiState/toggledMembers');
+const { isLibrarySelection } = await import('../library/librarySelection');
 
-const ASSET_KINDS = ['tiles', 'pieces', 'creatures'] as const;
+const WORLD_SELECTED = { folder: 'world', key: '' } as const;
 
 checkAToggleReachesTheUiStateDoc();
 checkTheNextLoadReadsWhatTheDocHolds();
 checkADocHoldingTheWrongShapeFallsBackToTheDefault();
 checkEveryReaderOfAKeySeesAWrite();
 checkTogglingAMemberAddsThenRemovesIt();
-checkCollapsingEveryCardReplacesWhateverWasCollapsed();
+checkOpeningFoldersReplacesWhateverWasOpen();
 checkGuardsAcceptOnlyTheShapesTheUiPersists();
 console.log('persisted ui state: all checks passed');
 
@@ -38,10 +39,13 @@ function checkAToggleReachesTheUiStateDoc(): void {
 }
 
 function checkTheNextLoadReadsWhatTheDocHolds(): void {
-  seedUiState({ 'assets.tab': 'creatures', 'panel.widths': { library: 310 } });
+  seedUiState({
+    'library.selection': { folder: 'tiles', key: '3' },
+    'panel.widths': { library: 310 },
+  });
   assert(
-    persistedUiValue('assets.tab', 'tiles', isOneOf(ASSET_KINDS)) === 'creatures',
-    'the tab selected last session is the tab that opens',
+    persistedUiValue('library.selection', WORLD_SELECTED, isLibrarySelection).key === '3',
+    'whatever was selected last session is what the detail panel opens on',
   );
   assert(
     persistedUiValue('panel.widths', {}, isRecordOf(isNumber)).library === 310,
@@ -50,9 +54,9 @@ function checkTheNextLoadReadsWhatTheDocHolds(): void {
 }
 
 function checkADocHoldingTheWrongShapeFallsBackToTheDefault(): void {
-  seedUiState({ 'stale.tab': 'a tab that no longer exists', 'corrupt.widths': 'not a record' });
+  seedUiState({ 'stale.selection': { folder: 'a folder that no longer exists' }, 'corrupt.widths': 'not a record' });
   assert(
-    persistedUiValue('stale.tab', 'tiles', isOneOf(ASSET_KINDS)) === 'tiles',
+    persistedUiValue('stale.selection', WORLD_SELECTED, isLibrarySelection).folder === 'world',
     'a stored value that fails its guard is replaced by the default',
   );
   assert(
@@ -63,10 +67,10 @@ function checkADocHoldingTheWrongShapeFallsBackToTheDefault(): void {
 
 function checkEveryReaderOfAKeySeesAWrite(): void {
   let notifications = 0;
-  const unsubscribe = subscribeToPersistedUiValue('collapsedNodeCards', () => (notifications += 1));
-  writePersistedUiValue('collapsedNodeCards', ['n1']);
+  const unsubscribe = subscribeToPersistedUiValue('library.openFolders', () => (notifications += 1));
+  writePersistedUiValue('library.openFolders', ['tiles']);
   unsubscribe();
-  writePersistedUiValue('collapsedNodeCards', ['n1', 'n2']);
+  writePersistedUiValue('library.openFolders', ['tiles', 'pieces']);
   assert(notifications === 1, 'a reader hears about a write until it unsubscribes, and not after');
 }
 
@@ -76,12 +80,12 @@ function checkTogglingAMemberAddsThenRemovesIt(): void {
   assert(toggledMembers(once, 'n1').length === 0, 'toggling the same member off removes it');
 }
 
-function checkCollapsingEveryCardReplacesWhateverWasCollapsed(): void {
-  seedUiState({ collapsedNodeCards: ['n1'] });
-  writePersistedUiValue('collapsedNodeCards', ['n1', 'n2', 'n3']);
+function checkOpeningFoldersReplacesWhateverWasOpen(): void {
+  seedUiState({ 'library.openFolders': ['tiles'] });
+  writePersistedUiValue('library.openFolders', ['tiles', 'pieces', 'pipeline']);
   assert(
-    JSON.stringify(storedUiState().collapsedNodeCards) === '["n1","n2","n3"]',
-    'collapsing every card stores the whole set rather than merging with the old one',
+    JSON.stringify(storedUiState()['library.openFolders']) === '["tiles","pieces","pipeline"]',
+    'opening folders stores the whole set rather than merging with the old one',
   );
 }
 
@@ -89,6 +93,10 @@ function checkGuardsAcceptOnlyTheShapesTheUiPersists(): void {
   assert(isBoolean(true) && !isBoolean('true'), 'a boolean guard takes booleans alone');
   assert(isNumberOrNull(null) && isNumberOrNull(3) && !isNumberOrNull('3'), 'a width may be unset');
   assert(isStringArray(['a']) && !isStringArray(['a', 2]), 'a string array holds only strings');
+  assert(
+    isLibrarySelection({ folder: 'pipeline', key: 'n1' }) && !isLibrarySelection({ folder: 'nope', key: '' }),
+    'a selection names a folder the library actually has',
+  );
 }
 
 function seedUiState(state: Record<string, unknown>): void {
