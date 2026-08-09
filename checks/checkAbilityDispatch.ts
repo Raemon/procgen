@@ -207,6 +207,30 @@ export function checkAbilityDispatch(check: CheckReporter): void {
     const after = abilities.context.creatures.byId(creature.id)!;
     return added.ok && tuned.ok && !badBehavior.ok && after.behavior === 3 && after.speed === 2.5;
   })());
+  check('a culture can be named, tiled, proportioned and bound to pieces through abilities', (() => {
+    const added = act('god', 'add_culture');
+    const culture = abilities.context.cultures.all()[abilities.context.cultures.all().length - 1]!;
+    const piece = abilities.pieces.all()[0]!;
+    const tileId = abilities.tileAssets.all()[0]!.id;
+    const named = act('god', 'rename_culture', { culture_id: culture.id, name: 'hill folk' });
+    const tiled = act('god', 'set_culture_tiles', { culture_id: culture.id, wall_tile: tileId });
+    const shaped = act('god', 'set_culture_numbers', { culture_id: culture.id, roof_style: 1, story_layers: 99 });
+    const bound = act('god', 'bind_culture_role', { culture_id: culture.id, role: 'door', piece_ids: [piece.id] });
+    const badRole = act('god', 'bind_culture_role', { culture_id: culture.id, role: 'gargoyle', piece_ids: [] });
+    const after = abilities.context.cultures.byId(culture.id)!;
+    return (
+      added.ok && named.ok && tiled.ok && shaped.ok && bound.ok && !badRole.ok &&
+      after.name === 'hill folk' && after.wallTileId === tileId &&
+      after.roofStyle === 1 && after.storyLayers === 6 &&
+      JSON.stringify(after.roleBindings.door) === JSON.stringify([piece.id])
+    );
+  })());
+  check('removing a culture takes it out of the culture assets', (() => {
+    const culture = abilities.context.cultures.all()[abilities.context.cultures.all().length - 1]!;
+    const removed = act('god', 'remove_culture', { culture_id: culture.id });
+    const again = act('god', 'remove_culture', { culture_id: culture.id });
+    return removed.ok && !again.ok && again.code === 'unknown_culture';
+  })());
   check('presets and templates round-trip through abilities', (() => {
     const saved = act('god', 'save_preset', { name: 'check preset' });
     const nodeIds = abilities.store.nodes().map((node) => node.id);

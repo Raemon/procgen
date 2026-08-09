@@ -4,6 +4,7 @@ export const PERSISTED_UI_KEYS = {
   assetKind: 'assets.tab',
   openTileArt: 'assets.openTileArt',
   openCreaturePanels: 'assets.openCreaturePanels',
+  openCulturePanels: 'assets.openCulturePanels',
   openPieceId: 'assets.openPieceId',
   hintsVisible: 'ui.hintsVisible',
   collapsedNodeCards: 'procgen.collapsedNodeCards',

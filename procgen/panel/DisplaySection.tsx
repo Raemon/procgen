@@ -28,7 +28,7 @@ import {
   pieceRotationTooltip,
   MODE_LABELS,
 } from './help/displayModeHelp';
-import { tileSelectOptions } from './tileSelectOptions';
+import { tileSelectOptions } from '../../frontend/controls/tileSelectOptions';
 
 const MAX_CULTURE_ID = 15;
 
