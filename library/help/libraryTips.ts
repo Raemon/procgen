@@ -4,7 +4,7 @@ import type { LibraryFolder } from '../librarySelection';
 export const FOLDER_TIPS: Readonly<Record<LibraryFolder, TooltipContent>> = {
   worlds: {
     title: 'worlds',
-    body: 'Whole worlds: the one you are editing, the examples that ship with the editor, and the ones you have saved. A world is the pipeline of nodes that generates it, seed and daylight included.',
+    body: 'Whole worlds: the examples that ship with the editor and the ones you have made. A world is the pipeline of nodes that generates it, seed and daylight included. Selecting one opens it for editing; ▶ run puts it in the game panel.',
   },
   tiles: {
     title: 'tiles',
@@ -32,30 +32,37 @@ export const FOLDER_TIPS: Readonly<Record<LibraryFolder, TooltipContent>> = {
   },
   groups: {
     title: 'node groups',
-    body: 'Bookmarked groups of procgen nodes that function together, with the wiring between them already made. Stamp one into the world you are editing, or send a folder band from that world back here to reuse it.',
+    body: 'Bookmarked groups of procgen nodes that function together, with the wiring between them already made. Edit one here like a world, stamp it into the running world, or send a folder band from a world back here to reuse it.',
   },
 };
 
-export const CURRENT_WORLD_TIP: TooltipContent = {
-  title: 'this world',
-  body: 'The world you are editing: its seed, its daylight, and the nodes generating it. Opens as the full pipeline in the detail column.',
-};
-
-export function savedWorldTip(name: string, description: string, saved: boolean): TooltipContent {
-  return { title: saved ? `★ ${name}` : name, body: description };
+export function worldTip(name: string, description: string, running: boolean): TooltipContent {
+  return { title: running ? `${name} — running` : name, body: description };
 }
 
-export function loadWorldTip(name: string): TooltipContent {
+export function runWorldTip(name: string, running: boolean): TooltipContent {
+  return running
+    ? {
+        title: `${name} is running`,
+        body: 'The game panel is showing this world, so every edit here lands on screen as you make it.',
+      }
+    : {
+        title: `run ${name}`,
+        body: 'Puts this world in the game panel. Whatever was running keeps every edit you made to it — worlds are saved as you work.',
+      };
+}
+
+export function copyWorldTip(name: string): TooltipContent {
   return {
-    title: `load ${name}`,
-    body: 'Replaces every node in the world you are editing with this one. Asks first; assets are left alone.',
+    title: `duplicate ${name}`,
+    body: 'Files a copy of this world under a free name, so you can take it somewhere else without losing this one.',
   };
 }
 
 export function deleteWorldTip(name: string): TooltipContent {
   return {
     title: `delete ${name}`,
-    body: 'Drops this saved world. The world you are editing is untouched.',
+    body: 'Takes this world off the library shelf. Assets it used are left alone.',
   };
 }
 
@@ -68,10 +75,16 @@ export function openFolderTip(folder: string, closedTip: TooltipContent): Toolti
   return { title: `close ${folder}`, body: closedTip.body };
 }
 
-export function stampGroupTip(name: string): TooltipContent {
+export function stampGroupTip(name: string, runningWorld: string): TooltipContent {
+  if (!runningWorld) {
+    return {
+      title: `stamp ${name}`,
+      body: 'Stamping copies a group into the running world — press ▶ run on a world first.',
+    };
+  }
   return {
-    title: `stamp ${name}`,
-    body: 'Inserts this group at the end of the world you are editing, renamed so its ids do not collide and filed under its own folder band.',
+    title: `stamp ${name} into ${runningWorld}`,
+    body: 'Inserts this group at the end of the running world, renamed so its ids do not collide and filed under its own folder band.',
   };
 }
 

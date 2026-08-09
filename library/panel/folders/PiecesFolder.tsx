@@ -10,7 +10,7 @@ import { useLibrarySelection } from '../useLibrarySelection';
 
 export function PiecesFolder() {
   const { pieces, perform } = useAppRuntime();
-  const [, select] = useLibrarySelection();
+  const { select } = useLibrarySelection();
   const entries = usePieceEntries();
   useEffect(
     () => pieces.onPieceAdded((piece) => select('pieces', String(piece.id))),

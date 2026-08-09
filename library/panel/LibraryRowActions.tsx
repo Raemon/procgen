@@ -3,8 +3,8 @@ import { ConfirmModal } from '../../frontend/controls/ConfirmModal';
 import { IconButton } from '../../frontend/controls/IconButton';
 import { classes } from '../../frontend/controls/classes';
 import { REVEALED_ON_ROW_HOVER } from '../../frontend/controls/revealOnRowHover';
-import { DuplicateIcon, TrashIcon } from '../../frontend/icons/rowActionIcons';
-import { deleteRowConfirmation, deleteRowTip, duplicateRowTip } from '../help/rowActionTips';
+import { DuplicateIcon, RunIcon, TrashIcon } from '../../frontend/icons/rowActionIcons';
+import { deleteRowConfirmation, deleteRowTip, duplicateRowTip, runRowTip } from '../help/rowActionTips';
 import type { LibraryEntry } from './entries/libraryEntry';
 
 const ACTION_BUTTON_CLASSES = 'h-5 w-5 rounded-sm border-transparent bg-transparent';
@@ -33,6 +33,19 @@ export function LibraryRowActions({ entry }: { entry: LibraryEntry }) {
           onClick={() => setConfirmingDelete(true)}
         >
           <TrashIcon />
+        </IconButton>
+      )}
+      {entry.run && (
+        <IconButton
+          active={entry.running}
+          className={classes(
+            entry.running ? undefined : REVEALED_ON_ROW_HOVER,
+            ACTION_BUTTON_CLASSES,
+          )}
+          tip={runRowTip(entry.name, entry.running === true)}
+          onClick={entry.run}
+        >
+          <RunIcon />
         </IconButton>
       )}
       {confirmingDelete && entry.remove && (

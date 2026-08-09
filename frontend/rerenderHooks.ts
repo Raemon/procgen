@@ -3,11 +3,6 @@ import { useAppRuntime } from './appRuntimeContext';
 
 type Subscribe = (listener: () => void) => () => void;
 
-export function useRerenderOnPipelineChange(): void {
-  const { store } = useAppRuntime();
-  useRerenderWhen(useCallback((listener: () => void) => store.onChange(listener), [store]));
-}
-
 export function useRerenderOnTileAssetChange(): void {
   const { tileAssets } = useAppRuntime();
   useRerenderWhen(useCallback((listener: () => void) => tileAssets.onChange(listener), [tileAssets]));

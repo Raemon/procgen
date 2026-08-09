@@ -8,4 +8,6 @@ export interface LibraryEntry {
   tip: TooltipContent;
   duplicate?: () => void;
   remove?: () => void;
+  run?: () => void;
+  running?: boolean;
 }

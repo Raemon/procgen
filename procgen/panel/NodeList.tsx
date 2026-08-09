@@ -1,5 +1,5 @@
 import { useRef, useState, type DragEvent } from 'react';
-import { useAppRuntime } from '../../frontend/appRuntimeContext';
+import { useEditedPipeline } from './editing/editedPipelineContext';
 import { DIM_READOUT_CLASSES } from '../../frontend/controls/fieldClasses';
 import { PERSISTED_UI_KEYS } from '../../frontend/uiState/persistedUiKeys';
 import { usePersistedUiSet } from '../../frontend/uiState/usePersistedUiSet';
@@ -10,7 +10,7 @@ import { NodeFolderBand } from './NodeFolderBand';
 import { nodeFolderRuns, type NodeRun } from './nodeFolderRuns';
 
 export function NodeList() {
-  const { store, perform } = useAppRuntime();
+  const { store, perform } = useEditedPipeline();
   const list = useRef<HTMLDivElement>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
   const collapsedFolders = usePersistedUiSet(PERSISTED_UI_KEYS.collapsedNodeFolders);

@@ -9,7 +9,7 @@ import { useLibrarySelection } from '../useLibrarySelection';
 
 export function CreatureKindFolder({ folder }: { folder: 'creatures' | 'characters' }) {
   const { creatures, perform } = useAppRuntime();
-  const [, select] = useLibrarySelection();
+  const { select } = useLibrarySelection();
   const entries = useCreatureEntries(folder);
   const wantsCharacters = folder === 'characters';
 

@@ -1,33 +1,27 @@
 import type { AssetKind } from '../../../assets/asset';
 import type { LibrarySelection } from '../../librarySelection';
 import { useLibrarySelection } from '../useLibrarySelection';
-import { storedWorldOf } from '../../worldKeys';
 import { CreatureDetail } from './CreatureDetail';
 import { CultureDetail } from './CultureDetail';
-import { CurrentWorldDetail } from './CurrentWorldDetail';
 import { ItemDetail } from './ItemDetail';
 import { NodeGroupDetail } from './NodeGroupDetail';
 import { NothingHere } from './NothingHere';
+import { NothingSelected } from './NothingSelected';
 import { PieceDetail } from './PieceDetail';
-import { StoredWorldDetail } from './StoredWorldDetail';
 import { TileDetail } from './TileDetail';
+import { WorldDetail } from './WorldDetail';
 
 export function DetailPanel() {
-  const [selection] = useLibrarySelection();
-  return detailFor(selection);
+  const { selection } = useLibrarySelection();
+  return selection ? detailFor(selection) : <NothingSelected />;
 }
 
 function detailFor(selection: LibrarySelection) {
-  if (selection.folder === 'worlds') return worldDetail(selection.key);
+  if (selection.folder === 'worlds') return <WorldDetail name={selection.key} />;
   if (selection.folder === 'groups') return <NodeGroupDetail name={selection.key} />;
   const id = assetIdOf(selection.key);
   if (id === null) return <NothingHere what={selection.folder} />;
   return assetDetail(selection.folder, id);
-}
-
-function worldDetail(key: string) {
-  const stored = storedWorldOf(key);
-  return stored ? <StoredWorldDetail world={stored} /> : <CurrentWorldDetail />;
 }
 
 function assetDetail(folder: AssetKind, id: number) {
