@@ -1,9 +1,10 @@
-export {};
+import { readFileSync } from 'node:fs';
+import { endingIn, filesUnder } from './filesUnder';
 
 globalThis.fetch = async () => new Response(null, { status: 204 });
 delete (globalThis as { localStorage?: unknown }).localStorage;
 
-const { isBoolean, isNumber, isNumberOrNull, isRecordOf, isStringArray } = await import(
+const { isBoolean, isNumber, isNumberOrNull, isOneOf, isRecordOf, isStringArray } = await import(
   '../frontend/uiState/persistedUiGuards'
 );
 const { readPersistedFile, seedPersistedFile } = await import(
@@ -15,8 +16,17 @@ const { persistedUiValue, subscribeToPersistedUiValue, writePersistedUiValue } =
 const { toggledMembers } = await import('../frontend/uiState/toggledMembers');
 const { isLibrarySelection } = await import('../library/librarySelection');
 type LibrarySelection = import('../library/librarySelection').LibrarySelection;
+const { PERSISTED_UI_KEYS } = await import('../frontend/uiState/persistedUiKeys');
+const { ITEM_PANELS } = await import('../assets/items/editor/itemPanels');
+const { CREATURE_PANELS } = await import('../assets/creatures/editor/creaturePanels');
+const { persistedUiRecordOf } = await import('../frontend/uiState/persistedUiRecordOf');
 
 const WORLD_SELECTED: LibrarySelection = { folder: 'worlds', key: '' };
+const ASSET_EDITOR_ROOT = 'assets';
+const DRAWER_STATE_IN_A_BARE_USE_STATE = /const \[[^\]]*(?:open|Open|panel|Panel)[^\]]*\] = useState/;
+const POPUPS_THAT_SHOULD_NOT_SURVIVE_A_RELOAD = ['assets/tiles/editor/SymbolInput.tsx'];
+const CULTURE_PANELS = ['none', 'tiles', 'proportions', 'pieces'] as const;
+const REMOVES_ITS_ASSET = /perform\('remove_\w+'/;
 
 checkAToggleReachesTheUiStateDoc();
 checkTheNextLoadReadsWhatTheDocHolds();
@@ -24,7 +34,13 @@ checkADocHoldingTheWrongShapeFallsBackToTheDefault();
 checkEveryReaderOfAKeySeesAWrite();
 checkTogglingAMemberAddsThenRemovesIt();
 checkOpeningFoldersReplacesWhateverWasOpen();
+checkForgettingARowLeavesNoPanelEntryBehind();
 checkGuardsAcceptOnlyTheShapesTheUiPersists();
+checkNoAssetEditorKeepsItsOpenDrawerToItself();
+checkEveryRowThatForgetsAnAssetForgetsItsDrawerToo();
+checkTheOpenItemPanelSurvivesTheNextLoad();
+checkTheOpenBackdropDrawerSurvivesTheNextLoad();
+checkADrawerNamingAPanelThatIsGoneOpensNothing();
 console.log('persisted ui state: all checks passed');
 
 function checkAToggleReachesTheUiStateDoc(): void {
@@ -90,6 +106,20 @@ function checkOpeningFoldersReplacesWhateverWasOpen(): void {
   );
 }
 
+function checkForgettingARowLeavesNoPanelEntryBehind(): void {
+  const key = 'assets.openRowPanels';
+  seedUiState({ [key]: { '3': 'tiles', '4': 'proportions' } });
+  const panels = persistedUiRecordOf(
+    persistedUiValue(key, {}, isRecordOf(isOneOf(CULTURE_PANELS))),
+    (next) => writePersistedUiValue(key, next),
+  );
+  panels.forget('3');
+  assert(
+    JSON.stringify(storedUiState()[key]) === '{"4":"proportions"}',
+    'deleting a row forgets its open panel, so a row later handed the same id does not inherit it',
+  );
+}
+
 function checkGuardsAcceptOnlyTheShapesTheUiPersists(): void {
   assert(isBoolean(true) && !isBoolean('true'), 'a boolean guard takes booleans alone');
   assert(isNumberOrNull(null) && isNumberOrNull(3) && !isNumberOrNull('3'), 'a width may be unset');
@@ -98,6 +128,74 @@ function checkGuardsAcceptOnlyTheShapesTheUiPersists(): void {
     isLibrarySelection({ folder: 'worlds', key: 'saved:my archipelago' }) && !isLibrarySelection({ folder: 'nope', key: '' }),
     'a selection names a folder the library actually has',
   );
+}
+
+function checkNoAssetEditorKeepsItsOpenDrawerToItself(): void {
+  const forgetful = assetEditorComponents()
+    .filter((path) => !POPUPS_THAT_SHOULD_NOT_SURVIVE_A_RELOAD.includes(path))
+    .filter((path) => DRAWER_STATE_IN_A_BARE_USE_STATE.test(readFileSync(path, 'utf8')));
+  if (forgetful.length > 0) console.error(`  drawer state left in useState: ${forgetful.join(', ')}`);
+  assert(
+    forgetful.length === 0,
+    'no asset editor remembers which drawer is open in a bare useState, so every drawer survives a reload',
+  );
+  assert(
+    POPUPS_THAT_SHOULD_NOT_SURVIVE_A_RELOAD.every((path) =>
+      DRAWER_STATE_IN_A_BARE_USE_STATE.test(readFileSync(path, 'utf8')),
+    ),
+    'every popup excused from persisting still keeps its own open state, so the excuse list cannot go stale',
+  );
+}
+
+function checkEveryRowThatForgetsAnAssetForgetsItsDrawerToo(): void {
+  const rowsHoldingADrawer = assetEditorComponents()
+    .map((path) => ({ path, source: readFileSync(path, 'utf8') }))
+    .filter((file) => file.source.includes('usePersistedOpenPanel'));
+  const leaking = rowsHoldingADrawer
+    .filter((file) => REMOVES_ITS_ASSET.test(file.source))
+    .filter((file) => !file.source.includes('forgetRow()'))
+    .map((file) => file.path);
+  if (leaking.length > 0) console.error(`  drawer entries left behind on delete: ${leaking.join(', ')}`);
+  assert(
+    rowsHoldingADrawer.length > 0 && leaking.length === 0,
+    'every row that deletes its asset forgets its drawer, so a later asset handed the same id does not inherit it',
+  );
+}
+
+function checkTheOpenItemPanelSurvivesTheNextLoad(): void {
+  const key = PERSISTED_UI_KEYS.openItemPanels;
+  seedUiState({ [key]: { '7': 'knobs' } });
+  assert(
+    persistedUiValue(key, {}, isRecordOf(isOneOf(ITEM_PANELS)))['7'] === 'knobs',
+    'the item drawer left open last session is the drawer that opens',
+  );
+  writePersistedUiValue(key, { '7': 'art' });
+  assert(
+    JSON.stringify(storedUiState()[key]) === '{"7":"art"}',
+    'opening an item drawer writes which panel it is into the uiState doc',
+  );
+}
+
+function checkTheOpenBackdropDrawerSurvivesTheNextLoad(): void {
+  const key = PERSISTED_UI_KEYS.openInventoryBackdrops;
+  seedUiState({ [key]: ['3'] });
+  assert(
+    persistedUiValue(key, [], isStringArray).includes('3'),
+    'the inventory backdrop drawer left open last session opens again',
+  );
+}
+
+function checkADrawerNamingAPanelThatIsGoneOpensNothing(): void {
+  const key = PERSISTED_UI_KEYS.openCreaturePanels;
+  seedUiState({ [key]: { '2': 'a panel this build never had' } });
+  assert(
+    Object.keys(persistedUiValue(key, {}, isRecordOf(isOneOf(CREATURE_PANELS)))).length === 0,
+    'a stored creature drawer naming a panel that no longer exists opens nothing',
+  );
+}
+
+function assetEditorComponents(): string[] {
+  return filesUnder(ASSET_EDITOR_ROOT, endingIn('.tsx'));
 }
 
 function seedUiState(state: Record<string, unknown>): void {

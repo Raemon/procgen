@@ -6,6 +6,7 @@ import {
   RENDER_CHOICES,
   type ItemDef,
 } from '../itemDef';
+import { DrawerPanel } from '../../../frontend/controls/DrawerPanel';
 import { KnobRow } from '../../../frontend/controls/KnobRow';
 import { Select } from '../../../frontend/controls/Select';
 import { Slider } from '../../../frontend/controls/Slider';
@@ -65,7 +66,7 @@ export function ItemRenderKnobs({ item }: { item: ItemDef }) {
   const edit = (patch: Record<string, unknown>) => perform('update_item', { item_id: item.id, ...patch });
   const isBillboard = item.render === BILLBOARD;
   return (
-    <div className="mt-1.5 rounded border border-art-edge bg-art-panel p-2">
+    <DrawerPanel>
       <KnobRow label="render" tip={choiceTooltip('render', RENDER_CHOICES)}>
         <Select
           value={String(item.render)}
@@ -132,7 +133,7 @@ export function ItemRenderKnobs({ item }: { item: ItemDef }) {
           onChange={(tags) => edit({ tags })}
         />
       </KnobRow>
-    </div>
+    </DrawerPanel>
   );
 }
 

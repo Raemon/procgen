@@ -1,4 +1,4 @@
-import type { ReadOnlyTileAssets } from '../../frontend/readOnlyAssets';
+import type { ReadOnlyTileAssets } from '../readOnlyAssets';
 
 export function tileSelectOptions(
   tileAssets: ReadOnlyTileAssets,

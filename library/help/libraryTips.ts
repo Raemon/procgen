@@ -87,16 +87,6 @@ export const ADD_ITEM_TIP: TooltipContent = {
   body: 'Appends a blank item, ready to be named, painted and given a footprint in inventory cells.',
 };
 
-export const ADD_CULTURE_TIP: TooltipContent = {
-  title: 'add culture',
-  body: 'Appends a culture with nothing bound yet — choose its tiles and pieces to shape how its villages build.',
-};
-
-export const ADD_CREATURE_TIP: TooltipContent = {
-  title: 'add creature',
-  body: 'Appends a wandering creature, ready to be given a look, a speed and a behavior.',
-};
-
 export const ADD_CHARACTER_TIP: TooltipContent = {
   title: 'add character',
   body: 'Appends a creature that carries things: the same rules plus an inventory grid.',

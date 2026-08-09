@@ -1,4 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs';
+import { reportOffenders } from './reportOffenders';
 import { CODEBASE_DOCS_PATH } from '../api/codebaseDocsRoute';
 import { everyRegisteredRoute } from '../api/agent/everyRoute';
 
@@ -14,21 +15,21 @@ export function checkClaudeMdPointsAtThingsThatExist(
   const house = readFileSync(CLAUDE_MD, 'utf8');
 
   const missingFiles = matchesOf(house, FILE_PATH).filter((path) => !existsSync(path));
-  report('paths claude.md names that do not exist', missingFiles);
+  reportOffenders('paths claude.md names that do not exist', missingFiles);
   check(
     'every file claude.md points at exists, so the one hand-written file cannot misdirect',
     missingFiles.length === 0,
   );
 
   const missingScripts = capturesOf(house, NPM_SCRIPT).filter((name) => !npmScripts().includes(name));
-  report('npm scripts claude.md names that are not defined', missingScripts);
+  reportOffenders('npm scripts claude.md names that are not defined', missingScripts);
   check(
     'every npm script claude.md names is defined in package.json',
     missingScripts.length === 0,
   );
 
   const missingRoutes = capturesOf(house, HTTP_ROUTE).filter((path) => !isServed(path));
-  report('routes claude.md names that nothing serves', missingRoutes);
+  reportOffenders('routes claude.md names that nothing serves', missingRoutes);
   check(
     'every url claude.md names is a route this server actually mounts',
     missingRoutes.length === 0,
@@ -57,7 +58,3 @@ function capturesOf(source: string, pattern: RegExp): string[] {
   return [...new Set([...source.matchAll(pattern)].map((match) => match[1]!))];
 }
 
-function report(what: string, offenders: readonly string[]): void {
-  if (offenders.length === 0) return;
-  console.log(`     ${what}:\n       ${offenders.join('\n       ')}`);
-}

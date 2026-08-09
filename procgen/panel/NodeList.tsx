@@ -1,6 +1,6 @@
 import { useRef, useState, type DragEvent } from 'react';
 import { useAppRuntime } from '../../frontend/appRuntimeContext';
-import { HINT_CLASSES } from '../../frontend/controls/fieldClasses';
+import { DIM_READOUT_CLASSES } from '../../frontend/controls/fieldClasses';
 import { PERSISTED_UI_KEYS } from '../../frontend/uiState/persistedUiKeys';
 import { usePersistedUiSet } from '../../frontend/uiState/usePersistedUiSet';
 import { DROP_INDEX_ATTRIBUTE, insertionIndexAt } from './nodeInsertionIndex';
@@ -51,7 +51,7 @@ export function NodeList() {
         />
       ))}
       {nodes.length === 0 && (
-        <p className={HINT_CLASSES}>
+        <p className={DIM_READOUT_CLASSES}>
           Blank world. Add a node to start generating, or load an example.
         </p>
       )}

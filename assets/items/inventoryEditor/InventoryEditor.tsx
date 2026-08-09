@@ -3,6 +3,7 @@ import { useAppRuntime } from '../../../frontend/appRuntimeContext';
 import { useRerenderOnItemChange } from '../../../frontend/rerenderHooks';
 import type { CreatureDef } from '../../creatures/creatureDef';
 import { MAX_INVENTORY_SIDE, slotAt, type InventoryDef } from '../inventory/inventoryDef';
+import { DrawerPanel } from '../../../frontend/controls/DrawerPanel';
 import { Button } from '../../../frontend/controls/Button';
 import { KnobRow } from '../../../frontend/controls/KnobRow';
 import type { TooltipContent } from '../../../frontend/tooltips/tooltipContent';
@@ -14,8 +15,10 @@ import {
 } from './help/inventoryTips';
 import { Select } from '../../../frontend/controls/Select';
 import { TagsInput } from '../../../frontend/controls/TagsInput';
-import { classes } from '../../../frontend/controls/classes';
-import { HINT_CLASSES } from '../../../frontend/controls/fieldClasses';
+import { DIM_READOUT_CLASSES } from '../../../frontend/controls/fieldClasses';
+import { PanelHint } from '../../../frontend/help/PanelHint';
+import { PERSISTED_UI_KEYS } from '../../../frontend/uiState/persistedUiKeys';
+import { usePersistedUiSet } from '../../../frontend/uiState/usePersistedUiSet';
 import { SpriteArtEditor } from '../../pixelArtEditor/SpriteArtEditor';
 import { InventoryGrid, type GridCell } from './InventoryGrid';
 import { INVENTORY_MODES, type InventoryEditorMode } from './inventoryEditorMode';
@@ -24,15 +27,15 @@ export function InventoryEditor({ creature }: { creature: CreatureDef }) {
   const { perform } = useAppRuntime();
   if (!creature.inventory) {
     return (
-      <div className="mt-1.5 rounded border border-art-edge bg-art-panel p-2">
-        <p className={HINT_CLASSES}>This creature carries nothing.</p>
+      <DrawerPanel>
+        <p className={DIM_READOUT_CLASSES}>This creature carries nothing.</p>
         <Button
           className="mt-1.5"
           onClick={() => perform('set_inventory', { creature_id: creature.id, width: 6, height: 4 })}
         >
           + give it an inventory
         </Button>
-      </div>
+      </DrawerPanel>
     );
   }
   return <InventoryPanel creature={creature} inventory={creature.inventory} />;
@@ -69,7 +72,7 @@ function InventoryPanel({
   }
 
   return (
-    <div className="mt-1.5 rounded border border-art-edge bg-art-panel p-2">
+    <DrawerPanel>
       <SizeRow creature={creature} inventory={inventory} />
       <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
         {INVENTORY_MODES.map((entry) => (
@@ -115,8 +118,10 @@ function InventoryPanel({
         </KnobRow>
       )}
       <BackdropRow creature={creature} inventory={inventory} />
-      <p className={classes(HINT_CLASSES, 'mt-2')}>{INVENTORY_MODES.find((entry) => entry.mode === mode)!.help}</p>
-    </div>
+      <PanelHint className="mt-2">
+        {INVENTORY_MODES.find((entry) => entry.mode === mode)!.help}
+      </PanelHint>
+    </DrawerPanel>
   );
 }
 
@@ -186,7 +191,7 @@ function SlotTagsRow({
   creatureId: number;
 }) {
   const { perform } = useAppRuntime();
-  if (!selected) return <p className={classes(HINT_CLASSES, 'mt-2')}>Click a slot to tag it.</p>;
+  if (!selected) return <PanelHint className="mt-2">Click a slot to tag it.</PanelHint>;
   const slot = slotAt(inventory, selected.x, selected.y);
   if (!slot) return null;
   return (
@@ -210,14 +215,19 @@ function SlotTagsRow({
 
 function BackdropRow({ creature, inventory }: { creature: CreatureDef; inventory: InventoryDef }) {
   const { perform } = useAppRuntime();
-  const [open, setOpen] = useState(false);
+  const openBackdrops = usePersistedUiSet(PERSISTED_UI_KEYS.openInventoryBackdrops);
+  const open = openBackdrops.has(String(creature.id));
   return (
     <>
       <div className="mt-2 flex items-center gap-1.5">
-        <Button className="px-2 py-0.5 text-[11px]" active={open} onClick={() => setOpen(!open)}>
+        <Button
+          className="px-2 py-0.5 text-[11px]"
+          active={open}
+          onClick={() => openBackdrops.toggle(String(creature.id))}
+        >
           backdrop
         </Button>
-        <span className={HINT_CLASSES}>
+        <span className={DIM_READOUT_CLASSES}>
           {inventory.background ? 'art layered under the grid' : 'no art under the grid'}
         </span>
       </div>

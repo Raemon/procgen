@@ -13,12 +13,14 @@ import {
 } from '../characterBillboard';
 import type { CreatureDef } from '../../creatures/creatureDef';
 import { blankSpriteArt, type SpriteArt } from '../../tiles/spriteArt';
+import { DrawerPanel } from '../../../frontend/controls/DrawerPanel';
 import { Button } from '../../../frontend/controls/Button';
 import { KnobRow } from '../../../frontend/controls/KnobRow';
 import { Slider } from '../../../frontend/controls/Slider';
 import { ValueReadout } from '../../../frontend/controls/ValueReadout';
 import { classes } from '../../../frontend/controls/classes';
-import { HINT_CLASSES } from '../../../frontend/controls/fieldClasses';
+import { DIM_READOUT_CLASSES } from '../../../frontend/controls/fieldClasses';
+import { PanelHint } from '../../../frontend/help/PanelHint';
 import { CLEAR_SPRITES_TIP } from '../../creatures/editor/help/creatureTips';
 import { SpriteArtEditor } from '../../pixelArtEditor/SpriteArtEditor';
 import { tooltipHandlers } from '../../../frontend/tooltips/tooltipHandlers';
@@ -42,7 +44,7 @@ export function CharacterSpritesEditor({ character }: { character: CreatureDef }
       sprite,
     });
   return (
-    <div className="mt-1.5 rounded border border-art-edge bg-art-panel p-2">
+    <DrawerPanel>
       <TabRow
         values={CHARACTER_ROTATIONS}
         active={rotation}
@@ -86,10 +88,14 @@ export function CharacterSpritesEditor({ character }: { character: CreatureDef }
           onChange={(sprite) => editFrame(frame, sprite ?? blankSpriteArt(NEW_FRAME_SIZE))}
         />
       ) : (
-        <p className={HINT_CLASSES}>
-          No frames for {rotation}/{animation} yet. The 2.5D view falls back to another rotation
-          until you paint one.
-        </p>
+        <>
+          <p className={DIM_READOUT_CLASSES}>
+            No frames for {rotation}/{animation} yet.
+          </p>
+          <PanelHint>
+            The 2.5D view falls back to another rotation until you paint one.
+          </PanelHint>
+        </>
       )}
       {billboard && <FpsRows character={character} billboard={billboard} />}
       <div className="mt-2 flex items-center gap-1.5">
@@ -100,12 +106,12 @@ export function CharacterSpritesEditor({ character }: { character: CreatureDef }
         >
           clear sprites
         </Button>
-        <span className={HINT_CLASSES}>
+        <PanelHint>
           The quad turns to face the camera; the five rotations cover the eight compass facings,
           the mirrored half flipped.
-        </span>
+        </PanelHint>
       </div>
-    </div>
+    </DrawerPanel>
   );
 }
 

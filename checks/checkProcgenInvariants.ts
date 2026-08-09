@@ -34,6 +34,7 @@ import { checkTileArtStorageInvariants } from './checkTileArtStorageInvariants';
 import { checkGeneratedAssetInvariants } from './checkGeneratedAssetInvariants';
 import { checkPieceInvariants } from './checkPieceInvariants';
 import { checkVillageInvariants } from './checkVillageInvariants';
+import { checkCultureEditing } from './checkCultureEditing';
 import { checkShapedTileInvariants } from './checkShapedTileInvariants';
 import { checkMarkerBillboardInvariants } from './checkMarkerBillboardInvariants';
 import { checkPresentationFoldersAreTheOnlyDomCode } from './checkPresentationFoldersAreTheOnlyDomCode';
@@ -43,6 +44,8 @@ import { checkClaudeMdPointsAtThingsThatExist } from './checkClaudeMdPointsAtThi
 import { checkDocumentationHasNotRegrown } from './checkDocumentationHasNotRegrown';
 import { checkPerformanceReadouts } from './checkPerformanceReadouts';
 import { checkTileHoverReadout } from './checkTileHoverReadout';
+import { checkDevProxyDoesNotShadowSourceFolders } from './checkDevProxyDoesNotShadowSourceFolders';
+import { checkPanelHintsRespectTheToggle } from './checkPanelHintsRespectTheToggle';
 
 function check(name: string, condition: boolean): void {
   test(name, () => assert.ok(condition));
@@ -80,6 +83,7 @@ describe('shaped tiles and per-voxel facing', () => checkShapedTileInvariants(ch
 describe('scattered prop billboards', () => checkMarkerBillboardInvariants(check));
 describe('pieces', () => checkPieceInvariants(check));
 describe('villages', () => checkVillageInvariants(check));
+describe('the cultures editor', () => checkCultureEditing(check));
 describe('generated asset kits', () => checkGeneratedAssetInvariants(check));
 describe('the dom boundary', () => checkPresentationFoldersAreTheOnlyDomCode(check));
 describe('documentation', () => {
@@ -91,3 +95,5 @@ describe('the api surface', () => checkEveryApiSurfaceIsDescribed(check));
 describe('landmarks and ceilings', () => checkLandmarkAndCeilingInvariants(check));
 describe('performance readouts', () => checkPerformanceReadouts(check));
 describe('the hovered tile readout', () => checkTileHoverReadout(check));
+describe('the dev proxy', () => checkDevProxyDoesNotShadowSourceFolders(check));
+describe('panel hints', () => checkPanelHintsRespectTheToggle(check));
