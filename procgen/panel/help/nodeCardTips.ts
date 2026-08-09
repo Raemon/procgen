@@ -18,17 +18,12 @@ export const NODE_NOTES_TIP: TooltipContent = {
 
 export const NODE_FOLDER_TIP: TooltipContent = {
   title: 'folder',
-  body: 'Panel-only grouping. Adjacent nodes sharing a folder name fold into one band that can be collapsed or saved as a template; nothing about generation changes.',
+  body: 'Grouping for the editor only. Adjacent nodes sharing a folder name fold into one band that can be collapsed or sent to the asset library as a node group; nothing about generation changes.',
 };
 
 export const FOLDER_NAME_TIP: TooltipContent = {
   title: 'folder name',
-  body: 'Renaming retags every node in the band. Grouping is for the panel only and never changes what is generated.',
-};
-
-export const SAVE_TEMPLATE_TIP: TooltipContent = {
-  title: 'save as template',
-  body: 'Keeps this band for reuse: wiring inside the folder is preserved, wiring to nodes outside it is left open for the next stamp to fill.',
+  body: 'Renaming retags every node in the band, and names the node group if you send it to the asset library. Grouping never changes what is generated.',
 };
 
 export const UNGROUP_TIP: TooltipContent = {

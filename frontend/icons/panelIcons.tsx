@@ -1,23 +1,23 @@
 import { Icon } from './Icon';
 
-export function AssetsIcon({ size }: { size?: number }) {
+export function LibraryIcon({ size }: { size?: number }) {
   return (
     <Icon size={size}>
-      <path d="M12 3 3 7.5l9 4.5 9-4.5L12 3Z" />
-      <path d="M3 12.5 12 17l9-4.5" />
-      <path d="M3 17.5 12 22l9-4.5" />
+      <path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4L11 7.5h8.5A1.5 1.5 0 0 1 21 9v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18Z" />
+      <path d="M3 10.5h18" />
     </Icon>
   );
 }
 
-export function ProcgenIcon({ size }: { size?: number }) {
+export function DetailIcon({ size }: { size?: number }) {
   return (
     <Icon size={size}>
-      <circle cx="5.5" cy="5.5" r="2.5" />
-      <circle cx="18.5" cy="10" r="2.5" />
-      <circle cx="7" cy="18.5" r="2.5" />
-      <path d="M8 6.5 16 9.4" />
-      <path d="M17.4 12.3 8.6 16.6" />
+      <path d="M4 7.5h16" />
+      <path d="M4 12h16" />
+      <path d="M4 16.5h16" />
+      <circle cx="9" cy="7.5" r="2" />
+      <circle cx="15" cy="12" r="2" />
+      <circle cx="8" cy="16.5" r="2" />
     </Icon>
   );
 }

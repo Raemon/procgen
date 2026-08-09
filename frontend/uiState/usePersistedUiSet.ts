@@ -11,8 +11,8 @@ export interface PersistedUiSet {
 
 const NO_MEMBERS: string[] = [];
 
-export function usePersistedUiSet(key: string): PersistedUiSet {
-  const [members, setMembers] = usePersistedUiValue<string[]>(key, NO_MEMBERS, isStringArray);
+export function usePersistedUiSet(key: string, membersUntilTouched = NO_MEMBERS): PersistedUiSet {
+  const [members, setMembers] = usePersistedUiValue<string[]>(key, membersUntilTouched, isStringArray);
   const set = useMemo(() => new Set(members), [members]);
   return {
     has: (member) => set.has(member),

@@ -27,7 +27,11 @@ import { newPieceWithId, type Piece, type PieceRole } from '../assets/pieces/pie
 import { isOneOf } from '../frontend/uiState/persistedUiGuards';
 import type { CheckReporter } from './checkReporter';
 
-const CULTURES_PANEL_SOURCE = join('assets', 'cultures', 'editor');
+const CULTURES_PANEL_SOURCES = [
+  join('assets', 'cultures', 'editor'),
+  join('library', 'panel', 'folders'),
+  join('library', 'panel', 'detail'),
+];
 const PERFORMED_ACTION = /perform\('([a-z_]+)'/g;
 const CULTURE_ABILITY_ACTIONS = [
   'add_culture',
@@ -62,8 +66,8 @@ function checkEveryCultureAbilityIsReachableFromThePanel(check: CheckReporter): 
     unreachable.length === 0,
   );
   check(
-    'every ability named for a culture tells a human its control lives in the cultures tab',
-    abilitiesNamedForCultures().every((spec) => spec.humanControl.includes('cultures tab')),
+    'every ability named for a culture tells a human where its control lives',
+    abilitiesNamedForCultures().every((spec) => spec.humanControl.includes('cultures')),
   );
 }
 
@@ -166,7 +170,7 @@ function cultureAbilities(): AbilitySpec[] {
   return allAbilities().filter(
     (spec) =>
       spec.action.includes('culture') ||
-      spec.humanControl.includes('cultures tab') ||
+      spec.humanControl.includes('cultures') ||
       (spec.group === 'assets' && 'culture_id' in spec.params),
   );
 }
@@ -194,7 +198,7 @@ function panelComponentSourcesMentioning(what: string): string[] {
 }
 
 function panelSourceFiles(): string[] {
-  return sourceFilesUnder(CULTURES_PANEL_SOURCE);
+  return CULTURES_PANEL_SOURCES.flatMap(sourceFilesUnder);
 }
 
 function sourceFilesUnder(root: string): string[] {

@@ -35,7 +35,7 @@ function registerPieceAbility(
 
 registerPieceAbility({
   action: 'add_piece',
-  humanControl: 'assets panel, pieces tab: + add piece',
+  humanControl: 'asset library, pieces folder: + add piece',
   description:
     'Create an empty piece: a width × depth × layers box of tile ids you fill with paint_piece.',
   params: {},
@@ -48,7 +48,7 @@ registerPieceAbility({
 
 registerPieceAbility({
   action: 'duplicate_piece',
-  humanControl: 'assets panel, pieces tab: ⧉ on a piece row',
+  humanControl: 'detail panel, pieces: ⧉ on a piece row',
   description: 'Copy a piece with all its voxels.',
   params: { piece_id: { kind: 'int', help: PIECE_ID_HELP } },
   example: { action: 'duplicate_piece', piece_id: 0 },
@@ -63,7 +63,7 @@ registerPieceAbility({
 
 registerPieceAbility({
   action: 'rename_piece',
-  humanControl: 'assets panel, pieces tab: the name field on a piece row',
+  humanControl: 'detail panel, pieces: the name field on a piece row',
   description: 'Rename a piece. Nodes bind pieces by id, so renaming is safe.',
   params: {
     piece_id: { kind: 'int', help: PIECE_ID_HELP },
@@ -81,7 +81,7 @@ registerPieceAbility({
 
 registerPieceAbility({
   action: 'resize_piece',
-  humanControl: 'assets panel, pieces tab: the size steppers',
+  humanControl: 'detail panel, pieces: the size steppers',
   description:
     'Change a piece\'s box. Voxels outside the new box are dropped; new space starts empty.',
   params: {
@@ -107,7 +107,7 @@ registerPieceAbility({
 
 registerPieceAbility({
   action: 'rotate_piece',
-  humanControl: 'assets panel, pieces tab: the rotate button',
+  humanControl: 'detail panel, pieces: the rotate button',
   description: 'Turn a piece a quarter turn clockwise, swapping its width and depth.',
   params: { piece_id: { kind: 'int', help: PIECE_ID_HELP } },
   example: { action: 'rotate_piece', piece_id: 0 },
@@ -120,7 +120,7 @@ registerPieceAbility({
 
 registerPieceAbility({
   action: 'paint_piece',
-  humanControl: 'assets panel, pieces tab: painting on the layer canvas',
+  humanControl: 'detail panel, pieces: painting on the layer canvas',
   description:
     'Paint one voxel of a piece. Layer 0 is the ground layer; tile_id -1 erases the voxel.',
   params: {
@@ -136,7 +136,7 @@ registerPieceAbility({
 
 registerPieceAbility({
   action: 'flood_fill_piece',
-  humanControl: 'assets panel, pieces tab: the fill tool on the layer canvas',
+  humanControl: 'detail panel, pieces: the fill tool on the layer canvas',
   description:
     'Flood fill one layer of a piece from a starting cell, replacing every connected voxel that matches it.',
   params: {
@@ -157,7 +157,7 @@ registerPieceAbility({
 
 registerPieceAbility({
   action: 'fill_piece_layer',
-  humanControl: 'assets panel, pieces tab: the clear-layer button',
+  humanControl: 'detail panel, pieces: the clear-layer button',
   description: 'Set every voxel of one layer of a piece at once. tile_id -1 clears the layer.',
   params: {
     piece_id: { kind: 'int', help: PIECE_ID_HELP },
@@ -175,7 +175,7 @@ registerPieceAbility({
 
 registerPieceAbility({
   action: 'set_piece_voxels',
-  humanControl: 'assets panel, pieces tab: paste layer and undo',
+  humanControl: 'detail panel, pieces: paste layer and undo',
   description:
     "Replace a piece's whole voxel array — the bulk write behind paste and undo. It must be exactly width × depth × layers long.",
   params: {
@@ -188,7 +188,7 @@ registerPieceAbility({
 
 registerPieceAbility({
   action: 'set_piece_role',
-  humanControl: 'assets panel, pieces tab: the role dropdown on a piece row',
+  humanControl: 'detail panel, pieces: the role dropdown on a piece row',
   description:
     'Tag what part of a building this piece is, so the assembler knows where it may go.',
   params: {
@@ -201,7 +201,7 @@ registerPieceAbility({
 
 registerPieceAbility({
   action: 'set_piece_voxel_facing',
-  humanControl: 'assets panel, pieces tab: the facing tool on the layer canvas',
+  humanControl: 'detail panel, pieces: the facing tool on the layer canvas',
   description:
     'Turn voxels in place: facing 0-3 is quarter turns clockwise, and rotating the piece turns these with it. Give to_x and to_y to face a whole rectangle at once.',
   params: {
@@ -220,7 +220,7 @@ registerPieceAbility({
 
 registerPieceAbility({
   action: 'remove_piece',
-  humanControl: 'assets panel, pieces tab: ✕ on a piece row',
+  humanControl: 'detail panel, pieces: ✕ on a piece row',
   description:
     'Delete a piece. Nodes bound to it stop stamping anything, and cultures that bound it to a building role fall back to their tiles.',
   params: { piece_id: { kind: 'int', help: PIECE_ID_HELP } },

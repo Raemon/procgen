@@ -4,12 +4,9 @@ import { Button } from '../../frontend/controls/Button';
 import { classes } from '../../frontend/controls/classes';
 import { FOLDER_HOVER_GROUP, REVEALED_ON_FOLDER_HOVER } from '../../frontend/controls/revealOnRowHover';
 import { tooltipHandlers } from '../../frontend/tooltips/tooltipHandlers';
-import {
-  collapseFolderTip,
-  FOLDER_NAME_TIP,
-  SAVE_TEMPLATE_TIP,
-  UNGROUP_TIP,
-} from './help/nodeCardTips';
+import { SEND_BAND_TO_LIBRARY_TIP } from '../../library/help/libraryTips';
+import { useLibrarySelection } from '../../library/panel/useLibrarySelection';
+import { collapseFolderTip, FOLDER_NAME_TIP, UNGROUP_TIP } from './help/nodeCardTips';
 import type { NodeRun } from './nodeFolderRuns';
 
 export function NodeFolderBand({
@@ -62,7 +59,7 @@ function FolderHeader({
       <span className="text-[10px] whitespace-nowrap text-ink-dim">
         {run.nodes.length} node{run.nodes.length === 1 ? '' : 's'}
       </span>
-      <SaveAsTemplateButton run={run} />
+      <SendToLibraryButton run={run} />
       <Button
         className={classes(REVEALED_ON_FOLDER_HOVER, 'px-1.5 py-0.5 text-[11px]')}
         tip={UNGROUP_TIP}
@@ -74,30 +71,27 @@ function FolderHeader({
   );
 }
 
-function SaveAsTemplateButton({ run }: { run: NodeRun }) {
+function SendToLibraryButton({ run }: { run: NodeRun }) {
   const { perform } = useAppRuntime();
-  const [saved, setSaved] = useState(false);
-  function save(): void {
-    perform('save_template', {
+  const [, select] = useLibrarySelection();
+  function sendToLibrary(): void {
+    const saved = perform('save_template', {
       name: run.folder,
       node_ids: run.nodes.map((node) => node.id),
       description: describeRun(run),
     });
-    setSaved(true);
+    if (!saved.ok) return window.alert(saved.hint);
+    select('groups', run.folder);
   }
   return (
-    <Button
-      className={classes(REVEALED_ON_FOLDER_HOVER, 'px-1.5 py-0.5 text-[11px]')}
-      tip={SAVE_TEMPLATE_TIP}
-      onClick={save}
-    >
-      {saved ? '✓' : '⤓'}
+    <Button className="px-1.5 py-0.5 text-[11px]" tip={SEND_BAND_TO_LIBRARY_TIP} onClick={sendToLibrary}>
+      ⤓ library
     </Button>
   );
 }
 
 function describeRun(run: NodeRun): string {
-  return `Saved from the panel: ${run.nodes.map((node) => node.label).join(' → ')}.`;
+  return `Sent to the library from a world: ${run.nodes.map((node) => node.label).join(' → ')}.`;
 }
 
 function FolderNameInput({ folder, nodeIds }: { folder: string; nodeIds: string[] }) {

@@ -30,7 +30,7 @@ function registerNodeAbility(
 
 registerNodeAbility({
   action: 'add_node',
-  humanControl: 'procgen panel: + add node',
+  humanControl: 'detail panel, world: + add node',
   description:
     'Create a node of the given type. Its inputs auto-wire to the nearest matching earlier nodes.',
   params: {
@@ -47,7 +47,7 @@ registerNodeAbility({
 
 registerNodeAbility({
   action: 'duplicate_node',
-  humanControl: 'procgen panel: ⧉ on a node card',
+  humanControl: 'detail panel, node card: ⧉',
   description: 'Copy a node with all its knob values and wiring, inserted right after the original.',
   params: { node_id: { kind: 'nodeId', help: NODE_ID_HELP } },
   example: { action: 'duplicate_node', node_id: 'n1' },
@@ -62,7 +62,7 @@ registerNodeAbility({
 
 registerNodeAbility({
   action: 'remove_node',
-  humanControl: 'procgen panel: ✕ on a node card',
+  humanControl: 'detail panel, node card: ✕',
   description: 'Delete a node. Nodes that consumed it are rewired past it where possible.',
   params: { node_id: { kind: 'nodeId', help: NODE_ID_HELP } },
   example: { action: 'remove_node', node_id: 'n1' },
@@ -75,7 +75,7 @@ registerNodeAbility({
 
 registerNodeAbility({
   action: 'move_node',
-  humanControl: 'procgen panel: drag ⠿ to reorder',
+  humanControl: 'detail panel, world: drag ⠿ to reorder',
   description:
     'Reorder a node. Nodes run top to bottom, and a node may only consume earlier nodes.',
   params: {
@@ -93,7 +93,7 @@ registerNodeAbility({
 for (const enabled of [true, false]) {
   registerNodeAbility({
     action: enabled ? 'enable_node' : 'disable_node',
-    humanControl: 'procgen panel: enable checkbox',
+    humanControl: 'detail panel, node card: enable checkbox',
     description: enabled
       ? 'Turn a disabled node back on.'
       : 'Turn a node off without deleting it.',
@@ -109,7 +109,7 @@ for (const enabled of [true, false]) {
 
 registerNodeAbility({
   action: 'rename_node',
-  humanControl: 'procgen panel: node title',
+  humanControl: 'detail panel, node card: node title',
   description: 'Rename a node. Labels are for reading; wiring uses ids.',
   params: {
     node_id: { kind: 'nodeId', help: NODE_ID_HELP },
@@ -127,7 +127,7 @@ registerNodeAbility({
 
 registerNodeAbility({
   action: 'comment_node',
-  humanControl: 'procgen panel: comment row',
+  humanControl: 'detail panel, node card: comment row',
   description: 'Leave a note on a node for whoever edits after you.',
   params: {
     node_id: { kind: 'nodeId', help: NODE_ID_HELP },
@@ -143,7 +143,7 @@ registerNodeAbility({
 
 registerNodeAbility({
   action: 'set_folder',
-  humanControl: 'procgen panel: folder band above a run of nodes',
+  humanControl: 'detail panel, world: folder band above a run of nodes',
   description:
     'Put a node in a named folder. Neighbouring nodes sharing a folder are grouped in the panel.',
   params: {
@@ -161,7 +161,7 @@ registerNodeAbility({
 
 registerNodeAbility({
   action: 'set_param',
-  humanControl: 'procgen panel: knobs',
+  humanControl: 'detail panel, node card: knobs',
   description: "Set one knob. Numbers are clamped to the knob's range; ints are rounded.",
   params: {
     node_id: { kind: 'nodeId', help: NODE_ID_HELP },
@@ -178,7 +178,7 @@ registerNodeAbility({
 
 registerNodeAbility({
   action: 'wire_input',
-  humanControl: 'procgen panel: input (←) dropdowns',
+  humanControl: 'detail panel, node card: input (←) dropdowns',
   description: "Connect a node input to an earlier node's output.",
   params: {
     node_id: { kind: 'nodeId', help: NODE_ID_HELP },
@@ -196,7 +196,7 @@ registerNodeAbility({
 
 registerNodeAbility({
   action: 'set_display',
-  humanControl: 'procgen panel: display section',
+  humanControl: 'detail panel, node card: display section',
   description:
     'Map a node into the world: tile layers stack in list order, ceilings roof the world over, elevation shapes the ground, markers draw glyphs, pieces stamp one piece each, structures reserve points for an assembled building, creatures spawn life, items float loot. Fields you leave out keep their current value when the mode is unchanged.',
   params: {

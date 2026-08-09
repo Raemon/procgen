@@ -6,7 +6,7 @@ import { usePersistedUiValue } from './uiState/usePersistedUiValue';
 import { panelWidthsThatLeaveRoomForWorld } from './panelWidthBudget';
 import { useWindowWidth } from './useWindowWidth';
 
-export type PanelKey = 'assets' | 'procgen' | 'agents' | 'log';
+export type PanelKey = 'library' | 'detail' | 'agents' | 'log';
 
 const MIN_PANEL_WIDTH = 150;
 const MAX_PANEL_WIDTH = 640;
@@ -14,8 +14,8 @@ const HANDLE_WIDTH = 6;
 export const COLLAPSED_PANEL_WIDTH = 30;
 
 const START_WIDTHS: Readonly<Record<PanelKey, number>> = {
-  assets: 240,
-  procgen: 280,
+  library: 240,
+  detail: 300,
   agents: 250,
   log: 270,
 };

@@ -268,6 +268,15 @@ export function checkAbilityDispatch(check: CheckReporter): void {
       !unknown.ok && unknown.code === 'unknown_preset' && unknown.hint.includes('check preset')
     );
   })());
+  check('a save cannot shadow a built-in world or node group, which would make it unreachable', (() => {
+    const nodeIds = abilities.store.nodes().map((node) => node.id);
+    const overExample = act('god', 'save_preset', { name: 'islands & forests' });
+    const overBuiltIn = act('god', 'save_template', { name: 'tectonic plates', node_ids: nodeIds });
+    return (
+      !overExample.ok && overExample.code === 'name_taken' &&
+      !overBuiltIn.ok && overBuiltIn.code === 'name_taken'
+    );
+  })());
   check('a roll can be seeded and undone', (() => {
     const before = JSON.stringify(abilities.store.snapshot());
     const rolled = act('god', 'randomize_sliders', { seed: 42 });

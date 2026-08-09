@@ -3,15 +3,15 @@ import { AgentLogPanel } from '../agents/panel/AgentLogPanel';
 import { AgentLogRail } from '../agents/panel/AgentLogRail';
 import { AgentsPanel } from '../agents/panel/AgentsPanel';
 import { AgentsRail } from '../agents/panel/AgentsRail';
-import { ProcgenPanel } from '../procgen/panel/ProcgenPanel';
-import { ProcgenRail } from '../procgen/panel/ProcgenRail';
-import { AssetsPanel } from '../assets/panel/AssetsPanel';
-import { AssetsRail } from '../assets/panel/AssetsRail';
+import { DetailPanel } from '../library/panel/detail/DetailPanel';
+import { DetailRail } from '../library/panel/DetailRail';
+import { LibraryPanel } from '../library/panel/LibraryPanel';
+import { LibraryRail } from '../library/panel/LibraryRail';
 import {
   AgentLogIcon,
   AgentsIcon,
-  AssetsIcon,
-  ProcgenIcon,
+  DetailIcon,
+  LibraryIcon,
 } from './icons/panelIcons';
 import type { TooltipContent } from './tooltips/tooltipContent';
 import { FloatingTooltip } from './tooltips/FloatingTooltip';
@@ -78,22 +78,22 @@ function visibleColumns(
 ): Column[] {
   const columns: Column[] = [
     {
-      key: 'assets',
-      tip: PANEL_TIPS.assets,
-      title: 'assets',
-      icon: <AssetsIcon />,
+      key: 'library',
+      tip: PANEL_TIPS.library,
+      title: 'asset library',
+      icon: <LibraryIcon />,
       tone: 'bg-panel',
-      body: <AssetsPanel />,
-      rail: <AssetsRail />,
+      body: <LibraryPanel />,
+      rail: <LibraryRail />,
     },
     {
-      key: 'procgen',
-      tip: PANEL_TIPS.procgen,
-      title: 'procgen',
-      icon: <ProcgenIcon />,
+      key: 'detail',
+      tip: PANEL_TIPS.detail,
+      title: 'detail',
+      icon: <DetailIcon />,
       tone: 'bg-procgen',
-      body: <ProcgenPanel />,
-      rail: <ProcgenRail />,
+      body: <DetailPanel />,
+      rail: <DetailRail />,
     },
     {
       key: 'agents',

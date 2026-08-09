@@ -1,0 +1,28 @@
+import { ASSET_KINDS } from '../assets/asset';
+
+export const LIBRARY_FOLDERS = ['worlds', ...ASSET_KINDS, 'groups'] as const;
+
+export type LibraryFolder = (typeof LIBRARY_FOLDERS)[number];
+
+export interface LibrarySelection {
+  folder: LibraryFolder;
+  key: string;
+}
+
+export const CURRENT_WORLD = '';
+
+export const WORLD_SELECTED: LibrarySelection = { folder: 'worlds', key: CURRENT_WORLD };
+
+export function isLibrarySelection(value: unknown): value is LibrarySelection {
+  if (typeof value !== 'object' || value === null) return false;
+  const candidate = value as { folder?: unknown; key?: unknown };
+  return isLibraryFolder(candidate.folder) && typeof candidate.key === 'string';
+}
+
+export function isLibraryFolder(value: unknown): value is LibraryFolder {
+  return LIBRARY_FOLDERS.includes(value as LibraryFolder);
+}
+
+export function selects(selection: LibrarySelection, folder: LibraryFolder, key: string): boolean {
+  return selection.folder === folder && selection.key === key;
+}

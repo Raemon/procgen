@@ -1,20 +1,17 @@
 import { useAppRuntime } from '../../../frontend/appRuntimeContext';
-import { useRerenderOnItemChange } from '../../../frontend/rerenderHooks';
-import { Button } from '../../../frontend/controls/Button';
 import { PanelHint } from '../../../frontend/help/PanelHint';
-import { ItemRow } from './ItemRow';
+import { useRerenderOnItemChange } from '../../../frontend/rerenderHooks';
+import { ItemRow } from '../../../assets/items/editor/ItemRow';
+import { NothingHere } from './NothingHere';
 
-export function ItemsTab() {
-  const { items, perform } = useAppRuntime();
+export function ItemDetail({ id }: { id: number }) {
+  const { items } = useAppRuntime();
   useRerenderOnItemChange();
+  const item = items.all().find((each) => each.id === id);
+  if (!item) return <NothingHere what="item" />;
   return (
     <>
-      {items.all().map((item) => (
-        <ItemRow key={item.id} item={item} />
-      ))}
-      <Button className="mt-2" onClick={() => perform('add_item')}>
-        + add item
-      </Button>
+      <ItemRow key={item.id} item={item} />
       <PanelHint className="mt-2">
         Items are pixel art on a transparent background, drawn either as a thickened billboard —
         standing up or lying flat, its rim painted with the edge color — or wrapped on a floating

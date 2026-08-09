@@ -1,21 +1,17 @@
 import { useAppRuntime } from '../../../frontend/appRuntimeContext';
-import { useRerenderOnCultureChange } from '../../../frontend/rerenderHooks';
-import { Button } from '../../../frontend/controls/Button';
 import { PanelHint } from '../../../frontend/help/PanelHint';
-import { CultureRow } from './CultureRow';
-import { ADD_CULTURE_TIP } from './help/cultureTips';
+import { useRerenderOnCultureChange } from '../../../frontend/rerenderHooks';
+import { CultureRow } from '../../../assets/cultures/editor/CultureRow';
+import { NothingHere } from './NothingHere';
 
-export function CulturesTab() {
-  const { cultures, perform } = useAppRuntime();
+export function CultureDetail({ id }: { id: number }) {
+  const { cultures } = useAppRuntime();
   useRerenderOnCultureChange();
+  const culture = cultures.all().find((each) => each.id === id);
+  if (!culture) return <NothingHere what="culture" />;
   return (
     <>
-      {cultures.all().map((culture) => (
-        <CultureRow key={culture.id} culture={culture} />
-      ))}
-      <Button className="mt-2" tip={ADD_CULTURE_TIP} onClick={() => perform('add_culture')}>
-        + add culture
-      </Button>
+      <CultureRow key={culture.id} culture={culture} />
       <PanelHint className="mt-2">
         A culture is how a village is built: the tiles its walls, roofs and floors are painted
         with, the pieces bound to each building role, and the roof style, story height and window

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { endingIn, filesUnder } from './filesUnder';
 
-const PANEL_SOURCE_ROOTS = ['agents', 'assets', 'frontend', 'procgen', 'world'];
+const PANEL_SOURCE_ROOTS = ['agents', 'assets', 'frontend', 'library', 'procgen', 'world'];
 const NATIVE_TITLE_ATTRIBUTE = /\stitle=[{"]/;
 
 const offenders = PANEL_SOURCE_ROOTS.flatMap((root) => filesUnder(root, endingIn('.tsx'))).filter(

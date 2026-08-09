@@ -14,12 +14,14 @@ const { persistedUiValue, subscribeToPersistedUiValue, writePersistedUiValue } =
   '../frontend/uiState/persistedUiStore'
 );
 const { toggledMembers } = await import('../frontend/uiState/toggledMembers');
+const { isLibrarySelection } = await import('../library/librarySelection');
+type LibrarySelection = import('../library/librarySelection').LibrarySelection;
 const { PERSISTED_UI_KEYS } = await import('../frontend/uiState/persistedUiKeys');
 const { ITEM_PANELS } = await import('../assets/items/editor/itemPanels');
 const { CREATURE_PANELS } = await import('../assets/creatures/editor/creaturePanels');
 const { persistedUiRecordOf } = await import('../frontend/uiState/persistedUiRecordOf');
 
-const ASSET_KINDS = ['tiles', 'pieces', 'creatures'] as const;
+const WORLD_SELECTED: LibrarySelection = { folder: 'worlds', key: '' };
 const ASSET_EDITOR_ROOT = 'assets';
 const DRAWER_STATE_IN_A_BARE_USE_STATE = /const \[[^\]]*(?:open|Open|panel|Panel)[^\]]*\] = useState/;
 const POPUPS_THAT_SHOULD_NOT_SURVIVE_A_RELOAD = ['assets/tiles/editor/SymbolInput.tsx'];
@@ -31,7 +33,7 @@ checkTheNextLoadReadsWhatTheDocHolds();
 checkADocHoldingTheWrongShapeFallsBackToTheDefault();
 checkEveryReaderOfAKeySeesAWrite();
 checkTogglingAMemberAddsThenRemovesIt();
-checkCollapsingEveryCardReplacesWhateverWasCollapsed();
+checkOpeningFoldersReplacesWhateverWasOpen();
 checkForgettingARowLeavesNoPanelEntryBehind();
 checkGuardsAcceptOnlyTheShapesTheUiPersists();
 checkNoAssetEditorKeepsItsOpenDrawerToItself();
@@ -54,10 +56,13 @@ function checkAToggleReachesTheUiStateDoc(): void {
 }
 
 function checkTheNextLoadReadsWhatTheDocHolds(): void {
-  seedUiState({ 'assets.tab': 'creatures', 'panel.widths': { library: 310 } });
+  seedUiState({
+    'library.selection': { folder: 'tiles', key: '3' },
+    'panel.widths': { library: 310 },
+  });
   assert(
-    persistedUiValue('assets.tab', 'tiles', isOneOf(ASSET_KINDS)) === 'creatures',
-    'the tab selected last session is the tab that opens',
+    persistedUiValue('library.selection', WORLD_SELECTED, isLibrarySelection).key === '3',
+    'whatever was selected last session is what the detail panel opens on',
   );
   assert(
     persistedUiValue('panel.widths', {}, isRecordOf(isNumber)).library === 310,
@@ -66,9 +71,9 @@ function checkTheNextLoadReadsWhatTheDocHolds(): void {
 }
 
 function checkADocHoldingTheWrongShapeFallsBackToTheDefault(): void {
-  seedUiState({ 'stale.tab': 'a tab that no longer exists', 'corrupt.widths': 'not a record' });
+  seedUiState({ 'stale.selection': { folder: 'a folder that no longer exists' }, 'corrupt.widths': 'not a record' });
   assert(
-    persistedUiValue('stale.tab', 'tiles', isOneOf(ASSET_KINDS)) === 'tiles',
+    persistedUiValue('stale.selection', WORLD_SELECTED, isLibrarySelection).folder === 'worlds',
     'a stored value that fails its guard is replaced by the default',
   );
   assert(
@@ -79,10 +84,10 @@ function checkADocHoldingTheWrongShapeFallsBackToTheDefault(): void {
 
 function checkEveryReaderOfAKeySeesAWrite(): void {
   let notifications = 0;
-  const unsubscribe = subscribeToPersistedUiValue('collapsedNodeCards', () => (notifications += 1));
-  writePersistedUiValue('collapsedNodeCards', ['n1']);
+  const unsubscribe = subscribeToPersistedUiValue('library.openFolders', () => (notifications += 1));
+  writePersistedUiValue('library.openFolders', ['tiles']);
   unsubscribe();
-  writePersistedUiValue('collapsedNodeCards', ['n1', 'n2']);
+  writePersistedUiValue('library.openFolders', ['tiles', 'pieces']);
   assert(notifications === 1, 'a reader hears about a write until it unsubscribes, and not after');
 }
 
@@ -92,12 +97,12 @@ function checkTogglingAMemberAddsThenRemovesIt(): void {
   assert(toggledMembers(once, 'n1').length === 0, 'toggling the same member off removes it');
 }
 
-function checkCollapsingEveryCardReplacesWhateverWasCollapsed(): void {
-  seedUiState({ collapsedNodeCards: ['n1'] });
-  writePersistedUiValue('collapsedNodeCards', ['n1', 'n2', 'n3']);
+function checkOpeningFoldersReplacesWhateverWasOpen(): void {
+  seedUiState({ 'library.openFolders': ['tiles'] });
+  writePersistedUiValue('library.openFolders', ['tiles', 'pieces', 'groups']);
   assert(
-    JSON.stringify(storedUiState().collapsedNodeCards) === '["n1","n2","n3"]',
-    'collapsing every card stores the whole set rather than merging with the old one',
+    JSON.stringify(storedUiState()['library.openFolders']) === '["tiles","pieces","groups"]',
+    'opening folders stores the whole set rather than merging with the old one',
   );
 }
 
@@ -119,6 +124,10 @@ function checkGuardsAcceptOnlyTheShapesTheUiPersists(): void {
   assert(isBoolean(true) && !isBoolean('true'), 'a boolean guard takes booleans alone');
   assert(isNumberOrNull(null) && isNumberOrNull(3) && !isNumberOrNull('3'), 'a width may be unset');
   assert(isStringArray(['a']) && !isStringArray(['a', 2]), 'a string array holds only strings');
+  assert(
+    isLibrarySelection({ folder: 'worlds', key: 'saved:my archipelago' }) && !isLibrarySelection({ folder: 'nope', key: '' }),
+    'a selection names a folder the library actually has',
+  );
 }
 
 function checkNoAssetEditorKeepsItsOpenDrawerToItself(): void {

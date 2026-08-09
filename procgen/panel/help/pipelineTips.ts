@@ -66,15 +66,3 @@ export const ADD_NODE_TIP: TooltipContent = {
   title: 'add node',
   body: 'Opens the catalogue of node types, grouped by what they produce. A new node lands at the end and wires itself to the nearest matching source.',
 };
-
-export const ADD_TEMPLATE_TIP: TooltipContent = {
-  title: 'add template',
-  body: 'Stamps in a named group of nodes with the wiring between them already made — built-in ones, plus any folder band you have saved yourself.',
-};
-
-export function deleteTemplateTip(name: string): TooltipContent {
-  return {
-    title: `forget ${name}`,
-    body: 'Drops this saved template. Nodes already stamped from it stay exactly where they are.',
-  };
-}

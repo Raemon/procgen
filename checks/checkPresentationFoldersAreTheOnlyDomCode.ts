@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
-const PANEL_ROOTS = ['agents', 'assets', 'procgen', 'world'];
+const PANEL_ROOTS = ['agents', 'assets', 'library', 'procgen', 'world'];
 const HEADLESS_ROOTS = ['abilities', 'api', 'multiplayer', 'server', 'perf'];
 const EVERY_ROOT = [...PANEL_ROOTS, ...HEADLESS_ROOTS, 'frontend', 'checks', 'tools'];
 const PRESENTATION_FOLDER_NAMES = ['panel', 'ui', 'view3d'];
@@ -28,7 +28,7 @@ export function checkPresentationFoldersAreTheOnlyDomCode(
 
   check(
     'every top-level folder is named by this check, so none can drift out of its coverage',
-    EVERY_ROOT.every(existsAsDirectory) && EVERY_ROOT.length === 12,
+    EVERY_ROOT.every(existsAsDirectory) && EVERY_ROOT.length === 13,
   );
 }
 
