@@ -35,6 +35,7 @@ export function StoredWorldDetail({ world }: { world: StoredWorldKey }) {
   }
 
   function deleteThisWorld(): void {
+    if (!window.confirm(`Delete your saved world "${world.name}"?`)) return;
     perform('delete_preset', { name: world.name });
     backToTheWorldBeingEdited();
   }

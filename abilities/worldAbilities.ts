@@ -234,6 +234,12 @@ function presetNames(context: AbilityContext): string[] {
 function savePreset(context: AbilityContext, params: Record<string, unknown>): AbilityResult {
   const name = readText(params, 'name');
   if (!name.ok) return name.failure;
+  if (examplePipelines().some((example) => example.name === name.value)) {
+    return abilityFailed(
+      'name_taken',
+      `'${name.value}' is a built-in example — saving under that name would make it unloadable, so pick another`,
+    );
+  }
   if (context.store.nodes().length === 0) {
     return abilityFailed('empty_pipeline', 'there is nothing to save — the pipeline has no nodes');
   }
@@ -286,6 +292,12 @@ function saveTemplate(context: AbilityContext, params: Record<string, unknown>):
   if (!name.ok) return name.failure;
   const ids = nodeIdsFrom(params);
   if (!ids.ok) return ids.failure;
+  if (context.templates.builtIn().some((builtIn) => builtIn.name === name.value)) {
+    return abilityFailed(
+      'name_taken',
+      `'${name.value}' is a built-in group — saving under that name would make it unreachable, so rename the folder first`,
+    );
+  }
   const nodes = context.store.nodes().filter((node) => ids.value.includes(node.id));
   if (nodes.length !== ids.value.length) {
     return abilityFailed(

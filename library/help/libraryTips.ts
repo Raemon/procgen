@@ -61,7 +61,7 @@ export function deleteWorldTip(name: string): TooltipContent {
 
 export const SEND_BAND_TO_LIBRARY_TIP: TooltipContent = {
   title: 'send to the asset library',
-  body: 'Files this band in the node groups folder as a group you can stamp into any world. Wiring inside the folder is kept; wiring to nodes outside it is left open for the next stamp to fill.',
+  body: 'Files this band in the node groups folder as a group you can stamp into any world, and opens it there. Wiring inside the folder is kept; wiring to nodes outside it is left open for the next stamp to fill.',
 };
 
 export function openFolderTip(folder: string, closedTip: TooltipContent): TooltipContent {

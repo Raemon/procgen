@@ -1,4 +1,4 @@
-import { ASSET_KINDS, type AssetKind } from '../assets/asset';
+import { ASSET_KINDS } from '../assets/asset';
 
 export const LIBRARY_FOLDERS = ['worlds', ...ASSET_KINDS, 'groups'] as const;
 
@@ -21,10 +21,6 @@ export function isLibrarySelection(value: unknown): value is LibrarySelection {
 
 export function isLibraryFolder(value: unknown): value is LibraryFolder {
   return LIBRARY_FOLDERS.includes(value as LibraryFolder);
-}
-
-export function isAssetFolder(folder: LibraryFolder): folder is AssetKind {
-  return ASSET_KINDS.includes(folder as AssetKind);
 }
 
 export function selects(selection: LibrarySelection, folder: LibraryFolder, key: string): boolean {

@@ -80,7 +80,8 @@ function SendToLibraryButton({ run }: { run: NodeRun }) {
       node_ids: run.nodes.map((node) => node.id),
       description: describeRun(run),
     });
-    if (saved.ok) select('groups', run.folder);
+    if (!saved.ok) return window.alert(saved.hint);
+    select('groups', run.folder);
   }
   return (
     <Button className="px-1.5 py-0.5 text-[11px]" tip={SEND_BAND_TO_LIBRARY_TIP} onClick={sendToLibrary}>

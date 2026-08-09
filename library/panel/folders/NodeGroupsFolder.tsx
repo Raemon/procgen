@@ -11,7 +11,8 @@ export function NodeGroupsFolder() {
     (listener) => templates.onChange(listener),
     () => templates.savedTemplates(),
   );
-  const groups = [...templates.builtIn(), ...saved];
+  const builtIn = templates.builtIn();
+  const groups = [...builtIn, ...saved.filter((group) => !isNamedLike(builtIn, group))];
   return (
     <LibraryFolder folder="groups" label="node groups" tip={FOLDER_TIPS.groups} count={groups.length}>
       {groups.map((group) => (
@@ -26,6 +27,10 @@ export function NodeGroupsFolder() {
       ))}
     </LibraryFolder>
   );
+}
+
+function isNamedLike(builtIn: readonly NodeTemplate[], group: NodeTemplate): boolean {
+  return builtIn.some((each) => each.name === group.name);
 }
 
 function summaryOf(group: NodeTemplate): string {
