@@ -3,7 +3,7 @@ import { AgentLogPanel } from '../agents/panel/AgentLogPanel';
 import { AgentLogRail } from '../agents/panel/AgentLogRail';
 import { AgentsPanel } from '../agents/panel/AgentsPanel';
 import { AgentsRail } from '../agents/panel/AgentsRail';
-import { DetailPanel } from '../library/detail/DetailPanel';
+import { DetailPanel } from '../library/panel/detail/DetailPanel';
 import { DetailRail } from '../library/panel/DetailRail';
 import { LibraryPanel } from '../library/panel/LibraryPanel';
 import { LibraryRail } from '../library/panel/LibraryRail';

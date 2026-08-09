@@ -1,12 +1,12 @@
 import { useSyncExternalStore } from 'react';
-import { useAppRuntime } from '../../frontend/appRuntimeContext';
-import { useRerenderOnPipelineChange } from '../../frontend/rerenderHooks';
-import { exampleWorlds } from '../exampleWorlds';
-import { CURRENT_WORLD_TIP, FOLDER_TIPS, savedWorldTip } from '../help/libraryTips';
-import { CURRENT_WORLD } from '../librarySelection';
-import { exampleWorldKey, savedWorldKey } from '../worldKeys';
-import { LibraryFolder } from '../panel/LibraryFolder';
-import { LibraryRow } from '../panel/LibraryRow';
+import { useAppRuntime } from '../../../frontend/appRuntimeContext';
+import { useRerenderOnPipelineChange } from '../../../frontend/rerenderHooks';
+import { exampleWorlds } from '../../exampleWorlds';
+import { CURRENT_WORLD_TIP, FOLDER_TIPS, savedWorldTip } from '../../help/libraryTips';
+import { CURRENT_WORLD } from '../../librarySelection';
+import { exampleWorldKey, savedWorldKey } from '../../worldKeys';
+import { LibraryFolder } from '../LibraryFolder';
+import { LibraryRow } from '../LibraryRow';
 
 export function WorldsFolder() {
   const { store, worldPresets } = useAppRuntime();

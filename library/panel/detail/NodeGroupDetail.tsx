@@ -1,13 +1,13 @@
 import { useSyncExternalStore } from 'react';
-import { useAppRuntime } from '../../frontend/appRuntimeContext';
-import { Button } from '../../frontend/controls/Button';
-import { classes } from '../../frontend/controls/classes';
-import { HINT_CLASSES } from '../../frontend/controls/fieldClasses';
-import { PanelHint } from '../../frontend/help/PanelHint';
-import type { NodeTemplate } from '../../procgen/templates/nodeTemplate';
-import { scrollNodeCardIntoView } from '../../procgen/panel/scrollNodeCardIntoView';
-import { forgetGroupTip, stampGroupTip } from '../help/libraryTips';
-import { WORLD_SELECTED } from '../librarySelection';
+import { useAppRuntime } from '../../../frontend/appRuntimeContext';
+import { Button } from '../../../frontend/controls/Button';
+import { classes } from '../../../frontend/controls/classes';
+import { HINT_CLASSES } from '../../../frontend/controls/fieldClasses';
+import { PanelHint } from '../../../frontend/help/PanelHint';
+import type { NodeTemplate } from '../../../procgen/templates/nodeTemplate';
+import { scrollNodeCardIntoView } from '../../../procgen/panel/scrollNodeCardIntoView';
+import { forgetGroupTip, stampGroupTip } from '../../help/libraryTips';
+import { WORLD_SELECTED } from '../../librarySelection';
 import { useLibrarySelection } from '../useLibrarySelection';
 import { NothingHere } from './NothingHere';
 

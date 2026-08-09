@@ -4,7 +4,7 @@ import type { TooltipContent } from '../../frontend/tooltips/tooltipContent';
 import { tooltipHandlers } from '../../frontend/tooltips/tooltipHandlers';
 import type { LibraryFolder } from '../librarySelection';
 import { selects } from '../librarySelection';
-import { useLibrarySelection } from '../useLibrarySelection';
+import { useLibrarySelection } from './useLibrarySelection';
 
 export function LibraryRow({
   folder,

@@ -5,7 +5,7 @@ import { classes } from '../../frontend/controls/classes';
 import { FOLDER_HOVER_GROUP, REVEALED_ON_FOLDER_HOVER } from '../../frontend/controls/revealOnRowHover';
 import { tooltipHandlers } from '../../frontend/tooltips/tooltipHandlers';
 import { SEND_BAND_TO_LIBRARY_TIP } from '../../library/help/libraryTips';
-import { useLibrarySelection } from '../../library/useLibrarySelection';
+import { useLibrarySelection } from '../../library/panel/useLibrarySelection';
 import { collapseFolderTip, FOLDER_NAME_TIP, UNGROUP_TIP } from './help/nodeCardTips';
 import type { NodeRun } from './nodeFolderRuns';
 

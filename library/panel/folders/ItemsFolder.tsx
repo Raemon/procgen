@@ -1,10 +1,10 @@
-import { useAppRuntime } from '../../frontend/appRuntimeContext';
-import { useRerenderOnItemChange } from '../../frontend/rerenderHooks';
-import { Button } from '../../frontend/controls/Button';
-import { renderLabel } from '../../assets/items/itemDef';
-import { ADD_ITEM_TIP, FOLDER_TIPS } from '../help/libraryTips';
-import { LibraryFolder } from '../panel/LibraryFolder';
-import { LibraryRow } from '../panel/LibraryRow';
+import { useAppRuntime } from '../../../frontend/appRuntimeContext';
+import { useRerenderOnItemChange } from '../../../frontend/rerenderHooks';
+import { Button } from '../../../frontend/controls/Button';
+import { renderLabel } from '../../../assets/items/itemDef';
+import { ADD_ITEM_TIP, FOLDER_TIPS } from '../../help/libraryTips';
+import { LibraryFolder } from '../LibraryFolder';
+import { LibraryRow } from '../LibraryRow';
 import { useLibrarySelection } from '../useLibrarySelection';
 
 export function ItemsFolder() {

@@ -1,11 +1,11 @@
 import { PanelHint } from '../../frontend/help/PanelHint';
-import { CreatureKindFolder } from '../folders/CreatureKindFolder';
-import { CulturesFolder } from '../folders/CulturesFolder';
-import { ItemsFolder } from '../folders/ItemsFolder';
-import { NodeGroupsFolder } from '../folders/NodeGroupsFolder';
-import { PiecesFolder } from '../folders/PiecesFolder';
-import { TilesFolder } from '../folders/TilesFolder';
-import { WorldsFolder } from '../folders/WorldsFolder';
+import { CreatureKindFolder } from './folders/CreatureKindFolder';
+import { CulturesFolder } from './folders/CulturesFolder';
+import { ItemsFolder } from './folders/ItemsFolder';
+import { NodeGroupsFolder } from './folders/NodeGroupsFolder';
+import { PiecesFolder } from './folders/PiecesFolder';
+import { TilesFolder } from './folders/TilesFolder';
+import { WorldsFolder } from './folders/WorldsFolder';
 
 export function LibraryPanel() {
   return (

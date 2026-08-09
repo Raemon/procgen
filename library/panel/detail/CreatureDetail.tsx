@@ -1,7 +1,7 @@
-import { useAppRuntime } from '../../frontend/appRuntimeContext';
-import { PanelHint } from '../../frontend/help/PanelHint';
-import { useRerenderOnCreatureChange } from '../../frontend/rerenderHooks';
-import { CreatureRow } from '../../assets/creatures/editor/CreatureRow';
+import { useAppRuntime } from '../../../frontend/appRuntimeContext';
+import { PanelHint } from '../../../frontend/help/PanelHint';
+import { useRerenderOnCreatureChange } from '../../../frontend/rerenderHooks';
+import { CreatureRow } from '../../../assets/creatures/editor/CreatureRow';
 import { NothingHere } from './NothingHere';
 
 export function CreatureDetail({ id, character }: { id: number; character: boolean }) {
@@ -11,7 +11,7 @@ export function CreatureDetail({ id, character }: { id: number; character: boole
   if (!creature) return <NothingHere what={character ? 'character' : 'creature'} />;
   return (
     <>
-      <CreatureRow creature={creature} />
+      <CreatureRow key={creature.id} creature={creature} />
       {character ? <CharacterHint /> : <CreatureHint />}
     </>
   );

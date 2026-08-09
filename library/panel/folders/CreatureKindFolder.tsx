@@ -1,10 +1,10 @@
-import { useAppRuntime } from '../../frontend/appRuntimeContext';
-import { useRerenderOnCreatureChange } from '../../frontend/rerenderHooks';
-import { Button } from '../../frontend/controls/Button';
-import { isCharacter } from '../../assets/creatures/creatureDef';
-import { ADD_CHARACTER_TIP, ADD_CREATURE_TIP, FOLDER_TIPS } from '../help/libraryTips';
-import { LibraryFolder } from '../panel/LibraryFolder';
-import { LibraryRow } from '../panel/LibraryRow';
+import { useAppRuntime } from '../../../frontend/appRuntimeContext';
+import { useRerenderOnCreatureChange } from '../../../frontend/rerenderHooks';
+import { Button } from '../../../frontend/controls/Button';
+import { isCharacter } from '../../../assets/creatures/creatureDef';
+import { ADD_CHARACTER_TIP, ADD_CREATURE_TIP, FOLDER_TIPS } from '../../help/libraryTips';
+import { LibraryFolder } from '../LibraryFolder';
+import { LibraryRow } from '../LibraryRow';
 import { useLibrarySelection } from '../useLibrarySelection';
 
 export function CreatureKindFolder({ folder }: { folder: 'creatures' | 'characters' }) {

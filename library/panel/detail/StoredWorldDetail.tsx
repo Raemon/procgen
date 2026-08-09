@@ -1,28 +1,42 @@
-import { useAppRuntime } from '../../frontend/appRuntimeContext';
-import { Button } from '../../frontend/controls/Button';
-import { classes } from '../../frontend/controls/classes';
-import { HINT_CLASSES } from '../../frontend/controls/fieldClasses';
-import { PanelHint } from '../../frontend/help/PanelHint';
-import { exampleWorlds } from '../exampleWorlds';
-import type { PipelineState } from '../../procgen/pipeline/pipelineState';
-import { deleteWorldTip, loadWorldTip } from '../help/libraryTips';
-import { WORLD_SELECTED } from '../librarySelection';
+import { useSyncExternalStore } from 'react';
+import { useAppRuntime } from '../../../frontend/appRuntimeContext';
+import { Button } from '../../../frontend/controls/Button';
+import { classes } from '../../../frontend/controls/classes';
+import { HINT_CLASSES } from '../../../frontend/controls/fieldClasses';
+import { PanelHint } from '../../../frontend/help/PanelHint';
+import { exampleWorlds } from '../../exampleWorlds';
+import type { PipelineState } from '../../../procgen/pipeline/pipelineState';
+import { deleteWorldTip, loadWorldTip } from '../../help/libraryTips';
+import { WORLD_SELECTED } from '../../librarySelection';
 import { useLibrarySelection } from '../useLibrarySelection';
-import type { StoredWorldKey } from '../worldKeys';
+import type { StoredWorldKey } from '../../worldKeys';
 import { NothingHere } from './NothingHere';
 
 export function StoredWorldDetail({ world }: { world: StoredWorldKey }) {
   const { worldPresets, perform } = useAppRuntime();
   const [, select] = useLibrarySelection();
+  const saved = useSyncExternalStore(
+    (listener) => worldPresets.onChange(listener),
+    () => worldPresets.savedPresets(),
+  );
   const stored = world.saved
-    ? worldPresets.byName(world.name)
+    ? saved.find((preset) => preset.name === world.name)
     : exampleWorlds().find((example) => example.name === world.name);
   if (!stored) return <NothingHere what="world" />;
+
+  function backToTheWorldBeingEdited(): void {
+    select(WORLD_SELECTED.folder, WORLD_SELECTED.key);
+  }
 
   function loadIntoTheEditor(): void {
     if (!window.confirm('Replace the current pipeline?')) return;
     perform('load_preset', { name: world.name });
-    select(WORLD_SELECTED.folder, WORLD_SELECTED.key);
+    backToTheWorldBeingEdited();
+  }
+
+  function deleteThisWorld(): void {
+    perform('delete_preset', { name: world.name });
+    backToTheWorldBeingEdited();
   }
 
   return (
@@ -38,7 +52,7 @@ export function StoredWorldDetail({ world }: { world: StoredWorldKey }) {
           <Button
             className="hover:border-danger-edge hover:text-danger-ink"
             tip={deleteWorldTip(stored.name)}
-            onClick={() => perform('delete_preset', { name: world.name })}
+            onClick={deleteThisWorld}
           >
             ✕
           </Button>

@@ -1,7 +1,7 @@
-import { useAppRuntime } from '../../frontend/appRuntimeContext';
-import { PanelHint } from '../../frontend/help/PanelHint';
-import { useRerenderOnCultureChange } from '../../frontend/rerenderHooks';
-import { CultureRow } from '../../assets/cultures/editor/CultureRow';
+import { useAppRuntime } from '../../../frontend/appRuntimeContext';
+import { PanelHint } from '../../../frontend/help/PanelHint';
+import { useRerenderOnCultureChange } from '../../../frontend/rerenderHooks';
+import { CultureRow } from '../../../assets/cultures/editor/CultureRow';
 import { NothingHere } from './NothingHere';
 
 export function CultureDetail({ id }: { id: number }) {
@@ -11,7 +11,7 @@ export function CultureDetail({ id }: { id: number }) {
   if (!culture) return <NothingHere what="culture" />;
   return (
     <>
-      <CultureRow culture={culture} />
+      <CultureRow key={culture.id} culture={culture} />
       <PanelHint className="mt-2">
         A culture is how a village is built: the tiles its walls, roofs and floors are painted
         with, the pieces bound to each building role, and the roof style, story height and window

@@ -1,6 +1,6 @@
-import type { LibrarySelection } from '../librarySelection';
+import type { LibrarySelection } from '../../librarySelection';
 import { useLibrarySelection } from '../useLibrarySelection';
-import { storedWorldOf } from '../worldKeys';
+import { storedWorldOf } from '../../worldKeys';
 import { CreatureDetail } from './CreatureDetail';
 import { CultureDetail } from './CultureDetail';
 import { CurrentWorldDetail } from './CurrentWorldDetail';

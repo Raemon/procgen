@@ -1,11 +1,11 @@
-import { useAppRuntime } from '../../frontend/appRuntimeContext';
-import { useRerenderOnCultureChange } from '../../frontend/rerenderHooks';
-import { Button } from '../../frontend/controls/Button';
-import { PIECE_ROLES } from '../../assets/pieces/pieceDef';
-import { piecesBoundToRole, type Culture } from '../../assets/cultures/cultureDef';
-import { ADD_CULTURE_TIP, FOLDER_TIPS } from '../help/libraryTips';
-import { LibraryFolder } from '../panel/LibraryFolder';
-import { LibraryRow } from '../panel/LibraryRow';
+import { useAppRuntime } from '../../../frontend/appRuntimeContext';
+import { useRerenderOnCultureChange } from '../../../frontend/rerenderHooks';
+import { Button } from '../../../frontend/controls/Button';
+import { PIECE_ROLES } from '../../../assets/pieces/pieceDef';
+import { piecesBoundToRole, type Culture } from '../../../assets/cultures/cultureDef';
+import { ADD_CULTURE_TIP, FOLDER_TIPS } from '../../help/libraryTips';
+import { LibraryFolder } from '../LibraryFolder';
+import { LibraryRow } from '../LibraryRow';
 import { useLibrarySelection } from '../useLibrarySelection';
 
 export function CulturesFolder() {

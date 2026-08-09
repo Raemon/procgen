@@ -1,4 +1,4 @@
-import { HINT_CLASSES } from '../../frontend/controls/fieldClasses';
+import { HINT_CLASSES } from '../../../frontend/controls/fieldClasses';
 
 export function NothingHere({ what }: { what: string }) {
   return (

@@ -1,9 +1,9 @@
 import { useSyncExternalStore } from 'react';
-import { useAppRuntime } from '../../frontend/appRuntimeContext';
-import type { NodeTemplate } from '../../procgen/templates/nodeTemplate';
-import { FOLDER_TIPS } from '../help/libraryTips';
-import { LibraryFolder } from '../panel/LibraryFolder';
-import { LibraryRow } from '../panel/LibraryRow';
+import { useAppRuntime } from '../../../frontend/appRuntimeContext';
+import type { NodeTemplate } from '../../../procgen/templates/nodeTemplate';
+import { FOLDER_TIPS } from '../../help/libraryTips';
+import { LibraryFolder } from '../LibraryFolder';
+import { LibraryRow } from '../LibraryRow';
 
 export function NodeGroupsFolder() {
   const { templates } = useAppRuntime();

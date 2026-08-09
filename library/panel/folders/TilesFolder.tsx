@@ -1,10 +1,10 @@
-import { useAppRuntime } from '../../frontend/appRuntimeContext';
-import { useRerenderOnTileAssetChange } from '../../frontend/rerenderHooks';
-import { Button } from '../../frontend/controls/Button';
-import { ADD_TILE_TIP } from '../../assets/tiles/editor/help/tileTips';
-import { FOLDER_TIPS } from '../help/libraryTips';
-import { LibraryFolder } from '../panel/LibraryFolder';
-import { LibraryRow } from '../panel/LibraryRow';
+import { useAppRuntime } from '../../../frontend/appRuntimeContext';
+import { useRerenderOnTileAssetChange } from '../../../frontend/rerenderHooks';
+import { Button } from '../../../frontend/controls/Button';
+import { ADD_TILE_TIP } from '../../../assets/tiles/editor/help/tileTips';
+import { FOLDER_TIPS } from '../../help/libraryTips';
+import { LibraryFolder } from '../LibraryFolder';
+import { LibraryRow } from '../LibraryRow';
 import { useLibrarySelection } from '../useLibrarySelection';
 
 export function TilesFolder() {

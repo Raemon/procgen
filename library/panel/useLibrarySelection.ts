@@ -1,12 +1,12 @@
 import { useCallback } from 'react';
-import { PERSISTED_UI_KEYS } from '../frontend/uiState/persistedUiKeys';
-import { usePersistedUiValue } from '../frontend/uiState/usePersistedUiValue';
+import { PERSISTED_UI_KEYS } from '../../frontend/uiState/persistedUiKeys';
+import { usePersistedUiValue } from '../../frontend/uiState/usePersistedUiValue';
 import {
   isLibrarySelection,
   WORLD_SELECTED,
   type LibraryFolder,
   type LibrarySelection,
-} from './librarySelection';
+} from '../librarySelection';
 
 export function useLibrarySelection(): [LibrarySelection, (folder: LibraryFolder, key: string) => void] {
   const [selection, setSelection] = usePersistedUiValue<LibrarySelection>(

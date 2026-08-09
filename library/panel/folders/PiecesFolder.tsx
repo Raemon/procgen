@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
-import { useAppRuntime } from '../../frontend/appRuntimeContext';
-import { useRerenderOnPieceChange } from '../../frontend/rerenderHooks';
-import { Button } from '../../frontend/controls/Button';
-import { ADD_PIECE_TIP } from '../../assets/pieces/editor/help/pieceTips';
-import { FOLDER_TIPS } from '../help/libraryTips';
-import { LibraryFolder } from '../panel/LibraryFolder';
-import { LibraryRow } from '../panel/LibraryRow';
+import { useAppRuntime } from '../../../frontend/appRuntimeContext';
+import { useRerenderOnPieceChange } from '../../../frontend/rerenderHooks';
+import { Button } from '../../../frontend/controls/Button';
+import { ADD_PIECE_TIP } from '../../../assets/pieces/editor/help/pieceTips';
+import { FOLDER_TIPS } from '../../help/libraryTips';
+import { LibraryFolder } from '../LibraryFolder';
+import { LibraryRow } from '../LibraryRow';
 import { useLibrarySelection } from '../useLibrarySelection';
 
 export function PiecesFolder() {

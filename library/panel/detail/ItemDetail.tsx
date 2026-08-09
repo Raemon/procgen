@@ -1,7 +1,7 @@
-import { useAppRuntime } from '../../frontend/appRuntimeContext';
-import { PanelHint } from '../../frontend/help/PanelHint';
-import { useRerenderOnItemChange } from '../../frontend/rerenderHooks';
-import { ItemRow } from '../../assets/items/editor/ItemRow';
+import { useAppRuntime } from '../../../frontend/appRuntimeContext';
+import { PanelHint } from '../../../frontend/help/PanelHint';
+import { useRerenderOnItemChange } from '../../../frontend/rerenderHooks';
+import { ItemRow } from '../../../assets/items/editor/ItemRow';
 import { NothingHere } from './NothingHere';
 
 export function ItemDetail({ id }: { id: number }) {
@@ -11,7 +11,7 @@ export function ItemDetail({ id }: { id: number }) {
   if (!item) return <NothingHere what="item" />;
   return (
     <>
-      <ItemRow item={item} />
+      <ItemRow key={item.id} item={item} />
       <PanelHint className="mt-2">
         Items are pixel art on a transparent background, drawn either as a thickened billboard —
         standing up or lying flat, its rim painted with the edge color — or wrapped on a floating

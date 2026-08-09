@@ -1,6 +1,8 @@
 import { RailItem, RailStack } from '../../frontend/collapsedRail/RailItem';
 import { railInitials } from '../../frontend/collapsedRail/railInitials';
-import { useLibrarySelection } from '../useLibrarySelection';
+import { CURRENT_WORLD, type LibrarySelection } from '../librarySelection';
+import { storedWorldOf } from '../worldKeys';
+import { useLibrarySelection } from './useLibrarySelection';
 
 export function DetailRail() {
   const [selection] = useLibrarySelection();
@@ -9,14 +11,18 @@ export function DetailRail() {
       <RailItem
         tip={{
           title: selection.folder,
-          body:
-            selection.key === ''
-              ? 'The world settings are open in the detail column.'
-              : `“${selection.key}” is open in the detail column.`,
+          body: `${nameOf(selection)} is open in the detail column.`,
         }}
       >
         {railInitials(selection.folder)}
       </RailItem>
     </RailStack>
   );
+}
+
+function nameOf(selection: LibrarySelection): string {
+  if (selection.folder !== 'worlds') return `“${selection.key}”`;
+  const stored = storedWorldOf(selection.key);
+  if (stored) return `“${stored.name}”`;
+  return selection.key === CURRENT_WORLD ? 'the world you are editing' : `“${selection.key}”`;
 }
