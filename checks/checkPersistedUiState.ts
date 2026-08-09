@@ -17,11 +17,13 @@ const { toggledMembers } = await import('../frontend/uiState/toggledMembers');
 const { PERSISTED_UI_KEYS } = await import('../frontend/uiState/persistedUiKeys');
 const { ITEM_PANELS } = await import('../assets/items/editor/itemPanels');
 const { CREATURE_PANELS } = await import('../assets/creatures/editor/creaturePanels');
+const { persistedUiRecordOf } = await import('../frontend/uiState/persistedUiRecordOf');
 
 const ASSET_KINDS = ['tiles', 'pieces', 'creatures'] as const;
 const ASSET_EDITOR_ROOT = 'assets';
 const DRAWER_STATE_IN_A_BARE_USE_STATE = /const \[[^\]]*(?:open|Open|panel|Panel)[^\]]*\] = useState/;
 const POPUPS_THAT_SHOULD_NOT_SURVIVE_A_RELOAD = ['assets/tiles/editor/SymbolInput.tsx'];
+const CULTURE_PANELS = ['none', 'tiles', 'proportions', 'pieces'] as const;
 
 checkAToggleReachesTheUiStateDoc();
 checkTheNextLoadReadsWhatTheDocHolds();
@@ -29,6 +31,7 @@ checkADocHoldingTheWrongShapeFallsBackToTheDefault();
 checkEveryReaderOfAKeySeesAWrite();
 checkTogglingAMemberAddsThenRemovesIt();
 checkCollapsingEveryCardReplacesWhateverWasCollapsed();
+checkForgettingARowLeavesNoPanelEntryBehind();
 checkGuardsAcceptOnlyTheShapesTheUiPersists();
 checkNoAssetEditorKeepsItsOpenDrawerToItself();
 checkTheOpenItemPanelSurvivesTheNextLoad();
@@ -93,6 +96,20 @@ function checkCollapsingEveryCardReplacesWhateverWasCollapsed(): void {
   assert(
     JSON.stringify(storedUiState().collapsedNodeCards) === '["n1","n2","n3"]',
     'collapsing every card stores the whole set rather than merging with the old one',
+  );
+}
+
+function checkForgettingARowLeavesNoPanelEntryBehind(): void {
+  const key = 'assets.openRowPanels';
+  seedUiState({ [key]: { '3': 'tiles', '4': 'proportions' } });
+  const panels = persistedUiRecordOf(
+    persistedUiValue(key, {}, isRecordOf(isOneOf(CULTURE_PANELS))),
+    (next) => writePersistedUiValue(key, next),
+  );
+  panels.forget('3');
+  assert(
+    JSON.stringify(storedUiState()[key]) === '{"4":"proportions"}',
+    'deleting a row forgets its open panel, so a row later handed the same id does not inherit it',
   );
 }
 

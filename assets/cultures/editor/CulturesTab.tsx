@@ -3,6 +3,7 @@ import { useRerenderOnCultureChange } from '../../../frontend/rerenderHooks';
 import { Button } from '../../../frontend/controls/Button';
 import { PanelHint } from '../../../frontend/help/PanelHint';
 import { CultureRow } from './CultureRow';
+import { ADD_CULTURE_TIP } from './help/cultureTips';
 
 export function CulturesTab() {
   const { cultures, perform } = useAppRuntime();
@@ -12,7 +13,7 @@ export function CulturesTab() {
       {cultures.all().map((culture) => (
         <CultureRow key={culture.id} culture={culture} />
       ))}
-      <Button className="mt-2" onClick={() => perform('add_culture')}>
+      <Button className="mt-2" tip={ADD_CULTURE_TIP} onClick={() => perform('add_culture')}>
         + add culture
       </Button>
       <PanelHint className="mt-2">

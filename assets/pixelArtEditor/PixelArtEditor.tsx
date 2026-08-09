@@ -1,4 +1,5 @@
 import { FLAT_HEIGHT_INK } from '../tiles/faceArtHeight';
+import { DrawerPanel } from '../../frontend/controls/DrawerPanel';
 import type { CubeFace, CubeFaceArt } from '../tiles/tileFaceArt';
 import { FaceTabs } from './FaceTabs';
 import { FrameStrip } from './FrameStrip';
@@ -26,7 +27,7 @@ export function PixelArtEditor({
   const canvasBase = editor.settings.layer === 'height' ? FLAT_HEIGHT_INK : baseColor;
   const stillPicture = Boolean(lockedFace);
   return (
-    <div className="mt-1.5 rounded border border-art-edge bg-art-panel p-2">
+    <DrawerPanel>
       {!stillPicture && (
         <div className="mb-1.5 flex flex-wrap items-center gap-1">
           <FaceTabs
@@ -53,6 +54,6 @@ export function PixelArtEditor({
           onShift={editor.shiftFace}
         />
       </div>
-    </div>
+    </DrawerPanel>
   );
 }

@@ -6,7 +6,7 @@ import { Slider } from '../../frontend/controls/Slider';
 import { ValueReadout } from '../../frontend/controls/ValueReadout';
 import { CodeParam } from './CodeParam';
 import { paramTooltip } from './help/paramTooltip';
-import { tileSelectOptions } from './tileSelectOptions';
+import { tileSelectOptions } from '../../frontend/controls/tileSelectOptions';
 
 export interface ParamRowProps {
   spec: ParamSpec;

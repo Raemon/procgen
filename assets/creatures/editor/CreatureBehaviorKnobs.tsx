@@ -1,6 +1,7 @@
 import { useAppRuntime } from '../../../frontend/appRuntimeContext';
 import { BEHAVIOR_CHOICES } from '../behaviorKinds';
 import type { CreatureDef } from '../creatureDef';
+import { DrawerPanel } from '../../../frontend/controls/DrawerPanel';
 import { KnobRow } from '../../../frontend/controls/KnobRow';
 import { Select } from '../../../frontend/controls/Select';
 import { Slider } from '../../../frontend/controls/Slider';
@@ -57,7 +58,7 @@ export function CreatureBehaviorKnobs({ creature }: { creature: CreatureDef }) {
   const setKnob = (patch: Record<string, number>) =>
     perform('update_creature', { creature_id: creature.id, ...patch });
   return (
-    <div className="mt-1.5 rounded border border-art-edge bg-art-panel p-2">
+    <DrawerPanel>
       <KnobRow label="behavior" tip={behaviorTooltip()}>
         <Select
           value={String(creature.behavior)}
@@ -94,7 +95,7 @@ export function CreatureBehaviorKnobs({ creature }: { creature: CreatureDef }) {
           onChange={(event) => setKnob({ phasing: event.target.checked ? 1 : 0 })}
         />
       </KnobRow>
-    </div>
+    </DrawerPanel>
   );
 }
 

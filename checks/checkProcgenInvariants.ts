@@ -34,6 +34,7 @@ import { checkTileArtStorageInvariants } from './checkTileArtStorageInvariants';
 import { checkGeneratedAssetInvariants } from './checkGeneratedAssetInvariants';
 import { checkPieceInvariants } from './checkPieceInvariants';
 import { checkVillageInvariants } from './checkVillageInvariants';
+import { checkCultureEditing } from './checkCultureEditing';
 import { checkShapedTileInvariants } from './checkShapedTileInvariants';
 import { checkMarkerBillboardInvariants } from './checkMarkerBillboardInvariants';
 import { checkPresentationFoldersAreTheOnlyDomCode } from './checkPresentationFoldersAreTheOnlyDomCode';
@@ -82,6 +83,7 @@ describe('shaped tiles and per-voxel facing', () => checkShapedTileInvariants(ch
 describe('scattered prop billboards', () => checkMarkerBillboardInvariants(check));
 describe('pieces', () => checkPieceInvariants(check));
 describe('villages', () => checkVillageInvariants(check));
+describe('the cultures editor', () => checkCultureEditing(check));
 describe('generated asset kits', () => checkGeneratedAssetInvariants(check));
 describe('the dom boundary', () => checkPresentationFoldersAreTheOnlyDomCode(check));
 describe('documentation', () => {
