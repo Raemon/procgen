@@ -13,8 +13,6 @@ import {
 } from './protocol';
 import { Backoff } from './backoff';
 
-const TOKEN_STORAGE_KEY = 'procgen.netToken.v1';
-
 export type NetStatus = 'connecting' | 'online' | 'reconnecting' | 'kicked';
 
 export interface NetHandlers {
@@ -31,13 +29,11 @@ export class NetClient {
   private ws: WebSocket | null = null;
   private readonly backoff = new Backoff();
   private reconnectTimer = 0;
-  private name = '';
   private closedByUser = false;
 
   constructor(private readonly handlers: NetHandlers) {}
 
-  connect(name: string): void {
-    this.name = name;
+  connect(): void {
     this.closedByUser = false;
     this.open();
   }
@@ -89,9 +85,7 @@ export class NetClient {
 
   private sendHello(ws: WebSocket): void {
     this.backoff.reset();
-    const hello: HelloMsg = { t: 'hello', v: PROTOCOL_VERSION, name: this.name };
-    const token = localStorage.getItem(TOKEN_STORAGE_KEY);
-    if (token) hello.token = token;
+    const hello: HelloMsg = { t: 'hello', v: PROTOCOL_VERSION };
     ws.send(encodeClient(hello));
   }
 
@@ -108,7 +102,6 @@ export class NetClient {
   }
 
   private acceptWelcome(msg: WelcomeMsg): void {
-    localStorage.setItem(TOKEN_STORAGE_KEY, msg.token);
     this.handlers.onStatus('online');
     this.handlers.onWelcome(msg);
   }

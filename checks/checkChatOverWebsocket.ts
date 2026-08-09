@@ -9,13 +9,20 @@ const SETTLE_MS = 400;
 void main();
 
 async function main(): Promise<void> {
+  if (!process.env.DATABASE_URL) {
+    console.error(
+      'this check starts a real server, which needs DATABASE_URL: point it at a Postgres and run `npx prisma db push` first',
+    );
+    process.exit(1);
+  }
   const server = startServer();
   try {
     await waitForHealth();
     await checkSpeechReachesEveryone();
     await checkBlankAndOversizedTextAreCleaned();
     await checkFloodIsThrottled();
-    console.log('chat over websocket: all checks passed');
+    await checkTheSessionCookieBringsYouBackAsTheSameCharacter();
+    console.log('websocket sessions and chat: all checks passed');
   } finally {
     server.kill('SIGTERM');
   }
@@ -45,7 +52,7 @@ async function serverIsAnswering(): Promise<boolean> {
 }
 
 async function checkSpeechReachesEveryone(): Promise<void> {
-  const [speaker, listener] = await Promise.all([joinedClient('speaker'), joinedClient('listener')]);
+  const [speaker, listener] = await Promise.all([joinedClient(), joinedClient()]);
   speaker.say('hello neighbours');
   await delay(SETTLE_MS);
   assert(speaker.said.length === 1, 'the speaker hears its own line echoed back by the server');
@@ -57,7 +64,7 @@ async function checkSpeechReachesEveryone(): Promise<void> {
 }
 
 async function checkBlankAndOversizedTextAreCleaned(): Promise<void> {
-  const client = await joinedClient('scrubbed');
+  const client = await joinedClient();
   client.say('   \n\t  ');
   client.say('a\u0007b');
   client.say('x '.repeat(400));
@@ -69,7 +76,7 @@ async function checkBlankAndOversizedTextAreCleaned(): Promise<void> {
 }
 
 async function checkFloodIsThrottled(): Promise<void> {
-  const client = await joinedClient('flooder');
+  const client = await joinedClient();
   for (let i = 0; i < 12; i++) client.say(`spam ${i}`);
   await delay(SETTLE_MS);
   assert(client.said.length === 3, `a burst is capped at 3 lines, got ${client.said.length}`);
@@ -80,18 +87,43 @@ async function checkFloodIsThrottled(): Promise<void> {
 interface ChatClient {
   socket: WebSocket;
   entityId: number;
+  setCookie: string[] | undefined;
   said: SaidMsg[];
   say(text: string): void;
   close(): void;
 }
 
-async function joinedClient(name: string): Promise<ChatClient> {
-  const socket = new WebSocket(`ws://localhost:${PORT}/ws`);
+async function checkTheSessionCookieBringsYouBackAsTheSameCharacter(): Promise<void> {
+  const first = await joinedClient();
+  const cookie = sessionCookieOf(first);
+  assert(cookie !== '', 'the handshake hands a fresh visitor a session cookie');
+  const resumed = await joinedClient(cookie);
+  assert(
+    resumed.entityId === first.entityId,
+    'reconnecting with the session cookie comes back as the same character',
+  );
+  const stranger = await joinedClient();
+  assert(
+    stranger.entityId !== first.entityId,
+    'a visitor with no cookie of their own is somebody else',
+  );
+  for (const client of [resumed, stranger]) client.close();
+}
+
+function sessionCookieOf(client: ChatClient): string {
+  const header = (client.setCookie ?? []).find((line) => line.startsWith('procgenSession='));
+  return header ? header.split(';')[0]! : '';
+}
+
+async function joinedClient(cookie = ''): Promise<ChatClient> {
+  const socket = new WebSocket(`ws://localhost:${PORT}/ws`, { headers: { cookie } });
   const said: SaidMsg[] = [];
   let entityId = 0;
+  let setCookie: string[] | undefined;
+  socket.on('upgrade', (res) => (setCookie = res.headers['set-cookie']));
   await new Promise<void>((resolve, reject) => {
     socket.on('error', reject);
-    socket.on('open', () => socket.send(encodeClient({ t: 'hello', v: PROTOCOL_VERSION, name })));
+    socket.on('open', () => socket.send(encodeClient({ t: 'hello', v: PROTOCOL_VERSION })));
     socket.on('message', (data: Buffer) => {
       const msg = decodeServer(data.toString());
       if (!msg || Array.isArray(msg)) return;
@@ -105,6 +137,9 @@ async function joinedClient(name: string): Promise<ChatClient> {
   return {
     socket,
     said,
+    get setCookie() {
+      return setCookie;
+    },
     get entityId() {
       return entityId;
     },

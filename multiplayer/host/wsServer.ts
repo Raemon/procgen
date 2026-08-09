@@ -19,6 +19,11 @@ import {
 import { turnedFacing } from '../../world/facing';
 import { joinConnection, leaveConnection } from '../game/joins';
 import { Connection } from './connection';
+import {
+  characterIdOfRequest,
+  mintCharacterId,
+  sessionCookieHeaderFor,
+} from './sessionCookie';
 import { takeSayAllowance } from './sayAllowance';
 import type { WsDeps } from './wsDeps';
 
@@ -28,13 +33,21 @@ const MAX_INPUT_VIOLATIONS = 100;
 
 export function attachWebSocket(httpServer: Server, deps: WsDeps): () => void {
   const wss = new WebSocketServer({ noServer: true });
+  const freshlyMinted = new WeakMap<object, string>();
+  wss.on('headers', (headers, req) => {
+    const minted = freshlyMinted.get(req);
+    if (minted) headers.push(sessionCookieHeaderFor(deps.config.serverSecret, minted));
+  });
   httpServer.on('upgrade', (req, socket, head) => {
     const url = new URL(req.url ?? '/', 'http://localhost');
     if (url.pathname !== '/ws') {
       socket.destroy();
       return;
     }
-    wss.handleUpgrade(req, socket, head, (ws) => acceptSocket(ws, deps));
+    const known = characterIdOfRequest(deps.config.serverSecret, req);
+    const characterId = known ?? mintCharacterId();
+    if (!known) freshlyMinted.set(req, characterId);
+    wss.handleUpgrade(req, socket, head, (ws) => acceptSocket(ws, characterId, deps));
   });
   const heartbeat = setInterval(() => pingAll(deps), HEARTBEAT_MS);
   return () => {
@@ -43,8 +56,8 @@ export function attachWebSocket(httpServer: Server, deps: WsDeps): () => void {
   };
 }
 
-function acceptSocket(ws: WebSocket, deps: WsDeps): void {
-  const conn = new Connection(ws);
+function acceptSocket(ws: WebSocket, characterId: string, deps: WsDeps): void {
+  const conn = new Connection(ws, characterId);
   deps.connections.add(conn);
   conn.helloTimer = setTimeout(() => conn.kick('abuse', 'hello timeout'), HELLO_TIMEOUT_MS);
   ws.on('pong', () => (conn.alive = true));
@@ -75,7 +88,7 @@ function handleHello(conn: Connection, hello: HelloMsg, deps: WsDeps): void {
     conn.kick('version', `server speaks protocol v${PROTOCOL_VERSION}`);
     return;
   }
-  void joinConnection(conn, hello, deps).catch((err) => {
+  void joinConnection(conn, deps).catch((err) => {
     console.error('[ws] join failed', err);
     conn.kick('abuse', 'join failed');
   });

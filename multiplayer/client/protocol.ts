@@ -20,8 +20,6 @@ export type KickCode = 'version' | 'duplicate' | 'backpressure' | 'abuse';
 export interface HelloMsg {
   t: 'hello';
   v: number;
-  name: string;
-  token?: string;
 }
 
 export interface WelcomeMsg {
@@ -30,7 +28,6 @@ export interface WelcomeMsg {
   x: number;
   y: number;
   facing: FacingIndex;
-  token: string;
 }
 
 export interface EntityMetaMsg {

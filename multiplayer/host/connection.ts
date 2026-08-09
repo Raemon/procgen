@@ -20,7 +20,10 @@ export class Connection {
   alive = true;
   helloTimer?: ReturnType<typeof setTimeout>;
 
-  constructor(readonly ws: WebSocket) {}
+  constructor(
+    readonly ws: WebSocket,
+    readonly characterId: string,
+  ) {}
 
   send(msg: ServerMsg): void {
     if (this.ws.readyState !== this.ws.OPEN) return;
