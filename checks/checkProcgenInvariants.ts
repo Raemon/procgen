@@ -38,6 +38,7 @@ import { checkCultureEditing } from './checkCultureEditing';
 import { checkShapedTileInvariants } from './checkShapedTileInvariants';
 import { checkMarkerBillboardInvariants } from './checkMarkerBillboardInvariants';
 import { checkPresentationFoldersAreTheOnlyDomCode } from './checkPresentationFoldersAreTheOnlyDomCode';
+import { checkLibraryRowActions } from './checkLibraryRowActions';
 import { checkDesignBetsStillHold } from './checkDesignBetsStillHold';
 import { checkEveryApiSurfaceIsDescribed } from './checkEveryApiSurfaceIsDescribed';
 import { checkClaudeMdPointsAtThingsThatExist } from './checkClaudeMdPointsAtThingsThatExist';
@@ -86,6 +87,7 @@ describe('villages', () => checkVillageInvariants(check));
 describe('the cultures editor', () => checkCultureEditing(check));
 describe('generated asset kits', () => checkGeneratedAssetInvariants(check));
 describe('the dom boundary', () => checkPresentationFoldersAreTheOnlyDomCode(check));
+describe('library row actions', () => checkLibraryRowActions(check));
 describe('documentation', () => {
   checkDocumentationHasNotRegrown(check);
   checkClaudeMdPointsAtThingsThatExist(check);

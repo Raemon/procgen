@@ -45,7 +45,7 @@ export function CreatureRow({ creature }: { creature: CreatureDef }) {
     <div className="mb-1.5">
       <div className={classes(ROW_HOVER_GROUP, 'flex items-center gap-1.5')}>
         <ColorField ink={creature.color} tip={CREATURE_COLOR_TIP} onChange={(color) => edit({ color })} />
-        <SymbolInput symbol={creature.symbol} onPick={(symbol) => edit({ symbol })} />
+        <SymbolInput symbol={creature.symbol} tint={creature.color} onPick={(symbol) => edit({ symbol })} />
         <input
           type="text"
           aria-label="creature name"
