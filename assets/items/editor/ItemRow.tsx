@@ -46,7 +46,7 @@ export function ItemRow({ item }: { item: ItemDef }) {
           tip={ITEM_COLOR_TIP}
           onChange={(color) => edit({ color })}
         />
-        <SymbolInput symbol={item.symbol} onPick={(symbol) => edit({ symbol })} />
+        <SymbolInput symbol={item.symbol} tint={item.color} onPick={(symbol) => edit({ symbol })} />
         <input
           type="text"
           aria-label="item name"
