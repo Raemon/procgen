@@ -50,12 +50,12 @@ export interface InputSpec {
 
 export interface ChunkGenCtx {
   readonly nodeId: string;
+  readonly time: number;
   readonly chunkX: number;
   readonly chunkY: number;
   readonly originX: number;
   readonly originY: number;
   readonly size: number;
-  readonly stride: number;
   readonly params: Record<string, ParamValue>;
   rng(label: string): RandomStream;
   rngAt(gridX: number, gridY: number, label: string): RandomStream;
@@ -63,7 +63,6 @@ export interface ChunkGenCtx {
   hash01(worldX: number, worldY: number, label: string): number;
   input(name: string): ChunkValue | null;
   inputAt(name: string, chunkX: number, chunkY: number): ChunkValue | null;
-  inputAtStride(name: string, chunkX: number, chunkY: number, stride: number): ChunkValue | null;
   fieldInput(name: string): FieldChunk | null;
   tilesInput(name: string): TilesChunk | null;
   pointsInput(name: string): PointsChunk | null;
@@ -78,6 +77,7 @@ export interface NodeTypeDef {
   category: string;
   description: string;
   whenToUse: string;
+  readsTime?: true;
   inputs: Record<string, InputSpec>;
   params: Record<string, ParamSpec>;
   output: ValueKind | ((params: Record<string, ParamValue>) => ValueKind);

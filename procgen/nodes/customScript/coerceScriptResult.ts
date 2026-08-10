@@ -30,19 +30,40 @@ function coercePoints(raw: unknown): WorldPoint[] {
   return unwrapped.map(coercePoint);
 }
 
+interface ScriptedPoint {
+  x: number;
+  y: number;
+  tag?: unknown;
+  data?: unknown;
+}
+
 function coercePoint(candidate: unknown): WorldPoint {
-  if (typeof candidate !== 'object' || candidate === null) {
-    throw new Error('each point must be an object with numeric x and y');
-  }
-  const point = candidate as { x?: unknown; y?: unknown; tag?: unknown };
-  if (typeof point.x !== 'number' || typeof point.y !== 'number') {
-    throw new Error('each point must be an object with numeric x and y');
-  }
+  const point = pointWithNumericPosition(candidate);
   return {
     x: Math.round(point.x),
     y: Math.round(point.y),
     tag: typeof point.tag === 'string' ? point.tag : 'point',
+    ...numericDataOf(point.data),
   };
+}
+
+function pointWithNumericPosition(candidate: unknown): ScriptedPoint {
+  const point = candidate as ScriptedPoint | null;
+  const positioned =
+    typeof point === 'object' &&
+    point !== null &&
+    typeof point.x === 'number' &&
+    typeof point.y === 'number';
+  if (!positioned) throw new Error('each point must be an object with numeric x and y');
+  return point as ScriptedPoint;
+}
+
+function numericDataOf(raw: unknown): { data?: Readonly<Record<string, number>> } {
+  if (typeof raw !== 'object' || raw === null) return {};
+  const entries = Object.entries(raw).filter(
+    (entry): entry is [string, number] => typeof entry[1] === 'number' && Number.isFinite(entry[1]),
+  );
+  return entries.length > 0 ? { data: Object.fromEntries(entries) } : {};
 }
 
 function unwrapChunkValue(raw: unknown): unknown {

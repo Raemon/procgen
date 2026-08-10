@@ -1,109 +1,93 @@
 import '../kinds/index';
-import {
-  bandCells,
-  eastGateBand,
-  northGateBand,
-  southGateBand,
-  westGateBand,
-  type Band,
-} from '../../../procgen/nodes/puzzle/puzzleRoomCorridors';
-import type { PuzzleRoomKnobs } from '../../../procgen/nodes/puzzle/puzzleRoomKnobs';
-import {
-  doorwayCentreOffset,
-  rectBottom,
-  rectRight,
-  roomInteriorRect,
-  roomKey,
-  type RoomRect,
-} from '../../../procgen/nodes/puzzle/puzzleRoomLattice';
-import { roomLatticeMazeFor } from '../../../procgen/nodes/puzzle/roomLatticeMazeCache';
-import type { RoomLatticeMaze } from '../../../procgen/nodes/puzzle/roomLatticeMaze';
+import { chunkKey } from '../../../procgen/chunk';
+import { chunkExitsOf } from '../../../procgen/labyrinth/chunkExits';
+import { roleOf, ROOM } from '../../../procgen/labyrinth/chunkRole';
+import type { LabyrinthKnobs } from '../../../procgen/labyrinth/labyrinthKnobs';
+import { roomGeometryOf, type RoomDoorway, type RoomGeometry } from '../../../procgen/labyrinth/roomLayout';
 import { hashString } from '../../../procgen/random/hashString';
 import { mulberry32 } from '../../../procgen/random/mulberry32';
-import { fixture } from '../fixtures/puzzleFixture';
-import { nothingToSolve } from '../kinds/puzzleKind';
-import { RoomCells } from '../kinds/roomCells';
-import { challengeForRing, roomRing } from './roomDifficulty';
+import { fixture, type PuzzleFixture } from '../fixtures/puzzleFixture';
+import { nothingToSolve, type FurnishedRoom } from '../kinds/puzzleKind';
+import { RoomCells, type Cell } from '../kinds/roomCells';
+import { challengeForRing, roomRing, type RoomChallenge } from './roomDifficulty';
 import type { PuzzleRoomLayout, RoomGates } from './puzzleRoomLayout';
 
 export function buildPuzzleRoom(
-  knobs: PuzzleRoomKnobs,
+  knobs: LabyrinthKnobs,
   roomX: number,
   roomY: number,
 ): PuzzleRoomLayout {
-  const interior = roomInteriorRect(roomX, roomY, knobs);
-  const challenge = challengeForRing(roomRing(roomX, roomY), roomStream(knobs, roomX, roomY, 'kind'));
-  const cells = new RoomCells(interior);
-  const maze = roomLatticeMazeFor(knobs);
-  const entrances = entrancesOf(knobs, maze, interior, roomX, roomY);
-  const furnished = challenge.kind
-    ? challenge.kind.furnish({
-        cells,
-        level: challenge.level,
-        entrances,
-        rng: roomStream(knobs, roomX, roomY, 'furnish'),
-      })
-    : nothingToSolve();
+  const geometry = roomGeometryOf(roomX, roomY, chunkExitsOf(roomX, roomY, knobs), knobs);
+  const isRoom = roleOf(roomX, roomY, knobs) === ROOM;
+  const challenge = challengeOf(knobs, roomX, roomY, isRoom);
+  const furnished = furnish(knobs, roomX, roomY, geometry, challenge);
   return {
     roomX,
     roomY,
-    key: roomKey(roomX, roomY),
-    interior,
+    key: chunkKey(roomX, roomY),
+    interior: geometry.interior,
     kindName: challenge.kind?.name ?? '',
     level: challenge.level,
-    entrance: entrances[0]!,
+    entrance: entrancesOf(geometry)[0]!,
     fixtures: furnished.fixtures,
-    gates: gatesOf(knobs, maze, roomX, roomY),
+    gates: isRoom ? gatesOf(geometry) : { east: [], south: [], west: [], north: [] },
     opensWhen: furnished.opensWhen,
     solution: furnished.solution,
   };
 }
 
-function entrancesOf(
-  knobs: PuzzleRoomKnobs,
-  maze: RoomLatticeMaze,
-  interior: RoomRect,
+function challengeOf(
+  knobs: LabyrinthKnobs,
   roomX: number,
   roomY: number,
-): { x: number; y: number }[] {
-  const row = interior.y + doorwayCentreOffset(knobs);
-  const column = interior.x + doorwayCentreOffset(knobs);
-  const doorways = [
-    { open: maze.hasEastCorridor(roomX - 1, roomY), cell: { x: interior.x, y: row } },
-    { open: maze.hasEastCorridor(roomX, roomY), cell: { x: rectRight(interior), y: row } },
-    { open: maze.hasSouthCorridor(roomX, roomY - 1), cell: { x: column, y: interior.y } },
-    { open: maze.hasSouthCorridor(roomX, roomY), cell: { x: column, y: rectBottom(interior) } },
-  ];
-  const reachable = doorways.filter((doorway) => doorway.open).map((doorway) => doorway.cell);
-  return reachable.length > 0 ? reachable : [{ x: interior.x, y: row }];
+  isRoom: boolean,
+): RoomChallenge {
+  if (!isRoom) return { kind: null, level: 0 };
+  return challengeForRing(roomRing(roomX, roomY), roomStream(knobs, roomX, roomY, 'kind'));
 }
 
-function gatesOf(
-  knobs: PuzzleRoomKnobs,
-  maze: RoomLatticeMaze,
+function furnish(
+  knobs: LabyrinthKnobs,
   roomX: number,
   roomY: number,
-): RoomGates {
+  geometry: RoomGeometry,
+  challenge: RoomChallenge,
+): FurnishedRoom {
+  if (!challenge.kind) return nothingToSolve();
+  return challenge.kind.furnish({
+    cells: new RoomCells(geometry.interior),
+    level: challenge.level,
+    entrances: entrancesOf(geometry),
+    rng: roomStream(knobs, roomX, roomY, 'furnish'),
+  });
+}
+
+function entrancesOf(geometry: RoomGeometry): Cell[] {
+  const inner = geometry.doorways.map((doorway) => middleGateCell(doorway));
+  if (inner.length > 0) return inner;
+  return [{ x: geometry.interior.x, y: geometry.interior.y + Math.floor(geometry.interior.height / 2) }];
+}
+
+function middleGateCell(doorway: RoomDoorway): Cell {
+  return doorway.gate[Math.floor(doorway.gate.length / 2)]!;
+}
+
+function gatesOf(geometry: RoomGeometry): RoomGates {
   return {
-    east: maze.hasEastCorridor(roomX, roomY)
-      ? doorsAcross(eastGateBand(roomX, roomY, knobs), 'gateEast')
-      : [],
-    south: maze.hasSouthCorridor(roomX, roomY)
-      ? doorsAcross(southGateBand(roomX, roomY, knobs), 'gateSouth')
-      : [],
-    west: maze.hasEastCorridor(roomX - 1, roomY)
-      ? doorsAcross(westGateBand(roomX, roomY, knobs), 'gateWest')
-      : [],
-    north: maze.hasSouthCorridor(roomX, roomY - 1)
-      ? doorsAcross(northGateBand(roomX, roomY, knobs), 'gateNorth')
-      : [],
+    east: gateFixtures(geometry, 'east'),
+    south: gateFixtures(geometry, 'south'),
+    west: gateFixtures(geometry, 'west'),
+    north: gateFixtures(geometry, 'north'),
   };
 }
 
-function doorsAcross(band: Band, name: string) {
-  return bandCells(band).map((cell, index) => fixture(`${name}${index}`, 'gate', cell));
+function gateFixtures(geometry: RoomGeometry, side: RoomDoorway['side']): PuzzleFixture[] {
+  const doorway = geometry.doorways.find((candidate) => candidate.side === side);
+  if (!doorway) return [];
+  const name = `gate${side[0]!.toUpperCase()}${side.slice(1)}`;
+  return doorway.gate.map((cell, index) => fixture(`${name}${index}`, 'gate', cell));
 }
 
-function roomStream(knobs: PuzzleRoomKnobs, roomX: number, roomY: number, label: string) {
+function roomStream(knobs: LabyrinthKnobs, roomX: number, roomY: number, label: string) {
   return mulberry32(hashString(`${knobs.seed}:puzzleRoom:${roomX},${roomY}:${label}`));
 }

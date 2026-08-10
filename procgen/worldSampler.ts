@@ -24,6 +24,7 @@ import type {
 } from './structureOverlay/structurePlacement';
 import { buildSampledChunk } from './sampling/buildSampledChunk';
 import { SampledChunkCache, type SampledChunk } from './sampling/sampledChunkCache';
+import { pointsInRect } from './values/pointsInRect';
 import { asPoints } from './values/valueAccess';
 
 export interface Marker {
@@ -222,7 +223,7 @@ export class WorldSampler {
       if (node.display.mode !== 'structures' || node.display.cultureId < 0) continue;
       const { cultureId } = node.display;
       for (const point of this.pointsOfNode(node, chunkX, chunkY)) {
-        placements.push({ x: point.x, y: point.y, cultureId, tag: point.tag });
+        placements.push({ x: point.x, y: point.y, cultureId, tag: point.tag, data: point.data });
       }
     }
     return placements;
@@ -249,18 +250,7 @@ export class WorldSampler {
     maxX: number,
     maxY: number,
   ): { x: number; y: number; tag: string }[] {
-    const inside: { x: number; y: number; tag: string }[] = [];
-    for (let chunkY = chunkCoordOfCell(minY); chunkY <= chunkCoordOfCell(maxY); chunkY++) {
-      for (let chunkX = chunkCoordOfCell(minX); chunkX <= chunkCoordOfCell(maxX); chunkX++) {
-        const points = asPoints(this.evaluator.valueFor(node.id, chunkX, chunkY)) ?? [];
-        for (const point of points) {
-          if (point.x >= minX && point.x <= maxX && point.y >= minY && point.y <= maxY) {
-            inside.push(point);
-          }
-        }
-      }
-    }
-    return inside;
+    return pointsInRect(this.evaluator, node.id, { minX, minY, maxX, maxY });
   }
 
   private collectMarkersFromNode(

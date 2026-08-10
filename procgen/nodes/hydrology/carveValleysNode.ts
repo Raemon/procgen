@@ -1,4 +1,3 @@
-import { cellsSpanningTiles } from '../../cellStride';
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { fieldValue, type ChunkValue } from '../../values/chunkValues';
@@ -69,6 +68,6 @@ function cutSpecOf(ctx: ChunkGenCtx): ValleyCutSpec {
   return {
     depth: ctx.params.depth as number,
     minFlow: ctx.params.minFlow as number,
-    valleyWidth: cellsSpanningTiles(ctx.params.valleyWidth as number, ctx.stride),
+    valleyWidth: Math.max(1, Math.round(ctx.params.valleyWidth as number)),
   };
 }

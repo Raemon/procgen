@@ -1,3 +1,4 @@
+import type { PointData } from '../values/chunkValues';
 import type { PiecePlacement } from './piecePlacement';
 
 export interface CultureStructurePlacement {
@@ -5,6 +6,7 @@ export interface CultureStructurePlacement {
   y: number;
   cultureId: number;
   tag: string;
+  data?: PointData;
 }
 
 export type StructurePlacement = PiecePlacement | CultureStructurePlacement;

@@ -1,4 +1,4 @@
-import { rectContains } from '../../../procgen/nodes/puzzle/puzzleRoomLattice';
+import { rectContains } from '../../../procgen/labyrinth/roomLayout';
 import type { PuzzleFixture } from '../fixtures/puzzleFixture';
 import { fixtureIdIn, type PuzzleRoomLayout } from '../rooms/puzzleRoomLayout';
 import { livePosition } from '../state/fixtureSignals';

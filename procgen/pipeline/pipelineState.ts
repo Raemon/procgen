@@ -1,5 +1,6 @@
 import type { DisplayBinding } from '../display/displayBinding';
 import type { ParamValue } from '../nodeType';
+import { PRESENT } from '../time/worldTime';
 
 export interface NodeInstance {
   id: string;
@@ -16,6 +17,7 @@ export interface NodeInstance {
 export interface PipelineState {
   seed: number;
   daylight: number;
+  time: number;
   nodes: NodeInstance[];
 }
 
@@ -23,7 +25,7 @@ export const DEFAULT_SEED = 1234;
 export const DEFAULT_DAYLIGHT = 1;
 
 export function emptyPipeline(): PipelineState {
-  return { seed: DEFAULT_SEED, daylight: DEFAULT_DAYLIGHT, nodes: [] };
+  return { seed: DEFAULT_SEED, daylight: DEFAULT_DAYLIGHT, time: PRESENT, nodes: [] };
 }
 
 export function clampDaylight(daylight: unknown): number {

@@ -1,5 +1,4 @@
 import { chunkKey } from '../chunk';
-import { clampedStride, FINE_STRIDE } from '../cellStride';
 import { nodeTypeOf } from '../nodeRegistry';
 import { outputKindOf, type NodeTypeDef } from '../nodeType';
 import { computeNodeSignatures } from '../pipeline/nodeSignatures';
@@ -24,17 +23,12 @@ export class PipelineEvaluator {
     store.onChange(() => this.refreshSignatures());
   }
 
-  valueFor(
-    nodeId: string,
-    chunkX: number,
-    chunkY: number,
-    stride: number = FINE_STRIDE,
-  ): ChunkValue {
+  valueFor(nodeId: string, chunkX: number, chunkY: number): ChunkValue {
     const node = this.store.nodeById(nodeId);
     const def = node && nodeTypeOf(node.type);
     if (!node || !def) return emptyValueOfKind('field');
     if (!node.enabled) return emptyValueOfKind(outputKindOf(def, node.params));
-    return this.cachedOrGenerated(node, def, chunkX, chunkY, clampedStride(stride));
+    return this.cachedOrGenerated(node, def, chunkX, chunkY);
   }
 
   errorFor(nodeId: string): string | null {
@@ -42,7 +36,7 @@ export class PipelineEvaluator {
   }
 
   private refreshSignatures(): void {
-    this.signatures = computeNodeSignatures(this.store.snapshot());
+    this.signatures = computeNodeSignatures(this.store.snapshot(), nodeTypeReadsTime);
     this.cache.growTo(cacheCapacityForPipeline(this.signatures.size));
   }
 
@@ -51,12 +45,11 @@ export class PipelineEvaluator {
     def: NodeTypeDef,
     chunkX: number,
     chunkY: number,
-    stride: number,
   ): ChunkValue {
-    const key = `${this.signatures.get(node.id)}|${stride}|${chunkKey(chunkX, chunkY)}`;
+    const key = `${this.signatures.get(node.id)}|${chunkKey(chunkX, chunkY)}`;
     const cached = this.cache.get(key);
     if (cached !== undefined) return cached;
-    const value = this.generate(node, def, chunkX, chunkY, stride);
+    const value = this.generate(node, def, chunkX, chunkY);
     this.cache.set(key, value);
     return value;
   }
@@ -66,19 +59,17 @@ export class PipelineEvaluator {
     def: NodeTypeDef,
     chunkX: number,
     chunkY: number,
-    stride: number,
   ): ChunkValue {
     const ctx = createChunkGenCtx({
       seed: this.store.seed(),
+      time: this.store.time(),
       nodeId: node.id,
       params: node.params,
       chunkX,
       chunkY,
-      stride,
-      resolveInput: (name, atChunkX, atChunkY, atStride) =>
-        this.resolveInput(node, name, atChunkX, atChunkY, atStride),
+      resolveInput: (name, atChunkX, atChunkY) => this.resolveInput(node, name, atChunkX, atChunkY),
       memo: (key, compute) =>
-        this.regionMemos.at(`${this.signatures.get(node.id)}|${stride}|${key}`, compute),
+        this.regionMemos.at(`${this.signatures.get(node.id)}|${key}`, compute),
     });
     try {
       const value = def.generateChunk(ctx);
@@ -95,10 +86,9 @@ export class PipelineEvaluator {
     inputName: string,
     chunkX: number,
     chunkY: number,
-    stride: number,
   ): ChunkValue | null {
     const sourceId = node.inputs[inputName];
-    return sourceId ? this.valueFor(sourceId, chunkX, chunkY, stride) : null;
+    return sourceId ? this.valueFor(sourceId, chunkX, chunkY) : null;
   }
 
   private matchingDeclaredKind(
@@ -111,6 +101,10 @@ export class PipelineEvaluator {
     this.runtimeErrors.set(node.id, `returned ${value.kind}, declared output is ${declared}`);
     return emptyValueOfKind(declared);
   }
+}
+
+function nodeTypeReadsTime(nodeType: string): boolean {
+  return nodeTypeOf(nodeType)?.readsTime === true;
 }
 
 function messageOf(error: unknown): string {

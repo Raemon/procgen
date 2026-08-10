@@ -1,5 +1,4 @@
 import { fractalNoise } from '../../noise/fractalNoise';
-import { worldCoordOfCell } from '../../cellStride';
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { fieldValue, type ChunkValue } from '../../values/chunkValues';
@@ -41,9 +40,9 @@ function noiseChunk(ctx: ChunkGenCtx): ChunkValue {
   const scale = ctx.params.scale as number;
   const octaves = ctx.params.octaves as number;
   for (let y = 0; y < ctx.size; y++) {
-    const worldY = worldCoordOfCell(ctx.originY + y, ctx.stride);
+    const worldY = ctx.originY + y;
     for (let x = 0; x < ctx.size; x++) {
-      const worldX = worldCoordOfCell(ctx.originX + x, ctx.stride);
+      const worldX = ctx.originX + x;
       field[y * ctx.size + x] = fractalNoise(worldX * scale, worldY * scale, seed, octaves);
     }
   }

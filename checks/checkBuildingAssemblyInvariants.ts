@@ -6,7 +6,11 @@ import { BUILDING_PROGRAMS, massingRulesFor } from '../procgen/assembly/building
 import { roofVoxelsOf, type RoofVoxel } from '../procgen/assembly/buildingRoof';
 import { doorCellOf, shellCellsOf, type ShellCell } from '../procgen/assembly/buildingShell';
 import { stepOfFacing, type BuildingSpec } from '../procgen/assembly/buildingSpec';
-import { buildingSeedKeyAt, specToTag, tagToSpec } from '../procgen/assembly/buildingSpecTag';
+import {
+  buildingPointOf,
+  buildingSeedKeyAt,
+  specOfBuildingPoint,
+} from '../procgen/assembly/buildingPoint';
 import { FIRST_WALL_LAYER, FLOOR_LAYER } from '../procgen/assembly/buildingTileFallback';
 import { NO_PIECES, type PieceSource } from '../procgen/assembly/pieceSource';
 import { tileIdOfVoxel } from '../procgen/structureOverlay/packedVoxel';
@@ -220,12 +224,15 @@ function checkABuildingLooksTheSameFromEveryChunkItStraddles(check: CheckReporte
 function checkSpecsSurviveTheirWorldPointTag(check: CheckReporter): void {
   const specs = BUILDING_PROGRAMS.map((_, program) => specAt(9, 11, program, program % 4));
   check(
-    'every building spec survives the round trip through its world point tag',
-    specs.every((spec) => JSON.stringify(tagToSpec(specToTag(spec), spec.x, spec.y)) === JSON.stringify(spec)),
+    'every building spec survives the round trip through its world point payload',
+    specs.every(
+      (spec) => JSON.stringify(specOfBuildingPoint(buildingPointOf(spec))) === JSON.stringify(spec),
+    ),
   );
+  const bare = specOfBuildingPoint({ x: 3, y: 4, tag: 'town' });
   check(
-    'a point tagged by something other than the assembler still yields a buildable spec',
-    tagToSpec('town', 3, 4).program === 0 && tagToSpec('town', 3, 4).seedKey === buildingSeedKeyAt(3, 4),
+    'a point placed by something other than the assembler still yields a buildable spec',
+    bare.program === 0 && bare.seedKey === buildingSeedKeyAt(3, 4),
   );
 }
 
@@ -234,7 +241,7 @@ function straddlingOverlay(spec: BuildingSpec): StructureOverlay {
     NO_PIECES,
     (chunkX, chunkY) =>
       chunkX === 0 && chunkY === 0
-        ? [{ x: spec.x, y: spec.y, cultureId: SYNTHETIC_CULTURE_ID, tag: specToTag(spec) }]
+        ? [{ ...buildingPointOf(spec), cultureId: SYNTHETIC_CULTURE_ID }]
         : [],
     { byId: (id) => (id === SYNTHETIC_CULTURE_ID ? syntheticCulture() : undefined) },
   );

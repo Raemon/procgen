@@ -2,11 +2,13 @@ import { earthlikeCoastsAndRanges } from './earthlikeCoastsAndRanges';
 import { emberMarches } from './emberMarches';
 import type { ExamplePipeline } from './examplePipeline';
 import { fallenMetropolis } from './fallenMetropolis';
+import { infiniteLabyrinth } from './infiniteLabyrinth';
 import { mountainsLakesAndRapids } from './mountainsLakesAndRapids';
 import { poleToEquator } from './poleToEquator';
 import { puzzleLabyrinth } from './puzzleLabyrinth';
 import { settlementsAndWildlife } from './settlementsAndWildlife';
 import { thatchmereVale } from './thatchmereVale';
+import { volcanicIslands } from './volcanicIslands';
 
 export type { ExamplePipeline };
 
@@ -26,6 +28,8 @@ export function examplePipelines(): ExamplePipeline[] {
     puzzleLabyrinth(),
     thatchmereVale(),
     mountainsLakesAndRapids(),
+    infiniteLabyrinth(),
+    volcanicIslands(),
   ];
 }
 

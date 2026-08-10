@@ -1,10 +1,11 @@
-export type ViewMode = '3d-god' | 'agent-god' | 'character' | 'agent-character';
+export type ViewMode = '3d-god' | 'agent-god' | 'character' | 'agent-character' | 'features';
 
 export const VIEW_MODES: readonly { id: ViewMode; label: string }[] = [
   { id: '3d-god', label: '3-D God' },
   { id: 'agent-god', label: 'Agent God' },
   { id: 'character', label: '2.5D Character' },
   { id: 'agent-character', label: 'Agent Character' },
+  { id: 'features', label: 'Features' },
 ];
 
 export function isCharacterControlled(mode: ViewMode): boolean {

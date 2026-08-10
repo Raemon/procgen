@@ -1,4 +1,5 @@
-import { specToTag } from '../../assembly/buildingSpecTag';
+import { buildingPointOf } from '../../assembly/buildingPoint';
+import { PROGRAM_CATALOG } from '../../assembly/programCatalog';
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { pointsValue, type ChunkValue, type PointsChunk } from '../../values/chunkValues';
@@ -6,6 +7,7 @@ import { nearbyVillageCenters } from './nearbyVillageCenters';
 import { villageHashSeedAt } from './villageHashSeed';
 import { layoutForCenter, type VillagePlot } from './villageLayout';
 import { villageLayoutKnobsOf, VILLAGE_LAYOUT_PARAMS } from './villageLayoutParams';
+import { programWeightKnobs, weightKnobName } from './programWeightKnobs';
 
 registerNodeType({
   type: 'villagePlots',
@@ -24,46 +26,7 @@ registerNodeType({
   },
   params: {
     ...VILLAGE_LAYOUT_PARAMS,
-    cottageWeight: {
-      kind: 'int',
-      label: 'cottages',
-      help: 'Relative share of outer plots that become cottages, the smallest single-story house.',
-      min: 0,
-      max: 8,
-      default: 4,
-    },
-    dwellingWeight: {
-      kind: 'int',
-      label: 'dwellings',
-      help: 'Relative share of outer plots that become two-story dwellings.',
-      min: 0,
-      max: 8,
-      default: 3,
-    },
-    smithyWeight: {
-      kind: 'int',
-      label: 'smithies',
-      help: 'Set to 0 to keep smithies out of the village; any higher value lets the second ring hold one.',
-      min: 0,
-      max: 8,
-      default: 2,
-    },
-    innWeight: {
-      kind: 'int',
-      label: 'inns',
-      help: 'Set to 0 to keep inns out of the village; any higher value lets the inner ring hold one.',
-      min: 0,
-      max: 8,
-      default: 1,
-    },
-    townHallWeight: {
-      kind: 'int',
-      label: 'town halls',
-      help: 'Set to 0 to leave the plaza plot to an ordinary house; any higher value gives the village its one town hall.',
-      min: 0,
-      max: 8,
-      default: 1,
-    },
+    ...programWeightKnobs(),
   },
   output: 'points',
   generateChunk: villagePlotsChunk,
@@ -84,15 +47,9 @@ function collectPlotInChunk(ctx: ChunkGenCtx, plot: VillagePlot, into: PointsChu
   const insideX = plot.spec.x >= ctx.originX && plot.spec.x < ctx.originX + ctx.size;
   const insideY = plot.spec.y >= ctx.originY && plot.spec.y < ctx.originY + ctx.size;
   if (!insideX || !insideY) return;
-  into.push({ x: plot.spec.x, y: plot.spec.y, tag: specToTag(plot.spec) });
+  into.push(buildingPointOf(plot.spec));
 }
 
 function programWeightsOf(ctx: ChunkGenCtx): number[] {
-  return [
-    ctx.params.cottageWeight as number,
-    ctx.params.dwellingWeight as number,
-    ctx.params.smithyWeight as number,
-    ctx.params.innWeight as number,
-    ctx.params.townHallWeight as number,
-  ];
+  return PROGRAM_CATALOG.map((def) => ctx.params[weightKnobName(def.name)] as number);
 }

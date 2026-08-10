@@ -1,5 +1,4 @@
 import { chunkOrigin, CHUNK_SIZE } from '../../chunk';
-import { cellsSpanningTiles } from '../../cellStride';
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { fieldValue, type ChunkValue } from '../../values/chunkValues';
@@ -79,7 +78,7 @@ function sharedRegionDistances(ctx: ChunkGenCtx): RegionDistances | null {
 }
 
 function rangeInCells(ctx: ChunkGenCtx): number {
-  return clampedWindowRadius(cellsSpanningTiles(ctx.params.range as number, ctx.stride));
+  return clampedWindowRadius(Math.max(1, Math.round(ctx.params.range as number)));
 }
 
 function alignedRegionStart(chunkCoord: number): number {

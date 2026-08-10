@@ -1,6 +1,7 @@
 import '../procgen/nodes';
 import { CHUNK_SIZE } from '../procgen/chunk';
 import { computeNodeSignatures } from '../procgen/pipeline/nodeSignatures';
+import { nodeTypeOf } from '../procgen/nodeRegistry';
 import { asPoints } from '../procgen/values/valueAccess';
 import type { CheckReporter } from './checkReporter';
 import {
@@ -39,10 +40,10 @@ export function checkChunkDeterminismAndSignatures(check: CheckReporter): void {
     fieldBytes(reseeded.evaluator, 'n1', 0, 0) !== fieldBytes(a.evaluator, 'n1', 0, 0),
   );
 
-  const beforeSigs = computeNodeSignatures(islandsState());
+  const beforeSigs = computeNodeSignatures(islandsState(), nodeTypeReadsTime);
   const tweaked = islandsState();
   tweaked.nodes[0]!.params.scale = 0.11;
-  const afterSigs = computeNodeSignatures(tweaked);
+  const afterSigs = computeNodeSignatures(tweaked, nodeTypeReadsTime);
   check(
     'param change invalidates that node and downstream signatures',
     beforeSigs.get('n1') !== afterSigs.get('n1') && beforeSigs.get('n5') !== afterSigs.get('n5'),
@@ -51,7 +52,7 @@ export function checkChunkDeterminismAndSignatures(check: CheckReporter): void {
   downstreamTweak.nodes[1]!.params.threshold = 0.6;
   check(
     'downstream param change leaves upstream signature cached',
-    computeNodeSignatures(downstreamTweak).get('n1') === beforeSigs.get('n1'),
+    computeNodeSignatures(downstreamTweak, nodeTypeReadsTime).get('n1') === beforeSigs.get('n1'),
   );
 
   const sampled = worldFromState(islandsState());
@@ -74,4 +75,8 @@ export function checkChunkDeterminismAndSignatures(check: CheckReporter): void {
         p.x >= 2 * CHUNK_SIZE && p.x < 3 * CHUNK_SIZE && p.y >= -CHUNK_SIZE && p.y < 0,
     ),
   );
+}
+
+function nodeTypeReadsTime(nodeType: string): boolean {
+  return nodeTypeOf(nodeType)?.readsTime === true;
 }
