@@ -1,4 +1,5 @@
 import '../procgen/nodes';
+import { CHUNK_SIZE } from '../procgen/chunk';
 import type { PipelineState } from '../procgen/pipeline/pipelineState';
 import { labelSeed } from '../procgen/random/labelSeed';
 import { PRESENT } from '../procgen/time/worldTime';
@@ -33,6 +34,14 @@ function volcanicState(): PipelineState {
     { id: 'fertility', type: 'volcanicFertility', params: { ashRadius: 40, peakAge: 2_000_000, altitudePenalty: 0.2 }, inputs: { volcanoes: 'volcanoes', elevation: 'cones' } },
     { id: 'deposits', type: 'mineralDeposits', params: { density: 0.05, minIslandAge: 1_000_000, richnessScale: 1 }, inputs: { volcanoes: 'volcanoes', elevation: 'cones' } },
   ]);
+}
+
+const CONE_SPAN_CHUNKS = 14;
+
+function coneSpanRect() {
+  const low = -CONE_SPAN_CHUNKS * CHUNK_SIZE;
+  const high = low + (2 * CONE_SPAN_CHUNKS + 1) * CHUNK_SIZE;
+  return { minX: low, minY: low, maxX: high, maxY: high };
 }
 
 function pointsIn(world: World, nodeId: string, span: number): WorldPoint[] {
@@ -88,7 +97,7 @@ function agesAlongDrift(cones: WorldPoint[]): boolean {
 }
 
 function isWellInsideCollectedSpan(cone: WorldPoint): boolean {
-  return Math.abs(cone.x) <= 220 && Math.abs(cone.y) <= 220;
+  return Math.abs(cone.x) <= 340 && Math.abs(cone.y) <= 340;
 }
 
 function isClearOfOtherChains(cone: WorldPoint, all: WorldPoint[], clearance: number): boolean {
@@ -204,7 +213,7 @@ export function checkVolcanicWorldInvariants(check: CheckReporter): void {
       pointBytes(pointsIn(world, 'deposits', 1)) === pointBytes(pointsIn(again, 'deposits', 1)),
   );
 
-  const cones = pointsIn(world, 'volcanoes', 10);
+  const cones = pointsIn(world, 'volcanoes', CONE_SPAN_CHUNKS);
   const chains = [...chainsOf(cones).values()].filter((chain) => chain.length >= 3);
   check('the fixture yields several chains with at least three cones to reason about', chains.length >= 3);
   check(
@@ -261,7 +270,7 @@ export function checkVolcanicWorldInvariants(check: CheckReporter): void {
     ) && pointBytes(deposits) === pointBytes(pointsIn(again, 'deposits', 6)),
   );
 
-  const rect = { minX: -320, minY: -320, maxX: 352, maxY: 352 };
+  const rect = coneSpanRect();
   const pureCones = conesOverlapping(rect, pureSpec(world)).map((cone) => [
     cone.x,
     cone.y,

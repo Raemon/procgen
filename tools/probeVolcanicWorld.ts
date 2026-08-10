@@ -150,16 +150,15 @@ function reportCounts(all: TimeCounts[]): void {
   for (const row of all) {
     console.log(`  ${String(row.time).padStart(10)}  ${String(row.cones).padStart(7)}  ${String(row.landCells).padStart(4)}  ${String(row.deposits).padStart(8)}`);
   }
-  console.log(`  weakly increasing toward present: ${isMonotone(all) ? 'yes' : 'NO'}`);
+  console.log(`  cones and deposits only ever appear: ${isMonotone(all) ? 'yes' : 'NO'}`);
+  console.log('  land rises and falls, since islands drown as their cones erode');
 }
 
 function isMonotone(all: TimeCounts[]): boolean {
   return all.every(
     (row, i) =>
       i === 0 ||
-      (row.cones >= all[i - 1]!.cones &&
-        row.landCells >= all[i - 1]!.landCells &&
-        row.deposits >= all[i - 1]!.deposits),
+      (row.cones >= all[i - 1]!.cones && row.deposits >= all[i - 1]!.deposits),
   );
 }
 
