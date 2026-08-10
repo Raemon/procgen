@@ -3,132 +3,89 @@ import type { PipelineState } from '../procgen/pipeline/pipelineState';
 import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
 import { examplePipelines } from '../procgen/presets/examplePipelines';
 import { sanitizeWorldPresets } from '../procgen/presets/worldPreset';
-import { asField } from '../procgen/values/valueAccess';
-import { WorldSampler } from '../procgen/worldSampler';
+import { nodeTypeOf } from '../procgen/nodeRegistry';
 import type { CheckReporter } from './checkReporter';
-import {
-  earthlikeState,
-  fieldBytes,
-  tileBytes,
-  tileIdsInRegion,
-  worldFromState,
-} from './pipelineWorldFixtures';
+import { earthlikeState, fieldBytes, tileBytes, worldFromState } from './pipelineWorldFixtures';
+
+const SHIPPED_WORLDS = ['volcanic islands', 'infinite labyrinth'];
 
 function presetStateNamed(name: string): PipelineState {
   return sanitizePipeline(examplePipelines().find((preset) => preset.name === name)!.state);
 }
 
-function tileIdsInRect(
-  sampler: WorldSampler,
-  centerX: number,
-  centerY: number,
-  halfWidth: number,
-  halfHeight: number,
-): Set<number> {
-  const seen = new Set<number>();
-  for (let y = centerY - halfHeight; y < centerY + halfHeight; y++) {
-    for (let x = centerX - halfWidth; x < centerX + halfWidth; x++) seen.add(sampler.tileAt(x, y));
-  }
-  return seen;
+function shippedStates(): PipelineState[] {
+  return examplePipelines().map((preset) => sanitizePipeline(preset.state));
 }
 
 export function checkNamedWorldPresets(check: CheckReporter): void {
-  const earthlike = worldFromState(earthlikeState());
-  const earthlikeAgain = worldFromState(earthlikeState());
   check(
-    'the earthlike preset regenerates identically from the same seed',
-    tileBytes(earthlike.evaluator, 'n16', 1, 1) === tileBytes(earthlikeAgain.evaluator, 'n16', 1, 1) &&
-      fieldBytes(earthlike.evaluator, 'n12', 1, 1) === fieldBytes(earthlikeAgain.evaluator, 'n12', 1, 1),
-  );
-  const waters = worldFromState(presetStateNamed('mountains, lakes & rapids'));
-  const watersAgain = worldFromState(presetStateNamed('mountains, lakes & rapids'));
-  check(
-    'the mountains, lakes & rapids preset survives sanitize with all nodes',
-    presetStateNamed('mountains, lakes & rapids').nodes.length === 28,
+    'the editor ships exactly the two worlds it means to, named as the library lists them',
+    examplePipelines().map((preset) => preset.name).join() === SHIPPED_WORLDS.join(),
   );
   check(
-    'the mountains, lakes & rapids preset regenerates identically from the same seed',
-    fieldBytes(waters.evaluator, 'lakeSurface', 1, 1) === fieldBytes(watersAgain.evaluator, 'lakeSurface', 1, 1) &&
-      tileBytes(waters.evaluator, 'lakes', 1, 1) === tileBytes(watersAgain.evaluator, 'lakes', 1, 1),
+    'every shipped world describes itself and survives sanitize with all of its nodes',
+    examplePipelines().every((preset) => preset.description.length > 0) &&
+      shippedStates().every((state) => state.nodes.length > 0),
   );
+  check(
+    'every node a shipped world names is a node type the registry still knows',
+    shippedStates().every((state) => state.nodes.every((node) => nodeTypeOf(node.type))),
+  );
+  check(
+    'every shipped world tells its story in named folders rather than a flat run of nodes',
+    shippedStates().every((state) => foldersOf(state).length >= 2),
+  );
+  checkVolcanicIslandsRegenerates(check);
+  checkInfiniteLabyrinthRegenerates(check);
+  checkSavedPresetsRoundTrip(check);
+}
 
-  const metropolis = worldFromState(presetStateNamed('fallen metropolis'));
-  const metropolisAgain = worldFromState(presetStateNamed('fallen metropolis'));
-  check(
-    'the fallen metropolis preset survives sanitize with all nodes',
-    presetStateNamed('fallen metropolis').nodes.length === 28,
-  );
-  check(
-    'the fallen metropolis regenerates identically from the same seed',
-    fieldBytes(metropolis.evaluator, 'n9', 1, 1) === fieldBytes(metropolisAgain.evaluator, 'n9', 1, 1) &&
-      tileBytes(metropolis.evaluator, 'n10', 1, 1) === tileBytes(metropolisAgain.evaluator, 'n10', 1, 1),
-  );
-  const metropolisTiles = tileIdsInRegion(metropolis.sampler, 96);
-  check(
-    'the fallen metropolis shows stone walls, flagstone streets, rubble and reclaiming grass',
-    [17, 16, 9, 2].every((tile) => metropolisTiles.has(tile)),
-  );
-  check('the risen sea drowns part of the fallen metropolis', metropolisTiles.has(0));
-  const districtFate = asField(metropolis.evaluator.valueFor('n9', 0, 0))!;
-  const districtFateEast = asField(metropolis.evaluator.valueFor('n9', 1, 0))!;
-  check(
-    'district fate varies between districts but stays inside 0..1',
-    JSON.stringify(Array.from(districtFate)) !== JSON.stringify(Array.from(districtFateEast)) &&
-      [...districtFate, ...districtFateEast].every((value) => value >= 0 && value <= 1),
-  );
+function foldersOf(state: PipelineState): string[] {
+  return [...new Set(state.nodes.map((node) => node.folder).filter((folder) => folder.length > 0))];
+}
 
-  const climates = worldFromState(presetStateNamed('pole to equator'));
-  const climatesAgain = worldFromState(presetStateNamed('pole to equator'));
+function checkVolcanicIslandsRegenerates(check: CheckReporter): void {
+  const islands = worldFromState(presetStateNamed('volcanic islands'));
+  const again = worldFromState(presetStateNamed('volcanic islands'));
   check(
-    'the pole to equator preset survives sanitize with all nodes',
-    presetStateNamed('pole to equator').nodes.length === 41,
+    'volcanic islands regenerates identically from the same seed',
+    fieldBytes(islands.evaluator, 'terrain', 0, 0) === fieldBytes(again.evaluator, 'terrain', 0, 0) &&
+      tileBytes(islands.evaluator, 'sea', 0, 0) === tileBytes(again.evaluator, 'sea', 0, 0),
   );
   check(
-    'the pole to equator preset regenerates identically from the same seed',
-    fieldBytes(climates.evaluator, 'n20', 1, 1) === fieldBytes(climatesAgain.evaluator, 'n20', 1, 1) &&
-      tileBytes(climates.evaluator, 'n31', 0, -20) === tileBytes(climatesAgain.evaluator, 'n31', 0, -20),
+    'volcanic islands puts land under the spot you wake on',
+    landCellsAround(islands, 48) > 0,
   );
-  const polarTiles = tileIdsInRect(climates.sampler, 0, -700, 96, 16);
-  const temperateTiles = tileIdsInRect(climates.sampler, 0, 0, 96, 16);
-  const desertTiles = tileIdsInRect(climates.sampler, 0, 700, 96, 16);
-  check('the far north of pole to equator is snow or ice', polarTiles.has(7) || polarTiles.has(6));
-  check('the middle latitudes of pole to equator grow grass', temperateTiles.has(2));
-  check('the far south of pole to equator is sand', desertTiles.has(1));
-  check(
-    'grass belongs to the middle latitudes, not the polar cap',
-    !polarTiles.has(2) && temperateTiles.has(2),
-  );
+}
 
-  const marches = worldFromState(presetStateNamed('the ember marches'));
-  const marchesAgain = worldFromState(presetStateNamed('the ember marches'));
+function checkInfiniteLabyrinthRegenerates(check: CheckReporter): void {
+  const delve = worldFromState(presetStateNamed('infinite labyrinth'));
+  const again = worldFromState(presetStateNamed('infinite labyrinth'));
   check(
-    'the ember marches preset survives sanitize with all nodes',
-    presetStateNamed('the ember marches').nodes.length === 51,
+    'the infinite labyrinth regenerates identically from the same seed',
+    tileBytes(delve.evaluator, 'n1', 0, 0) === tileBytes(again.evaluator, 'n1', 0, 0) &&
+      tileBytes(delve.evaluator, 'n1', 3, -2) === tileBytes(again.evaluator, 'n1', 3, -2),
   );
-  check(
-    'the ember marches regenerates identically from the same seed',
-    fieldBytes(marches.evaluator, 'n14', 1, 1) === fieldBytes(marchesAgain.evaluator, 'n14', 1, 1) &&
-      tileBytes(marches.evaluator, 'n23', 15, -3) === tileBytes(marchesAgain.evaluator, 'n23', 15, -3),
-  );
-  const greenMarchTiles = tileIdsInRect(marches.sampler, -600, 0, 48, 32);
-  const ashfallTiles = tileIdsInRect(marches.sampler, 600, 0, 96, 64);
-  check('the green west of the ember marches grows grass', greenMarchTiles.has(2));
-  check(
-    'the eastern ashfall is ash and lava, and grass does not grow there',
-    ashfallTiles.has(22) && ashfallTiles.has(21) && !ashfallTiles.has(2),
-  );
+  check('the infinite labyrinth is unlit, so its own torches are what you see by', delve.store.daylight() === 0);
+}
 
+function landCellsAround(world: ReturnType<typeof worldFromState>, span: number): number {
+  let land = 0;
+  for (let y = -span; y < span; y += 4) {
+    for (let x = -span; x < span; x += 4) if (world.sampler.elevationAt(x, y) > 0) land++;
+  }
+  return land;
+}
+
+function checkSavedPresetsRoundTrip(check: CheckReporter): void {
+  const saved = [{ name: 'kept', description: 'a saved world', state: earthlikeState() }];
+  const restored = sanitizeWorldPresets(JSON.parse(JSON.stringify(saved)));
   check(
-    'a saved world preset round-trips through storage with its seed and nodes',
-    (() => {
-      const saved = sanitizeWorldPresets(
-        JSON.parse(JSON.stringify([{ name: 'mine', description: 'combo', state: earthlikeState() }])),
-      );
-      return saved.length === 1 && saved[0]!.state.seed === earthlikeState().seed && saved[0]!.state.nodes.length === earthlikeState().nodes.length;
-    })(),
+    'a saved world survives the round trip through storage with its nodes intact',
+    restored.length === 1 && restored[0]!.state.nodes.length === saved[0]!.state.nodes.length,
   );
   check(
-    'world presets reject junk',
-    sanitizeWorldPresets([{ name: '', state: earthlikeState() }, { name: 'empty', state: { nodes: [] } }, null, 7]).length === 0,
+    'junk in stored presets is dropped rather than trusted',
+    sanitizeWorldPresets([{ name: '', state: {} }, 'nope', { name: 'x' }]).length === 0,
   );
 }

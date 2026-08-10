@@ -4,11 +4,11 @@ import { PipelineEvaluator } from '../procgen/eval/evaluator';
 import type { PipelineState } from '../procgen/pipeline/pipelineState';
 import { PipelineStore } from '../procgen/pipeline/pipelineStore';
 import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
-import { examplePipelines } from '../procgen/presets/examplePipelines';
 import { EMPTY_TILE } from '../procgen/values/chunkValues';
 import { asField, asTiles } from '../procgen/values/valueAccess';
 import { WorldSampler } from '../procgen/worldSampler';
 import { TileAssets } from '../assets/tiles/tileAssets';
+import { noiseTerrainState } from './terrainFixtureState';
 
 export const tileAssets = new TileAssets();
 
@@ -23,11 +23,11 @@ export function worldFromState(state: PipelineState): {
 }
 
 export function islandsState(): PipelineState {
-  return sanitizePipeline(examplePipelines()[0]!.state);
+  return noiseTerrainState();
 }
 
 export function earthlikeState(): PipelineState {
-  return sanitizePipeline(examplePipelines()[6]!.state);
+  return noiseTerrainState();
 }
 
 export function stateOfNodes(nodes: Array<Record<string, unknown>>): PipelineState {

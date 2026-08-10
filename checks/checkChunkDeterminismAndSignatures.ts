@@ -14,7 +14,7 @@ import {
 
 export function checkChunkDeterminismAndSignatures(check: CheckReporter): void {
   const islands = islandsState();
-  check('example pipeline survives sanitize with all nodes', islands.nodes.length === 5);
+  check('example pipeline survives sanitize with all nodes', islands.nodes.length === 7);
 
   const a = worldFromState(islandsState());
   const b = worldFromState(islandsState());

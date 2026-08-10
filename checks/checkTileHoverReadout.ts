@@ -3,8 +3,7 @@ import { buildObservation, NO_OVERLAY, type AgentObservation } from '../agents/o
 import { observationLines, viewFirstLineIndex } from '../agents/observationText';
 import { PipelineEvaluator } from '../procgen/eval/evaluator';
 import { PipelineStore } from '../procgen/pipeline/pipelineStore';
-import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
-import { examplePipelines } from '../procgen/presets/examplePipelines';
+import { noiseTerrainState } from './terrainFixtureState';
 import { WorldSampler } from '../procgen/worldSampler';
 import { TileAssets } from '../assets/tiles/tileAssets';
 import { hoveredTileLines } from '../world/hover/hoveredTileLines';
@@ -132,6 +131,6 @@ function eyesOf(mode: AgentMode): AgentEyes {
 }
 
 function samplerOfTheFirstExampleWorld(): WorldSampler {
-  const store = new PipelineStore(sanitizePipeline(examplePipelines()[0]!.state));
+  const store = new PipelineStore(noiseTerrainState());
   return new WorldSampler(store, new PipelineEvaluator(store), tileAssets);
 }

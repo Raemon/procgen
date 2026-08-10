@@ -272,7 +272,7 @@ export function checkAbilityDispatch(check: CheckReporter): void {
   })());
   check('editing a built-in world or node group takes its name over, and deleting yours gives it back', (() => {
     const nodeIds = abilities.store.nodes().map((node) => node.id);
-    const overExample = act('god', 'save_preset', { name: 'islands & forests' });
+    const overExample = act('god', 'save_preset', { name: 'volcanic islands' });
     const overBuiltIn = act('god', 'save_template', { name: 'tectonic plates', node_ids: nodeIds });
     const edited = abilities.context.templates.byName('tectonic plates');
     const dropped = act('god', 'delete_template', { name: 'tectonic plates' });
@@ -284,12 +284,12 @@ export function checkAbilityDispatch(check: CheckReporter): void {
     );
   })());
   check('deleting a built-in world takes it off the shelf without making its name unloadable', (() => {
-    const deleted = act('god', 'delete_preset', { name: 'islands & forests' });
-    const stillLoadable = act('god', 'load_preset', { name: 'islands & forests' });
+    const deleted = act('god', 'delete_preset', { name: 'volcanic islands' });
+    const stillLoadable = act('god', 'load_preset', { name: 'volcanic islands' });
     return (
       deleted.ok &&
       stillLoadable.ok &&
-      abilities.context.worldPresets.hiddenExamples().includes('islands & forests')
+      abilities.context.worldPresets.hiddenExamples().includes('volcanic islands')
     );
   })());
   check('run_world puts a world on screen and names it as the one running', (() => {

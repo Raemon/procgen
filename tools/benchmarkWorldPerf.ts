@@ -9,7 +9,7 @@ import type { ChunkGenCtx } from '../procgen/nodeType';
 import type { NodeInstance, PipelineState } from '../procgen/pipeline/pipelineState';
 import { PipelineStore } from '../procgen/pipeline/pipelineStore';
 import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
-import { emberMarches } from '../procgen/presets/emberMarches';
+import { volcanicIslands } from '../procgen/presets/volcanicIslands';
 import { asField, asTiles } from '../procgen/values/valueAccess';
 import { EMPTY_TILE } from '../procgen/values/chunkValues';
 import { WorldSampler } from '../procgen/worldSampler';
@@ -107,7 +107,7 @@ interface Bench {
 }
 
 function freshWorld(tileAssets: TileAssets): Bench {
-  const state = sanitizePipeline(emberMarches().state);
+  const state = sanitizePipeline(volcanicIslands().state);
   const store = new PipelineStore(state);
   const evaluator = new PipelineEvaluator(store);
   countValueForCalls(evaluator);
