@@ -28,7 +28,7 @@ export function labyrinthKnobsFrom(
     braid: params.braid as number,
     carver: params.carver as number,
     doorJitter: params.doorJitter as number,
-    wallTile: params.wallTile as number,
-    floorTile: params.floorTile as number,
+    wallTile: (params.wallTile as number) ?? 0,
+    floorTile: (params.floorTile as number) ?? 0,
   };
 }

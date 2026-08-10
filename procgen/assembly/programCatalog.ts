@@ -32,7 +32,7 @@ export const PROGRAM_CATALOG = [
     minTownAge: 180,
     massing: { minW: 7, maxW: 10, minD: 6, maxD: 9, stories: 1, wingChance: 0.5, chimneys: 2, yard: 3 },
     defaultWeight: 2,
-    weightHelp: 'How many plots past the inns are given to smithies. 0 keeps smithies out of the village.',
+    weightHelp: 'How many plots past the inns are given to a smithy. 0 keeps the smithy out of the village.',
   },
   {
     name: 'inn',

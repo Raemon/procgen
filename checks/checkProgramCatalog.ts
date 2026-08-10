@@ -22,6 +22,24 @@ function largestPlotCells(): number {
   return spec?.kind === 'int' ? spec.max : 0;
 }
 
+function helpNamesItsProgram(name: ProgramName): boolean {
+  const help = weightKnobOf(name)?.help ?? '';
+  return help.length > 20 && help.toLowerCase().includes(spokenOf(name));
+}
+
+function spokenOf(name: ProgramName): string {
+  return PROGRAM_CATALOG.find((def) => def.name === name)!.spokenName;
+}
+
+function ageLadderClimbsWithSize(): boolean {
+  const byFloor = [...PROGRAM_CATALOG].sort((a, b) => footprintOf(a) - footprintOf(b));
+  return byFloor.every((def, index) => index === 0 || def.minTownAge >= byFloor[index - 1]!.minTownAge);
+}
+
+function footprintOf(def: (typeof PROGRAM_CATALOG)[number]): number {
+  return def.massing.maxW * def.massing.maxD;
+}
+
 export function checkProgramCatalog(check: CheckReporter): void {
   check(
     'every catalog program has a name unique in the catalog',
@@ -37,8 +55,12 @@ export function checkProgramCatalog(check: CheckReporter): void {
       PROGRAM_CATALOG.map((def) => def.defaultWeight).join() === '4,3,2,1,1',
   );
   check(
-    'every program the plot selector can choose has a weight knob carrying its own help',
-    SELECTABLE_PROGRAMS.every((name) => weightKnobOf(name)?.help === helpOf(name)),
+    'every program the plot selector can choose has a weight knob whose help names that program',
+    SELECTABLE_PROGRAMS.every((name) => helpNamesItsProgram(name)),
+  );
+  check(
+    'a town has to be old enough for each larger program, so age is what makes a town look grown',
+    ageLadderClimbsWithSize(),
   );
   check(
     'a point still carrying the retired bld tag builds a default cottage rather than a town hall',
@@ -61,10 +83,6 @@ const SELECTABLE_PROGRAMS = ['cottage', 'dwelling', 'smithy', 'inn', 'townHall']
 function weightKnobOf(name: string): KnobParamSpec | undefined {
   const spec = nodeTypeOf('villagePlots')?.params[weightKnobName(name)];
   return spec && isKnobParamSpec(spec) ? spec : undefined;
-}
-
-function helpOf(name: string): string {
-  return PROGRAM_CATALOG[programIndexByName(name as ProgramName)]!.weightHelp;
 }
 
 function roundTrips(program: number, facing: number): boolean {

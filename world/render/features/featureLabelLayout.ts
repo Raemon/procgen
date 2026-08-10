@@ -35,16 +35,15 @@ export function layoutLabels(
   for (const candidate of visibleAtZoom(candidates, pixelsPerTile)) {
     if (aNodeHasSaidEnough(namedPerNode, candidate)) continue;
     const box = boxOf(candidate);
-    if (placed.every((other) => !boxesOverlap(box, other))) placed.push(box);
+    if (placed.some((other) => boxesOverlap(box, other))) continue;
+    placed.push(box);
+    namedPerNode.set(candidate.nodeId, (namedPerNode.get(candidate.nodeId) ?? 0) + 1);
   }
   return placed;
 }
 
 function aNodeHasSaidEnough(namedPerNode: Map<string, number>, candidate: LabelCandidate): boolean {
-  const named = namedPerNode.get(candidate.nodeId) ?? 0;
-  if (named >= LABELS_ONE_NODE_MAY_NAME) return true;
-  namedPerNode.set(candidate.nodeId, named + 1);
-  return false;
+  return (namedPerNode.get(candidate.nodeId) ?? 0) >= LABELS_ONE_NODE_MAY_NAME;
 }
 
 function visibleAtZoom(
@@ -61,7 +60,7 @@ function visibleAtZoom(
 
 function byPriority(a: LabelCandidate, b: LabelCandidate): number {
   if (a.rank !== b.rank) return a.rank - b.rank;
-  if (a.extentArea !== b.extentArea) return b.extentArea - a.extentArea;
+  if (a.extentArea !== b.extentArea) return a.extentArea - b.extentArea;
   return a.key < b.key ? -1 : 1;
 }
 

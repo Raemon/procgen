@@ -3,6 +3,7 @@ import { defaultTiles } from '../assets/tiles/defaultTiles';
 import type { TileDef } from '../assets/tiles/tileDef';
 import type { PipelineState } from '../procgen/pipeline/pipelineState';
 import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
+import { pointsInRect } from '../procgen/values/pointsInRect';
 import { SEA_LEVEL } from '../procgen/volcanic/seaLevel';
 import { examplePipelines } from '../procgen/presets/examplePipelines';
 import { sanitizeWorldPresets } from '../procgen/presets/worldPreset';
@@ -76,6 +77,23 @@ function checkVolcanicIslandsRegenerates(check: CheckReporter): void {
     'the archipelago around the spawn is islands rather than one drowned reef or one continent',
     region.landShare > 0.04 && region.landShare < 0.6,
   );
+  const houses = pointsInRect(islands.evaluator, 'houses', HOUSE_SURVEY);
+  check('the shipped world raises houses near the spawn to stand on something', houses.length > 0);
+  check(
+    'every house the shipped world raises stands on dry land rather than out over the water',
+    houses.every((house) => aboveTheWaterline(islands, house.x, house.y)),
+  );
+}
+
+const HOUSE_SURVEY = { minX: -400, minY: -400, maxX: 400, maxY: 400 };
+
+function aboveTheWaterline(
+  world: ReturnType<typeof worldFromState>,
+  x: number,
+  y: number,
+): boolean {
+  const waterline = SEA_LEVEL * elevationHeightScaleOf(presetStateNamed('volcanic islands'));
+  return world.sampler.elevationAt(x, y) > waterline;
 }
 
 interface GroundSweep {

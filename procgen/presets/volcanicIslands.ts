@@ -387,8 +387,8 @@ export function volcanicIslands(): ExamplePipeline {
           comment:
             'Buildings fill outward one ring per lifetime, so an old village near a landfall has grown its inner rings a hall and an inn while a young one on the frontier is still a knot of cottages.',
           enabled: true,
-          params: { radius: 48, plotCells: 16 },
-          inputs: { centers: 'villages' },
+          params: { radius: 48, plotCells: 16, buildAbove: SEA_LEVEL },
+          inputs: { centers: 'villages', ground: 'eroded' },
           display: { mode: 'structures', cultureId: THATCHMERE_CULTURE_ID },
         },
         {

@@ -5,7 +5,7 @@ const FULL_AMBIENT_INTENSITY = 0.55;
 const FULL_SUN_INTENSITY = 1.6;
 
 export const LAMPLIT_AMBIENT = 0.02;
-export const OVERHEAD_AMBIENT = 0.4;
+export const OVERHEAD_AMBIENT = 2.5;
 
 export class SceneDaylight {
   private readonly ambient = new THREE.AmbientLight(0xbfd0e0, FULL_AMBIENT_INTENSITY);

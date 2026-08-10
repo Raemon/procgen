@@ -4,7 +4,9 @@ import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { pointsValue, type ChunkValue, type PointsChunk, type WorldPoint } from '../../values/chunkValues';
 import { BORN, pointNumber } from '../../values/pointData';
+import { worldFieldReader } from '../../values/worldInputReaders';
 import { PLOT_STAGGER_LABEL, plotBuiltYear } from './plotBuiltYear';
+import { plotStandsOnGround } from './plotStandsOnGround';
 import { nearbyVillageCenters } from './nearbyVillageCenters';
 import { villageHashSeedAt } from './villageHashSeed';
 import { layoutForCenter, type VillagePlot } from './villageLayout';
@@ -25,9 +27,23 @@ registerNodeType({
       label: 'centers',
       help: 'A village centers node. Every center within the layout radius plans its own streets and plots.',
     },
+    ground: {
+      kind: 'field',
+      label: 'ground',
+      help: 'Optional elevation. Wire it in and a plot whose ground lies below the building line is left unbuilt, so no house stands in water.',
+    },
   },
   params: {
     ...VILLAGE_LAYOUT_PARAMS,
+    buildAbove: {
+      kind: 'number',
+      label: 'build above',
+      help: 'Ground below this height carries no buildings. Only bites when a ground field is wired in; set it to the sea level of the world.',
+      min: 0,
+      max: 1,
+      step: 0.01,
+      default: 0,
+    },
     ...programWeightKnobs(),
   },
   output: 'points',
@@ -55,6 +71,8 @@ function collectPlotInChunk(
   const insideX = plot.spec.x >= ctx.originX && plot.spec.x < ctx.originX + ctx.size;
   const insideY = plot.spec.y >= ctx.originY && plot.spec.y < ctx.originY + ctx.size;
   if (!insideX || !insideY) return;
+  const groundAt = ctx.fieldInput('ground') ? worldFieldReader(ctx, 'ground') : null;
+  if (!plotStandsOnGround(groundAt, plot, ctx.params.buildAbove as number)) return;
   const built = builtYearOf(ctx, center, plot);
   if (built > ctx.time) return;
   const point = buildingPointOf(plot.spec);

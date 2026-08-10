@@ -13,6 +13,8 @@ import { villageHashSeedAt } from './villageHashSeed';
 import { layoutForCenter, type VillageLayoutKnobs, type VillagePlot } from './villageLayout';
 import { PLOT_STAGGER_LABEL, plotBuiltYear } from './plotBuiltYear';
 import { hashLatticePoint } from '../../noise/hashLatticePoint';
+import { fieldReaderOverEvaluator } from '../../values/fieldReaderOverEvaluator';
+import { plotStandsOnGround, type GroundHeightAt } from './plotStandsOnGround';
 import { labelSeed } from '../../random/labelSeed';
 import { BORN, pointNumber } from '../../values/pointData';
 
@@ -24,23 +26,38 @@ function villagePlotsFeatures(request: FeatureExtractionRequest): ExtractedFeatu
   const knobs = layoutKnobsOf(request.node);
   const reach = grownBy(request.rect, knobs.radius);
   const staggerSeed = labelSeed(request.seed, request.node.id, PLOT_STAGGER_LABEL);
+  const footing = footingOf(request);
   return pointsInRect(request.evaluator, centersId, reach).flatMap((center) =>
-    plotFeaturesOfCenter(center, centersId, knobs, request.rect, request.time, staggerSeed),
+    plotFeaturesOfCenter(center, centersId, knobs, request, staggerSeed, footing),
   );
+}
+
+interface Footing {
+  groundAt: GroundHeightAt | null;
+  buildAbove: number;
+}
+
+function footingOf(request: FeatureExtractionRequest): Footing {
+  const groundId = request.node.inputs.ground;
+  return {
+    groundAt: groundId ? fieldReaderOverEvaluator(request.evaluator, groundId) : null,
+    buildAbove: (request.node.params.buildAbove as number) ?? 0,
+  };
 }
 
 function plotFeaturesOfCenter(
   center: WorldPoint,
   centersId: string,
   knobs: VillageLayoutKnobs,
-  rect: WorldRect,
-  time: number,
+  request: FeatureExtractionRequest,
   staggerSeed: number,
+  footing: Footing,
 ): ExtractedFeature[] {
   const plan = layoutForCenter(villageHashSeedAt(center.x, center.y), center, knobs);
   return plan.plots
-    .filter((plot) => plotAnchorInRect(plot, rect))
-    .filter((plot) => standingBy(plot, center, time, staggerSeed))
+    .filter((plot) => plotAnchorInRect(plot, request.rect))
+    .filter((plot) => plotStandsOnGround(footing.groundAt, plot, footing.buildAbove))
+    .filter((plot) => standingBy(plot, center, request.time, staggerSeed))
     .map((plot) => plotFeature(plot, featureKey(centersId, center.x, center.y)));
 }
 

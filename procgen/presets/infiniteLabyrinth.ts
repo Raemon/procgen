@@ -4,12 +4,13 @@ import type { ExamplePipeline } from './examplePipeline';
 
 const ROOF_ON_THE_WALLS = BLOCKING_TILE_HEIGHT;
 const TORCH_ITEM = 5;
+const ASH_HOUND = 4;
 
 export function infiniteLabyrinth(): ExamplePipeline {
   return {
     name: 'infinite labyrinth',
     description:
-      'One node is the whole dungeon: every 32-tile chunk is either a big walled room holding a single puzzle or a dense warren, and every chunk opens onto its neighbours through one to four doorways. The doors spiral — the ways outward from each ring are gathered into one quarter of it, turned a golden angle from the ring before, with one seam of the ring sealed shut — so moving outward means winding around each ring rather than walking straight. You wake in the empty room at the origin with a torch beside you; the first rings are all rooms of escalating challenge, and beyond them a quarter of the chunks give way to warrens you can wander freely. Press F to work a lever or take a key, walk into a crate to push it, and R to reset a room you have wedged shut.',
+      'One node is the whole dungeon: every 32-tile chunk is either a big walled room holding a single puzzle or a dense warren, and every chunk opens onto its neighbours through one to four doorways. The doors spiral — the ways outward from each ring are gathered into one quarter of it, turned a golden angle from the ring before, with one seam of the ring sealed shut — so moving outward means winding around each ring rather than walking straight. You wake in the empty room at the origin with a torch beside you; the first rings are all rooms of escalating challenge, and beyond them a quarter of the chunks give way to warrens you can wander freely. Something lives down here too: about one chunk in twenty beyond the fourth ring keeps an ash hound. Press F to work a lever or take a key, walk into a crate to push it, and R to reset a room you have wedged shut.',
     state: {
       seed: 5309,
       daylight: 0,
@@ -35,6 +36,28 @@ export function infiniteLabyrinth(): ExamplePipeline {
           },
           inputs: {},
           display: { mode: 'tileLayer' },
+        },
+        {
+          id: 'denizens',
+          type: 'labyrinthDenizens',
+          label: 'what lives down here',
+          folder: 'the dungeon',
+          comment:
+            'Roughly one chunk in twenty beyond the fourth ring is home to an ash hound, standing somewhere on that room or warren floor. The knobs here mirror the labyrinth node above so the hounds stand on its floors and not in its walls; the first four rings stay empty, because the opening is for learning in.',
+          enabled: true,
+          params: {
+            roomFraction: 0.75,
+            tutorialRings: 3,
+            corridor: 1,
+            wall: 1,
+            braid: 0.15,
+            carver: 0,
+            doorJitter: 0.5,
+            rarity: 0.05,
+            safeRings: 4,
+          },
+          inputs: {},
+          display: { mode: 'creatures', creatureId: ASH_HOUND },
         },
         {
           id: 'n2',
