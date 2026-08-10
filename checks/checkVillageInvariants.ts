@@ -1,4 +1,4 @@
-import { specToTag, tagToSpec } from '../procgen/assembly/buildingSpecTag';
+import { buildingPointOf, specOfBuildingPoint } from '../procgen/assembly/buildingPoint';
 import { CHUNK_SIZE } from '../procgen/chunk';
 import { PipelineEvaluator } from '../procgen/eval/evaluator';
 import { villageHashSeedAt } from '../procgen/nodes/village/villageHashSeed';
@@ -51,11 +51,11 @@ function checkOneCenterAlwaysPlansTheSameVillage(check: CheckReporter): void {
     SAMPLED_CENTERS.every((center) => planAt(center).streets.length > 0 && planAt(center).plots.length > 0),
   );
   check(
-    'every plot a village plans survives the round trip through its world point tag',
+    'every plot a village plans survives the round trip through its world point payload',
     SAMPLED_CENTERS.every((center) =>
       planAt(center).plots.every(
         (plot) =>
-          JSON.stringify(tagToSpec(specToTag(plot.spec), plot.spec.x, plot.spec.y)) ===
+          JSON.stringify(specOfBuildingPoint(buildingPointOf(plot.spec))) ===
           JSON.stringify(plot.spec),
       ),
     ),

@@ -50,6 +50,7 @@ export interface InputSpec {
 
 export interface ChunkGenCtx {
   readonly nodeId: string;
+  readonly time: number;
   readonly chunkX: number;
   readonly chunkY: number;
   readonly originX: number;
@@ -78,6 +79,7 @@ export interface NodeTypeDef {
   category: string;
   description: string;
   whenToUse: string;
+  readsTime?: true;
   inputs: Record<string, InputSpec>;
   params: Record<string, ParamSpec>;
   output: ValueKind | ((params: Record<string, ParamValue>) => ValueKind);

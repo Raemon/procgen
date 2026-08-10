@@ -18,6 +18,7 @@ export type RegionMemo = <Value>(key: string, compute: () => Value) => Value;
 
 export interface GenCtxArgs {
   seed: number;
+  time: number;
   nodeId: string;
   params: Record<string, ParamValue>;
   chunkX: number;
@@ -28,7 +29,7 @@ export interface GenCtxArgs {
 }
 
 export function createChunkGenCtx(args: GenCtxArgs): ChunkGenCtx {
-  const { seed, nodeId, params, chunkX, chunkY, stride, resolveInput, memo } = args;
+  const { seed, time, nodeId, params, chunkX, chunkY, stride, resolveInput, memo } = args;
   const labelSeeds = new Map<string, number>();
   const labelSeed = (label: string): number => seedForLabel(labelSeeds, seed, nodeId, label);
   const input = (name: string): ChunkValue | null => resolveInput(name, chunkX, chunkY, stride);
@@ -36,6 +37,7 @@ export function createChunkGenCtx(args: GenCtxArgs): ChunkGenCtx {
     mulberry32(hashString(streamKey(seed, nodeId, gridX, gridY, label, stride)));
   return {
     nodeId,
+    time,
     chunkX,
     chunkY,
     originX: chunkOrigin(chunkX),

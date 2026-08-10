@@ -4,6 +4,7 @@ import { outputKindOf, type ParamValue } from '../nodeType';
 import { autoWireInputsToNearestSources } from './autoWireNewNode';
 import { createNodeInstance, nextNodeId } from './createNodeInstance';
 import { clampDaylight, nodeIndexById, type NodeInstance, type PipelineState } from './pipelineState';
+import { clampTime } from '../time/worldTime';
 import type { NodeTemplate } from '../templates/nodeTemplate';
 import { stampTemplateInto } from '../templates/stampTemplate';
 import { dropInvalidWires, isWireValid } from './wiringRules';
@@ -28,6 +29,10 @@ export class PipelineStore {
     return this.state.daylight;
   }
 
+  time(): number {
+    return this.state.time;
+  }
+
   nodes(): readonly NodeInstance[] {
     return this.state.nodes;
   }
@@ -48,6 +53,11 @@ export class PipelineStore {
 
   setDaylight(daylight: number): void {
     this.state.daylight = clampDaylight(daylight);
+    this.emit('values');
+  }
+
+  setTime(time: number): void {
+    this.state.time = clampTime(time);
     this.emit('values');
   }
 

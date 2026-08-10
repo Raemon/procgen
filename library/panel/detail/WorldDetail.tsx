@@ -14,6 +14,7 @@ import { RandomizeRow } from '../../../procgen/panel/RandomizeRow';
 import { scrollNodeCardIntoView } from '../../../procgen/panel/scrollNodeCardIntoView';
 import { WorldDaylightRow } from '../../../procgen/panel/WorldDaylightRow';
 import { WorldSeedRow } from '../../../procgen/panel/WorldSeedRow';
+import { WorldTimeRow } from '../../../procgen/panel/WorldTimeRow';
 import type { WorldPreset } from '../../../procgen/presets/worldPreset';
 import { useRunningWorld } from '../useRunningWorld';
 import { NothingHere } from './NothingHere';
@@ -53,6 +54,7 @@ function WorldEditor({ world, running }: { world: WorldPreset; running: boolean 
       <WorldActionsRow world={world} running={running} />
       <WorldSeedRow />
       <WorldDaylightRow />
+      <WorldTimeRow />
       <RandomizeRow />
       <NodeListToolbar />
       <NodeList />

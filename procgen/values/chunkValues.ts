@@ -4,10 +4,13 @@ export const EMPTY_TILE = -1;
 
 export type ValueKind = 'field' | 'tiles' | 'points';
 
+export type PointData = Readonly<Record<string, number>>;
+
 export interface WorldPoint {
   x: number;
   y: number;
   tag: string;
+  data?: PointData;
 }
 
 export type FieldChunk = Float32Array;

@@ -12,7 +12,7 @@ import type { World } from '../world/world';
 
 export type ReadOnlyPipelineStore = Pick<
   PipelineStore,
-  'seed' | 'daylight' | 'nodes' | 'nodeById' | 'onChange'
+  'seed' | 'daylight' | 'time' | 'nodes' | 'nodeById' | 'onChange'
 >;
 export type ReadOnlyTileAssets = Pick<TileAssets, 'all' | 'byId' | 'byRole' | 'idForRole' | 'onChange'>;
 export type ReadOnlyPieceAssets = Pick<

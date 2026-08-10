@@ -1,4 +1,4 @@
-import { buildingSeedKeyAt } from '../../assembly/buildingSpecTag';
+import { buildingSeedKeyAt } from '../../assembly/buildingPoint';
 import type { BuildingSpec } from '../../assembly/buildingSpec';
 import type { VillageHashSeed } from './villageHashSeed';
 import { plotSlotsOf, type VillagePlotSlot } from './villagePlotSlots';
