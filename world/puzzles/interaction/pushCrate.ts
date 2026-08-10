@@ -60,5 +60,5 @@ function somethingStandsAt(
 }
 
 function standsInTheWay(fixture: PuzzleFixture): boolean {
-  return fixture.kind === 'crate' || fixture.kind === 'pillar';
+  return fixture.kind === 'crate' || fixture.kind === 'pillar' || fixture.kind === 'gate';
 }

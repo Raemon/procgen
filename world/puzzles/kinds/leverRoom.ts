@@ -1,19 +1,21 @@
 import { fixture, type PuzzleFixture } from '../fixtures/puzzleFixture';
 import { registerPuzzleKind, type FurnishContext, type FurnishedRoom } from './puzzleKind';
+import { climbingCount, crowdingCount, fixtureCapacity } from './roomCapacity';
 import { scatterPillars } from './scatterPillars';
 
-const MOST_LEVERS = 4;
-const MOST_PILLARS = 4;
+const LEVER_SHARE = 3;
+const PILLAR_SHARE = 2;
 
 registerPuzzleKind({
   name: 'lever',
-  introducedAtRing: 1,
+  teachingOrder: 0,
   teaches: 'a door in this world is opened by something else in the room',
   furnish: furnishLeverRoom,
 });
 
 function furnishLeverRoom(context: FurnishContext): FurnishedRoom {
-  const pillars = scatterPillars(context, pillarCount(context.level));
+  const room = fixtureCapacity(context.cells);
+  const pillars = scatterPillars(context, crowdingCount(context.level, 2, room / PILLAR_SHARE));
   const levers = placeLevers(context);
   return {
     fixtures: [...pillars, ...levers],
@@ -24,17 +26,10 @@ function furnishLeverRoom(context: FurnishContext): FurnishedRoom {
 
 function placeLevers(context: FurnishContext): PuzzleFixture[] {
   const levers: PuzzleFixture[] = [];
-  for (let index = 0; index < leverCount(context.level); index++) {
+  const wanted = climbingCount(context.level, 2, fixtureCapacity(context.cells) / LEVER_SHARE);
+  for (let index = 0; index < wanted; index++) {
     const cell = context.cells.takeCentreThenSpread(context.rng, context.level === 0);
     if (cell) levers.push(fixture(`lever${index}`, 'lever', cell));
   }
   return levers;
-}
-
-function leverCount(level: number): number {
-  return Math.min(1 + Math.floor(level / 2), MOST_LEVERS);
-}
-
-function pillarCount(level: number): number {
-  return Math.max(0, Math.min(level - 2, MOST_PILLARS));
 }

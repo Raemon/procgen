@@ -4,13 +4,13 @@ import { pointsValue, type ChunkValue, type PointsChunk } from '../../values/chu
 import { BORN, CHAIN_ID, DEPOSIT_KIND, HOST_X, HOST_Y, RICHNESS } from '../../values/pointData';
 import { worldFieldReader, type WorldFieldReader } from '../../values/worldInputReaders';
 import { depositKindAt } from '../../volcanic/depositBands';
+import { SEA_LEVEL } from '../../volcanic/seaLevel';
 import { MAX_CONE_RADIUS, type VolcanoCone } from '../../volcanic/hotspotChains';
 import { coneOfPoint, nearbyVolcanoes } from './nearbyVolcanoes';
 
 export const DEPOSIT_TAG = 'deposit';
 
 const DEPOSIT_SPACING = 24;
-const SEA_LEVEL = 0.45;
 const HOST_REACH = 1.2;
 
 registerNodeType({

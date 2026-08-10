@@ -17,10 +17,10 @@ export interface PullableRoom extends CrateFloorSpace {
 interface ReversePull {
   entrance: Cell;
   solution: CratePush[];
-  whereThePlayerCanGetTo: Set<string>;
+  whereThePlayerCanGetTo: Set<number>;
 }
 
-const ATTEMPTS_PER_PULL = 8;
+const ATTEMPTS_PER_PULL = 5;
 
 export function reversePullCrates(
   room: PullableRoom,
@@ -48,7 +48,7 @@ export function everyDoorwayCanRunTheSolution(
   return entrances.every((entrance) => forwardSolutionWorks(room, entrance, solution));
 }
 
-export function cratesStillOnPlates(room: PullableRoom, plates: ReadonlySet<string>): string[] {
+export function cratesStillOnPlates(room: PullableRoom, plates: ReadonlySet<number>): string[] {
   return [...room.crates]
     .filter(([, cell]) => plates.has(cellKey(cell)))
     .map(([crateId]) => crateId);
@@ -69,7 +69,7 @@ function aDirectionAtRandom(rng: RandomStream): { dx: number; dy: number } {
 function dragEveryCrateOffAPlate(
   room: PullableRoom,
   run: ReversePull,
-  plates: ReadonlySet<string>,
+  plates: ReadonlySet<number>,
   rng: RandomStream,
 ): void {
   const attempts = plates.size * CRATE_DIRECTIONS.length * ATTEMPTS_PER_PULL;

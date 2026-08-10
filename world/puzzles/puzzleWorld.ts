@@ -9,6 +9,7 @@ import { crateCanBePushed, pushCrate, type WalkableProbe } from './interaction/p
 import { reportDoor, useFixture, type UseOutcome } from './interaction/useFixture';
 import { puzzleKnobsFromPipeline } from './puzzleKnobsFromPipeline';
 import { buildPuzzleRoom } from './rooms/buildPuzzleRoom';
+import { RoomCache } from './rooms/roomCache';
 import {
   everyFixtureOf,
   fixtureIdIn,
@@ -22,7 +23,7 @@ import { PuzzleState } from './state/puzzleState';
 const ROOMS_KEPT = 512;
 
 export class PuzzleWorld {
-  private readonly rooms = new Map<string, PuzzleRoomLayout>();
+  private readonly rooms = new RoomCache(ROOMS_KEPT);
   private knobs: LabyrinthKnobs | null;
 
   constructor(
@@ -135,7 +136,6 @@ export class PuzzleWorld {
     const known = this.rooms.get(key);
     if (known) return known;
     const built = buildPuzzleRoom(this.knobs, roomX, roomY);
-    if (this.rooms.size >= ROOMS_KEPT) this.rooms.clear();
     this.rooms.set(key, built);
     return built;
   }

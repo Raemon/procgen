@@ -1,8 +1,9 @@
 import { THATCHMERE_CULTURE_ID } from '../../assets/cultures/defaultCultures';
 import { defaultTileId } from '../../assets/tiles/defaultTiles';
+import { SEA_LEVEL } from '../volcanic/seaLevel';
 import type { ExamplePipeline } from './examplePipeline';
 
-const SEA_LEVEL = 0.45;
+
 
 export function volcanicIslands(): ExamplePipeline {
   return {
@@ -22,12 +23,12 @@ export function volcanicIslands(): ExamplePipeline {
             'The engine of the whole world: each mantle plume erupts a cone every half a million years while the plate drifts overhead, so every chain is a line of dated volcanoes with the youngest at the head. Everything downstream — elevation, soil, mines — reads these points and their birth dates.',
           enabled: true,
           params: {
-            hotspotSpacing: 384,
-            driftRate: 0.0004,
-            eruptionPeriod: 500_000,
-            coneRadius: 56,
-            coneHeight: 0.85,
-            chainFraction: 0.35,
+            hotspotSpacing: 320,
+            driftRate: 0.00015,
+            eruptionPeriod: 400_000,
+            coneRadius: 96,
+            coneHeight: 1,
+            chainFraction: 0.55,
           },
           inputs: {},
           display: { mode: 'markers', tileId: -1, glyph: '▲', color: '#8a4a35' },
@@ -64,7 +65,7 @@ export function volcanicIslands(): ExamplePipeline {
           comment:
             'The abyssal plain with just enough noise mixed in to give the sea floor swells and the rare drowned bank, while staying safely below the waterline so no land exists that a volcano did not make.',
           enabled: true,
-          params: { weight: 0.35 },
+          params: { weight: 0.3 },
           inputs: { a: 'abyss', b: 'seafloor' },
           display: { mode: 'hidden' },
         },
@@ -76,7 +77,7 @@ export function volcanicIslands(): ExamplePipeline {
           comment:
             'The islands themselves. Every cone born by the current time is stamped into the field: young ones tall and cratered, old ones eroded to half height and half again, their shoulders spreading as they wear down. Drag time into the past and the head of each chain vanishes.',
           enabled: true,
-          params: { seaLevel: SEA_LEVEL, erosionHalfLife: 1_500_000, craterDepth: 0.12, shoulder: 12 },
+          params: { seaLevel: SEA_LEVEL, erosionHalfLife: 3_000_000, craterDepth: 0.12, shoulder: 12 },
           inputs: { volcanoes: 'hotspots' },
           display: { mode: 'hidden' },
         },

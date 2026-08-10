@@ -1,6 +1,7 @@
 import '../procgen/nodes';
 import type { PipelineState } from '../procgen/pipeline/pipelineState';
 import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
+import { SEA_LEVEL } from '../procgen/volcanic/seaLevel';
 import { examplePipelines } from '../procgen/presets/examplePipelines';
 import { sanitizeWorldPresets } from '../procgen/presets/worldPreset';
 import { nodeTypeOf } from '../procgen/nodeRegistry';
@@ -25,7 +26,9 @@ export function checkNamedWorldPresets(check: CheckReporter): void {
   check(
     'every shipped world describes itself and survives sanitize with all of its nodes',
     examplePipelines().every((preset) => preset.description.length > 0) &&
-      shippedStates().every((state) => state.nodes.length > 0),
+      examplePipelines().every(
+        (preset) => sanitizePipeline(preset.state).nodes.length === nodeCountOf(preset.state),
+      ),
   );
   check(
     'every node a shipped world names is a node type the registry still knows',
@@ -38,6 +41,10 @@ export function checkNamedWorldPresets(check: CheckReporter): void {
   checkVolcanicIslandsRegenerates(check);
   checkInfiniteLabyrinthRegenerates(check);
   checkSavedPresetsRoundTrip(check);
+}
+
+function nodeCountOf(state: unknown): number {
+  return (state as PipelineState).nodes.length;
 }
 
 function foldersOf(state: PipelineState): string[] {
@@ -53,8 +60,12 @@ function checkVolcanicIslandsRegenerates(check: CheckReporter): void {
       tileBytes(islands.evaluator, 'sea', 0, 0) === tileBytes(again.evaluator, 'sea', 0, 0),
   );
   check(
-    'volcanic islands puts land under the spot you wake on',
-    landCellsAround(islands, 48) > 0,
+    'volcanic islands puts dry land, not just shallower seabed, under the spot you wake on',
+    landShareAround(islands, 48) > 0.2,
+  );
+  check(
+    'the archipelago around the spawn is islands rather than one drowned reef or one continent',
+    landShareAround(islands, 512) > 0.04 && landShareAround(islands, 512) < 0.6,
   );
 }
 
@@ -69,12 +80,22 @@ function checkInfiniteLabyrinthRegenerates(check: CheckReporter): void {
   check('the infinite labyrinth is unlit, so its own torches are what you see by', delve.store.daylight() === 0);
 }
 
-function landCellsAround(world: ReturnType<typeof worldFromState>, span: number): number {
+function landShareAround(world: ReturnType<typeof worldFromState>, span: number): number {
+  const waterline = SEA_LEVEL * elevationHeightScaleOf(presetStateNamed('volcanic islands'));
   let land = 0;
-  for (let y = -span; y < span; y += 4) {
-    for (let x = -span; x < span; x += 4) if (world.sampler.elevationAt(x, y) > 0) land++;
+  let seen = 0;
+  for (let y = -span; y < span; y += 8) {
+    for (let x = -span; x < span; x += 8) {
+      seen++;
+      if (world.sampler.elevationAt(x, y) > waterline) land++;
+    }
   }
-  return land;
+  return land / seen;
+}
+
+function elevationHeightScaleOf(state: PipelineState): number {
+  const elevation = state.nodes.map((node) => node.display).find((it) => it.mode === 'elevation');
+  return elevation ? elevation.heightScale : 1;
 }
 
 function checkSavedPresetsRoundTrip(check: CheckReporter): void {

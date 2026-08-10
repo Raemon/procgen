@@ -3,7 +3,7 @@ import type { Cell, RoomCells } from './roomCells';
 
 export interface CrateBoard {
   cells: RoomCells;
-  pillars: ReadonlySet<string>;
+  pillars: ReadonlySet<number>;
 }
 
 export function standingRoomForACrate(board: CrateBoard, cell: Cell): boolean {
@@ -13,9 +13,9 @@ export function standingRoomForACrate(board: CrateBoard, cell: Cell): boolean {
 export function squaresACrateCannotComeBackFrom(
   board: CrateBoard,
   plates: readonly Cell[],
-): Set<string> {
+): Set<number> {
   const stillWinnable = squaresAPlateIsStillReachableFrom(board, plates);
-  const stranding = new Set<string>();
+  const stranding = new Set<number>();
   for (const cell of everyFloorCellOf(board)) {
     if (!stillWinnable.has(cellKey(cell))) stranding.add(cellKey(cell));
   }
@@ -25,8 +25,8 @@ export function squaresACrateCannotComeBackFrom(
 function squaresAPlateIsStillReachableFrom(
   board: CrateBoard,
   plates: readonly Cell[],
-): Set<string> {
-  const reached = new Set<string>();
+): Set<number> {
+  const reached = new Set<number>();
   const queue: Cell[] = [];
   for (const plate of plates) {
     if (!standingRoomForACrate(board, plate) || reached.has(cellKey(plate))) continue;

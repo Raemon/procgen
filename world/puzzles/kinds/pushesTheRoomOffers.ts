@@ -23,7 +23,7 @@ export function pushesTheRoomOffers(space: CrateFloorSpace, player: Cell): Crate
 export function pushesThatStrandACrate(
   space: CrateFloorSpace,
   player: Cell,
-  stranding: ReadonlySet<string>,
+  stranding: ReadonlySet<number>,
 ): CratePush[] {
   return pushesTheRoomOffers(space, player).filter((push) => {
     const crate = space.crates.get(push.crateId)!;
@@ -33,7 +33,7 @@ export function pushesThatStrandACrate(
 
 function thePlayerCouldMakeThisPush(
   space: CrateFloorSpace,
-  withinReach: ReadonlySet<string>,
+  withinReach: ReadonlySet<number>,
   crate: Cell,
   push: { dx: number; dy: number },
 ): boolean {

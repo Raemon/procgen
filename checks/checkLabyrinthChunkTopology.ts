@@ -6,7 +6,8 @@ import { labyrinthKnobsFrom, type LabyrinthKnobs } from '../procgen/labyrinth/la
 import { buildPuzzleRoom } from '../world/puzzles/rooms/buildPuzzleRoom';
 import type { PuzzleRoomLayout } from '../world/puzzles/rooms/puzzleRoomLayout';
 import { forwardSolutionWorks } from '../world/puzzles/kinds/forwardSolutionWorks';
-import type { CrateFloorSpace } from '../world/puzzles/kinds/crateFloorSpace';
+import { canWalkBetween, type CrateFloorSpace } from '../world/puzzles/kinds/crateFloorSpace';
+import { cellKey } from '../world/puzzles/kinds/cellKey';
 import { RoomCells } from '../world/puzzles/kinds/roomCells';
 import { roomIsSolved } from '../world/puzzles/state/fixtureSignals';
 import { PuzzleState } from '../world/puzzles/state/puzzleState';
@@ -111,16 +112,31 @@ function crateSpaceOf(layout: PuzzleRoomLayout): CrateFloorSpace {
   const crates = layout.fixtures.filter((f) => f.kind === 'crate');
   return {
     cells: new RoomCells(layout.interior),
-    pillars: new Set(pillars.map((pillar) => `${pillar.x},${pillar.y}`)),
+    pillars: new Set(pillars.map(cellKey)),
     crates: new Map(crates.map((crate) => [crate.id, { x: crate.x, y: crate.y }])),
   };
 }
 
 function furnishedRoomIsBeatable(layout: PuzzleRoomLayout): boolean {
   if (layout.kindName === '') return true;
-  if (layout.kindName !== 'sokoban') return layout.opensWhen.length > 0;
+  if (layout.kindName !== 'sokoban') return everyTriggerCanBeWalkedTo(layout);
   if (layout.solution.length === 0) return layout.opensWhen.length === 0;
   return forwardSolutionWorks(crateSpaceOf(layout), layout.entrance, layout.solution);
+}
+
+function everyTriggerCanBeWalkedTo(layout: PuzzleRoomLayout): boolean {
+  if (layout.opensWhen.length === 0) return false;
+  const space = crateSpaceOf(layout);
+  return layout.opensWhen.every((id) => triggerIsWithinReach(layout, space, id));
+}
+
+function triggerIsWithinReach(
+  layout: PuzzleRoomLayout,
+  space: CrateFloorSpace,
+  id: string,
+): boolean {
+  const trigger = layout.fixtures.find((candidate) => candidate.id === id);
+  return trigger !== undefined && canWalkBetween(space, layout.entrance, trigger);
 }
 
 function everyRoomBeatable(knobs: LabyrinthKnobs, rings: number): boolean {

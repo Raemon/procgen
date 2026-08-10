@@ -16,29 +16,37 @@ import {
   reversePullCrates,
   type PullableRoom,
 } from './reversePullCrates';
+import { cellKey } from './cellKey';
+import { climbingCount, crowdingCount, fixtureCapacity } from './roomCapacity';
 import { releaseWalkingRoom, scatterPillars } from './scatterPillars';
 import { RoomCells, type Cell } from './roomCells';
 
-const MOST_CRATES = 3;
-const MOST_PILLARS = 5;
+const CRATE_SHARE = 6;
+const PILLAR_SHARE = 1;
 const MOST_PULLS_PER_CRATE = 6;
+const MOST_PULLS_IN_A_SOLUTION = 24;
 const CELLS_PER_CRATE = 8;
+const LAYOUTS_WORTH_TRYING = 10;
 
 registerPuzzleKind({
   name: 'sokoban',
-  introducedAtRing: 3,
+  teachingOrder: 2,
   teaches: 'the room itself is the mechanism, and a wrong push can cost you the room',
   furnish: furnishSokobanRoom,
 });
 
-const FURNISH_ATTEMPTS = 8;
-
 function furnishSokobanRoom(context: FurnishContext): FurnishedRoom {
+  const budget = { left: LAYOUTS_WORTH_TRYING };
   for (const demand of demandsToTry(context)) {
-    const chosen = theMostRuinableLayoutOnOffer(context, demand);
+    const chosen = theMostRuinableLayoutOnOffer(context, demand, budget);
     if (chosen) return chosen.room;
+    if (budget.left <= 0) break;
   }
   return nothingToSolve();
+}
+
+interface LayoutBudget {
+  left: number;
 }
 
 interface LayoutOnOffer {
@@ -50,10 +58,12 @@ interface LayoutOnOffer {
 function theMostRuinableLayoutOnOffer(
   context: FurnishContext,
   demand: CrateDemand,
+  budget: LayoutBudget,
 ): LayoutOnOffer | null {
   const wanted = ruinChanceWantedAt(context.level);
   let best: LayoutOnOffer | null = null;
-  for (let attempt = 0; attempt < FURNISH_ATTEMPTS; attempt++) {
+  while (budget.left > 0) {
+    budget.left--;
     const candidate = layOutCratesAndPlates(freshCells(context), demand);
     if (candidate && (!best || askingMoreOfThePlayer(candidate, best))) best = candidate;
     if (best && best.ruinChance >= wanted) return best;
@@ -73,14 +83,19 @@ interface CrateDemand {
 
 function demandsToTry(context: FurnishContext): CrateDemand[] {
   const roomiest = roomForCrates(context);
+  const wanted = Math.min(crateCount(context), roomiest);
   const demands: CrateDemand[] = [];
-  for (let crates = Math.min(crateCount(context.level), roomiest); crates >= 1; crates--) {
-    for (let pillars = pillarCount(context.level); pillars >= 0; pillars -= 2) {
-      demands.push({ crates, pillars: Math.max(0, pillars) });
+  for (let crates = wanted; crates >= 1; crates--) {
+    for (let pillars = pillarCount(context); pillars >= 0; pillars = fewerPillars(pillars)) {
+      demands.push({ crates, pillars });
+      if (pillars === 0) break;
     }
-    demands.push({ crates, pillars: 0 });
   }
   return demands;
+}
+
+function fewerPillars(pillars: number): number {
+  return Math.max(0, Math.floor(pillars / 2));
 }
 
 function roomForCrates(context: FurnishContext): number {
@@ -99,13 +114,8 @@ function layOutCratesAndPlates(
   const plates = placePlates(context, demand.crates);
   releaseWalkingRoom(context);
   const room = crateRoomStartingSolved(context, pillars, plates);
-  const plateCells = new Set(plates.map((plate) => `${plate.x},${plate.y}`));
-  const solution = reversePullCrates(
-    room,
-    context.entrances,
-    pullCount(context.level) * plates.length,
-    context.rng,
-  );
+  const plateCells = new Set(plates.map(cellKey));
+  const solution = reversePullCrates(room, context.entrances, pullsToAskFor(context, plates), context.rng);
   if (cratesStillOnPlates(room, plateCells).length > 0) return null;
   if (solution.length === 0) return null;
   if (!everyDoorwayCanRunTheSolution(room, context.entrances, solution)) return null;
@@ -139,7 +149,7 @@ function crateRoomStartingSolved(
   );
   return {
     cells: context.cells,
-    pillars: new Set(pillars.map((pillar) => `${pillar.x},${pillar.y}`)),
+    pillars: new Set(pillars.map(cellKey)),
     crates,
     player: context.entrances[0]!,
   };
@@ -149,14 +159,15 @@ function cratesAsFixtures(room: PullableRoom): PuzzleFixture[] {
   return [...room.crates].map(([id, cell]) => fixture(id, 'crate', cell));
 }
 
-function crateCount(level: number): number {
-  return Math.min(1 + Math.floor(level / 2), MOST_CRATES);
+function crateCount(context: FurnishContext): number {
+  return climbingCount(context.level, 2, fixtureCapacity(context.cells) / CRATE_SHARE);
 }
 
-function pullCount(level: number): number {
-  return Math.min(1 + level, MOST_PULLS_PER_CRATE);
+function pullsToAskFor(context: FurnishContext, plates: readonly PuzzleFixture[]): number {
+  const perCrate = Math.min(1 + context.level, MOST_PULLS_PER_CRATE);
+  return Math.min(perCrate * plates.length, MOST_PULLS_IN_A_SOLUTION);
 }
 
-function pillarCount(level: number): number {
-  return Math.max(0, Math.min(level - 1, MOST_PILLARS));
+function pillarCount(context: FurnishContext): number {
+  return crowdingCount(context.level, 1, fixtureCapacity(context.cells) / PILLAR_SHARE);
 }
