@@ -4,7 +4,7 @@ import '../procgen/nodes';
 import { seedPersistedFile } from '../frontend/persistence/repoFileStore';
 import { PipelineEvaluator } from '../procgen/eval/evaluator';
 import { PipelineStore } from '../procgen/pipeline/pipelineStore';
-import { loadStoredPipeline } from '../frontend/persistence/pipelineStorage';
+import { loadStoredPipeline } from '../procgen/pipeline/pipelineStorage';
 import type { NodeInstance } from '../procgen/pipeline/pipelineState';
 import { WorldSampler } from '../procgen/worldSampler';
 import { TileAssets } from '../assets/tiles/tileAssets';

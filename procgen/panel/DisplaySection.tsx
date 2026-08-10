@@ -1,4 +1,5 @@
 import { useAppRuntime } from '../../frontend/appRuntimeContext';
+import { useEditedPipeline } from './editing/editedPipelineContext';
 import {
   useRerenderOnCreatureChange,
   useRerenderOnItemChange,
@@ -41,7 +42,7 @@ const ROTATION_OPTIONS = [
 ];
 
 export function DisplaySection({ node, kind }: { node: NodeInstance; kind: ValueKind }) {
-  const { perform } = useAppRuntime();
+  const { perform } = useEditedPipeline();
   return (
     <div className="mt-2 border-t border-dashed border-panel-edge pt-2">
       <KnobRow label="display" tip={displayModeTooltip(kind)}>
@@ -76,7 +77,8 @@ function PieceRows({
   node: NodeInstance;
   binding: Extract<DisplayBinding, { mode: 'pieces' }>;
 }) {
-  const { perform, pieces } = useAppRuntime();
+  const { perform } = useEditedPipeline();
+  const { pieces } = useAppRuntime();
   useRerenderOnPieceChange();
   return (
     <>
@@ -105,7 +107,7 @@ function StructureRows({
   node: NodeInstance;
   binding: Extract<DisplayBinding, { mode: 'structures' }>;
 }) {
-  const { perform } = useAppRuntime();
+  const { perform } = useEditedPipeline();
   return (
     <KnobRow label="culture">
       <Slider
@@ -127,7 +129,8 @@ function CreatureRows({
   node: NodeInstance;
   binding: Extract<DisplayBinding, { mode: 'creatures' }>;
 }) {
-  const { perform, creatures } = useAppRuntime();
+  const { perform } = useEditedPipeline();
+  const { creatures } = useAppRuntime();
   useRerenderOnCreatureChange();
   return (
     <KnobRow label="creature">
@@ -147,7 +150,8 @@ function ItemRows({
   node: NodeInstance;
   binding: Extract<DisplayBinding, { mode: 'items' }>;
 }) {
-  const { perform, items } = useAppRuntime();
+  const { perform } = useEditedPipeline();
+  const { items } = useAppRuntime();
   useRerenderOnItemChange();
   return (
     <KnobRow label="item">
@@ -171,7 +175,7 @@ function assetOptions(
 }
 
 function HeightScaleRow({ node, heightScale }: { node: NodeInstance; heightScale: number }) {
-  const { perform } = useAppRuntime();
+  const { perform } = useEditedPipeline();
   return (
     <KnobRow label="height">
       <Slider
@@ -187,7 +191,7 @@ function HeightScaleRow({ node, heightScale }: { node: NodeInstance; heightScale
 }
 
 function CeilingHeightRow({ node, height }: { node: NodeInstance; height: number }) {
-  const { perform } = useAppRuntime();
+  const { perform } = useEditedPipeline();
   return (
     <KnobRow label="height" tip={ceilingHeightTooltip()}>
       <Slider
@@ -203,7 +207,8 @@ function CeilingHeightRow({ node, height }: { node: NodeInstance; height: number
 }
 
 function MarkerRows({ node, binding }: { node: NodeInstance; binding: MarkerBinding }) {
-  const { perform, tileAssets } = useAppRuntime();
+  const { perform } = useEditedPipeline();
+  const { tileAssets } = useAppRuntime();
   return (
     <>
       <KnobRow label="tile" tip={markerTileTooltip()}>

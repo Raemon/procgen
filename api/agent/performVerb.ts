@@ -35,6 +35,7 @@ export function performVerb(
       items: world.items,
       templates: world.templates,
       worldPresets: world.worldPresets,
+      runningWorld: world.runningWorld,
       randomizeHistory: world.randomizeHistory,
       regionSampler: world.sampler,
       groundItems: world.groundItems,

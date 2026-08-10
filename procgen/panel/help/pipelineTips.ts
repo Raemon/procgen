@@ -20,14 +20,9 @@ export const ROLL_SEED_TIP: TooltipContent = {
   body: 'Rerolls the world without touching the pipeline — the fastest way to see whether a setup produces good worlds in general or just got lucky once.',
 };
 
-export const SAVE_PRESET_TIP: TooltipContent = {
-  title: 'save preset',
-  body: 'Stores the whole current pipeline — every node, wire, knob and display binding — under a name you choose, in this browser.',
-};
-
 export const CLEAR_PIPELINE_TIP: TooltipContent = {
   title: 'clear',
-  body: 'Removes every node and leaves a blank world. Asks first; there is no undo for this one.',
+  body: 'Removes every node from this world and leaves it blank. Asks first; there is no undo for this one.',
 };
 
 export const RANDOMIZE_TIPS = {

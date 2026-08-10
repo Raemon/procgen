@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAppRuntime } from '../../frontend/appRuntimeContext';
+import { useEditedPipeline } from './editing/editedPipelineContext';
 import type { NodeInstance } from '../pipeline/pipelineState';
 import { tooltipHandlers } from '../../frontend/tooltips/tooltipHandlers';
 import { NODE_FOLDER_TIP } from './help/nodeCardTips';
@@ -8,7 +8,7 @@ import { folderNamesIn } from './nodeFolderRuns';
 const FOLDER_DATALIST_ID = 'procgen-folder-names';
 
 export function NodeFolderRow({ node }: { node: NodeInstance }) {
-  const { store, perform } = useAppRuntime();
+  const { store, perform } = useEditedPipeline();
   const [draft, setDraft] = useState(node.folder);
   return (
     <label className="mb-2 flex items-center gap-1.5 text-[11px] text-ink-dim">

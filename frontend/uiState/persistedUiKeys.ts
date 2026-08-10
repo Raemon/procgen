@@ -2,6 +2,7 @@ export const PERSISTED_UI_KEYS = {
   panelWidths: 'panel.widths',
   collapsedPanels: 'panel.collapsed',
   librarySelection: 'library.selection',
+  runningWorld: 'library.runningWorld',
   openLibraryFolders: 'library.openFolders',
   openTileArt: 'assets.openTileArt',
   openCreaturePanels: 'assets.openCreaturePanels',

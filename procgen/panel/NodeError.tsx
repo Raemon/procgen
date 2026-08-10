@@ -1,10 +1,12 @@
 import { useAppRuntime } from '../../frontend/appRuntimeContext';
 import { useRerenderOnWorldChange } from '../../frontend/rerenderHooks';
+import { useEditedPipeline } from './editing/editedPipelineContext';
 
 export function NodeError({ nodeId }: { nodeId: string }) {
   const { evaluator } = useAppRuntime();
+  const { rendered } = useEditedPipeline();
   useRerenderOnWorldChange();
-  const message = evaluator.errorFor(nodeId);
+  const message = rendered ? evaluator.errorFor(nodeId) : null;
   if (!message) return null;
   return <ErrorNote message={message} />;
 }

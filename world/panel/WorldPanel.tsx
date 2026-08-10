@@ -3,6 +3,7 @@ import { Button } from '../../frontend/controls/Button';
 import { WorldIcon } from '../../frontend/icons/panelIcons';
 import { tooltipHandlers } from '../../frontend/tooltips/tooltipHandlers';
 import { VIEW_MODE_TIPS, WORLD_VIEW_TIP } from './help/worldTips';
+import { RunningWorldName } from './RunningWorldName';
 import { WorldStage } from './WorldStage';
 import { WorldToolbar } from './WorldToolbar';
 import { VIEW_MODES, type ViewMode } from './viewMode';
@@ -31,6 +32,7 @@ export function WorldPanel() {
           </Button>
         ))}
         <WorldToolbar mode={mode} />
+        <RunningWorldName />
       </div>
       <WorldStage mode={mode} />
     </div>
