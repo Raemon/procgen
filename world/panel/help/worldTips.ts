@@ -49,3 +49,16 @@ export const LIFE_TIP: TooltipContent = {
   title: 'life',
   body: 'Runs the creature simulation. Paused, creatures hold their positions; the world itself is unaffected either way.',
 };
+
+export function runningWorldTip(running: string): TooltipContent {
+  if (!running) {
+    return {
+      title: 'no world running',
+      body: 'Nothing from the worlds folder is on screen. Press ▶ run on a world in the asset library to put it here.',
+    };
+  }
+  return {
+    title: `running: ${running}`,
+    body: 'The world this panel is generating. Click to open it in the detail column, where its nodes are edited.',
+  };
+}

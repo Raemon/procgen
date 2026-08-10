@@ -57,6 +57,21 @@ registerCultureAbility({
 });
 
 registerCultureAbility({
+  action: 'duplicate_culture',
+  humanControl: 'asset library, cultures folder: ⧉ on a culture row',
+  description: 'Copy a culture, its tiles and role bindings included, as a new culture with its own id.',
+  params: { culture_id: { kind: 'int', help: CULTURE_ID_HELP } },
+  example: { action: 'duplicate_culture', culture_id: 0 },
+  apply: (context, params) =>
+    withCulture(context, params, (culture) => {
+      const copy = context.cultures.duplicate(culture.id);
+      return copy
+        ? abilitySucceeded(`duplicated culture ${culture.id} as ${copy.id}`)
+        : abilityFailed('unknown_culture', `could not duplicate culture ${culture.id}`);
+    }),
+});
+
+registerCultureAbility({
   action: 'remove_culture',
   humanControl: 'detail panel, cultures: ✕ on a culture row',
   description: 'Delete a culture. Points bound to it stop growing buildings.',

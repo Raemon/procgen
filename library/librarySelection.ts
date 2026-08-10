@@ -9,12 +9,11 @@ export interface LibrarySelection {
   key: string;
 }
 
-export const CURRENT_WORLD = '';
+export const NOTHING_SELECTED = null;
 
-export const WORLD_SELECTED: LibrarySelection = { folder: 'worlds', key: CURRENT_WORLD };
-
-export function isLibrarySelection(value: unknown): value is LibrarySelection {
-  if (typeof value !== 'object' || value === null) return false;
+export function isLibrarySelection(value: unknown): value is LibrarySelection | null {
+  if (value === null) return true;
+  if (typeof value !== 'object') return false;
   const candidate = value as { folder?: unknown; key?: unknown };
   return isLibraryFolder(candidate.folder) && typeof candidate.key === 'string';
 }
@@ -23,6 +22,10 @@ export function isLibraryFolder(value: unknown): value is LibraryFolder {
   return LIBRARY_FOLDERS.includes(value as LibraryFolder);
 }
 
-export function selects(selection: LibrarySelection, folder: LibraryFolder, key: string): boolean {
-  return selection.folder === folder && selection.key === key;
+export function selects(
+  selection: LibrarySelection | null,
+  folder: LibraryFolder,
+  key: string,
+): boolean {
+  return selection?.folder === folder && selection.key === key;
 }

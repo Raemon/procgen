@@ -3,7 +3,9 @@ import type { ItemAssets } from '../assets/items/itemAssets';
 import type { CultureAssets } from '../assets/cultures/cultureAssets';
 import type { PieceAssets } from '../assets/pieces/pieceAssets';
 import type { PipelineStore } from '../procgen/pipeline/pipelineStore';
+import type { RunningWorld } from '../procgen/presets/runningWorld';
 import type { WorldPresetLibrary } from '../procgen/presets/worldPresetLibrary';
+import type { WorldShelf } from '../procgen/presets/worldShelf';
 import type { TemplateLibrary } from '../procgen/templates/templateLibrary';
 import type { TileAssets } from '../assets/tiles/tileAssets';
 import type { World } from '../world/world';
@@ -28,6 +30,8 @@ export type ReadOnlyWorldPresetLibrary = Pick<
   WorldPresetLibrary,
   'savedPresets' | 'byName' | 'onChange'
 >;
+export type ReadOnlyWorldShelf = Pick<WorldShelf, 'all' | 'byName' | 'onChange'>;
+export type ReadOnlyRunningWorld = Pick<RunningWorld, 'name' | 'onChange'>;
 export type ReadOnlyWorld = Pick<
   World,
   'playerX' | 'playerY' | 'facing' | 'sightRadiusTiles' | 'on'

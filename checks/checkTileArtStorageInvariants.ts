@@ -85,7 +85,12 @@ function checkSavingTheWorldStoresArtCompactly(check: CheckReporter): void {
 }
 
 function worldSavingOnlyTiles(): ServerWorld {
-  const nothing = { all: () => [], snapshot: () => null, savedTemplates: () => [], savedPresets: () => [] };
+  const nothing = {
+    all: () => [],
+    snapshot: () => null,
+    savedTemplates: () => [],
+    stored: () => ({ presets: [], hiddenExamples: [] }),
+  };
   return {
     ...nothing,
     store: nothing,
