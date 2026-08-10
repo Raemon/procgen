@@ -1,11 +1,11 @@
-import { useAppRuntime } from '../../frontend/appRuntimeContext';
+import { useEditedPipeline } from './editing/editedPipelineContext';
 import { KnobRow } from '../../frontend/controls/KnobRow';
 import { Slider } from '../../frontend/controls/Slider';
 import { ValueReadout } from '../../frontend/controls/ValueReadout';
 import { DAYLIGHT_TIP } from './help/pipelineTips';
 
 export function WorldDaylightRow() {
-  const { store, perform } = useAppRuntime();
+  const { store, perform } = useEditedPipeline();
   return (
     <KnobRow label="daylight" tip={DAYLIGHT_TIP}>
       <Slider

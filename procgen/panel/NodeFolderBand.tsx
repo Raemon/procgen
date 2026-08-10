@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { useAppRuntime } from '../../frontend/appRuntimeContext';
+import { useEditedPipeline } from './editing/editedPipelineContext';
 import { Button } from '../../frontend/controls/Button';
 import { classes } from '../../frontend/controls/classes';
 import { FOLDER_HOVER_GROUP, REVEALED_ON_FOLDER_HOVER } from '../../frontend/controls/revealOnRowHover';
@@ -42,7 +42,7 @@ function FolderHeader({
   collapsed: boolean;
   onToggleCollapsed(): void;
 }) {
-  const { perform } = useAppRuntime();
+  const { perform } = useEditedPipeline();
   const nodeIds = run.nodes.map((node) => node.id);
   return (
     <div className="mb-1.5 flex items-center gap-[5px] px-0.5">
@@ -72,8 +72,8 @@ function FolderHeader({
 }
 
 function SendToLibraryButton({ run }: { run: NodeRun }) {
-  const { perform } = useAppRuntime();
-  const [, select] = useLibrarySelection();
+  const { perform } = useEditedPipeline();
+  const { select } = useLibrarySelection();
   function sendToLibrary(): void {
     const saved = perform('save_template', {
       name: run.folder,
@@ -95,7 +95,7 @@ function describeRun(run: NodeRun): string {
 }
 
 function FolderNameInput({ folder, nodeIds }: { folder: string; nodeIds: string[] }) {
-  const { perform } = useAppRuntime();
+  const { perform } = useEditedPipeline();
   const [draft, setDraft] = useState(folder);
   const commit = () => draft.trim() && setFolderOfNodes(perform, nodeIds, draft.trim());
   return (

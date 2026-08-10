@@ -67,18 +67,29 @@ registerWorldAbility({
 
 registerWorldAbility({
   action: 'load_preset',
-  humanControl: 'asset library, worlds folder: load into this world — or the presets dropdown on a world',
+  humanControl: 'no button of its own — run_world is what the ▶ run button calls',
   description:
-    'Replace the whole pipeline with a named preset — one of the built-in examples or one you saved.',
+    'Replace the whole pipeline with a named preset — one of the built-in examples or one you saved — without changing which world the game panel says is running.',
   params: { name: { kind: 'text', help: 'a preset name — see GET /api/v1/presets' } },
   example: { action: 'load_preset', name: 'islands' },
   apply: (context, params) => loadPreset(context, params),
 });
 
 registerWorldAbility({
+  action: 'run_world',
+  humanControl: 'asset library, worlds folder: ▶ run on a world',
+  description:
+    'Run a world: its nodes become the pipeline the game panel renders, and the world panel names it as the running world. Editing that world from then on edits what you are looking at.',
+  params: { name: { kind: 'text', help: 'a world name — see GET /api/v1/presets' } },
+  example: { action: 'run_world', name: 'islands' },
+  apply: (context, params) => runWorld(context, params),
+});
+
+registerWorldAbility({
   action: 'save_preset',
-  humanControl: 'detail panel, world: presets save button',
-  description: 'Save the whole current pipeline as a named preset. An existing name is overwritten.',
+  humanControl: 'detail panel, world: every edit writes itself back under the world you are editing',
+  description:
+    'Save the whole current pipeline as a named world. An existing name is overwritten; saving under the name of a built-in example takes that name over, and the example stays behind as what deleting yours falls back to.',
   params: {
     name: { kind: 'text', help: 'the preset name' },
     description: { kind: 'text', help: 'what this world is', optional: true },
@@ -99,16 +110,17 @@ registerWorldAbility({
 
 registerWorldAbility({
   action: 'delete_preset',
-  humanControl: 'asset library, worlds folder: ✕ on a saved world',
-  description: 'Delete one of your saved presets. Built-in examples cannot be deleted.',
-  params: { name: { kind: 'text', help: 'the saved preset name' } },
+  humanControl: 'asset library, worlds folder: ✕ on a world',
+  description:
+    'Delete a world. Yours is dropped; a built-in example is taken off the library shelf, and load_preset can still name it.',
+  params: { name: { kind: 'text', help: 'the world name' } },
   example: { action: 'delete_preset', name: 'my archipelago' },
   apply: (context, params) => deletePreset(context, params),
 });
 
 registerWorldAbility({
   action: 'stamp_template',
-  humanControl: 'asset library, node groups folder: stamp into this world',
+  humanControl: 'asset library, node groups folder: stamp into the running world',
   description:
     'Insert a saved group of wired nodes into the pipeline, renamed so its ids do not collide and filed under its own folder.',
   params: {
@@ -125,9 +137,10 @@ registerWorldAbility({
 
 registerWorldAbility({
   action: 'save_template',
-  humanControl: 'detail panel, world: ⤓ library on a folder band',
+  humanControl:
+    'detail panel, world: ⤓ library on a folder band — and every edit to a node group writes itself back this way',
   description:
-    'Save a run of nodes as a reusable template. Wires that point outside the group are dropped.',
+    'Save a run of nodes as a reusable template. Wires that point outside the group are dropped; saving under the name of a built-in group takes that name over.',
   params: {
     name: { kind: 'text', help: 'the template name' },
     node_ids: { kind: 'json', help: 'the ids of the nodes to save, as an array of strings' },
@@ -149,7 +162,8 @@ registerWorldAbility({
 registerWorldAbility({
   action: 'delete_template',
   humanControl: 'detail panel, node group: ✕',
-  description: 'Delete one of your saved templates. Built-in templates cannot be deleted.',
+  description:
+    'Delete one of your saved templates. A built-in group edited into a saved one goes back to how it ships.',
   params: { name: { kind: 'text', help: 'the saved template name' } },
   example: { action: 'delete_template', name: 'coastline' },
   apply: (context, params) => deleteTemplate(context, params),
@@ -239,36 +253,47 @@ function loadPreset(context: AbilityContext, params: Record<string, unknown>): A
   return abilitySucceeded(`loaded preset '${name.value}'`);
 }
 
+function runWorld(context: AbilityContext, params: Record<string, unknown>): AbilityResult {
+  const name = readText(params, 'name');
+  if (!name.ok) return name.failure;
+  if (context.runningWorld.name() === name.value) {
+    return abilitySucceeded(`'${name.value}' is already the world running`);
+  }
+  const loaded = loadPreset(context, params);
+  if (!loaded.ok) return loaded;
+  context.runningWorld.setName(name.value);
+  return abilitySucceeded(`'${name.value}' is the world now running`);
+}
+
 function presetStateOf(context: AbilityContext, name: string): unknown {
-  const example = examplePipelines().find((preset) => preset.name === name);
-  return example ? example.state : context.worldPresets.byName(name)?.state;
+  return worldPresetNamed(context, name)?.state;
 }
 
 function presetNames(context: AbilityContext): string[] {
   return [
-    ...examplePipelines().map((preset) => preset.name),
-    ...context.worldPresets.savedPresets().map((preset) => preset.name),
+    ...new Set([
+      ...context.worldPresets.savedPresets().map((preset) => preset.name),
+      ...examplePipelines().map((preset) => preset.name),
+    ]),
   ];
 }
 
 function savePreset(context: AbilityContext, params: Record<string, unknown>): AbilityResult {
   const name = readText(params, 'name');
   if (!name.ok) return name.failure;
-  if (examplePipelines().some((example) => example.name === name.value)) {
-    return abilityFailed(
-      'name_taken',
-      `'${name.value}' is a built-in example — saving under that name would make it unloadable, so pick another`,
-    );
-  }
   if (context.store.nodes().length === 0) {
     return abilityFailed('empty_pipeline', 'there is nothing to save — the pipeline has no nodes');
   }
   context.worldPresets.save({
     name: name.value,
-    description: readOptionalText(params, 'description'),
+    description: readOptionalText(params, 'description') || describedElsewhere(context, name.value),
     state: sanitizePipeline(context.store.snapshot()),
   });
   return abilitySucceeded(`saved preset '${name.value}'`);
+}
+
+function describedElsewhere(context: AbilityContext, name: string): string {
+  return worldPresetNamed(context, name)?.description ?? '';
 }
 
 function duplicatePreset(context: AbilityContext, params: Record<string, unknown>): AbilityResult {
@@ -289,7 +314,7 @@ function duplicatePreset(context: AbilityContext, params: Record<string, unknown
 
 function worldPresetNamed(context: AbilityContext, name: string) {
   return (
-    examplePipelines().find((preset) => preset.name === name) ?? context.worldPresets.byName(name)
+    context.worldPresets.byName(name) ?? examplePipelines().find((preset) => preset.name === name)
   );
 }
 
@@ -311,14 +336,17 @@ function duplicateTemplate(context: AbilityContext, params: Record<string, unkno
 function deletePreset(context: AbilityContext, params: Record<string, unknown>): AbilityResult {
   const name = readText(params, 'name');
   if (!name.ok) return name.failure;
-  if (!context.worldPresets.byName(name.value)) {
+  if (!worldPresetNamed(context, name.value)) {
     return abilityFailed(
       'unknown_preset',
-      `no saved preset '${name.value}' — saved presets: ${listOf(context.worldPresets.savedPresets().map((preset) => preset.name))}`,
+      `no world '${name.value}' — the library holds: ${listOf(presetNames(context))}`,
     );
   }
   context.worldPresets.remove(name.value);
-  return abilitySucceeded(`deleted saved preset '${name.value}'`);
+  if (examplePipelines().some((example) => example.name === name.value)) {
+    context.worldPresets.hideExample(name.value);
+  }
+  return abilitySucceeded(`deleted world '${name.value}'`);
 }
 
 function stampTemplate(context: AbilityContext, params: Record<string, unknown>): AbilityResult {
@@ -349,12 +377,6 @@ function saveTemplate(context: AbilityContext, params: Record<string, unknown>):
   if (!name.ok) return name.failure;
   const ids = nodeIdsFrom(params);
   if (!ids.ok) return ids.failure;
-  if (context.templates.builtIn().some((builtIn) => builtIn.name === name.value)) {
-    return abilityFailed(
-      'name_taken',
-      `'${name.value}' is a built-in group — saving under that name would make it unreachable, so rename the folder first`,
-    );
-  }
   const nodes = context.store.nodes().filter((node) => ids.value.includes(node.id));
   if (nodes.length !== ids.value.length) {
     return abilityFailed(
@@ -362,7 +384,9 @@ function saveTemplate(context: AbilityContext, params: Record<string, unknown>):
       `node_ids must all exist — the pipeline has: ${listOf(context.store.nodes().map((node) => node.id))}`,
     );
   }
-  context.templates.save(templateFromNodes(nodes, name.value, readOptionalText(params, 'description')));
+  const description =
+    readOptionalText(params, 'description') || (context.templates.byName(name.value)?.description ?? '');
+  context.templates.save(templateFromNodes(nodes, name.value, description));
   return abilitySucceeded(`saved template '${name.value}' from ${listOf(ids.value)}`);
 }
 

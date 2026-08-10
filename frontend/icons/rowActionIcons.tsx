@@ -9,6 +9,14 @@ export function DuplicateIcon({ size }: { size?: number }) {
   );
 }
 
+export function RunIcon({ size }: { size?: number }) {
+  return (
+    <Icon size={size}>
+      <path d="M8 5.5l10 6.5-10 6.5z" />
+    </Icon>
+  );
+}
+
 export function TrashIcon({ size }: { size?: number }) {
   return (
     <Icon size={size}>

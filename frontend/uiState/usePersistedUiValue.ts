@@ -14,7 +14,8 @@ export function usePersistedUiValue<T>(
     (listener: () => void) => subscribeToPersistedUiValue(key, listener),
     [key],
   );
-  const value = useSyncExternalStore(subscribe, () => persistedUiValue(key, fallback, isValid));
+  const readValue = useCallback(() => persistedUiValue(key, fallback, isValid), [key, fallback, isValid]);
+  const value = useSyncExternalStore(subscribe, readValue, readValue);
   const setValue = useCallback((next: T) => writePersistedUiValue(key, next), [key]);
   return [value, setValue];
 }
