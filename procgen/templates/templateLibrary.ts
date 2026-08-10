@@ -1,13 +1,13 @@
+import { unpersisted, type PersistedCollection } from '../persistence/persistedCollection';
 import { builtInTemplates } from './builtInTemplates';
 import type { NodeTemplate } from './nodeTemplate';
-import { loadSavedTemplates, storeSavedTemplates } from './templateStorage';
 
 export class TemplateLibrary {
   private saved: NodeTemplate[];
   private readonly listeners = new Set<() => void>();
 
-  constructor(initialTemplates?: NodeTemplate[]) {
-    this.saved = initialTemplates ?? loadSavedTemplates();
+  constructor(private readonly persistence: PersistedCollection<NodeTemplate> = unpersisted()) {
+    this.saved = persistence.load();
   }
 
   builtIn(): readonly NodeTemplate[] {
@@ -42,7 +42,7 @@ export class TemplateLibrary {
   }
 
   private persistAndNotify(): void {
-    storeSavedTemplates(this.saved);
+    this.persistence.store(this.saved);
     for (const listener of this.listeners) listener();
   }
 }

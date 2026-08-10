@@ -15,6 +15,8 @@ import { CreatureClock } from '../world/creatureSim/creatureClock';
 import { CreatureSim } from '../world/creatureSim/creatureSim';
 import { PipelineEvaluator } from '../procgen/eval/evaluator';
 import { attachPipelinePersistence, loadStoredPipeline } from './persistence/pipelineStorage';
+import { persistedTemplates } from './persistence/templateStorage';
+import { persistedWorldPresets } from './persistence/worldPresetStorage';
 import { PipelineStore } from '../procgen/pipeline/pipelineStore';
 import { WorldPresetLibrary } from '../procgen/presets/worldPresetLibrary';
 import { RandomizeHistory } from '../procgen/randomize/randomizeHistory';
@@ -78,8 +80,8 @@ export interface AppRuntime {
 
 export function createAppRuntime(): AppRuntime {
   const tileAssets = new TileAssets();
-  const templates = new TemplateLibrary();
-  const worldPresets = new WorldPresetLibrary();
+  const templates = new TemplateLibrary(persistedTemplates());
+  const worldPresets = new WorldPresetLibrary(persistedWorldPresets());
   const pieces = new PieceAssets();
   const cultures = new CultureAssets();
   const creatures = new CreatureAssets();

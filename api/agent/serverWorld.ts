@@ -14,6 +14,7 @@ import { PipelineStore } from '../../procgen/pipeline/pipelineStore';
 import { WorldPresetLibrary } from '../../procgen/presets/worldPresetLibrary';
 import { RandomizeHistory } from '../../procgen/randomize/randomizeHistory';
 import { TemplateLibrary } from '../../procgen/templates/templateLibrary';
+import { loadOnly } from '../../procgen/persistence/persistedCollection';
 import { sanitizePipeline } from '../../procgen/pipeline/sanitizePipeline';
 import { WorldSampler } from '../../procgen/worldSampler';
 import { nearestWalkable } from '../../world/nearestWalkable';
@@ -99,8 +100,10 @@ function buildServerWorld(
     creaturesFromStoredJson(docs.read('creatures')) ?? undefined,
   );
   const items = new ItemAssets(itemsFromStoredJson(docs.read('items')) ?? undefined);
-  const templates = new TemplateLibrary(sanitizeTemplates(docs.read('templates')));
-  const worldPresets = new WorldPresetLibrary(sanitizeWorldPresets(docs.read('worldPresets')));
+  const templates = new TemplateLibrary(loadOnly(() => sanitizeTemplates(docs.read('templates'))));
+  const worldPresets = new WorldPresetLibrary(
+    loadOnly(() => sanitizeWorldPresets(docs.read('worldPresets'))),
+  );
   const store = new PipelineStore(sanitizePipeline(docs.read('pipeline')));
   const evaluator = new PipelineEvaluator(store);
   const sampler = new WorldSampler(

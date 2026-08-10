@@ -1,12 +1,12 @@
-import { loadSavedWorldPresets, storeSavedWorldPresets } from './worldPresetStorage';
+import { unpersisted, type PersistedCollection } from '../persistence/persistedCollection';
 import type { WorldPreset } from './worldPreset';
 
 export class WorldPresetLibrary {
   private saved: WorldPreset[];
   private readonly listeners = new Set<() => void>();
 
-  constructor(initialPresets?: WorldPreset[]) {
-    this.saved = initialPresets ?? loadSavedWorldPresets();
+  constructor(private readonly persistence: PersistedCollection<WorldPreset> = unpersisted()) {
+    this.saved = persistence.load();
   }
 
   savedPresets(): readonly WorldPreset[] {
@@ -33,7 +33,7 @@ export class WorldPresetLibrary {
   }
 
   private persistAndNotify(): void {
-    storeSavedWorldPresets(this.saved);
+    this.persistence.store(this.saved);
     for (const listener of this.listeners) listener();
   }
 }
