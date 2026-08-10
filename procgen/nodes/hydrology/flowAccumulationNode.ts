@@ -1,7 +1,6 @@
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { chunkOrigin, CHUNK_SIZE } from '../../chunk';
-import { cellsSpanningTiles } from '../../cellStride';
 import { fieldValue, type ChunkValue } from '../../values/chunkValues';
 import {
   clampedWindowRadius,
@@ -101,11 +100,11 @@ function sharedRegionFlow(ctx: ChunkGenCtx): RegionFlow | null {
 }
 
 function channelStartInCells(ctx: ChunkGenCtx): number {
-  return Math.max(1, (ctx.params.channelizeAbove as number) / (ctx.stride * ctx.stride));
+  return Math.max(1, ctx.params.channelizeAbove as number);
 }
 
 function catchmentInCells(ctx: ChunkGenCtx): number {
-  return Math.max(1, (ctx.params.catchmentScale as number) / (ctx.stride * ctx.stride));
+  return Math.max(1, ctx.params.catchmentScale as number);
 }
 
 function alignedRegionStart(chunkCoord: number): number {
@@ -117,7 +116,7 @@ function computeRegionFlow(
   regionChunkX: number,
   regionChunkY: number,
 ): RegionFlow | null {
-  const radius = clampedWindowRadius(cellsSpanningTiles(ctx.params.windowRadius as number, ctx.stride));
+  const radius = clampedWindowRadius(Math.max(1, Math.round(ctx.params.windowRadius as number)));
   const regionSpan = SHARED_WINDOW_CHUNKS * CHUNK_SIZE;
   const window = gatherFieldWindowRect(
     ctx,

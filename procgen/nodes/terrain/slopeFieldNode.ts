@@ -1,4 +1,3 @@
-import { cellsSpanningTiles } from '../../cellStride';
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { fieldValue, type ChunkValue } from '../../values/chunkValues';
@@ -40,11 +39,11 @@ registerNodeType({
 
 function slopeChunk(ctx: ChunkGenCtx): ChunkValue {
   const out = ctx.newField();
-  const radiusCells = cellsSpanningTiles(ctx.params.radius as number, ctx.stride);
+  const radiusCells = Math.max(1, Math.round(ctx.params.radius as number));
   const window = gatherFieldWindow(ctx, 'source', radiusCells + 1);
   if (!window) return fieldValue(out);
   const gain = ctx.params.gain as number;
-  const spanInTiles = 2 * radiusCells * ctx.stride;
+  const spanInTiles = 2 * radiusCells;
   for (let i = 0; i < out.length; i++) {
     const cellX = ctx.originX + (i % ctx.size);
     const cellY = ctx.originY + Math.floor(i / ctx.size);
