@@ -139,9 +139,9 @@ registerWorldAbility({
   action: 'stamp_template',
   humanControl: 'asset library, node groups folder: stamp into the running world',
   description:
-    'Insert a saved group of wired nodes into the pipeline, renamed so its ids do not collide and filed under its own folder.',
+    'Insert a saved node group into the pipeline, renamed so its ids do not collide and filed under its own folder. The verb says template for compatibility; the library calls these node groups.',
   params: {
-    name: { kind: 'text', help: 'a template name — see GET /api/v1/templates' },
+    name: { kind: 'text', help: 'a node group name — see GET /api/v1/templates' },
     before_node_id: {
       kind: 'nodeId',
       help: 'insert before this node; omitted means the end of the list',
@@ -157,9 +157,9 @@ registerWorldAbility({
   humanControl:
     'detail panel, world: ⤓ library on a folder band — and every edit to a node group writes itself back this way',
   description:
-    'Save a run of nodes as a reusable template. Wires that point outside the group are dropped; saving under the name of a built-in group takes that name over.',
+    'Save a run of nodes as a reusable node group. Wires that point outside the group are dropped; saving under the name of a built-in group takes that name over.',
   params: {
-    name: { kind: 'text', help: 'the template name' },
+    name: { kind: 'text', help: 'the node group name' },
     node_ids: { kind: 'json', help: 'the ids of the nodes to save, as an array of strings' },
     description: { kind: 'text', help: 'what this group does', optional: true },
   },
@@ -180,7 +180,7 @@ registerWorldAbility({
   action: 'delete_template',
   humanControl: 'detail panel, node group: ✕',
   description:
-    'Delete one of your saved templates. A built-in group edited into a saved one goes back to how it ships.',
+    'Delete one of your saved node groups. A built-in group edited into a saved one goes back to how it ships.',
   params: { name: { kind: 'text', help: 'the saved template name' } },
   example: { action: 'delete_template', name: 'coastline' },
   apply: (context, params) => deleteTemplate(context, params),

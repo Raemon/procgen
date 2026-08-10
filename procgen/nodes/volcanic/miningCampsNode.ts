@@ -2,7 +2,7 @@ import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { PRESENT } from '../../time/worldTime';
 import { pointsValue, type ChunkValue, type PointsChunk, type WorldPoint } from '../../values/chunkValues';
-import { BORN, RICHNESS, pointNumber } from '../../values/pointData';
+import { BORN, RICHNESS, SENT_FROM_X, SENT_FROM_Y, pointNumber } from '../../values/pointData';
 import { nearbyPointsOf } from './nearbyPoints';
 
 export const CAMP_TAG = 'camp';
@@ -74,6 +74,8 @@ function collectCampFor(
     data: {
       [BORN]: Math.min(PRESENT, pointNumber(village, BORN, PRESENT) + (ctx.params.campDelay as number)),
       [RICHNESS]: pointNumber(deposit, RICHNESS, 0),
+      [SENT_FROM_X]: village.x,
+      [SENT_FROM_Y]: village.y,
     },
   });
 }

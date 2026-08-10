@@ -48,7 +48,7 @@ export function villageSnapshotAround(
 }
 
 export function villageCenterNodes(world: HeadlessWorld): NodeInstance[] {
-  return nodesOfType(world, 'villageCenters');
+  return nodesOfType(world, 'settlementSpread');
 }
 
 export function firstCenterOfNode(

@@ -4,7 +4,7 @@ import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { pointsValue, type ChunkValue, type PointsChunk, type WorldPoint } from '../../values/chunkValues';
 import { BORN, pointNumber } from '../../values/pointData';
-import { RING_PERIOD } from '../../time/worldTime';
+import { PLOT_STAGGER_LABEL, plotBuiltYear } from './plotBuiltYear';
 import { nearbyVillageCenters } from './nearbyVillageCenters';
 import { villageHashSeedAt } from './villageHashSeed';
 import { layoutForCenter, type VillagePlot } from './villageLayout';
@@ -62,9 +62,8 @@ function collectPlotInChunk(
 }
 
 function builtYearOf(ctx: ChunkGenCtx, center: WorldPoint, plot: VillagePlot): number {
-  const founded = pointNumber(center, BORN, -Infinity);
-  const stagger = ctx.hash01(plot.spec.x, plot.spec.y, 'plot stagger') * RING_PERIOD;
-  return founded + plot.ring * RING_PERIOD + stagger;
+  const stagger = ctx.hash01(plot.spec.x, plot.spec.y, PLOT_STAGGER_LABEL);
+  return plotBuiltYear(pointNumber(center, BORN, -Infinity), plot.ring, stagger);
 }
 
 function programWeightsOf(ctx: ChunkGenCtx): number[] {

@@ -1,7 +1,7 @@
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { pointsValue, type ChunkValue, type PointsChunk } from '../../values/chunkValues';
-import { BORN, CHAIN_ID, DEPOSIT_KIND, RICHNESS } from '../../values/pointData';
+import { BORN, CHAIN_ID, DEPOSIT_KIND, HOST_X, HOST_Y, RICHNESS } from '../../values/pointData';
 import { worldFieldReader, type WorldFieldReader } from '../../values/worldInputReaders';
 import { depositKindAt } from '../../volcanic/depositBands';
 import { MAX_CONE_RADIUS, type VolcanoCone } from '../../volcanic/hotspotChains';
@@ -178,6 +178,8 @@ function depositPointOf(
       [RICHNESS]: ctx.hash01(cellX, cellY, 'deposit richness') * (ctx.params.richnessScale as number),
       [BORN]: host.born,
       [CHAIN_ID]: host.chainId,
+      [HOST_X]: host.x,
+      [HOST_Y]: host.y,
     },
   };
 }

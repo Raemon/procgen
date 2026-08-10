@@ -179,11 +179,12 @@ function villageState(): PipelineState {
     seed: 11,
     nodes: [
       { id: 'flat', type: 'constantField', params: { value: 0.6 }, inputs: {} },
+      { id: 'travel', type: 'travelCostField', params: { seaLevel: 0.2 }, inputs: { elevation: 'flat' } },
       {
         id: 'centers',
-        type: 'villageCenters',
-        params: { maskAtLeast: 0.5, maskAtMost: 0.85, spacing: CENTER_SPACING },
-        inputs: { mask: 'flat' },
+        type: 'settlementSpread',
+        params: { landfallPitch: 512, spacing: CENTER_SPACING, minScore: 0, spreadSpeed: 3 },
+        inputs: { habitability: 'flat', travelCost: 'travel' },
       },
       { id: 'plots', type: 'villagePlots', params: layoutParams(), inputs: { centers: 'centers' } },
       {
