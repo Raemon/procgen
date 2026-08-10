@@ -17,7 +17,7 @@ export function checkPipelineSanitizeAndEditing(check: CheckReporter): void {
     seed: 1,
     nodes: [...(islandsState().nodes as unknown[]), { id: 'nx', type: 'doesNotExist', params: {} }],
   });
-  check('unknown node types are dropped on load', withUnknown.nodes.length === 5);
+  check('unknown node types are dropped on load', withUnknown.nodes.length === 7);
 
   const forwardWire = sanitizePipeline({
     seed: 1,

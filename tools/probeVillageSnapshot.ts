@@ -1,7 +1,7 @@
 import '../procgen/nodes';
 import { defaultTileId } from '../assets/tiles/defaultTiles';
-import { thatchmereVale } from '../procgen/presets/thatchmereVale';
-import type { NodeInstance, PipelineState } from '../procgen/pipeline/pipelineState';
+import { villageFixtureState } from './village/villageFixtureWorld';
+import type { NodeInstance } from '../procgen/pipeline/pipelineState';
 import { worldFromPipelineState, type HeadlessWorld } from './headlessWorld';
 import {
   firstCenterOfNode,
@@ -13,7 +13,7 @@ import {
 const SEARCH_CHUNKS = 12;
 const REGION_SIDE = 96;
 
-const world = worldFromPipelineState(thatchmereVale().state as PipelineState);
+const world = worldFromPipelineState(villageFixtureState());
 for (const node of villageCenterNodes(world)) reportVillageOf(world, node);
 
 function reportVillageOf(world: HeadlessWorld, node: NodeInstance): void {

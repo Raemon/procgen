@@ -8,6 +8,7 @@ import { nodeFolderRuns } from '../procgen/panel/nodeFolderRuns';
 import { asField } from '../procgen/values/valueAccess';
 import type { CheckReporter } from './checkReporter';
 import { earthlikeState, worldFromState } from './pipelineWorldFixtures';
+import { SLOPE_FOLDER } from './terrainFixtureState';
 
 export function checkTemplates(check: CheckReporter): void {
   const templates = builtInTemplates();
@@ -33,11 +34,11 @@ export function checkTemplates(check: CheckReporter): void {
       asField(stampedWorld.evaluator.valueFor(stamped[3]!.id, 0, 0)) !== null,
   );
 
-  const capturedRun = nodeFolderRuns(sanitizePipeline(earthlikeState()).nodes).find((run) => run.folder === 'river valleys')!;
-  const captured = templateFromNodes(capturedRun.nodes, 'river valleys', 'captured from the preset');
+  const capturedRun = nodeFolderRuns(sanitizePipeline(earthlikeState()).nodes).find((run) => run.folder === SLOPE_FOLDER)!;
+  const captured = templateFromNodes(capturedRun.nodes, SLOPE_FOLDER, 'captured from the fixture');
   check(
     'saving a folder as a template keeps wiring inside it and opens wiring to nodes outside',
-    captured.nodes[1]!.inputs.flow === captured.nodes[0]!.id && captured.nodes[0]!.inputs.elevation === null,
+    captured.nodes[1]!.inputs.source === captured.nodes[0]!.id && captured.nodes[0]!.inputs.source === null,
   );
   check(
     'a saved template round-trips through storage',

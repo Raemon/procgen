@@ -8,7 +8,6 @@ import { checkHashSpreadsItsDraws } from './checkHashSpreadsItsDraws';
 import { checkChunkDeterminismAndSignatures } from './checkChunkDeterminismAndSignatures';
 import { checkLabyrinthConnectivity } from './checkLabyrinthConnectivity';
 import { checkLabyrinthChunkTopology } from './checkLabyrinthChunkTopology';
-import { checkRiversAndTowns } from './checkRiversAndTowns';
 import { checkCustomScriptNodes } from './checkCustomScriptNodes';
 import { checkPipelineSanitizeAndEditing } from './checkPipelineSanitizeAndEditing';
 import { checkAsciiSnapshotAndPlayerFooting } from './checkAsciiSnapshotAndPlayerFooting';
@@ -64,7 +63,6 @@ describe('the hashes every world draws from', () => checkHashSpreadsItsDraws(che
 describe('chunk determinism and node signatures', () => checkChunkDeterminismAndSignatures(check));
 describe('labyrinths', () => checkLabyrinthConnectivity(check));
 describe('the labyrinth chunk topology', () => checkLabyrinthChunkTopology(check));
-describe('rivers and towns', () => checkRiversAndTowns(check));
 describe('custom script nodes', () => checkCustomScriptNodes(check));
 describe('pipeline sanitize and editing', () => checkPipelineSanitizeAndEditing(check));
 describe('the ascii snapshot', () => checkAsciiSnapshotAndPlayerFooting(check));

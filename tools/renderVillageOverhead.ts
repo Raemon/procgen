@@ -1,8 +1,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import '../procgen/nodes';
 import { tileIdOfVoxel } from '../procgen/structureOverlay/packedVoxel';
-import type { PipelineState } from '../procgen/pipeline/pipelineState';
-import { thatchmereVale } from '../procgen/presets/thatchmereVale';
+import { villageFixtureState } from './village/villageFixtureWorld';
 import { worldFromPipelineState, type HeadlessWorld } from './headlessWorld';
 import { pngBuffer, type RgbImage } from './png/writePng';
 import { firstCenterOfNode, villageCenterNodes } from './village/villageSnapshot';
@@ -10,7 +9,7 @@ import { firstCenterOfNode, villageCenterNodes } from './village/villageSnapshot
 const SIDE = 128;
 const SCALE = 4;
 
-const world = worldFromPipelineState(thatchmereVale().state as PipelineState);
+const world = worldFromPipelineState(villageFixtureState());
 const centers = villageCenterNodes(world);
 for (const [index, node] of centers.entries()) renderNode(world, node, index);
 

@@ -1,13 +1,12 @@
 import '../procgen/nodes';
-import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
-import { examplePipelines } from '../procgen/presets/examplePipelines';
+import { scriptedContourState } from './scriptFixtureState';
 import type { CheckReporter } from './checkReporter';
 import { tileBytes, tileIdsInRegion, worldFromState } from './pipelineWorldFixtures';
 
 export function checkCustomScriptNodes(check: CheckReporter): void {
-  const scriptState = sanitizePipeline(examplePipelines()[2]!.state);
+  const scriptState = scriptedContourState();
   const scripted = worldFromState(scriptState);
-  const scriptedAgain = worldFromState(sanitizePipeline(examplePipelines()[2]!.state));
+  const scriptedAgain = worldFromState(scriptedContourState());
   check(
     'custom script node runs deterministically',
     tileBytes(scripted.evaluator, 'n2', 1, 1) === tileBytes(scriptedAgain.evaluator, 'n2', 1, 1) &&
@@ -15,7 +14,7 @@ export function checkCustomScriptNodes(check: CheckReporter): void {
   );
   check('custom script node reports no error on valid code', scripted.evaluator.errorFor('n2') === null);
 
-  const badScript = sanitizePipeline(examplePipelines()[2]!.state);
+  const badScript = scriptedContourState();
   badScript.nodes[1]!.params.code = 'return 5;';
   const broken = worldFromState(badScript);
   broken.evaluator.valueFor('n2', 0, 0);

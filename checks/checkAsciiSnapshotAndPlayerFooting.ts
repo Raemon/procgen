@@ -1,7 +1,6 @@
 import '../procgen/nodes';
 import { emptyPipeline } from '../procgen/pipeline/pipelineState';
-import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
-import { examplePipelines } from '../procgen/presets/examplePipelines';
+import { monsterCavesState } from './scriptFixtureState';
 import { EMPTY_TILE } from '../procgen/values/chunkValues';
 import { asciiSnapshot } from '../world/render/ascii/asciiSnapshot';
 import { PLAYER_GLYPH } from '../world/render/ascii/asciiCells';
@@ -13,7 +12,7 @@ import { tileAssets, worldFromState } from './pipelineWorldFixtures';
 export function checkAsciiSnapshotAndPlayerFooting(check: CheckReporter): void {
   check('empty void is walkable', isWalkableTile(tileAssets, EMPTY_TILE));
 
-  const caves = worldFromState(sanitizePipeline(examplePipelines()[1]!.state));
+  const caves = worldFromState(monsterCavesState());
   const monsterMarkers = caves.sampler.markersIn(-64, -64, 63, 63);
   check(
     'custom markers keep their own glyph and color',

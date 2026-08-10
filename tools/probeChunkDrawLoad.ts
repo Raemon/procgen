@@ -1,6 +1,6 @@
 import '../procgen/nodes';
-import { emberMarches } from '../procgen/presets/emberMarches';
-import { puzzleLabyrinth } from '../procgen/presets/puzzleLabyrinth';
+import { infiniteLabyrinth } from '../procgen/presets/infiniteLabyrinth';
+import { volcanicIslands } from '../procgen/presets/volcanicIslands';
 import { buildChunkMeshGroup } from '../world/render/view3d/worldMeshes';
 import { drawLoadLine, drawLoadOf } from './chunkDrawLoad';
 import { worldFromPipelineState, type HeadlessWorld } from './headlessWorld';
@@ -18,8 +18,8 @@ const DELVE_CHUNKS = [
 
 stubTheCanvasTexturesAreRasterizedOnto();
 
-reportChunks('above ground in the ember marches', emberMarches().state, OPEN_SKY_CHUNKS);
-reportChunks('inside the delve of the puzzle labyrinth', puzzleLabyrinth().state, DELVE_CHUNKS);
+reportChunks('above ground in the volcanic islands', volcanicIslands().state, OPEN_SKY_CHUNKS);
+reportChunks('inside the infinite labyrinth', infiniteLabyrinth().state, DELVE_CHUNKS);
 
 function reportChunks(
   title: string,
