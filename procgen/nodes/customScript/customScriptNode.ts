@@ -3,6 +3,7 @@ import type { ChunkGenCtx } from '../../nodeType';
 import type { ChunkValue, ValueKind } from '../../values/chunkValues';
 import { coerceScriptResult } from './coerceScriptResult';
 import { compileScript } from './compileScript';
+import { scriptSafeCtx } from './scriptSafeCtx';
 import { SCRIPT_TEMPLATE } from './scriptTemplate';
 
 const OUTPUT_KINDS = ['field', 'tiles', 'points'] as const;
@@ -55,5 +56,5 @@ registerScriptNodeType({
 
 function runScriptChunk(ctx: ChunkGenCtx): ChunkValue {
   const run = compileScript(ctx.params.code as string);
-  return coerceScriptResult(run(ctx), ctx.params.outputKind as ValueKind);
+  return coerceScriptResult(run(scriptSafeCtx(ctx)), ctx.params.outputKind as ValueKind);
 }

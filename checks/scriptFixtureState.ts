@@ -71,3 +71,46 @@ export function monsterCavesState(): PipelineState {
     ],
   });
 }
+
+const VANDAL_SCRIPT = `const points = ctx.pointsInput('a') ?? [];
+for (const point of points) {
+  point.tag = 'spoiled';
+  if (point.data) point.data.born = 999;
+}
+points.length = 0;
+return points;`;
+
+export function scriptedPointVandalState(): PipelineState {
+  return sanitizePipeline({
+    seed: 4242,
+    nodes: [
+      {
+        id: 'ground',
+        type: 'noiseField',
+        label: 'ground',
+        enabled: true,
+        params: { scale: 0.05, octaves: 3 },
+        inputs: {},
+        display: { mode: 'hidden' },
+      },
+      {
+        id: 'seeds',
+        type: 'scatterPoints',
+        label: 'wildflowers',
+        enabled: true,
+        params: { density: 0.05, maskAtLeast: 0, maskAtMost: 1 },
+        inputs: { mask: 'ground' },
+        display: { mode: 'hidden' },
+      },
+      {
+        id: 'vandal',
+        type: 'customScript',
+        label: 'a script behaving badly',
+        enabled: true,
+        params: { outputKind: 'points', code: VANDAL_SCRIPT },
+        inputs: { a: 'seeds' },
+        display: { mode: 'hidden' },
+      },
+    ],
+  });
+}

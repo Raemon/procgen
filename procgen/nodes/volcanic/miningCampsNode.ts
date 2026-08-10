@@ -52,7 +52,7 @@ registerNodeType({
 
 function miningCampsChunk(ctx: ChunkGenCtx): ChunkValue {
   const deposits = ctx.pointsInput('deposits');
-  if (!deposits || !ctx.pointsInput('villages')) return pointsValue([]);
+  if (!deposits || deposits.length === 0 || !ctx.pointsInput('villages')) return pointsValue([]);
   const villages = nearbyPointsOf(ctx, 'villages', ctx.params.maxHaul as number);
   const camps: PointsChunk = [];
   for (const deposit of deposits) collectCampFor(ctx, deposit, villages, camps);
@@ -72,7 +72,7 @@ function collectCampFor(
     y: deposit.y,
     tag: CAMP_TAG,
     data: {
-      [BORN]: Math.min(PRESENT, pointNumber(village, BORN, PRESENT) + (ctx.params.campDelay as number)),
+      [BORN]: pointNumber(village, BORN, PRESENT) + (ctx.params.campDelay as number),
       [RICHNESS]: pointNumber(deposit, RICHNESS, 0),
       [SENT_FROM_X]: village.x,
       [SENT_FROM_Y]: village.y,
