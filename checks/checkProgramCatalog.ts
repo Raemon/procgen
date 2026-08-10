@@ -22,6 +22,8 @@ function largestPlotCells(): number {
   return spec?.kind === 'int' ? spec.max : 0;
 }
 
+const SHIPPED_PLOT = 16;
+
 function helpNamesItsProgram(name: ProgramName): boolean {
   const help = weightKnobOf(name)?.help ?? '';
   return help.length > 20 && help.toLowerCase().includes(spokenOf(name));
@@ -61,6 +63,10 @@ export function checkProgramCatalog(check: CheckReporter): void {
   check(
     'a town has to be old enough for each larger program, so age is what makes a town look grown',
     ageLadderClimbsWithSize(),
+  );
+  check(
+    'every catalog program fits the plot the shipped world actually lays out, halls included',
+    PROGRAM_CATALOG.every((def) => def.massing.maxW <= SHIPPED_PLOT && def.massing.maxD <= SHIPPED_PLOT),
   );
   check(
     'a point still carrying the retired bld tag builds a default cottage rather than a town hall',

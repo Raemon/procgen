@@ -347,7 +347,7 @@ export function volcanicIslands(): ExamplePipeline {
           enabled: true,
           params: {
             landfallPitch: 640,
-            spacing: 80,
+            spacing: 160,
             minScore: 0.25,
             spreadSpeed: 2.2,
             qualityHaste: 120,
@@ -375,7 +375,7 @@ export function volcanicIslands(): ExamplePipeline {
           comment:
             'The plan a village is laid out to. Streets are surveyed at founding, so they read as the shape the houses grow into rather than something that appears with them.',
           enabled: true,
-          params: { radius: 48, plotCells: 16 },
+          params: { radius: 96, plotCells: 16 },
           inputs: { centers: 'villages' },
           display: { mode: 'tileLayer' },
         },
@@ -385,9 +385,9 @@ export function volcanicIslands(): ExamplePipeline {
           label: 'houses',
           folder: 'the people',
           comment:
-            'Buildings fill outward one ring per lifetime, so an old village near a landfall has grown its inner rings a hall and an inn while a young one on the frontier is still a knot of cottages.',
+            'Buildings fill outward one ring per lifetime and only a town old enough for them gets a smithy, an inn or a hall, so an old village near a landfall has grown five rings deep while a young one on the frontier is still a knot of cottages. Plots whose ground lies below the waterline stay empty, which is why a village on a spit is smaller than its years alone would say.',
           enabled: true,
-          params: { radius: 48, plotCells: 16, buildAbove: SEA_LEVEL },
+          params: { radius: 96, plotCells: 16, buildAbove: SEA_LEVEL },
           inputs: { centers: 'villages', ground: 'eroded' },
           display: { mode: 'structures', cultureId: THATCHMERE_CULTURE_ID },
         },
