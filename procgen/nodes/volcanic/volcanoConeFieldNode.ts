@@ -1,4 +1,3 @@
-import { worldCoordOfCell } from '../../cellStride';
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { fieldValue, type ChunkValue } from '../../values/chunkValues';
@@ -79,9 +78,9 @@ function volcanoConeFieldChunk(ctx: ChunkGenCtx): ChunkValue {
   const base = (ctx.params.seaLevel as number) * BASE_BELOW_SEA;
   const craterDepth = ctx.params.craterDepth as number;
   for (let y = 0; y < ctx.size; y++) {
-    const worldY = worldCoordOfCell(ctx.originY + y, ctx.stride);
+    const worldY = ctx.originY + y;
     for (let x = 0; x < ctx.size; x++) {
-      const worldX = worldCoordOfCell(ctx.originX + x, ctx.stride);
+      const worldX = ctx.originX + x;
       field[y * ctx.size + x] = seafloorOrCones(worldX, worldY, cones, base, craterDepth);
     }
   }

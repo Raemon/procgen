@@ -1,4 +1,3 @@
-import { worldCoordOfCell } from '../../cellStride';
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { pointsValue, type ChunkValue, type WorldPoint } from '../../values/chunkValues';
@@ -98,10 +97,10 @@ function chainSpecOf(ctx: ChunkGenCtx): HotspotChainSpec {
 
 function chunkTileRect(ctx: ChunkGenCtx): TileRect {
   return {
-    minX: worldCoordOfCell(ctx.originX, ctx.stride),
-    minY: worldCoordOfCell(ctx.originY, ctx.stride),
-    maxX: worldCoordOfCell(ctx.originX + ctx.size, ctx.stride),
-    maxY: worldCoordOfCell(ctx.originY + ctx.size, ctx.stride),
+    minX: ctx.originX,
+    minY: ctx.originY,
+    maxX: ctx.originX + ctx.size,
+    maxY: ctx.originY + ctx.size,
   };
 }
 

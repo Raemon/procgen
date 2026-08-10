@@ -1,4 +1,3 @@
-import { worldCoordOfCell } from '../../cellStride';
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { pointsValue, type ChunkValue, type PointsChunk } from '../../values/chunkValues';
@@ -94,7 +93,7 @@ function depositSiteTest(ctx: ChunkGenCtx, hosts: readonly VolcanoCone[]): SiteT
   return (cellX, cellY) =>
     ctx.hash01(cellX, cellY, 'deposit candidate') < (ctx.params.density as number) &&
     isDryLand(elevationAt, cellX, cellY) &&
-    hostConeAt(ctx, hosts, cellX, cellY) !== null;
+    hostConeAt(hosts, cellX, cellY) !== null;
 }
 
 function isDryLand(elevationAt: WorldFieldReader, cellX: number, cellY: number): boolean {
@@ -103,13 +102,12 @@ function isDryLand(elevationAt: WorldFieldReader, cellX: number, cellY: number):
 }
 
 function hostConeAt(
-  ctx: ChunkGenCtx,
   hosts: readonly VolcanoCone[],
   cellX: number,
   cellY: number,
 ): VolcanoCone | null {
-  const worldX = worldCoordOfCell(cellX, ctx.stride);
-  const worldY = worldCoordOfCell(cellY, ctx.stride);
+  const worldX = cellX;
+  const worldY = cellY;
   let nearest: VolcanoCone | null = null;
   let nearestDistance = Infinity;
   for (const cone of hosts) {
@@ -131,7 +129,7 @@ function collectDepositAt(
 ): void {
   if (!site(cellX, cellY)) return;
   if (!winsSpacingContest(ctx, site, cellX, cellY)) return;
-  const host = hostConeAt(ctx, hosts, cellX, cellY);
+  const host = hostConeAt(hosts, cellX, cellY);
   if (host) into.push(depositPointOf(ctx, host, cellX, cellY));
 }
 
@@ -168,8 +166,8 @@ function depositPointOf(
   cellX: number,
   cellY: number,
 ): PointsChunk[number] {
-  const worldX = worldCoordOfCell(cellX, ctx.stride);
-  const worldY = worldCoordOfCell(cellY, ctx.stride);
+  const worldX = cellX;
+  const worldY = cellY;
   const distance = Math.hypot(worldX - host.x, worldY - host.y);
   return {
     x: worldX,

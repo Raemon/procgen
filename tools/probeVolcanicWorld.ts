@@ -69,7 +69,7 @@ function mapChar(
   if (pointInCharCell(deposits, time, zoom, col, row)) return '$';
   const tileX = (col - MAP_COLS / 2) * zoom;
   const tileY = (row - MAP_ROWS / 2) * zoom;
-  return fieldValueAt('terrain', tileX, tileY, zoom) >= SEA_LEVEL ? '#' : '.';
+  return fieldValueAt('terrain', tileX, tileY) >= SEA_LEVEL ? '#' : '.';
 }
 
 function pointInCharCell(
@@ -87,12 +87,12 @@ function pointInCharCell(
   );
 }
 
-function fieldValueAt(nodeId: string, tileX: number, tileY: number, stride: number): number {
-  const cellX = Math.floor(tileX / stride);
-  const cellY = Math.floor(tileY / stride);
+function fieldValueAt(nodeId: string, tileX: number, tileY: number): number {
+  const cellX = tileX;
+  const cellY = tileY;
   const chunkX = Math.floor(cellX / CHUNK_SIZE);
   const chunkY = Math.floor(cellY / CHUNK_SIZE);
-  const field = asField(world.evaluator.valueFor(nodeId, chunkX, chunkY, stride));
+  const field = asField(world.evaluator.valueFor(nodeId, chunkX, chunkY));
   const index = (cellY - chunkY * CHUNK_SIZE) * CHUNK_SIZE + (cellX - chunkX * CHUNK_SIZE);
   return field ? field[index]! : 0;
 }
@@ -138,7 +138,7 @@ function landCellsInWindow(): number {
     for (let col = 0; col < MAP_COLS; col++) {
       const tileX = (col - MAP_COLS / 2) * COUNT_ZOOM;
       const tileY = (row - MAP_ROWS / 2) * COUNT_ZOOM;
-      if (fieldValueAt('terrain', tileX, tileY, COUNT_ZOOM) >= SEA_LEVEL) land++;
+      if (fieldValueAt('terrain', tileX, tileY) >= SEA_LEVEL) land++;
     }
   }
   return land;

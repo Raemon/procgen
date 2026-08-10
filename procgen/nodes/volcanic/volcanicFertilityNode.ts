@@ -1,4 +1,3 @@
-import { worldCoordOfCell } from '../../cellStride';
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { fieldValue, type ChunkValue, type FieldChunk } from '../../values/chunkValues';
@@ -88,8 +87,8 @@ function cellFertility(
   x: number,
   y: number,
 ): number {
-  const worldX = worldCoordOfCell(ctx.originX + x, ctx.stride);
-  const worldY = worldCoordOfCell(ctx.originY + y, ctx.stride);
+  const worldX = ctx.originX + x;
+  const worldY = ctx.originY + y;
   const cover = ashCoverAt(worldX, worldY, cones, ctx.params.ashRadius as number);
   if (cover.eldestBorn === null) return 0;
   const maturity = soilMaturity(ctx.time - cover.eldestBorn, ctx.params.peakAge as number);

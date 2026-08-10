@@ -9,7 +9,7 @@ export function nearbyVolcanoes(
   inputName: string,
   radiusTiles: number,
 ): WorldPoint[] {
-  const reach = Math.ceil(radiusTiles / (ctx.size * ctx.stride));
+  const reach = Math.ceil(radiusTiles / (ctx.size));
   const volcanoes: WorldPoint[] = [];
   for (let chunkY = ctx.chunkY - reach; chunkY <= ctx.chunkY + reach; chunkY++) {
     for (let chunkX = ctx.chunkX - reach; chunkX <= ctx.chunkX + reach; chunkX++) {

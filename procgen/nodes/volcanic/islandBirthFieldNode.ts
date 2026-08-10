@@ -1,4 +1,3 @@
-import { worldCoordOfCell } from '../../cellStride';
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { fieldValue, type ChunkValue } from '../../values/chunkValues';
@@ -43,9 +42,9 @@ function islandBirthChunk(ctx: ChunkGenCtx): ChunkValue {
   const cones = nearbyVolcanoes(ctx, 'volcanoes', MAX_CONE_RADIUS).map(coneOfPoint);
   const seaLevel = ctx.params.seaLevel as number;
   for (let y = 0; y < ctx.size; y++) {
-    const worldY = worldCoordOfCell(ctx.originY + y, ctx.stride);
+    const worldY = ctx.originY + y;
     for (let x = 0; x < ctx.size; x++) {
-      const worldX = worldCoordOfCell(ctx.originX + x, ctx.stride);
+      const worldX = ctx.originX + x;
       field[y * ctx.size + x] = earliestBirthClearing(worldX, worldY, cones, seaLevel);
     }
   }
