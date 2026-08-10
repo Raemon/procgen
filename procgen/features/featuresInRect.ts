@@ -3,6 +3,7 @@ import { nodeTypeOf } from '../nodeRegistry';
 import { outputKindOf, type NodeTypeDef } from '../nodeType';
 import type { NodeInstance } from '../pipeline/pipelineState';
 import type { WorldRect } from '../values/pointsInRect';
+import { BORN_FILTER_TYPE } from '../nodes/time/bornFilterNode';
 import { featureKey, type ExtractedFeature, type Feature } from './feature';
 import { featureExtractorOf, type FeatureExtractor } from './featureExtractorRegistry';
 import { pointsNodeFeatures } from './pointsNodeFeatures';
@@ -19,11 +20,22 @@ export function featuresInRect(
   evaluator: PipelineEvaluator,
   rect: WorldRect,
 ): Feature[] {
+  return withoutUnresolvedEdgeKeys(featuresBeforeEdgesAreScrubbed(store, evaluator, rect));
+}
+
+export function featuresBeforeEdgesAreScrubbed(
+  store: FeaturePipeline,
+  evaluator: PipelineEvaluator,
+  rect: WorldRect,
+): Feature[] {
   const byKey = new Map<string, Feature>();
-  for (const node of store.nodes()) {
-    if (node.enabled) collectNodeFeatures(store, evaluator, rect, node, byKey);
+  const nodes = store.nodes();
+  for (const node of nodes) {
+    if (node.enabled && !aTimeFilterSpeaksForIt(nodes, node)) {
+      collectNodeFeatures(store, evaluator, rect, node, byKey);
+    }
   }
-  return withoutUnresolvedEdgeKeys([...byKey.values()]);
+  return [...byKey.values()];
 }
 
 function collectNodeFeatures(
@@ -36,10 +48,17 @@ function collectNodeFeatures(
   const def = nodeTypeOf(node.type);
   const extract = def && extractorFor(node, def);
   if (!def || !extract) return;
-  for (const extracted of extract({ node, seed: store.seed(), time: store.time(), evaluator, rect })) {
+  const request = { node, nodes: store.nodes(), seed: store.seed(), time: store.time(), evaluator, rect };
+  for (const extracted of extract(request)) {
     const key = featureKey(node.id, extracted.x, extracted.y);
     into.set(key, stampedFeature(extracted, key, node, def));
   }
+}
+
+function aTimeFilterSpeaksForIt(nodes: readonly NodeInstance[], node: NodeInstance): boolean {
+  return nodes.some(
+    (other) => other.enabled && other.type === BORN_FILTER_TYPE && other.inputs.source === node.id,
+  );
 }
 
 function stampedFeature(

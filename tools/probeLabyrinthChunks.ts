@@ -32,7 +32,7 @@ function glyphOf(cx: number, cy: number, knobs: LabyrinthKnobs): string {
 function kindLetterOf(cx: number, cy: number, knobs: LabyrinthKnobs): string {
   if (roleOf(cx, cy, knobs) !== ROOM) return 'm';
   const rng = mulberry32(hashString(`${knobs.seed}:puzzleRoom:${cx},${cy}:kind`));
-  const challenge = challengeForRing(ringOf(cx, cy), rng);
+  const challenge = challengeForRing(ringOf(cx, cy), knobs.tutorialRings, rng);
   return challenge.kind ? challenge.kind.name[0]! : '·';
 }
 

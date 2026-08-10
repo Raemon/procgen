@@ -43,7 +43,8 @@ function challengeOf(
   isRoom: boolean,
 ): RoomChallenge {
   if (!isRoom) return { kind: null, level: 0 };
-  return challengeForRing(roomRing(roomX, roomY), roomStream(knobs, roomX, roomY, 'kind'));
+  const ring = roomRing(roomX, roomY);
+  return challengeForRing(ring, knobs.tutorialRings, roomStream(knobs, roomX, roomY, 'kind'));
 }
 
 function furnish(

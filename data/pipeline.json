@@ -11,14 +11,29 @@
       "folder": "the mantle",
       "enabled": true,
       "params": {
-        "hotspotSpacing": 384,
-        "driftRate": 0.0004,
-        "eruptionPeriod": 500000,
-        "coneRadius": 56,
-        "coneHeight": 0.85,
-        "chainFraction": 0.35
+        "hotspotSpacing": 320,
+        "driftRate": 0.00015,
+        "eruptionPeriod": 400000,
+        "coneRadius": 96,
+        "coneHeight": 1,
+        "chainFraction": 0.55
       },
       "inputs": {},
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "conesNow",
+      "type": "bornFilter",
+      "label": "volcanoes that have erupted",
+      "comment": "The cones already erupted at the moment being shown. The elevation field does its own dating, so this exists for the map and the markers: scrub into the deep past and the head of every chain stops being drawn as well as stops being land.",
+      "folder": "the mantle",
+      "enabled": true,
+      "params": {},
+      "inputs": {
+        "source": "hotspots"
+      },
       "display": {
         "mode": "markers",
         "tileId": -1,
@@ -68,7 +83,7 @@
       "folder": "the mantle",
       "enabled": true,
       "params": {
-        "weight": 0.35
+        "weight": 0.3
       },
       "inputs": {
         "a": "abyss",
@@ -88,7 +103,7 @@
       "enabled": true,
       "params": {
         "seaLevel": 0.45,
-        "erosionHalfLife": 1500000,
+        "erosionHalfLife": 3000000,
         "craterDepth": 0.12,
         "shoulder": 12
       },
@@ -122,7 +137,7 @@
       "id": "birth",
       "type": "islandBirthField",
       "label": "island birth dates",
-      "comment": "When land first broke the water, written as a date per cell with 0 meaning never. Nothing displays it; it exists for the settlement layer to ask how long an island has been there to live on.",
+      "comment": "When land first broke the water, written as a date per cell with 0 meaning never. Nothing displays it; the deposits below read it to date the ground, so a mine can only ripen after the rock it sits in existed.",
       "folder": "the mantle",
       "enabled": true,
       "params": {
@@ -194,7 +209,7 @@
       },
       "display": {
         "mode": "elevation",
-        "heightScale": 4
+        "heightScale": 10
       }
     },
     {
@@ -441,7 +456,7 @@
       "id": "deposits",
       "type": "mineralDeposits",
       "label": "mineral deposits",
-      "comment": "Mines only on islands that have stood half a million years — long enough to cool, young enough that the islands still stand tall: obsidian near the summits, sulfur on the flanks, ore on the outer skirts. Every deposit remembers its host cone and chain, so the settlement layer can trade in provenance.",
+      "comment": "Ore, obsidian and sulfur, each dated half a million years after the ground it sits in rose from the sea, so a mine ripens rather than appearing with the rock: obsidian near the summits, sulfur on the flanks, ore on the outer skirts. Every deposit remembers its host cone and chain, so the settlement layer can trade in provenance.",
       "folder": "riches",
       "enabled": true,
       "params": {
@@ -451,7 +466,23 @@
       },
       "inputs": {
         "volcanoes": "hotspots",
-        "elevation": "eroded"
+        "elevation": "eroded",
+        "islandBirth": "birth"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "oreNow",
+      "type": "bornFilter",
+      "label": "deposits that have ripened",
+      "comment": "The deposits whose ripening date has arrived. Scrub time back past a mine and it goes with the island it formed in, instead of hanging in open water.",
+      "folder": "riches",
+      "enabled": true,
+      "params": {},
+      "inputs": {
+        "source": "deposits"
       },
       "display": {
         "mode": "markers",
@@ -488,7 +519,7 @@
       "enabled": true,
       "params": {
         "landfallPitch": 640,
-        "spacing": 80,
+        "spacing": 160,
         "minScore": 0.25,
         "spreadSpeed": 2.2,
         "qualityHaste": 120
@@ -527,7 +558,7 @@
       "folder": "the people",
       "enabled": true,
       "params": {
-        "radius": 48,
+        "radius": 96,
         "plotCells": 16,
         "streetWidth": 3,
         "streetTile": -1,
@@ -544,13 +575,14 @@
       "id": "houses",
       "type": "villagePlots",
       "label": "houses",
-      "comment": "Buildings fill outward one ring per lifetime, so an old village near a landfall has grown its inner rings a hall and an inn while a young one on the frontier is still a knot of cottages.",
+      "comment": "Buildings fill outward one ring per lifetime and only a town old enough for them gets a smithy, an inn or a hall, so an old village near a landfall has grown five rings deep while a young one on the frontier is still a knot of cottages. Plots whose ground lies below the waterline stay empty, which is why a village on a spit is smaller than its years alone would say.",
       "folder": "the people",
       "enabled": true,
       "params": {
-        "radius": 48,
+        "radius": 96,
         "plotCells": 16,
         "streetWidth": 3,
+        "buildAbove": 0.45,
         "cottageWeight": 4,
         "dwellingWeight": 3,
         "smithyWeight": 2,
@@ -558,7 +590,8 @@
         "townHallWeight": 1
       },
       "inputs": {
-        "centers": "villages"
+        "centers": "villages",
+        "ground": "eroded"
       },
       "display": {
         "mode": "structures",
@@ -577,7 +610,7 @@
         "campDelay": 70
       },
       "inputs": {
-        "deposits": "deposits",
+        "deposits": "oreNow",
         "villages": "villages"
       },
       "display": {

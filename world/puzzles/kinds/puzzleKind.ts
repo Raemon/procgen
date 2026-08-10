@@ -23,7 +23,7 @@ export interface FurnishContext {
 
 export interface PuzzleKindDef {
   name: string;
-  introducedAtRing: number;
+  teachingOrder: number;
   teaches: string;
   furnish(context: FurnishContext): FurnishedRoom;
 }
@@ -32,7 +32,7 @@ const registry: PuzzleKindDef[] = [];
 
 export function registerPuzzleKind(def: PuzzleKindDef): PuzzleKindDef {
   registry.push(def);
-  registry.sort((a, b) => a.introducedAtRing - b.introducedAtRing);
+  registry.sort((a, b) => a.teachingOrder - b.teachingOrder);
   return def;
 }
 

@@ -1,8 +1,9 @@
+import { cellKey } from './cellKey';
 import type { Cell, RoomCells } from './roomCells';
 
 export interface CrateFloorSpace {
   cells: RoomCells;
-  pillars: Set<string>;
+  pillars: Set<number>;
   crates: Map<string, Cell>;
 }
 
@@ -13,9 +14,7 @@ export const CRATE_DIRECTIONS: readonly { dx: number; dy: number }[] = [
   { dx: 0, dy: -1 },
 ];
 
-export function cellKey(cell: Cell): string {
-  return `${cell.x},${cell.y}`;
-}
+export { cellKey };
 
 export function isOpenFloor(space: CrateFloorSpace, cell: Cell): boolean {
   if (!space.cells.contains(cell.x, cell.y)) return false;
@@ -30,9 +29,9 @@ function aCrateSitsOn(space: CrateFloorSpace, cell: Cell): boolean {
   return false;
 }
 
-export function cellsReachableFrom(space: CrateFloorSpace, from: Cell): Set<string> {
+export function cellsReachableFrom(space: CrateFloorSpace, from: Cell): Set<number> {
   if (!isOpenFloor(space, from)) return new Set();
-  const seen = new Set<string>([cellKey(from)]);
+  const seen = new Set<number>([cellKey(from)]);
   const queue: Cell[] = [from];
   for (let read = 0; read < queue.length; read++) {
     const here = queue[read]!;
@@ -48,7 +47,7 @@ export function cellsReachableFrom(space: CrateFloorSpace, from: Cell): Set<stri
 
 export function canWalkBetween(space: CrateFloorSpace, from: Cell, goal: Cell): boolean {
   if (!isOpenFloor(space, from) || !isOpenFloor(space, goal)) return false;
-  const seen = new Set<string>([cellKey(from)]);
+  const seen = new Set<number>([cellKey(from)]);
   const queue: Cell[] = [from];
   for (let read = 0; read < queue.length; read++) {
     const here = queue[read]!;

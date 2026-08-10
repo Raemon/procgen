@@ -37,6 +37,10 @@ function checkTimeClipsSettlement(check: CheckReporter): void {
   const standingNow = pointsIn(now, 'villages');
   const standingThen = pointsIn(then, 'villages');
   check(
+    'the fixture has villages standing in both the past and the present to compare',
+    standingThen.length > 0 && standingNow.length > standingThen.length,
+  );
+  check(
     'scrubbing world time back leaves a village standing only if it was already founded',
     standingThen.every((village) => pointNumber(village, BORN, PRESENT) <= -600),
   );
@@ -54,13 +58,15 @@ function checkCampsFollowTheirVillage(check: CheckReporter): void {
   const world = worldFromState(settlementFixture());
   const camps = pointsIn(world, 'camps');
   const villages = pointsIn(world, 'founded');
+  const deposits = pointsIn(world, 'deposits');
+  check('the fixture raises camps to trace back to their villages', camps.length > 0);
   check(
     'every mining camp is founded after the village whose miners walked out to it',
     camps.every((camp) => oldestVillageNear(camp, villages) < pointNumber(camp, BORN, PRESENT)),
   );
   check(
     'every mining camp stands on a deposit rather than beside one',
-    camps.every((camp) => pointsIn(world, 'deposits').some((ore) => ore.x === camp.x && ore.y === camp.y)),
+    camps.every((camp) => deposits.some((ore) => ore.x === camp.x && ore.y === camp.y)),
   );
 }
 

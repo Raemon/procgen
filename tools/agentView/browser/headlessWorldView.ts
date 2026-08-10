@@ -1,7 +1,11 @@
 import * as THREE from 'three';
 import { NO_EXTRA_MARKERS } from '../../../world/render/markerSource';
 import { ChunkMeshStreamer } from '../../../world/render/view3d/chunkMeshStreamer';
-import { SceneDaylight } from '../../../world/render/view3d/sceneDaylight';
+import {
+  LAMPLIT_AMBIENT,
+  OVERHEAD_AMBIENT,
+  SceneDaylight,
+} from '../../../world/render/view3d/sceneDaylight';
 import { streamingRadiusChunks } from '../../../world/render/view3d/streamingRadius';
 import { WorldLights } from '../../../world/render/view3d/worldLights';
 import { createCharacterFog, createWorldScene } from '../../../world/render/view3d/worldScene';
@@ -55,6 +59,7 @@ export class HeadlessWorldView {
   }
 
   streamFrame(): void {
+    this.daylight.seeInTheDark(this.request.style === 'character' ? LAMPLIT_AMBIENT : OVERHEAD_AMBIENT);
     this.daylight.setLevel(this.world.store.daylight());
     this.framedCamera.update();
     this.streamAroundFocus();

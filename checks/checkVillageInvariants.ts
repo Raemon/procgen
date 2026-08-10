@@ -167,7 +167,7 @@ function streetBytes(evaluator: PipelineEvaluator, chunkX: number, chunkY: numbe
 }
 
 function planAt(center: { x: number; y: number }): VillagePlan {
-  return layoutForCenter(villageHashSeedAt(center.x, center.y), center.x, center.y, LAYOUT_KNOBS);
+  return layoutForCenter(villageHashSeedAt(center.x, center.y), center, LAYOUT_KNOBS);
 }
 
 function evaluatorOf(state: PipelineState): PipelineEvaluator {

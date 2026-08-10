@@ -229,7 +229,7 @@ function foundingOf(
   const habitabilityAt = worldFieldReader(ctx, 'habitability');
   const score = habitabilityAt(worldX, worldY) ?? 0;
   const haste = (ctx.params.qualityHaste as number) * score;
-  return { [BORN]: Math.min(PRESENT, (arrival(worldX, worldY) ?? PRESENT) + haste) };
+  return { [BORN]: Math.min(PRESENT, (arrival(worldX, worldY) ?? PRESENT) - haste) };
 }
 
 function winsSpacingContest(

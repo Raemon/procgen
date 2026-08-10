@@ -47,6 +47,7 @@ function labelCandidateOf(cluster: FeatureCluster, measure: TextMeasurer): Label
   const text = clusterLabel(cluster);
   return {
     key: cluster.feature.key,
+    nodeId: cluster.feature.nodeId,
     text,
     anchorX: cluster.screenX + LABEL_ANCHOR_GAP_PX,
     anchorY: cluster.screenY,

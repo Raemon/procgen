@@ -1,3 +1,4 @@
+import { cellKey } from './cellKey';
 import type { RandomStream } from '../../../procgen/random/mulberry32';
 import type { RoomRect } from '../../../procgen/labyrinth/roomLayout';
 
@@ -7,7 +8,7 @@ export interface Cell {
 }
 
 export class RoomCells {
-  private readonly taken = new Set<string>();
+  private readonly taken = new Set<number>();
 
   constructor(readonly interior: RoomRect) {}
 
@@ -21,16 +22,16 @@ export class RoomCells {
   }
 
   isFree(x: number, y: number): boolean {
-    return this.contains(x, y) && !this.taken.has(`${x},${y}`);
+    return this.contains(x, y) && !this.taken.has(cellKey({ x, y }));
   }
 
   occupy(cell: Cell): Cell {
-    this.taken.add(`${cell.x},${cell.y}`);
+    this.taken.add(cellKey(cell));
     return cell;
   }
 
   release(cell: Cell): void {
-    this.taken.delete(`${cell.x},${cell.y}`);
+    this.taken.delete(cellKey(cell));
   }
 
   centre(): Cell {

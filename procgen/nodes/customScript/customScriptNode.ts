@@ -3,6 +3,7 @@ import type { ChunkGenCtx } from '../../nodeType';
 import type { ChunkValue, ValueKind } from '../../values/chunkValues';
 import { coerceScriptResult } from './coerceScriptResult';
 import { compileScript } from './compileScript';
+import { scriptSafeCtx } from './scriptSafeCtx';
 import { SCRIPT_TEMPLATE } from './scriptTemplate';
 
 const OUTPUT_KINDS = ['field', 'tiles', 'points'] as const;
@@ -11,6 +12,7 @@ registerScriptNodeType({
   type: 'customScript',
   title: 'custom script',
   category: 'custom',
+  readsTime: true,
   description: 'Write generateChunk(ctx) right here in the browser. Return a field array, tile array, or point list matching the chosen output.',
   whenToUse:
     'Experiments the built-in nodes cannot express. Iterate in the browser; when a script stabilizes, promote it to a TypeScript node file that calls registerNodeType.',
@@ -37,7 +39,7 @@ registerScriptNodeType({
       optionHelp: {
         field: 'One number per cell (Float32Array via ctx.newField()). Displays as elevation.',
         tiles: 'One tile id per cell, -1 for empty (Int32Array via ctx.newTiles()). Displays as a tile layer.',
-        points: 'A list of {x, y, tag} in world coordinates. Displays as markers.',
+        points: 'A list of {x, y, tag} in world coordinates, each optionally carrying a numeric data payload. Displays as markers.',
       },
       default: 'field',
     },
@@ -54,5 +56,5 @@ registerScriptNodeType({
 
 function runScriptChunk(ctx: ChunkGenCtx): ChunkValue {
   const run = compileScript(ctx.params.code as string);
-  return coerceScriptResult(run(ctx), ctx.params.outputKind as ValueKind);
+  return coerceScriptResult(run(scriptSafeCtx(ctx)), ctx.params.outputKind as ValueKind);
 }

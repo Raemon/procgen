@@ -40,7 +40,7 @@ function villageStreetsChunk(ctx: ChunkGenCtx): ChunkValue {
   if (!ctx.pointsInput('centers')) return tilesValue(tiles);
   const knobs = villageLayoutKnobsOf(ctx);
   for (const center of nearbyVillageCenters(ctx, 'centers', knobs.radius)) {
-    paveVillage(ctx, layoutForCenter(villageHashSeedAt(center.x, center.y), center.x, center.y, knobs), tiles);
+    paveVillage(ctx, layoutForCenter(villageHashSeedAt(center.x, center.y), center, knobs), tiles);
   }
   return tilesValue(tiles);
 }

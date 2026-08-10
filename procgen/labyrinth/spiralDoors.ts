@@ -22,11 +22,33 @@ function awayFromCorners(index: number, ring: number): number {
   return wrapped % (2 * ring) === ring ? (wrapped + 1) % count : wrapped;
 }
 
+const DOOR_CLUSTER_SHARE = 0.25;
+const CHUNKS_PER_EXTRA_DOOR = 3;
+
+export function doorsOutOfRing(ring: number): number {
+  return 1 + Math.floor(ring / CHUNKS_PER_EXTRA_DOOR);
+}
+
 export function radialDoorIndices(ring: number, knobs: LabyrinthKnobs): number[] {
   const outer = ring + 1;
-  const first = awayFromCorners((outwardDoorAngle(ring, knobs) / TAU) * perimeterCount(outer), outer);
-  if (hash01(knobs, `second:${ring}`) >= 0.5) return [first];
-  return [first, awayFromCorners(first + 4 * outer, outer)];
+  const count = perimeterCount(outer);
+  const first = (outwardDoorAngle(ring, knobs) / TAU) * count;
+  const window = Math.max(1, Math.floor(count * DOOR_CLUSTER_SHARE));
+  const wanted = Math.min(doorsOutOfRing(ring), window);
+  return spreadThroughTheWindow(first, window, wanted, outer);
+}
+
+function spreadThroughTheWindow(
+  first: number,
+  window: number,
+  wanted: number,
+  outer: number,
+): number[] {
+  const indices = new Set<number>();
+  for (let step = 0; step < wanted; step++) {
+    indices.add(awayFromCorners(first + (step * window) / wanted, outer));
+  }
+  return [...indices];
 }
 
 function inwardOf(chunk: ChunkCoord): ChunkCoord {

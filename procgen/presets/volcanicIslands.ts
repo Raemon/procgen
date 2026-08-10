@@ -1,8 +1,9 @@
 import { THATCHMERE_CULTURE_ID } from '../../assets/cultures/defaultCultures';
 import { defaultTileId } from '../../assets/tiles/defaultTiles';
+import { SEA_LEVEL } from '../volcanic/seaLevel';
 import type { ExamplePipeline } from './examplePipeline';
 
-const SEA_LEVEL = 0.45;
+
 
 export function volcanicIslands(): ExamplePipeline {
   return {
@@ -22,14 +23,26 @@ export function volcanicIslands(): ExamplePipeline {
             'The engine of the whole world: each mantle plume erupts a cone every half a million years while the plate drifts overhead, so every chain is a line of dated volcanoes with the youngest at the head. Everything downstream — elevation, soil, mines — reads these points and their birth dates.',
           enabled: true,
           params: {
-            hotspotSpacing: 384,
-            driftRate: 0.0004,
-            eruptionPeriod: 500_000,
-            coneRadius: 56,
-            coneHeight: 0.85,
-            chainFraction: 0.35,
+            hotspotSpacing: 320,
+            driftRate: 0.00015,
+            eruptionPeriod: 400_000,
+            coneRadius: 96,
+            coneHeight: 1,
+            chainFraction: 0.55,
           },
           inputs: {},
+          display: { mode: 'hidden' },
+        },
+        {
+          id: 'conesNow',
+          type: 'bornFilter',
+          label: 'volcanoes that have erupted',
+          folder: 'the mantle',
+          comment:
+            'The cones already erupted at the moment being shown. The elevation field does its own dating, so this exists for the map and the markers: scrub into the deep past and the head of every chain stops being drawn as well as stops being land.',
+          enabled: true,
+          params: {},
+          inputs: { source: 'hotspots' },
           display: { mode: 'markers', tileId: -1, glyph: '▲', color: '#8a4a35' },
         },
         {
@@ -64,7 +77,7 @@ export function volcanicIslands(): ExamplePipeline {
           comment:
             'The abyssal plain with just enough noise mixed in to give the sea floor swells and the rare drowned bank, while staying safely below the waterline so no land exists that a volcano did not make.',
           enabled: true,
-          params: { weight: 0.35 },
+          params: { weight: 0.3 },
           inputs: { a: 'abyss', b: 'seafloor' },
           display: { mode: 'hidden' },
         },
@@ -76,7 +89,7 @@ export function volcanicIslands(): ExamplePipeline {
           comment:
             'The islands themselves. Every cone born by the current time is stamped into the field: young ones tall and cratered, old ones eroded to half height and half again, their shoulders spreading as they wear down. Drag time into the past and the head of each chain vanishes.',
           enabled: true,
-          params: { seaLevel: SEA_LEVEL, erosionHalfLife: 1_500_000, craterDepth: 0.12, shoulder: 12 },
+          params: { seaLevel: SEA_LEVEL, erosionHalfLife: 3_000_000, craterDepth: 0.12, shoulder: 12 },
           inputs: { volcanoes: 'hotspots' },
           display: { mode: 'hidden' },
         },
@@ -98,7 +111,7 @@ export function volcanicIslands(): ExamplePipeline {
           label: 'island birth dates',
           folder: 'the mantle',
           comment:
-            'When land first broke the water, written as a date per cell with 0 meaning never. Nothing displays it; it exists for the settlement layer to ask how long an island has been there to live on.',
+            'When land first broke the water, written as a date per cell with 0 meaning never. Nothing displays it; the deposits below read it to date the ground, so a mine can only ripen after the rock it sits in existed.',
           enabled: true,
           params: { seaLevel: SEA_LEVEL },
           inputs: { volcanoes: 'hotspots' },
@@ -138,7 +151,7 @@ export function volcanicIslands(): ExamplePipeline {
           enabled: true,
           params: { depth: 0.1, minFlow: 0.35, valleyWidth: 4 },
           inputs: { elevation: 'terrain', flow: 'flow' },
-          display: { mode: 'elevation', heightScale: 4 },
+          display: { mode: 'elevation', heightScale: 10 },
         },
         {
           id: 'sea',
@@ -294,10 +307,22 @@ export function volcanicIslands(): ExamplePipeline {
           label: 'mineral deposits',
           folder: 'riches',
           comment:
-            'Mines only on islands that have stood half a million years — long enough to cool, young enough that the islands still stand tall: obsidian near the summits, sulfur on the flanks, ore on the outer skirts. Every deposit remembers its host cone and chain, so the settlement layer can trade in provenance.',
+            'Ore, obsidian and sulfur, each dated half a million years after the ground it sits in rose from the sea, so a mine ripens rather than appearing with the rock: obsidian near the summits, sulfur on the flanks, ore on the outer skirts. Every deposit remembers its host cone and chain, so the settlement layer can trade in provenance.',
           enabled: true,
           params: { density: 0.02, minIslandAge: 500_000, richnessScale: 1 },
-          inputs: { volcanoes: 'hotspots', elevation: 'eroded' },
+          inputs: { volcanoes: 'hotspots', elevation: 'eroded', islandBirth: 'birth' },
+          display: { mode: 'hidden' },
+        },
+        {
+          id: 'oreNow',
+          type: 'bornFilter',
+          label: 'deposits that have ripened',
+          folder: 'riches',
+          comment:
+            'The deposits whose ripening date has arrived. Scrub time back past a mine and it goes with the island it formed in, instead of hanging in open water.',
+          enabled: true,
+          params: {},
+          inputs: { source: 'deposits' },
           display: { mode: 'markers', tileId: -1, glyph: '⚒', color: '#d9b23c' },
         },
         {
@@ -322,7 +347,7 @@ export function volcanicIslands(): ExamplePipeline {
           enabled: true,
           params: {
             landfallPitch: 640,
-            spacing: 80,
+            spacing: 160,
             minScore: 0.25,
             spreadSpeed: 2.2,
             qualityHaste: 120,
@@ -350,7 +375,7 @@ export function volcanicIslands(): ExamplePipeline {
           comment:
             'The plan a village is laid out to. Streets are surveyed at founding, so they read as the shape the houses grow into rather than something that appears with them.',
           enabled: true,
-          params: { radius: 48, plotCells: 16 },
+          params: { radius: 96, plotCells: 16 },
           inputs: { centers: 'villages' },
           display: { mode: 'tileLayer' },
         },
@@ -360,10 +385,10 @@ export function volcanicIslands(): ExamplePipeline {
           label: 'houses',
           folder: 'the people',
           comment:
-            'Buildings fill outward one ring per lifetime, so an old village near a landfall has grown its inner rings a hall and an inn while a young one on the frontier is still a knot of cottages.',
+            'Buildings fill outward one ring per lifetime and only a town old enough for them gets a smithy, an inn or a hall, so an old village near a landfall has grown five rings deep while a young one on the frontier is still a knot of cottages. Plots whose ground lies below the waterline stay empty, which is why a village on a spit is smaller than its years alone would say.',
           enabled: true,
-          params: { radius: 48, plotCells: 16 },
-          inputs: { centers: 'villages' },
+          params: { radius: 96, plotCells: 16, buildAbove: SEA_LEVEL },
+          inputs: { centers: 'villages', ground: 'eroded' },
           display: { mode: 'structures', cultureId: THATCHMERE_CULTURE_ID },
         },
         {
@@ -375,7 +400,7 @@ export function volcanicIslands(): ExamplePipeline {
             'Where ore and people overlap. A deposit within hauling distance of a village raises a camp a lifetime after that village was founded, which is the one edge in this world that is a genuine consequence rather than a coincidence.',
           enabled: true,
           params: { maxHaul: 176, campDelay: 70 },
-          inputs: { deposits: 'deposits', villages: 'villages' },
+          inputs: { deposits: 'oreNow', villages: 'villages' },
           display: { mode: 'hidden' },
         },
         {

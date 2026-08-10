@@ -4,10 +4,12 @@ import '../procgen/features/index';
 import { PipelineEvaluator } from '../procgen/eval/evaluator';
 import type { Feature } from '../procgen/features/feature';
 import {
-  featureExtractorOf,
   registeredFeatureExtractorTypes,
 } from '../procgen/features/featureExtractorRegistry';
-import { featuresInRect } from '../procgen/features/featuresInRect';
+import {
+  featuresBeforeEdgesAreScrubbed,
+  featuresInRect,
+} from '../procgen/features/featuresInRect';
 import { allNodeTypes, nodeTypeOf } from '../procgen/nodeRegistry';
 import { defaultParams, outputKindOf, type NodeTypeDef } from '../procgen/nodeType';
 import type { PipelineState } from '../procgen/pipeline/pipelineState';
@@ -19,6 +21,7 @@ import { stateOfNodes } from './pipelineWorldFixtures';
 
 const SURVEY: WorldRect = { minX: -64, minY: -64, maxX: 63, maxY: 63 };
 const WIDER_SURVEY: WorldRect = { minX: -96, minY: -96, maxX: 95, maxY: 95 };
+const ONE_CHUNK: WorldRect = { minX: 0, minY: 0, maxX: 31, maxY: 31 };
 const BARREL_PATH = 'procgen/features/index.ts';
 
 export function checkFeatureExtraction(check: CheckReporter): void {
@@ -110,13 +113,19 @@ function labyrinthFixtureState(): PipelineState {
 function checkEveryPointsNodeResolves(check: CheckReporter): void {
   const pointsTypes = allNodeTypes().filter(producesPoints);
   check(
-    'every points-producing node type resolves to a registered extractor or the shared points default',
-    pointsTypes.length > 0 && pointsTypes.every((def) => featureExtractorOf(def.type) !== undefined || producesPoints(def)),
+    'every points-producing node type survives being surveyed on its own, so no node can crash the map',
+    pointsTypes.length > 0 && pointsTypes.every(surveysWithoutThrowing),
   );
   check(
     'every registered feature extractor names a node type that actually exists',
     registeredFeatureExtractorTypes().every((type) => nodeTypeOf(type) !== undefined),
   );
+}
+
+function surveysWithoutThrowing(def: NodeTypeDef): boolean {
+  const state = stateOfNodes([{ id: 'lone', type: def.type, params: defaultParams(def), inputs: {} }]);
+  const { store, evaluator } = worldOfFixture(state);
+  return Array.isArray(featuresInRect(store, evaluator, ONE_CHUNK));
 }
 
 function producesPoints(def: NodeTypeDef): boolean {
@@ -142,7 +151,7 @@ function barrelSpecifierOf(path: string): string {
 }
 
 function checkExtractionIsStableAndKeyed(check: CheckReporter): void {
-  const { store, evaluator } = worldOfFixture(featureFixtureState());
+  const { store, evaluator } = theFeatureFixture();
   const first = featuresInRect(store, evaluator, SURVEY);
   check(
     'extracting the same rect twice yields feature-for-feature identical results',
@@ -156,7 +165,7 @@ function checkExtractionIsStableAndKeyed(check: CheckReporter): void {
 }
 
 function checkDisplayIsIgnoredButDisablingIsNot(check: CheckReporter): void {
-  const { store, evaluator } = worldOfFixture(featureFixtureState());
+  const { store, evaluator } = theFeatureFixture();
   const hidden = featuresInRect(store, evaluator, SURVEY).filter(ofScatterNode);
   const disabled = worldOfFixture(featureFixtureState({ scatterEnabled: false }));
   check(
@@ -174,21 +183,27 @@ function ofScatterNode(feature: Feature): boolean {
 }
 
 function checkEdgesAreHonest(check: CheckReporter): void {
-  const { store, evaluator } = worldOfFixture(featureFixtureState());
+  const { store, evaluator } = theFeatureFixture();
   const features = featuresInRect(store, evaluator, WIDER_SURVEY);
-  const keys = new Set(features.map((feature) => feature.key));
+  const keys = new Set(featuresInRect(store, evaluator, SURVEY).map((feature) => feature.key));
   check(
     'no default-extracted feature carries a parent or link edge it cannot vouch for',
     features.filter((feature) => feature.nodeId !== 'plots').every(hasNoEdges),
   );
+  const raw = featuresBeforeEdgesAreScrubbed(store, evaluator, SURVEY);
+  const wider = new Set(features.map((feature) => feature.key));
   check(
-    'every parent and link key in an extraction resolves to a feature that was actually emitted',
-    features.every(
-      (feature) =>
-        (!feature.parentKey || keys.has(feature.parentKey)) &&
-        feature.linkKeys.every((key) => keys.has(key)),
-    ),
+    'the narrow survey names edges that reach outside it, so dropping them is a real decision',
+    raw.some((feature) => edgeKeysOf(feature).some((key) => !keys.has(key))) && raw.length > 0,
   );
+  check(
+    'every edge a survey names is a feature some survey can find, never a key nothing answers to',
+    raw.every((feature) => edgeKeysOf(feature).every((key) => wider.has(key))),
+  );
+}
+
+function edgeKeysOf(feature: Feature): string[] {
+  return feature.parentKey ? [feature.parentKey, ...feature.linkKeys] : [...feature.linkKeys];
 }
 
 function hasNoEdges(feature: Feature): boolean {
@@ -196,7 +211,7 @@ function hasNoEdges(feature: Feature): boolean {
 }
 
 function checkVillagePlotsMatchEmittedPoints(check: CheckReporter): void {
-  const { store, evaluator } = worldOfFixture(featureFixtureState());
+  const { store, evaluator } = theFeatureFixture();
   const plots = featuresInRect(store, evaluator, SURVEY).filter((feature) => feature.nodeId === 'plots');
   const emitted = pointsInRect(evaluator, 'plots', SURVEY);
   check('the village fixture plants plots inside the survey, so matching them means something', plots.length > 0);
@@ -212,7 +227,7 @@ function checkVillagePlotsMatchEmittedPoints(check: CheckReporter): void {
 }
 
 function checkScatterLabelsComeFromTheNode(check: CheckReporter): void {
-  const { store, evaluator } = worldOfFixture(featureFixtureState());
+  const { store, evaluator } = theFeatureFixture();
   const scattered = featuresInRect(store, evaluator, SURVEY).filter(ofScatterNode);
   check(
     'a scatterPoints feature is labelled by its node, never by the node id it writes as its tag',
@@ -220,7 +235,16 @@ function checkScatterLabelsComeFromTheNode(check: CheckReporter): void {
   );
 }
 
-function worldOfFixture(state: PipelineState): { store: PipelineStore; evaluator: PipelineEvaluator } {
+type FixtureWorld = { store: PipelineStore; evaluator: PipelineEvaluator };
+
+let sharedFixture: FixtureWorld | null = null;
+
+function theFeatureFixture(): FixtureWorld {
+  if (!sharedFixture) sharedFixture = worldOfFixture(featureFixtureState());
+  return sharedFixture;
+}
+
+function worldOfFixture(state: PipelineState): FixtureWorld {
   const store = new PipelineStore(state);
   return { store, evaluator: new PipelineEvaluator(store) };
 }

@@ -2,10 +2,10 @@ import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { fieldValue, type ChunkValue, type FieldChunk } from '../../values/chunkValues';
 import { type VolcanoCone } from '../../volcanic/hotspotChains';
+import { SEA_LEVEL } from '../../volcanic/seaLevel';
 import { ashFalloff, soilMaturity } from '../../volcanic/soilMaturity';
 import { coneOfPoint, nearbyVolcanoes } from './nearbyVolcanoes';
 
-const SEA_LEVELISH = 0.45;
 const ALTITUDE_WEIGHT = 3;
 
 registerNodeType({
@@ -90,7 +90,7 @@ function cellFertility(
   const worldX = ctx.originX + x;
   const worldY = ctx.originY + y;
   const ground = elevation?.[y * ctx.size + x] ?? 0;
-  if (ground <= SEA_LEVELISH) return 0;
+  if (ground <= SEA_LEVEL) return 0;
   const cover = ashCoverAt(worldX, worldY, cones, ctx.params.ashRadius as number);
   if (cover.eldestBorn === null) return 0;
   const maturity = soilMaturity(ctx.time - cover.eldestBorn, ctx.params.peakAge as number);
@@ -119,7 +119,7 @@ function ashCoverAt(
 }
 
 function altitudePenaltyAt(ctx: ChunkGenCtx, elevation: number): number {
-  const above = Math.max(0, elevation - SEA_LEVELISH);
+  const above = Math.max(0, elevation - SEA_LEVEL);
   return (ctx.params.altitudePenalty as number) * above * ALTITUDE_WEIGHT;
 }
 

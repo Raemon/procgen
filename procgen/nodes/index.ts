@@ -19,6 +19,7 @@ import './hydrology/lakeFromFillNode';
 import './hydrology/rapidsFromFlowNode';
 import './maze/mazeChunkNode';
 import './labyrinth/labyrinthChunksNode';
+import './labyrinth/labyrinthDenizensNode';
 import './landmark/landmarkRoomNode';
 import './landmark/landmarkPointNode';
 import './volcanic/hotspotChainNode';

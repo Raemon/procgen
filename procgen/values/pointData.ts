@@ -13,7 +13,11 @@ export const HOST_Y = 'hostY';
 export const SENT_FROM_X = 'sentFromX';
 export const SENT_FROM_Y = 'sentFromY';
 
-export function pointNumber(point: WorldPoint, key: string, fallback: number): number {
+export interface PointWithData {
+  data?: Readonly<Record<string, number>>;
+}
+
+export function pointNumber(point: PointWithData, key: string, fallback: number): number {
   const value = point.data?.[key];
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
 }

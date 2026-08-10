@@ -66,7 +66,8 @@ function chamberLabel(chunk: ChunkCoord, knobs: LabyrinthKnobs, room: boolean): 
 
 function rankOfChamber(chunk: ChunkCoord, knobs: LabyrinthKnobs, room: boolean): number {
   if (!room) return RANK_DETAIL;
-  return ringOf(chunk.x, chunk.y) <= knobs.tutorialRings ? RANK_LANDMARK : RANK_NOTABLE;
+  if (ringOf(chunk.x, chunk.y) === 0) return RANK_LANDMARK;
+  return ringOf(chunk.x, chunk.y) <= knobs.tutorialRings ? RANK_NOTABLE : RANK_DETAIL;
 }
 
 function neighboursThroughOpenExits(
