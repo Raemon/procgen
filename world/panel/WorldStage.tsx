@@ -15,6 +15,7 @@ export function WorldStage({ mode }: { mode: ViewMode }) {
   const view3dSlot = useRef<HTMLDivElement>(null);
   const agentGodSlot = useRef<HTMLDivElement>(null);
   const agentCharacterSlot = useRef<HTMLDivElement>(null);
+  const featuresSlot = useRef<HTMLDivElement>(null);
   const mounted = useRef<MountedWorldViews | null>(null);
   const latestMode = useRef(mode);
   latestMode.current = mode;
@@ -26,6 +27,7 @@ export function WorldStage({ mode }: { mode: ViewMode }) {
         view3d: view3dSlot.current!,
         agentGod: agentGodSlot.current!,
         agentCharacter: agentCharacterSlot.current!,
+        features: featuresSlot.current!,
       },
       () => latestMode.current,
     );
@@ -48,6 +50,10 @@ export function WorldStage({ mode }: { mode: ViewMode }) {
       <div
         ref={agentCharacterSlot}
         className={classes('absolute inset-0', mode !== 'agent-character' && 'hidden')}
+      />
+      <div
+        ref={featuresSlot}
+        className={classes('absolute inset-0', mode !== 'features' && 'hidden')}
       />
       {usesView3d(mode) && <InteractPrompt />}
       <div className="pointer-events-none absolute bottom-3 left-3 flex flex-col items-start gap-1">

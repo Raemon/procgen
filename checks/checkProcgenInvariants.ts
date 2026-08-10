@@ -48,6 +48,8 @@ import { checkPerformanceReadouts } from './checkPerformanceReadouts';
 import { checkTileHoverReadout } from './checkTileHoverReadout';
 import { checkDevProxyDoesNotShadowSourceFolders } from './checkDevProxyDoesNotShadowSourceFolders';
 import { checkPanelHintsRespectTheToggle } from './checkPanelHintsRespectTheToggle';
+import { checkFeatureExtraction } from './checkFeatureExtraction';
+import { checkFeatureViewLayout } from './checkFeatureViewLayout';
 
 function check(name: string, condition: boolean): void {
   test(name, () => assert.ok(condition));
@@ -101,3 +103,5 @@ describe('performance readouts', () => checkPerformanceReadouts(check));
 describe('the hovered tile readout', () => checkTileHoverReadout(check));
 describe('the dev proxy', () => checkDevProxyDoesNotShadowSourceFolders(check));
 describe('panel hints', () => checkPanelHintsRespectTheToggle(check));
+describe('feature extraction', () => checkFeatureExtraction(check));
+describe('the features map layout', () => checkFeatureViewLayout(check));

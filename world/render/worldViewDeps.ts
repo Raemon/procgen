@@ -8,6 +8,7 @@ import type {
 import type { SpeechBubbles } from '../chat/speechBubbles';
 import type { CreatureSim } from '../creatureSim/creatureSim';
 import type { RemotePlayers } from '../../multiplayer/client/remotePlayers';
+import type { PipelineEvaluator } from '../../procgen/eval/evaluator';
 import type { WorldSampler } from '../../procgen/worldSampler';
 import type { CaptureTool } from '../capture/captureTool';
 import type { HoveredTile } from '../hover/hoveredTile';
@@ -16,6 +17,7 @@ import type { MarkerSource } from './markerSource';
 export interface WorldViewDeps {
   world: ReadOnlyWorld;
   sampler: WorldSampler;
+  evaluator: PipelineEvaluator;
   puzzles: MarkerSource;
   store: ReadOnlyPipelineStore;
   tileAssets: ReadOnlyTileAssets;

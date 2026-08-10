@@ -5,6 +5,7 @@ import { MovementInput } from '../input/movementInput';
 import { PickUpInput } from '../input/pickUpInput';
 import { UseFixtureInput } from '../input/useFixtureInput';
 import { AgentTextView } from '../render/agentText/agentTextView';
+import { FeaturesView } from '../render/features/featuresView';
 import { View3D } from '../render/view3d/view3d';
 import { setWorldViewSnapshotter } from '../render/worldViewSnapshot';
 import type { WorldViewDeps } from '../render/worldViewDeps';
@@ -14,6 +15,7 @@ export interface ViewSlots {
   view3d: HTMLElement;
   agentGod: HTMLElement;
   agentCharacter: HTMLElement;
+  features: HTMLElement;
 }
 
 export interface MountedWorldViews {
@@ -46,6 +48,7 @@ export function mountWorldViews(
     runtime.puzzles,
     runtime.hoveredTile,
   );
+  const featuresView = new FeaturesView(slots.features, worldViewDepsOf(runtime));
 
   setWorldViewSnapshotter((size, use) => view3d.captureAfterNextFrame(size, use));
 
@@ -62,6 +65,10 @@ export function mountWorldViews(
       redraw: () => agentCharacterView.draw(),
       recenterOnPlayer: () => agentCharacterView.draw(),
     }),
+    runtime.renderers.add({
+      redraw: () => featuresView.draw(),
+      recenterOnPlayer: () => featuresView.recenterOnPlayer(),
+    }),
   ];
 
   const movement = new MovementInput({
@@ -76,19 +83,19 @@ export function mountWorldViews(
       if (isCharacterControlled(currentMode())) perform(direction === -1 ? 'turn_left' : 'turn_right');
       else if (currentMode() === '3d-god') view3d.rotate(direction);
     },
-    isSuspended: () => inputIsSuspended(runtime),
+    isSuspended: () => inputIsSuspended(runtime, currentMode()),
   });
 
   const useFixture = new UseFixtureInput({
     use: () => perform(isCharacterControlled(currentMode()) ? 'use' : 'use_fixture'),
     resetRoom: () =>
       perform(isCharacterControlled(currentMode()) ? 'reset_room' : 'reset_puzzle_room'),
-    isSuspended: () => inputIsSuspended(runtime),
+    isSuspended: () => inputIsSuspended(runtime, currentMode()),
   });
 
   const pickUp = new PickUpInput({
     pickUp: () => perform(isCharacterControlled(currentMode()) ? 'pick_up' : 'pick_up_item'),
-    isSuspended: () => inputIsSuspended(runtime),
+    isSuspended: () => inputIsSuspended(runtime, currentMode()),
   });
 
   const redrawOnSightChange = world.on('sight-changed', () => {
@@ -116,6 +123,7 @@ export function mountWorldViews(
       pickUp.dispose();
       useFixture.dispose();
       for (const remove of unregister) remove();
+      featuresView.dispose();
       view3d.dispose();
       agentGodView.dispose();
       agentCharacterView.dispose();
@@ -128,14 +136,15 @@ export function mountWorldViews(
   };
 }
 
-function inputIsSuspended(runtime: AppRuntime): boolean {
-  return runtime.chatComposer.isOpen() || runtime.playerInventoryPanel.isOpen();
+function inputIsSuspended(runtime: AppRuntime, mode: ViewMode): boolean {
+  return runtime.chatComposer.isOpen() || runtime.playerInventoryPanel.isOpen() || mode === 'features';
 }
 
 function worldViewDepsOf(runtime: AppRuntime): WorldViewDeps {
   return {
     world: runtime.world,
     sampler: runtime.sampler,
+    evaluator: runtime.evaluator,
     store: runtime.store,
     puzzles: runtime.puzzles,
     tileAssets: runtime.tileAssets,
