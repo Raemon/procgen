@@ -1,4 +1,3 @@
-import { cellsSpanningTiles } from '../../cellStride';
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { fieldValue, type ChunkValue } from '../../values/chunkValues';
@@ -53,7 +52,7 @@ function fillDepressionsChunk(ctx: ChunkGenCtx): ChunkValue {
   const window = gatherFieldWindow(
     ctx,
     'elevation',
-    cellsSpanningTiles(ctx.params.windowRadius as number, ctx.stride),
+    Math.max(1, Math.round(ctx.params.windowRadius as number)),
   );
   if (!window) return fieldValue(out);
   const filled = drainableSurface(window, {
