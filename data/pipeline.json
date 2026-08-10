@@ -195,7 +195,7 @@
       "id": "eroded",
       "type": "carveValleys",
       "label": "ravined flanks",
-      "comment": "The streams cut ravines down the cone flanks — the radial gully pattern that makes a volcanic island read as volcanic from above. This is the final elevation everything else stands on.",
+      "comment": "The streams cut ravines down the cone flanks — the radial gully pattern that makes a volcanic island read as volcanic from above. This is the final elevation field everything else stands on; the relief node below is what actually draws it.",
       "folder": "water",
       "enabled": true,
       "params": {
@@ -208,8 +208,42 @@
         "flow": "flow"
       },
       "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "waterline",
+      "type": "constantField",
+      "label": "waterline",
+      "comment": "The surface of the sea as a field: every cell holds exactly sea level. Only the standing relief below reads it, to hold the drawn ocean flat instead of following the seabed.",
+      "folder": "water",
+      "enabled": true,
+      "params": {
+        "value": 0.45
+      },
+      "inputs": {},
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "relief",
+      "type": "combineFields",
+      "label": "standing relief",
+      "comment": "What the world visibly stands on: the ravined flanks wherever they rise above the sea, and the flat waterline everywhere else. Drawn tall enough that a young cone is a mountain you look up at and its ravines are cuts you could fall into, rather than a tinted disc.",
+      "folder": "water",
+      "enabled": true,
+      "params": {
+        "operation": 4,
+        "clamp": 1
+      },
+      "inputs": {
+        "a": "eroded",
+        "b": "waterline"
+      },
+      "display": {
         "mode": "elevation",
-        "heightScale": 10
+        "heightScale": 40
       }
     },
     {
