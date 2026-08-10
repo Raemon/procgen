@@ -7,7 +7,7 @@ import { sharedTileBoxGeometry } from './sharedTileGeometries';
 import { shapedTileGeometry } from './shapedTileGeometries';
 import type { TilePlacement } from './tilePlacements';
 
-export const GROUND_DEPTH = 1;
+export const GROUND_DEPTH = 3;
 export const WATER_DROP = 0.22;
 export const BLOCK_LAYER_HEIGHT = 1;
 

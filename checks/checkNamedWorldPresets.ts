@@ -4,6 +4,7 @@ import type { TileDef } from '../assets/tiles/tileDef';
 import type { PipelineState } from '../procgen/pipeline/pipelineState';
 import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
 import { pointsInRect } from '../procgen/values/pointsInRect';
+import { asField } from '../procgen/values/valueAccess';
 import { SEA_LEVEL } from '../procgen/volcanic/seaLevel';
 import { examplePipelines } from '../procgen/presets/examplePipelines';
 import { sanitizeWorldPresets } from '../procgen/presets/worldPreset';
@@ -71,7 +72,15 @@ function checkVolcanicIslandsRegenerates(check: CheckReporter): void {
   );
   check(
     'a volcano stands proud of its own shoreline rather than reading as a flat coloured disc',
-    region.reliefAboveWater > 4,
+    region.reliefAboveWater > 8,
+  );
+  check(
+    'the sea is drawn as one flat sheet at the waterline instead of a rolling seabed',
+    region.depthBelowWater === 0 && home.depthBelowWater === 0,
+  );
+  check(
+    'the streams have cut ravines deep enough to see from the ridge beside them',
+    deepestRavineCut(islands) > 2,
   );
   check(
     'the archipelago around the spawn is islands rather than one drowned reef or one continent',
@@ -99,6 +108,23 @@ function aboveTheWaterline(
 interface GroundSweep {
   landShare: number;
   reliefAboveWater: number;
+  depthBelowWater: number;
+}
+
+function deepestRavineCut(world: ReturnType<typeof worldFromState>): number {
+  const scale = elevationHeightScaleOf(presetStateNamed('volcanic islands'));
+  let deepest = 0;
+  for (let chunkY = -4; chunkY < 4; chunkY++) {
+    for (let chunkX = -4; chunkX < 4; chunkX++) {
+      const uncut = asField(world.evaluator.valueFor('terrain', chunkX, chunkY));
+      const cut = asField(world.evaluator.valueFor('eroded', chunkX, chunkY));
+      if (!uncut || !cut) continue;
+      for (let i = 0; i < uncut.length; i++) {
+        deepest = Math.max(deepest, (uncut[i]! - cut[i]!) * scale);
+      }
+    }
+  }
+  return deepest;
 }
 
 function checkInfiniteLabyrinthRegenerates(check: CheckReporter): void {
@@ -121,15 +147,21 @@ function groundAround(
   let land = 0;
   let seen = 0;
   let highest = waterline;
+  let lowest = waterline;
   for (let y = -span; y < span; y += step) {
     for (let x = -span; x < span; x += step) {
       const ground = world.sampler.elevationAt(x, y);
       seen++;
       if (ground > waterline) land++;
       highest = Math.max(highest, ground);
+      lowest = Math.min(lowest, ground);
     }
   }
-  return { landShare: land / seen, reliefAboveWater: highest - waterline };
+  return {
+    landShare: land / seen,
+    reliefAboveWater: highest - waterline,
+    depthBelowWater: waterline - lowest,
+  };
 }
 
 function elevationHeightScaleOf(state: PipelineState): number {
