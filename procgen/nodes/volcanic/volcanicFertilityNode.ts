@@ -89,11 +89,12 @@ function cellFertility(
 ): number {
   const worldX = ctx.originX + x;
   const worldY = ctx.originY + y;
+  const ground = elevation?.[y * ctx.size + x] ?? 0;
+  if (ground <= SEA_LEVELISH) return 0;
   const cover = ashCoverAt(worldX, worldY, cones, ctx.params.ashRadius as number);
   if (cover.eldestBorn === null) return 0;
   const maturity = soilMaturity(ctx.time - cover.eldestBorn, ctx.params.peakAge as number);
-  const penalty = altitudePenaltyAt(ctx, elevation?.[y * ctx.size + x] ?? 0);
-  return clamp01(cover.ash * maturity - penalty);
+  return clamp01(cover.ash * maturity - altitudePenaltyAt(ctx, ground));
 }
 
 interface AshCover {

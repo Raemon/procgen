@@ -19,6 +19,7 @@ export interface VillageLayoutKnobs extends VillageStreetKnobs {
 export interface VillagePlot {
   rect: VillageRect;
   spec: BuildingSpec;
+  ring: number;
 }
 
 export interface VillagePlan {
@@ -84,7 +85,7 @@ function plotOf(
     { slotIndex, ring: slot.ring, plotCells: knobs.plotCells, weights: knobs.weights },
     hashSeed,
   );
-  return { rect: slot.rect, spec: specForPlot(slot, program) };
+  return { rect: slot.rect, spec: specForPlot(slot, program), ring: slot.ring };
 }
 
 function specForPlot(slot: VillagePlotSlot, program: number): BuildingSpec {

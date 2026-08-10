@@ -21,6 +21,7 @@ import { checkRandomizeAndPermutation } from './checkRandomizeAndPermutation';
 import { checkTerrainFieldNodes } from './checkTerrainFieldNodes';
 import { checkHydrologyNodes } from './checkHydrologyNodes';
 import { checkVolcanicWorldInvariants } from './checkVolcanicWorldInvariants';
+import { checkSettlementSpread } from './checkSettlementSpread';
 import { checkStandingAndBrokenWater } from './checkStandingAndBrokenWater';
 import { checkBiomeBands } from './checkBiomeBands';
 import { checkNodeFolders } from './checkNodeFolders';
@@ -76,6 +77,7 @@ describe('randomize and permutation', () => checkRandomizeAndPermutation(check))
 describe('terrain field nodes', () => checkTerrainFieldNodes(check));
 describe('hydrology nodes', () => checkHydrologyNodes(check));
 describe('the volcanic world', () => checkVolcanicWorldInvariants(check));
+describe('settlement spread', () => checkSettlementSpread(check));
 describe('biome bands', () => checkBiomeBands(check));
 describe('node folders', () => checkNodeFolders(check));
 describe('standing and broken water', () => checkStandingAndBrokenWater(check));
