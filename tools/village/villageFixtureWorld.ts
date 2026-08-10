@@ -9,6 +9,7 @@ export function villageFixtureState(): PipelineState {
     nodes: [
       groundNode(),
       habitabilityNode(),
+      travelNode(),
       centersNode(),
       streetsNode(),
       plotsNode(),
@@ -42,15 +43,28 @@ function habitabilityNode() {
   };
 }
 
+function travelNode() {
+  return {
+    id: 'travel',
+    type: 'travelCostField',
+    label: 'what it costs to cross',
+    folder: 'the people',
+    enabled: true,
+    params: { seaLevel: 0.2 },
+    inputs: { elevation: 'ground' },
+    display: { mode: 'hidden' },
+  };
+}
+
 function centersNode() {
   return {
     id: 'centers',
-    type: 'villageCenters',
+    type: 'settlementSpread',
     label: 'village centers',
     folder: 'the people',
     enabled: true,
-    params: { maskAtLeast: 0.4, maskAtMost: 0.95, spacing: 96 },
-    inputs: { mask: 'habitability' },
+    params: { landfallPitch: 512, spacing: 96, minScore: 0.2, spreadSpeed: 3 },
+    inputs: { habitability: 'habitability', travelCost: 'travel' },
     display: { mode: 'markers', tileId: -1, glyph: '*', color: '#ffcc55' },
   };
 }

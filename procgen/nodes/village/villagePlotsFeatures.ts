@@ -11,6 +11,10 @@ import { pointsInRect, type WorldRect } from '../../values/pointsInRect';
 import { weightKnobName } from './programWeightKnobs';
 import { villageHashSeedAt } from './villageHashSeed';
 import { layoutForCenter, type VillageLayoutKnobs, type VillagePlot } from './villageLayout';
+import { PLOT_STAGGER_LABEL, plotBuiltYear } from './plotBuiltYear';
+import { hashLatticePoint } from '../../noise/hashLatticePoint';
+import { labelSeed } from '../../random/labelSeed';
+import { BORN, pointNumber } from '../../values/pointData';
 
 registerFeatureExtractor('villagePlots', villagePlotsFeatures);
 
@@ -19,8 +23,9 @@ function villagePlotsFeatures(request: FeatureExtractionRequest): ExtractedFeatu
   if (!centersId) return [];
   const knobs = layoutKnobsOf(request.node);
   const reach = grownBy(request.rect, knobs.radius);
+  const staggerSeed = labelSeed(request.seed, request.node.id, PLOT_STAGGER_LABEL);
   return pointsInRect(request.evaluator, centersId, reach).flatMap((center) =>
-    plotFeaturesOfCenter(center, centersId, knobs, request.rect),
+    plotFeaturesOfCenter(center, centersId, knobs, request.rect, request.time, staggerSeed),
   );
 }
 
@@ -29,11 +34,24 @@ function plotFeaturesOfCenter(
   centersId: string,
   knobs: VillageLayoutKnobs,
   rect: WorldRect,
+  time: number,
+  staggerSeed: number,
 ): ExtractedFeature[] {
   const plan = layoutForCenter(villageHashSeedAt(center.x, center.y), center.x, center.y, knobs);
   return plan.plots
     .filter((plot) => plotAnchorInRect(plot, rect))
+    .filter((plot) => standingBy(plot, center, time, staggerSeed))
     .map((plot) => plotFeature(plot, featureKey(centersId, center.x, center.y)));
+}
+
+function standingBy(
+  plot: VillagePlot,
+  center: WorldPoint,
+  time: number,
+  staggerSeed: number,
+): boolean {
+  const stagger = hashLatticePoint(plot.spec.x, plot.spec.y, staggerSeed);
+  return plotBuiltYear(pointNumber(center, BORN, -Infinity), plot.ring, stagger) <= time;
 }
 
 function plotFeature(plot: VillagePlot, parentKey: string): ExtractedFeature {

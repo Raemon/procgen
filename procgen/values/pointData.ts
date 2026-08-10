@@ -8,6 +8,10 @@ export const RICHNESS = 'richness';
 export const CHAIN_ID = 'chainId';
 export const CONE_RADIUS = 'coneRadius';
 export const CONE_HEIGHT = 'coneHeight';
+export const HOST_X = 'hostX';
+export const HOST_Y = 'hostY';
+export const SENT_FROM_X = 'sentFromX';
+export const SENT_FROM_Y = 'sentFromY';
 
 export function pointNumber(point: WorldPoint, key: string, fallback: number): number {
   const value = point.data?.[key];

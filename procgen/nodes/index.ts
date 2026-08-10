@@ -30,7 +30,6 @@ import './volcanic/travelCostFieldNode';
 import './volcanic/settlementSpreadNode';
 import './volcanic/miningCampsNode';
 import './time/bornFilterNode';
-import './village/villageCentersNode';
 import './village/villagePlotsNode';
 import './village/villageStreetsNode';
 import './customScript/customScriptNode';

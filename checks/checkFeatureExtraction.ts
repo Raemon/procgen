@@ -29,6 +29,82 @@ export function checkFeatureExtraction(check: CheckReporter): void {
   checkEdgesAreHonest(check);
   checkVillagePlotsMatchEmittedPoints(check);
   checkScatterLabelsComeFromTheNode(check);
+  checkVolcanicProvenanceIsCarried(check);
+  checkChamberLinksFollowOpenExits(check);
+}
+
+function checkVolcanicProvenanceIsCarried(check: CheckReporter): void {
+  const { store, evaluator } = worldOfFixture(volcanicFixtureState());
+  const features = featuresInRect(store, evaluator, SURVEY);
+  const keys = new Set(features.map((feature) => feature.key));
+  const deposits = features.filter((feature) => feature.nodeId === 'ore');
+  const camps = features.filter((feature) => feature.nodeId === 'camps');
+  check('the volcanic fixture yields deposits and camps to trace', deposits.length > 0 && camps.length > 0);
+  check(
+    'deposits name the volcano they formed on, and never name one the survey did not find',
+    deposits.some((ore) => ore.parentKey !== null) &&
+      deposits.every((ore) => ore.parentKey === null || keys.has(ore.parentKey)),
+  );
+  check(
+    'every mining camp stands on a deposit, and the camps that name a sending village name a real one',
+    camps.every((camp) => camp.linkKeys.length === 1 && (camp.parentKey === null || keys.has(camp.parentKey))),
+  );
+}
+
+function checkChamberLinksFollowOpenExits(check: CheckReporter): void {
+  const { store, evaluator } = worldOfFixture(labyrinthFixtureState());
+  const chambers = featuresInRect(store, evaluator, SURVEY);
+  const keys = new Set(chambers.map((feature) => feature.key));
+  check('the labyrinth fixture yields chambers to trace', chambers.length > 0);
+  check(
+    'a chamber links only to chunks that are chambers themselves, so no corridor leads nowhere',
+    chambers.every((chamber) => chamber.linkKeys.every((key) => keys.has(key))),
+  );
+  check(
+    'every chamber carries the extent of the chunk it fills, so the map draws rooms not dots',
+    chambers.every((chamber) => chamber.extent?.width === 32 && chamber.extent.height === 32),
+  );
+  check(
+    'corridor links are mutual, since a seam either side agrees is the same seam',
+    chambers.every((chamber) => chamber.linkKeys.every((key) => linksBack(chambers, key, chamber.key))),
+  );
+}
+
+function linksBack(chambers: readonly Feature[], key: string, backTo: string): boolean {
+  const neighbour = chambers.find((chamber) => chamber.key === key);
+  return neighbour === undefined || neighbour.linkKeys.includes(backTo);
+}
+
+function volcanicFixtureState(): PipelineState {
+  return stateOfNodes([
+    { id: 'cones', type: 'hotspotChain', params: { hotspotSpacing: 256, chainFraction: 1 }, inputs: {} },
+    { id: 'shape', type: 'volcanoConeField', params: {}, inputs: { volcanoes: 'cones' } },
+    {
+      id: 'ore',
+      type: 'mineralDeposits',
+      params: { density: 0.05, minIslandAge: 0 },
+      inputs: { volcanoes: 'cones', elevation: 'shape' },
+    },
+    { id: 'travel', type: 'travelCostField', params: {}, inputs: { elevation: 'shape' } },
+    {
+      id: 'towns',
+      type: 'settlementSpread',
+      params: { landfallPitch: 512, spacing: 64, minScore: 0, spreadSpeed: 3 },
+      inputs: { habitability: 'shape', travelCost: 'travel' },
+    },
+    {
+      id: 'camps',
+      type: 'miningCamps',
+      params: { maxHaul: 400, campDelay: 20 },
+      inputs: { deposits: 'ore', villages: 'towns' },
+    },
+  ]);
+}
+
+function labyrinthFixtureState(): PipelineState {
+  return stateOfNodes([
+    { id: 'delve', type: 'labyrinthChunks', params: { roomFraction: 0.75, tutorialRings: 3 }, inputs: {} },
+  ]);
 }
 
 function checkEveryPointsNodeResolves(check: CheckReporter): void {
@@ -154,7 +230,13 @@ function featureFixtureState(options: { scatterEnabled?: boolean } = {}): Pipeli
     { id: 'flat', type: 'constantField', params: { value: 0.6 }, inputs: {} },
     scatterNode(options.scatterEnabled ?? true),
     { id: 'beacon', type: 'landmarkPoint', label: 'the beacon', params: { x: 5, y: 6 }, inputs: {} },
-    { id: 'centers', type: 'villageCenters', params: { spacing: 64 }, inputs: { mask: 'flat' } },
+    { id: 'travel', type: 'travelCostField', params: { seaLevel: 0.2 }, inputs: { elevation: 'flat' } },
+    {
+      id: 'centers',
+      type: 'settlementSpread',
+      params: { landfallPitch: 512, spacing: 64, minScore: 0, spreadSpeed: 3 },
+      inputs: { habitability: 'flat', travelCost: 'travel' },
+    },
     {
       id: 'plots',
       type: 'villagePlots',
