@@ -3,6 +3,7 @@ import { clusterFeatures, clusterLabel } from '../world/render/features/featureC
 import {
   boxesOverlap,
   layoutLabels,
+  LABELS_ONE_NODE_MAY_NAME,
   type LabelCandidate,
 } from '../world/render/features/featureLabelLayout';
 import { pickFeatureAt, type PickTarget } from '../world/render/features/featurePicking';
@@ -23,6 +24,7 @@ export function checkFeatureViewLayout(check: CheckReporter): void {
 
 function checkLabelsNeverOverlap(check: CheckReporter): void {
   const placed = layoutLabels(crowdedCandidates(), 4);
+  checkOneNodeCannotFloodTheMap(check);
   check('the crowded label fixture keeps some labels, so the overlap claim is not vacuous', placed.length > 1);
   check(
     'no two labels the layout places overlap each other',
@@ -30,9 +32,34 @@ function checkLabelsNeverOverlap(check: CheckReporter): void {
   );
 }
 
+function checkOneNodeCannotFloodTheMap(check: CheckReporter): void {
+  const scenery = spreadOutCandidatesOfOneNode(40);
+  check(
+    'one scattering node cannot bury the map, however many things it names',
+    layoutLabels(scenery, 4).length <= LABELS_ONE_NODE_MAY_NAME && scenery.length > LABELS_ONE_NODE_MAY_NAME,
+  );
+}
+
+function spreadOutCandidatesOfOneNode(count: number): LabelCandidate[] {
+  const spread: LabelCandidate[] = [];
+  for (let index = 0; index < count; index++) spread.push({
+    key: `s${index}`,
+    nodeId: 'groves',
+    text: 'island groves',
+    anchorX: 40 + index * 200,
+    anchorY: 40 + index * 40,
+    widthPx: 60,
+    heightPx: 12,
+    rank: RANK_NOTABLE,
+    extentArea: 0,
+  });
+  return spread;
+}
+
 function crowdedCandidates(): LabelCandidate[] {
   return [0, 1, 2, 3, 4, 5, 6, 7].map((index) => ({
     key: `k${index}`,
+    nodeId: `n${index}`,
     text: `label ${index}`,
     anchorX: 100 + index * 9,
     anchorY: 100 + (index % 3) * 4,

@@ -1,4 +1,4 @@
-import { programNameOf } from '../../assembly/buildingPrograms';
+import { spokenProgramName } from '../../assembly/programCatalog';
 import { PROGRAM_CATALOG } from '../../assembly/programCatalog';
 import { featureKey, RANK_DETAIL, type ExtractedFeature } from '../../features/feature';
 import {
@@ -59,7 +59,7 @@ function plotFeature(plot: VillagePlot, parentKey: string): ExtractedFeature {
     x: plot.spec.x,
     y: plot.spec.y,
     extent: { width: plot.rect.width, height: plot.rect.depth },
-    label: programNameOf(plot.spec.program),
+    label: spokenProgramName(plot.spec.program),
     rank: RANK_DETAIL,
     parentKey,
     linkKeys: [],

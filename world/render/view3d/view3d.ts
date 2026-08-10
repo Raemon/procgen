@@ -20,7 +20,7 @@ import { advanceFaceArtAnimations } from './faceArtAnimations';
 import { ItemMeshes } from './itemMeshes';
 import { RemotePlayerMeshes } from './remotePlayerMeshes';
 import { createCharacterFog, createWorldScene, setFogRange } from './worldScene';
-import { SceneDaylight } from './sceneDaylight';
+import { LAMPLIT_AMBIENT, OVERHEAD_AMBIENT, SceneDaylight } from './sceneDaylight';
 import { WorldLights } from './worldLights';
 import { PlayerCharacterMesh } from './playerCharacterMesh';
 import { FollowCamera } from './followCamera';
@@ -49,7 +49,7 @@ export class View3D {
 
   private readonly renderer = new THREE.WebGLRenderer({ antialias: true });
   private readonly scene = createWorldScene();
-  private readonly daylight = new SceneDaylight(this.scene);
+  private readonly daylight = new SceneDaylight(this.scene, OVERHEAD_AMBIENT);
   private readonly followCamera = new FollowCamera();
   private readonly characterCamera = new CharacterCamera();
   private readonly characterFog = createCharacterFog();
@@ -134,6 +134,7 @@ export class View3D {
     if (this.cameraStyle === style) return;
     this.cameraStyle = style;
     this.scene.fog = style === 'character' ? this.characterFog : null;
+    this.daylight.seeInTheDark(style === 'character' ? LAMPLIT_AMBIENT : OVERHEAD_AMBIENT);
     this.streamer.showCeilings(style === 'character');
     this.player.visible = style === 'god';
     this.characterCamera.snapOnNextFrame();

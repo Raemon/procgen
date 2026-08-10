@@ -2,6 +2,7 @@ import { RANK_LANDMARK } from '../../../procgen/features/feature';
 
 export interface LabelCandidate {
   key: string;
+  nodeId: string;
   text: string;
   anchorX: number;
   anchorY: number;
@@ -22,6 +23,7 @@ export interface PlacedLabel {
 
 export const LABELS_HIDDEN_BELOW_PPT = 0.6;
 export const ONLY_LANDMARK_LABELS_BELOW_PPT = 2;
+export const LABELS_ONE_NODE_MAY_NAME = 12;
 const LABEL_GAP_PX = 6;
 
 export function layoutLabels(
@@ -29,11 +31,20 @@ export function layoutLabels(
   pixelsPerTile: number,
 ): PlacedLabel[] {
   const placed: PlacedLabel[] = [];
+  const namedPerNode = new Map<string, number>();
   for (const candidate of visibleAtZoom(candidates, pixelsPerTile)) {
+    if (aNodeHasSaidEnough(namedPerNode, candidate)) continue;
     const box = boxOf(candidate);
     if (placed.every((other) => !boxesOverlap(box, other))) placed.push(box);
   }
   return placed;
+}
+
+function aNodeHasSaidEnough(namedPerNode: Map<string, number>, candidate: LabelCandidate): boolean {
+  const named = namedPerNode.get(candidate.nodeId) ?? 0;
+  if (named >= LABELS_ONE_NODE_MAY_NAME) return true;
+  namedPerNode.set(candidate.nodeId, named + 1);
+  return false;
 }
 
 function visibleAtZoom(
@@ -49,8 +60,8 @@ function visibleAtZoom(
 }
 
 function byPriority(a: LabelCandidate, b: LabelCandidate): number {
-  if (a.extentArea !== b.extentArea) return b.extentArea - a.extentArea;
   if (a.rank !== b.rank) return a.rank - b.rank;
+  if (a.extentArea !== b.extentArea) return b.extentArea - a.extentArea;
   return a.key < b.key ? -1 : 1;
 }
 
