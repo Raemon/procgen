@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { defaultTileId } from '../assets/tiles/defaultTiles';
 import { chunkExitsOf, openExitCount, seamIsOpen } from '../procgen/labyrinth/chunkExits';
 import { ringOf } from '../procgen/labyrinth/chunkRing';
 import { roleOf, ROOM } from '../procgen/labyrinth/chunkRole';
@@ -27,8 +28,8 @@ function knobsFor(seed: number): LabyrinthKnobs {
     braid: 0.15,
     carver: 0,
     doorJitter: 0.5,
-    wallTile: 17,
-    floorTile: 15,
+    wallTile: defaultTileId('dressed granite wall'),
+    floorTile: defaultTileId('cobbled street'),
   });
 }
 
@@ -55,6 +56,12 @@ function exitCountsStayInRange(knobs: LabyrinthKnobs): boolean {
     const count = openExitCount(chunkExitsOf(cx, cy, knobs));
     return count >= 1 && count <= 4;
   });
+}
+
+function branchingShareOf(knobs: LabyrinthKnobs): number {
+  const chunks = everyChunkWithin(CHECKED_RINGS).filter(([cx, cy]) => ringOf(cx, cy) > 0);
+  const branching = chunks.filter(([cx, cy]) => openExitCount(chunkExitsOf(cx, cy, knobs)) >= 3);
+  return branching.length / chunks.length;
 }
 
 function chunkDistancesFromOrigin(knobs: LabyrinthKnobs, rings: number): Map<string, number> {
@@ -172,6 +179,10 @@ export function checkLabyrinthChunkTopology(check: CheckReporter): void {
   check(
     'every chunk in rings 0..8 has between 1 and 4 open seams, across 3 seeds',
     knobs.every(exitCountsStayInRange),
+  );
+  check(
+    'the chunk maze branches rather than running as one unbroken corridor, across 3 seeds',
+    knobs.every((k) => branchingShareOf(k) > 0.04),
   );
   check(
     'the chunk graph from the origin reaches every chunk of rings 0..8',
