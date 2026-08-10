@@ -5,7 +5,7 @@ export const LABYRINTH_GEOMETRY_PARAMS: Record<string, KnobParamSpec> = {
     roomFraction: {
       kind: 'number',
       label: 'room share',
-      help: 'Fraction of chunks beyond the tutorial rings that become puzzle rooms; the rest are carved into dense one-chunk warrens.',
+      help: 'Fraction of cells beyond the tutorial rings that become puzzle rooms; the rest are carved into dense one-cell warrens.',
       min: 0,
       max: 1,
       step: 0.05,
@@ -14,7 +14,7 @@ export const LABYRINTH_GEOMETRY_PARAMS: Record<string, KnobParamSpec> = {
     tutorialRings: {
       kind: 'int',
       label: 'tutorial rings',
-      help: 'Rings of chunks around the origin forced to be rooms, so the opening minutes teach the puzzle kinds before any warren appears.',
+      help: 'Rings of cells around the origin forced to be rooms, so the opening minutes teach the puzzle kinds before any warren appears.',
       min: 1,
       max: 6,
       default: 3,
@@ -47,7 +47,7 @@ export const LABYRINTH_GEOMETRY_PARAMS: Record<string, KnobParamSpec> = {
     carver: {
       kind: 'choice',
       label: 'carver',
-      help: 'The algorithm that carves each warren chunk; each has a distinct corridor character.',
+      help: 'The algorithm that carves each warren cell; each has a distinct corridor character.',
       options: CARVER_CHOICES,
       default: CARVER_DFS,
     },

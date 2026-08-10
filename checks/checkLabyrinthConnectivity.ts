@@ -1,5 +1,4 @@
 import '../procgen/nodes';
-import { CHUNK_SIZE } from '../procgen/chunk';
 import { chunkExitsOf, CLOSED, type ChunkExits } from '../procgen/labyrinth/chunkExits';
 import {
   LABYRINTH_NODE_TYPE,
@@ -7,6 +6,7 @@ import {
   labyrinthKnobsFrom,
   type LabyrinthKnobs,
 } from '../procgen/labyrinth/labyrinthKnobs';
+import { LABYRINTH_CELL_SIZE, labyrinthCellOrigin } from '../procgen/labyrinth/labyrinthLattice';
 import { labelSeed } from '../procgen/random/labelSeed';
 import type { PipelineState } from '../procgen/pipeline/pipelineState';
 import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
@@ -46,14 +46,14 @@ function seamCells(
   side: keyof ChunkExits,
   offset: number,
 ): [number, number, number, number] {
-  const originX = cx * CHUNK_SIZE;
-  const originY = cy * CHUNK_SIZE;
+  const originX = labyrinthCellOrigin(cx);
+  const originY = labyrinthCellOrigin(cy);
   if (side === 'east') {
     const y = originY + offset;
-    return [originX + CHUNK_SIZE - 1, y, originX + CHUNK_SIZE, y];
+    return [originX + LABYRINTH_CELL_SIZE - 1, y, originX + LABYRINTH_CELL_SIZE, y];
   }
   const x = originX + offset;
-  return [x, originY + CHUNK_SIZE - 1, x, originY + CHUNK_SIZE];
+  return [x, originY + LABYRINTH_CELL_SIZE - 1, x, originY + LABYRINTH_CELL_SIZE];
 }
 
 function everySeamCrossable(sampler: WorldSampler, knobs: LabyrinthKnobs): boolean {
@@ -68,8 +68,8 @@ function everySeamCrossable(sampler: WorldSampler, knobs: LabyrinthKnobs): boole
 }
 
 function floorsAreOneComponent(sampler: WorldSampler, knobs: LabyrinthKnobs): boolean {
-  const size = (2 * FLOOD_RINGS + 1) * CHUNK_SIZE;
-  const min = -FLOOD_RINGS * CHUNK_SIZE;
+  const size = (2 * FLOOD_RINGS + 1) * LABYRINTH_CELL_SIZE;
+  const min = -FLOOD_RINGS * LABYRINTH_CELL_SIZE;
   const isFloor = (i: number) =>
     sampler.tileAt(min + (i % size), min + Math.floor(i / size)) === knobs.floorTile;
   const floors = Array.from({ length: size * size }, (_, i) => i).filter(isFloor);

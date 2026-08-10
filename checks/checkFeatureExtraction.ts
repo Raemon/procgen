@@ -10,6 +10,7 @@ import {
   featuresBeforeEdgesAreScrubbed,
   featuresInRect,
 } from '../procgen/features/featuresInRect';
+import { LABYRINTH_CELL_SIZE } from '../procgen/labyrinth/labyrinthLattice';
 import { allNodeTypes, nodeTypeOf } from '../procgen/nodeRegistry';
 import { defaultParams, outputKindOf, type NodeTypeDef } from '../procgen/nodeType';
 import type { PipelineState } from '../procgen/pipeline/pipelineState';
@@ -64,8 +65,12 @@ function checkChamberLinksFollowOpenExits(check: CheckReporter): void {
     chambers.every((chamber) => chamber.linkKeys.every((key) => keys.has(key))),
   );
   check(
-    'every chamber carries the extent of the chunk it fills, so the map draws rooms not dots',
-    chambers.every((chamber) => chamber.extent?.width === 32 && chamber.extent.height === 32),
+    'every chamber carries the extent of the labyrinth cell it fills, so the map draws rooms not dots',
+    chambers.every(
+      (chamber) =>
+        chamber.extent?.width === LABYRINTH_CELL_SIZE &&
+        chamber.extent.height === LABYRINTH_CELL_SIZE,
+    ),
   );
   check(
     'corridor links are mutual, since a seam either side agrees is the same seam',

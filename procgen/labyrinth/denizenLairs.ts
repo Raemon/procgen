@@ -1,8 +1,8 @@
-import { CHUNK_SIZE } from '../chunk';
 import { chunkExitsOf } from './chunkExits';
 import { ringOf } from './chunkRing';
 import { hashUnit } from './hashUnit';
 import type { LabyrinthKnobs } from './labyrinthKnobs';
+import { LABYRINTH_CELL_SIZE, labyrinthCellOrigin } from './labyrinthLattice';
 import { isRoomFloor, roomGeometryOf } from './roomLayout';
 import { submazeFloorMask } from './submazeLayout';
 import { roleOf, ROOM } from './chunkRole';
@@ -17,7 +17,7 @@ export interface DenizenKnobs {
   safeRings: number;
 }
 
-export function lairInChunk(
+export function lairInCell(
   cx: number,
   cy: number,
   knobs: LabyrinthKnobs,
@@ -41,10 +41,10 @@ function floorCellsOf(cx: number, cy: number, knobs: LabyrinthKnobs): DenizenLai
   const geometry = roomGeometryOf(cx, cy, exits, knobs);
   const mask = isRoom ? null : submazeFloorMask(cx, cy, exits, knobs);
   const cells: DenizenLair[] = [];
-  for (let y = 0; y < CHUNK_SIZE; y++) {
-    for (let x = 0; x < CHUNK_SIZE; x++) {
-      const world = { x: cx * CHUNK_SIZE + x, y: cy * CHUNK_SIZE + y };
-      if (isFloorHere(world, geometry, mask, y * CHUNK_SIZE + x)) cells.push(world);
+  for (let y = 0; y < LABYRINTH_CELL_SIZE; y++) {
+    for (let x = 0; x < LABYRINTH_CELL_SIZE; x++) {
+      const world = { x: labyrinthCellOrigin(cx) + x, y: labyrinthCellOrigin(cy) + y };
+      if (isFloorHere(world, geometry, mask, y * LABYRINTH_CELL_SIZE + x)) cells.push(world);
     }
   }
   return cells;

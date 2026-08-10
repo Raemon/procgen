@@ -1,5 +1,5 @@
-import { CHUNK_SIZE } from '../chunk';
 import { perimeterCount, perimeterIndexOf, ringOf } from './chunkRing';
+import { LABYRINTH_CELL_SIZE } from './labyrinthLattice';
 import { hashUnit } from './hashUnit';
 import type { LabyrinthKnobs } from './labyrinthKnobs';
 import { radialDoorIndices, ringBreakIndex } from './spiralDoors';
@@ -85,7 +85,7 @@ function seamDoor(
 
 function doorOffset(label: string, knobs: LabyrinthKnobs): number {
   const margin = clampedWall(knobs) + doorwaySpread(knobs);
-  const hi = CHUNK_SIZE - 1 - margin;
+  const hi = LABYRINTH_CELL_SIZE - 1 - margin;
   const h = hashUnit(`${knobs.seed}:door:${label}`);
   return margin + Math.floor(h * (hi - margin + 1));
 }
