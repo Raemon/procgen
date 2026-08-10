@@ -62,18 +62,25 @@ function checkVolcanicIslandsRegenerates(check: CheckReporter): void {
     fieldBytes(islands.evaluator, 'terrain', 0, 0) === fieldBytes(again.evaluator, 'terrain', 0, 0) &&
       tileBytes(islands.evaluator, 'sea', 0, 0) === tileBytes(again.evaluator, 'sea', 0, 0),
   );
+  const home = groundAround(islands, 48, 4);
+  const region = groundAround(islands, 384, 12);
   check(
     'volcanic islands puts dry land, not just shallower seabed, under the spot you wake on',
-    landShareAround(islands, 48) > 0.2,
+    home.landShare > 0.2,
   );
   check(
     'a volcano stands proud of its own shoreline rather than reading as a flat coloured disc',
-    summitReliefAround(islands, 512) > 4,
+    region.reliefAboveWater > 4,
   );
   check(
     'the archipelago around the spawn is islands rather than one drowned reef or one continent',
-    landShareAround(islands, 512) > 0.04 && landShareAround(islands, 512) < 0.6,
+    region.landShare > 0.04 && region.landShare < 0.6,
   );
+}
+
+interface GroundSweep {
+  landShare: number;
+  reliefAboveWater: number;
 }
 
 function checkInfiniteLabyrinthRegenerates(check: CheckReporter): void {
@@ -87,28 +94,24 @@ function checkInfiniteLabyrinthRegenerates(check: CheckReporter): void {
   check('the infinite labyrinth is unlit, so its own torches are what you see by', delve.store.daylight() === 0);
 }
 
-function landShareAround(world: ReturnType<typeof worldFromState>, span: number): number {
+function groundAround(
+  world: ReturnType<typeof worldFromState>,
+  span: number,
+  step: number,
+): GroundSweep {
   const waterline = SEA_LEVEL * elevationHeightScaleOf(presetStateNamed('volcanic islands'));
   let land = 0;
   let seen = 0;
-  for (let y = -span; y < span; y += 8) {
-    for (let x = -span; x < span; x += 8) {
-      seen++;
-      if (world.sampler.elevationAt(x, y) > waterline) land++;
-    }
-  }
-  return land / seen;
-}
-
-function summitReliefAround(world: ReturnType<typeof worldFromState>, span: number): number {
-  const waterline = SEA_LEVEL * elevationHeightScaleOf(presetStateNamed('volcanic islands'));
   let highest = waterline;
-  for (let y = -span; y < span; y += 8) {
-    for (let x = -span; x < span; x += 8) {
-      highest = Math.max(highest, world.sampler.elevationAt(x, y));
+  for (let y = -span; y < span; y += step) {
+    for (let x = -span; x < span; x += step) {
+      const ground = world.sampler.elevationAt(x, y);
+      seen++;
+      if (ground > waterline) land++;
+      highest = Math.max(highest, ground);
     }
   }
-  return highest - waterline;
+  return { landShare: land / seen, reliefAboveWater: highest - waterline };
 }
 
 function elevationHeightScaleOf(state: PipelineState): number {

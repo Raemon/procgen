@@ -20,6 +20,14 @@ export function featuresInRect(
   evaluator: PipelineEvaluator,
   rect: WorldRect,
 ): Feature[] {
+  return withoutUnresolvedEdgeKeys(featuresBeforeEdgesAreScrubbed(store, evaluator, rect));
+}
+
+export function featuresBeforeEdgesAreScrubbed(
+  store: FeaturePipeline,
+  evaluator: PipelineEvaluator,
+  rect: WorldRect,
+): Feature[] {
   const byKey = new Map<string, Feature>();
   const nodes = store.nodes();
   for (const node of nodes) {
@@ -27,7 +35,7 @@ export function featuresInRect(
       collectNodeFeatures(store, evaluator, rect, node, byKey);
     }
   }
-  return withoutUnresolvedEdgeKeys([...byKey.values()]);
+  return [...byKey.values()];
 }
 
 function collectNodeFeatures(
