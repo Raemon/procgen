@@ -1,4 +1,6 @@
 import '../procgen/nodes';
+import { defaultTiles } from '../assets/tiles/defaultTiles';
+import type { TileDef } from '../assets/tiles/tileDef';
 import type { PipelineState } from '../procgen/pipeline/pipelineState';
 import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
 import { SEA_LEVEL } from '../procgen/volcanic/seaLevel';
@@ -41,6 +43,7 @@ export function checkNamedWorldPresets(check: CheckReporter): void {
   checkVolcanicIslandsRegenerates(check);
   checkInfiniteLabyrinthRegenerates(check);
   checkSavedPresetsRoundTrip(check);
+  checkShippedWorldTiles(check);
 }
 
 function nodeCountOf(state: unknown): number {
@@ -108,5 +111,20 @@ function checkSavedPresetsRoundTrip(check: CheckReporter): void {
   check(
     'junk in stored presets is dropped rather than trusted',
     sanitizeWorldPresets([{ name: '', state: {} }, 'nope', { name: 'x' }]).length === 0,
+  );
+}
+
+function tileNamedIn(state: PipelineState, nodeId: string, param: string): TileDef | undefined {
+  const node = state.nodes.find((candidate) => candidate.id === nodeId);
+  return defaultTiles()[node?.params[param] as number];
+}
+
+function checkShippedWorldTiles(check: CheckReporter): void {
+  const delve = presetStateNamed('infinite labyrinth');
+  const floor = tileNamedIn(delve, 'n1', 'floorTile');
+  const wall = tileNamedIn(delve, 'n1', 'wallTile');
+  check(
+    'the labyrinth floor is a tile you can stand on and its wall is one you cannot walk through',
+    floor?.walkable === true && wall?.walkable === false,
   );
 }

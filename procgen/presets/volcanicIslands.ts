@@ -31,6 +31,18 @@ export function volcanicIslands(): ExamplePipeline {
             chainFraction: 0.55,
           },
           inputs: {},
+          display: { mode: 'hidden' },
+        },
+        {
+          id: 'conesNow',
+          type: 'bornFilter',
+          label: 'volcanoes that have erupted',
+          folder: 'the mantle',
+          comment:
+            'The cones already erupted at the moment being shown. The elevation field does its own dating, so this exists for the map and the markers: scrub into the deep past and the head of every chain stops being drawn as well as stops being land.',
+          enabled: true,
+          params: {},
+          inputs: { source: 'hotspots' },
           display: { mode: 'markers', tileId: -1, glyph: '▲', color: '#8a4a35' },
         },
         {
@@ -99,7 +111,7 @@ export function volcanicIslands(): ExamplePipeline {
           label: 'island birth dates',
           folder: 'the mantle',
           comment:
-            'When land first broke the water, written as a date per cell with 0 meaning never. Nothing displays it; it exists for the settlement layer to ask how long an island has been there to live on.',
+            'When land first broke the water, written as a date per cell with 0 meaning never. Nothing displays it; the deposits below read it to date the ground, so a mine can only ripen after the rock it sits in existed.',
           enabled: true,
           params: { seaLevel: SEA_LEVEL },
           inputs: { volcanoes: 'hotspots' },
@@ -295,10 +307,22 @@ export function volcanicIslands(): ExamplePipeline {
           label: 'mineral deposits',
           folder: 'riches',
           comment:
-            'Mines only on islands that have stood half a million years — long enough to cool, young enough that the islands still stand tall: obsidian near the summits, sulfur on the flanks, ore on the outer skirts. Every deposit remembers its host cone and chain, so the settlement layer can trade in provenance.',
+            'Ore, obsidian and sulfur, each dated half a million years after the ground it sits in rose from the sea, so a mine ripens rather than appearing with the rock: obsidian near the summits, sulfur on the flanks, ore on the outer skirts. Every deposit remembers its host cone and chain, so the settlement layer can trade in provenance.',
           enabled: true,
           params: { density: 0.02, minIslandAge: 500_000, richnessScale: 1 },
-          inputs: { volcanoes: 'hotspots', elevation: 'eroded' },
+          inputs: { volcanoes: 'hotspots', elevation: 'eroded', islandBirth: 'birth' },
+          display: { mode: 'hidden' },
+        },
+        {
+          id: 'oreNow',
+          type: 'bornFilter',
+          label: 'deposits that have ripened',
+          folder: 'riches',
+          comment:
+            'The deposits whose ripening date has arrived. Scrub time back past a mine and it goes with the island it formed in, instead of hanging in open water.',
+          enabled: true,
+          params: {},
+          inputs: { source: 'deposits' },
           display: { mode: 'markers', tileId: -1, glyph: '⚒', color: '#d9b23c' },
         },
         {
@@ -376,7 +400,7 @@ export function volcanicIslands(): ExamplePipeline {
             'Where ore and people overlap. A deposit within hauling distance of a village raises a camp a lifetime after that village was founded, which is the one edge in this world that is a genuine consequence rather than a coincidence.',
           enabled: true,
           params: { maxHaul: 176, campDelay: 70 },
-          inputs: { deposits: 'deposits', villages: 'villages' },
+          inputs: { deposits: 'oreNow', villages: 'villages' },
           display: { mode: 'hidden' },
         },
         {

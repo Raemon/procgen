@@ -1,10 +1,8 @@
+import { defaultTileId } from '../../assets/tiles/defaultTiles';
 import { BLOCKING_TILE_HEIGHT } from '../../assets/tiles/tileHeight';
 import type { ExamplePipeline } from './examplePipeline';
 
 const ROOF_ON_THE_WALLS = BLOCKING_TILE_HEIGHT;
-const COBBLESTONE = 15;
-const STONE_WALL = 17;
-const ROCK = 4;
 const TORCH_ITEM = 5;
 
 export function infiniteLabyrinth(): ExamplePipeline {
@@ -32,8 +30,8 @@ export function infiniteLabyrinth(): ExamplePipeline {
             braid: 0.15,
             carver: 0,
             doorJitter: 0.5,
-            wallTile: STONE_WALL,
-            floorTile: COBBLESTONE,
+            wallTile: defaultTileId('dressed granite wall'),
+            floorTile: defaultTileId('cobbled street'),
           },
           inputs: {},
           display: { mode: 'tileLayer' },
@@ -70,7 +68,7 @@ export function infiniteLabyrinth(): ExamplePipeline {
           comment:
             'Every cell is above the threshold, so every cell gets rock, and the ceiling display hangs it exactly where the stone walls end so the roof sits on the walls. Ceilings only draw in first person, so the god camera can still look down into the labyrinth.',
           enabled: true,
-          params: { threshold: 0.5, belowTile: -1, aboveTile: ROCK },
+          params: { threshold: 0.5, belowTile: -1, aboveTile: defaultTileId('granite outcrop') },
           inputs: { source: 'n3' },
           display: { mode: 'ceiling', height: ROOF_ON_THE_WALLS },
         },

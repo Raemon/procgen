@@ -5,6 +5,7 @@ import type { ExtractedFeature } from './feature';
 
 export interface FeatureExtractionRequest {
   node: NodeInstance;
+  nodes: readonly NodeInstance[];
   seed: number;
   time: number;
   evaluator: PipelineEvaluator;

@@ -32,6 +32,11 @@ registerNodeType({
       label: 'elevation',
       help: 'The final eroded elevation, read across chunk edges so deposits never land in the sea.',
     },
+    islandBirth: {
+      kind: 'field',
+      label: 'island birth',
+      help: 'When land first broke water here. A deposit is datable from this plus the ripening age below; without it the host cone\u2019s own eruption date is used instead.',
+    },
   },
   params: {
     density: {
@@ -46,7 +51,7 @@ registerNodeType({
     minIslandAge: {
       kind: 'number',
       label: 'min island age',
-      help: 'Years a cone must have stood before its island bears minerals. Fresh lava has nothing to mine.',
+      help: 'Years the ground must have stood above water before it bears minerals, counted from the island birth date. Fresh lava has nothing to mine.',
       min: 0,
       max: 5_000_000,
       step: 250_000,
@@ -69,7 +74,7 @@ registerNodeType({
 function mineralDepositsChunk(ctx: ChunkGenCtx): ChunkValue {
   const points: PointsChunk = [];
   if (!ctx.fieldInput('elevation')) return pointsValue(points);
-  const hosts = agedHostsNear(ctx);
+  const hosts = hostsNear(ctx);
   const site = depositSiteTest(ctx, hosts);
   for (let y = 0; y < ctx.size; y++) {
     for (let x = 0; x < ctx.size; x++) {
@@ -79,11 +84,17 @@ function mineralDepositsChunk(ctx: ChunkGenCtx): ChunkValue {
   return pointsValue(points);
 }
 
-function agedHostsNear(ctx: ChunkGenCtx): VolcanoCone[] {
-  const minAge = ctx.params.minIslandAge as number;
-  return nearbyVolcanoes(ctx, 'volcanoes', HOST_REACH * MAX_CONE_RADIUS + DEPOSIT_SPACING)
-    .map(coneOfPoint)
-    .filter((cone) => -cone.born >= minAge);
+function hostsNear(ctx: ChunkGenCtx): VolcanoCone[] {
+  return nearbyVolcanoes(ctx, 'volcanoes', HOST_REACH * MAX_CONE_RADIUS + DEPOSIT_SPACING).map(
+    coneOfPoint,
+  );
+}
+
+function ripeYearOf(ctx: ChunkGenCtx, host: VolcanoCone, cellX: number, cellY: number): number {
+  const birthAt = worldFieldReader(ctx, 'islandBirth');
+  const landBorn = ctx.fieldInput('islandBirth') ? (birthAt(cellX, cellY) ?? 0) : 0;
+  const born = landBorn !== 0 ? landBorn : host.born;
+  return born + (ctx.params.minIslandAge as number);
 }
 
 type SiteTest = (cellX: number, cellY: number) => boolean;
@@ -176,7 +187,7 @@ function depositPointOf(
     data: {
       [DEPOSIT_KIND]: depositKindAt(distance, host.radius),
       [RICHNESS]: ctx.hash01(cellX, cellY, 'deposit richness') * (ctx.params.richnessScale as number),
-      [BORN]: host.born,
+      [BORN]: ripeYearOf(ctx, host, cellX, cellY),
       [CHAIN_ID]: host.chainId,
       [HOST_X]: host.x,
       [HOST_Y]: host.y,

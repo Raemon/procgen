@@ -32,7 +32,7 @@ function volcanicState(): PipelineState {
     { id: 'cones', type: 'volcanoConeField', params: { seaLevel: SEA_LEVEL, erosionHalfLife: 2_500_000, craterDepth: 0.1, shoulder: 12 }, inputs: { volcanoes: 'volcanoes' } },
     { id: 'birth', type: 'islandBirthField', params: { seaLevel: SEA_LEVEL }, inputs: { volcanoes: 'volcanoes' } },
     { id: 'fertility', type: 'volcanicFertility', params: { ashRadius: 40, peakAge: 2_000_000, altitudePenalty: 0.2 }, inputs: { volcanoes: 'volcanoes', elevation: 'cones' } },
-    { id: 'deposits', type: 'mineralDeposits', params: { density: 0.05, minIslandAge: 1_000_000, richnessScale: 1 }, inputs: { volcanoes: 'volcanoes', elevation: 'cones' } },
+    { id: 'deposits', type: 'mineralDeposits', params: { density: 0.05, minIslandAge: 1_000_000, richnessScale: 1 }, inputs: { volcanoes: 'volcanoes', elevation: 'cones', islandBirth: 'birth' } },
   ]);
 }
 
@@ -193,12 +193,18 @@ function coneBornBetween(
   );
 }
 
-function depositHasAgedHost(deposit: WorldPoint, cones: WorldPoint[], minAge: number): boolean {
+function depositHasAHost(deposit: WorldPoint, cones: WorldPoint[]): boolean {
   return cones.some(
     (cone) =>
-      -pointNumber(cone, BORN, 0) >= minAge &&
-      Math.hypot(deposit.x - cone.x, deposit.y - cone.y) <= 1.2 * pointNumber(cone, CONE_RADIUS, 0) + 0.5,
+      Math.hypot(deposit.x - cone.x, deposit.y - cone.y) <=
+      1.2 * pointNumber(cone, CONE_RADIUS, 0) + 0.5,
   );
+}
+
+function depositRipensAfterItsGround(world: World, deposit: WorldPoint, minAge: number): boolean {
+  const ground = fieldAt(world.evaluator, 'birth', deposit.x, deposit.y);
+  if (ground === 0) return false;
+  return pointNumber(deposit, BORN, 0) === ground + minAge;
 }
 
 function pureSpec(world: World): HotspotChainSpec {
@@ -270,11 +276,12 @@ export function checkVolcanicWorldInvariants(check: CheckReporter): void {
   const deposits = pointsIn(world, 'deposits', 6);
   check('the fixture seeds deposits to inspect', deposits.length > 0);
   check(
-    'every deposit sits above sea level within reach of a cone older than the minimum island age',
+    'every deposit sits above sea level on a cone, dated one ripening age after its ground left the sea',
     deposits.every(
       (deposit) =>
         fieldAt(world.evaluator, 'cones', deposit.x, deposit.y) > SEA_LEVEL &&
-        depositHasAgedHost(deposit, cones, 1_000_000),
+        depositHasAHost(deposit, cones) &&
+        depositRipensAfterItsGround(world, deposit, 1_000_000),
     ) && pointBytes(deposits) === pointBytes(pointsIn(again, 'deposits', 6)),
   );
 

@@ -1,5 +1,9 @@
 import { massingRulesFor } from '../../assembly/buildingPrograms';
-import { PROGRAM_CATALOG, programIndexByName } from '../../assembly/programCatalog';
+import {
+  PROGRAM_CATALOG,
+  programIndexByName,
+  programIsOpenToATownOfAge,
+} from '../../assembly/programCatalog';
 import type { VillageHashSeed } from './villageHashSeed';
 
 export const COTTAGE = programIndexByName('cottage');
@@ -16,11 +20,13 @@ export interface PlotProgramChoice {
   slotIndex: number;
   ring: number;
   plotCells: number;
+  townAge: number;
   weights: readonly number[];
 }
 
 export function programForSlot(choice: PlotProgramChoice, hashSeed: VillageHashSeed): number {
   const wanted = wantedProgramOf(choice, hashSeed);
+  if (!programIsOpenToATownOfAge(wanted, choice.townAge)) return COTTAGE;
   return fitsPlot(wanted, choice.plotCells) ? wanted : COTTAGE;
 }
 

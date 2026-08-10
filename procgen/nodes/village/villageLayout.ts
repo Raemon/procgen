@@ -1,5 +1,7 @@
 import { buildingSeedKeyAt } from '../../assembly/buildingPoint';
 import type { BuildingSpec } from '../../assembly/buildingSpec';
+import { PRESENT } from '../../time/worldTime';
+import { BORN, pointNumber, type PointWithData } from '../../values/pointData';
 import type { VillageHashSeed } from './villageHashSeed';
 import { plotSlotsOf, type VillagePlotSlot } from './villagePlotSlots';
 import { programForSlot } from './villagePlotPrograms';
@@ -14,6 +16,11 @@ import {
 
 export interface VillageLayoutKnobs extends VillageStreetKnobs {
   weights: readonly number[];
+}
+
+export interface VillageCenter extends PointWithData {
+  x: number;
+  y: number;
 }
 
 export interface VillagePlot {
@@ -32,16 +39,18 @@ export interface VillagePlan {
 
 export function layoutForCenter(
   hashSeed: VillageHashSeed,
-  centerX: number,
-  centerY: number,
+  center: VillageCenter,
   knobs: VillageLayoutKnobs,
 ): VillagePlan {
+  const centerX = center.x;
+  const centerY = center.y;
+  const townAge = PRESENT - pointNumber(center, BORN, -Infinity);
   const axis = axisForCenter(hashSeed);
   const streets = streetRectsOf(axis, centerX, centerY, knobs);
   const plaza = plazaRect(centerX, centerY, knobs);
   const slots = plotSlotsOf(axis, centerX, centerY, knobs);
   const paved = [...streets, plaza];
-  return { centerX, centerY, streets, plaza, plots: plotsOf(slots, paved, knobs, hashSeed) };
+  return { centerX, centerY, streets, plaza, plots: plotsOf(slots, paved, knobs, townAge, hashSeed) };
 }
 
 export function planCoversStreetCell(plan: VillagePlan, x: number, y: number): boolean {
@@ -68,10 +77,11 @@ function plotsOf(
   slots: readonly VillagePlotSlot[],
   paved: readonly VillageRect[],
   knobs: VillageLayoutKnobs,
+  townAge: number,
   hashSeed: VillageHashSeed,
 ): VillagePlot[] {
   return slots
-    .map((slot, slotIndex) => plotOf(slot, slotIndex, knobs, hashSeed))
+    .map((slot, slotIndex) => plotOf(slot, slotIndex, knobs, townAge, hashSeed))
     .filter((plot) => paved.every((rect) => !rectsOverlap(plot.rect, rect)));
 }
 
@@ -79,12 +89,17 @@ function plotOf(
   slot: VillagePlotSlot,
   slotIndex: number,
   knobs: VillageLayoutKnobs,
+  townAge: number,
   hashSeed: VillageHashSeed,
 ): VillagePlot {
-  const program = programForSlot(
-    { slotIndex, ring: slot.ring, plotCells: knobs.plotCells, weights: knobs.weights },
-    hashSeed,
-  );
+  const choice = {
+    slotIndex,
+    ring: slot.ring,
+    plotCells: knobs.plotCells,
+    townAge,
+    weights: knobs.weights,
+  };
+  const program = programForSlot(choice, hashSeed);
   return { rect: slot.rect, spec: specForPlot(slot, program), ring: slot.ring };
 }
 

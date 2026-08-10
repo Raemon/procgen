@@ -12,30 +12,35 @@ export interface MassingRules {
 export const PROGRAM_CATALOG = [
   {
     name: 'cottage',
+    minTownAge: 0,
     massing: { minW: 5, maxW: 7, minD: 5, maxD: 7, stories: 1, wingChance: 0, chimneys: 1, yard: 2 },
     defaultWeight: 4,
     weightHelp: 'Relative share of outer plots that become cottages, the smallest single-story house.',
   },
   {
     name: 'dwelling',
+    minTownAge: 60,
     massing: { minW: 6, maxW: 9, minD: 6, maxD: 9, stories: 2, wingChance: 0, chimneys: 1, yard: 2 },
     defaultWeight: 3,
     weightHelp: 'Relative share of outer plots that become two-story dwellings.',
   },
   {
     name: 'smithy',
+    minTownAge: 180,
     massing: { minW: 7, maxW: 10, minD: 6, maxD: 9, stories: 1, wingChance: 0.5, chimneys: 2, yard: 3 },
     defaultWeight: 2,
     weightHelp: 'How many plots past the inns are given to smithies. 0 keeps smithies out of the village.',
   },
   {
     name: 'inn',
+    minTownAge: 320,
     massing: { minW: 9, maxW: 13, minD: 8, maxD: 11, stories: 2, wingChance: 0.7, chimneys: 2, yard: 3 },
     defaultWeight: 1,
     weightHelp: 'How many plots just off the plaza are given to inns. 0 keeps inns out of the village.',
   },
   {
     name: 'townHall',
+    minTownAge: 520,
     massing: { minW: 11, maxW: 15, minD: 9, maxD: 12, stories: 2, wingChance: 0.5, chimneys: 1, yard: 4 },
     defaultWeight: 1,
     weightHelp: 'Above 0 the plaza plot becomes the one town hall; at 0 it stays an ordinary house.',
@@ -45,6 +50,10 @@ export const PROGRAM_CATALOG = [
 export type ProgramDef = (typeof PROGRAM_CATALOG)[number];
 
 export type ProgramName = ProgramDef['name'];
+
+export function programIsOpenToATownOfAge(program: number, townAge: number): boolean {
+  return townAge >= programDefOf(program).minTownAge;
+}
 
 export function programIndexByName(name: ProgramName): number {
   const index = PROGRAM_CATALOG.findIndex((def) => def.name === name);

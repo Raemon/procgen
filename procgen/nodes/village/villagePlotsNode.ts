@@ -40,7 +40,7 @@ function villagePlotsChunk(ctx: ChunkGenCtx): ChunkValue {
   if (!ctx.pointsInput('centers')) return pointsValue(points);
   const knobs = villageLayoutKnobsOf(ctx, programWeightsOf(ctx));
   for (const center of nearbyVillageCenters(ctx, 'centers', knobs.radius)) {
-    const plan = layoutForCenter(villageHashSeedAt(center.x, center.y), center.x, center.y, knobs);
+    const plan = layoutForCenter(villageHashSeedAt(center.x, center.y), center, knobs);
     for (const plot of plan.plots) collectPlotInChunk(ctx, center, plot, points);
   }
   return pointsValue(points);

@@ -3,8 +3,10 @@ import type { ChunkGenCtx } from '../../nodeType';
 import { pointsValue, type ChunkValue, type PointsChunk } from '../../values/chunkValues';
 import { BORN, pointNumber } from '../../values/pointData';
 
+export const BORN_FILTER_TYPE = 'bornFilter';
+
 registerNodeType({
-  type: 'bornFilter',
+  type: BORN_FILTER_TYPE,
   title: 'born by now',
   category: 'time',
   readsTime: true,

@@ -37,7 +37,7 @@ function plotFeaturesOfCenter(
   time: number,
   staggerSeed: number,
 ): ExtractedFeature[] {
-  const plan = layoutForCenter(villageHashSeedAt(center.x, center.y), center.x, center.y, knobs);
+  const plan = layoutForCenter(villageHashSeedAt(center.x, center.y), center, knobs);
   return plan.plots
     .filter((plot) => plotAnchorInRect(plot, rect))
     .filter((plot) => standingBy(plot, center, time, staggerSeed))
