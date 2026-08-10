@@ -10,6 +10,11 @@ export const DAYLIGHT_TIP: TooltipContent = {
   body: 'How much light the sky gives this world. At 0 the world is pitch dark and only tiles, items and carried lights are visible — the setting an underground world wants. At 1 the sun is up everywhere.',
 };
 
+export const TIME_TIP: TooltipContent = {
+  title: 'world time',
+  body: 'The moment the world is shown at. 0 is the present; drag negative to look into the past — recent values remove young buildings and settlements, deep values un-erode valleys and sink old islands. Only nodes that read time recompute.',
+};
+
 export const ROLL_SEED_TIP: TooltipContent = {
   title: 'roll a new seed',
   body: 'Rerolls the world without touching the pipeline — the fastest way to see whether a setup produces good worlds in general or just got lucky once.',

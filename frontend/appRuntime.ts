@@ -14,7 +14,7 @@ import { MultiplayerSession } from '../multiplayer/client/multiplayerSession';
 import { CreatureClock } from '../world/creatureSim/creatureClock';
 import { CreatureSim } from '../world/creatureSim/creatureSim';
 import { PipelineEvaluator } from '../procgen/eval/evaluator';
-import { attachPipelinePersistence, loadStoredPipeline } from '../procgen/pipeline/pipelineStorage';
+import { attachPipelinePersistence, loadStoredPipeline } from './persistence/pipelineStorage';
 import { PipelineStore } from '../procgen/pipeline/pipelineStore';
 import { WorldPresetLibrary } from '../procgen/presets/worldPresetLibrary';
 import { RandomizeHistory } from '../procgen/randomize/randomizeHistory';

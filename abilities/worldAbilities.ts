@@ -53,6 +53,21 @@ registerWorldAbility({
 });
 
 registerWorldAbility({
+  action: 'set_time',
+  humanControl: 'detail panel, world: time row',
+  description:
+    'Set the moment the world is shown at, 0 for the present and negative values for the past. Scrubbing back removes young buildings and settlements first, then in deep time un-erodes and sinks the volcanic islands.',
+  params: { time: { kind: 'number', help: '0 for the present, negative for years before it' } },
+  example: { action: 'set_time', time: -200 },
+  apply: (context, params) => {
+    const time = readNumber(params, 'time');
+    if (!time.ok) return time.failure;
+    context.store.setTime(time.value);
+    return abilitySucceeded(`time = ${context.store.time()}`);
+  },
+});
+
+registerWorldAbility({
   action: 'clear_pipeline',
   humanControl: 'detail panel, world: clear',
   description: 'Remove every node, leaving an empty world to build from zero.',

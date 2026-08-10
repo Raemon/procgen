@@ -21,14 +21,16 @@ import {
   type NodeInstance,
   type PipelineState,
 } from './pipelineState';
+import { clampTime } from '../time/worldTime';
 import { dropInvalidWires } from './wiringRules';
 
 export function sanitizePipeline(raw: unknown): PipelineState {
   if (typeof raw !== 'object' || raw === null) return emptyPipeline();
-  const candidate = raw as { seed?: unknown; daylight?: unknown; nodes?: unknown };
+  const candidate = raw as { seed?: unknown; daylight?: unknown; time?: unknown; nodes?: unknown };
   const state: PipelineState = {
     seed: sanitizeSeed(candidate.seed),
     daylight: clampDaylight(candidate.daylight),
+    time: clampTime(candidate.time),
     nodes: sanitizeNodes(candidate.nodes),
   };
   dropInvalidWires(state);

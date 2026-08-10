@@ -9,6 +9,7 @@ import { RandomizeRow } from '../../../procgen/panel/RandomizeRow';
 import { scrollNodeCardIntoView } from '../../../procgen/panel/scrollNodeCardIntoView';
 import { WorldDaylightRow } from '../../../procgen/panel/WorldDaylightRow';
 import { WorldSeedRow } from '../../../procgen/panel/WorldSeedRow';
+import { WorldTimeRow } from '../../../procgen/panel/WorldTimeRow';
 
 export function CurrentWorldDetail() {
   const { store, perform } = useAppRuntime();
@@ -25,6 +26,7 @@ export function CurrentWorldDetail() {
     <>
       <WorldSeedRow />
       <WorldDaylightRow />
+      <WorldTimeRow />
       <PresetsRow />
       <RandomizeRow />
       <NodeListToolbar />

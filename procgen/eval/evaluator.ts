@@ -70,6 +70,7 @@ export class PipelineEvaluator {
   ): ChunkValue {
     const ctx = createChunkGenCtx({
       seed: this.store.seed(),
+      time: this.store.time(),
       nodeId: node.id,
       params: node.params,
       chunkX,
