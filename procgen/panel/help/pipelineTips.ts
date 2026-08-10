@@ -12,7 +12,7 @@ export const DAYLIGHT_TIP: TooltipContent = {
 
 export const TIME_TIP: TooltipContent = {
   title: 'world time',
-  body: 'The moment the world is shown at: 0 is the present, negative is years before it. Only nodes that read time answer to this, and they recompute alone — a world whose nodes all ignore time looks identical at every moment.',
+  body: 'The moment the world is shown at. The scale is logarithmic into the past, so the right half of the slider is the settled centuries — buildings, then villages, thinning away — and the left half is the volcanic aeons, where islands sink back under the sea. Only nodes that read time answer to it, and they recompute alone.',
 };
 
 export const ROLL_SEED_TIP: TooltipContent = {
