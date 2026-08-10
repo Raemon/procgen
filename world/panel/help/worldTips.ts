@@ -27,6 +27,11 @@ export const VIEW_MODE_TIPS: Readonly<Record<ViewMode, TooltipContent>> = {
     body: 'The character view as the ASCII window an agent receives while playing.',
     when: 'Debugging what an agent can and cannot perceive from where it stands.',
   },
+  features: {
+    title: 'Features',
+    body: 'Every discrete thing the generators placed, on one annotated map — pan and zoom to survey it. Edges are drawn only where a generator truly derived one thing from another.',
+    when: 'Auditing what a roll actually produced, and which node each placed thing came from.',
+  },
 };
 
 export const CAPTURE_TIP: TooltipContent = {
