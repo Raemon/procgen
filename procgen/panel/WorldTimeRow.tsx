@@ -1,32 +1,31 @@
-import { useState } from 'react';
-import { useAppRuntime } from '../../frontend/appRuntimeContext';
-import { classes } from '../../frontend/controls/classes';
-import { FIELD_CLASSES } from '../../frontend/controls/fieldClasses';
+import { useEditedPipeline } from './editing/editedPipelineContext';
 import { KnobRow } from '../../frontend/controls/KnobRow';
-import { DEEPEST_PAST, PRESENT } from '../time/worldTime';
+import { Slider } from '../../frontend/controls/Slider';
+import { SCRUB_STEPS, scrubStepOfTime, timeOfScrubStep } from '../time/scrubberScale';
+import { PRESENT } from '../time/worldTime';
 import { TIME_TIP } from './help/pipelineTips';
 
 export function WorldTimeRow() {
-  const { store, perform } = useAppRuntime();
-  const [draft, setDraft] = useState<string | null>(null);
-
-  function typeTime(text: string): void {
-    setDraft(text);
-    if (Number.isFinite(Number(text)) && text.trim()) perform('set_time', { time: Number(text) });
-  }
-
+  const { store, perform } = useEditedPipeline();
+  const time = store.time();
   return (
     <KnobRow label="time" tip={TIME_TIP}>
-      <input
-        type="number"
-        min={DEEPEST_PAST}
-        max={PRESENT}
-        className={classes(FIELD_CLASSES, 'w-full min-w-0')}
-        value={draft ?? String(store.time())}
-        onChange={(event) => typeTime(event.target.value)}
-        onBlur={() => setDraft(null)}
-        aria-label="world time"
+      <Slider
+        min={0}
+        max={SCRUB_STEPS}
+        step={1}
+        value={scrubStepOfTime(time)}
+        onChange={(step) => perform('set_time', { time: timeOfScrubStep(step) })}
       />
+      <span className="min-w-[64px] text-right text-[11px]">{whenReadout(time)}</span>
     </KnobRow>
   );
+}
+
+function whenReadout(time: number): string {
+  const yearsBack = PRESENT - time;
+  if (yearsBack <= 0) return 'now';
+  if (yearsBack < 1000) return `${Math.round(yearsBack)} yr ago`;
+  if (yearsBack < 1_000_000) return `${Math.round(yearsBack / 1000)} kyr ago`;
+  return `${(yearsBack / 1_000_000).toFixed(2)} Myr ago`;
 }
