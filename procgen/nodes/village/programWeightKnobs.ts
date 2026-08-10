@@ -3,7 +3,9 @@ import type { KnobParamSpec } from '../../nodeType';
 
 export function programWeightKnobs(): Record<string, KnobParamSpec> {
   const knobs: Record<string, KnobParamSpec> = {};
-  for (const def of PROGRAM_CATALOG) knobs[weightKnobName(def.name)] = weightKnob(def.name, def.defaultWeight);
+  for (const def of PROGRAM_CATALOG) {
+    knobs[weightKnobName(def.name)] = weightKnob(def.name, def.defaultWeight);
+  }
   return knobs;
 }
 
