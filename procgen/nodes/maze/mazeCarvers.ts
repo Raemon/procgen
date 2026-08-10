@@ -9,8 +9,8 @@ import {
 } from './cellMaze';
 
 export const CARVER_DFS = 0;
-export const CARVER_PRIM = 1;
-export const CARVER_SIDEWINDER = 2;
+const CARVER_PRIM = 1;
+const CARVER_SIDEWINDER = 2;
 
 export const CARVER_CHOICES = [
   { value: CARVER_DFS, label: 'dfs', help: 'Depth-first backtracker: long winding corridors with few branches.' },

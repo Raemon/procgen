@@ -1,4 +1,4 @@
-export const MIN_WORLD_WIDTH = 360;
+const MIN_WORLD_WIDTH = 360;
 
 export function panelWidthsThatLeaveRoomForWorld(
   requested: readonly number[],

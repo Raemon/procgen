@@ -1,7 +1,7 @@
 export const EMPTY_VOXEL = -1;
 export const MAX_PIECE_SIDE = 48;
 export const MAX_PIECE_LAYERS = 24;
-export const DEFAULT_FACING = 0;
+const DEFAULT_FACING = 0;
 export const VOXEL_FACING_COUNT = 4;
 
 export const PIECE_ROLES = [
@@ -84,36 +84,12 @@ export function facingAt(piece: Piece, x: number, y: number, layer: number): num
   return piece.facings[voxelIndex(piece, x, y, layer)] ?? DEFAULT_FACING;
 }
 
-export function withVoxelsPainted(
-  piece: Piece,
-  indices: readonly number[],
-  tileId: number,
-): Piece {
-  const voxels = [...piece.voxels];
-  for (const index of indices) if (index >= 0 && index < voxels.length) voxels[index] = tileId;
-  return { ...piece, voxels };
-}
-
-export function withFacingsPainted(
-  piece: Piece,
-  indices: readonly number[],
-  facing: number,
-): Piece {
-  const facings = [...piece.facings];
-  for (const index of indices) if (index >= 0 && index < facings.length) facings[index] = facing;
-  return { ...piece, facings };
-}
-
 export function withCenteredAnchor(piece: Piece): Piece {
   return {
     ...piece,
     anchorX: Math.floor(piece.width / 2),
     anchorY: Math.floor(piece.depth / 2),
   };
-}
-
-export function filledVoxelCount(piece: Piece): number {
-  return piece.voxels.reduce((count, voxel) => count + (voxel === EMPTY_VOXEL ? 0 : 1), 0);
 }
 
 export function pieceFootprintRadius(piece: Piece): number {

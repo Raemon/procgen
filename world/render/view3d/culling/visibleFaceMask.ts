@@ -2,11 +2,11 @@ import type { ChunkOccluderField } from './chunkOccluderField';
 import type { OccluderBox } from './occluderBox';
 
 export const EAST_FACE = 1;
-export const WEST_FACE = 2;
-export const TOP_FACE = 4;
-export const BOTTOM_FACE = 8;
-export const SOUTH_FACE = 16;
-export const NORTH_FACE = 32;
+const WEST_FACE = 2;
+const TOP_FACE = 4;
+const BOTTOM_FACE = 8;
+const SOUTH_FACE = 16;
+const NORTH_FACE = 32;
 export const EVERY_FACE = EAST_FACE | WEST_FACE | TOP_FACE | BOTTOM_FACE | SOUTH_FACE | NORTH_FACE;
 
 const SIDES = [

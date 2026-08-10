@@ -2,7 +2,7 @@ import type { WorldRect } from '../../../procgen/values/pointsInRect';
 import type { FeaturesCamera } from './featuresCamera';
 
 export const FEATURE_SURVEY_SPAN_TILES = 256;
-export const MAX_PIXELS_PER_TILE = 64;
+const MAX_PIXELS_PER_TILE = 64;
 
 export function surveyRectOf(camera: FeaturesCamera): WorldRect {
   const halfWidth = visibleTiles(camera.widthPx, camera.pixelsPerTile) / 2;
@@ -19,7 +19,7 @@ function visibleTiles(spanPx: number, pixelsPerTile: number): number {
   return Math.min(FEATURE_SURVEY_SPAN_TILES, spanPx / pixelsPerTile);
 }
 
-export function minPixelsPerTile(widthPx: number, heightPx: number): number {
+function minPixelsPerTile(widthPx: number, heightPx: number): number {
   return Math.max(widthPx, heightPx) / FEATURE_SURVEY_SPAN_TILES;
 }
 

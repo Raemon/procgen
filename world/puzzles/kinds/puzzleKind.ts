@@ -40,10 +40,6 @@ export function allPuzzleKinds(): readonly PuzzleKindDef[] {
   return registry;
 }
 
-export function puzzleKindNamed(name: string): PuzzleKindDef | undefined {
-  return registry.find((kind) => kind.name === name);
-}
-
 export function nothingToSolve(): FurnishedRoom {
   return { fixtures: [], opensWhen: [], solution: [] };
 }

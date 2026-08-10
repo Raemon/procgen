@@ -11,7 +11,7 @@ import {
   type CostGrid,
 } from '../../volcanic/settlementCost';
 
-export const VILLAGE_TAG = 'village';
+const VILLAGE_TAG = 'village';
 
 const GRID_STEP = 16;
 const REGION_CHUNKS = 8;

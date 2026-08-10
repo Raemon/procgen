@@ -21,7 +21,7 @@ const LANTERN_INK = '#ffcf7a';
 const FEWEST_ACCENTS = 1;
 const MOST_ACCENTS = 2;
 
-export const BUILDING_TILE_SLOTS: readonly TileSlot[] = [
+const BUILDING_TILE_SLOTS: readonly TileSlot[] = [
   slot('wall', 'wall', 'wall', 'cube', false, 0.55),
   slot('footing', 'footing', 'wall', 'slabLower', true, 0.45),
   slot('roofSlope', 'roof', 'roof', 'stairs', false, 0.5),

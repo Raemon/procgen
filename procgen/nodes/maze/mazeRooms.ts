@@ -1,6 +1,6 @@
 import type { RandomStream } from '../../random/mulberry32';
 
-export const NO_ROOM = -1;
+const NO_ROOM = -1;
 
 export interface MazeRooms {
   cells: number;
@@ -26,7 +26,7 @@ export function carveMazeRooms(
   return rooms;
 }
 
-export function roomIdAt(rooms: MazeRooms, cellX: number, cellY: number): number {
+function roomIdAt(rooms: MazeRooms, cellX: number, cellY: number): number {
   if (cellX < 0 || cellY < 0 || cellX >= rooms.cells || cellY >= rooms.cells) return NO_ROOM;
   return rooms.roomIdOfCell[cellY * rooms.cells + cellX]!;
 }

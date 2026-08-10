@@ -47,7 +47,7 @@ export function creatureJson(creature: CreatureDef) {
   };
 }
 
-export function billboardJson(billboard: CharacterBillboard) {
+function billboardJson(billboard: CharacterBillboard) {
   return {
     idle_fps: billboard.idleFps,
     moving_fps: billboard.movingFps,

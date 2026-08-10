@@ -8,7 +8,7 @@ export function canLoadPngTextures(): boolean {
   return typeof document !== 'undefined' && typeof Image !== 'undefined';
 }
 
-export function pngTextureFaceOf(textureId: string, face: TextureFace): TextureFace {
+function pngTextureFaceOf(textureId: string, face: TextureFace): TextureFace {
   const synth = materialSynthById(textureId);
   return synth && synth.faces.includes(face) ? face : 'top';
 }

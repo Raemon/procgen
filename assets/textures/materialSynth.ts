@@ -1,4 +1,4 @@
-export const TEXTURE_FACES = ['top', 'side'] as const;
+const TEXTURE_FACES = ['top', 'side'] as const;
 export type TextureFace = (typeof TEXTURE_FACES)[number];
 export type Rgb = [number, number, number];
 

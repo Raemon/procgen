@@ -5,7 +5,7 @@ import { coneProfileAt } from '../../volcanic/coneProfile';
 import { MAX_CONE_RADIUS, type VolcanoCone } from '../../volcanic/hotspotChains';
 import { coneOfPoint, nearbyVolcanoes } from './nearbyVolcanoes';
 
-export const NEVER_LAND = 0;
+const NEVER_LAND = 0;
 
 registerNodeType({
   type: 'islandBirthField',

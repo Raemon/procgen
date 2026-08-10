@@ -74,6 +74,3 @@ export function fixtureLook(kind: PuzzleFixtureKind, isOn: boolean): FixtureLook
   return LOOKS[kind][isOn ? 'on' : 'off'];
 }
 
-export function everyFixtureLook(): FixtureLook[] {
-  return Object.values(LOOKS).flatMap((pair) => [pair.off, pair.on]);
-}

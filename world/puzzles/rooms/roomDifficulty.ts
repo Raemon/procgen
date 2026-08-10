@@ -25,7 +25,7 @@ export function challengeForRing(
   return { kind, level: Math.max(0, ring - tutorialSpan(tutorialRings)) };
 }
 
-export function introductionRing(
+function introductionRing(
   kinds: readonly PuzzleKindDef[],
   kind: PuzzleKindDef,
   tutorialRings: number,
@@ -34,6 +34,6 @@ export function introductionRing(
   return 1 + Math.floor((kinds.indexOf(kind) * span) / kinds.length);
 }
 
-export function tutorialSpan(tutorialRings: number): number {
+function tutorialSpan(tutorialRings: number): number {
   return Math.max(1, Math.round(tutorialRings));
 }

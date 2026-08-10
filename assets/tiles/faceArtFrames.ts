@@ -25,10 +25,6 @@ export function frameCount(art: CubeFaceArt): number {
   return 1 + (art.framesAfterFirst?.length ?? 0);
 }
 
-export function isAnimated(art: CubeFaceArt): boolean {
-  return frameCount(art) > 1;
-}
-
 export function frameMsOf(art: CubeFaceArt): number {
   return clampFrameMs(art.frameMs ?? DEFAULT_FRAME_MS);
 }
@@ -37,7 +33,7 @@ export function clampFrameMs(frameMs: number): number {
   return Math.min(MAX_FRAME_MS, Math.max(MIN_FRAME_MS, Math.round(frameMs)));
 }
 
-export function faceArtFrames(art: CubeFaceArt): FaceArtFrame[] {
+function faceArtFrames(art: CubeFaceArt): FaceArtFrame[] {
   return [firstFrameOf(art), ...(art.framesAfterFirst ?? [])];
 }
 

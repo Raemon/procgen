@@ -6,9 +6,9 @@ import type { AsciiViewport } from './asciiViewport';
 
 export const PLAYER_GLYPH = '@';
 export const EMPTY_GLYPH = ' ';
-export const UNKNOWN_GLYPH = '?';
-export const PLAYER_INK = '#ffd86a';
-export const UNKNOWN_INK = '#555555';
+const UNKNOWN_GLYPH = '?';
+const PLAYER_INK = '#ffd86a';
+const UNKNOWN_INK = '#555555';
 
 export interface AsciiCell {
   glyph: string;

@@ -19,6 +19,6 @@ function rectShape(cluster: FeatureCluster, width: number, height: number): Feat
   return { kind: 'rect', x: cluster.screenX, y: cluster.screenY, width, height };
 }
 
-export function dotRadius(count: number): number {
+function dotRadius(count: number): number {
   return Math.min(MAX_DOT_RADIUS_PX, 3 * Math.sqrt(count));
 }

@@ -32,7 +32,3 @@ export function perimeterIndexOf(cx: number, cy: number): number {
   return 7 * ring + (cy + ring);
 }
 
-export function perimeterAngleOf(cx: number, cy: number): number {
-  const ring = ringOf(cx, cy);
-  return (perimeterIndexOf(cx, cy) / perimeterCount(ring)) * 2 * Math.PI;
-}

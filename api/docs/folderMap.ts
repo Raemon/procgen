@@ -9,7 +9,7 @@ export interface FolderEntry {
   files: FileEntry[];
 }
 
-export interface FileEntry {
+interface FileEntry {
   path: string;
   name: string;
   exports: string[];

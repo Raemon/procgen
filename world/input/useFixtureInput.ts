@@ -1,6 +1,6 @@
 import { hasModifier, isTypingInFormControl } from './movementKeys';
 
-export const USE_KEY = 'KeyF';
+const USE_KEY = 'KeyF';
 const RESET_KEY = 'KeyR';
 
 export interface UseFixtureDeps {

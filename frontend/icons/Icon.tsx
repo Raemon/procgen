@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-export const ICON_SIZE = 14;
+const ICON_SIZE = 14;
 
 export function Icon({
   children,

@@ -4,7 +4,7 @@ export function dominantFaceColor(art: CubeFaceArt | null): string | null {
   return art ? dominantPixelColor(art.top) : null;
 }
 
-export function dominantPixelColor(pixels: FacePixels): string | null {
+function dominantPixelColor(pixels: FacePixels): string | null {
   const counts = new Map<string, number>();
   for (const pixel of pixels) {
     if (pixel) counts.set(pixel, (counts.get(pixel) ?? 0) + 1);

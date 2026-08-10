@@ -7,7 +7,7 @@ export interface NodeTemplate {
   nodes: NodeInstance[];
 }
 
-export function sanitizeTemplate(raw: unknown): NodeTemplate | null {
+function sanitizeTemplate(raw: unknown): NodeTemplate | null {
   if (typeof raw !== 'object' || raw === null) return null;
   const candidate = raw as { name?: unknown; description?: unknown; nodes?: unknown };
   if (typeof candidate.name !== 'string' || candidate.name.trim() === '') return null;

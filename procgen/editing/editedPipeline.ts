@@ -2,7 +2,7 @@ import type { AbilityResult } from '../../abilities/ability';
 import type { ReadOnlyPipelineStore } from '../../frontend/readOnlyAssets';
 import type { PipelineStore } from '../pipeline/pipelineStore';
 
-export type PerformOnPipeline = (
+type PerformOnPipeline = (
   action: string,
   params?: Record<string, unknown>,
 ) => AbilityResult;

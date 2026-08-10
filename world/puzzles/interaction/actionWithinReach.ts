@@ -1,6 +1,6 @@
 import { facingVector, type FacingIndex } from '../../facing';
 
-export const INTERACT_KEY = 'F';
+const INTERACT_KEY = 'F';
 
 export interface ActionOfferingCells {
   actionAt(x: number, y: number): string | null;
@@ -11,8 +11,6 @@ export interface Reacher {
   y: number;
   facing: FacingIndex;
 }
-
-export const NOTHING_TO_REACH: ActionOfferingCells = { actionAt: () => null };
 
 export function actionWithinReach(cells: ActionOfferingCells, reacher: Reacher): string | null {
   const underfoot = cells.actionAt(reacher.x, reacher.y);

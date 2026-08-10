@@ -9,7 +9,7 @@ export interface WorldMeasurements {
   noveltySpread: number;
 }
 
-export interface MetricReading {
+interface MetricReading {
   name: string;
   value: number;
   score: number;

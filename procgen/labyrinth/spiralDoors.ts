@@ -2,7 +2,7 @@ import { chunkAtPerimeter, perimeterCount, perimeterIndexOf, ringOf, type ChunkC
 import { hashUnit } from './hashUnit';
 import type { LabyrinthKnobs } from './labyrinthKnobs';
 
-export const GOLDEN_ANGLE = 2.399963229728653;
+const GOLDEN_ANGLE = 2.399963229728653;
 
 const TAU = 2 * Math.PI;
 
@@ -10,7 +10,7 @@ function hash01(knobs: LabyrinthKnobs, label: string): number {
   return hashUnit(`${knobs.seed}:spiral:${label}`);
 }
 
-export function outwardDoorAngle(ring: number, knobs: LabyrinthKnobs): number {
+function outwardDoorAngle(ring: number, knobs: LabyrinthKnobs): number {
   const theta0 = hash01(knobs, 'theta0') * TAU;
   const jitter = (hash01(knobs, `jitter:${ring}`) - 0.5) * knobs.doorJitter * (TAU / 8);
   return theta0 + ring * GOLDEN_ANGLE + jitter;
@@ -25,7 +25,7 @@ function awayFromCorners(index: number, ring: number): number {
 const DOOR_CLUSTER_SHARE = 0.25;
 const CHUNKS_PER_EXTRA_DOOR = 3;
 
-export function doorsOutOfRing(ring: number): number {
+function doorsOutOfRing(ring: number): number {
   return 1 + Math.floor(ring / CHUNKS_PER_EXTRA_DOOR);
 }
 

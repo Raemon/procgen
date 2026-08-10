@@ -2,9 +2,9 @@ import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { fieldValue, newFieldChunk, type ChunkValue } from '../../values/chunkValues';
 
-export const COMBINE_ADD = 0;
-export const COMBINE_SUBTRACT = 1;
-export const COMBINE_MULTIPLY = 2;
+const COMBINE_ADD = 0;
+const COMBINE_SUBTRACT = 1;
+const COMBINE_MULTIPLY = 2;
 export const COMBINE_MIN = 3;
 export const COMBINE_MAX = 4;
 export const COMBINE_AVERAGE = 5;

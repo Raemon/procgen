@@ -13,7 +13,7 @@ export function tileEntropyBits(trace: ExplorationTrace, tileIdAt: TileIdProbe):
   return bits;
 }
 
-export function seenCellKeys(trace: ExplorationTrace): Set<string> {
+function seenCellKeys(trace: ExplorationTrace): Set<string> {
   const seen = new Set<string>();
   for (const key of trace.visited) {
     const cell = cellFromKey(key);

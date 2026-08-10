@@ -28,10 +28,6 @@ export class ChunkVoxelColumns {
   }
 }
 
-export function groundPackedVoxelOf(column: VoxelColumn | null): number {
-  return column?.[0] ?? EMPTY_VOXEL;
-}
-
 export function topPackedVoxelOf(column: VoxelColumn | null): number {
   if (!column) return EMPTY_VOXEL;
   for (let layer = column.length - 1; layer >= 0; layer--) {

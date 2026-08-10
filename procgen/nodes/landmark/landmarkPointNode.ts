@@ -2,7 +2,7 @@ import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { pointsValue, type ChunkValue, type PointsChunk } from '../../values/chunkValues';
 
-export const LANDMARK_TAG = 'landmark';
+const LANDMARK_TAG = 'landmark';
 
 registerNodeType({
   type: 'landmarkPoint',

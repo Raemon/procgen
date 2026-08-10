@@ -11,7 +11,7 @@ export function pixelNoise(x: number, y: number, seed: number): number {
   return hashLatticePoint(x, y, seed);
 }
 
-export function patchNoise(x: number, y: number, scale: PatchScale): number {
+function patchNoise(x: number, y: number, scale: PatchScale): number {
   const lattice = Math.max(1, Math.round(scale.size / scale.cell));
   const [gridX, gridY] = [x / scale.cell, y / scale.cell];
   const [cornerX, cornerY] = [Math.floor(gridX), Math.floor(gridY)];

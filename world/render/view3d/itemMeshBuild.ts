@@ -13,11 +13,11 @@ const BOTTOM = 3;
 const SOUTH = 4;
 const NORTH = 5;
 
-export function isBillboard(item: ItemDef): boolean {
+function isBillboard(item: ItemDef): boolean {
   return item.render === BILLBOARD;
 }
 
-export function isLyingFlat(item: ItemDef): boolean {
+function isLyingFlat(item: ItemDef): boolean {
   return item.orientation === LYING_FLAT;
 }
 

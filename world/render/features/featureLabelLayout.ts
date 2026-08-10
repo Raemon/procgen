@@ -21,8 +21,8 @@ export interface PlacedLabel {
   heightPx: number;
 }
 
-export const LABELS_HIDDEN_BELOW_PPT = 0.6;
-export const ONLY_LANDMARK_LABELS_BELOW_PPT = 2;
+const LABELS_HIDDEN_BELOW_PPT = 0.6;
+const ONLY_LANDMARK_LABELS_BELOW_PPT = 2;
 export const LABELS_ONE_NODE_MAY_NAME = 12;
 const LABEL_GAP_PX = 6;
 

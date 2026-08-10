@@ -1,5 +1,3 @@
-export const LIST_PRICES_CHECKED_ON = '2026-06-24';
-
 const USD_PER_MTOK: Readonly<Record<string, ModelRates>> = {
   'claude-fable-5': { inputPerMTok: 10, outputPerMTok: 50 },
   'claude-mythos-5': { inputPerMTok: 10, outputPerMTok: 50 },
@@ -17,7 +15,7 @@ const DEAREST_KNOWN_RATES: ModelRates = { inputPerMTok: 10, outputPerMTok: 50 };
 const CACHE_READ_MULTIPLIER = 0.1;
 const CACHE_WRITE_MULTIPLIER = 1.25;
 
-export interface ModelRates {
+interface ModelRates {
   inputPerMTok: number;
   outputPerMTok: number;
 }

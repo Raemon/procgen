@@ -16,7 +16,7 @@ export const REFUSAL_HINTS: Readonly<Record<PlacementRefusal, string>> = {
   slot_taken: 'another item already covers one of those cells',
 };
 
-export function footprintCells(item: ItemDef, x: number, y: number): { x: number; y: number }[] {
+function footprintCells(item: ItemDef, x: number, y: number): { x: number; y: number }[] {
   const cells: { x: number; y: number }[] = [];
   for (let row = 0; row < item.gridHeight; row++) {
     for (let column = 0; column < item.gridWidth; column++) {
@@ -26,7 +26,7 @@ export function footprintCells(item: ItemDef, x: number, y: number): { x: number
   return cells;
 }
 
-export function slotAcceptsTags(slotTags: readonly string[], itemTags: readonly string[]): boolean {
+function slotAcceptsTags(slotTags: readonly string[], itemTags: readonly string[]): boolean {
   return slotTags.length === 0 || slotTags.some((tag) => itemTags.includes(tag));
 }
 

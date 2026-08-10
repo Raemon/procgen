@@ -1,7 +1,7 @@
 import { parseScriptForMode, scriptFaultText } from './scriptSyntax';
 import type { AgentMode } from '../../agents/agentMode';
 
-export interface MemoryNote {
+interface MemoryNote {
   id: string;
   note: string;
 }

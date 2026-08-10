@@ -7,7 +7,7 @@ export interface WorldPreset {
   state: PipelineState;
 }
 
-export function sanitizeWorldPreset(raw: unknown): WorldPreset | null {
+function sanitizeWorldPreset(raw: unknown): WorldPreset | null {
   if (typeof raw !== 'object' || raw === null) return null;
   const candidate = raw as { name?: unknown; description?: unknown; state?: unknown };
   if (typeof candidate.name !== 'string' || candidate.name.trim() === '') return null;

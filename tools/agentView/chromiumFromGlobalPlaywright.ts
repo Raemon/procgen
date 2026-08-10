@@ -1,12 +1,12 @@
 import { createRequire } from 'node:module';
 import type { ServedResponse } from './servePublicFilesToPage';
 
-export interface RouteLike {
+interface RouteLike {
   request(): { url(): string };
   fulfill(response: ServedResponse): Promise<void>;
 }
 
-export interface ConsoleMessageLike {
+interface ConsoleMessageLike {
   type(): string;
   text(): string;
 }

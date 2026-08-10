@@ -1,6 +1,6 @@
-export const DEPOSIT_ORE = 0;
-export const DEPOSIT_OBSIDIAN = 1;
-export const DEPOSIT_SULFUR = 2;
+const DEPOSIT_ORE = 0;
+const DEPOSIT_OBSIDIAN = 1;
+const DEPOSIT_SULFUR = 2;
 
 const OBSIDIAN_BAND = 0.35;
 const SULFUR_BAND = 0.75;

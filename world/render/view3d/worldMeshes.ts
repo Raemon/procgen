@@ -38,8 +38,6 @@ import {
 } from './tileShapes';
 import { groupedByShapeAndFacing } from './shapedPlacementGroups';
 
-export { disposeMeshChildren } from './disposeMeshResources';
-
 export const CEILING_GROUP_NAME = 'ceiling';
 
 export function buildChunkMeshGroup(

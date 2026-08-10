@@ -9,7 +9,7 @@ export interface FieldWindow {
   data: Float32Array;
 }
 
-export const MAX_WINDOW_RADIUS = 128;
+const MAX_WINDOW_RADIUS = 128;
 
 export function clampedWindowRadius(radius: number): number {
   return Math.min(MAX_WINDOW_RADIUS, Math.max(0, Math.round(radius)));

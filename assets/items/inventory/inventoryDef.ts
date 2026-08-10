@@ -2,8 +2,8 @@ import type { SpriteArt } from '../../tiles/spriteArt';
 import { normalizedTags } from '../itemDef';
 
 export const MAX_INVENTORY_SIDE = 16;
-export const DEFAULT_INVENTORY_WIDTH = 6;
-export const DEFAULT_INVENTORY_HEIGHT = 4;
+const DEFAULT_INVENTORY_WIDTH = 6;
+const DEFAULT_INVENTORY_HEIGHT = 4;
 
 export interface InventorySlot {
   usable: boolean;
@@ -90,6 +90,3 @@ export function resizedInventory(
   return resized;
 }
 
-export function cloneInventory(inventory: InventoryDef): InventoryDef {
-  return structuredClone(inventory);
-}

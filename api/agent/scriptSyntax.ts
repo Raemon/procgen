@@ -20,7 +20,7 @@ export interface ScriptFault {
 
 export type ScriptParse = { ok: true; lines: ScriptLine[] } | { ok: false; fault: ScriptFault };
 
-export function parseScript(body: string): ScriptParse {
+function parseScript(body: string): ScriptParse {
   const lines: ScriptLine[] = [];
   const rawLines = body.split('\n');
   for (let index = 0; index < rawLines.length; index += 1) {

@@ -2,8 +2,6 @@ import type { VillagePlot } from './villageLayout';
 
 export type GroundHeightAt = (x: number, y: number) => number | null;
 
-export const BUILD_ABOVE_LABEL = 'build above';
-
 export function plotStandsOnGround(
   groundAt: GroundHeightAt | null,
   plot: VillagePlot,

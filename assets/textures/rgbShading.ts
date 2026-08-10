@@ -12,10 +12,6 @@ export function mixed(a: Rgb, b: Rgb, t: number): Rgb {
   ];
 }
 
-export function warmed(base: Rgb, amount: number): Rgb {
-  return [clamp255(base[0] + amount), base[1], clamp255(base[2] - amount)];
-}
-
 function clamp255(value: number): number {
   return Math.max(0, Math.min(255, Math.round(value)));
 }

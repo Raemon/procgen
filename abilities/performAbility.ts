@@ -20,10 +20,6 @@ export function performAbility(
   return spec.apply(context, params);
 }
 
-export function abilityChangesWorld(mode: AbilityMode, action: string): boolean {
-  return abilityFor(mode, action)?.changesWorld ?? false;
-}
-
 function unknownAction(mode: AbilityMode, action: string): AbilityResult {
   return abilityFailed(
     'unknown_action',

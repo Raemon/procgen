@@ -7,7 +7,7 @@ import type { PieceRole } from '../pieces/pieceDef';
 import { defaultTileId } from '../tiles/defaultTiles';
 import { GABLE_ROOF, HIP_ROOF, type Culture } from './cultureDef';
 
-export const STONEWOLD_CULTURE_ID = 0;
+const STONEWOLD_CULTURE_ID = 0;
 export const THATCHMERE_CULTURE_ID = 1;
 
 export function defaultCultures(): Culture[] {

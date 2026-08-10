@@ -7,7 +7,7 @@ const DRIFT_SALT = 0x2545f491;
 const ID_SALT = 0x63d83595;
 const HEIGHT_SALT = 0xb5297a4d;
 
-export const YOUNGEST_ERUPTION = 50_000;
+const YOUNGEST_ERUPTION = 50_000;
 export const CONE_GROWTH_SPAN = 500_000;
 export const MAX_CONE_RADIUS = 96;
 const SMALLEST_GROWING_CONE = 0.35;
@@ -46,11 +46,11 @@ interface ChainHead {
   chainId: number;
 }
 
-export function conesPerChain(spec: HotspotChainSpec): number {
+function conesPerChain(spec: HotspotChainSpec): number {
   return Math.floor(VOLCANIC_ERA_SPAN / spec.eruptionPeriod) + 1;
 }
 
-export function chainReach(spec: HotspotChainSpec): number {
+function chainReach(spec: HotspotChainSpec): number {
   return spec.driftRate * VOLCANIC_ERA_SPAN + spec.coneRadius;
 }
 
@@ -111,7 +111,7 @@ function coneOfChain(head: ChainHead, k: number, spec: HotspotChainSpec): Volcan
   };
 }
 
-export function grownFraction(born: number): number {
+function grownFraction(born: number): number {
   return Math.max(SMALLEST_GROWING_CONE, Math.min(1, -born / CONE_GROWTH_SPAN));
 }
 

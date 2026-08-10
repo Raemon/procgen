@@ -21,7 +21,7 @@ export interface CapsuleSpec {
   opacity?: number;
 }
 
-export interface ColumnEdges {
+interface ColumnEdges {
   top: number;
   bottom: number;
 }

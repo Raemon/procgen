@@ -8,7 +8,7 @@ export const ORDER_NONE = 0;
 export const ORDER_DIR = 1;
 export const ORDER_STEP = 2;
 
-export type OrderKind = typeof ORDER_NONE | typeof ORDER_DIR | typeof ORDER_STEP;
+type OrderKind = typeof ORDER_NONE | typeof ORDER_DIR | typeof ORDER_STEP;
 
 export interface MovementOrder {
   kind: OrderKind;

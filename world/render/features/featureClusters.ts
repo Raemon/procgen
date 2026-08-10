@@ -1,7 +1,7 @@
 import type { Feature } from '../../../procgen/features/feature';
 import { screenOfWorld, type FeaturesCamera } from './featuresCamera';
 
-export const CLUSTER_CELL_PX = 24;
+const CLUSTER_CELL_PX = 24;
 
 export interface FeatureCluster {
   feature: Feature;

@@ -9,7 +9,7 @@ import type {
 
 export type ParamValue = number | string;
 
-export interface ChoiceOption {
+interface ChoiceOption {
   value: number;
   label: string;
   help: string;
@@ -22,7 +22,7 @@ export type KnobParamSpec =
   | { kind: 'toggle'; label: string; help: string; default: 0 | 1 }
   | { kind: 'tile'; label: string; help: string };
 
-export type ScriptOnlyParamSpec =
+type ScriptOnlyParamSpec =
   | {
       kind: 'select';
       label: string;
@@ -35,7 +35,7 @@ export type ScriptOnlyParamSpec =
 
 export type ParamSpec = KnobParamSpec | ScriptOnlyParamSpec;
 
-export const KNOB_PARAM_KINDS = ['number', 'int', 'choice', 'toggle', 'tile'] as const;
+const KNOB_PARAM_KINDS = ['number', 'int', 'choice', 'toggle', 'tile'] as const;
 
 export function isKnobParamSpec(spec: ParamSpec): spec is KnobParamSpec {
   return (KNOB_PARAM_KINDS as readonly string[]).includes(spec.kind);

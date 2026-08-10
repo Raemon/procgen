@@ -23,7 +23,7 @@ export const NO_OVERLAY: ObservedOverlay = { markersIn: () => [], actionAt: () =
 
 export const GOD_VIEW_SIZE = 33;
 
-export { BLANK_GLYPH, SELF_GLYPH, UNKNOWN_TILE_GLYPH } from './observedTile';
+export { SELF_GLYPH } from './observedTile';
 
 export interface LegendEntry {
   glyph: string;

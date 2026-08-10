@@ -27,8 +27,6 @@ export const FACING_NAMES = [
   'northwest',
 ] as const;
 
-export const FACING_ARROWS = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖'] as const;
-
 export function turnedFacing(facing: FacingIndex, eighthTurns: number): FacingIndex {
   return ((((facing + eighthTurns) % 8) + 8) % 8) as FacingIndex;
 }

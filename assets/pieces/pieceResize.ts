@@ -27,19 +27,6 @@ export function resizedPiece(piece: Piece, extent: PieceExtent): Piece {
   return withCenteredAnchor(resized);
 }
 
-export function shiftedPiece(piece: Piece, dx: number, dy: number, dLayer: number): Piece {
-  const shifted: Piece = {
-    ...piece,
-    voxels: blankVoxels(piece.width, piece.depth, piece.layers),
-    facings: blankFacings(piece.width, piece.depth, piece.layers),
-  };
-  forEachCell(shifted, (x, y, layer, index) => {
-    shifted.voxels[index] = voxelAt(piece, x - dx, y - dy, layer - dLayer);
-    shifted.facings[index] = facingAt(piece, x - dx, y - dy, layer - dLayer);
-  });
-  return shifted;
-}
-
 function clampedExtent({ width, depth, layers }: PieceExtent): PieceExtent {
   return {
     width: clampSide(width, MAX_PIECE_SIDE),

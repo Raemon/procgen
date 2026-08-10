@@ -11,7 +11,7 @@ export interface SampledChunk {
 
 const PACK_STRIDE = 1 << 16;
 
-export function packedChunkCoord(chunkX: number, chunkY: number): number {
+function packedChunkCoord(chunkX: number, chunkY: number): number {
   return chunkX * PACK_STRIDE + chunkY;
 }
 

@@ -8,8 +8,8 @@ export const Op = {
   Snapshot: 10,
 } as const;
 
-export type OrderMsg = [typeof Op.Order, number, number];
-export type TurnMsg = [typeof Op.Turn, number];
+type OrderMsg = [typeof Op.Order, number, number];
+type TurnMsg = [typeof Op.Turn, number];
 
 export type SnapshotRow = [number, number, number, number, number, number];
 export type SnapshotMsg = [typeof Op.Snapshot, number, SnapshotRow[]];
@@ -48,7 +48,7 @@ export interface SaidMsg {
   text: string;
 }
 
-export interface DocChangedMsg {
+interface DocChangedMsg {
   t: 'docChanged';
   name: string;
 }

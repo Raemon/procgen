@@ -8,7 +8,7 @@ import { SEA_LEVEL } from '../../volcanic/seaLevel';
 import { MAX_CONE_RADIUS, type VolcanoCone } from '../../volcanic/hotspotChains';
 import { coneOfPoint, nearbyVolcanoes } from './nearbyVolcanoes';
 
-export const DEPOSIT_TAG = 'deposit';
+const DEPOSIT_TAG = 'deposit';
 
 const DEPOSIT_SPACING = 24;
 const HOST_REACH = 1.2;

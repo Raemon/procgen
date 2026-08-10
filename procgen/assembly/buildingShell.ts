@@ -2,7 +2,7 @@ import type { RandomStream } from '../random/mulberry32';
 import type { RoomBox } from './buildingMassing';
 import { FACING_STEPS, normalizedFacing } from './buildingSpec';
 
-export type ShellRole = 'corner' | 'wall' | 'floor' | 'outside';
+type ShellRole = 'corner' | 'wall' | 'floor' | 'outside';
 
 export interface ShellCell {
   x: number;
@@ -11,20 +11,20 @@ export interface ShellCell {
   facing: number;
 }
 
-export function isInsideBoxes(boxes: readonly RoomBox[], x: number, y: number): boolean {
+function isInsideBoxes(boxes: readonly RoomBox[], x: number, y: number): boolean {
   return boxes.some(
     (box) => x >= box.x && y >= box.y && x < box.x + box.width && y < box.y + box.depth,
   );
 }
 
-export function shellRoleAt(boxes: readonly RoomBox[], x: number, y: number): ShellRole {
+function shellRoleAt(boxes: readonly RoomBox[], x: number, y: number): ShellRole {
   if (!isInsideBoxes(boxes, x, y)) return 'outside';
   const openSides = outwardFacingsAt(boxes, x, y);
   if (openSides.length === 0) return 'floor';
   return hasPerpendicularPair(openSides) ? 'corner' : 'wall';
 }
 
-export function outwardFacingsAt(boxes: readonly RoomBox[], x: number, y: number): number[] {
+function outwardFacingsAt(boxes: readonly RoomBox[], x: number, y: number): number[] {
   return FACING_STEPS.map((step, facing) => ({ step, facing }))
     .filter(({ step }) => !isInsideBoxes(boxes, x + step[0], y + step[1]))
     .map(({ facing }) => facing);
@@ -39,7 +39,7 @@ export function shellCellsOf(boxes: readonly RoomBox[]): ShellCell[] {
   return cells;
 }
 
-export function forEachFootprintCell(
+function forEachFootprintCell(
   boxes: readonly RoomBox[],
   visit: (x: number, y: number) => void,
 ): void {
