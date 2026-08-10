@@ -18,6 +18,7 @@ import './hydrology/riverFromFlowNode';
 import './hydrology/lakeFromFillNode';
 import './hydrology/rapidsFromFlowNode';
 import './maze/mazeChunkNode';
+import './labyrinth/labyrinthChunksNode';
 import './puzzle/puzzleRoomsNode';
 import './landmark/landmarkRoomNode';
 import './landmark/landmarkPointNode';
