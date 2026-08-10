@@ -1,13 +1,16 @@
 import { massingRulesFor } from '../../assembly/buildingPrograms';
+import { PROGRAM_CATALOG, programIndexByName } from '../../assembly/programCatalog';
 import type { VillageHashSeed } from './villageHashSeed';
 
-export const COTTAGE = 0;
-export const DWELLING = 1;
-export const SMITHY = 2;
-export const INN = 3;
-export const TOWN_HALL = 4;
+export const COTTAGE = programIndexByName('cottage');
+export const DWELLING = programIndexByName('dwelling');
+export const SMITHY = programIndexByName('smithy');
+export const INN = programIndexByName('inn');
+export const TOWN_HALL = programIndexByName('townHall');
 
-export const DEFAULT_PROGRAM_WEIGHTS: readonly number[] = [4, 3, 2, 1, 1];
+export const DEFAULT_PROGRAM_WEIGHTS: readonly number[] = PROGRAM_CATALOG.map(
+  (def) => def.defaultWeight,
+);
 
 export interface PlotProgramChoice {
   slotIndex: number;
