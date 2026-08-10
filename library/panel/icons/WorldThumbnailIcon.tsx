@@ -4,8 +4,8 @@ import { useWorldThumbnail } from './useWorldThumbnail';
 
 const GLYPH_SIZE = 20;
 
-export function WorldThumbnailIcon({ worldKey }: { worldKey: string }) {
-  const thumbnail = useWorldThumbnail(worldKey);
+export function WorldThumbnailIcon({ worldName }: { worldName: string }) {
+  const thumbnail = useWorldThumbnail(worldName);
   return (
     <AssetIconFrame>
       {thumbnail ? (

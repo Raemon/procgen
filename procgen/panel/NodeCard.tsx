@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { useAppRuntime } from '../../frontend/appRuntimeContext';
+import { useEditedPipeline } from './editing/editedPipelineContext';
 import { nodeTypeOf } from '../nodeRegistry';
 import { outputKindOf } from '../nodeType';
 import type { NodeInstance } from '../pipeline/pipelineState';
@@ -27,11 +28,16 @@ export function NodeCard({
   index: number;
   dropMarker: DropMarker;
 }) {
-  const { perform, tileAssets } = useAppRuntime();
+  const { perform } = useEditedPipeline();
+  const { tileAssets } = useAppRuntime();
   const collapsedCards = usePersistedUiSet(PERSISTED_UI_KEYS.collapsedNodeCards);
   const collapsed = collapsedCards.has(node.id);
   const def = nodeTypeOf(node.type);
-  const highlighted = useSyncExternalStore(subscribeToWireHighlight, highlightedWireSource);
+  const highlighted = useSyncExternalStore(
+    subscribeToWireHighlight,
+    highlightedWireSource,
+    highlightedWireSource,
+  );
 
   return (
     <section

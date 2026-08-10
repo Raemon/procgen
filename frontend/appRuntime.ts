@@ -14,9 +14,18 @@ import { MultiplayerSession } from '../multiplayer/client/multiplayerSession';
 import { CreatureClock } from '../world/creatureSim/creatureClock';
 import { CreatureSim } from '../world/creatureSim/creatureSim';
 import { PipelineEvaluator } from '../procgen/eval/evaluator';
+import { EditablePipelines } from '../procgen/editing/editablePipelines';
+import type { EditedPipeline } from '../procgen/editing/editedPipeline';
 import { attachPipelinePersistence, loadStoredPipeline } from '../procgen/pipeline/pipelineStorage';
 import { PipelineStore } from '../procgen/pipeline/pipelineStore';
+import { runningWorldEdits } from '../procgen/presets/runningWorldEdits';
+import { RunningWorld } from '../procgen/presets/runningWorld';
+import {
+  attachRunningWorldPersistence,
+  loadRunningWorldName,
+} from '../procgen/presets/runningWorldStorage';
 import { WorldPresetLibrary } from '../procgen/presets/worldPresetLibrary';
+import { WorldShelf } from '../procgen/presets/worldShelf';
 import { RandomizeHistory } from '../procgen/randomize/randomizeHistory';
 import { TemplateLibrary } from '../procgen/templates/templateLibrary';
 import { WorldSampler } from '../procgen/worldSampler';
@@ -39,12 +48,15 @@ import type {
   ReadOnlyCultureAssets,
   ReadOnlyTemplateLibrary,
   ReadOnlyTileAssets,
+  ReadOnlyRunningWorld,
   ReadOnlyWorld,
   ReadOnlyWorldPresetLibrary,
+  ReadOnlyWorldShelf,
 } from './readOnlyAssets';
 import { WorldRenderers } from './worldRenderers';
 
 const VALUE_TWEAK_DEBOUNCE_MS = 150;
+const WORLD_WRITE_BACK_MS = 400;
 
 export interface AppRuntime {
   tileAssets: ReadOnlyTileAssets;
@@ -55,6 +67,10 @@ export interface AppRuntime {
   store: ReadOnlyPipelineStore;
   templates: ReadOnlyTemplateLibrary;
   worldPresets: ReadOnlyWorldPresetLibrary;
+  worlds: ReadOnlyWorldShelf;
+  runningWorld: ReadOnlyRunningWorld;
+  editing: EditablePipelines;
+  runningPipeline: EditedPipeline;
   evaluator: PipelineEvaluator;
   sampler: WorldSampler;
   world: ReadOnlyWorld;
@@ -80,6 +96,9 @@ export function createAppRuntime(): AppRuntime {
   const tileAssets = new TileAssets();
   const templates = new TemplateLibrary();
   const worldPresets = new WorldPresetLibrary();
+  const worlds = new WorldShelf(worldPresets);
+  const runningWorld = new RunningWorld(loadRunningWorldName());
+  attachRunningWorldPersistence(runningWorld);
   const pieces = new PieceAssets();
   const cultures = new CultureAssets();
   const creatures = new CreatureAssets();
@@ -132,9 +151,17 @@ export function createAppRuntime(): AppRuntime {
   );
 
   function perform(action: string, params: Record<string, unknown> = {}): AbilityResult {
-    const result = performAbilityOnce(action, params);
+    const result = performAbilityOnce(store, action, params);
     redrawIfPuzzlesChanged();
     return result;
+  }
+
+  function performOn(
+    edited: PipelineStore,
+    action: string,
+    params: Record<string, unknown> = {},
+  ): AbilityResult {
+    return edited === store ? perform(action, params) : performAbilityOnce(edited, action, params);
   }
 
   function redrawIfPuzzlesChanged(): void {
@@ -144,6 +171,7 @@ export function createAppRuntime(): AppRuntime {
   }
 
   function performAbilityOnce(
+    store: PipelineStore,
     action: string,
     params: Record<string, unknown>,
   ): AbilityResult {
@@ -157,6 +185,7 @@ export function createAppRuntime(): AppRuntime {
         items,
         templates,
         worldPresets,
+        runningWorld,
         randomizeHistory,
         regionSampler: sampler,
         groundItems,
@@ -199,10 +228,23 @@ export function createAppRuntime(): AppRuntime {
     worldChanged.emit();
   }
 
+  const runningPipeline: EditedPipeline = { store, perform, rendered: true };
+  const editing = new EditablePipelines({
+    performOn,
+    runningPipeline,
+    runningWorld,
+    worldNamed: (name) => worlds.byName(name),
+    groupNamed: (name) => templates.byName(name),
+  });
+
+  const worldEdits = runningWorldEdits({ store, worlds, runningWorld, perform });
+
   const applyAfterTweaks = debounce(applyWorldChange, VALUE_TWEAK_DEBOUNCE_MS);
-  store.onChange((change) =>
-    change === 'structure' ? applyWorldChange() : applyAfterTweaks.schedule(),
-  );
+  const saveEditsAfterTweaks = debounce(worldEdits.saveWhatIsOpen, WORLD_WRITE_BACK_MS);
+  store.onChange((change) => {
+    if (!net.isApplyingARemotePipeline()) saveEditsAfterTweaks.schedule();
+    return change === 'structure' ? applyWorldChange() : applyAfterTweaks.schedule();
+  });
   tileAssets.onChange(applyWorldChange);
   pieces.onChange(applyWorldChange);
   cultures.onChange(applyWorldChange);
@@ -212,11 +254,16 @@ export function createAppRuntime(): AppRuntime {
   world.on('player-moved', () => announceKeysTakenByWalkingOver());
   world.on('player-moved', () => renderers.recenterAll());
   world.on('player-turned', () => renderers.recenterAll());
+  worldEdits.runAWorldIfNoneIsRunning();
 
   return {
     tileAssets,
     templates,
     worldPresets,
+    worlds,
+    runningWorld,
+    editing,
+    runningPipeline,
     pieces,
     cultures,
     creatures,

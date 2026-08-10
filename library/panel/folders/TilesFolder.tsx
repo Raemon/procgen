@@ -9,7 +9,7 @@ import { useLibrarySelection } from '../useLibrarySelection';
 
 export function TilesFolder() {
   const { tileAssets, perform } = useAppRuntime();
-  const [, select] = useLibrarySelection();
+  const { select } = useLibrarySelection();
   const entries = useTileEntries();
 
   function addTileAndSelectIt(): void {

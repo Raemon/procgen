@@ -21,7 +21,7 @@ const { ITEM_PANELS } = await import('../assets/items/editor/itemPanels');
 const { CREATURE_PANELS } = await import('../assets/creatures/editor/creaturePanels');
 const { persistedUiRecordOf } = await import('../frontend/uiState/persistedUiRecordOf');
 
-const WORLD_SELECTED: LibrarySelection = { folder: 'worlds', key: '' };
+const NOTHING_SELECTED: LibrarySelection | null = null;
 const ASSET_EDITOR_ROOT = 'assets';
 const DRAWER_STATE_IN_A_BARE_USE_STATE = /const \[[^\]]*(?:open|Open|panel|Panel)[^\]]*\] = useState/;
 const POPUPS_THAT_SHOULD_NOT_SURVIVE_A_RELOAD = ['assets/tiles/editor/SymbolInput.tsx'];
@@ -61,7 +61,7 @@ function checkTheNextLoadReadsWhatTheDocHolds(): void {
     'panel.widths': { library: 310 },
   });
   assert(
-    persistedUiValue('library.selection', WORLD_SELECTED, isLibrarySelection).key === '3',
+    persistedUiValue('library.selection', NOTHING_SELECTED, isLibrarySelection)?.key === '3',
     'whatever was selected last session is what the detail panel opens on',
   );
   assert(
@@ -73,7 +73,7 @@ function checkTheNextLoadReadsWhatTheDocHolds(): void {
 function checkADocHoldingTheWrongShapeFallsBackToTheDefault(): void {
   seedUiState({ 'stale.selection': { folder: 'a folder that no longer exists' }, 'corrupt.widths': 'not a record' });
   assert(
-    persistedUiValue('stale.selection', WORLD_SELECTED, isLibrarySelection).folder === 'worlds',
+    persistedUiValue('stale.selection', NOTHING_SELECTED, isLibrarySelection) === null,
     'a stored value that fails its guard is replaced by the default',
   );
   assert(

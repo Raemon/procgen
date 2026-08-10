@@ -1,10 +1,11 @@
-import { useState, type ReactNode } from 'react';
+import { useState, useSyncExternalStore, type ReactNode } from 'react';
+import { useEditedPipeline } from './editing/editedPipelineContext';
 import { useAppRuntime } from '../../frontend/appRuntimeContext';
 import { Button } from '../../frontend/controls/Button';
 import { classes } from '../../frontend/controls/classes';
 import { FOLDER_HOVER_GROUP, REVEALED_ON_FOLDER_HOVER } from '../../frontend/controls/revealOnRowHover';
 import { tooltipHandlers } from '../../frontend/tooltips/tooltipHandlers';
-import { SEND_BAND_TO_LIBRARY_TIP } from '../../library/help/libraryTips';
+import { openGroupTip, SEND_BAND_TO_LIBRARY_TIP } from '../../library/help/libraryTips';
 import { useLibrarySelection } from '../../library/panel/useLibrarySelection';
 import { collapseFolderTip, FOLDER_NAME_TIP, UNGROUP_TIP } from './help/nodeCardTips';
 import type { NodeRun } from './nodeFolderRuns';
@@ -42,7 +43,7 @@ function FolderHeader({
   collapsed: boolean;
   onToggleCollapsed(): void;
 }) {
-  const { perform } = useAppRuntime();
+  const { perform } = useEditedPipeline();
   const nodeIds = run.nodes.map((node) => node.id);
   return (
     <div className="mb-1.5 flex items-center gap-[5px] px-0.5">
@@ -59,6 +60,7 @@ function FolderHeader({
       <span className="text-[10px] whitespace-nowrap text-ink-dim">
         {run.nodes.length} node{run.nodes.length === 1 ? '' : 's'}
       </span>
+      <OpenGroupButton folder={run.folder} />
       <SendToLibraryButton run={run} />
       <Button
         className={classes(REVEALED_ON_FOLDER_HOVER, 'px-1.5 py-0.5 text-[11px]')}
@@ -71,9 +73,28 @@ function FolderHeader({
   );
 }
 
+function OpenGroupButton({ folder }: { folder: string }) {
+  const { templates } = useAppRuntime();
+  const { select } = useLibrarySelection();
+  useSyncExternalStore(
+    (listener) => templates.onChange(listener),
+    () => templates.savedTemplates(),
+  );
+  if (!templates.byName(folder)) return null;
+  return (
+    <Button
+      className="px-1.5 py-0.5 text-[11px]"
+      tip={openGroupTip(folder)}
+      onClick={() => select('groups', folder)}
+    >
+      ↗
+    </Button>
+  );
+}
+
 function SendToLibraryButton({ run }: { run: NodeRun }) {
-  const { perform } = useAppRuntime();
-  const [, select] = useLibrarySelection();
+  const { perform } = useEditedPipeline();
+  const { select } = useLibrarySelection();
   function sendToLibrary(): void {
     const saved = perform('save_template', {
       name: run.folder,
@@ -95,7 +116,7 @@ function describeRun(run: NodeRun): string {
 }
 
 function FolderNameInput({ folder, nodeIds }: { folder: string; nodeIds: string[] }) {
-  const { perform } = useAppRuntime();
+  const { perform } = useEditedPipeline();
   const [draft, setDraft] = useState(folder);
   const commit = () => draft.trim() && setFolderOfNodes(perform, nodeIds, draft.trim());
   return (

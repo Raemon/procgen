@@ -1,5 +1,5 @@
 import { useState, type DragEvent } from 'react';
-import { useAppRuntime } from '../../frontend/appRuntimeContext';
+import { useEditedPipeline } from './editing/editedPipelineContext';
 import type { NodeInstance } from '../pipeline/pipelineState';
 import { Button } from '../../frontend/controls/Button';
 import { classes } from '../../frontend/controls/classes';
@@ -27,7 +27,7 @@ export function NodeCardHeader({
   collapsed: boolean;
   onToggleCollapsed(): void;
 }) {
-  const { perform } = useAppRuntime();
+  const { perform } = useEditedPipeline();
   if (collapsed) {
     return (
       <div className="flex items-center gap-[5px]">
@@ -128,7 +128,7 @@ function startCardDrag(event: DragEvent<HTMLElement>, nodeId: string): void {
 }
 
 function NodeLabelInput({ node }: { node: NodeInstance }) {
-  const { perform } = useAppRuntime();
+  const { perform } = useEditedPipeline();
   const [draft, setDraft] = useState(node.label);
   const commit = () => draft.trim() && perform('rename_node', { node_id: node.id, label: draft.trim() });
   return (

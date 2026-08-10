@@ -20,6 +20,7 @@ export class MultiplayerSession {
   private readonly localSim: LocalMovementSim;
   private online = false;
   private applyingRemote = false;
+  private applyingRemotePipeline = false;
   private lastLocalTurnAt = 0;
   private lastFacing: FacingIndex = 0;
 
@@ -125,11 +126,17 @@ export class MultiplayerSession {
       .catch(() => undefined);
   }
 
+  isApplyingARemotePipeline(): boolean {
+    return this.applyingRemotePipeline;
+  }
+
   private applyRemotePipeline(raw: unknown): void {
     if (!raw) return;
     const incoming = sanitizePipeline(raw);
     if (JSON.stringify(incoming) === JSON.stringify(this.store.snapshot())) return;
+    this.applyingRemotePipeline = true;
     this.store.replaceAll(incoming);
+    this.applyingRemotePipeline = false;
   }
 }
 

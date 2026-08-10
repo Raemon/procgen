@@ -8,7 +8,7 @@ import { useLibrarySelection } from '../useLibrarySelection';
 
 export function ItemsFolder() {
   const { items, perform } = useAppRuntime();
-  const [, select] = useLibrarySelection();
+  const { select } = useLibrarySelection();
   const entries = useItemEntries();
 
   function addItemAndSelectIt(): void {

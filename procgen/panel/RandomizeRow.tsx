@@ -1,4 +1,4 @@
-import { useAppRuntime } from '../../frontend/appRuntimeContext';
+import { useEditedPipeline } from './editing/editedPipelineContext';
 import { Button } from '../../frontend/controls/Button';
 import type { TooltipContent } from '../../frontend/tooltips/tooltipContent';
 import { RANDOMIZE_TIPS } from './help/pipelineTips';
@@ -11,7 +11,7 @@ const ROLLS: { action: string; label: string; tip: TooltipContent }[] = [
 ];
 
 export function RandomizeRow() {
-  const { perform } = useAppRuntime();
+  const { perform } = useEditedPipeline();
   return (
     <div className="mb-2 flex gap-1.5">
       {ROLLS.map((roll) => (

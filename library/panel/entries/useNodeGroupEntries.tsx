@@ -6,26 +6,21 @@ import type { LibraryEntry } from './libraryEntry';
 
 export function useNodeGroupEntries(): LibraryEntry[] {
   const { templates, perform } = useAppRuntime();
-  const saved = useSyncExternalStore(
+  const groups = useSyncExternalStore(
     (listener) => templates.onChange(listener),
-    () => templates.savedTemplates(),
+    () => templates.all(),
   );
-  const builtIn = templates.builtIn();
-  const groups = [...builtIn, ...saved.filter((group) => !isNamedLike(builtIn, group))];
+  const saved = templates.savedTemplates();
   return groups.map((group) => ({
     key: group.name,
     name: group.name,
     icon: <NodeGroupIcon />,
     tip: { title: group.name, body: summaryOf(group) },
     duplicate: () => perform('duplicate_template', { name: group.name }),
-    remove: isNamedLike(builtIn, group)
-      ? undefined
-      : () => perform('delete_template', { name: group.name }),
+    remove: saved.some((each) => each.name === group.name)
+      ? () => perform('delete_template', { name: group.name })
+      : undefined,
   }));
-}
-
-function isNamedLike(builtIn: readonly NodeTemplate[], group: NodeTemplate): boolean {
-  return builtIn.some((each) => each.name === group.name);
 }
 
 function summaryOf(group: NodeTemplate): string {
