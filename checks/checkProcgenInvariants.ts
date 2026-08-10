@@ -4,6 +4,7 @@ import '../procgen/nodes';
 import '../abilities/index';
 import { checkNodeRegistryAndParamSpecs } from './checkNodeRegistryAndParamSpecs';
 import { checkProgramCatalog } from './checkProgramCatalog';
+import { checkHashSpreadsItsDraws } from './checkHashSpreadsItsDraws';
 import { checkChunkDeterminismAndSignatures } from './checkChunkDeterminismAndSignatures';
 import { checkLabyrinthConnectivity } from './checkLabyrinthConnectivity';
 import { checkLabyrinthChunkTopology } from './checkLabyrinthChunkTopology';
@@ -59,6 +60,7 @@ function check(name: string, condition: boolean): void {
 
 describe('the node registry', () => checkNodeRegistryAndParamSpecs(check));
 describe('the building program catalog', () => checkProgramCatalog(check));
+describe('the hashes every world draws from', () => checkHashSpreadsItsDraws(check));
 describe('chunk determinism and node signatures', () => checkChunkDeterminismAndSignatures(check));
 describe('labyrinths', () => checkLabyrinthConnectivity(check));
 describe('the labyrinth chunk topology', () => checkLabyrinthChunkTopology(check));

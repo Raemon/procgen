@@ -9,7 +9,7 @@ export function volcanicIslands(): ExamplePipeline {
     description:
       'A hotspot archipelago with deep time in its bones: mantle plumes drag chains of volcanoes across the plate, the young cones stand tall and cratered while their elders slump into fertile green atolls, and minerals ripen only on islands old enough to have cooled. Scrub the time slider and the whole chain sinks back into the sea.',
     state: {
-      seed: 250,
+      seed: 312,
       daylight: 1,
       nodes: [
         {

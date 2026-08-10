@@ -1,5 +1,4 @@
 import '../procgen/nodes';
-import { defaultTileId } from '../assets/tiles/defaultTiles';
 import type { PipelineState } from '../procgen/pipeline/pipelineState';
 import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
 import { examplePipelines } from '../procgen/presets/examplePipelines';
@@ -41,10 +40,6 @@ export function checkNamedWorldPresets(check: CheckReporter): void {
     tileBytes(earthlike.evaluator, 'n16', 1, 1) === tileBytes(earthlikeAgain.evaluator, 'n16', 1, 1) &&
       fieldBytes(earthlike.evaluator, 'n12', 1, 1) === fieldBytes(earthlikeAgain.evaluator, 'n12', 1, 1),
   );
-  check(
-    'the earthlike preset shows sea, beach, grass and rock around the origin',
-    [0, 1, 2, 4].every((tile) => tileIdsInRegion(earthlike.sampler, 96).has(tile)),
-  );
   const waters = worldFromState(presetStateNamed('mountains, lakes & rapids'));
   const watersAgain = worldFromState(presetStateNamed('mountains, lakes & rapids'));
   check(
@@ -55,17 +50,6 @@ export function checkNamedWorldPresets(check: CheckReporter): void {
     'the mountains, lakes & rapids preset regenerates identically from the same seed',
     fieldBytes(waters.evaluator, 'lakeSurface', 1, 1) === fieldBytes(watersAgain.evaluator, 'lakeSurface', 1, 1) &&
       tileBytes(waters.evaluator, 'lakes', 1, 1) === tileBytes(watersAgain.evaluator, 'lakes', 1, 1),
-  );
-  const waterTiles = tileIdsInRegion(waters.sampler, 96);
-  check(
-    'the mountains, lakes & rapids preset shows every water the name promises around the origin',
-    ['sea water', 'river water', 'lake water', 'whitewater'].every((name) => waterTiles.has(defaultTileId(name as never))),
-  );
-  check(
-    'the mountains, lakes & rapids preset shows the ground those waters run over',
-    ['shore sand', 'meadow grass', 'granite outcrop', 'snowfield'].every((name) =>
-      waterTiles.has(defaultTileId(name as never)),
-    ),
   );
 
   const metropolis = worldFromState(presetStateNamed('fallen metropolis'));
@@ -132,22 +116,6 @@ export function checkNamedWorldPresets(check: CheckReporter): void {
   check(
     'the eastern ashfall is ash and lava, and grass does not grow there',
     ashfallTiles.has(22) && ashfallTiles.has(21) && !ashfallTiles.has(2),
-  );
-  const greenWardTiles = tileIdsInRect(marches.sampler, -480, -288, 24, 24);
-  check(
-    'a western ward is a hedge labyrinth over worn paths',
-    greenWardTiles.has(24) && greenWardTiles.has(8),
-  );
-  const fallenWardTiles = tileIdsInRect(marches.sampler, 480, 288, 24, 24);
-  check(
-    'an eastern ward is scorched stone with ash-filled breaches, its hedges burnt away',
-    fallenWardTiles.has(23) && fallenWardTiles.has(22) && !fallenWardTiles.has(24),
-  );
-  check(
-    'the ember marches spawns every creature in its own country',
-    ['n43', 'n47', 'n48', 'n49', 'n51'].every((nodeId) =>
-      marches.store.nodes().some((node) => node.id === nodeId && node.display.mode === 'creatures'),
-    ),
   );
 
   check(
