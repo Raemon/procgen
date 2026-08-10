@@ -1,13 +1,14 @@
-import { unpersisted, type PersistedCollection } from '../persistence/persistedCollection';
 import { builtInTemplates } from './builtInTemplates';
 import type { NodeTemplate } from './nodeTemplate';
+import { loadSavedTemplates, storeSavedTemplates } from './templateStorage';
 
 export class TemplateLibrary {
   private saved: NodeTemplate[];
   private readonly listeners = new Set<() => void>();
+  private everyTemplate: NodeTemplate[] | null = null;
 
-  constructor(private readonly persistence: PersistedCollection<NodeTemplate> = unpersisted()) {
-    this.saved = persistence.load();
+  constructor(initialTemplates?: NodeTemplate[]) {
+    this.saved = initialTemplates ?? loadSavedTemplates();
   }
 
   builtIn(): readonly NodeTemplate[] {
@@ -19,11 +20,18 @@ export class TemplateLibrary {
   }
 
   all(): NodeTemplate[] {
-    return [...this.builtIn(), ...this.saved];
+    this.everyTemplate ??= [...this.saved, ...this.builtInNotShadowedBySaved()];
+    return this.everyTemplate;
   }
 
   byName(name: string): NodeTemplate | undefined {
     return this.all().find((template) => template.name === name);
+  }
+
+  private builtInNotShadowedBySaved(): NodeTemplate[] {
+    return this.builtIn().filter(
+      (template) => !this.saved.some((edited) => edited.name === template.name),
+    );
   }
 
   save(template: NodeTemplate): void {
@@ -42,7 +50,8 @@ export class TemplateLibrary {
   }
 
   private persistAndNotify(): void {
-    this.persistence.store(this.saved);
+    this.everyTemplate = null;
+    storeSavedTemplates(this.saved);
     for (const listener of this.listeners) listener();
   }
 }

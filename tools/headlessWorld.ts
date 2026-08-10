@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { seedPersistedFile } from '../frontend/persistence/repoFileStore';
 import { PipelineEvaluator } from '../procgen/eval/evaluator';
 import { PipelineStore } from '../procgen/pipeline/pipelineStore';
-import { loadStoredPipeline } from '../frontend/persistence/pipelineStorage';
+import { loadStoredPipeline } from '../procgen/pipeline/pipelineStorage';
 import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
 import type { PipelineState } from '../procgen/pipeline/pipelineState';
 import { WorldSampler } from '../procgen/worldSampler';

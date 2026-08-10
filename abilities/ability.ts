@@ -6,6 +6,7 @@ import type { PieceAssets } from '../assets/pieces/pieceAssets';
 import type { PuzzleWorld } from '../world/puzzles/puzzleWorld';
 import type { RegionSampler } from '../assets/pieces/captureRegionAsPiece';
 import type { PipelineStore } from '../procgen/pipeline/pipelineStore';
+import type { RunningWorld } from '../procgen/presets/runningWorld';
 import type { WorldPresetLibrary } from '../procgen/presets/worldPresetLibrary';
 import type { RandomizeHistory } from '../procgen/randomize/randomizeHistory';
 import type { TemplateLibrary } from '../procgen/templates/templateLibrary';
@@ -32,6 +33,7 @@ export interface AbilityContext {
   items: ItemAssets;
   templates: TemplateLibrary;
   worldPresets: WorldPresetLibrary;
+  runningWorld: RunningWorld;
   randomizeHistory: RandomizeHistory;
   regionSampler: RegionSampler;
   groundItems: GroundItems;

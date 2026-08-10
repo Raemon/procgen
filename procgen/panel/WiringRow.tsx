@@ -1,4 +1,4 @@
-import { useAppRuntime } from '../../frontend/appRuntimeContext';
+import { useEditedPipeline } from './editing/editedPipelineContext';
 import type { InputSpec } from '../nodeType';
 import type { NodeInstance } from '../pipeline/pipelineState';
 import { wiringCandidates } from '../pipeline/wiringRules';
@@ -18,7 +18,7 @@ export function WiringRow({
   inputName: string;
   spec: InputSpec;
 }) {
-  const { store, perform } = useAppRuntime();
+  const { store, perform } = useEditedPipeline();
   const wiredTo = node.inputs[inputName] ?? UNWIRED;
   return (
     <div

@@ -14,6 +14,7 @@
     "typecheck": "tsc --noEmit",
     "check:chat": "npx tsx checks/checkSpeechBubbleStore.ts && npx tsx checks/checkChatOverWebsocket.ts",
     "check:ui": "npx tsx checks/checkPersistedUiState.ts",
+    "check:panels": "npx tsx checks/checkFolderBandsRenderEditableNodes.tsx",
     "check:tooltips": "npx tsx checks/checkPanelTooltips.ts",
     "check:nodefilter": "esbuild checks/checkNodeTypeFilter.ts --bundle --format=esm --platform=node --log-level=error --outfile=dist/checkNodeTypeFilter.mjs && node dist/checkNodeTypeFilter.mjs",
     "check": "esbuild checks/checkProcgenInvariants.ts --bundle --format=esm --platform=node --log-level=error --external:typescript --outfile=dist/checks.mjs && node --test-reporter=spec dist/checks.mjs",

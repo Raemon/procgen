@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAppRuntime } from '../../frontend/appRuntimeContext';
+import { useEditedPipeline } from './editing/editedPipelineContext';
 import { Button } from '../../frontend/controls/Button';
 import { classes } from '../../frontend/controls/classes';
 import { FIELD_CLASSES } from '../../frontend/controls/fieldClasses';
@@ -9,7 +9,7 @@ import { ROLL_SEED_TIP, SEED_TIP } from './help/pipelineTips';
 const MAX_RANDOM_SEED = 1_000_000;
 
 export function WorldSeedRow() {
-  const { store, perform } = useAppRuntime();
+  const { store, perform } = useEditedPipeline();
   const [draft, setDraft] = useState<string | null>(null);
 
   function typeSeed(text: string): void {

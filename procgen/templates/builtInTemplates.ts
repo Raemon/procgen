@@ -1,7 +1,10 @@
 import { sanitizeTemplates, type NodeTemplate } from './nodeTemplate';
 
+let sanitized: NodeTemplate[] | null = null;
+
 export function builtInTemplates(): NodeTemplate[] {
-  return sanitizeTemplates(BUILT_IN_TEMPLATES);
+  sanitized ??= sanitizeTemplates(BUILT_IN_TEMPLATES);
+  return sanitized;
 }
 
 const BUILT_IN_TEMPLATES = [

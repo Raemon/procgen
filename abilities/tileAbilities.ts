@@ -66,6 +66,21 @@ registerTileAbility({
 });
 
 registerTileAbility({
+  action: 'duplicate_tile',
+  humanControl: 'asset library, tiles folder: ⧉ on a tile row',
+  description: 'Copy a tile, art and knobs included, as a new tile with its own id.',
+  params: { tile_id: { kind: 'int', help: TILE_ID_HELP } },
+  example: { action: 'duplicate_tile', tile_id: 0 },
+  apply: (context, params) =>
+    withTile(context, params, (tileId) => {
+      const copy = context.tileAssets.duplicate(tileId);
+      return copy
+        ? abilitySucceeded(`duplicated tile ${tileId} as ${copy.id}`)
+        : abilityFailed('unknown_tile', `could not duplicate tile ${tileId}`);
+    }),
+});
+
+registerTileAbility({
   action: 'remove_tile',
   humanControl: 'detail panel, tiles: ✕ on a tile row',
   description: 'Delete a tile type. Nodes still pointing at its id fall back to drawing nothing.',

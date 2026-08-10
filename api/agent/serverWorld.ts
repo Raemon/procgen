@@ -14,7 +14,6 @@ import { PipelineStore } from '../../procgen/pipeline/pipelineStore';
 import { WorldPresetLibrary } from '../../procgen/presets/worldPresetLibrary';
 import { RandomizeHistory } from '../../procgen/randomize/randomizeHistory';
 import { TemplateLibrary } from '../../procgen/templates/templateLibrary';
-import { loadOnly } from '../../procgen/persistence/persistedCollection';
 import { sanitizePipeline } from '../../procgen/pipeline/sanitizePipeline';
 import { WorldSampler } from '../../procgen/worldSampler';
 import { nearestWalkable } from '../../world/nearestWalkable';
@@ -25,7 +24,9 @@ import { isWalkableTile } from '../../world/tileWalkability';
 import { TileAssets } from '../../assets/tiles/tileAssets';
 import { tilesAsStoredJson, tilesFromStoredJson } from '../../assets/tiles/tileStorage';
 import { sanitizeTemplates } from '../../procgen/templates/nodeTemplate';
-import { sanitizeWorldPresets } from '../../procgen/presets/worldPreset';
+import { worldLibraryFromStoredJson } from '../../procgen/presets/storedWorldLibrary';
+import { RunningWorld } from '../../procgen/presets/runningWorld';
+import { runningWorldNameIn } from '../../procgen/presets/runningWorldStorage';
 
 const SPAWN_SEARCH_RADIUS = 128;
 
@@ -40,6 +41,7 @@ export interface ServerWorld {
   items: ItemAssets;
   templates: TemplateLibrary;
   worldPresets: WorldPresetLibrary;
+  runningWorld: RunningWorld;
   randomizeHistory: RandomizeHistory;
   takenItems: TakenItemSpawns;
   groundItems: GroundItems;
@@ -71,7 +73,7 @@ export function persistWorld(docs: DocSink, world: ServerWorld): void {
   docs.write('creatures', creaturesAsStoredJson(world.creatures.all()));
   docs.write('items', itemsAsStoredJson(world.items.all()));
   docs.write('templates', world.templates.savedTemplates());
-  docs.write('worldPresets', world.worldPresets.savedPresets());
+  docs.write('worldPresets', world.worldPresets.stored());
 }
 
 export function currentServerWorld(docs: DocSource, previous: ServerWorld | null): ServerWorld {
@@ -100,10 +102,9 @@ function buildServerWorld(
     creaturesFromStoredJson(docs.read('creatures')) ?? undefined,
   );
   const items = new ItemAssets(itemsFromStoredJson(docs.read('items')) ?? undefined);
-  const templates = new TemplateLibrary(loadOnly(() => sanitizeTemplates(docs.read('templates'))));
-  const worldPresets = new WorldPresetLibrary(
-    loadOnly(() => sanitizeWorldPresets(docs.read('worldPresets'))),
-  );
+  const templates = new TemplateLibrary(sanitizeTemplates(docs.read('templates')));
+  const worldPresets = new WorldPresetLibrary(worldLibraryFromStoredJson(docs.read('worldPresets')));
+  const runningWorld = new RunningWorld(runningWorldNameIn(docs.read('uiState')));
   const store = new PipelineStore(sanitizePipeline(docs.read('pipeline')));
   const evaluator = new PipelineEvaluator(store);
   const sampler = new WorldSampler(
@@ -131,6 +132,7 @@ function buildServerWorld(
     items,
     templates,
     worldPresets,
+    runningWorld,
     randomizeHistory,
     takenItems,
     isWalkable,

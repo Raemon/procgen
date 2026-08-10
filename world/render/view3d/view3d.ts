@@ -28,14 +28,21 @@ import { worldCellUnderPointer } from './pointerToWorldCell';
 import { SelectionBox } from './selectionBox';
 import { speechBubbleAnchors } from './speechBubbleAnchors';
 import { SpeechBubbleLabels } from './speechBubbleLabels';
+import { squareThumbnailOf } from './squareThumbnail';
 import { streamingRadiusChunks } from './streamingRadius';
 import { disposeSharedWorldArt } from './sharedWorldArt';
 import { clampSightRadiusTiles, isWithinSightRadius } from '../../vision/characterSight';
 
 const MAX_FRAME_MS = 100;
+const MOST_SNAPSHOTS_WORTH_QUEUEING = 4;
 const STILL_ENOUGH_TILES = 0.05;
 
 export type CameraStyle = 'god' | 'character';
+
+interface SnapshotRequest {
+  size: number;
+  use(dataUrl: string): void;
+}
 
 export class View3D {
   readonly canvas: HTMLCanvasElement;
@@ -60,6 +67,7 @@ export class View3D {
   private readonly speechLabels: SpeechBubbleLabels;
   private readonly resizeObserver = new ResizeObserver(() => this.resize());
   private readonly stopReportingGpuLoad = reportGpuSceneLoad(() => this.gpuSceneLoad());
+  private readonly snapshotRequests: SnapshotRequest[] = [];
   private animationFrame = 0;
   private lastFrameTime = 0;
   private elapsedSeconds = 0;
@@ -243,6 +251,19 @@ export class View3D {
     this.lightAroundPlayer();
     this.showSpeechBubbles();
     measureWork('gpu submit', () => this.renderer.render(this.scene, this.activeCamera()));
+    this.serveSnapshotRequests();
+  }
+
+  captureAfterNextFrame(size: number, use: (dataUrl: string) => void): void {
+    if (this.snapshotRequests.length >= MOST_SNAPSHOTS_WORTH_QUEUEING) this.snapshotRequests.shift();
+    this.snapshotRequests.push({ size, use });
+  }
+
+  private serveSnapshotRequests(): void {
+    if (this.snapshotRequests.length === 0) return;
+    for (const request of this.snapshotRequests.splice(0)) {
+      request.use(squareThumbnailOf(this.canvas, request.size));
+    }
   }
 
   private showSpeechBubbles(): void {
