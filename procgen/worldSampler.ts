@@ -222,7 +222,7 @@ export class WorldSampler {
       if (node.display.mode !== 'structures' || node.display.cultureId < 0) continue;
       const { cultureId } = node.display;
       for (const point of this.pointsOfNode(node, chunkX, chunkY)) {
-        placements.push({ x: point.x, y: point.y, cultureId, tag: point.tag });
+        placements.push({ x: point.x, y: point.y, cultureId, tag: point.tag, data: point.data });
       }
     }
     return placements;

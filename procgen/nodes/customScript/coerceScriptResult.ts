@@ -34,7 +34,7 @@ function coercePoint(candidate: unknown): WorldPoint {
   if (typeof candidate !== 'object' || candidate === null) {
     throw new Error('each point must be an object with numeric x and y');
   }
-  const point = candidate as { x?: unknown; y?: unknown; tag?: unknown };
+  const point = candidate as { x?: unknown; y?: unknown; tag?: unknown; data?: unknown };
   if (typeof point.x !== 'number' || typeof point.y !== 'number') {
     throw new Error('each point must be an object with numeric x and y');
   }
@@ -42,7 +42,16 @@ function coercePoint(candidate: unknown): WorldPoint {
     x: Math.round(point.x),
     y: Math.round(point.y),
     tag: typeof point.tag === 'string' ? point.tag : 'point',
+    ...numericDataOf(point.data),
   };
+}
+
+function numericDataOf(raw: unknown): { data?: Readonly<Record<string, number>> } {
+  if (typeof raw !== 'object' || raw === null) return {};
+  const entries = Object.entries(raw).filter(
+    (entry): entry is [string, number] => typeof entry[1] === 'number' && Number.isFinite(entry[1]),
+  );
+  return entries.length > 0 ? { data: Object.fromEntries(entries) } : {};
 }
 
 function unwrapChunkValue(raw: unknown): unknown {

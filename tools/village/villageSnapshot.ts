@@ -1,7 +1,7 @@
 import { massingExtent, massingFor } from '../../procgen/assembly/buildingMassing';
 import { programNameOf } from '../../procgen/assembly/buildingPrograms';
 import type { BuildingSpec } from '../../procgen/assembly/buildingSpec';
-import { tagToSpec } from '../../procgen/assembly/buildingSpecTag';
+import { specOfBuildingPoint } from '../../procgen/assembly/buildingPoint';
 import { chunkCoordOfCell } from '../../procgen/chunk';
 import { hashString } from '../../procgen/random/hashString';
 import { mulberry32 } from '../../procgen/random/mulberry32';
@@ -104,7 +104,7 @@ function collectPlotsInChunk(
   into: BuildingSpec[],
 ): void {
   for (const point of pointsOfType(world, 'villagePlots', chunkX, chunkY)) {
-    if (isInsideRegion(region, point.x, point.y)) into.push(tagToSpec(point.tag, point.x, point.y));
+    if (isInsideRegion(region, point.x, point.y)) into.push(specOfBuildingPoint(point));
   }
 }
 

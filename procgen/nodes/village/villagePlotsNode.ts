@@ -1,4 +1,4 @@
-import { specToTag } from '../../assembly/buildingSpecTag';
+import { buildingPointOf } from '../../assembly/buildingPoint';
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { pointsValue, type ChunkValue, type PointsChunk } from '../../values/chunkValues';
@@ -84,7 +84,7 @@ function collectPlotInChunk(ctx: ChunkGenCtx, plot: VillagePlot, into: PointsChu
   const insideX = plot.spec.x >= ctx.originX && plot.spec.x < ctx.originX + ctx.size;
   const insideY = plot.spec.y >= ctx.originY && plot.spec.y < ctx.originY + ctx.size;
   if (!insideX || !insideY) return;
-  into.push({ x: plot.spec.x, y: plot.spec.y, tag: specToTag(plot.spec) });
+  into.push(buildingPointOf(plot.spec));
 }
 
 function programWeightsOf(ctx: ChunkGenCtx): number[] {

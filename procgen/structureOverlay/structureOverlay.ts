@@ -1,5 +1,5 @@
 import { assembleBuilding } from '../assembly/assembleBuilding';
-import { tagToSpec } from '../assembly/buildingSpecTag';
+import { specOfBuildingPoint } from '../assembly/buildingPoint';
 import { NO_CULTURES, type CultureSource } from '../assembly/cultureSource';
 import type { PieceSource } from '../assembly/pieceSource';
 import { CHUNK_SIZE, chunkCoordOfCell, chunkKey, chunkOrigin } from '../chunk';
@@ -92,7 +92,7 @@ export class StructureOverlay {
   ): void {
     const culture = this.cultures.byId(placement.cultureId);
     if (!culture) return;
-    assembleBuilding(tagToSpec(placement.tag, placement.x, placement.y), culture, this.pieces, paint);
+    assembleBuilding(specOfBuildingPoint(placement), culture, this.pieces, paint);
   }
 
   private placementsNear(chunkX: number, chunkY: number): StructurePlacement[] {
