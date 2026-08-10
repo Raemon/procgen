@@ -1,0 +1,317 @@
+import { defaultTileId } from '../../assets/tiles/defaultTiles';
+import type { ExamplePipeline } from './examplePipeline';
+
+const SEA_LEVEL = 0.45;
+
+export function volcanicIslands(): ExamplePipeline {
+  return {
+    name: 'volcanic islands',
+    description:
+      'A hotspot archipelago with deep time in its bones: mantle plumes drag chains of volcanoes across the plate, the young cones stand tall and cratered while their elders slump into fertile green atolls, and minerals ripen only on islands old enough to have cooled. Scrub the time slider and the whole chain sinks back into the sea.',
+    state: {
+      seed: 250,
+      daylight: 1,
+      nodes: [
+        {
+          id: 'hotspots',
+          type: 'hotspotChain',
+          label: 'hotspot chains',
+          folder: 'the mantle',
+          comment:
+            'The engine of the whole world: each mantle plume erupts a cone every half a million years while the plate drifts overhead, so every chain is a line of dated volcanoes with the youngest at the head. Everything downstream — elevation, soil, mines — reads these points and their birth dates.',
+          enabled: true,
+          params: {
+            hotspotSpacing: 384,
+            driftRate: 0.0004,
+            eruptionPeriod: 500_000,
+            coneRadius: 56,
+            coneHeight: 0.85,
+            chainFraction: 0.35,
+          },
+          inputs: {},
+          display: { mode: 'markers', tileId: -1, glyph: '▲', color: '#8a4a35' },
+        },
+        {
+          id: 'abyss',
+          type: 'constantField',
+          label: 'abyssal plain',
+          folder: 'the mantle',
+          comment:
+            'The flat deep-ocean floor every island rises from. Kept as its own node so the seafloor blend below has a base to lean on.',
+          enabled: true,
+          params: { value: 0.18 },
+          inputs: {},
+          display: { mode: 'hidden' },
+        },
+        {
+          id: 'seafloor',
+          type: 'terrainNoise',
+          label: 'seafloor noise',
+          folder: 'the mantle',
+          comment:
+            'Raw relief for the ocean bottom: gentle rolling noise at continental scale, hidden because only the blend below uses it.',
+          enabled: true,
+          params: { scale: 0.008, style: 0, octaves: 5, lacunarity: 2, gain: 0.5 },
+          inputs: {},
+          display: { mode: 'hidden' },
+        },
+        {
+          id: 'seabed',
+          type: 'blendFields',
+          label: 'seabed',
+          folder: 'the mantle',
+          comment:
+            'The abyssal plain with just enough noise mixed in to give the sea floor swells and the rare drowned bank, while staying safely below the waterline so no land exists that a volcano did not make.',
+          enabled: true,
+          params: { weight: 0.35 },
+          inputs: { a: 'abyss', b: 'seafloor' },
+          display: { mode: 'hidden' },
+        },
+        {
+          id: 'cones',
+          type: 'volcanoConeField',
+          label: 'volcano cones',
+          folder: 'the mantle',
+          comment:
+            'The islands themselves. Every cone born by the current time is stamped into the field: young ones tall and cratered, old ones eroded to half height and half again, their shoulders spreading as they wear down. Drag time into the past and the head of each chain vanishes.',
+          enabled: true,
+          params: { seaLevel: SEA_LEVEL, erosionHalfLife: 1_500_000, craterDepth: 0.12, shoulder: 12 },
+          inputs: { volcanoes: 'hotspots' },
+          display: { mode: 'hidden' },
+        },
+        {
+          id: 'terrain',
+          type: 'combineFields',
+          label: 'island terrain',
+          folder: 'the mantle',
+          comment:
+            'Max of the cones and the seabed, so cones rise out of a textured ocean floor instead of a dead-flat one and the seabed shows wherever no volcano ever grew.',
+          enabled: true,
+          params: { operation: 4, clamp: 1 },
+          inputs: { a: 'cones', b: 'seabed' },
+          display: { mode: 'hidden' },
+        },
+        {
+          id: 'birth',
+          type: 'islandBirthField',
+          label: 'island birth dates',
+          folder: 'the mantle',
+          comment:
+            'When land first broke the water, written as a date per cell with 0 meaning never. Nothing displays it; it exists for the settlement layer to ask how long an island has been there to live on.',
+          enabled: true,
+          params: { seaLevel: SEA_LEVEL },
+          inputs: { volcanoes: 'hotspots' },
+          display: { mode: 'hidden' },
+        },
+        {
+          id: 'filled',
+          type: 'fillDepressions',
+          label: 'drainable surface',
+          folder: 'water',
+          comment:
+            'Floods the closed hollows — old crater bowls above all — up to their spill points so rain can always find the sea. The difference between this and the raw terrain is exactly where the crater lakes sit.',
+          enabled: true,
+          params: { seaLevel: SEA_LEVEL, maxFill: 0.2, windowRadius: 48 },
+          inputs: { elevation: 'terrain' },
+          display: { mode: 'hidden' },
+        },
+        {
+          id: 'flow',
+          type: 'flowAccumulation',
+          label: 'runoff',
+          folder: 'water',
+          comment:
+            'Rain routed downhill across the island flanks. Catchments are small on islands, so the scale is kept low enough that the short steep streams still register as rivers.',
+          enabled: true,
+          params: { seaLevel: SEA_LEVEL, catchmentScale: 1500, convergence: 4, channelizeAbove: 20, fillPits: 1, windowRadius: 48 },
+          inputs: { elevation: 'terrain' },
+          display: { mode: 'hidden' },
+        },
+        {
+          id: 'eroded',
+          type: 'carveValleys',
+          label: 'ravined flanks',
+          folder: 'water',
+          comment:
+            'The streams cut ravines down the cone flanks — the radial gully pattern that makes a volcanic island read as volcanic from above. This is the final elevation everything else stands on.',
+          enabled: true,
+          params: { depth: 0.1, minFlow: 0.35, valleyWidth: 4 },
+          inputs: { elevation: 'terrain', flow: 'flow' },
+          display: { mode: 'elevation', heightScale: 4 },
+        },
+        {
+          id: 'sea',
+          type: 'thresholdTiles',
+          label: 'ocean & sand',
+          folder: 'water',
+          comment:
+            'The base coat: open sea below the waterline, black-gold sand above it. Every later layer only overrides parts of this.',
+          enabled: true,
+          params: {
+            threshold: SEA_LEVEL,
+            belowTile: defaultTileId('sea water'),
+            aboveTile: defaultTileId('shore sand'),
+          },
+          inputs: { source: 'eroded' },
+          display: { mode: 'tileLayer' },
+        },
+        {
+          id: 'shallows',
+          type: 'thresholdTiles',
+          label: 'fringing shallows',
+          folder: 'water',
+          comment:
+            'A shelf of pale water from 0.42 up, later overridden by land from the waterline, which leaves the ring of shallows every volcanic island wears just offshore.',
+          enabled: true,
+          params: { threshold: 0.42, belowTile: -1, aboveTile: defaultTileId('shallow water') },
+          inputs: { source: 'eroded' },
+          display: { mode: 'tileLayer' },
+        },
+        {
+          id: 'strand',
+          type: 'thresholdTiles',
+          label: 'strand',
+          folder: 'water',
+          comment:
+            'Restores the sand above the waterline that the shallows just painted over, so the beach survives as a ribbon between surf and grass.',
+          enabled: true,
+          params: { threshold: SEA_LEVEL, belowTile: -1, aboveTile: defaultTileId('shore sand') },
+          inputs: { source: 'eroded' },
+          display: { mode: 'tileLayer' },
+        },
+        {
+          id: 'rivers',
+          type: 'riverFromFlow',
+          label: 'flank streams',
+          folder: 'water',
+          comment:
+            'The runoff painted as water down the same ravines it carved, ending at the 0.45 waterline so every stream reaches the surf.',
+          enabled: true,
+          params: { minFlow: 0.5, maxWidth: 3, seaLevel: SEA_LEVEL, riverTile: defaultTileId('river water') },
+          inputs: { flow: 'flow', elevation: 'eroded' },
+          display: { mode: 'tileLayer' },
+        },
+        {
+          id: 'lakes',
+          type: 'lakeFromFill',
+          label: 'crater lakes',
+          folder: 'water',
+          comment:
+            'Standing water wherever the flooded surface sits above the raw terrain — which on this world means crater bowls, so the old calderas hold lakes at exactly their spill level.',
+          enabled: true,
+          params: { seaLevel: SEA_LEVEL, minDepth: 0.006, shallowDepth: 0.02, lakeTile: defaultTileId('lake water'), shallowTile: defaultTileId('shallow water') },
+          inputs: { ground: 'terrain', flooded: 'filled' },
+          display: { mode: 'tileLayer' },
+        },
+        {
+          id: 'fertility',
+          type: 'volcanicFertility',
+          label: 'ash soils',
+          folder: 'soil',
+          comment:
+            'Where the good earth is: ash from every cone, weathered by the age of the eldest cone that dropped it, thinned above the shoreline shelf. Middle-aged islands come out lush, the raw head of a chain stays barren — the vegetation below reads only this.',
+          enabled: true,
+          params: { ashRadius: 96, peakAge: 2_000_000, altitudePenalty: 0.5 },
+          inputs: { volcanoes: 'hotspots', elevation: 'eroded' },
+          display: { mode: 'hidden' },
+        },
+        {
+          id: 'lowGrass',
+          type: 'thresholdTiles',
+          label: 'lowland green',
+          folder: 'soil',
+          comment:
+            'Grass takes over a few tiles above the strand. Painted from elevation rather than fertility so even barren young islands carry a thin green fringe where spray and birds seed the shore.',
+          enabled: true,
+          params: { threshold: 0.49, belowTile: -1, aboveTile: defaultTileId('meadow grass') },
+          inputs: { source: 'eroded' },
+          display: { mode: 'tileLayer' },
+        },
+        {
+          id: 'upSlope',
+          type: 'thresholdTiles',
+          label: 'upper slopes',
+          folder: 'soil',
+          comment:
+            'A darker turf on the mid flanks, so the climb up a cone reads as changing country rather than one flat green.',
+          enabled: true,
+          params: { threshold: 0.56, belowTile: -1, aboveTile: defaultTileId('pasture grass') },
+          inputs: { source: 'eroded' },
+          display: { mode: 'tileLayer' },
+        },
+        {
+          id: 'cinder',
+          type: 'thresholdTiles',
+          label: 'cinder slopes',
+          folder: 'soil',
+          comment:
+            'Loose scree where the grass gives out on the steep upper cone — the cinder skirt below the bare summit rock.',
+          enabled: true,
+          params: { threshold: 0.63, belowTile: -1, aboveTile: defaultTileId('scree') },
+          inputs: { source: 'eroded' },
+          display: { mode: 'tileLayer' },
+        },
+        {
+          id: 'summitRock',
+          type: 'thresholdTiles',
+          label: 'summit rock',
+          folder: 'soil',
+          comment:
+            'Bare rock on the summits and young crater rims. Only the tallest, youngest cones reach this band, which is what makes the head of a chain look different from its worn tail at a glance.',
+          enabled: true,
+          params: { threshold: 0.71, belowTile: -1, aboveTile: defaultTileId('granite outcrop') },
+          inputs: { source: 'eroded' },
+          display: { mode: 'tileLayer' },
+        },
+        {
+          id: 'groves',
+          type: 'scatterPoints',
+          label: 'island groves',
+          folder: 'soil',
+          comment:
+            'Trees only where the ash soil is rich, which concentrates the forest on the middle-aged islands and leaves the young rock and the leached-out elders sparse. The story of the chain, told in trees.',
+          enabled: true,
+          params: { density: 0.07, maskAtLeast: 0.5, maskAtMost: 1 },
+          inputs: { mask: 'fertility' },
+          display: { mode: 'markers', tileId: defaultTileId('oak tree'), glyph: '♠', color: '#3f7a44' },
+        },
+        {
+          id: 'scrub',
+          type: 'scatterPoints',
+          label: 'pioneer scrub',
+          folder: 'soil',
+          comment:
+            'Hardy brush on the poorer soils around the forest band — the pioneer growth that colonises ash before the trees arrive.',
+          enabled: true,
+          params: { density: 0.045, maskAtLeast: 0.22, maskAtMost: 0.5 },
+          inputs: { mask: 'fertility' },
+          display: { mode: 'markers', tileId: defaultTileId('hazel bush'), glyph: '%', color: '#6a8a4f' },
+        },
+        {
+          id: 'deposits',
+          type: 'mineralDeposits',
+          label: 'mineral deposits',
+          folder: 'riches',
+          comment:
+            'Mines only on islands that have stood half a million years — long enough to cool, young enough that the islands still stand tall: obsidian near the summits, sulfur on the flanks, ore on the outer skirts. Every deposit remembers its host cone and chain, so the settlement layer can trade in provenance.',
+          enabled: true,
+          params: { density: 0.02, minIslandAge: 500_000, richnessScale: 1 },
+          inputs: { volcanoes: 'hotspots', elevation: 'eroded' },
+          display: { mode: 'markers', tileId: -1, glyph: '⚒', color: '#d9b23c' },
+        },
+        {
+          id: 'wake',
+          type: 'landmarkPoint',
+          label: 'where you wake',
+          folder: 'where you wake',
+          comment:
+            'The one hand-placed thing in the world: the spot you open your eyes, on the shore of whichever island the seed put at the origin.',
+          enabled: true,
+          params: { x: 0, y: 0 },
+          inputs: {},
+          display: { mode: 'markers', tileId: -1, glyph: '✦', color: '#ffd27f' },
+        },
+      ],
+    },
+  };
+}
