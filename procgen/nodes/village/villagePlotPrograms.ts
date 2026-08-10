@@ -6,11 +6,11 @@ import {
 } from '../../assembly/programCatalog';
 import type { VillageHashSeed } from './villageHashSeed';
 
-const COTTAGE = programIndexByName('cottage');
-const DWELLING = programIndexByName('dwelling');
-const SMITHY = programIndexByName('smithy');
-const INN = programIndexByName('inn');
-const TOWN_HALL = programIndexByName('townHall');
+export const COTTAGE = programIndexByName('cottage');
+export const DWELLING = programIndexByName('dwelling');
+export const SMITHY = programIndexByName('smithy');
+export const INN = programIndexByName('inn');
+export const TOWN_HALL = programIndexByName('townHall');
 
 export const DEFAULT_PROGRAM_WEIGHTS: readonly number[] = PROGRAM_CATALOG.map(
   (def) => def.defaultWeight,

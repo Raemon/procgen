@@ -7,10 +7,10 @@ import { MOONLIT_DWARF_PALETTE, type DwarfPalette } from './dwarfPalette';
 import { idleDwarfPose, walkingDwarfPose, type DwarfPose } from './dwarfPose';
 import { dwarfSprite } from './dwarfSprite';
 
-const DWARF_IDLE_FRAMES = 6;
-const DWARF_WALK_FRAMES = 8;
-const DWARF_IDLE_FPS = 5;
-const DWARF_WALK_FPS = 10;
+export const DWARF_IDLE_FRAMES = 6;
+export const DWARF_WALK_FRAMES = 8;
+export const DWARF_IDLE_FPS = 5;
+export const DWARF_WALK_FPS = 10;
 
 export function dwarfBillboard(palette: DwarfPalette = MOONLIT_DWARF_PALETTE): CharacterBillboard {
   const clips = blankCharacterClips();

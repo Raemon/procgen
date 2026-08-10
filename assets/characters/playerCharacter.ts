@@ -2,7 +2,7 @@ import type { ReadOnlyCreatureAssets } from '../../frontend/readOnlyAssets';
 import { MOONLIT_DWARF_ART } from '../creatures/art/builtInBillboards';
 import { isCharacter, type CreatureDef } from '../creatures/creatureDef';
 
-const PLAYER_CHARACTER_ID = 8;
+export const PLAYER_CHARACTER_ID = 8;
 
 export function playerCharacterDef(creatureAssets: ReadOnlyCreatureAssets): CreatureDef | null {
   return (

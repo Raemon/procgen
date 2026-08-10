@@ -6,7 +6,7 @@ import type { AgentMode, AgentPose } from './agentMode';
 
 export const SELF_GLYPH = '@';
 export const BLANK_GLYPH = ' ';
-const UNKNOWN_TILE_GLYPH = '?';
+export const UNKNOWN_TILE_GLYPH = '?';
 
 export interface ObservedTile {
   glyph: string;
@@ -45,7 +45,7 @@ export function observedTileAt(
   return observedGroundAt(sampler, tileAssets, x, y);
 }
 
-function unseenTile(sightRadiusTiles: number): ObservedTile {
+export function unseenTile(sightRadiusTiles: number): ObservedTile {
   return {
     glyph: BLANK_GLYPH,
     meaning: `unseen: behind you, or past your ${sightRadiusTiles}-tile sight radius (fog)`,

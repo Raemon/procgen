@@ -7,8 +7,8 @@ import type { ChunkGenCtx, ParamValue } from '../nodeType';
 import { newFieldChunk, newTilesChunk, type ChunkValue } from '../values/chunkValues';
 import { asField, asPoints, asTiles } from '../values/valueAccess';
 
-type InputResolver = (name: string, chunkX: number, chunkY: number) => ChunkValue | null;
-type RegionMemo = <Value>(key: string, compute: () => Value) => Value;
+export type InputResolver = (name: string, chunkX: number, chunkY: number) => ChunkValue | null;
+export type RegionMemo = <Value>(key: string, compute: () => Value) => Value;
 
 export interface GenCtxArgs {
   seed: number;

@@ -18,7 +18,7 @@ export function isLibrarySelection(value: unknown): value is LibrarySelection | 
   return isLibraryFolder(candidate.folder) && typeof candidate.key === 'string';
 }
 
-function isLibraryFolder(value: unknown): value is LibraryFolder {
+export function isLibraryFolder(value: unknown): value is LibraryFolder {
   return LIBRARY_FOLDERS.includes(value as LibraryFolder);
 }
 

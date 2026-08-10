@@ -9,7 +9,7 @@ import {
   type VolcanoCone,
 } from '../../volcanic/hotspotChains';
 
-const VOLCANO_TAG = 'volcano';
+export const VOLCANO_TAG = 'volcano';
 
 registerNodeType({
   type: 'hotspotChain',

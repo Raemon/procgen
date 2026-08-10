@@ -6,7 +6,7 @@ export interface CrateBoard {
   pillars: ReadonlySet<number>;
 }
 
-function standingRoomForACrate(board: CrateBoard, cell: Cell): boolean {
+export function standingRoomForACrate(board: CrateBoard, cell: Cell): boolean {
   return board.cells.contains(cell.x, cell.y) && !board.pillars.has(cellKey(cell));
 }
 

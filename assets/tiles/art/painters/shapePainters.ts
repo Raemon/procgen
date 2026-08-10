@@ -13,7 +13,7 @@ export interface PixelPoint {
   y: number;
 }
 
-function rectHolds(rect: PixelRect, x: number, y: number): boolean {
+export function rectHolds(rect: PixelRect, x: number, y: number): boolean {
   return x >= rect.left && x < rect.left + rect.width && y >= rect.top && y < rect.top + rect.height;
 }
 

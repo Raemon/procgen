@@ -4,8 +4,8 @@ import { spriteEdgeRuns, type SpriteEdgeRun, type SpriteEdgeSide } from '../../.
 import { opaqueInk } from '../../../assets/tiles/inkColor';
 import { QuadBuffer, type Quad } from './quadBuffer';
 
-const SPRITE_ART_MATERIAL = 0;
-const SPRITE_RIM_MATERIAL = 1;
+export const SPRITE_ART_MATERIAL = 0;
+export const SPRITE_RIM_MATERIAL = 1;
 
 const RIM_SHADE = 0.62;
 const UNTINTED = new THREE.Color(0xffffff);

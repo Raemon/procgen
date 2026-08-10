@@ -1,7 +1,7 @@
 import { opaqueInk } from './inkColor';
 
 export const FLAT_HEIGHT_INK = '#808080';
-const FLAT_HEIGHT = heightOfInk(FLAT_HEIGHT_INK);
+export const FLAT_HEIGHT = heightOfInk(FLAT_HEIGHT_INK);
 export const HEIGHT_INK_STEPS = [0, 0.25, FLAT_HEIGHT, 0.75, 1].map(heightInk);
 
 export function heightInk(unit: number): string {

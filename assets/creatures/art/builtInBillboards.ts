@@ -4,7 +4,7 @@ import { humanoidBillboard } from './humanoidBillboard';
 import { BLANK_CHARACTER_PALETTE, WANDERING_TRADER_PALETTE } from './humanoidPalette';
 
 export const MOONLIT_DWARF_ART = 'moonlit-dwarf';
-const WANDERING_TRADER_ART = 'wandering-trader';
+export const WANDERING_TRADER_ART = 'wandering-trader';
 export const BLANK_CHARACTER_ART = 'blank-character';
 
 const BUILDERS: Readonly<Record<string, () => CharacterBillboard>> = {

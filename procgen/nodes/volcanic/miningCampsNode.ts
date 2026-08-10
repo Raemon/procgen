@@ -5,7 +5,7 @@ import { pointsValue, type ChunkValue, type PointsChunk, type WorldPoint } from 
 import { BORN, RICHNESS, SENT_FROM_X, SENT_FROM_Y, pointNumber } from '../../values/pointData';
 import { nearbyPointsOf } from './nearbyPoints';
 
-const CAMP_TAG = 'camp';
+export const CAMP_TAG = 'camp';
 
 registerNodeType({
   type: 'miningCamps',

@@ -22,7 +22,7 @@ export interface DoorLeaf {
   seed: number;
 }
 
-function bandsAcross(leaf: PixelRect): PixelRect[] {
+export function bandsAcross(leaf: PixelRect): PixelRect[] {
   return [leaf.top + 3, leaf.top + leaf.height - 8].map((top) => ({
     left: leaf.left,
     top,

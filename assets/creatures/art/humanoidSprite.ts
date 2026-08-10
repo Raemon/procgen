@@ -4,7 +4,7 @@ import type { HumanoidPalette } from './humanoidPalette';
 import { humanoidView, type HumanoidView } from './humanoidView';
 import { blankSpriteCanvas, paintPixel, paintRect, spriteArtOf, type SpriteCanvas } from './paint/spriteCanvas';
 
-const HUMANOID_SPRITE_SIZE = 16;
+export const HUMANOID_SPRITE_SIZE = 16;
 
 const HEAD_TOP = 2;
 const HEAD_HEIGHT = 4;

@@ -35,7 +35,7 @@ export function coneProfileAt(distance: number, radius: number, height: number):
   return (1 - Math.pow(distance / radius, PROFILE_EXPONENT)) * height;
 }
 
-function craterDipAt(distance: number, radius: number, craterDepth: number): number {
+export function craterDipAt(distance: number, radius: number, craterDepth: number): number {
   const bowl = radius * CRATER_BOWL;
   if (distance >= bowl) return 0;
   return craterDepth * (1 - distance / bowl);

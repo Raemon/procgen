@@ -41,7 +41,7 @@ export interface AbilityContext {
   actor: AbilityActor;
 }
 
-type AbilityParamKind = 'int' | 'number' | 'text' | 'nodeId' | 'json';
+export type AbilityParamKind = 'int' | 'number' | 'text' | 'nodeId' | 'json';
 
 export interface AbilityParamSpec {
   kind: AbilityParamKind;

@@ -1,6 +1,6 @@
 import type { Culture } from './cultureDef';
 
-type CultureTileField =
+export type CultureTileField =
   | 'wallTileId'
   | 'trimTileId'
   | 'roofSlopeTileId'

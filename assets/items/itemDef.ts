@@ -3,7 +3,7 @@ import type { SpriteArt } from '../tiles/spriteArt';
 import type { CubeFaceArt } from '../tiles/tileFaceArt';
 
 export const BILLBOARD = 0;
-const CUBE = 1;
+export const CUBE = 1;
 
 export const RENDER_CHOICES = [
   {
@@ -18,7 +18,7 @@ export const RENDER_CHOICES = [
   },
 ] as const;
 
-const UPRIGHT = 0;
+export const UPRIGHT = 0;
 export const LYING_FLAT = 1;
 
 export const ORIENTATION_CHOICES = [

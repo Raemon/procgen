@@ -33,7 +33,7 @@ export function clampFrameMs(frameMs: number): number {
   return Math.min(MAX_FRAME_MS, Math.max(MIN_FRAME_MS, Math.round(frameMs)));
 }
 
-function faceArtFrames(art: CubeFaceArt): FaceArtFrame[] {
+export function faceArtFrames(art: CubeFaceArt): FaceArtFrame[] {
   return [firstFrameOf(art), ...(art.framesAfterFirst ?? [])];
 }
 

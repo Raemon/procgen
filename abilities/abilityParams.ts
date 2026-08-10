@@ -35,7 +35,7 @@ export function readOptionalInt(
   return read.ok ? Math.round(read.value) : fallback;
 }
 
-function badValue(name: string, expected: string): { ok: false; failure: AbilityResult } {
+export function badValue(name: string, expected: string): { ok: false; failure: AbilityResult } {
   return { ok: false, failure: abilityFailed('invalid_value', `'${name}' takes ${expected}`) };
 }
 

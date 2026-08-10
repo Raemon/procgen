@@ -51,7 +51,7 @@ function collectLinkEdges(
   }
 }
 
-function arcControlOf(from: ScreenPoint, to: ScreenPoint): ScreenPoint {
+export function arcControlOf(from: ScreenPoint, to: ScreenPoint): ScreenPoint {
   return {
     x: (from.x + to.x) / 2 - (to.y - from.y) * ARC_BOW_OF_CHORD,
     y: (from.y + to.y) / 2 + (to.x - from.x) * ARC_BOW_OF_CHORD,

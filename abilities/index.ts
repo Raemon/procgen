@@ -11,4 +11,3 @@ import './creatureAbilities';
 import './itemAbilities';
 import './inventoryAbilities';
 import './characterArtAbilities';
-

@@ -12,7 +12,7 @@ import type { NodeInstance } from '../../procgen/pipeline/pipelineState';
 import type { TileShapeKind } from '../../assets/tiles/tileShapeKind';
 import type { HeadlessWorld } from '../headlessWorld';
 
-interface SampledRegion {
+export interface SampledRegion {
   minX: number;
   minY: number;
   side: number;

@@ -23,12 +23,12 @@ export function culturePlacementsOf(
   return placements.filter(isCulturePlacement);
 }
 
-function isCulturePlacement(
+export function isCulturePlacement(
   placement: StructurePlacement,
 ): placement is CultureStructurePlacement {
   return !isPiecePlacement(placement);
 }
 
-function isPiecePlacement(placement: StructurePlacement): placement is PiecePlacement {
+export function isPiecePlacement(placement: StructurePlacement): placement is PiecePlacement {
   return 'pieceId' in placement;
 }

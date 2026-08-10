@@ -1,4 +1,4 @@
-interface PrismaLike {
+export interface PrismaLike {
   doc: {
     findMany(args?: unknown): Promise<Array<{ name: string; json: unknown }>>;
     upsert(args: unknown): Promise<unknown>;

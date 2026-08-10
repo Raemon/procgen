@@ -1,7 +1,7 @@
 export const EMPTY_VOXEL = -1;
 export const MAX_PIECE_SIDE = 48;
 export const MAX_PIECE_LAYERS = 24;
-const DEFAULT_FACING = 0;
+export const DEFAULT_FACING = 0;
 export const VOXEL_FACING_COUNT = 4;
 
 export const PIECE_ROLES = [

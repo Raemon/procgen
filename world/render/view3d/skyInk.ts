@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
-const NIGHT_INK = '#0a0d13';
-const DAY_INK = '#8fb4d6';
+export const NIGHT_INK = '#0a0d13';
+export const DAY_INK = '#8fb4d6';
 
 export function skyInkFor(daylight: number): THREE.Color {
   const level = Math.max(0, Math.min(1, daylight));

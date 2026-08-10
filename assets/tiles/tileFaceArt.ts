@@ -32,7 +32,7 @@ export function blankFacePixels(size: number = DEFAULT_FACE_ART_SIZE): FacePixel
   return new Array<string | null>(size * size).fill(null);
 }
 
-function blankFaceGrids(size: number = DEFAULT_FACE_ART_SIZE): FaceGrids {
+export function blankFaceGrids(size: number = DEFAULT_FACE_ART_SIZE): FaceGrids {
   const grids = {} as FaceGrids;
   for (const face of CUBE_FACES) grids[face] = blankFacePixels(size);
   return grids;
@@ -68,7 +68,7 @@ export function isEntirelyBlank(art: CubeFaceArt): boolean {
   return everyGridInArt(art, (pixels) => pixels.every((pixel) => pixel === null));
 }
 
-function everyGridInArt(
+export function everyGridInArt(
   art: CubeFaceArt,
   predicate: (pixels: FacePixels) => boolean,
 ): boolean {

@@ -9,12 +9,12 @@ export interface RoomRect {
   height: number;
 }
 
-interface Cell {
+export interface Cell {
   x: number;
   y: number;
 }
 
-type DoorwaySide = 'west' | 'north' | 'east' | 'south';
+export type DoorwaySide = 'west' | 'north' | 'east' | 'south';
 
 export interface RoomDoorway {
   side: DoorwaySide;
@@ -29,11 +29,11 @@ export interface RoomGeometry {
   anchors: Cell[];
 }
 
-function rectRight(rect: RoomRect): number {
+export function rectRight(rect: RoomRect): number {
   return rect.x + rect.width - 1;
 }
 
-function rectBottom(rect: RoomRect): number {
+export function rectBottom(rect: RoomRect): number {
   return rect.y + rect.height - 1;
 }
 
@@ -41,7 +41,7 @@ export function rectContains(rect: RoomRect, x: number, y: number): boolean {
   return x >= rect.x && y >= rect.y && x <= rectRight(rect) && y <= rectBottom(rect);
 }
 
-function roomInterior(cx: number, cy: number, knobs: LabyrinthKnobs): RoomRect {
+export function roomInterior(cx: number, cy: number, knobs: LabyrinthKnobs): RoomRect {
   const wall = clampedWall(knobs);
   return {
     x: labyrinthCellOrigin(cx) + wall,

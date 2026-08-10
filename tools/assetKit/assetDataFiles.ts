@@ -5,7 +5,7 @@ export const TILES_PATH = 'data/tiles.json';
 export const PIECES_PATH = 'data/pieces.json';
 export const CULTURES_PATH = 'data/cultures.json';
 
-interface StoredAsset {
+export interface StoredAsset {
   id?: number;
   name?: string;
   symbol?: string;

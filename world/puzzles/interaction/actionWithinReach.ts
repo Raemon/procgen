@@ -1,6 +1,6 @@
 import { facingVector, type FacingIndex } from '../../facing';
 
-const INTERACT_KEY = 'F';
+export const INTERACT_KEY = 'F';
 
 export interface ActionOfferingCells {
   actionAt(x: number, y: number): string | null;

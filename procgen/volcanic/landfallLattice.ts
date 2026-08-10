@@ -28,7 +28,7 @@ export function landfallCellsOverlapping(
   return cells;
 }
 
-function landfallOfCell(cellX: number, cellY: number, spec: LandfallSpec): Landfall {
+export function landfallOfCell(cellX: number, cellY: number, spec: LandfallSpec): Landfall {
   const alongX = hashLatticePoint(cellX, cellY, spec.seed);
   const alongY = hashLatticePoint(cellX, cellY, spec.seed + 1);
   const arrivedAt = hashLatticePoint(cellX, cellY, spec.seed + 2);

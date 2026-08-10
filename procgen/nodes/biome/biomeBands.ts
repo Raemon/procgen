@@ -1,4 +1,4 @@
-interface BiomeBandTiles {
+export interface BiomeBandTiles {
   deep: number;
   water: number;
   shore: number;

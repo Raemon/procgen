@@ -1,6 +1,6 @@
 import { allFaceGridsOf, CUBE_FACES, type CubeFaceArt } from '../tileFaceArt';
 
-const MAX_PALETTE_COLORS = 0xffff;
+export const MAX_PALETTE_COLORS = 0xffff;
 
 const INDEXES_IN_ONE_BYTE = 256;
 

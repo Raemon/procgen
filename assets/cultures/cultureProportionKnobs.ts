@@ -6,7 +6,7 @@ import {
   type Culture,
 } from './cultureDef';
 
-type CultureProportionField = 'storyLayers' | 'windowEvery';
+export type CultureProportionField = 'storyLayers' | 'windowEvery';
 
 export interface CultureProportionKnob {
   field: CultureProportionField;

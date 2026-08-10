@@ -4,7 +4,7 @@ import type { PaintVoxel } from './buildingSpec';
 
 export const FLOOR_LAYER = 0;
 export const FIRST_WALL_LAYER = 1;
-const DOOR_OPENING_LAYERS = 2;
+export const DOOR_OPENING_LAYERS = 2;
 
 export function paintTile(
   paint: PaintVoxel,

@@ -33,7 +33,7 @@ export class SurveyedFeatures {
   }
 }
 
-function chunkAlignedRectOf(rect: WorldRect): WorldRect {
+export function chunkAlignedRectOf(rect: WorldRect): WorldRect {
   return {
     minX: chunkCoordOfCell(rect.minX) * CHUNK_SIZE,
     minY: chunkCoordOfCell(rect.minY) * CHUNK_SIZE,

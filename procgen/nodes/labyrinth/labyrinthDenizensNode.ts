@@ -6,7 +6,7 @@ import { LABYRINTH_SEED_LABEL, labyrinthKnobsFrom } from '../../labyrinth/labyri
 import { LABYRINTH_CELL_SIZE, labyrinthCellCoordOf } from '../../labyrinth/labyrinthLattice';
 import { LABYRINTH_GEOMETRY_PARAMS } from './labyrinthGeometryParams';
 
-const DENIZEN_TAG = 'denizen';
+export const DENIZEN_TAG = 'denizen';
 
 registerNodeType({
   type: 'labyrinthDenizens',

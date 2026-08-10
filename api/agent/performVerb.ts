@@ -5,7 +5,7 @@ import { failureByCode } from '../../agents/failures';
 import type { ServerWorld } from './serverWorld';
 import { sessionActor, type AgentSession } from './sessions';
 
-interface VerbFailure {
+export interface VerbFailure {
   code: string;
   meaning: string;
   recovery: string;

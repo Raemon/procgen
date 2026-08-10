@@ -31,7 +31,7 @@ export function everyFixtureOf(layout: PuzzleRoomLayout): PuzzleFixture[] {
   return [...layout.fixtures, ...everyGateOf(layout)];
 }
 
-function everyGateOf(layout: PuzzleRoomLayout): PuzzleFixture[] {
+export function everyGateOf(layout: PuzzleRoomLayout): PuzzleFixture[] {
   const { east, south, west, north } = layout.gates;
   return [...east, ...south, ...west, ...north];
 }

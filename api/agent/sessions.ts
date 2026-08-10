@@ -28,7 +28,7 @@ export interface TranscriptEntry {
   text: string;
 }
 
-type RunStatus = 'running' | 'stopped' | 'finished' | 'error';
+export type RunStatus = 'running' | 'stopped' | 'finished' | 'error';
 
 export interface AutopilotRun {
   goal: string;
