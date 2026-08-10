@@ -1,6 +1,6 @@
-import { examplePipelines } from '../procgen/presets/examplePipelines';
-import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
-import type { WorldPreset } from '../procgen/presets/worldPreset';
+import { examplePipelines } from './examplePipelines';
+import { sanitizePipeline } from '../pipeline/sanitizePipeline';
+import type { WorldPreset } from './worldPreset';
 
 let sanitized: WorldPreset[] | null = null;
 

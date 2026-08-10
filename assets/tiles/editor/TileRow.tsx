@@ -29,7 +29,7 @@ export function TileRow({ tile }: { tile: TileDef }) {
     <div className="mb-1.5">
       <div className={classes(ROW_HOVER_GROUP, 'flex items-center gap-1.5')}>
         <FaceArtToggle tile={tile} open={artOpen} onToggle={() => openTileArt.toggle(String(tile.id))} />
-        <SymbolInput symbol={tile.symbol} onPick={(symbol) => editTile({ symbol })} />
+        <SymbolInput symbol={tile.symbol} tint={tile.color} onPick={(symbol) => editTile({ symbol })} />
         <input
           type="text"
           className={classes(FIELD_CLASSES, 'min-w-0 flex-1')}

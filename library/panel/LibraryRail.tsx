@@ -1,19 +1,17 @@
-import { RailItem, RailStack } from '../../frontend/collapsedRail/RailItem';
-import { FOLDER_TIPS } from '../help/libraryTips';
-import { LIBRARY_FOLDERS, type LibraryFolder } from '../librarySelection';
+import { RailStack } from '../../frontend/collapsedRail/RailItem';
+import { useLibraryEntries } from './entries/useLibraryEntries';
+import { LIBRARY_FOLDERS } from '../librarySelection';
+import { LibraryRailIcon } from './LibraryRailIcon';
 
 export function LibraryRail() {
+  const entries = useLibraryEntries();
   return (
     <RailStack>
-      {LIBRARY_FOLDERS.map((folder) => (
-        <RailItem key={folder} tip={FOLDER_TIPS[folder]}>
-          {railLabel(folder)}
-        </RailItem>
-      ))}
+      {LIBRARY_FOLDERS.flatMap((folder) =>
+        entries[folder].map((entry) => (
+          <LibraryRailIcon key={`${folder}:${entry.key}`} folder={folder} entry={entry} />
+        )),
+      )}
     </RailStack>
   );
-}
-
-function railLabel(folder: LibraryFolder): string {
-  return folder.slice(0, 2);
 }
