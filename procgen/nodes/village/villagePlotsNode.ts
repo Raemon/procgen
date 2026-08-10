@@ -2,7 +2,9 @@ import { buildingPointOf } from '../../assembly/buildingPoint';
 import { PROGRAM_CATALOG } from '../../assembly/programCatalog';
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
-import { pointsValue, type ChunkValue, type PointsChunk } from '../../values/chunkValues';
+import { pointsValue, type ChunkValue, type PointsChunk, type WorldPoint } from '../../values/chunkValues';
+import { BORN, pointNumber } from '../../values/pointData';
+import { RING_PERIOD } from '../../time/worldTime';
 import { nearbyVillageCenters } from './nearbyVillageCenters';
 import { villageHashSeedAt } from './villageHashSeed';
 import { layoutForCenter, type VillagePlot } from './villageLayout';
@@ -29,6 +31,7 @@ registerNodeType({
     ...programWeightKnobs(),
   },
   output: 'points',
+  readsTime: true,
   generateChunk: villagePlotsChunk,
 });
 
@@ -38,16 +41,30 @@ function villagePlotsChunk(ctx: ChunkGenCtx): ChunkValue {
   const knobs = villageLayoutKnobsOf(ctx, programWeightsOf(ctx));
   for (const center of nearbyVillageCenters(ctx, 'centers', knobs.radius)) {
     const plan = layoutForCenter(villageHashSeedAt(center.x, center.y), center.x, center.y, knobs);
-    for (const plot of plan.plots) collectPlotInChunk(ctx, plot, points);
+    for (const plot of plan.plots) collectPlotInChunk(ctx, center, plot, points);
   }
   return pointsValue(points);
 }
 
-function collectPlotInChunk(ctx: ChunkGenCtx, plot: VillagePlot, into: PointsChunk): void {
+function collectPlotInChunk(
+  ctx: ChunkGenCtx,
+  center: WorldPoint,
+  plot: VillagePlot,
+  into: PointsChunk,
+): void {
   const insideX = plot.spec.x >= ctx.originX && plot.spec.x < ctx.originX + ctx.size;
   const insideY = plot.spec.y >= ctx.originY && plot.spec.y < ctx.originY + ctx.size;
   if (!insideX || !insideY) return;
-  into.push(buildingPointOf(plot.spec));
+  const built = builtYearOf(ctx, center, plot);
+  if (built > ctx.time) return;
+  const point = buildingPointOf(plot.spec);
+  into.push({ ...point, data: { ...point.data, [BORN]: built } });
+}
+
+function builtYearOf(ctx: ChunkGenCtx, center: WorldPoint, plot: VillagePlot): number {
+  const founded = pointNumber(center, BORN, -Infinity);
+  const stagger = ctx.hash01(plot.spec.x, plot.spec.y, 'plot stagger') * RING_PERIOD;
+  return founded + plot.ring * RING_PERIOD + stagger;
 }
 
 function programWeightsOf(ctx: ChunkGenCtx): number[] {

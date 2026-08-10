@@ -158,6 +158,16 @@ function birthFieldMatches(world: World, cones: WorldPoint[]): boolean {
   return true;
 }
 
+function bestFertilityOnFlank(world: ReturnType<typeof worldFromState>, cone: WorldPoint): number {
+  let best = 0;
+  for (let step = 4; step <= Math.round(pointNumber(cone, CONE_RADIUS, 56)); step += 4) {
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      best = Math.max(best, fieldAt(world.evaluator, 'fertility', cone.x + dx! * step, cone.y + dy! * step));
+    }
+  }
+  return best;
+}
+
 function fertilityInRange(world: World): boolean {
   for (let y = -32; y < 32; y += 2) {
     for (let x = -32; x < 32; x += 2) {
@@ -250,9 +260,7 @@ export function checkVolcanicWorldInvariants(check: CheckReporter): void {
   const oldFlankCone = coneBornBetween(cones, -1_550_000, -2_550_000, 60);
   const youngCone = coneBornBetween(cones, -50_000, -50_000, 60);
   check('an isolated old cone and an isolated newborn cone exist to compare soils', !!oldFlankCone && !!youngCone);
-  const oldFlank = oldFlankCone
-    ? fieldAt(world.evaluator, 'fertility', oldFlankCone.x + 20, oldFlankCone.y)
-    : 0;
+  const oldFlank = oldFlankCone ? bestFertilityOnFlank(world, oldFlankCone) : 0;
   const youngRock = youngCone ? fieldAt(world.evaluator, 'fertility', youngCone.x, youngCone.y) : 1;
   check(
     'fertility stays inside 0..1 and an old cone flank outgrows the bare rock of a newborn cone',

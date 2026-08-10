@@ -461,6 +461,148 @@
       }
     },
     {
+      "id": "travel",
+      "type": "travelCostField",
+      "label": "what it costs to cross",
+      "comment": "What a tile costs to walk or row. Deep water is dear and the shore is cheap, which is what makes the spread hug coastlines and hop the narrows instead of striking out across the ocean.",
+      "folder": "the people",
+      "enabled": true,
+      "params": {
+        "seaLevel": 0.45,
+        "seaCost": 5,
+        "climbCost": 6
+      },
+      "inputs": {
+        "elevation": "cones"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "founded",
+      "type": "settlementSpread",
+      "label": "villages founded",
+      "comment": "One landfall per stretch of coast, then a cost-weighted spread outward from all of them at once. Each village keeps the year the frontier reached it, so the ones near a landfall are centuries older than the far archipelago.",
+      "folder": "the people",
+      "enabled": true,
+      "params": {
+        "landfallPitch": 640,
+        "spacing": 80,
+        "minScore": 0.25,
+        "spreadSpeed": 2.2,
+        "qualityHaste": 120
+      },
+      "inputs": {
+        "habitability": "fertility",
+        "travelCost": "travel"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "villages",
+      "type": "bornFilter",
+      "label": "villages standing now",
+      "comment": "The clip where human time bites: only the villages already founded at the moment being shown. Scrub world time back and the frontier retreats toward its landfalls.",
+      "folder": "the people",
+      "enabled": true,
+      "params": {},
+      "inputs": {
+        "source": "founded"
+      },
+      "display": {
+        "mode": "markers",
+        "tileId": -1,
+        "glyph": "⌂",
+        "color": "#e8d8a0"
+      }
+    },
+    {
+      "id": "streets",
+      "type": "villageStreets",
+      "label": "streets and plazas",
+      "comment": "The plan a village is laid out to. Streets are surveyed at founding, so they read as the shape the houses grow into rather than something that appears with them.",
+      "folder": "the people",
+      "enabled": true,
+      "params": {
+        "radius": 48,
+        "plotCells": 16,
+        "streetWidth": 3,
+        "streetTile": -1,
+        "plazaTile": -1
+      },
+      "inputs": {
+        "centers": "villages"
+      },
+      "display": {
+        "mode": "tileLayer"
+      }
+    },
+    {
+      "id": "houses",
+      "type": "villagePlots",
+      "label": "houses",
+      "comment": "Buildings fill outward one ring per lifetime, so an old village near a landfall has grown its inner rings a hall and an inn while a young one on the frontier is still a knot of cottages.",
+      "folder": "the people",
+      "enabled": true,
+      "params": {
+        "radius": 48,
+        "plotCells": 16,
+        "streetWidth": 3,
+        "cottageWeight": 4,
+        "dwellingWeight": 3,
+        "smithyWeight": 2,
+        "innWeight": 1,
+        "townHallWeight": 1
+      },
+      "inputs": {
+        "centers": "villages"
+      },
+      "display": {
+        "mode": "structures",
+        "cultureId": 1
+      }
+    },
+    {
+      "id": "camps",
+      "type": "miningCamps",
+      "label": "mining camps",
+      "comment": "Where ore and people overlap. A deposit within hauling distance of a village raises a camp a lifetime after that village was founded, which is the one edge in this world that is a genuine consequence rather than a coincidence.",
+      "folder": "the people",
+      "enabled": true,
+      "params": {
+        "maxHaul": 176,
+        "campDelay": 70
+      },
+      "inputs": {
+        "deposits": "deposits",
+        "villages": "villages"
+      },
+      "display": {
+        "mode": "hidden"
+      }
+    },
+    {
+      "id": "campsNow",
+      "type": "bornFilter",
+      "label": "camps standing now",
+      "comment": "The same clip applied to the camps, so a mine never predates the village that sent its miners.",
+      "folder": "the people",
+      "enabled": true,
+      "params": {},
+      "inputs": {
+        "source": "camps"
+      },
+      "display": {
+        "mode": "markers",
+        "tileId": -1,
+        "glyph": "⛏",
+        "color": "#c9a227"
+      }
+    },
+    {
       "id": "wake",
       "type": "landmarkPoint",
       "label": "where you wake",

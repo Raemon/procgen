@@ -1,3 +1,4 @@
+import { THATCHMERE_CULTURE_ID } from '../../assets/cultures/defaultCultures';
 import { defaultTileId } from '../../assets/tiles/defaultTiles';
 import type { ExamplePipeline } from './examplePipeline';
 
@@ -298,6 +299,96 @@ export function volcanicIslands(): ExamplePipeline {
           params: { density: 0.02, minIslandAge: 500_000, richnessScale: 1 },
           inputs: { volcanoes: 'hotspots', elevation: 'eroded' },
           display: { mode: 'markers', tileId: -1, glyph: '⚒', color: '#d9b23c' },
+        },
+        {
+          id: 'travel',
+          type: 'travelCostField',
+          label: 'what it costs to cross',
+          folder: 'the people',
+          comment:
+            'What a tile costs to walk or row. Deep water is dear and the shore is cheap, which is what makes the spread hug coastlines and hop the narrows instead of striking out across the ocean.',
+          enabled: true,
+          params: { seaLevel: SEA_LEVEL, seaCost: 5, climbCost: 6 },
+          inputs: { elevation: 'cones' },
+          display: { mode: 'hidden' },
+        },
+        {
+          id: 'founded',
+          type: 'settlementSpread',
+          label: 'villages founded',
+          folder: 'the people',
+          comment:
+            'One landfall per stretch of coast, then a cost-weighted spread outward from all of them at once. Each village keeps the year the frontier reached it, so the ones near a landfall are centuries older than the far archipelago.',
+          enabled: true,
+          params: {
+            landfallPitch: 640,
+            spacing: 80,
+            minScore: 0.25,
+            spreadSpeed: 2.2,
+            qualityHaste: 120,
+          },
+          inputs: { habitability: 'fertility', travelCost: 'travel' },
+          display: { mode: 'hidden' },
+        },
+        {
+          id: 'villages',
+          type: 'bornFilter',
+          label: 'villages standing now',
+          folder: 'the people',
+          comment:
+            'The clip where human time bites: only the villages already founded at the moment being shown. Scrub world time back and the frontier retreats toward its landfalls.',
+          enabled: true,
+          params: {},
+          inputs: { source: 'founded' },
+          display: { mode: 'markers', tileId: -1, glyph: '⌂', color: '#e8d8a0' },
+        },
+        {
+          id: 'streets',
+          type: 'villageStreets',
+          label: 'streets and plazas',
+          folder: 'the people',
+          comment:
+            'The plan a village is laid out to. Streets are surveyed at founding, so they read as the shape the houses grow into rather than something that appears with them.',
+          enabled: true,
+          params: { radius: 48, plotCells: 16 },
+          inputs: { centers: 'villages' },
+          display: { mode: 'tileLayer' },
+        },
+        {
+          id: 'houses',
+          type: 'villagePlots',
+          label: 'houses',
+          folder: 'the people',
+          comment:
+            'Buildings fill outward one ring per lifetime, so an old village near a landfall has grown its inner rings a hall and an inn while a young one on the frontier is still a knot of cottages.',
+          enabled: true,
+          params: { radius: 48, plotCells: 16 },
+          inputs: { centers: 'villages' },
+          display: { mode: 'structures', cultureId: THATCHMERE_CULTURE_ID },
+        },
+        {
+          id: 'camps',
+          type: 'miningCamps',
+          label: 'mining camps',
+          folder: 'the people',
+          comment:
+            'Where ore and people overlap. A deposit within hauling distance of a village raises a camp a lifetime after that village was founded, which is the one edge in this world that is a genuine consequence rather than a coincidence.',
+          enabled: true,
+          params: { maxHaul: 176, campDelay: 70 },
+          inputs: { deposits: 'deposits', villages: 'villages' },
+          display: { mode: 'hidden' },
+        },
+        {
+          id: 'campsNow',
+          type: 'bornFilter',
+          label: 'camps standing now',
+          folder: 'the people',
+          comment:
+            'The same clip applied to the camps, so a mine never predates the village that sent its miners.',
+          enabled: true,
+          params: {},
+          inputs: { source: 'camps' },
+          display: { mode: 'markers', tileId: -1, glyph: '⛏', color: '#c9a227' },
         },
         {
           id: 'wake',

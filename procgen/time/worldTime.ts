@@ -2,6 +2,10 @@ export const PRESENT = 0;
 
 export const VOLCANIC_ERA_SPAN = 5_000_000;
 
+export const SETTLEMENT_ERA_SPAN = 900;
+
+export const RING_PERIOD = 90;
+
 export const DEEPEST_PAST = -VOLCANIC_ERA_SPAN;
 
 export function clampTime(raw: unknown): number {
