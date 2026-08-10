@@ -151,7 +151,7 @@ export function volcanicIslands(): ExamplePipeline {
           enabled: true,
           params: { depth: 0.1, minFlow: 0.35, valleyWidth: 4 },
           inputs: { elevation: 'terrain', flow: 'flow' },
-          display: { mode: 'elevation', heightScale: 4 },
+          display: { mode: 'elevation', heightScale: 10 },
         },
         {
           id: 'sea',

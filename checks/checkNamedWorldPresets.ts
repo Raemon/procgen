@@ -67,6 +67,10 @@ function checkVolcanicIslandsRegenerates(check: CheckReporter): void {
     landShareAround(islands, 48) > 0.2,
   );
   check(
+    'a volcano stands proud of its own shoreline rather than reading as a flat coloured disc',
+    summitReliefAround(islands, 512) > 4,
+  );
+  check(
     'the archipelago around the spawn is islands rather than one drowned reef or one continent',
     landShareAround(islands, 512) > 0.04 && landShareAround(islands, 512) < 0.6,
   );
@@ -94,6 +98,17 @@ function landShareAround(world: ReturnType<typeof worldFromState>, span: number)
     }
   }
   return land / seen;
+}
+
+function summitReliefAround(world: ReturnType<typeof worldFromState>, span: number): number {
+  const waterline = SEA_LEVEL * elevationHeightScaleOf(presetStateNamed('volcanic islands'));
+  let highest = waterline;
+  for (let y = -span; y < span; y += 8) {
+    for (let x = -span; x < span; x += 8) {
+      highest = Math.max(highest, world.sampler.elevationAt(x, y));
+    }
+  }
+  return highest - waterline;
 }
 
 function elevationHeightScaleOf(state: PipelineState): number {
