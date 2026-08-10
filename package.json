@@ -38,6 +38,7 @@
     "features:probe": "bash tools/runTool.sh probeWorldFeatures",
     "labyrinth:probe": "bash tools/runTool.sh probeLabyrinthChunks",
     "village:probe": "bash tools/runTool.sh probeVillageSnapshot",
+    "volcanic:probe": "bash tools/runTool.sh probeVolcanicWorld",
     "village:overhead": "bash tools/runTool.sh renderVillageOverhead",
     "view:render": "NODE_PATH=\"$(npm root -g)\" npx tsx tools/agentView/renderWorldView.ts"
   },
