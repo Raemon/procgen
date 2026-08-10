@@ -3,20 +3,34 @@ import { PERSISTED_UI_KEYS } from '../../frontend/uiState/persistedUiKeys';
 import { usePersistedUiValue } from '../../frontend/uiState/usePersistedUiValue';
 import {
   isLibrarySelection,
-  WORLD_SELECTED,
+  NOTHING_SELECTED,
+  selects,
   type LibraryFolder,
   type LibrarySelection,
 } from '../librarySelection';
 
-export function useLibrarySelection(): [LibrarySelection, (folder: LibraryFolder, key: string) => void] {
-  const [selection, setSelection] = usePersistedUiValue<LibrarySelection>(
+export interface LibrarySelecting {
+  selection: LibrarySelection | null;
+  select(folder: LibraryFolder, key: string): void;
+  toggle(folder: LibraryFolder, key: string): void;
+  clear(): void;
+}
+
+export function useLibrarySelection(): LibrarySelecting {
+  const [selection, setSelection] = usePersistedUiValue<LibrarySelection | null>(
     PERSISTED_UI_KEYS.librarySelection,
-    WORLD_SELECTED,
+    NOTHING_SELECTED,
     isLibrarySelection,
   );
   const select = useCallback(
     (folder: LibraryFolder, key: string) => setSelection({ folder, key }),
     [setSelection],
   );
-  return [selection, select];
+  const toggle = useCallback(
+    (folder: LibraryFolder, key: string) =>
+      setSelection(selects(selection, folder, key) ? NOTHING_SELECTED : { folder, key }),
+    [selection, setSelection],
+  );
+  const clear = useCallback(() => setSelection(NOTHING_SELECTED), [setSelection]);
+  return { selection, select, toggle, clear };
 }

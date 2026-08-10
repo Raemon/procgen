@@ -31,11 +31,13 @@ const CULTURES_PANEL_SOURCES = [
   join('assets', 'cultures', 'editor'),
   join('library', 'panel', 'folders'),
   join('library', 'panel', 'detail'),
+  join('library', 'panel', 'entries'),
 ];
 const PERFORMED_ACTION = /perform\('([a-z_]+)'/g;
 const CULTURE_ABILITY_ACTIONS = [
   'add_culture',
   'rename_culture',
+  'duplicate_culture',
   'remove_culture',
   'set_culture_tiles',
   'set_culture_numbers',
@@ -89,8 +91,12 @@ function checkTheDrawersSurviveAReload(check: CheckReporter): void {
   const deletingACulture = panelComponentSourcesMentioning("perform('remove_culture'");
   check(
     'deleting a culture forgets its drawer, so a later culture handed the same id does not inherit it',
-    deletingACulture.length > 0 && deletingACulture.every((source) => source.includes('forgetRow()')),
+    deletingACulture.length > 0 && deletingACulture.every(forgetsTheDrawerItDeletes),
   );
+}
+
+function forgetsTheDrawerItDeletes(source: string): boolean {
+  return source.includes('forgetRow()') || source.includes('forgetOpenPanelOfRow(');
 }
 
 function checkTheKnobsCoverEveryParamTheAbilitiesTake(check: CheckReporter): void {

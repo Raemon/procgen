@@ -4,15 +4,15 @@ export interface DebouncedCall {
 }
 
 export function debounce(fn: () => void, waitMs: number): DebouncedCall {
-  let timer = 0;
+  let timer: ReturnType<typeof setTimeout> | null = null;
   const runNow = () => {
-    timer = 0;
+    timer = null;
     fn();
   };
   return {
     schedule() {
-      clearTimeout(timer);
-      timer = window.setTimeout(runNow, waitMs);
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(runNow, waitMs);
     },
     flushIfPending() {
       if (!timer) return;

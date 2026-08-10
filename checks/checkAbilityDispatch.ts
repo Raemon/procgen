@@ -3,6 +3,7 @@ import { emptyPipeline } from '../procgen/pipeline/pipelineState';
 import { PipelineStore } from '../procgen/pipeline/pipelineStore';
 import { RandomizeHistory } from '../procgen/randomize/randomizeHistory';
 import { TemplateLibrary } from '../procgen/templates/templateLibrary';
+import { RunningWorld } from '../procgen/presets/runningWorld';
 import { WorldPresetLibrary } from '../procgen/presets/worldPresetLibrary';
 import { CreatureAssets } from '../assets/creatures/creatureAssets';
 import { ItemAssets } from '../assets/items/itemAssets';
@@ -38,8 +39,9 @@ function abilityWorld() {
     cultures,
     creatures: new CreatureAssets(),
     items: new ItemAssets(),
-    templates: new TemplateLibrary(),
-    worldPresets: new WorldPresetLibrary(),
+    templates: new TemplateLibrary([]),
+    worldPresets: new WorldPresetLibrary({ presets: [], hiddenExamples: [] }),
+    runningWorld: new RunningWorld(),
     randomizeHistory: new RandomizeHistory(),
     groundItems: NO_GROUND_ITEMS,
     puzzles: new PuzzleWorld(store, () => true),
@@ -268,14 +270,31 @@ export function checkAbilityDispatch(check: CheckReporter): void {
       !unknown.ok && unknown.code === 'unknown_preset' && unknown.hint.includes('check preset')
     );
   })());
-  check('a save cannot shadow a built-in world or node group, which would make it unreachable', (() => {
+  check('editing a built-in world or node group takes its name over, and deleting yours gives it back', (() => {
     const nodeIds = abilities.store.nodes().map((node) => node.id);
     const overExample = act('god', 'save_preset', { name: 'islands & forests' });
     const overBuiltIn = act('god', 'save_template', { name: 'tectonic plates', node_ids: nodeIds });
+    const edited = abilities.context.templates.byName('tectonic plates');
+    const dropped = act('god', 'delete_template', { name: 'tectonic plates' });
+    const shipped = abilities.context.templates.byName('tectonic plates');
     return (
-      !overExample.ok && overExample.code === 'name_taken' &&
-      !overBuiltIn.ok && overBuiltIn.code === 'name_taken'
+      overExample.ok && overBuiltIn.ok && dropped.ok &&
+      edited!.nodes.length === nodeIds.length &&
+      shipped !== undefined && shipped.nodes.length !== nodeIds.length
     );
+  })());
+  check('deleting a built-in world takes it off the shelf without making its name unloadable', (() => {
+    const deleted = act('god', 'delete_preset', { name: 'islands & forests' });
+    const stillLoadable = act('god', 'load_preset', { name: 'islands & forests' });
+    return (
+      deleted.ok &&
+      stillLoadable.ok &&
+      abilities.context.worldPresets.hiddenExamples().includes('islands & forests')
+    );
+  })());
+  check('run_world puts a world on screen and names it as the one running', (() => {
+    const ran = act('god', 'run_world', { name: 'check preset' });
+    return ran.ok && abilities.context.runningWorld.name() === 'check preset';
   })());
   check('a roll can be seeded and undone', (() => {
     const before = JSON.stringify(abilities.store.snapshot());

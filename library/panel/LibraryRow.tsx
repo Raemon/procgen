@@ -1,50 +1,36 @@
-import type { ReactNode } from 'react';
 import { classes } from '../../frontend/controls/classes';
-import type { TooltipContent } from '../../frontend/tooltips/tooltipContent';
+import { ROW_HOVER_GROUP } from '../../frontend/controls/revealOnRowHover';
 import { tooltipHandlers } from '../../frontend/tooltips/tooltipHandlers';
+import type { LibraryEntry } from './entries/libraryEntry';
 import type { LibraryFolder } from '../librarySelection';
 import { selects } from '../librarySelection';
+import { LibraryRowActions } from './LibraryRowActions';
 import { useLibrarySelection } from './useLibrarySelection';
 
-export function LibraryRow({
-  folder,
-  entryKey,
-  name,
-  glyph,
-  tint,
-  note,
-  dimmed,
-  tip,
-}: {
-  folder: LibraryFolder;
-  entryKey: string;
-  name: string;
-  glyph?: ReactNode;
-  tint?: string;
-  note?: string;
-  dimmed?: boolean;
-  tip: TooltipContent;
-}) {
-  const [selection, select] = useLibrarySelection();
-  const selected = selects(selection, folder, entryKey);
+export function LibraryRow({ folder, entry }: { folder: LibraryFolder; entry: LibraryEntry }) {
+  const { selection, toggle } = useLibrarySelection();
+  const selected = selects(selection, folder, entry.key);
   return (
-    <button
-      type="button"
+    <div
       className={classes(
-        'flex w-full cursor-pointer items-center gap-1.5 rounded border px-1.5 py-1 text-left text-xs',
-        selected ? 'border-accent bg-btn-active text-accent' : 'border-transparent text-ink hover:bg-field',
-        dimmed && 'opacity-45',
+        ROW_HOVER_GROUP,
+        'mb-0.5 flex w-full items-center gap-1.5 rounded border px-1 py-1',
+        selected ? 'border-accent bg-btn-active' : 'border-transparent hover:bg-field',
       )}
-      onClick={() => select(folder, entryKey)}
-      {...tooltipHandlers(tip)}
+      {...tooltipHandlers(entry.tip)}
     >
-      {glyph && (
-        <span className="flex w-4 shrink-0 justify-center" style={tint ? { color: tint } : undefined}>
-          {glyph}
-        </span>
-      )}
-      <span className="min-w-0 flex-1 truncate">{name}</span>
-      {note && <span className="shrink-0 text-[10px] text-ink-dim">{note}</span>}
-    </button>
+      <button
+        type="button"
+        className={classes(
+          'flex min-w-0 flex-1 cursor-pointer items-center gap-1.5 text-left text-xs',
+          selected ? 'text-accent' : 'text-ink',
+        )}
+        onClick={() => toggle(folder, entry.key)}
+      >
+        {entry.icon}
+        <span className="min-w-0 flex-1 truncate">{entry.name}</span>
+      </button>
+      <LibraryRowActions entry={entry} />
+    </div>
   );
 }

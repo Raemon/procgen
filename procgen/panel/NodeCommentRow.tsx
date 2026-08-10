@@ -1,11 +1,11 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import { useAppRuntime } from '../../frontend/appRuntimeContext';
+import { useEditedPipeline } from './editing/editedPipelineContext';
 import type { NodeInstance } from '../pipeline/pipelineState';
 import { tooltipHandlers } from '../../frontend/tooltips/tooltipHandlers';
 import { NODE_NOTES_TIP } from './help/nodeCardTips';
 
 export function NodeCommentRow({ node }: { node: NodeInstance }) {
-  const { perform } = useAppRuntime();
+  const { perform } = useEditedPipeline();
   const textarea = useRef<HTMLTextAreaElement>(null);
   const [draft, setDraft] = useState(node.comment);
   useLayoutEffect(() => fitHeightToContent(textarea.current), [draft]);

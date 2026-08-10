@@ -1,7 +1,7 @@
 import { useAppRuntime } from '../../../frontend/appRuntimeContext';
-import { useRerenderOnTileAssetChange } from '../../../frontend/rerenderHooks';
 import { Button } from '../../../frontend/controls/Button';
 import { ADD_TILE_TIP } from '../../../assets/tiles/editor/help/tileTips';
+import { useTileEntries } from '../entries/useTileEntries';
 import { FOLDER_TIPS } from '../../help/libraryTips';
 import { LibraryFolder } from '../LibraryFolder';
 import { LibraryRow } from '../LibraryRow';
@@ -9,9 +9,8 @@ import { useLibrarySelection } from '../useLibrarySelection';
 
 export function TilesFolder() {
   const { tileAssets, perform } = useAppRuntime();
-  const [, select] = useLibrarySelection();
-  useRerenderOnTileAssetChange();
-  const tiles = tileAssets.all();
+  const { select } = useLibrarySelection();
+  const entries = useTileEntries();
 
   function addTileAndSelectIt(): void {
     perform('add_tile');
@@ -20,21 +19,9 @@ export function TilesFolder() {
   }
 
   return (
-    <LibraryFolder folder="tiles" tip={FOLDER_TIPS.tiles} count={tiles.length}>
-      {tiles.map((tile) => (
-        <LibraryRow
-          key={tile.id}
-          folder="tiles"
-          entryKey={String(tile.id)}
-          name={tile.name}
-          glyph={tile.symbol}
-          tint={tile.color}
-          note={tile.walkable ? undefined : 'blocks'}
-          tip={{
-            title: tile.name,
-            body: `tile ${tile.id} · symbol “${tile.symbol}” · ${tile.walkable ? 'walkable' : 'blocking'}`,
-          }}
-        />
+    <LibraryFolder folder="tiles" tip={FOLDER_TIPS.tiles} count={entries.length}>
+      {entries.map((entry) => (
+        <LibraryRow key={entry.key} folder="tiles" entry={entry} />
       ))}
       <Button className="mt-1 w-full" tip={ADD_TILE_TIP} onClick={addTileAndSelectIt}>
         + add tile

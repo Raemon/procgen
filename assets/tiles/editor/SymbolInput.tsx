@@ -7,9 +7,11 @@ import { SymbolPickerPopup } from './SymbolPickerPopup';
 
 export function SymbolInput({
   symbol,
+  tint,
   onPick,
 }: {
   symbol: string;
+  tint?: string;
   onPick(symbol: string): void;
 }) {
   const anchor = useRef<HTMLInputElement>(null);
@@ -29,6 +31,7 @@ export function SymbolInput({
         maxLength={1}
         aria-label="ascii symbol"
         className={classes(FIELD_CLASSES, 'w-[26px] shrink-0 px-0 text-center')}
+        style={tint ? { color: tint } : undefined}
         value={symbol}
         onChange={(event) => typedSymbolOf(event.target.value, onPick)}
         onClick={() => setPickerOpen(true)}

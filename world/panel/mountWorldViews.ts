@@ -7,6 +7,7 @@ import { UseFixtureInput } from '../input/useFixtureInput';
 import { AgentTextView } from '../render/agentText/agentTextView';
 import { FeaturesView } from '../render/features/featuresView';
 import { View3D } from '../render/view3d/view3d';
+import { setWorldViewSnapshotter } from '../render/worldViewSnapshot';
 import type { WorldViewDeps } from '../render/worldViewDeps';
 import { isCharacterControlled, type ViewMode } from './viewMode';
 
@@ -48,6 +49,8 @@ export function mountWorldViews(
     runtime.hoveredTile,
   );
   const featuresView = new FeaturesView(slots.features, worldViewDepsOf(runtime));
+
+  setWorldViewSnapshotter((size, use) => view3d.captureAfterNextFrame(size, use));
 
   const unregister = [
     runtime.renderers.add({
@@ -112,6 +115,7 @@ export function mountWorldViews(
 
   return {
     dispose: () => {
+      setWorldViewSnapshotter(null);
       redrawOnSightChange();
       stopWalkingWhileTyping();
       stopWalkingWhileBagIsOpen();
