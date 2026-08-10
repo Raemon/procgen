@@ -1,11 +1,11 @@
-import type { PuzzleRoomKnobs } from '../../procgen/nodes/puzzle/puzzleRoomKnobs';
+import type { LabyrinthKnobs } from '../../procgen/labyrinth/labyrinthKnobs';
 
 export function sameKnobs(
-  left: PuzzleRoomKnobs | null,
-  right: PuzzleRoomKnobs | null,
+  left: LabyrinthKnobs | null,
+  right: LabyrinthKnobs | null,
 ): boolean {
   if (left === null || right === null) return left === right;
-  return (Object.keys(left) as (keyof PuzzleRoomKnobs)[]).every(
+  return (Object.keys(left) as (keyof LabyrinthKnobs)[]).every(
     (name) => left[name] === right[name],
   );
 }

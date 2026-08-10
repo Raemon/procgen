@@ -36,6 +36,7 @@
     "cultures:write": "bash tools/runTool.sh writeCulturesDataFile",
     "assets:generate": "esbuild tools/generateRandomAssets.ts --bundle --format=esm --platform=node --log-level=error --outfile=dist/generateRandomAssets.mjs && node dist/generateRandomAssets.mjs",
     "features:probe": "bash tools/runTool.sh probeWorldFeatures",
+    "labyrinth:probe": "bash tools/runTool.sh probeLabyrinthChunks",
     "village:probe": "bash tools/runTool.sh probeVillageSnapshot",
     "village:overhead": "bash tools/runTool.sh renderVillageOverhead",
     "view:render": "NODE_PATH=\"$(npm root -g)\" npx tsx tools/agentView/renderWorldView.ts"
