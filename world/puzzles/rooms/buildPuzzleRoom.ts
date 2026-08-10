@@ -1,5 +1,5 @@
 import '../kinds/index';
-import { chunkKey } from '../../../procgen/chunk';
+import { labyrinthCellKey } from '../../../procgen/labyrinth/labyrinthLattice';
 import { chunkExitsOf } from '../../../procgen/labyrinth/chunkExits';
 import { roleOf, ROOM } from '../../../procgen/labyrinth/chunkRole';
 import type { LabyrinthKnobs } from '../../../procgen/labyrinth/labyrinthKnobs';
@@ -24,7 +24,7 @@ export function buildPuzzleRoom(
   return {
     roomX,
     roomY,
-    key: chunkKey(roomX, roomY),
+    key: labyrinthCellKey(roomX, roomY),
     interior: geometry.interior,
     kindName: challenge.kind?.name ?? '',
     level: challenge.level,

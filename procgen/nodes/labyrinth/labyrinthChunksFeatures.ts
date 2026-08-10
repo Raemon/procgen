@@ -1,4 +1,3 @@
-import { CHUNK_SIZE, chunkCoordOfCell, chunkOrigin } from '../../chunk';
 import {
   featureKey,
   RANK_DETAIL,
@@ -13,6 +12,11 @@ import {
 import { chunkExitsOf, type ChunkExits } from '../../labyrinth/chunkExits';
 import { ROOM, roleOf } from '../../labyrinth/chunkRole';
 import { labyrinthKnobsFrom, type LabyrinthKnobs } from '../../labyrinth/labyrinthKnobs';
+import {
+  LABYRINTH_CELL_SIZE,
+  labyrinthCellCoordOf,
+  labyrinthCellOrigin,
+} from '../../labyrinth/labyrinthLattice';
 import { ringOf } from '../../labyrinth/chunkRing';
 import type { WorldRect } from '../../values/pointsInRect';
 
@@ -32,8 +36,8 @@ interface ChunkCoord {
 
 function chunksOverlapping(rect: WorldRect): ChunkCoord[] {
   const chunks: ChunkCoord[] = [];
-  for (let y = chunkCoordOfCell(rect.minY); y <= chunkCoordOfCell(rect.maxY); y++) {
-    for (let x = chunkCoordOfCell(rect.minX); x <= chunkCoordOfCell(rect.maxX); x++) {
+  for (let y = labyrinthCellCoordOf(rect.minY); y <= labyrinthCellCoordOf(rect.maxY); y++) {
+    for (let x = labyrinthCellCoordOf(rect.minX); x <= labyrinthCellCoordOf(rect.maxX); x++) {
       chunks.push({ x, y });
     }
   }
@@ -47,9 +51,9 @@ function chamberFeature(
 ): ExtractedFeature {
   const room = roleOf(chunk.x, chunk.y, knobs) === ROOM;
   return {
-    x: chunkOrigin(chunk.x),
-    y: chunkOrigin(chunk.y),
-    extent: { width: CHUNK_SIZE, height: CHUNK_SIZE },
+    x: labyrinthCellOrigin(chunk.x),
+    y: labyrinthCellOrigin(chunk.y),
+    extent: { width: LABYRINTH_CELL_SIZE, height: LABYRINTH_CELL_SIZE },
     label: chamberLabel(chunk, knobs, room),
     rank: rankOfChamber(chunk, knobs, room),
     parentKey: null,
@@ -78,7 +82,7 @@ function neighboursThroughOpenExits(
   const exits = chunkExitsOf(chunk.x, chunk.y, knobs);
   return openSides(exits)
     .map(([dx, dy]) => ({ x: chunk.x + dx, y: chunk.y + dy }))
-    .map((neighbour) => featureKey(nodeId, chunkOrigin(neighbour.x), chunkOrigin(neighbour.y)));
+    .map((neighbour) => featureKey(nodeId, labyrinthCellOrigin(neighbour.x), labyrinthCellOrigin(neighbour.y)));
 }
 
 function openSides(exits: ChunkExits): [number, number][] {

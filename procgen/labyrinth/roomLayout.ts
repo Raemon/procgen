@@ -1,5 +1,5 @@
-import { CHUNK_SIZE, chunkOrigin } from '../chunk';
 import { clampedWall, doorwaySpread, CLOSED, type ChunkExits } from './chunkExits';
+import { LABYRINTH_CELL_SIZE, labyrinthCellOrigin } from './labyrinthLattice';
 import type { LabyrinthKnobs } from './labyrinthKnobs';
 
 export interface RoomRect {
@@ -44,10 +44,10 @@ export function rectContains(rect: RoomRect, x: number, y: number): boolean {
 export function roomInterior(cx: number, cy: number, knobs: LabyrinthKnobs): RoomRect {
   const wall = clampedWall(knobs);
   return {
-    x: chunkOrigin(cx) + wall,
-    y: chunkOrigin(cy) + wall,
-    width: CHUNK_SIZE - 2 * wall,
-    height: CHUNK_SIZE - 2 * wall,
+    x: labyrinthCellOrigin(cx) + wall,
+    y: labyrinthCellOrigin(cy) + wall,
+    width: LABYRINTH_CELL_SIZE - 2 * wall,
+    height: LABYRINTH_CELL_SIZE - 2 * wall,
   };
 }
 
@@ -103,12 +103,12 @@ function doorwayRow(
 ): Cell[] {
   const spread = doorwaySpread(knobs);
   const across = Array.from({ length: 2 * spread + 1 }, (_, i) => offset - spread + i);
-  const originX = chunkOrigin(cx);
-  const originY = chunkOrigin(cy);
+  const originX = labyrinthCellOrigin(cx);
+  const originY = labyrinthCellOrigin(cy);
   if (side === 'west') return across.map((o) => ({ x: originX + depth, y: originY + o }));
   if (side === 'north') return across.map((o) => ({ x: originX + o, y: originY + depth }));
-  if (side === 'east') return across.map((o) => ({ x: originX + CHUNK_SIZE - 1 - depth, y: originY + o }));
-  return across.map((o) => ({ x: originX + o, y: originY + CHUNK_SIZE - 1 - depth }));
+  if (side === 'east') return across.map((o) => ({ x: originX + LABYRINTH_CELL_SIZE - 1 - depth, y: originY + o }));
+  return across.map((o) => ({ x: originX + o, y: originY + LABYRINTH_CELL_SIZE - 1 - depth }));
 }
 
 function anchorsOf(interior: RoomRect): Cell[] {

@@ -1,4 +1,3 @@
-import { CHUNK_SIZE } from '../chunk';
 import { braidCellMaze } from '../nodes/maze/braidCellMaze';
 import { isOpenBetween, type CellMaze } from '../nodes/maze/cellMaze';
 import { carveCellMaze } from '../nodes/maze/mazeCarvers';
@@ -6,6 +5,7 @@ import { hashString } from '../random/hashString';
 import { mulberry32 } from '../random/mulberry32';
 import { clampedCorridor, clampedWall, doorwaySpread, CLOSED, type ChunkExits } from './chunkExits';
 import type { LabyrinthKnobs } from './labyrinthKnobs';
+import { LABYRINTH_CELL_SIZE } from './labyrinthLattice';
 
 interface SubmazeLattice {
   corridor: number;
@@ -18,7 +18,7 @@ function latticeOf(knobs: LabyrinthKnobs): SubmazeLattice {
   const corridor = clampedCorridor(knobs);
   const wall = clampedWall(knobs);
   const pitch = corridor + wall;
-  const cells = Math.max(1, Math.floor((CHUNK_SIZE - wall) / pitch));
+  const cells = Math.max(1, Math.floor((LABYRINTH_CELL_SIZE - wall) / pitch));
   return { corridor, wall, pitch, cells };
 }
 
@@ -37,16 +37,16 @@ export function submazeFloorMask(
 ): Uint8Array {
   const lattice = latticeOf(knobs);
   const maze = submazeOf(cx, cy, knobs, lattice);
-  const mask = new Uint8Array(CHUNK_SIZE * CHUNK_SIZE);
+  const mask = new Uint8Array(LABYRINTH_CELL_SIZE * LABYRINTH_CELL_SIZE);
   paintLattice(mask, lattice, maze);
   carveDoorChannels(mask, lattice, exits, knobs);
   return mask;
 }
 
 function paintLattice(mask: Uint8Array, lattice: SubmazeLattice, maze: CellMaze): void {
-  for (let y = 0; y < CHUNK_SIZE; y++) {
-    for (let x = 0; x < CHUNK_SIZE; x++) {
-      if (isLatticeFloor(x, y, lattice, maze)) mask[y * CHUNK_SIZE + x] = 1;
+  for (let y = 0; y < LABYRINTH_CELL_SIZE; y++) {
+    for (let x = 0; x < LABYRINTH_CELL_SIZE; x++) {
+      if (isLatticeFloor(x, y, lattice, maze)) mask[y * LABYRINTH_CELL_SIZE + x] = 1;
     }
   }
 }
@@ -105,7 +105,7 @@ function cellFloorStart(cell: number, lattice: SubmazeLattice): number {
 
 function fillRect(mask: Uint8Array, x0: number, x1: number, y0: number, y1: number): void {
   for (let y = y0; y <= y1; y++) {
-    for (let x = x0; x <= x1; x++) mask[y * CHUNK_SIZE + x] = 1;
+    for (let x = x0; x <= x1; x++) mask[y * LABYRINTH_CELL_SIZE + x] = 1;
   }
 }
 
@@ -124,7 +124,7 @@ function carveWestDoor(mask: Uint8Array, lattice: SubmazeLattice, offset: number
 function carveEastDoor(mask: Uint8Array, lattice: SubmazeLattice, offset: number, spread: number): void {
   const columnStart = cellFloorStart(lattice.cells - 1, lattice);
   const rowStart = cellFloorStart(nearestCell(offset, lattice), lattice);
-  fillRect(mask, columnStart, CHUNK_SIZE - 1, offset - spread, offset + spread);
+  fillRect(mask, columnStart, LABYRINTH_CELL_SIZE - 1, offset - spread, offset + spread);
   fillRect(
     mask,
     columnStart,
@@ -149,7 +149,7 @@ function carveNorthDoor(mask: Uint8Array, lattice: SubmazeLattice, offset: numbe
 function carveSouthDoor(mask: Uint8Array, lattice: SubmazeLattice, offset: number, spread: number): void {
   const rowStart = cellFloorStart(lattice.cells - 1, lattice);
   const columnStart = cellFloorStart(nearestCell(offset, lattice), lattice);
-  fillRect(mask, offset - spread, offset + spread, rowStart, CHUNK_SIZE - 1);
+  fillRect(mask, offset - spread, offset + spread, rowStart, LABYRINTH_CELL_SIZE - 1);
   fillRect(
     mask,
     Math.min(offset - spread, columnStart),

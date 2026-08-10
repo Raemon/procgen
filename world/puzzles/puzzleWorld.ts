@@ -1,4 +1,4 @@
-import { chunkCoordOfCell, chunkKey } from '../../procgen/chunk';
+import { labyrinthCellCoordOf, labyrinthCellKey } from '../../procgen/labyrinth/labyrinthLattice';
 import type { LabyrinthKnobs } from '../../procgen/labyrinth/labyrinthKnobs';
 import type { Marker } from '../../procgen/worldSampler';
 import type { ReadOnlyPipelineStore } from '../../frontend/readOnlyAssets';
@@ -41,8 +41,8 @@ export class PuzzleWorld {
 
   roomAt(x: number, y: number): PuzzleRoomLayout | null {
     if (!this.knobs) return null;
-    const roomX = chunkCoordOfCell(x);
-    const roomY = chunkCoordOfCell(y);
+    const roomX = labyrinthCellCoordOf(x);
+    const roomY = labyrinthCellCoordOf(y);
     return this.room(roomX, roomY);
   }
 
@@ -132,7 +132,7 @@ export class PuzzleWorld {
 
   private room(roomX: number, roomY: number): PuzzleRoomLayout | null {
     if (!this.knobs) return null;
-    const key = chunkKey(roomX, roomY);
+    const key = labyrinthCellKey(roomX, roomY);
     const known = this.rooms.get(key);
     if (known) return known;
     const built = buildPuzzleRoom(this.knobs, roomX, roomY);
@@ -147,8 +147,8 @@ export class PuzzleWorld {
     maxY: number,
   ): PuzzleRoomLayout[] {
     const layouts: PuzzleRoomLayout[] = [];
-    for (let roomY = chunkCoordOfCell(minY); roomY <= chunkCoordOfCell(maxY); roomY++) {
-      for (let roomX = chunkCoordOfCell(minX); roomX <= chunkCoordOfCell(maxX); roomX++) {
+    for (let roomY = labyrinthCellCoordOf(minY); roomY <= labyrinthCellCoordOf(maxY); roomY++) {
+      for (let roomX = labyrinthCellCoordOf(minX); roomX <= labyrinthCellCoordOf(maxX); roomX++) {
         const layout = this.room(roomX, roomY);
         if (layout) layouts.push(layout);
       }
