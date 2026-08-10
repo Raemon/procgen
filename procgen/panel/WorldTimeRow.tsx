@@ -3,6 +3,7 @@ import { useAppRuntime } from '../../frontend/appRuntimeContext';
 import { classes } from '../../frontend/controls/classes';
 import { FIELD_CLASSES } from '../../frontend/controls/fieldClasses';
 import { KnobRow } from '../../frontend/controls/KnobRow';
+import { DEEPEST_PAST, PRESENT } from '../time/worldTime';
 import { TIME_TIP } from './help/pipelineTips';
 
 export function WorldTimeRow() {
@@ -18,6 +19,8 @@ export function WorldTimeRow() {
     <KnobRow label="time" tip={TIME_TIP}>
       <input
         type="number"
+        min={DEEPEST_PAST}
+        max={PRESENT}
         className={classes(FIELD_CLASSES, 'w-full min-w-0')}
         value={draft ?? String(store.time())}
         onChange={(event) => typeTime(event.target.value)}

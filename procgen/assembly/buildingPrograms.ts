@@ -1,18 +1,12 @@
-import { PROGRAM_CATALOG, programDefOf, type MassingRules } from './programCatalog';
+import { PROGRAM_CATALOG, programDefOf, type MassingRules, type ProgramName } from './programCatalog';
 
 export { clampedProgram, type MassingRules } from './programCatalog';
 
-export const BUILDING_PROGRAMS: readonly string[] = PROGRAM_CATALOG.map((def) => def.name);
+export const BUILDING_PROGRAMS: readonly ProgramName[] = PROGRAM_CATALOG.map((def) => def.name);
 
-export type BuildingProgram = string;
-
-export const PROGRAM_MASSING: readonly MassingRules[] = PROGRAM_CATALOG.map((def) => def.massing);
+export type BuildingProgram = ProgramName;
 
 export const MAX_WING_SIDE = 6;
-
-export function programIndexOf(program: BuildingProgram): number {
-  return BUILDING_PROGRAMS.indexOf(program);
-}
 
 export function programNameOf(program: number): BuildingProgram {
   return programDefOf(program).name;

@@ -42,7 +42,7 @@ export class PipelineEvaluator {
   }
 
   private refreshSignatures(): void {
-    this.signatures = computeNodeSignatures(this.store.snapshot());
+    this.signatures = computeNodeSignatures(this.store.snapshot(), nodeTypeReadsTime);
     this.cache.growTo(cacheCapacityForPipeline(this.signatures.size));
   }
 
@@ -112,6 +112,10 @@ export class PipelineEvaluator {
     this.runtimeErrors.set(node.id, `returned ${value.kind}, declared output is ${declared}`);
     return emptyValueOfKind(declared);
   }
+}
+
+function nodeTypeReadsTime(nodeType: string): boolean {
+  return nodeTypeOf(nodeType)?.readsTime === true;
 }
 
 function messageOf(error: unknown): string {

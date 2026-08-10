@@ -1,5 +1,7 @@
 import '../procgen/nodes';
 import { computeNodeSignatures } from '../procgen/pipeline/nodeSignatures';
+import { nodeTypeOf } from '../procgen/nodeRegistry';
+import type { PipelineState } from '../procgen/pipeline/pipelineState';
 import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
 import { nodeFolderRuns } from '../procgen/panel/nodeFolderRuns';
 import type { CheckReporter } from './checkReporter';
@@ -26,7 +28,16 @@ export function checkNodeFolders(check: CheckReporter): void {
   );
   check(
     'folders never reach the node signature, so grouping cannot change the world',
-    [...computeNodeSignatures(foldedState).values()].join() ===
-      [...computeNodeSignatures(sanitizePipeline({ seed: 3, nodes: foldedState.nodes.map((node) => ({ ...node, folder: 'renamed' })) })).values()].join(),
+    [...computeNodeSignatures(foldedState, nodeTypeReadsTime).values()].join() ===
+      [...computeNodeSignatures(renamedFolders(foldedState), nodeTypeReadsTime).values()].join(),
   );
+}
+
+function renamedFolders(state: PipelineState): PipelineState {
+  const nodes = state.nodes.map((node) => ({ ...node, folder: 'renamed' }));
+  return sanitizePipeline({ ...state, nodes });
+}
+
+function nodeTypeReadsTime(nodeType: string): boolean {
+  return nodeTypeOf(nodeType)?.readsTime === true;
 }

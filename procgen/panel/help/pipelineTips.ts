@@ -12,7 +12,7 @@ export const DAYLIGHT_TIP: TooltipContent = {
 
 export const TIME_TIP: TooltipContent = {
   title: 'world time',
-  body: 'The moment the world is shown at. 0 is the present; drag negative to look into the past — recent values remove young buildings and settlements, deep values un-erode valleys and sink old islands. Only nodes that read time recompute.',
+  body: 'The moment the world is shown at: 0 is the present, negative is years before it. Only nodes that read time answer to this, and they recompute alone — a world whose nodes all ignore time looks identical at every moment.',
 };
 
 export const ROLL_SEED_TIP: TooltipContent = {

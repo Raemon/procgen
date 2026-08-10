@@ -56,8 +56,10 @@ registerWorldAbility({
   action: 'set_time',
   humanControl: 'detail panel, world: time row',
   description:
-    'Set the moment the world is shown at, 0 for the present and negative values for the past. Scrubbing back removes young buildings and settlements first, then in deep time un-erodes and sinks the volcanic islands.',
-  params: { time: { kind: 'number', help: '0 for the present, negative for years before it' } },
+    'Set the moment the world is shown at, 0 for the present and negative for years before it. Only nodes that declare they read time answer to it, so a world built from nodes that ignore time looks the same at every moment.',
+  params: {
+    time: { kind: 'number', help: '0 for the present, negative for years before it' },
+  },
   example: { action: 'set_time', time: -200 },
   apply: (context, params) => {
     const time = readNumber(params, 'time');

@@ -4,14 +4,17 @@ import { FACING, PROGRAM, hasPointNumber, pointNumber } from '../values/pointDat
 import { clampedProgram } from './buildingPrograms';
 import { normalizedFacing, type BuildingSpec } from './buildingSpec';
 
-export const BUILDING_TAG = 'building';
+const BUILDING_TAG = 'building';
 
 export function buildingPointOf(spec: BuildingSpec): WorldPoint {
   return {
     x: spec.x,
     y: spec.y,
     tag: BUILDING_TAG,
-    data: { [PROGRAM]: clampedProgram(spec.program), [FACING]: normalizedFacing(spec.facing) },
+    data: Object.freeze({
+      [PROGRAM]: clampedProgram(spec.program),
+      [FACING]: normalizedFacing(spec.facing),
+    }),
   };
 }
 

@@ -1,8 +1,6 @@
 export const PRESENT = 0;
 
-export const SETTLEMENT_ERA_SPAN = 500;
 export const VOLCANIC_ERA_SPAN = 5_000_000;
-export const RING_PERIOD = 40;
 
 export const DEEPEST_PAST = -VOLCANIC_ERA_SPAN;
 
