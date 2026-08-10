@@ -1,5 +1,5 @@
 import type { RandomStream } from '../../../procgen/random/mulberry32';
-import type { RoomRect } from '../../../procgen/nodes/puzzle/puzzleRoomLattice';
+import type { RoomRect } from '../../../procgen/labyrinth/roomLayout';
 
 export interface Cell {
   x: number;

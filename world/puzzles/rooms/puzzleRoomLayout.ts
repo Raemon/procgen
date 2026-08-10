@@ -1,4 +1,4 @@
-import type { RoomRect } from '../../../procgen/nodes/puzzle/puzzleRoomLattice';
+import type { RoomRect } from '../../../procgen/labyrinth/roomLayout';
 import type { PuzzleFixture } from '../fixtures/puzzleFixture';
 import type { CratePush } from '../kinds/puzzleKind';
 

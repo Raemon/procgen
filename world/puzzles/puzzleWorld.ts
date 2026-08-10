@@ -1,5 +1,5 @@
-import type { PuzzleRoomKnobs } from '../../procgen/nodes/puzzle/puzzleRoomKnobs';
-import { roomIndexOfCell, roomKey } from '../../procgen/nodes/puzzle/puzzleRoomLattice';
+import { chunkCoordOfCell, chunkKey } from '../../procgen/chunk';
+import type { LabyrinthKnobs } from '../../procgen/labyrinth/labyrinthKnobs';
 import type { Marker } from '../../procgen/worldSampler';
 import type { ReadOnlyPipelineStore } from '../../frontend/readOnlyAssets';
 import { fixtureLook } from './fixtures/fixtureAppearance';
@@ -23,7 +23,7 @@ const ROOMS_KEPT = 512;
 
 export class PuzzleWorld {
   private readonly rooms = new Map<string, PuzzleRoomLayout>();
-  private knobs: PuzzleRoomKnobs | null;
+  private knobs: LabyrinthKnobs | null;
 
   constructor(
     private readonly store: ReadOnlyPipelineStore,
@@ -40,8 +40,8 @@ export class PuzzleWorld {
 
   roomAt(x: number, y: number): PuzzleRoomLayout | null {
     if (!this.knobs) return null;
-    const roomX = roomIndexOfCell(x, this.knobs);
-    const roomY = roomIndexOfCell(y, this.knobs);
+    const roomX = chunkCoordOfCell(x);
+    const roomY = chunkCoordOfCell(y);
     return this.room(roomX, roomY);
   }
 
@@ -131,7 +131,7 @@ export class PuzzleWorld {
 
   private room(roomX: number, roomY: number): PuzzleRoomLayout | null {
     if (!this.knobs) return null;
-    const key = roomKey(roomX, roomY);
+    const key = chunkKey(roomX, roomY);
     const known = this.rooms.get(key);
     if (known) return known;
     const built = buildPuzzleRoom(this.knobs, roomX, roomY);
@@ -146,10 +146,9 @@ export class PuzzleWorld {
     maxX: number,
     maxY: number,
   ): PuzzleRoomLayout[] {
-    const knobs = this.knobs!;
     const layouts: PuzzleRoomLayout[] = [];
-    for (let roomY = roomIndexOfCell(minY, knobs); roomY <= roomIndexOfCell(maxY, knobs); roomY++) {
-      for (let roomX = roomIndexOfCell(minX, knobs); roomX <= roomIndexOfCell(maxX, knobs); roomX++) {
+    for (let roomY = chunkCoordOfCell(minY); roomY <= chunkCoordOfCell(maxY); roomY++) {
+      for (let roomX = chunkCoordOfCell(minX); roomX <= chunkCoordOfCell(maxX); roomX++) {
         const layout = this.room(roomX, roomY);
         if (layout) layouts.push(layout);
       }
