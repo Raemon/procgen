@@ -55,6 +55,7 @@ import { checkPanelHintsRespectTheToggle } from './panelHintsRespectTheToggle.te
 import { checkFeatureExtraction } from '@/features/asset-library/worlds/__tests__/featureExtraction.test';
 import { checkFeatureViewLayout } from '@/features/asset-library/worlds/__tests__/featureViewLayout.test';
 import { routeHandlerTests } from './routeHandlers.test';
+import { bootstrapPersistenceTests } from './bootstrapPersistence.test';
 
 function check(name: string, condition: boolean): void {
   test(name, () => assert.ok(condition));
@@ -116,3 +117,4 @@ describe('panel hints', () => checkPanelHintsRespectTheToggle(check));
 describe('feature extraction', () => checkFeatureExtraction(check));
 describe('the features map layout', () => checkFeatureViewLayout(check));
 describe('Route Handlers', routeHandlerTests);
+describe('browser persistence bootstrap', bootstrapPersistenceTests);

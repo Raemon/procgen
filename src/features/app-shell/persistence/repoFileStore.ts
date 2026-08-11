@@ -1,4 +1,6 @@
 const WRITE_DEBOUNCE_MS = 400;
+const BOOTSTRAP_FETCH_TIMEOUT_MS = 4_000;
+const BOOTSTRAP_RETRY_DELAYS_MS = [0, 500, 1_500, 3_000] as const;
 
 const DOCS_THE_WORLD_CANNOT_OPEN_WITHOUT = ['pipeline', 'tiles', 'pieces', 'cultures'];
 
@@ -21,23 +23,30 @@ const RESOURCE_PATHS: Readonly<Record<string, string>> = {
 };
 
 export async function preloadPersistedFiles(names: readonly string[]): Promise<void> {
+  names.forEach((name) => unreachable.delete(name));
   await Promise.all(names.map(preloadOne));
   reportDocsTheServerNeverGave(names);
 }
 
 async function preloadOne(name: string): Promise<void> {
-  try {
-    const response = await fetch(resourcePath(name));
-    if (response.ok) acceptDocumentResponse(name, response, await response.json());
-  } catch {
-    unreachable.add(name);
+  for (const delayMs of BOOTSTRAP_RETRY_DELAYS_MS) {
+    if (delayMs > 0) await delay(delayMs);
+    try {
+      const response = await fetch(resourcePath(name), {
+        signal: AbortSignal.timeout(BOOTSTRAP_FETCH_TIMEOUT_MS),
+      });
+      if (!response.ok) continue;
+      acceptDocumentResponse(name, response, await response.json());
+      return;
+    } catch {}
   }
+  unreachable.add(name);
 }
 
 function reportDocsTheServerNeverGave(names: readonly string[]): void {
   if (unreachable.size > 0) {
-    return console.error(
-      `[persist] The game server did not answer for ${[...unreachable].join(', ')}. Nothing is stored in this browser, so start the server before loading the app.`,
+    throw new Error(
+      `The game server did not answer for ${[...unreachable].join(', ')}. Check that it is running, then retry.`,
     );
   }
   const missing = names.filter(
@@ -47,6 +56,10 @@ function reportDocsTheServerNeverGave(names: readonly string[]): void {
   console.error(
     `[persist] The database holds no ${missing.join(', ')}, so the world opens without them. Run \`npm run docs:seed\` to load the repo data files into it.`,
   );
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export function seedPersistedFile(name: string, value: unknown): void {
