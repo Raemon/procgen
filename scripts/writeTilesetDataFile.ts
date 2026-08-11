@@ -1,6 +1,6 @@
 import { writeFileSync } from 'node:fs';
-import { defaultTiles } from '../assets/tiles/defaultTiles';
-import { tilesAsStoredJson } from '../assets/tiles/tileStorage';
+import { defaultTiles } from '@/features/asset-library/tiles/defaultTiles';
+import { tilesAsStoredJson } from '@/features/asset-library/tiles/tileStorage';
 
 const OUTPUT_PATH = 'data/tiles.json';
 

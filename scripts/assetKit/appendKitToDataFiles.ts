@@ -1,5 +1,5 @@
-import type { AssetKit } from '../../assets/generation/assetKit';
-import { tilesAsStoredJson } from '../../assets/tiles/tileStorage';
+import type { AssetKit } from '@/features/asset-library/generation/assetKit';
+import { tilesAsStoredJson } from '@/features/asset-library/tiles/tileStorage';
 import {
   CULTURES_PATH,
   PIECES_PATH,

@@ -1,10 +1,10 @@
-import type { WorldSampler } from '../../../procgen/worldSampler';
-import { facingYawRadians } from '../../../world/facing';
-import { CharacterCamera } from '../../../world/render/view3d/characterCamera';
+import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
+import { facingYawRadians } from '@/features/game/facing';
+import { CharacterCamera } from '@/features/game/render/view3d/characterCamera';
 import {
   clampSightRadiusTiles,
   DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
-} from '../../../world/vision/characterSight';
+} from '@/features/game/vision/characterSight';
 import type { WorldViewRequest } from '../worldViewRequest';
 import type { FramedCamera } from './framedCamera';
 import { wheelPixelsReaching } from './wheelPixelsReaching';

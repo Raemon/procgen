@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VITE_PORT=1111
-GAME_SERVER_PORT=8080
+DEV_SERVER_PORT=1111
 
 kill_port() {
   local port=$1
@@ -20,11 +19,5 @@ kill_port() {
   [ -n "$remaining" ] && kill -9 $remaining 2>/dev/null || true
 }
 
-kill_port "$VITE_PORT"
-kill_port "$GAME_SERVER_PORT"
-
-PORT="$GAME_SERVER_PORT" npx tsx watch --env-file-if-exists=.env server/index.ts &
-GAME_SERVER_PID=$!
-trap 'kill $GAME_SERVER_PID 2>/dev/null || true' EXIT
-
-npx vite --port "$VITE_PORT" --strictPort "$@"
+kill_port "$DEV_SERVER_PORT"
+PORT="$DEV_SERVER_PORT" NODE_ENV=development exec npx tsx watch --env-file-if-exists=.env server.ts "$@"

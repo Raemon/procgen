@@ -1,16 +1,16 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { seedPersistedFile } from '../frontend/persistence/repoFileStore';
-import { PipelineEvaluator } from '../procgen/eval/evaluator';
-import { PipelineStore } from '../procgen/pipeline/pipelineStore';
-import { loadStoredPipeline } from '../procgen/pipeline/pipelineStorage';
-import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
-import type { PipelineState } from '../procgen/pipeline/pipelineState';
-import { WorldSampler } from '../procgen/worldSampler';
-import { CultureAssets } from '../assets/cultures/cultureAssets';
-import { PieceAssets } from '../assets/pieces/pieceAssets';
-import { TileAssets } from '../assets/tiles/tileAssets';
-import { NO_ITEMS } from '../assets/items/itemAssets';
-import { TakenItemSpawns } from '../assets/items/pickups/takenItemSpawns';
+import { seedPersistedFile } from '@/features/app-shell/persistence/repoFileStore';
+import { PipelineEvaluator } from '@/features/asset-library/worlds/eval/evaluator';
+import { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
+import { loadStoredPipeline } from '@/features/asset-library/worlds/pipeline/pipelineStorage';
+import { sanitizePipeline } from '@/features/asset-library/worlds/pipeline/sanitizePipeline';
+import type { PipelineState } from '@/features/asset-library/worlds/pipeline/pipelineState';
+import { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
+import { CultureAssets } from '@/features/asset-library/cultures/cultureAssets';
+import { PieceAssets } from '@/features/asset-library/pieces/pieceAssets';
+import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
+import { NO_ITEMS } from '@/features/asset-library/items/itemAssets';
+import { TakenItemSpawns } from '@/features/asset-library/items/pickups/takenItemSpawns';
 
 export interface HeadlessWorld {
   tileAssets: TileAssets;

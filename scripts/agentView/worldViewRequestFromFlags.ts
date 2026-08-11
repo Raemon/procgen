@@ -1,4 +1,4 @@
-import { FACING_NAMES, type FacingIndex } from '../../world/facing';
+import { FACING_NAMES, type FacingIndex } from '@/features/game/facing';
 import {
   commandLineFlags,
   numberFlag,

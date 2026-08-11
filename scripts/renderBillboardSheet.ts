@@ -1,8 +1,8 @@
 import { writeFileSync } from 'node:fs';
-import { TILE_ART_SIZE } from '../assets/tiles/art/artSize';
-import { markerBillboardArt } from '../assets/tiles/art/billboards/markerBillboardArt';
-import { defaultTiles } from '../assets/tiles/defaultTiles';
-import type { TileDef } from '../assets/tiles/tileDef';
+import { TILE_ART_SIZE } from '@/features/asset-library/tiles/art/artSize';
+import { markerBillboardArt } from '@/features/asset-library/tiles/art/billboards/markerBillboardArt';
+import { defaultTiles } from '@/features/asset-library/tiles/defaultTiles';
+import type { TileDef } from '@/features/asset-library/tiles/tileDef';
 import { pngBuffer, type RgbImage } from './png/writePng';
 
 const OUTPUT_PATH = 'docs/billboard-preview.png';

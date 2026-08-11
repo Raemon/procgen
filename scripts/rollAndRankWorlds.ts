@@ -1,4 +1,4 @@
-import '../procgen/nodes';
+import '@/features/asset-library/worlds/nodes';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { stepsTaken } from './explore/explorationTrace';
@@ -9,15 +9,15 @@ import {
 } from './explore/metrics/measureWorld';
 import { thumbnailHtml } from './explore/report/asciiThumbnail';
 import { galleryPageHtml, type GalleryWorld } from './explore/report/galleryHtml';
-import { seedPersistedFile } from '../frontend/persistence/repoFileStore';
-import { PipelineEvaluator } from '../procgen/eval/evaluator';
-import type { PipelineState } from '../procgen/pipeline/pipelineState';
-import { PipelineStore } from '../procgen/pipeline/pipelineStore';
-import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
-import { randomWorldPipeline } from '../procgen/randomize/randomWorldPipeline';
-import { WorldSampler } from '../procgen/worldSampler';
-import { mulberry32 } from '../procgen/random/mulberry32';
-import { TileAssets } from '../assets/tiles/tileAssets';
+import { seedPersistedFile } from '@/features/app-shell/persistence/repoFileStore';
+import { PipelineEvaluator } from '@/features/asset-library/worlds/eval/evaluator';
+import type { PipelineState } from '@/features/asset-library/worlds/pipeline/pipelineState';
+import { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
+import { sanitizePipeline } from '@/features/asset-library/worlds/pipeline/sanitizePipeline';
+import { randomWorldPipeline } from '@/features/asset-library/worlds/randomize/randomWorldPipeline';
+import { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
+import { mulberry32 } from '@/features/asset-library/worlds/random/mulberry32';
+import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
 
 const ROLL_COUNT = Number(process.argv[2] ?? 16);
 const ROLL_SEED = Number(process.argv[3] ?? 20260806);

@@ -1,15 +1,15 @@
-import { massingExtent, massingFor } from '../../procgen/assembly/buildingMassing';
-import { programNameOf } from '../../procgen/assembly/buildingPrograms';
-import type { BuildingSpec } from '../../procgen/assembly/buildingSpec';
-import { specOfBuildingPoint } from '../../procgen/assembly/buildingPoint';
-import { chunkCoordOfCell } from '../../procgen/chunk';
-import { hashString } from '../../procgen/random/hashString';
-import { mulberry32 } from '../../procgen/random/mulberry32';
-import { tileIdOfVoxel } from '../../procgen/structureOverlay/packedVoxel';
-import { asPoints } from '../../procgen/values/valueAccess';
-import type { WorldPoint } from '../../procgen/values/chunkValues';
-import type { NodeInstance } from '../../procgen/pipeline/pipelineState';
-import type { TileShapeKind } from '../../assets/tiles/tileShapeKind';
+import { massingExtent, massingFor } from '@/features/asset-library/worlds/assembly/buildingMassing';
+import { programNameOf } from '@/features/asset-library/worlds/assembly/buildingPrograms';
+import type { BuildingSpec } from '@/features/asset-library/worlds/assembly/buildingSpec';
+import { specOfBuildingPoint } from '@/features/asset-library/worlds/assembly/buildingPoint';
+import { chunkCoordOfCell } from '@/features/asset-library/worlds/chunk';
+import { hashString } from '@/features/asset-library/worlds/random/hashString';
+import { mulberry32 } from '@/features/asset-library/worlds/random/mulberry32';
+import { tileIdOfVoxel } from '@/features/asset-library/worlds/structureOverlay/packedVoxel';
+import { asPoints } from '@/features/asset-library/worlds/values/valueAccess';
+import type { WorldPoint } from '@/features/asset-library/worlds/values/chunkValues';
+import type { NodeInstance } from '@/features/asset-library/worlds/pipeline/pipelineState';
+import type { TileShapeKind } from '@/features/asset-library/tiles/tileShapeKind';
 import type { HeadlessWorld } from '../headlessWorld';
 
 export interface SampledRegion {

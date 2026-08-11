@@ -1,12 +1,12 @@
-import '../procgen/nodes';
-import '../procgen/features/index';
-import { PipelineEvaluator } from '../procgen/eval/evaluator';
-import type { Feature } from '../procgen/features/feature';
-import { featuresInRect } from '../procgen/features/featuresInRect';
-import { PipelineStore } from '../procgen/pipeline/pipelineStore';
-import { sanitizePipeline } from '../procgen/pipeline/sanitizePipeline';
-import { examplePipelines, type ExamplePipeline } from '../procgen/presets/examplePipelines';
-import type { WorldRect } from '../procgen/values/pointsInRect';
+import '@/features/asset-library/worlds/nodes';
+import '@/features/asset-library/worlds/features';
+import { PipelineEvaluator } from '@/features/asset-library/worlds/eval/evaluator';
+import type { Feature } from '@/features/asset-library/worlds/features/feature';
+import { featuresInRect } from '@/features/asset-library/worlds/features/featuresInRect';
+import { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
+import { sanitizePipeline } from '@/features/asset-library/worlds/pipeline/sanitizePipeline';
+import { examplePipelines, type ExamplePipeline } from '@/features/asset-library/worlds/presets/examplePipelines';
+import type { WorldRect } from '@/features/asset-library/worlds/values/pointsInRect';
 
 const HALF_SPAN = 128;
 const SURVEY_RECT: WorldRect = {

@@ -1,6 +1,6 @@
-import { sanitizePipeline } from '../../procgen/pipeline/sanitizePipeline';
-import type { PipelineState } from '../../procgen/pipeline/pipelineState';
-import { THATCHMERE_CULTURE_ID } from '../../assets/cultures/defaultCultures';
+import { sanitizePipeline } from '@/features/asset-library/worlds/pipeline/sanitizePipeline';
+import type { PipelineState } from '@/features/asset-library/worlds/pipeline/pipelineState';
+import { THATCHMERE_CULTURE_ID } from '@/features/asset-library/cultures/defaultCultures';
 
 export function villageFixtureState(): PipelineState {
   return sanitizePipeline({

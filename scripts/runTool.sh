@@ -3,18 +3,18 @@ set -euo pipefail
 
 toolName=${1-}
 if [ -z "$toolName" ]; then
-  echo "runTool.sh needs a tool name, as in: bash tools/runTool.sh probeChunkDrawLoad" >&2
+  echo "runTool.sh needs a script name, as in: bash scripts/runTool.sh probeChunkDrawLoad" >&2
   exit 64
 fi
 
-toolDirectory=$(cd "$(dirname "$0")" && pwd)
-toolPath="$toolDirectory/$toolName.ts"
-if [ ! -f "$toolPath" ]; then
-  echo "runTool.sh found no tool named $toolName: there is no file at $toolPath" >&2
+scriptDirectory=$(cd "$(dirname "$0")" && pwd)
+scriptPath="$scriptDirectory/$toolName.ts"
+if [ ! -f "$scriptPath" ]; then
+  echo "runTool.sh found no script named $toolName: there is no file at $scriptPath" >&2
   exit 66
 fi
 
-repoRoot=$(cd "$toolDirectory/.." && pwd)
+repoRoot=$(cd "$scriptDirectory/.." && pwd)
 esbuildPath="$repoRoot/node_modules/.bin/esbuild"
 if [ ! -x "$esbuildPath" ]; then
   echo "runTool.sh found no esbuild at $esbuildPath: run npm install first" >&2
@@ -22,4 +22,4 @@ if [ ! -x "$esbuildPath" ]; then
 fi
 
 cd "$repoRoot"
-"$esbuildPath" "$toolPath" --bundle --format=esm --platform=node --log-level=error | node --input-type=module
+"$esbuildPath" "$scriptPath" --bundle --format=esm --platform=node --log-level=error | node --input-type=module

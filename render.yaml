@@ -5,7 +5,7 @@ services:
     plan: free
     buildCommand: npm ci --ignore-scripts && npx prisma generate && npm run build
     startCommand: npm run start:prod
-    healthCheckPath: /healthz
+    healthCheckPath: /api/health
     numInstances: 1
     pullRequestPreviewsEnabled: true
     envVars:

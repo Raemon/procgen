@@ -1,11 +1,11 @@
 import * as THREE from 'three';
-import '../procgen/nodes';
+import '@/features/asset-library/worlds/nodes';
 import { worldFromRepoData } from './headlessWorld';
 import { stubTheCanvasTexturesAreRasterizedOnto } from './stubCanvasForHeadlessTextures';
-import { applyTileSideBudget } from '../world/render/view3d/chunkDetail';
-import { disposeMeshChildren } from '../world/render/view3d/disposeMeshResources';
-import { tileSideBudget } from '../world/render/view3d/tileDetailBudget';
-import { buildChunkMeshGroup } from '../world/render/view3d/worldMeshes';
+import { applyTileSideBudget } from '@/features/game/render/view3d/chunkDetail';
+import { disposeMeshChildren } from '@/features/game/render/view3d/disposeMeshResources';
+import { tileSideBudget } from '@/features/game/render/view3d/tileDetailBudget';
+import { buildChunkMeshGroup } from '@/features/game/render/view3d/worldMeshes';
 
 const VIEWPORT_HEIGHT_PIXELS = 900;
 const VERTICAL_FOV_DEGREES = 50;

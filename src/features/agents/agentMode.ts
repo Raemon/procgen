@@ -1,0 +1,13 @@
+import type { FacingIndex } from '@/features/game/facing';
+
+export type AgentMode = 'god' | 'character';
+
+export interface AgentPose {
+  x: number;
+  y: number;
+  facing: FacingIndex;
+}
+
+export function isAgentMode(value: unknown): value is AgentMode {
+  return value === 'god' || value === 'character';
+}

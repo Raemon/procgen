@@ -1,5 +1,5 @@
 import { writeFileSync } from 'node:fs';
-import { defaultCultures } from '../assets/cultures/defaultCultures';
+import { defaultCultures } from '@/features/asset-library/cultures/defaultCultures';
 
 const OUTPUT_PATH = 'data/cultures.json';
 

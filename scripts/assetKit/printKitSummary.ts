@@ -1,5 +1,5 @@
-import type { AssetKit } from '../../assets/generation/assetKit';
-import { GABLE_ROOF } from '../../assets/cultures/cultureDef';
+import type { AssetKit } from '@/features/asset-library/generation/assetKit';
+import { GABLE_ROOF } from '@/features/asset-library/cultures/cultureDef';
 
 export function printKitSummary(kit: AssetKit, seed: number): void {
   console.log(`\n== culture kit "${kit.name}" from seed ${seed} ==`);

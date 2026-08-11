@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { initStore } from '../server/persistence/db';
-import { PERSISTED_DOC_NAMES, saveDoc } from '../server/persistence/docsRepo';
+import { initStore } from '@/infrastructure/server/persistence/db';
+import { PERSISTED_DOC_NAMES, saveDoc } from '@/infrastructure/server/persistence/docsRepo';
 
 const store = await initStore(process.env.DATABASE_URL ?? null);
 for (const name of PERSISTED_DOC_NAMES) await seedOne(name);

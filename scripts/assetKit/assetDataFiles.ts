@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync } from 'node:fs';
-import type { AssetLibrary } from '../../assets/generation/assetKit';
+import type { AssetLibrary } from '@/features/asset-library/generation/assetKit';
 
 export const TILES_PATH = 'data/tiles.json';
 export const PIECES_PATH = 'data/pieces.json';

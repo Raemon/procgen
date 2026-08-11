@@ -1,6 +1,6 @@
 import { writeFileSync } from 'node:fs';
-import { MATERIAL_SYNTHS } from '../assets/textures/materialCatalog';
-import type { MaterialSynth } from '../assets/textures/materialSynth';
+import { MATERIAL_SYNTHS } from '@/features/asset-library/textures/materialCatalog';
+import type { MaterialSynth } from '@/features/asset-library/textures/materialSynth';
 import { pngBuffer, type RgbImage } from './png/writePng';
 
 const CELL = 256;

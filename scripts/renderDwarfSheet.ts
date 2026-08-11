@@ -1,11 +1,11 @@
 import { writeFileSync } from 'node:fs';
-import { dwarfBillboard } from '../assets/characters/dwarf/dwarfBillboard';
+import { dwarfBillboard } from '@/features/asset-library/characters/dwarf/dwarfBillboard';
 import {
   CHARACTER_ANIMATIONS,
   CHARACTER_ROTATIONS,
   framesOf,
-} from '../assets/characters/characterBillboard';
-import { spriteGridSize, type SpriteArt } from '../assets/tiles/spriteArt';
+} from '@/features/asset-library/characters/characterBillboard';
+import { spriteGridSize, type SpriteArt } from '@/features/asset-library/tiles/spriteArt';
 import { pngBuffer } from './png/writePng';
 
 const OUTPUT_PATH = 'docs/dwarf-character-sheet.png';

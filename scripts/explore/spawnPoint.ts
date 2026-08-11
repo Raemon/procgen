@@ -1,4 +1,4 @@
-import { nearestWalkable, type CellPoint } from '../../world/nearestWalkable';
+import { nearestWalkable, type CellPoint } from '@/features/game/nearestWalkable';
 import type { WalkableProbe } from './cachedWorldProbes';
 
 const SPAWN_SEARCH_RADIUS = 64;

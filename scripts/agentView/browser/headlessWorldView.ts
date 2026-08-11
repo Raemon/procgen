@@ -1,14 +1,14 @@
 import * as THREE from 'three';
-import { NO_EXTRA_MARKERS } from '../../../world/render/markerSource';
-import { ChunkMeshStreamer } from '../../../world/render/view3d/chunkMeshStreamer';
+import { NO_EXTRA_MARKERS } from '@/features/game/render/markerSource';
+import { ChunkMeshStreamer } from '@/features/game/render/view3d/chunkMeshStreamer';
 import {
   LAMPLIT_AMBIENT,
   OVERHEAD_AMBIENT,
   SceneDaylight,
-} from '../../../world/render/view3d/sceneDaylight';
-import { streamingRadiusChunks } from '../../../world/render/view3d/streamingRadius';
-import { WorldLights } from '../../../world/render/view3d/worldLights';
-import { createCharacterFog, createWorldScene } from '../../../world/render/view3d/worldScene';
+} from '@/features/game/render/view3d/sceneDaylight';
+import { streamingRadiusChunks } from '@/features/game/render/view3d/streamingRadius';
+import { WorldLights } from '@/features/game/render/view3d/worldLights';
+import { createCharacterFog, createWorldScene } from '@/features/game/render/view3d/worldScene';
 import type { HeadlessWorld } from '../../headlessWorld';
 import type { WorldViewRequest } from '../worldViewRequest';
 import type { FramedCamera } from './framedCamera';

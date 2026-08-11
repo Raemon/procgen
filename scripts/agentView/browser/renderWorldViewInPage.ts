@@ -1,4 +1,4 @@
-import '../../../procgen/nodes';
+import '@/features/asset-library/worlds/nodes';
 import type { WorldViewRequest } from '../worldViewRequest';
 import { characterCameraForRequest } from './characterCameraForRequest';
 import type { FramedCamera } from './framedCamera';

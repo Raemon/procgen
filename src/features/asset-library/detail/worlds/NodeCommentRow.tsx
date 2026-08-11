@@ -1,0 +1,30 @@
+import { useLayoutEffect, useRef, useState } from 'react';
+import { useEditedPipeline } from './editing/editedPipelineContext';
+import type { NodeInstance } from '@/features/asset-library/worlds/pipeline/pipelineState';
+import { tooltipHandlers } from '@/features/app-shell/tooltips/tooltipHandlers';
+import { NODE_NOTES_TIP } from './help/nodeCardTips';
+
+export function NodeCommentRow({ node }: { node: NodeInstance }) {
+  const { perform } = useEditedPipeline();
+  const textarea = useRef<HTMLTextAreaElement>(null);
+  const [draft, setDraft] = useState(node.comment);
+  useLayoutEffect(() => fitHeightToContent(textarea.current), [draft]);
+  return (
+    <textarea
+      ref={textarea}
+      rows={1}
+      placeholder="notes — why is this node set up this way?"
+      className="mb-2 block w-full resize-none overflow-hidden rounded border border-transparent bg-transparent px-1 py-[3px] text-[11px] leading-relaxed text-ink-dim italic placeholder:text-[#4a5568] hover:border-panel-edge hover:bg-bg hover:text-ink focus:border-panel-edge focus:bg-bg focus:text-ink"
+      value={draft}
+      onChange={(event) => setDraft(event.target.value)}
+      onBlur={() => perform('comment_node', { node_id: node.id, comment: draft })}
+      {...tooltipHandlers(NODE_NOTES_TIP)}
+    />
+  );
+}
+
+function fitHeightToContent(textarea: HTMLTextAreaElement | null): void {
+  if (!textarea) return;
+  textarea.style.height = 'auto';
+  textarea.style.height = `${textarea.scrollHeight}px`;
+}

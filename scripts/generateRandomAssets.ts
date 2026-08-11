@@ -1,4 +1,4 @@
-import { generateAssetKit } from '../assets/generation/assetKit';
+import { generateAssetKit } from '@/features/asset-library/generation/assetKit';
 import { appendKitToDataFiles } from './assetKit/appendKitToDataFiles';
 import {
   CULTURES_PATH,

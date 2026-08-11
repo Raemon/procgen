@@ -1,6 +1,6 @@
-import type { WorldSampler } from '../../procgen/worldSampler';
-import type { TileAssets } from '../../assets/tiles/tileAssets';
-import { isWalkableTile } from '../../world/tileWalkability';
+import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
+import type { TileAssets } from '@/features/asset-library/tiles/tileAssets';
+import { isWalkableTile } from '@/features/game/tileWalkability';
 import { cellKey } from './explorationTrace';
 
 export type TileIdProbe = (x: number, y: number) => number;

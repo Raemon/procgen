@@ -1,11 +1,11 @@
-import '../world/puzzles/kinds/index';
-import { chunkExitsOf, openExitCount, CLOSED } from '../procgen/labyrinth/chunkExits';
-import { roleOf, ROOM } from '../procgen/labyrinth/chunkRole';
-import { ringOf } from '../procgen/labyrinth/chunkRing';
-import { labyrinthKnobsFrom, type LabyrinthKnobs } from '../procgen/labyrinth/labyrinthKnobs';
-import { hashString } from '../procgen/random/hashString';
-import { mulberry32 } from '../procgen/random/mulberry32';
-import { challengeForRing } from '../world/puzzles/rooms/roomDifficulty';
+import '@/features/game/puzzles/kinds';
+import { chunkExitsOf, openExitCount, CLOSED } from '@/features/asset-library/worlds/labyrinth/chunkExits';
+import { roleOf, ROOM } from '@/features/asset-library/worlds/labyrinth/chunkRole';
+import { ringOf } from '@/features/asset-library/worlds/labyrinth/chunkRing';
+import { labyrinthKnobsFrom, type LabyrinthKnobs } from '@/features/asset-library/worlds/labyrinth/labyrinthKnobs';
+import { hashString } from '@/features/asset-library/worlds/random/hashString';
+import { mulberry32 } from '@/features/asset-library/worlds/random/mulberry32';
+import { challengeForRing } from '@/features/game/puzzles/rooms/roomDifficulty';
 
 const GRAPH_RINGS = 8;
 const HISTOGRAM_RINGS = 12;

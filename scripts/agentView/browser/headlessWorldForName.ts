@@ -1,5 +1,5 @@
-import { examplePipelines } from '../../../procgen/presets/examplePipelines';
-import type { PipelineState } from '../../../procgen/pipeline/pipelineState';
+import { examplePipelines } from '@/features/asset-library/worlds/presets/examplePipelines';
+import type { PipelineState } from '@/features/asset-library/worlds/pipeline/pipelineState';
 import { worldFromPipelineState, worldFromRepoData, type HeadlessWorld } from '../../headlessWorld';
 import { REPO_PIPELINE_WORLD_NAME } from '../worldViewRequest';
 

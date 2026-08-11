@@ -1,11 +1,11 @@
-import '../procgen/nodes';
-import { infiniteLabyrinth } from '../procgen/presets/infiniteLabyrinth';
-import { volcanicIslands } from '../procgen/presets/volcanicIslands';
-import { buildChunkMeshGroup } from '../world/render/view3d/worldMeshes';
+import '@/features/asset-library/worlds/nodes';
+import { infiniteLabyrinth } from '@/features/asset-library/worlds/presets/infiniteLabyrinth';
+import { volcanicIslands } from '@/features/asset-library/worlds/presets/volcanicIslands';
+import { buildChunkMeshGroup } from '@/features/game/render/view3d/worldMeshes';
 import { drawLoadLine, drawLoadOf } from './chunkDrawLoad';
 import { worldFromPipelineState, type HeadlessWorld } from './headlessWorld';
 import { stubTheCanvasTexturesAreRasterizedOnto } from './stubCanvasForHeadlessTextures';
-import type { PipelineState } from '../procgen/pipeline/pipelineState';
+import type { PipelineState } from '@/features/asset-library/worlds/pipeline/pipelineState';
 
 const OPEN_SKY_CHUNKS = [
   [0, 0],

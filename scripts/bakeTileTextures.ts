@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { MATERIAL_SYNTHS } from '../assets/textures/materialCatalog';
-import type { MaterialSynth, TextureFace } from '../assets/textures/materialSynth';
-import { normalRgbAt } from '../assets/textures/normalFromHeightGrid';
+import { MATERIAL_SYNTHS } from '@/features/asset-library/textures/materialCatalog';
+import type { MaterialSynth, TextureFace } from '@/features/asset-library/textures/materialSynth';
+import { normalRgbAt } from '@/features/asset-library/textures/normalFromHeightGrid';
 import { pngBuffer, type RgbImage } from './png/writePng';
 
 const TEXTURE_SIZE = 256;

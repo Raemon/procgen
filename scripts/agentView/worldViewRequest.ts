@@ -1,4 +1,4 @@
-import type { FacingIndex } from '../../world/facing';
+import type { FacingIndex } from '@/features/game/facing';
 
 export type WorldViewStyle = 'god' | 'character';
 

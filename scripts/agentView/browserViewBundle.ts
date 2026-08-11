@@ -1,7 +1,7 @@
 import { build, type Plugin } from 'esbuild';
 
-const BROWSER_ENTRY_POINT = 'tools/agentView/browser/renderWorldViewInPage.ts';
-const REPO_DATA_FILE_SYSTEM = 'tools/agentView/browser/repoDataFilesAsFileSystem.ts';
+const BROWSER_ENTRY_POINT = 'scripts/agentView/browser/renderWorldViewInPage.ts';
+const REPO_DATA_FILE_SYSTEM = 'scripts/agentView/browser/repoDataFilesAsFileSystem.ts';
 
 export async function browserViewBundle(): Promise<string> {
   const result = await build({

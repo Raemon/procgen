@@ -1,8 +1,8 @@
-import type { Marker, WorldSampler } from '../../../procgen/worldSampler';
-import type { CellPoint } from '../../../world/nearestWalkable';
-import type { TileAssets } from '../../../assets/tiles/tileAssets';
-import { asciiCellAt, pointOverlayLookup, type AsciiCell } from '../../../world/render/ascii/asciiCells';
-import { viewportCenteredOn, type AsciiViewport } from '../../../world/render/ascii/asciiViewport';
+import type { Marker, WorldSampler } from '@/features/asset-library/worlds/worldSampler';
+import type { CellPoint } from '@/features/game/nearestWalkable';
+import type { TileAssets } from '@/features/asset-library/tiles/tileAssets';
+import { asciiCellAt, pointOverlayLookup, type AsciiCell } from '@/features/game/render/ascii/asciiCells';
+import { viewportCenteredOn, type AsciiViewport } from '@/features/game/render/ascii/asciiViewport';
 
 const THUMB_COLUMNS = 110;
 const THUMB_ROWS = 56;

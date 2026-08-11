@@ -1,5 +1,5 @@
-import { CreatureAssets } from '../../../assets/creatures/creatureAssets';
-import type { WorldViewDeps } from '../../../world/render/worldViewDeps';
+import { CreatureAssets } from '@/features/asset-library/creatures/creatureAssets';
+import type { WorldViewDeps } from '@/features/game/render/worldViewDeps';
 import type { HeadlessWorld } from '../../headlessWorld';
 
 const NO_ITEM_ASSETS = { all: () => [], byId: () => undefined, onChange: () => () => {} };

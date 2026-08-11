@@ -1,5 +1,5 @@
 import { writeFileSync } from 'node:fs';
-import { defaultPieces } from '../assets/pieces/defaultPieces';
+import { defaultPieces } from '@/features/asset-library/pieces/defaultPieces';
 
 const OUTPUT_PATH = 'data/pieces.json';
 

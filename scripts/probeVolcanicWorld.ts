@@ -1,11 +1,11 @@
-import '../procgen/nodes';
-import { CHUNK_SIZE } from '../procgen/chunk';
-import type { PipelineState } from '../procgen/pipeline/pipelineState';
-import { volcanicIslands } from '../procgen/presets/volcanicIslands';
-import { PRESENT } from '../procgen/time/worldTime';
-import type { WorldPoint } from '../procgen/values/chunkValues';
-import { BORN, CHAIN_ID, CONE_HEIGHT, CONE_RADIUS, pointNumber } from '../procgen/values/pointData';
-import { asField, asPoints } from '../procgen/values/valueAccess';
+import '@/features/asset-library/worlds/nodes';
+import { CHUNK_SIZE } from '@/features/asset-library/worlds/chunk';
+import type { PipelineState } from '@/features/asset-library/worlds/pipeline/pipelineState';
+import { volcanicIslands } from '@/features/asset-library/worlds/presets/volcanicIslands';
+import { PRESENT } from '@/features/asset-library/worlds/time/worldTime';
+import type { WorldPoint } from '@/features/asset-library/worlds/values/chunkValues';
+import { BORN, CHAIN_ID, CONE_HEIGHT, CONE_RADIUS, pointNumber } from '@/features/asset-library/worlds/values/pointData';
+import { asField, asPoints } from '@/features/asset-library/worlds/values/valueAccess';
 import { worldFromPipelineState } from './headlessWorld';
 
 const TIMES = [-4_500_000, -2_500_000, -1_000_000, PRESENT];

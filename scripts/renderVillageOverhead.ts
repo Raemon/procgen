@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
-import '../procgen/nodes';
-import { tileIdOfVoxel } from '../procgen/structureOverlay/packedVoxel';
+import '@/features/asset-library/worlds/nodes';
+import { tileIdOfVoxel } from '@/features/asset-library/worlds/structureOverlay/packedVoxel';
 import { villageFixtureState } from './village/villageFixtureWorld';
 import { worldFromPipelineState, type HeadlessWorld } from './headlessWorld';
 import { pngBuffer, type RgbImage } from './png/writePng';

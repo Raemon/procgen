@@ -1,7 +1,7 @@
-import '../procgen/nodes';
-import { defaultTileId } from '../assets/tiles/defaultTiles';
+import '@/features/asset-library/worlds/nodes';
+import { defaultTileId } from '@/features/asset-library/tiles/defaultTiles';
 import { villageFixtureState } from './village/villageFixtureWorld';
-import type { NodeInstance } from '../procgen/pipeline/pipelineState';
+import type { NodeInstance } from '@/features/asset-library/worlds/pipeline/pipelineState';
 import { worldFromPipelineState, type HeadlessWorld } from './headlessWorld';
 import {
   firstCenterOfNode,

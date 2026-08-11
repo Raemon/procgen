@@ -1,4 +1,4 @@
-import type { CellPoint } from '../../world/nearestWalkable';
+import type { CellPoint } from '@/features/game/nearestWalkable';
 import type { WalkableProbe } from './cachedWorldProbes';
 import {
   cellKey,

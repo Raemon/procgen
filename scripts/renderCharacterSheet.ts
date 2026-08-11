@@ -1,12 +1,12 @@
 import { writeFileSync } from 'node:fs';
-import { humanoidBillboard } from '../assets/creatures/art/humanoidBillboard';
-import { WANDERING_TRADER_PALETTE } from '../assets/creatures/art/humanoidPalette';
+import { humanoidBillboard } from '@/features/asset-library/creatures/art/humanoidBillboard';
+import { WANDERING_TRADER_PALETTE } from '@/features/asset-library/creatures/art/humanoidPalette';
 import {
   CHARACTER_ANIMATIONS,
   CHARACTER_ROTATIONS,
   framesOf,
-} from '../assets/characters/characterBillboard';
-import { spriteGridSize, type SpriteArt } from '../assets/tiles/spriteArt';
+} from '@/features/asset-library/characters/characterBillboard';
+import { spriteGridSize, type SpriteArt } from '@/features/asset-library/tiles/spriteArt';
 import { pngBuffer } from './png/writePng';
 
 const OUTPUT_PATH = 'docs/character-sheet-preview.png';
