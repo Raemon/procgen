@@ -28,6 +28,7 @@ export function LibraryRow({ folder, entry }: { folder: LibraryFolder; entry: Li
         onClick={() => toggle(folder, entry.key)}
       >
         {entry.icon}
+        {entry.rowAdornment}
         <span className="min-w-0 flex-1 truncate">{entry.name}</span>
       </button>
       <LibraryRowActions entry={entry} />

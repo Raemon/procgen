@@ -5,6 +5,7 @@ export interface LibraryEntry {
   key: string;
   name: string;
   icon: ReactNode;
+  rowAdornment?: ReactNode;
   tip: TooltipContent;
   duplicate?: () => void;
   remove?: () => void;

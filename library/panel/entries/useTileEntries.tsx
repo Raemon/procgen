@@ -10,6 +10,11 @@ export function useTileEntries(): LibraryEntry[] {
     key: String(tile.id),
     name: tile.name,
     icon: <TileIcon tile={tile} />,
+    rowAdornment: (
+      <span className="w-4 shrink-0 text-center font-mono text-sm" style={{ color: tile.color }}>
+        {tile.symbol}
+      </span>
+    ),
     tip: {
       title: tile.name,
       body: `tile ${tile.id} · symbol “${tile.symbol}” · ${tile.walkable ? 'walkable' : 'blocking'}`,
