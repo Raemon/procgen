@@ -56,6 +56,7 @@ import { checkFeatureExtraction } from '@/features/asset-library/worlds/__tests_
 import { checkFeatureViewLayout } from '@/features/asset-library/worlds/__tests__/featureViewLayout.test';
 import { routeHandlerTests } from './routeHandlers.test';
 import { bootstrapPersistenceTests } from './bootstrapPersistence.test';
+import { websocketUpgradeRoutingTests } from '@/features/game/__tests__/websocketUpgradeRouting.test';
 
 function check(name: string, condition: boolean): void {
   test(name, () => assert.ok(condition));
@@ -118,3 +119,4 @@ describe('feature extraction', () => checkFeatureExtraction(check));
 describe('the features map layout', () => checkFeatureViewLayout(check));
 describe('Route Handlers', routeHandlerTests);
 describe('browser persistence bootstrap', bootstrapPersistenceTests);
+describe('websocket upgrade routing', websocketUpgradeRoutingTests);

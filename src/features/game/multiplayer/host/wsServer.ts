@@ -1,4 +1,5 @@
-import type { Server } from 'node:http';
+import type { IncomingMessage, Server } from 'node:http';
+import type { Duplex } from 'node:stream';
 import { WebSocketServer, type RawData, type WebSocket } from 'ws';
 import { decodeClient } from '../client/codec';
 import {
@@ -31,7 +32,15 @@ const HELLO_TIMEOUT_MS = 5000;
 const HEARTBEAT_MS = 20_000;
 const MAX_INPUT_VIOLATIONS = 100;
 
-export function attachWebSocket(httpServer: Server, deps: WsDeps): () => void {
+export const GAME_SOCKET_PATH = '/api/v1/game/socket';
+
+export type UpgradeHandler = (req: IncomingMessage, socket: Duplex, head: Buffer) => unknown;
+
+export function attachWebSocket(
+  httpServer: Server,
+  deps: WsDeps,
+  handleUpgradeTheGameDoesNotOwn: UpgradeHandler,
+): () => void {
   const wss = new WebSocketServer({ noServer: true });
   const freshlyMinted = new WeakMap<object, string>();
   wss.on('headers', (headers, req) => {
@@ -40,8 +49,8 @@ export function attachWebSocket(httpServer: Server, deps: WsDeps): () => void {
   });
   httpServer.on('upgrade', (req, socket, head) => {
     const url = new URL(req.url ?? '/', 'http://localhost');
-    if (url.pathname !== '/api/v1/game/socket') {
-      socket.destroy();
+    if (url.pathname !== GAME_SOCKET_PATH) {
+      handleUpgradeTheGameDoesNotOwn(req, socket, head);
       return;
     }
     const known = characterIdOfRequest(deps.config.serverSecret, req);

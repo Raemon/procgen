@@ -2,6 +2,7 @@ import { createServer } from 'node:http';
 import next from 'next';
 import { createProcgenServices } from '@/infrastructure/server/procgenServices';
 import { setProcessServices } from '@/infrastructure/server/processServices';
+import { hotReloadUpgradesBelongToNextInDev } from '@/infrastructure/server/hotReloadUpgrades';
 
 async function startServer(): Promise<void> {
   const dev = process.env.NODE_ENV !== 'production';
@@ -17,7 +18,10 @@ async function startServer(): Promise<void> {
   const server = createServer((request, response) => {
     void handleNextRequest(request, response);
   });
-  const detachGameSocket = services.attachGameSocket(server);
+  const detachGameSocket = services.attachGameSocket(
+    server,
+    hotReloadUpgradesBelongToNextInDev(dev, app.getUpgradeHandler()),
+  );
   const close = shutdownOnce(async () => {
     detachGameSocket();
     await services.stop();

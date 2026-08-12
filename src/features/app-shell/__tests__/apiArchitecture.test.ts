@@ -29,6 +29,7 @@ export function checkApiArchitecture(check: (name: string, condition: boolean) =
   const server = readFileSync('server.ts', 'utf8');
   check('the custom server delegates ordinary HTTP to Next', server.includes('handleNextRequest(request, response)'));
   check('the custom server owns the Game WebSocket attachment', server.includes('attachGameSocket'));
+  check('the custom server leaves Next its own upgrades, so dev hot reload survives', server.includes('app.getUpgradeHandler()'));
 }
 
 function nextRoutePaths(root: string): string[] {

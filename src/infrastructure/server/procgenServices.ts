@@ -11,7 +11,7 @@ import { GameLoop } from '@/features/game/multiplayer/game/gameLoop';
 import { SnapshotFeed } from '@/features/game/multiplayer/game/snapshotFeed';
 import { createWorldHost } from '@/features/game/multiplayer/game/worldHost';
 import type { Connection } from '@/features/game/multiplayer/host/connection';
-import { attachWebSocket } from '@/features/game/multiplayer/host/wsServer';
+import { attachWebSocket, type UpgradeHandler } from '@/features/game/multiplayer/host/wsServer';
 import { EventLoopLagMonitor } from '@/features/game/performance/eventLoopLagMonitor';
 import { loadServerConfig, type ServerConfig } from './config';
 import { initStore, type Store } from './persistence/db';
@@ -27,7 +27,7 @@ export interface ProcgenServices {
   loop: GameLoop;
   documentChanged(name: string): void;
   eventLoopLagMs(): number;
-  attachGameSocket(server: HttpServer): () => void;
+  attachGameSocket(server: HttpServer, handleUpgradeTheGameDoesNotOwn: UpgradeHandler): () => void;
   stop(): Promise<void>;
 }
 
@@ -60,18 +60,22 @@ export async function createProcgenServices(): Promise<ProcgenServices> {
     loop,
     documentChanged: (name) => afterDocChanged(docSync, name),
     eventLoopLagMs: () => eventLoopLag.latestLagMs(),
-    attachGameSocket: (server) =>
-      attachWebSocket(server, {
-        config,
-        store,
-        registry,
-        feed,
-        chat,
-        loop,
-        connections,
-        worldHost,
-        writeBehind,
-      }),
+    attachGameSocket: (server, handleUpgradeTheGameDoesNotOwn) =>
+      attachWebSocket(
+        server,
+        {
+          config,
+          store,
+          registry,
+          feed,
+          chat,
+          loop,
+          connections,
+          worldHost,
+          writeBehind,
+        },
+        handleUpgradeTheGameDoesNotOwn,
+      ),
     stop: async () => {
       loop.stop();
       writeBehind.stop();
