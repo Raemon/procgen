@@ -64,7 +64,7 @@ function replaceNodeWithType(
   state.nodes[index] = node;
 }
 
-function addRandomNode(
+export function addRandomNode(
   state: PipelineState,
   rng: RandomStream,
   tileIds: readonly number[],

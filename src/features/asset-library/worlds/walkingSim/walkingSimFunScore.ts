@@ -10,9 +10,17 @@ const CELLS_SEEN_FOR_A_REAL_WALK = 900;
 const CELLS_SEEN_FOR_A_WHOLE_WORLD = 6000;
 const SEALED_POCKET_SCORE_FLOOR = 0.25;
 
+const ROUNDEDNESS_FLOOR = 0.6;
+
 export function walkingSimFunScore(m: WalkingSimMeasurements): WalkingSimScore {
   const readings = [...pacingReadings(m), ...sceneryReadings(m), ...choiceReadings(m), ...learningReadings(m)];
-  return { overall: penaltyFor(m) * weightedMean(readings), readings };
+  const rounded = weightedMean(readings) * weakestReadingFactor(readings);
+  return { overall: penaltyFor(m) * rounded, readings };
+}
+
+function weakestReadingFactor(readings: readonly MetricReading[]): number {
+  const weakest = Math.min(...readings.map((each) => each.score));
+  return ROUNDEDNESS_FLOOR + (1 - ROUNDEDNESS_FLOOR) * weakest;
 }
 
 function pacingReadings(m: WalkingSimMeasurements): MetricReading[] {
