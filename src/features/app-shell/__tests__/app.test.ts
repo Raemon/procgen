@@ -52,6 +52,7 @@ import { checkPerformanceReadouts } from '@/features/game/__tests__/performanceR
 import { checkTileHoverReadout } from '@/features/game/__tests__/tileHoverReadout.test';
 import { checkApiArchitecture } from './apiArchitecture.test';
 import { checkPanelHintsRespectTheToggle } from './panelHintsRespectTheToggle.test';
+import { checkWalkingSimFun } from '@/features/asset-library/worlds/__tests__/walkingSimFun.test';
 import { checkFeatureExtraction } from '@/features/asset-library/worlds/__tests__/featureExtraction.test';
 import { checkFeatureViewLayout } from '@/features/asset-library/worlds/__tests__/featureViewLayout.test';
 import { routeHandlerTests } from './routeHandlers.test';
@@ -114,6 +115,7 @@ describe('performance readouts', () => checkPerformanceReadouts(check));
 describe('the hovered tile readout', () => checkTileHoverReadout(check));
 describe('the API architecture', () => checkApiArchitecture(check));
 describe('panel hints', () => checkPanelHintsRespectTheToggle(check));
+describe('the walking simulator benchmark', () => checkWalkingSimFun(check));
 describe('feature extraction', () => checkFeatureExtraction(check));
 describe('the features map layout', () => checkFeatureViewLayout(check));
 describe('Route Handlers', routeHandlerTests);
