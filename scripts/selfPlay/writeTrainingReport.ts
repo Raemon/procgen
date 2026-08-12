@@ -17,23 +17,32 @@ import {
 import { thumbnailHtml } from '../explore/report/asciiThumbnail';
 import { trainingReportHtml, type ReportElite } from './trainingReportHtml';
 
-export const REPORT_DIR = join(process.cwd(), 'dist', 'selfPlay');
+export const TRAINING_REPORT_DIR = join(process.cwd(), 'dist', 'selfPlay');
+export const RANKING_REPORT_DIR = join(process.cwd(), 'dist', 'walkingSimRank');
 
 const ELITES_SHOWN = 12;
 
 export function writeTrainingReport(
+  reportDir: string,
   elites: readonly ScoredWorld[],
   trajectory: readonly GenerationRecord[],
-  settings: TrainingSettings,
+  headline: string,
   stillRunning: boolean,
 ): void {
-  mkdirSync(REPORT_DIR, { recursive: true });
-  const shown = elites.slice(0, ELITES_SHOWN).map(reportEliteOf);
-  writeFileSync(join(REPORT_DIR, 'trajectory.json'), `${JSON.stringify(trajectory, null, 2)}\n`);
+  mkdirSync(reportDir, { recursive: true });
+  const shown = elites.slice(0, ELITES_SHOWN).map((world, at) => reportEliteOf(reportDir, world, at));
+  writeFileSync(join(reportDir, 'trajectory.json'), `${JSON.stringify(trajectory, null, 2)}\n`);
   writeFileSync(
-    join(REPORT_DIR, 'index.html'),
-    trainingReportHtml({ headline: headlineOf(settings, trajectory), trajectory, elites: shown, stillRunning }),
+    join(reportDir, 'index.html'),
+    trainingReportHtml({ headline, trajectory, elites: shown, stillRunning }),
   );
+}
+
+export function trainingHeadlineOf(
+  settings: TrainingSettings,
+  trajectory: readonly GenerationRecord[],
+): string {
+  return headlineOf(settings, trajectory);
 }
 
 function headlineOf(
@@ -49,9 +58,9 @@ function headlineOf(
   ].join(' · ');
 }
 
-function reportEliteOf(world: ScoredWorld, position: number): ReportElite {
+function reportEliteOf(reportDir: string, world: ScoredWorld, position: number): ReportElite {
   const fileStem = `elite-${String(position + 1).padStart(2, '0')}`;
-  writeGenomeFiles(world, fileStem);
+  writeGenomeFiles(reportDir, world, fileStem);
   return {
     rank: position + 1,
     fun: world.score.overall,
@@ -64,15 +73,15 @@ function reportEliteOf(world: ScoredWorld, position: number): ReportElite {
   };
 }
 
-function writeGenomeFiles(world: ScoredWorld, fileStem: string): void {
+function writeGenomeFiles(reportDir: string, world: ScoredWorld, fileStem: string): void {
   const { palette } = worldOfGenome(world.genome);
-  writeFileSync(join(REPORT_DIR, `${fileStem}.genome.json`), genomeAsJson(world.genome));
+  writeFileSync(join(reportDir, `${fileStem}.genome.json`), genomeAsJson(world.genome));
   writeFileSync(
-    join(REPORT_DIR, `${fileStem}.pipeline.json`),
+    join(reportDir, `${fileStem}.pipeline.json`),
     `${JSON.stringify(world.genome.pipeline, null, 2)}\n`,
   );
   writeFileSync(
-    join(REPORT_DIR, `${fileStem}.tiles.json`),
+    join(reportDir, `${fileStem}.tiles.json`),
     `${JSON.stringify(tilesAsStoredJson(palette.tiles), null, 2)}\n`,
   );
 }

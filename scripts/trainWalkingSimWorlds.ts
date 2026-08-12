@@ -7,7 +7,11 @@ import {
   type TrainingRun,
 } from '@/features/asset-library/worlds/selfPlay/trainingLoop';
 import { trainingSettingsOf } from './selfPlay/trainingOptions';
-import { REPORT_DIR, writeTrainingReport } from './selfPlay/writeTrainingReport';
+import {
+  TRAINING_REPORT_DIR,
+  trainingHeadlineOf,
+  writeTrainingReport,
+} from './selfPlay/writeTrainingReport';
 
 const settings = trainingSettingsOf(process.argv.slice(2));
 const startedAt = Date.now();
@@ -18,7 +22,13 @@ reportRun(runTraining(settings, reportGeneration));
 function reportGeneration(record: GenerationRecord, archive: EliteArchive): void {
   trajectory.push(record);
   console.log(generationLine(record));
-  writeTrainingReport(archive.rankedByFun(), trajectory, settings, true);
+  writeTrainingReport(
+    TRAINING_REPORT_DIR,
+    archive.rankedByFun(),
+    trajectory,
+    trainingHeadlineOf(settings, trajectory),
+    true,
+  );
 }
 
 function generationLine(record: GenerationRecord): string {
@@ -36,9 +46,15 @@ function generationLine(record: GenerationRecord): string {
 }
 
 function reportRun(run: TrainingRun): void {
-  writeTrainingReport(run.archive.rankedByFun(), run.trajectory, settings, false);
+  writeTrainingReport(
+    TRAINING_REPORT_DIR,
+    run.archive.rankedByFun(),
+    run.trajectory,
+    trainingHeadlineOf(settings, run.trajectory),
+    false,
+  );
   console.log(finishedLine(run));
-  console.log(`report: ${join(REPORT_DIR, 'index.html')}`);
+  console.log(`report: ${join(TRAINING_REPORT_DIR, 'index.html')}`);
 }
 
 function finishedLine(run: TrainingRun): string {
