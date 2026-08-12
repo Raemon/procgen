@@ -4,6 +4,7 @@ import { randomWorldPipeline } from '../randomize/randomWorldPipeline';
 import type { PipelineState } from '../pipeline/pipelineState';
 import { sanitizePipeline } from '../pipeline/sanitizePipeline';
 import { chance, rollInt } from '../randomize/randomRolls';
+import { settledPipeline } from './settleTheWorld';
 import { worldPaletteOfKit } from './worldPalette';
 
 export interface WorldGenome {
@@ -18,13 +19,21 @@ export const LARGEST_PALETTE = 9;
 export function rolledGenome(rng: RandomStream): WorldGenome {
   const kitSeed = rollInt(rng, 1, 999_999);
   const paletteSize = rollInt(rng, SMALLEST_PALETTE, LARGEST_PALETTE);
-  const tileIds = worldPaletteOfKit(kitSeed, paletteSize).paletteIds;
-  return { kitSeed, paletteSize, pipeline: rolledPipeline(rng, tileIds) };
+  const palette = worldPaletteOfKit(kitSeed, paletteSize);
+  return {
+    kitSeed,
+    paletteSize,
+    pipeline: rolledPipeline(rng, palette.paletteIds, palette.culture.id),
+  };
 }
 
-export function rolledPipeline(rng: RandomStream, tileIds: readonly number[]): PipelineState {
+export function rolledPipeline(
+  rng: RandomStream,
+  tileIds: readonly number[],
+  cultureId: number,
+): PipelineState {
   const rolled = chance(rng, 0.5) ? anyNodePipeline(rng, tileIds) : randomWorldPipeline(rng, tileIds);
-  return sanitizePipeline(rolled);
+  return settledPipeline(sanitizePipeline(rolled), rng, cultureId);
 }
 
 export function genomeFromJson(raw: unknown): WorldGenome {

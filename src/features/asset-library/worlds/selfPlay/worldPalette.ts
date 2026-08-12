@@ -1,4 +1,6 @@
 import { generateAssetKit } from '@/features/asset-library/generation/assetKit';
+import type { Culture } from '@/features/asset-library/cultures/cultureDef';
+import type { Piece } from '@/features/asset-library/pieces/pieceDef';
 import type { TileDef } from '@/features/asset-library/tiles/tileDef';
 import { mulberry32 } from '../random/mulberry32';
 import { shuffled } from '../randomize/randomRolls';
@@ -6,6 +8,8 @@ import { shuffled } from '../randomize/randomRolls';
 export interface WorldPalette {
   name: string;
   tiles: TileDef[];
+  pieces: Piece[];
+  culture: Culture;
   paletteIds: number[];
 }
 
@@ -23,6 +27,8 @@ export function worldPaletteOfKit(kitSeed: number, paletteSize: number): WorldPa
   return {
     name: kit.name,
     tiles: kit.tiles,
+    pieces: kit.pieces,
+    culture: kit.culture,
     paletteIds: paletteMostlyGround(kit.tiles, paletteSize, kitSeed),
   };
 }

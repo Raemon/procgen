@@ -1,5 +1,6 @@
 import type { RandomStream } from '../random/mulberry32';
 import { sanitizePipeline } from '../pipeline/sanitizePipeline';
+import { clonedState } from '../randomize/clonedState';
 import { permutedNodeCombination } from '../randomize/permuteNodeCombination';
 import { permutedSliderParams } from '../randomize/permuteSliderParams';
 import { clamped, pick, rollInt } from '../randomize/randomRolls';
@@ -9,7 +10,8 @@ import {
   SMALLEST_PALETTE,
   type WorldGenome,
 } from './worldGenome';
-import { worldPaletteOfKit } from './worldPalette';
+import { settledPipeline } from './settleTheWorld';
+import { worldPaletteOfKit, type WorldPalette } from './worldPalette';
 
 type GenomeMutation = (genome: WorldGenome, rng: RandomStream) => WorldGenome;
 
@@ -20,6 +22,7 @@ const GENOME_MUTATIONS: readonly GenomeMutation[] = [
   swappedAssetKit,
   resizedPalette,
   regrownPipeline,
+  settledBuildings,
 ];
 
 const MOST_MUTATIONS_AT_ONCE = 2;
@@ -57,9 +60,19 @@ function resizedPalette(genome: WorldGenome, rng: RandomStream): WorldGenome {
 }
 
 function regrownPipeline(genome: WorldGenome, rng: RandomStream): WorldGenome {
-  return { ...genome, pipeline: rolledPipeline(rng, paletteIdsOf(genome)) };
+  const palette = paletteOf(genome);
+  return { ...genome, pipeline: rolledPipeline(rng, palette.paletteIds, palette.culture.id) };
+}
+
+function settledBuildings(genome: WorldGenome, rng: RandomStream): WorldGenome {
+  const pipeline = settledPipeline(clonedState(genome.pipeline), rng, paletteOf(genome).culture.id);
+  return { ...genome, pipeline };
 }
 
 function paletteIdsOf(genome: WorldGenome): number[] {
-  return worldPaletteOfKit(genome.kitSeed, genome.paletteSize).paletteIds;
+  return paletteOf(genome).paletteIds;
+}
+
+function paletteOf(genome: WorldGenome): WorldPalette {
+  return worldPaletteOfKit(genome.kitSeed, genome.paletteSize);
 }
