@@ -44,7 +44,9 @@ An agent is created in one of two modes and stays in it for life.
 - **character** — a {{CHARACTER_SIZE}}x{{CHARACTER_SIZE}} window centered on
   you, but you only see the half-disc in front of you: tiles behind you are
   blank, and so is everything past your {{SIGHT_RADIUS}}-tile sight radius,
-  which is why the corners of the grid are blank too. The blank half is how you
+  which is why the corners of the grid are blank too. Ground standing twice
+  your height or taller blocks the line of sight: you see the wall, never past
+  it, so what lies behind stays blank until you walk around. The blank half is how you
   know which way you face — the observation never states it. That half-disc is
   exactly the ground the 2.5D character view renders before its fog closes in,
   which is first person and shows no more of the world than you are told. You move
@@ -306,7 +308,7 @@ function legendBlock(tileAssets: ReadOnlyTileAssets): string {
     );
   return [
     "- '@' = you",
-    "- ' ' = nothing generated here (in character mode, also: behind you, or fogged out past your sight radius)",
+    "- ' ' = nothing generated here (in character mode, also: behind you, fogged out past your sight radius, or hidden behind tall ground)",
     "- '?' = unrecognized tile",
     ...tiles,
   ].join('\n');
