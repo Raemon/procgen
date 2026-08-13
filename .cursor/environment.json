@@ -1,0 +1,19 @@
+{
+  "name": "procgen",
+  "user": "ubuntu",
+  "install": "bash .cursor/install.sh",
+  "start": "bash .cursor/start.sh",
+  "terminals": [
+    {
+      "name": "dev server",
+      "command": "npm run dev",
+      "description": "Next.js + custom game server on http://localhost:1111 (reads .env for DATABASE_URL)."
+    }
+  ],
+  "ports": [
+    {
+      "name": "dev server",
+      "port": 1111
+    }
+  ]
+}
