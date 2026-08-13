@@ -91,7 +91,13 @@ function candidateGenomesOf(state: RunState, settings: TrainingSettings): WorldG
 function nextCandidate(state: RunState): WorldGenome {
   const elites = state.archive.all();
   if (elites.length === 0 || chance(state.rng, FRESH_ROLL_SHARE)) return rolledGenome(state.rng);
-  return mutatedGenome(pick(state.rng, elites).genome, state.rng);
+  return mutatedGenome(lonelierParentOf(state, elites).genome, state.rng);
+}
+
+function lonelierParentOf(state: RunState, elites: readonly ScoredWorld[]): ScoredWorld {
+  const one = pick(state.rng, elites);
+  const other = pick(state.rng, elites);
+  return state.archive.lonelinessOf(one) >= state.archive.lonelinessOf(other) ? one : other;
 }
 
 function recordOf(

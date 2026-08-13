@@ -21,6 +21,14 @@ export class EliteArchive {
     return true;
   }
 
+  lonelinessOf(world: ScoredWorld): number {
+    const others = this.all().filter((elite) => elite !== world);
+    if (others.length === 0) return Number.MAX_SAFE_INTEGER;
+    return Math.min(
+      ...others.map((elite) => fingerprintDistance(world.fingerprint, elite.fingerprint)),
+    );
+  }
+
   private isAWeakerTwinOfAnElite(world: ScoredWorld, cell: string): boolean {
     for (const [sittingCell, sitting] of this.elites) {
       if (sittingCell === cell) continue;
