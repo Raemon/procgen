@@ -6,8 +6,8 @@
   "terminals": [
     {
       "name": "dev server",
-      "command": "npm run dev",
-      "description": "Next.js + custom game server on http://localhost:1111 (reads .env for DATABASE_URL)."
+      "command": "bash .cursor/start.sh && npm run dev",
+      "description": "Next.js + custom game server on http://localhost:1111 (reads .env for DATABASE_URL). Ensures Postgres is up first."
     }
   ],
   "ports": [
