@@ -14,10 +14,16 @@ async function startServer(): Promise<void> {
   await app.prepare();
   setProcessServices(services);
   const handleNextRequest = app.getRequestHandler();
+  const handleNextUpgrade = app.getUpgradeHandler();
   const server = createServer((request, response) => {
     void handleNextRequest(request, response);
   });
   const detachGameSocket = services.attachGameSocket(server);
+  server.on('upgrade', (request, socket, head) => {
+    const { pathname } = new URL(request.url ?? '/', 'http://localhost');
+    if (pathname === '/api/v1/game/socket') return;
+    void handleNextUpgrade(request, socket, head);
+  });
   const close = shutdownOnce(async () => {
     detachGameSocket();
     await services.stop();

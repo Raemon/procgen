@@ -40,10 +40,7 @@ export function attachWebSocket(httpServer: Server, deps: WsDeps): () => void {
   });
   httpServer.on('upgrade', (req, socket, head) => {
     const url = new URL(req.url ?? '/', 'http://localhost');
-    if (url.pathname !== '/api/v1/game/socket') {
-      socket.destroy();
-      return;
-    }
+    if (url.pathname !== '/api/v1/game/socket') return;
     const known = characterIdOfRequest(deps.config.serverSecret, req);
     const characterId = known ?? mintCharacterId();
     if (!known) freshlyMinted.set(req, characterId);
