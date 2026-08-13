@@ -55,6 +55,65 @@ export function cloneCorridorMazeState(): PipelineState {
   });
 }
 
+const STATIC_NOISE_SCRIPT = `const tiles = ctx.newTiles();
+const palette = [0, 2, 3, 4, 5];
+for (let i = 0; i < tiles.length; i++) {
+  const x = ctx.originX + (i % ctx.size);
+  const y = ctx.originY + Math.floor(i / ctx.size);
+  tiles[i] = palette[Math.floor(ctx.hash01(x, y, 'static') * palette.length)];
+}
+return tiles;`;
+
+export function staticNoiseState(): PipelineState {
+  return sanitizePipeline({
+    seed: 14,
+    nodes: [
+      {
+        id: 'n1',
+        type: 'customScript',
+        label: 'television static',
+        enabled: true,
+        params: { outputKind: 'tiles', code: STATIC_NOISE_SCRIPT },
+        inputs: {},
+        display: { mode: 'tileLayer' },
+      },
+    ],
+  });
+}
+
+export function populatedVariedState(): PipelineState {
+  const state = variedStructuredState();
+  return sanitizePipeline({
+    ...state,
+    nodes: [
+      ...state.nodes,
+      scatterMarkersNode('n9', 'wayshrines', 0.006, 0.42, 0.6, '✶', '#e0b040'),
+      scatterMarkersNode('n10', 'standing stones', 0.005, 0.52, 0.62, '▲', '#c2c2c2'),
+      scatterMarkersNode('n11', 'springs', 0.006, 0.36, 0.45, '◆', '#3fbf9f'),
+    ],
+  });
+}
+
+function scatterMarkersNode(
+  id: string,
+  label: string,
+  density: number,
+  maskAtLeast: number,
+  maskAtMost: number,
+  glyph: string,
+  color: string,
+) {
+  return {
+    id,
+    type: 'scatterPoints',
+    label,
+    enabled: true,
+    params: { density, maskAtLeast, maskAtMost },
+    inputs: { mask: 'n3' },
+    display: { mode: 'markers', tileId: -1, glyph, color },
+  };
+}
+
 export function variedStructuredState(): PipelineState {
   return sanitizePipeline({
     seed: 13,

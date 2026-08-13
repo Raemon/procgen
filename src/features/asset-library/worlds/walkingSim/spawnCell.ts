@@ -4,21 +4,35 @@ import type { WalkableProbe } from './worldProbes';
 
 const SPAWN_SEARCH_RADIUS = 48;
 const SPAWN_CANDIDATES_TRIED = 12;
-const SPAWN_SPACING = 8;
+const SPAWN_SPACING = 16;
+const WALKS_SPACING = 16;
 const ROOM_TO_WALK_CELLS = 300;
 
 export function spawnWithRoomToWalk(isWalkableAt: WalkableProbe): CellPoint | null {
+  return spawnsWithRoomToWalk(isWalkableAt, 1)[0] ?? null;
+}
+
+export function spawnsWithRoomToWalk(isWalkableAt: WalkableProbe, wanted: number): CellPoint[] {
+  const roomy: CellPoint[] = [];
   let roomiest: CellPoint | null = null;
   let roomiestReach = 0;
   for (const candidate of spawnCandidates(isWalkableAt)) {
+    if (!standsWellApartFrom(candidate, roomy)) continue;
     const reach = reachableFrom(candidate, isWalkableAt);
-    if (reach >= ROOM_TO_WALK_CELLS) return candidate;
+    if (reach >= ROOM_TO_WALK_CELLS) roomy.push(candidate);
+    if (roomy.length >= wanted) return roomy;
     if (reach > roomiestReach) {
       roomiest = candidate;
       roomiestReach = reach;
     }
   }
-  return roomiest;
+  return roomy.length > 0 ? roomy : roomiest ? [roomiest] : [];
+}
+
+function standsWellApartFrom(cell: CellPoint, chosen: readonly CellPoint[]): boolean {
+  return chosen.every(
+    (each) => Math.max(Math.abs(each.x - cell.x), Math.abs(each.y - cell.y)) >= WALKS_SPACING,
+  );
 }
 
 function spawnCandidates(isWalkableAt: WalkableProbe): CellPoint[] {

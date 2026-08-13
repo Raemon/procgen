@@ -6,7 +6,9 @@ import {
   fixtureTileAssets,
   FOREST_TILE,
   openPlainState,
+  populatedVariedState,
   samplerOfState,
+  staticNoiseState,
   variedStructuredState,
   WATER_TILE,
 } from './walkingSimFixtures';
@@ -17,15 +19,21 @@ const FIXTURE_WALK_SEED = 7;
 export function checkWalkingSimFun(check: (name: string, condition: boolean) => void): void {
   const plain = measuredFixture(openPlainState());
   const maze = measuredFixture(cloneCorridorMazeState());
+  const staticNoise = measuredFixture(staticNoiseState());
   const varied = measuredFixture(variedStructuredState());
+  const populated = measuredFixture(populatedVariedState());
 
-  check('every fixture world offers a spawn with room to walk, so no claim below is vacuous', [plain, maze, varied].every((each) => each.measurements.stepsWalked > 100));
+  check('every fixture world offers a spawn with room to walk, so no claim below is vacuous', [plain, maze, staticNoise, varied, populated].every((each) => each.measurements.stepsWalked > 100));
   check('a world scores the same on a second walk, so the benchmark can be trusted between runs', sameScore(varied, measuredFixture(variedStructuredState())));
   check('a varied world beats an open plain, since a plain never offers a choice or a new thing to learn', varied.score.overall > plain.score.overall);
   check('a varied world beats a maze of identical corridors, since repetition is not the same as structure', varied.score.overall > maze.score.overall);
+  check('a varied world beats television static, since surprise without learnable structure is only noise', varied.score.overall > staticNoise.score.overall);
+  check('the same terrain scores higher once there are discoveries to walk to', populated.score.overall > varied.score.overall);
+  check('everything static teaches arrives as ungraspable noise, while a varied world teaches in graspable bites', staticNoise.measurements.graspableLessonShare < varied.measurements.graspableLessonShare);
   check('an open plain offers no fork whose ways on lead anywhere different', plain.measurements.decisionPointsPer100Steps === 0);
   check('a varied world keeps handing the walker fresh views the whole way, not only at the start', varied.measurements.lessonSpread > plain.measurements.lessonSpread);
   check('regions of a varied world read as places, while a corridor maze looks the same everywhere', varied.measurements.regionalDifferentiation > maze.measurements.regionalDifferentiation);
+  check('a plain compresses to nothing while a varied world carries a real place grammar', plain.measurements.placeGrammarBits < varied.measurements.placeGrammarBits);
   check('trees block the eye and shallow water does not, so water gates the feet alone', sightIsBlockedByTreesButNotWater());
 }
 

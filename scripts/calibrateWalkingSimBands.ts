@@ -2,7 +2,9 @@ import {
   cloneCorridorMazeState,
   fixtureTileAssets,
   openPlainState,
+  populatedVariedState,
   samplerOfState,
+  staticNoiseState,
   variedStructuredState,
 } from '@/features/asset-library/worlds/__tests__/walkingSimFixtures';
 import { measureWalkingSimFun } from '@/features/asset-library/worlds/walkingSim/measureWalkingSimFun';
@@ -14,7 +16,9 @@ const CALIBRATION_WALK_SEED = 7;
 const calibrationWorlds = [
   { name: 'open plain', state: openPlainState() },
   { name: 'clone corridor maze', state: cloneCorridorMazeState() },
+  { name: 'television static', state: staticNoiseState() },
   { name: 'varied structured', state: variedStructuredState() },
+  { name: 'varied + discoveries', state: populatedVariedState() },
 ];
 
 for (const world of calibrationWorlds) printCalibration(world.name, world.state);
@@ -34,8 +38,11 @@ function printCalibration(name: string, state: ReturnType<typeof openPlainState>
   for (const reading of result.score.readings) console.log(readingLine(reading));
 }
 
-function walkShapeLine(result: { measurements: { stepsWalked: number; cellsSeen: number } }): string {
-  return `${result.measurements.stepsWalked} steps  ${result.measurements.cellsSeen} cells seen`;
+function walkShapeLine(result: {
+  walksTaken: number;
+  measurements: { stepsWalked: number; cellsSeen: number };
+}): string {
+  return `${result.walksTaken} walks  ${result.measurements.stepsWalked} steps  ${result.measurements.cellsSeen} cells seen`;
 }
 
 function readingLine(reading: { name: string; value: number; score: number }): string {

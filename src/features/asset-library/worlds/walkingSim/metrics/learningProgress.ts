@@ -1,53 +1,90 @@
 import type { CellPoint } from '@/features/game/nearestWalkable';
-import type { TileCharacterOf } from '../tileCharacter';
-import type { TileIdProbe } from '../worldProbes';
+import type { CellCharacterProbe } from '../cellCharacter';
 import { shareOf } from './meanOf';
 import { postcardsAlongPath } from './viewDistinctness';
 
 const STEPS_BETWEEN_LESSONS = 4;
 const WALK_CHAPTERS = 10;
+const NOISE_STARTS_ABOVE_NEW_PAIR_SHARE = 0.4;
+const ORIENTATION_STEPS = 24;
+const FEWEST_PAIRS_THAT_MEAN_LEARNING = 8;
 
 export interface LearningProgress {
   lessonsPer100Steps: number;
   lessonSpread: number;
-  lateLessonShare: number;
+  graspableLessonShare: number;
+}
+
+interface Lesson {
+  step: number;
+  newPairCount: number;
+  newPairShare: number;
 }
 
 export function learningProgress(
   path: readonly CellPoint[],
-  tileIdAt: TileIdProbe,
-  characterOf: TileCharacterOf,
+  characterAt: CellCharacterProbe,
 ): LearningProgress {
-  const lessons = firstSightings(
-    postcardsAlongPath(path, tileIdAt, characterOf, STEPS_BETWEEN_LESSONS),
-  );
-  const sightingCount = lessons.length;
+  const lessons = lessonsAmong(postcardsAlongPath(path, characterAt, STEPS_BETWEEN_LESSONS));
   return {
-    lessonsPer100Steps: shareOf(sightingCount, path.length) * 100,
+    lessonsPer100Steps: shareOf(lessons.length, path.length) * 100,
     lessonSpread: chapterSpreadOf(lessons, path.length),
-    lateLessonShare: shareOf(lateLessonsOf(lessons, path.length), sightingCount),
+    graspableLessonShare: graspableNewPairMassShare(lessons),
   };
 }
 
-function firstSightings(postcards: readonly string[]): number[] {
-  const alreadySeen = new Set<string>();
-  const sightingSteps: number[] = [];
-  postcards.forEach((postcard, index) => {
-    if (alreadySeen.has(postcard)) return;
-    alreadySeen.add(postcard);
-    sightingSteps.push(index * STEPS_BETWEEN_LESSONS);
-  });
-  return sightingSteps;
+function graspableNewPairMassShare(lessons: readonly Lesson[]): number {
+  const afterOrientation = lessons.filter((lesson) => lesson.step >= ORIENTATION_STEPS);
+  if (massOf(afterOrientation) < FEWEST_PAIRS_THAT_MEAN_LEARNING) return 0;
+  const graspableMass = massOf(afterOrientation.filter(isGraspable));
+  return shareOf(graspableMass, massOf(afterOrientation));
 }
 
-function chapterSpreadOf(lessonSteps: readonly number[], pathLength: number): number {
+function massOf(lessons: readonly Lesson[]): number {
+  return lessons.reduce((sum, lesson) => sum + lesson.newPairCount, 0);
+}
+
+function isGraspable(lesson: Lesson): boolean {
+  return lesson.newPairShare <= NOISE_STARTS_ABOVE_NEW_PAIR_SHARE;
+}
+
+function lessonsAmong(postcards: readonly string[]): Lesson[] {
+  const knownPairs = new Set<string>();
+  const lessons: Lesson[] = [];
+  postcards.forEach((postcard, index) => {
+    const pairs = characterPairsOf(postcard);
+    const newPairs = pairs.filter((pair) => !knownPairs.has(pair));
+    if (newPairs.length > 0) {
+      lessons.push(lessonOf(index, newPairs.length, pairs.length));
+    }
+    for (const pair of newPairs) knownPairs.add(pair);
+  });
+  return lessons;
+}
+
+function lessonOf(index: number, newPairCount: number, pairCount: number): Lesson {
+  return {
+    step: index * STEPS_BETWEEN_LESSONS,
+    newPairCount,
+    newPairShare: shareOf(newPairCount, pairCount),
+  };
+}
+
+function characterPairsOf(postcard: string): string[] {
+  const characters = postcard.split(',');
+  const pairs: string[] = [];
+  for (let at = 0; at + 1 < characters.length; at++) {
+    pairs.push(`${characters[at]}|${characters[at + 1]}`);
+  }
+  return pairs;
+}
+
+function chapterSpreadOf(lessons: readonly Lesson[], pathLength: number): number {
   if (pathLength === 0) return 0;
   const chapters = new Set(
-    lessonSteps.map((step) => Math.min(WALK_CHAPTERS - 1, Math.floor((step / pathLength) * WALK_CHAPTERS))),
+    lessons.map((each) =>
+      Math.min(WALK_CHAPTERS - 1, Math.floor((each.step / pathLength) * WALK_CHAPTERS)),
+    ),
   );
   return chapters.size / WALK_CHAPTERS;
-}
-
-function lateLessonsOf(lessonSteps: readonly number[], pathLength: number): number {
-  return lessonSteps.filter((step) => step >= pathLength / 2).length;
 }

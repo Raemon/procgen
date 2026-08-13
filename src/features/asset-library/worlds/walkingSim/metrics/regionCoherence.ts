@@ -1,6 +1,5 @@
+import type { CellCharacterProbe } from '../cellCharacter';
 import { cellFromKey } from '../cellGrid';
-import type { TileCharacterOf } from '../tileCharacter';
-import type { TileIdProbe } from '../worldProbes';
 import { entropyBitsOverCells } from './sceneryShares';
 import { meanOf } from './meanOf';
 
@@ -9,13 +8,12 @@ const SMALLEST_TELLING_REGION = 32;
 
 export function meanRegionEntropyBits(
   seen: ReadonlySet<string>,
-  tileIdAt: TileIdProbe,
-  characterOf: TileCharacterOf,
+  characterAt: CellCharacterProbe,
 ): number {
   const regions = [...cellsByRegion(seen).values()].filter(
     (cells) => cells.length >= SMALLEST_TELLING_REGION,
   );
-  return meanOf(regions.map((cells) => entropyBitsOverCells(cells, tileIdAt, characterOf)));
+  return meanOf(regions.map((cells) => entropyBitsOverCells(cells, characterAt)));
 }
 
 export function cellsByRegion(seen: ReadonlySet<string>): Map<string, string[]> {

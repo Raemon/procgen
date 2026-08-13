@@ -6,6 +6,7 @@ import type { OpaqueProbe } from './sightBlocking';
 import type { WalkableProbe } from './worldProbes';
 
 export const TOURIST_SIGHT_RADIUS = 10;
+const FAR_RING_SHARE = 0.75;
 
 export interface TouristLimits extends WalkLimits {
   sightRadius: number;
@@ -20,6 +21,7 @@ export interface TouristTrace {
   isovistAreaPerStep: number[];
   mysteryEdgesPerStep: number[];
   waysOnPerStep: number[];
+  farSeenPerStep: string[][];
   exhaustedRegion: boolean;
 }
 
@@ -71,6 +73,7 @@ function freshContext(
     isovistAreaPerStep: [],
     mysteryEdgesPerStep: [],
     waysOnPerStep: [],
+    farSeenPerStep: [],
     exhaustedRegion: false,
   };
   return { isWalkableAt, isOpaqueAt, limits, rng, isovists: new Map(), trace };
@@ -141,6 +144,18 @@ function recordStepTo(context: TouristWalkContext, cell: CellPoint, waysOn: numb
   trace.isovistAreaPerStep.push(isovist.length);
   trace.mysteryEdgesPerStep.push(mysteryEdgeCount(context, isovist));
   trace.waysOnPerStep.push(waysOn);
+  trace.farSeenPerStep.push(farRingKeysOf(cell, isovist, context.limits.sightRadius));
+}
+
+function farRingKeysOf(
+  eye: CellPoint,
+  isovist: readonly CellPoint[],
+  sightRadius: number,
+): string[] {
+  const farEnough = (sightRadius * FAR_RING_SHARE) ** 2;
+  return isovist
+    .filter((cell) => (cell.x - eye.x) ** 2 + (cell.y - eye.y) ** 2 >= farEnough)
+    .map((cell) => cellKey(cell.x, cell.y));
 }
 
 function absorbNewScenery(trace: TouristTrace, isovist: CellPoint[]): number {

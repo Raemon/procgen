@@ -18,11 +18,16 @@ const READING_SCALES: Array<[keyof WalkingSimMeasurements, number]> = [
   ['regionEntropyBits', 2.5],
   ['regionalDifferentiation', 1],
   ['viewDistinctness', 1],
+  ['placeGrammarBits', 3],
   ['decisionPointsPer100Steps', 40],
   ['meanBranchDivergence', 0.6],
   ['lessonsPer100Steps', 30],
   ['lessonSpread', 1],
-  ['lateLessonShare', 1],
+  ['graspableLessonShare', 1],
+  ['encountersPer100Steps', 10],
+  ['discoveryKinds', 8],
+  ['landmarkStepShare', 1],
+  ['landmarkHoldSteps', 25],
 ];
 
 const READING_WEIGHT = 0.5;

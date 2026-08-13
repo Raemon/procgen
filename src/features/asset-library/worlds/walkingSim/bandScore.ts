@@ -5,10 +5,19 @@ export interface MetricReading {
   weight: number;
 }
 
+const PLATEAU_TILT = 0.15;
+
 export function bandScore(value: number, lo: number, hi: number, falloff: number): number {
   const below = Math.max(0, lo - value);
   const above = Math.max(0, value - hi);
-  return Math.max(0, 1 - (below + above) / falloff);
+  if (below + above === 0) return 1 - PLATEAU_TILT * tiltFromSweetSpot(value, lo, hi);
+  return (1 - PLATEAU_TILT) * Math.max(0, 1 - (below + above) / falloff);
+}
+
+function tiltFromSweetSpot(value: number, lo: number, hi: number): number {
+  const halfWidth = (hi - lo) / 2;
+  if (halfWidth === 0) return 0;
+  return Math.abs(value - (lo + hi) / 2) / halfWidth;
 }
 
 export function reading(

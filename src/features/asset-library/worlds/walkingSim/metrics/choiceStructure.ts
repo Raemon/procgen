@@ -1,17 +1,20 @@
 import type { CellPoint } from '@/features/game/nearestWalkable';
+import type { CellCharacterProbe } from '../cellCharacter';
 import { CARDINAL_STEPS, cellKey } from '../cellGrid';
-import type { TileCharacterOf } from '../tileCharacter';
-import type { TileIdProbe, WalkableProbe } from '../worldProbes';
+import { spawnSitsAtCell, type NearbySpawnsProbe } from '../nearbySpawnsProbe';
+import type { WalkableProbe } from '../worldProbes';
 import { meanOf, shareOf } from './meanOf';
 import { sharesOfCounts, type ShareTally } from './sceneryShares';
 
 const HORIZON_CELLS = 400;
 const SMALLEST_MEANINGFUL_BRANCH = 12;
 const DECISION_POINTS_WEIGHED = 24;
-const DIVERGENT_ENOUGH_TO_MATTER = 0.25;
+const DIVERGENT_ENOUGH_TO_MATTER = 0.15;
 const SCENERY_WEIGHT = 0.6;
-const PAYOFF_WEIGHT = 0.25;
+const PAYOFF_WEIGHT = 0.1;
 const PROMISE_WEIGHT = 0.15;
+const SPOILS_WEIGHT = 0.15;
+const SPOILS_DENSITY_FOR_FULL_GAP = 0.03;
 
 export interface ChoiceStructure {
   decisionPointsPer100Steps: number;
@@ -20,8 +23,8 @@ export interface ChoiceStructure {
 
 export interface ChoiceProbes {
   isWalkableAt: WalkableProbe;
-  tileIdAt: TileIdProbe;
-  characterOf: TileCharacterOf;
+  characterAt: CellCharacterProbe;
+  spawnsNear: NearbySpawnsProbe;
   seen: ReadonlySet<string>;
 }
 
@@ -29,6 +32,7 @@ interface BranchFuture {
   shares: ShareTally;
   reachShare: number;
   unseenShare: number;
+  spoilsShare: number;
 }
 
 export function choiceStructure(path: readonly CellPoint[], probes: ChoiceProbes): ChoiceStructure {
@@ -78,16 +82,21 @@ function futureOfReach(reached: readonly CellPoint[], probes: ChoiceProbes): Bra
     shares: sharesOfCounts(characterCountsOf(reached, probes)),
     reachShare: reached.length / HORIZON_CELLS,
     unseenShare: shareOf(unseenCountOf(reached, probes.seen), reached.length),
+    spoilsShare: shareOf(spoilsCountOf(reached, probes), reached.length),
   };
 }
 
 function characterCountsOf(reached: readonly CellPoint[], probes: ChoiceProbes): ShareTally {
   const counts: ShareTally = new Map();
   for (const cell of reached) {
-    const character = probes.characterOf(probes.tileIdAt(cell.x, cell.y));
+    const character = probes.characterAt(cell.x, cell.y);
     counts.set(character, (counts.get(character) ?? 0) + 1);
   }
   return counts;
+}
+
+function spoilsCountOf(reached: readonly CellPoint[], probes: ChoiceProbes): number {
+  return reached.filter((cell) => spawnSitsAtCell(probes.spawnsNear, cell.x, cell.y)).length;
 }
 
 function unseenCountOf(reached: readonly CellPoint[], seen: ReadonlySet<string>): number {
@@ -165,7 +174,8 @@ function distanceBetween(one: BranchFuture, other: BranchFuture): number {
   const scenery = sceneryDistance(one.shares, other.shares);
   const payoff = relativeGap(one.reachShare, other.reachShare);
   const promise = Math.abs(one.unseenShare - other.unseenShare);
-  return SCENERY_WEIGHT * scenery + PAYOFF_WEIGHT * payoff + PROMISE_WEIGHT * promise;
+  const spoils = Math.min(1, Math.abs(one.spoilsShare - other.spoilsShare) / SPOILS_DENSITY_FOR_FULL_GAP);
+  return SCENERY_WEIGHT * scenery + PAYOFF_WEIGHT * payoff + PROMISE_WEIGHT * promise + SPOILS_WEIGHT * spoils;
 }
 
 function relativeGap(one: number, other: number): number {
