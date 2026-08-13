@@ -29,6 +29,8 @@ export function checkWalkingSimFun(check: (name: string, condition: boolean) => 
   check('a varied world beats a maze of identical corridors, since repetition is not the same as structure', varied.score.overall > maze.score.overall);
   check('a varied world beats television static, since surprise without learnable structure is only noise', varied.score.overall > staticNoise.score.overall);
   check('the same terrain scores higher once there are discoveries to walk to', populated.score.overall > varied.score.overall);
+  check('only a world with discoveries can tear the tourist between a promise and the unseen', populated.measurements.conflictsPer100Steps > varied.measurements.conflictsPer100Steps);
+  check('the tourist keeps most but not all of the promises a populated world shows it', populated.measurements.promiseKeptShare > 0.5 && populated.measurements.promiseKeptShare <= 1);
   check('everything static teaches arrives as ungraspable noise, while a varied world teaches in graspable bites', staticNoise.measurements.graspableLessonShare < varied.measurements.graspableLessonShare);
   check('an open plain offers no fork whose ways on lead anywhere different', plain.measurements.decisionPointsPer100Steps === 0);
   check('a varied world keeps handing the walker fresh views the whole way, not only at the start', varied.measurements.lessonSpread > plain.measurements.lessonSpread);

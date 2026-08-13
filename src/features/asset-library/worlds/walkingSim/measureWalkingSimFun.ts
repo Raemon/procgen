@@ -64,6 +64,7 @@ function oneWalk(
   const trace = walkAsTourist(
     probes.isWalkableAt,
     probes.isOpaqueAt,
+    probes.spawnsNear,
     spawn,
     limits,
     mulberry32(walkSeed),

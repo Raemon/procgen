@@ -103,7 +103,7 @@ function recordOf(
   const admissions = batch.filter((world) => state.archive.admit(world)).length;
   const archiveBestFun = state.archive.bestFun();
   const coverage = state.archive.coverage();
-  state.watch.notice(archiveBestFun, coverage);
+  state.watch.notice(archiveBestFun, state.archive.meanFun());
   return {
     generation,
     batch: batchScore(batch),

@@ -21,6 +21,8 @@ const READING_SCALES: Array<[keyof WalkingSimMeasurements, number]> = [
   ['placeGrammarBits', 3],
   ['decisionPointsPer100Steps', 40],
   ['meanBranchDivergence', 0.6],
+  ['conflictsPer100Steps', 25],
+  ['promiseKeptShare', 1],
   ['lessonsPer100Steps', 30],
   ['lessonSpread', 1],
   ['graspableLessonShare', 1],

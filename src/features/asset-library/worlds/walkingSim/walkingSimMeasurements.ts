@@ -1,5 +1,6 @@
 import type { CellCharacterProbe } from './cellCharacter';
 import { choiceStructure } from './metrics/choiceStructure';
+import { conflictedChoices } from './metrics/conflictedChoices';
 import { discoveriesAlongPath } from './metrics/discoveries';
 import { enclosureRhythm } from './metrics/enclosureRhythm';
 import { landmarkPull } from './metrics/landmarkPull';
@@ -37,6 +38,8 @@ export interface WalkingSimMeasurements {
   placeGrammarBits: number;
   decisionPointsPer100Steps: number;
   meanBranchDivergence: number;
+  conflictsPer100Steps: number;
+  promiseKeptShare: number;
   lessonsPer100Steps: number;
   lessonSpread: number;
   graspableLessonShare: number;
@@ -113,6 +116,7 @@ function sceneryReadings(trace: TouristTrace, probes: WalkProbes, seenShares: Sh
 function choiceAndLearningReadings(trace: TouristTrace, probes: WalkProbes) {
   return {
     ...choiceStructure(trace.path, { ...probes, seen: trace.seen }),
+    ...conflictedChoices(trace),
     ...learningProgress(trace.path, probes.characterAt),
   };
 }

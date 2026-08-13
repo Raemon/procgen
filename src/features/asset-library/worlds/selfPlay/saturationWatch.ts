@@ -2,16 +2,16 @@ const WORTHWHILE_GAIN = 0.002;
 
 export class SaturationWatch {
   private bestSoFar = 0;
-  private coverageSoFar = 0;
+  private meanSoFar = 0;
   private generationsWithoutGain = 0;
 
   constructor(private readonly patience: number) {}
 
-  notice(bestFun: number, coverage: number): void {
-    if (this.isAGain(bestFun, coverage)) this.generationsWithoutGain = 0;
+  notice(bestFun: number, meanEliteFun: number): void {
+    if (this.isAGain(bestFun, meanEliteFun)) this.generationsWithoutGain = 0;
     else this.generationsWithoutGain++;
     this.bestSoFar = Math.max(this.bestSoFar, bestFun);
-    this.coverageSoFar = Math.max(this.coverageSoFar, coverage);
+    this.meanSoFar = Math.max(this.meanSoFar, meanEliteFun);
   }
 
   hasSaturated(): boolean {
@@ -22,7 +22,9 @@ export class SaturationWatch {
     return this.generationsWithoutGain;
   }
 
-  private isAGain(bestFun: number, coverage: number): boolean {
-    return bestFun > this.bestSoFar + WORTHWHILE_GAIN || coverage > this.coverageSoFar;
+  private isAGain(bestFun: number, meanEliteFun: number): boolean {
+    return (
+      bestFun > this.bestSoFar + WORTHWHILE_GAIN || meanEliteFun > this.meanSoFar + WORTHWHILE_GAIN
+    );
   }
 }

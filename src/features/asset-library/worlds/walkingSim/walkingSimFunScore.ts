@@ -40,7 +40,7 @@ function pacingReadings(m: WalkingSimMeasurements): MetricReading[] {
 
 function sceneryReadings(m: WalkingSimMeasurements): MetricReading[] {
   return [
-    reading('scenery entropy (bits)', m.sceneryEntropyBits, 1, bandScore(m.sceneryEntropyBits, 1.4, 2.6, 1)),
+    reading('scenery entropy (bits)', m.sceneryEntropyBits, 0.5, bandScore(m.sceneryEntropyBits, 1.4, 2.6, 1)),
     reading('region entropy (bits)', m.regionEntropyBits, 1, bandScore(m.regionEntropyBits, 0.6, 1.6, 0.8)),
     reading('regional differentiation', m.regionalDifferentiation, 1, bandScore(m.regionalDifferentiation, 0.15, 0.6, 0.25)),
     reading('view distinctness', m.viewDistinctness, 1, bandScore(m.viewDistinctness, 0.25, 0.8, 0.3)),
@@ -50,8 +50,10 @@ function sceneryReadings(m: WalkingSimMeasurements): MetricReading[] {
 
 function choiceReadings(m: WalkingSimMeasurements): MetricReading[] {
   return [
-    reading('decision points /100', m.decisionPointsPer100Steps, 2, bandScore(m.decisionPointsPer100Steps, 8, 70, 20)),
+    reading('decision points /100', m.decisionPointsPer100Steps, 1, bandScore(m.decisionPointsPer100Steps, 8, 70, 20)),
     reading('branch divergence', m.meanBranchDivergence, 1, bandScore(m.meanBranchDivergence, 0.2, 0.6, 0.25)),
+    reading('conflicted choices /100', m.conflictsPer100Steps, 2, bandScore(m.conflictsPer100Steps, 2, 25, 8)),
+    reading('promises kept', m.promiseKeptShare, 1.5, bandScore(m.promiseKeptShare, 0.35, 0.85, 0.3)),
   ];
 }
 
