@@ -2,7 +2,7 @@ import '@/features/asset-library/worlds/nodes';
 import { join } from 'node:path';
 import { mulberry32 } from '@/features/asset-library/worlds/random/mulberry32';
 import { batchScore } from '@/features/asset-library/worlds/selfPlay/batchScore';
-import { funOf, scoredGenome, type ScoredWorld } from '@/features/asset-library/worlds/selfPlay/scoreGenome';
+import { funOf, scoredGenome, walkSeedOf, type ScoredWorld } from '@/features/asset-library/worlds/selfPlay/scoreGenome';
 import { rolledGenome } from '@/features/asset-library/worlds/selfPlay/worldGenome';
 import { touristLimits } from '@/features/asset-library/worlds/walkingSim/touristWalk';
 import { RANKING_REPORT_DIR, writeTrainingReport } from './selfPlay/writeTrainingReport';
@@ -15,7 +15,7 @@ const rng = mulberry32(ROLL_SEED);
 const limits = touristLimits(STEP_BUDGET, 140);
 const rolled = Array.from({ length: ROLL_COUNT }, () => rolledGenome(rng));
 const walked = rolled
-  .map((genome) => scoredGenome(genome, limits, ROLL_SEED))
+  .map((genome) => scoredGenome(genome, limits, walkSeedOf(genome)))
   .filter((world): world is ScoredWorld => world !== null)
   .sort((one, other) => funOf(other) - funOf(one));
 

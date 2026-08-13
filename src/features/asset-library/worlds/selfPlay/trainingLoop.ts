@@ -4,7 +4,7 @@ import { touristLimits, type TouristLimits } from '../walkingSim/touristWalk';
 import { batchScore, type BatchScore } from './batchScore';
 import { EliteArchive } from './eliteArchive';
 import { mutatedGenome } from './mutateGenome';
-import { scoredGenome, type ScoredWorld } from './scoreGenome';
+import { scoredGenome, walkSeedOf, type ScoredWorld } from './scoreGenome';
 import { SaturationWatch } from './saturationWatch';
 import { rolledGenome, type WorldGenome } from './worldGenome';
 
@@ -76,9 +76,7 @@ function liveOneGeneration(
   settings: TrainingSettings,
 ): GenerationRecord {
   const candidates = candidateGenomesOf(state, settings);
-  const walked = candidates.map((genome) =>
-    scoredGenome(genome, state.limits, settings.seed + generation),
-  );
+  const walked = candidates.map((genome) => scoredGenome(genome, state.limits, walkSeedOf(genome)));
   const batch = walked.filter((world): world is ScoredWorld => world !== null);
   const record = recordOf(generation, batch, candidates.length, state);
   state.trajectory.push(record);

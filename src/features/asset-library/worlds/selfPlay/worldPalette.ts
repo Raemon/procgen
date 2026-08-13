@@ -22,15 +22,25 @@ const EMPTY_LIBRARY = {
   nextCultureId: 0,
 };
 
-export function worldPaletteOfKit(kitSeed: number, paletteSize: number): WorldPalette {
+export function worldPaletteOfKit(
+  kitSeed: number,
+  accentKitSeed: number,
+  paletteSize: number,
+): WorldPalette {
   const kit = generateAssetKit(kitSeed, EMPTY_LIBRARY);
+  const tiles = [...kit.tiles, ...accentTilesOf(accentKitSeed, kitSeed, kit.tiles.length)];
   return {
     name: kit.name,
-    tiles: kit.tiles,
+    tiles,
     pieces: kit.pieces,
     culture: kit.culture,
-    paletteIds: paletteMostlyGround(kit.tiles, paletteSize, kitSeed),
+    paletteIds: paletteMostlyGround(tiles, paletteSize, kitSeed),
   };
+}
+
+function accentTilesOf(accentKitSeed: number, kitSeed: number, firstId: number): TileDef[] {
+  if (accentKitSeed === kitSeed) return [];
+  return generateAssetKit(accentKitSeed, { ...EMPTY_LIBRARY, nextTileId: firstId }).tiles;
 }
 
 const GROUND_SHARE_OF_PALETTE = 0.6;

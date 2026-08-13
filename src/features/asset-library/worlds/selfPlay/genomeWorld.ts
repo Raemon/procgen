@@ -13,7 +13,7 @@ export interface GenomeWorld {
 }
 
 export function worldOfGenome(genome: WorldGenome): GenomeWorld {
-  const palette = worldPaletteOfKit(genome.kitSeed, genome.paletteSize);
+  const palette = worldPaletteOfKit(genome.kitSeed, genome.accentKitSeed, genome.paletteSize);
   const tileAssets = new TileAssets(palette.tiles.map((tile) => ({ ...tile })));
   const store = new PipelineStore(structuredClone(genome.pipeline));
   return { palette, tileAssets, sampler: samplerOf(store, tileAssets, palette) };

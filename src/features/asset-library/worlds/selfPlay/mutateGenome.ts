@@ -1,9 +1,10 @@
 import type { RandomStream } from '../random/mulberry32';
+import { nodeTypeOf } from '../nodeRegistry';
 import { sanitizePipeline } from '../pipeline/sanitizePipeline';
 import { clonedState } from '../randomize/clonedState';
 import { permutedNodeCombination } from '../randomize/permuteNodeCombination';
 import { permutedSliderParams } from '../randomize/permuteSliderParams';
-import { clamped, pick, rollInt } from '../randomize/randomRolls';
+import { chance, clamped, pick, rollInt } from '../randomize/randomRolls';
 import {
   LARGEST_PALETTE,
   rolledPipeline,
@@ -18,8 +19,10 @@ type GenomeMutation = (genome: WorldGenome, rng: RandomStream) => WorldGenome;
 const GENOME_MUTATIONS: readonly GenomeMutation[] = [
   nudgedKnobs,
   permutedNodes,
+  repaintedTiles,
   rerolledWorldSeed,
   swappedAssetKit,
+  swappedAccentKit,
   resizedPalette,
   regrownPipeline,
   settledBuildings,
@@ -50,8 +53,41 @@ function rerolledWorldSeed(genome: WorldGenome, rng: RandomStream): WorldGenome 
   return { ...genome, pipeline: { ...genome.pipeline, seed: rollInt(rng, 1, 999_999) } };
 }
 
+function repaintedTiles(genome: WorldGenome, rng: RandomStream): WorldGenome {
+  const pipeline = clonedState(genome.pipeline);
+  const painted = pipeline.nodes.filter(nodeLinksTiles);
+  if (painted.length === 0) return { ...genome, pipeline };
+  repaintNode(pick(rng, painted), rng, paletteIdsOf(genome));
+  return { ...genome, pipeline };
+}
+
+function nodeLinksTiles(node: WorldGenome['pipeline']['nodes'][number]): boolean {
+  const def = nodeTypeOf(node.type);
+  return Object.values(def?.params ?? {}).some((spec) => spec.kind === 'tile');
+}
+
+function repaintNode(
+  node: WorldGenome['pipeline']['nodes'][number],
+  rng: RandomStream,
+  tileIds: readonly number[],
+): void {
+  const def = nodeTypeOf(node.type);
+  for (const [name, spec] of Object.entries(def?.params ?? {})) {
+    if (spec.kind === 'tile' && chance(rng, 0.6)) node.params[name] = repaintedTileId(rng, tileIds);
+  }
+}
+
+function repaintedTileId(rng: RandomStream, tileIds: readonly number[]): number {
+  if (tileIds.length === 0 || chance(rng, 0.15)) return -1;
+  return pick(rng, tileIds);
+}
+
 function swappedAssetKit(genome: WorldGenome, rng: RandomStream): WorldGenome {
   return { ...genome, kitSeed: rollInt(rng, 1, 999_999) };
+}
+
+function swappedAccentKit(genome: WorldGenome, rng: RandomStream): WorldGenome {
+  return { ...genome, accentKitSeed: rollInt(rng, 1, 999_999) };
 }
 
 function resizedPalette(genome: WorldGenome, rng: RandomStream): WorldGenome {
@@ -74,5 +110,5 @@ function paletteIdsOf(genome: WorldGenome): number[] {
 }
 
 function paletteOf(genome: WorldGenome): WorldPalette {
-  return worldPaletteOfKit(genome.kitSeed, genome.paletteSize);
+  return worldPaletteOfKit(genome.kitSeed, genome.accentKitSeed, genome.paletteSize);
 }

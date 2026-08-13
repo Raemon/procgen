@@ -1,10 +1,11 @@
+import { hashString } from '../random/hashString';
 import { measureWalkingSimFun } from '../walkingSim/measureWalkingSimFun';
 import type { TouristLimits } from '../walkingSim/touristWalk';
 import type { WalkingSimScore } from '../walkingSim/walkingSimFunScore';
 import type { WalkingSimMeasurements } from '../walkingSim/walkingSimMeasurements';
 import { worldOfGenome } from './genomeWorld';
 import { fingerprintOf, type WorldFingerprint } from './worldFingerprint';
-import type { WorldGenome } from './worldGenome';
+import { genomeAsJson, type WorldGenome } from './worldGenome';
 
 export interface ScoredWorld {
   genome: WorldGenome;
@@ -33,4 +34,8 @@ export function scoredGenome(
 
 export function funOf(world: ScoredWorld): number {
   return world.score.overall;
+}
+
+export function walkSeedOf(genome: WorldGenome): number {
+  return hashString(genomeAsJson(genome));
 }

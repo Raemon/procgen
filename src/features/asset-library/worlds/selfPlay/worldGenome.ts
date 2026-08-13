@@ -9,6 +9,7 @@ import { worldPaletteOfKit } from './worldPalette';
 
 export interface WorldGenome {
   kitSeed: number;
+  accentKitSeed: number;
   paletteSize: number;
   pipeline: PipelineState;
 }
@@ -18,10 +19,12 @@ export const LARGEST_PALETTE = 9;
 
 export function rolledGenome(rng: RandomStream): WorldGenome {
   const kitSeed = rollInt(rng, 1, 999_999);
+  const accentKitSeed = chance(rng, 0.6) ? rollInt(rng, 1, 999_999) : kitSeed;
   const paletteSize = rollInt(rng, SMALLEST_PALETTE, LARGEST_PALETTE);
-  const palette = worldPaletteOfKit(kitSeed, paletteSize);
+  const palette = worldPaletteOfKit(kitSeed, accentKitSeed, paletteSize);
   return {
     kitSeed,
+    accentKitSeed,
     paletteSize,
     pipeline: rolledPipeline(rng, palette.paletteIds, palette.culture.id),
   };
@@ -38,8 +41,10 @@ export function rolledPipeline(
 
 export function genomeFromJson(raw: unknown): WorldGenome {
   const stored = (typeof raw === 'object' && raw !== null ? raw : {}) as Partial<WorldGenome>;
+  const kitSeed = wholeNumberOr(stored.kitSeed, 1);
   return {
-    kitSeed: wholeNumberOr(stored.kitSeed, 1),
+    kitSeed,
+    accentKitSeed: wholeNumberOr(stored.accentKitSeed, kitSeed),
     paletteSize: wholeNumberOr(stored.paletteSize, SMALLEST_PALETTE),
     pipeline: sanitizePipeline(stored.pipeline),
   };
