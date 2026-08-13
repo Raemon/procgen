@@ -30,6 +30,7 @@ import { checkTemplates } from '@/features/asset-library/worlds/__tests__/templa
 import { checkWorldsAreDocuments } from '@/features/asset-library/worlds/__tests__/worldsAreDocuments.test';
 import { checkNamedWorldPresets } from '@/features/asset-library/worlds/__tests__/namedWorldPresets.test';
 import { checkAgentObservation } from '@/features/agents/__tests__/agentObservation.test';
+import { checkOccludedObservation } from '@/features/agents/__tests__/occludedObservation.test';
 import { checkAgentApiDocs } from '@/features/agents/__tests__/agentApiDocs.test';
 import { checkCommandDispatch } from '@/features/agents/__tests__/commandDispatch.test';
 import { checkOnlyTheCommandLayerCanMutate } from '@/features/agents/__tests__/commandLayerIsTheOnlyMutator.test';
@@ -92,6 +93,7 @@ describe('templates', () => checkTemplates(check));
 describe('the named world presets', () => checkNamedWorldPresets(check));
 describe('worlds and node groups as documents', () => checkWorldsAreDocuments(check));
 describe('agent observation', () => checkAgentObservation(check));
+describe('what a character cannot see past', () => checkOccludedObservation(check));
 describe('the agent api docs', () => checkAgentApiDocs(check));
 describe('command dispatch', () => checkCommandDispatch(check));
 describe('the mutation boundary', () => checkOnlyTheCommandLayerCanMutate(check));

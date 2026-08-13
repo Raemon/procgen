@@ -1,14 +1,16 @@
 import type { TileAssets } from '@/features/asset-library/tiles/tileAssets';
-import { storedTileHeight } from '@/features/asset-library/tiles/tileHeight';
+import { storedTileHeight, WALKABLE_TILE_HEIGHT } from '@/features/asset-library/tiles/tileHeight';
 import { EMPTY_TILE } from '../values/chunkValues';
 import { cellKey } from './cellGrid';
 import type { TileIdProbe } from './worldProbes';
 
-export const EYE_LEVEL_TILE_HEIGHT = 1.5;
+export const SIGHT_BLOCKING_TILE_HEIGHT = WALKABLE_TILE_HEIGHT * 2;
+
+export type SightAssets = Pick<TileAssets, 'byId'>;
 
 export type OpaqueProbe = (x: number, y: number) => boolean;
 
-export function opaqueProbeFrom(tileIdAt: TileIdProbe, tileAssets: TileAssets): OpaqueProbe {
+export function opaqueProbeFrom(tileIdAt: TileIdProbe, tileAssets: SightAssets): OpaqueProbe {
   const cache = new Map<string, boolean>();
   return (x, y) => {
     const key = cellKey(x, y);
@@ -20,9 +22,9 @@ export function opaqueProbeFrom(tileIdAt: TileIdProbe, tileAssets: TileAssets): 
   };
 }
 
-function tileBlocksSight(tileId: number, tileAssets: TileAssets): boolean {
+function tileBlocksSight(tileId: number, tileAssets: SightAssets): boolean {
   if (tileId === EMPTY_TILE) return false;
   const tile = tileAssets.byId(tileId);
   if (!tile) return false;
-  return storedTileHeight(tile) > EYE_LEVEL_TILE_HEIGHT;
+  return storedTileHeight(tile) >= SIGHT_BLOCKING_TILE_HEIGHT;
 }

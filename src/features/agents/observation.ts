@@ -8,7 +8,8 @@ import {
   characterViewSize,
   clampSightRadiusTiles,
 } from '@/features/game/vision/characterSight';
-import { BLANK_GLYPH, SELF_GLYPH, observedTileAt } from './observedTile';
+import { BLANK_GLYPH, SELF_GLYPH, observedTileAt, unseenTile } from './observedTile';
+import { terrainSightlineFor, type TerrainSightline } from './terrainSightline';
 import type { MarkerSource } from '@/features/game/render/markerSource';
 import {
   actionWithinReach,
@@ -61,6 +62,7 @@ export function buildObservation(
   const size = viewSizeFor(mode, radius);
   const viewport = viewportCenteredOn(pose.x, pose.y, size, size);
   const markers = pointOverlayLookup(sampler, viewport, overlay);
+  const seesPast = terrainSightlineFor(sampler, tileAssets, pose, mode, radius);
   const legend = new Map<string, LegendEntry>();
   addFixedLegendEntries(legend, mode, radius);
   const view: string[] = [];
@@ -69,7 +71,7 @@ export function buildObservation(
     for (let column = 0; column < size; column++) {
       const x = viewport.originX + column;
       const y = viewport.originY + row;
-      line += observedGlyph(sampler, tileAssets, markers, legend, pose, mode, radius, x, y);
+      line += observedGlyph(sampler, tileAssets, markers, legend, pose, mode, radius, seesPast, x, y);
     }
     view.push(line);
   }
@@ -93,19 +95,15 @@ function observedGlyph(
   pose: AgentPose,
   mode: AgentMode,
   sightRadiusTiles: number,
+  seesPast: TerrainSightline,
   x: number,
   y: number,
 ): string {
-  const observed = observedTileAt(
-    sampler,
-    tileAssets,
-    markers,
-    pose,
-    mode,
-    sightRadiusTiles,
-    x,
-    y,
-  );
+  const isSelf = x === pose.x && y === pose.y;
+  const observed =
+    isSelf || seesPast(x, y)
+      ? observedTileAt(sampler, tileAssets, markers, pose, mode, sightRadiusTiles, x, y)
+      : unseenTile(sightRadiusTiles);
   if (theWholeGridSharesOneLegendEntryFor(observed.glyph)) return observed.glyph;
   return collectLegend(legend, observed.glyph, observed.meaning, observed.walkable);
 }
@@ -138,7 +136,7 @@ function addFixedLegendEntries(
     glyph: BLANK_GLYPH,
     meaning:
       mode === 'character'
-        ? `nothing generated here, or unseen: behind you, or past your ${sightRadiusTiles}-tile sight radius (fog)`
+        ? `nothing generated here, or unseen: behind you, past your ${sightRadiusTiles}-tile sight radius (fog), or hidden behind tall ground`
         : 'nothing generated here',
     walkable: null,
   });
