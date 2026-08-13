@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import '../nodes';
 import { emptyPipeline } from '../pipeline/pipelineState';
 import { PipelineStore } from '../pipeline/pipelineStore';
@@ -6,6 +7,10 @@ import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { islandsState } from './pipelineWorldFixtures';
 
 export function checkPipelineSanitizeAndEditing(check: CheckReporter): void {
+  check(
+    'sanitizePipeline registers node types itself, so a client boot cannot strip every world to empty',
+    readFileSync(new URL('../pipeline/sanitizePipeline.ts', import.meta.url), 'utf8').includes("import '../nodes'"),
+  );
   const roundtrip = sanitizePipeline(JSON.parse(JSON.stringify(islandsState())));
   check('pipeline serialization roundtrips', JSON.stringify(roundtrip) === JSON.stringify(islandsState()));
   check(

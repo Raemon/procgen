@@ -1,3 +1,4 @@
+import '../nodes';
 import {
   DEFAULT_CEILING_HEIGHT,
   isBindingValidForKind,
