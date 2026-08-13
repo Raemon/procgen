@@ -34,6 +34,7 @@ export interface TrainingRun {
 }
 
 const FRESH_ROLL_SHARE = 0.3;
+const CANDIDATE_PATIENCE_MS = 8000;
 
 export function runTraining(
   settings: TrainingSettings,
@@ -62,7 +63,7 @@ function freshRun(settings: TrainingSettings): RunState {
     trajectory: [],
     rng: mulberry32(settings.seed),
     watch: new SaturationWatch(settings.patience),
-    limits: touristLimits(settings.stepBudget, settings.radiusCap),
+    limits: { ...touristLimits(settings.stepBudget, settings.radiusCap), patienceMs: CANDIDATE_PATIENCE_MS },
   };
 }
 

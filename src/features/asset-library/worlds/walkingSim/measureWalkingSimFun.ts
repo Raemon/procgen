@@ -34,7 +34,8 @@ export function measureWalkingSimFun(
   walkSeed: number,
 ): WalkingSimResult | null {
   const probes = walkProbesOf(sampler, tileAssets);
-  const spawns = spawnsWithRoomToWalk(probes.isWalkableAt, WALKS_PER_WORLD);
+  const spawnSearchEndsAt = Date.now() + limits.patienceMs;
+  const spawns = spawnsWithRoomToWalk(probes.isWalkableAt, WALKS_PER_WORLD, spawnSearchEndsAt);
   if (spawns.length === 0) return null;
   const walks = spawns.map((spawn, leg) => oneWalk(spawn, probes, limits, walkSeed + leg));
   return pooledResult(walks);

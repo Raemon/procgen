@@ -10,7 +10,10 @@ const FAR_RING_SHARE = 0.75;
 
 export interface TouristLimits extends WalkLimits {
   sightRadius: number;
+  patienceMs: number;
 }
+
+export const ALL_THE_TIME_IN_THE_WORLD = Number.MAX_SAFE_INTEGER;
 
 export interface TouristTrace {
   spawn: CellPoint;
@@ -35,7 +38,12 @@ interface TouristWalkContext {
 }
 
 export function touristLimits(stepBudget: number, radiusCap: number): TouristLimits {
-  return { stepBudget, radiusCap, sightRadius: TOURIST_SIGHT_RADIUS };
+  return {
+    stepBudget,
+    radiusCap,
+    sightRadius: TOURIST_SIGHT_RADIUS,
+    patienceMs: ALL_THE_TIME_IN_THE_WORLD,
+  };
 }
 
 export function walkAsTourist(
@@ -46,8 +54,9 @@ export function walkAsTourist(
   rng: RandomStream,
 ): TouristTrace {
   const context = freshContext(isWalkableAt, isOpaqueAt, spawn, limits, rng);
+  const walkEndsAt = Date.now() + limits.patienceMs;
   takeInTheViewFromSpawn(context);
-  while (stepsWalked(context.trace) < limits.stepBudget) {
+  while (stepsWalked(context.trace) < limits.stepBudget && Date.now() < walkEndsAt) {
     if (!takeNextStep(context)) break;
   }
   return context.trace;

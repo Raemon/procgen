@@ -9,14 +9,19 @@ const WALKS_SPACING = 16;
 const ROOM_TO_WALK_CELLS = 300;
 
 export function spawnWithRoomToWalk(isWalkableAt: WalkableProbe): CellPoint | null {
-  return spawnsWithRoomToWalk(isWalkableAt, 1)[0] ?? null;
+  return spawnsWithRoomToWalk(isWalkableAt, 1, Number.MAX_SAFE_INTEGER)[0] ?? null;
 }
 
-export function spawnsWithRoomToWalk(isWalkableAt: WalkableProbe, wanted: number): CellPoint[] {
+export function spawnsWithRoomToWalk(
+  isWalkableAt: WalkableProbe,
+  wanted: number,
+  notAfterMs: number,
+): CellPoint[] {
   const roomy: CellPoint[] = [];
   let roomiest: CellPoint | null = null;
   let roomiestReach = 0;
   for (const candidate of spawnCandidates(isWalkableAt)) {
+    if (Date.now() > notAfterMs) break;
     if (!standsWellApartFrom(candidate, roomy)) continue;
     const reach = reachableFrom(candidate, isWalkableAt);
     if (reach >= ROOM_TO_WALK_CELLS) roomy.push(candidate);
