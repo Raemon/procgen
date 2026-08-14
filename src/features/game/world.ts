@@ -1,4 +1,4 @@
-import { ANY_CLIMB_ALLOWED, type ClimbGate } from './climbing';
+import { ANY_CLIMB_ALLOWED, standableProbeFrom, type ClimbGate } from './climbing';
 import { turnedFacing, type FacingIndex } from './facing';
 import { nearestWalkable } from './nearestWalkable';
 import {
@@ -71,8 +71,11 @@ export class World {
   }
 
   ensurePlayerOnWalkableGround(): void {
-    if (this.isWalkableAt(this.playerX, this.playerY)) return;
-    const spot = nearestWalkable(this.playerX, this.playerY, SNAP_SEARCH_RADIUS, this.isWalkableAt);
+    const standable = standableProbeFrom(this.isWalkableAt, this.climbGateAt);
+    if (standable(this.playerX, this.playerY)) return;
+    const spot =
+      nearestWalkable(this.playerX, this.playerY, SNAP_SEARCH_RADIUS, standable) ??
+      nearestWalkable(this.playerX, this.playerY, SNAP_SEARCH_RADIUS, this.isWalkableAt);
     if (!spot) return;
     this.playerX = spot.x;
     this.playerY = spot.y;

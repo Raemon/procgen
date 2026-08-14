@@ -1,5 +1,5 @@
 import '@/features/asset-library/worlds/nodes';
-import { climbGateFrom } from '@/features/game/climbing';
+import { climbGateFrom, standableProbeFrom } from '@/features/game/climbing';
 import { CreatureAssets } from '@/features/asset-library/creatures/creatureAssets';
 import { creaturesAsStoredJson, creaturesFromStoredJson } from '@/features/asset-library/creatures/creatureStorage';
 import { ItemAssets } from '@/features/asset-library/items/itemAssets';
@@ -48,6 +48,7 @@ export interface ServerWorld {
   groundItems: GroundItems;
   puzzles: PuzzleWorld;
   isWalkable(x: number, y: number): boolean;
+  isStandable(x: number, y: number): boolean;
   stepRules: StepRules;
   spawn(): { x: number; y: number };
 }
@@ -120,6 +121,8 @@ function buildServerWorld(
   const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileAssets, sampler.tileAt(x, y));
   const puzzles = new PuzzleWorld(store, tileIsWalkable, puzzleState);
   const isWalkable = (x: number, y: number) => tileIsWalkable(x, y) && !puzzles.blocksAt(x, y);
+  const climbGate = climbGateFrom((x, y) => sampler.elevationAt(x, y));
+  const isStandable = standableProbeFrom(isWalkable, climbGate);
   return {
     stamp,
     sampler,
@@ -137,12 +140,15 @@ function buildServerWorld(
     randomizeHistory,
     takenItems,
     isWalkable,
+    isStandable,
     stepRules: {
       isWalkableAt: tileIsWalkable,
       clearTheWay: (x, y, dx, dy, mayPush) => puzzles.clearTheWay(x, y, dx, dy, mayPush),
-      climbGateAt: climbGateFrom((x, y) => sampler.elevationAt(x, y)),
+      climbGateAt: climbGate,
     },
-    spawn: () => nearestWalkable(0, 0, SPAWN_SEARCH_RADIUS, isWalkable) ?? { x: 0, y: 0 },
+    spawn: () =>
+      nearestWalkable(0, 0, SPAWN_SEARCH_RADIUS, isStandable) ??
+      nearestWalkable(0, 0, SPAWN_SEARCH_RADIUS, isWalkable) ?? { x: 0, y: 0 },
   };
 }
 

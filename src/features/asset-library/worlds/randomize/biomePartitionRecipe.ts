@@ -1,3 +1,4 @@
+import { defaultBindingForKind } from '../display/displayBinding';
 import { NOISE_STYLE_FBM, NOISE_STYLE_RIDGED } from '../noise/terrainOctaves';
 import type { NodeInstance } from '../pipeline/pipelineState';
 import type { RandomStream } from '../random/mulberry32';
@@ -12,7 +13,8 @@ export function biomePartitionRecipeNodes(
   tileIds: readonly number[],
 ): NodeInstance[] {
   const nodes: NodeInstance[] = [];
-  const reliefId = appendRelief(nodes, rng);
+  const smoothId = appendRelief(nodes, rng);
+  const reliefId = chance(rng, 0.6) ? appendTerracedRelief(nodes, rng, smoothId) : smoothId;
   const climateId = appendClimate(nodes, rng);
   const biomes = biomePalettesOf(rng, tileIds);
   const seaLevel = snappedToStep(rollBetween(rng, 0.38, 0.48), 0, 1, 0.01);
@@ -42,6 +44,44 @@ function appendRelief(nodes: NodeInstance[], rng: RandomStream): string {
     }),
   );
   return id;
+}
+
+function appendTerracedRelief(
+  nodes: NodeInstance[],
+  rng: RandomStream,
+  smoothId: string,
+): string {
+  const passesId = nextRecipeId(nodes);
+  nodes.push(
+    recipeNode({
+      id: passesId,
+      type: 'terrainNoise',
+      label: 'pass corridors',
+      params: {
+        scale: snappedToStep(rollBetween(rng, 0.03, 0.08), 0.002, 0.2, 0.002),
+        style: NOISE_STYLE_FBM,
+        octaves: 2,
+      },
+    }),
+  );
+  const terracedId = nextRecipeId(nodes);
+  const levels = rollInt(rng, 3, 5);
+  nodes.push(
+    recipeNode({
+      id: terracedId,
+      type: 'terraceField',
+      label: 'cliff terraces',
+      params: { levels, passesAbove: snappedToStep(rollBetween(rng, 0.55, 0.7), 0, 1, 0.01) },
+      inputs: { source: smoothId, passes: passesId },
+    }),
+  );
+  const smooth = nodes.find((node) => node.id === smoothId);
+  const terraced = nodes.find((node) => node.id === terracedId);
+  if (smooth && terraced) {
+    terraced.display = { mode: 'elevation', heightScale: Math.min(8, 1.6 * levels) };
+    smooth.display = defaultBindingForKind('field');
+  }
+  return terracedId;
 }
 
 function appendClimate(nodes: NodeInstance[], rng: RandomStream): string {

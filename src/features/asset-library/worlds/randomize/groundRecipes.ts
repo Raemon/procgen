@@ -11,12 +11,12 @@ import { volcanicIsleRecipeNodes } from './volcanicIsleRecipe';
 type GroundRecipe = (rng: RandomStream, tileIds: readonly number[]) => NodeInstance[];
 
 const WEIGHED_RECIPES: ReadonlyArray<[GroundRecipe, number]> = [
-  [terrainRecipeNodes, 0.22],
-  [mazeRecipeNodes, 0.13],
-  [riverlandsRecipeNodes, 0.17],
-  [volcanicIsleRecipeNodes, 0.1],
-  [highlandsRecipeNodes, 0.22],
-  [biomePartitionRecipeNodes, 0.16],
+  [terrainRecipeNodes, 0.16],
+  [mazeRecipeNodes, 0.12],
+  [riverlandsRecipeNodes, 0.15],
+  [volcanicIsleRecipeNodes, 0.08],
+  [highlandsRecipeNodes, 0.27],
+  [biomePartitionRecipeNodes, 0.22],
 ];
 
 export function groundRecipeNodes(rng: RandomStream, tileIds: readonly number[]): NodeInstance[] {

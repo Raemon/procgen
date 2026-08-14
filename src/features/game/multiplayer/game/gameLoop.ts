@@ -58,7 +58,13 @@ export class GameLoop {
     const world = this.worldHost.current();
     for (const entity of this.registry.byId.values()) {
       if (entity.kind !== 'player') continue;
-      const delta = tickMovement(entity, entity.x, entity.y, world.isWalkable);
+      const delta = tickMovement(
+        entity,
+        entity.x,
+        entity.y,
+        world.isWalkable,
+        world.stepRules.climbGateAt,
+      );
       if (delta) this.registry.moveTo(entity, entity.x + delta.dx, entity.y + delta.dy);
     }
   }

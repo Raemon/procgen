@@ -1,3 +1,4 @@
+import { defaultBindingForKind } from '../display/displayBinding';
 import { NOISE_STYLE_FBM, NOISE_STYLE_RIDGED } from '../noise/terrainOctaves';
 import type { NodeInstance } from '../pipeline/pipelineState';
 import type { RandomStream } from '../random/mulberry32';
@@ -5,8 +6,8 @@ import { chance, rollBetween, rollInt, snappedToStep } from './randomRolls';
 import { nextRecipeId, recipeNode } from './recipeNode';
 import { appendBandLayers, appendScatterLayers } from './terrainRecipe';
 
-const MACRO_SCALE_LO = 0.004;
-const MACRO_SCALE_HI = 0.01;
+const MACRO_SCALE_LO = 0.006;
+const MACRO_SCALE_HI = 0.016;
 const RELIEF_HEIGHT_LO = 4;
 const RELIEF_HEIGHT_HI = 7;
 
@@ -15,10 +16,58 @@ export function highlandsRecipeNodes(rng: RandomStream, tileIds: readonly number
   const rangesId = appendRanges(nodes, rng);
   const lowlandsId = appendLowlands(nodes, rng);
   const blendedId = appendReliefBlend(nodes, rng, rangesId, lowlandsId);
-  const reliefId = appendShelving(nodes, rng, blendedId);
+  const shelvedId = appendShelving(nodes, rng, blendedId);
+  const reliefId = appendTerraces(nodes, rng, shelvedId);
   appendBandLayers(nodes, rng, tileIds, reliefId);
   appendScatterLayers(nodes, rng, tileIds, reliefId);
   return nodes;
+}
+
+function appendTerraces(nodes: NodeInstance[], rng: RandomStream, sourceId: string): string {
+  const passesId = nextRecipeId(nodes);
+  nodes.push(
+    recipeNode({
+      id: passesId,
+      type: 'terrainNoise',
+      label: 'pass corridors',
+      params: {
+        scale: snappedToStep(rollBetween(rng, 0.03, 0.08), 0.002, 0.2, 0.002),
+        style: NOISE_STYLE_FBM,
+        octaves: rollInt(rng, 2, 3),
+      },
+    }),
+  );
+  const terracedId = nextRecipeId(nodes);
+  const levels = rollInt(rng, 3, 5);
+  nodes.push(
+    recipeNode({
+      id: terracedId,
+      type: 'terraceField',
+      label: 'cliff terraces',
+      params: {
+        levels,
+        passesAbove: snappedToStep(rollBetween(rng, 0.55, 0.7), 0, 1, 0.01),
+      },
+      inputs: { source: sourceId, passes: passesId },
+    }),
+  );
+  moveReliefDisplayTo(nodes, sourceId, terracedId, levels);
+  return terracedId;
+}
+
+function moveReliefDisplayTo(
+  nodes: NodeInstance[],
+  sourceId: string,
+  terracedId: string,
+  levels: number,
+): void {
+  const source = nodes.find((node) => node.id === sourceId);
+  const terraced = nodes.find((node) => node.id === terracedId);
+  if (!source || !terraced) return;
+  const riserGates = 1.6 * levels;
+  const heightScale = Math.min(8, Math.max(RELIEF_HEIGHT_LO, riserGates));
+  terraced.display = { mode: 'elevation', heightScale };
+  source.display = defaultBindingForKind('field');
 }
 
 function appendRanges(nodes: NodeInstance[], rng: RandomStream): string {

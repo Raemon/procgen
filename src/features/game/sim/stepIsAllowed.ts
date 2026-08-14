@@ -16,7 +16,6 @@ export function stepIsAllowed(
   dy: number,
   mayPush = true,
 ): boolean {
-  if (!rules.clearTheWay(nextX, nextY, dx, dy, mayPush)) return false;
-  if (!rules.isWalkableAt(nextX, nextY)) return false;
-  return (rules.climbGateAt ?? (() => true))(nextX - dx, nextY - dy, nextX, nextY);
+  if (!(rules.climbGateAt ?? (() => true))(nextX - dx, nextY - dy, nextX, nextY)) return false;
+  return rules.clearTheWay(nextX, nextY, dx, dy, mayPush) && rules.isWalkableAt(nextX, nextY);
 }

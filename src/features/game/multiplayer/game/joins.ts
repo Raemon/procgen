@@ -51,8 +51,8 @@ function mintPlayerName(): string {
 
 function walkableSpot(world: ServerWorld, x: number | null, y: number | null): { x: number; y: number } {
   if (x === null || y === null) return world.spawn();
-  if (world.isWalkable(x, y)) return { x, y };
-  return nearestWalkable(x, y, SNAP_SEARCH_RADIUS, world.isWalkable) ?? world.spawn();
+  if (world.isStandable(x, y)) return { x, y };
+  return nearestWalkable(x, y, SNAP_SEARCH_RADIUS, world.isStandable) ?? world.spawn();
 }
 
 function sendWelcome(conn: Connection, deps: WsDeps): void {

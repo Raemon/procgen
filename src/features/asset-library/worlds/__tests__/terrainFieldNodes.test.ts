@@ -15,6 +15,8 @@ function terrainNodesState(): PipelineState {
     { id: 'keepB', type: 'blendFields', params: { weight: 1 }, inputs: { a: 'plates', b: 'rolling' } },
     { id: 'flatSlope', type: 'slopeField', params: { radius: 2, gain: 40 }, inputs: { source: 'flat' } },
     { id: 'curved', type: 'hypsometricCurve', params: { seaLevel: 0.5, steepness: 9 }, inputs: { source: 'rolling' } },
+    { id: 'terraced', type: 'terraceField', params: { levels: 4, passesAbove: 0.65 }, inputs: { source: 'rolling' } },
+    { id: 'terracedWithPasses', type: 'terraceField', params: { levels: 4, passesAbove: 0.55 }, inputs: { source: 'rolling', passes: 'ridged' } },
   ]);
 }
 
@@ -64,5 +66,20 @@ export function checkTerrainFieldNodes(check: CheckReporter): void {
     'the hypsometric curve clears heights away from sea level',
     curveOutput.filter((value) => Math.abs(value - 0.5) < 0.05).length <
       curveInput.filter((value) => Math.abs(value - 0.5) < 0.05).length,
+  );
+
+  const quarterSteps = new Set([0, 0.25, 0.5, 0.75, 1]);
+  check(
+    'a terraced field snaps every cell onto one of its levels',
+    samplesOf('terraced', 48).every((value) => quarterSteps.has(value)),
+  );
+  const passInput = samplesOf('ridged', 48);
+  const withPasses = samplesOf('terracedWithPasses', 48);
+  const smoothSource = samplesOf('rolling', 48);
+  check(
+    'where the passes field runs high the source stays smooth, and elsewhere it steps',
+    withPasses.every((value, i) =>
+      passInput[i]! >= 0.55 ? value === smoothSource[i]! : quarterSteps.has(value),
+    ) && withPasses.some((value) => !quarterSteps.has(value)),
   );
 }
