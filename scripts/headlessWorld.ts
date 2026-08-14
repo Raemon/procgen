@@ -34,6 +34,22 @@ export function worldFromPipelineState(state: PipelineState): HeadlessWorld {
   return worldAround(new PipelineStore(sanitizePipeline(state)));
 }
 
+export interface WorldDocument {
+  name: string;
+  pipeline: unknown;
+  tiles: unknown;
+  pieces: unknown;
+  cultures: unknown;
+}
+
+export function worldFromDocument(document: WorldDocument): HeadlessWorld {
+  seedAssetFiles();
+  seedPersistedFile('tiles', document.tiles);
+  seedPersistedFile('pieces', document.pieces);
+  seedPersistedFile('cultures', document.cultures);
+  return worldAround(new PipelineStore(sanitizePipeline(document.pipeline)));
+}
+
 function seedAssetFiles(): void {
   for (const name of SEEDED_ASSET_FILES) seedFromRepoData(name);
 }

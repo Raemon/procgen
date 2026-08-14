@@ -3,7 +3,7 @@ import type { WorldViewRequest } from '../worldViewRequest';
 import { characterCameraForRequest } from './characterCameraForRequest';
 import type { FramedCamera } from './framedCamera';
 import { godCameraForRequest } from './godCameraForRequest';
-import { headlessWorldForName } from './headlessWorldForName';
+import { headlessWorldForRequest } from './headlessWorldForName';
 import { HeadlessWorldView } from './headlessWorldView';
 import { renderUntilWorldIsMeshed } from './renderUntilWorldIsMeshed';
 import type { HeadlessWorld } from '../../headlessWorld';
@@ -23,7 +23,7 @@ declare global {
 }
 
 window.renderWorldView = async (request) => {
-  const world = headlessWorldForName(request.worldName);
+  const world = headlessWorldForRequest(request);
   const view = new HeadlessWorldView(world, request, cameraForRequest(request, world));
   const frames = await renderUntilWorldIsMeshed(view);
   return { pngDataUrl: view.pngDataUrl(), frames, chunks: view.builtChunkCount(), ...view.gpuLoad() };

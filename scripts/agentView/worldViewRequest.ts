@@ -1,9 +1,11 @@
 import type { FacingIndex } from '@/features/game/facing';
+import type { WorldDocument } from '../headlessWorld';
 
 export type WorldViewStyle = 'god' | 'character';
 
 export interface WorldViewRequest {
   worldName: string;
+  worldDocument?: WorldDocument;
   x: number;
   y: number;
   facing: FacingIndex;

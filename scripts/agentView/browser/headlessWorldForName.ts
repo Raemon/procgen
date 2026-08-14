@@ -1,7 +1,17 @@
 import { examplePipelines } from '@/features/asset-library/worlds/presets/examplePipelines';
 import type { PipelineState } from '@/features/asset-library/worlds/pipeline/pipelineState';
-import { worldFromPipelineState, worldFromRepoData, type HeadlessWorld } from '../../headlessWorld';
-import { REPO_PIPELINE_WORLD_NAME } from '../worldViewRequest';
+import {
+  worldFromDocument,
+  worldFromPipelineState,
+  worldFromRepoData,
+  type HeadlessWorld,
+} from '../../headlessWorld';
+import { REPO_PIPELINE_WORLD_NAME, type WorldViewRequest } from '../worldViewRequest';
+
+export function headlessWorldForRequest(request: WorldViewRequest): HeadlessWorld {
+  if (request.worldDocument) return worldFromDocument(request.worldDocument);
+  return headlessWorldForName(request.worldName);
+}
 
 export function headlessWorldForName(worldName: string): HeadlessWorld {
   if (worldName === REPO_PIPELINE_WORLD_NAME) return worldFromRepoData();
