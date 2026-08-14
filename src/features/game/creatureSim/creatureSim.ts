@@ -1,5 +1,6 @@
 import type { CreatureSpawn, WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import type { CreatureAssets } from '@/features/asset-library/creatures/creatureAssets';
+import { climbGateFrom, type ClimbGate } from '../climbing';
 import { spawnedCreature, spawnKeyOf, type CreatureInstance } from './creatureInstance';
 import { retargetCreature, type SimWorldView } from './creatureTargets';
 import { moveCreatureTowardTarget, type WalkabilityProbe } from './moveCreatureTowardTarget';
@@ -19,8 +20,11 @@ export interface CreatureSimDeps {
 export class CreatureSim {
   private readonly creatures = new Map<string, CreatureInstance>();
   private secondsUntilScan = 0;
+  private readonly climbGate: ClimbGate;
 
-  constructor(private readonly deps: CreatureSimDeps) {}
+  constructor(private readonly deps: CreatureSimDeps) {
+    this.climbGate = climbGateFrom((x, y) => deps.sampler.elevationAt(x, y));
+  }
 
   active(): readonly CreatureInstance[] {
     return [...this.creatures.values()];
@@ -40,7 +44,11 @@ export class CreatureSim {
     const def = this.deps.creatureAssets.byId(creature.creatureId);
     if (!def) return;
     retargetCreature(creature, def, this.deps.world, dtSeconds);
-    moveCreatureTowardTarget(creature, def, this.deps.isWalkableAt, dtSeconds);
+    const fromX = Math.round(creature.x);
+    const fromY = Math.round(creature.y);
+    const walkableAndClimbable = (x: number, y: number) =>
+      this.deps.isWalkableAt(x, y) && this.climbGate(fromX, fromY, x, y);
+    moveCreatureTowardTarget(creature, def, walkableAndClimbable, dtSeconds);
   }
 
   private rescanSpawnsPeriodically(dtSeconds: number): void {
