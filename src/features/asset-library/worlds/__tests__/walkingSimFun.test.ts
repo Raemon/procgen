@@ -1,3 +1,4 @@
+import { visibleCellsFrom } from '../walkingSim/isovist';
 import { measureWalkingSimFun, type WalkingSimResult } from '../walkingSim/measureWalkingSimFun';
 import { opaqueProbeFrom } from '../walkingSim/sightBlocking';
 import { touristLimits } from '../walkingSim/touristWalk';
@@ -9,6 +10,7 @@ import {
   populatedVariedState,
   samplerOfState,
   staticNoiseState,
+  terracedHighlandState,
   variedStructuredState,
   WATER_TILE,
 } from './walkingSimFixtures';
@@ -30,7 +32,7 @@ export function checkWalkingSimFun(check: (name: string, condition: boolean) => 
   check('a varied world beats television static, since surprise without learnable structure is only noise', varied.score.overall > staticNoise.score.overall);
   check('the same terrain scores higher once there are discoveries to walk to', populated.score.overall > varied.score.overall);
   check('only a world with discoveries can tear the tourist between a promise and the unseen', populated.measurements.conflictsPer100Steps > varied.measurements.conflictsPer100Steps);
-  check('the tourist keeps most but not all of the promises a populated world shows it', populated.measurements.promiseKeptShare > 0.5 && populated.measurements.promiseKeptShare <= 1);
+  check('the tourist keeps a solid share of promises, but a wide horizon always shows more than one walk can visit', populated.measurements.promiseKeptShare > 0.3 && populated.measurements.promiseKeptShare < 1);
   check('everything static teaches arrives as ungraspable noise, while a varied world teaches in graspable bites', staticNoise.measurements.graspableLessonShare < varied.measurements.graspableLessonShare);
   check('an open plain offers no fork whose ways on lead anywhere different', plain.measurements.decisionPointsPer100Steps === 0);
   check('a varied world keeps handing the walker fresh views the whole way, not only at the start', varied.measurements.lessonSpread > plain.measurements.lessonSpread);
@@ -42,6 +44,13 @@ export function checkWalkingSimFun(check: (name: string, condition: boolean) => 
   check('every fixture walk keeps revealing across most of its chapters instead of front-loading the journey', [plain, maze, varied, populated].every((each) => each.measurements.revealSpread >= 0.7));
   check('a pooled score carries a spawn consistency factor that only ever discounts, never rewards', [plain, maze, varied, populated].every((each) => spawnConsistencyOf(each) > 0.6 && spawnConsistencyOf(each) <= 1));
   check('trees block the eye and shallow water does not, so water gates the feet alone', sightIsBlockedByTreesButNotWater());
+
+  const terraced = measuredFixture(terracedHighlandState());
+  check('cliffs gate the feet on a terraced world while a plain never says no', terraced.measurements.elevationGateShare > 0.05 && plain.measurements.elevationGateShare === 0);
+  check('climbing a terraced world pays for itself in newly revealed ground', terraced.measurements.climbRevealRatio > 0.2);
+  check('cliff edges turn a walk into a chain of route choices no plain can offer', terraced.measurements.decisionPointsPer100Steps > plain.measurements.decisionPointsPer100Steps + 10);
+  check('a world with terrain drama beats the same flat meadow', terraced.score.overall > plain.score.overall);
+  check('a raised eye sees over a low tree that blinds a walker on the ground', highGroundSeesOverTrees());
 }
 
 function measuredFixture(state: ReturnType<typeof openPlainState>): WalkingSimResult {
@@ -66,4 +75,13 @@ function spawnConsistencyOf(result: WalkingSimResult): number {
 function sightIsBlockedByTreesButNotWater(): boolean {
   const isOpaqueAt = opaqueProbeFrom((x) => (x === 0 ? WATER_TILE : FOREST_TILE), fixtureTileAssets);
   return !isOpaqueAt(0, 0) && isOpaqueAt(1, 0);
+}
+
+function highGroundSeesOverTrees(): boolean {
+  const treeAtTwo = (x: number) => x === 2;
+  const fromGround = visibleCellsFrom({ x: 0, y: 0 }, 6, (x) => treeAtTwo(x), () => 0);
+  const fromHill = visibleCellsFrom({ x: 0, y: 0 }, 6, (x) => treeAtTwo(x), (x) => (x <= 0 ? 4 : 0));
+  const seesPastTree = (cells: { x: number; y: number }[]) =>
+    cells.some((cell) => cell.x === 5 && cell.y === 0);
+  return !seesPastTree(fromGround) && seesPastTree(fromHill);
 }

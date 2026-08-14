@@ -15,7 +15,12 @@ import {
   type WalkingSimMeasurements,
   type WalkProbes,
 } from './walkingSimMeasurements';
-import { cachedTileIdProbe, walkableProbeFrom } from './worldProbes';
+import {
+  cachedElevationProbe,
+  cachedTileIdProbe,
+  stepProbeFrom,
+  walkableProbeFrom,
+} from './worldProbes';
 
 export const WALKS_PER_WORLD = 2;
 
@@ -35,7 +40,12 @@ export function measureWalkingSimFun(
 ): WalkingSimResult | null {
   const probes = walkProbesOf(sampler, tileAssets);
   const spawnSearchEndsAt = Date.now() + limits.patienceMs;
-  const spawns = spawnsWithRoomToWalk(probes.isWalkableAt, WALKS_PER_WORLD, spawnSearchEndsAt);
+  const spawns = spawnsWithRoomToWalk(
+    probes.isWalkableAt,
+    WALKS_PER_WORLD,
+    spawnSearchEndsAt,
+    probes.canStep,
+  );
   if (spawns.length === 0) return null;
   const walks = spawns.map((spawn, leg) => oneWalk(spawn, probes, limits, walkSeed + leg));
   return pooledResult(walks);
@@ -43,11 +53,15 @@ export function measureWalkingSimFun(
 
 function walkProbesOf(sampler: WorldSampler, tileAssets: TileAssets): WalkProbes {
   const tileIdAt = cachedTileIdProbe(sampler);
+  const isWalkableAt = walkableProbeFrom(tileIdAt, tileAssets);
+  const elevationAt = cachedElevationProbe(sampler);
   return {
-    isWalkableAt: walkableProbeFrom(tileIdAt, tileAssets),
+    isWalkableAt,
     isOpaqueAt: opaqueProbeFrom(tileIdAt, tileAssets),
     characterAt: cellCharacterProbe(sampler, tileIdAt, tileAssets),
     spawnsNear: nearbySpawnsProbe(sampler),
+    canStep: stepProbeFrom(isWalkableAt, elevationAt),
+    elevationAt,
   };
 }
 
@@ -61,14 +75,7 @@ function oneWalk(
   limits: TouristLimits,
   walkSeed: number,
 ): Walk {
-  const trace = walkAsTourist(
-    probes.isWalkableAt,
-    probes.isOpaqueAt,
-    probes.spawnsNear,
-    spawn,
-    limits,
-    mulberry32(walkSeed),
-  );
+  const trace = walkAsTourist(probes, spawn, limits, mulberry32(walkSeed));
   return { trace, ...measuredWalk(trace, probes, limits) };
 }
 

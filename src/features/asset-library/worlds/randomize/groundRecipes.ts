@@ -1,5 +1,7 @@
 import type { NodeInstance } from '../pipeline/pipelineState';
 import type { RandomStream } from '../random/mulberry32';
+import { biomePartitionRecipeNodes } from './biomePartitionRecipe';
+import { highlandsRecipeNodes } from './highlandsRecipe';
 import { mazeRecipeNodes } from './mazeRecipe';
 import { riverlandsRecipeNodes } from './riverlandsRecipe';
 import { rollBetween } from './randomRolls';
@@ -9,10 +11,12 @@ import { volcanicIsleRecipeNodes } from './volcanicIsleRecipe';
 type GroundRecipe = (rng: RandomStream, tileIds: readonly number[]) => NodeInstance[];
 
 const WEIGHED_RECIPES: ReadonlyArray<[GroundRecipe, number]> = [
-  [terrainRecipeNodes, 0.4],
-  [mazeRecipeNodes, 0.2],
-  [riverlandsRecipeNodes, 0.25],
-  [volcanicIsleRecipeNodes, 0.15],
+  [terrainRecipeNodes, 0.22],
+  [mazeRecipeNodes, 0.13],
+  [riverlandsRecipeNodes, 0.17],
+  [volcanicIsleRecipeNodes, 0.1],
+  [highlandsRecipeNodes, 0.22],
+  [biomePartitionRecipeNodes, 0.16],
 ];
 
 export function groundRecipeNodes(rng: RandomStream, tileIds: readonly number[]): NodeInstance[] {

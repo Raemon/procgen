@@ -19,7 +19,11 @@ export function terrainSightlineFor(
 ): TerrainSightline {
   if (mode === 'god') return SEES_PAST_EVERYTHING;
   const isOpaqueAt = opaqueProbeFrom(cachedTileIdProbe(sampler), tileAssets);
-  const inSight = visibleCellsFrom({ x: pose.x, y: pose.y }, sightRadiusTiles, isOpaqueAt);
+  const elevationAt =
+    typeof sampler.elevationAt === 'function'
+      ? (x: number, y: number) => sampler.elevationAt(x, y)
+      : undefined;
+  const inSight = visibleCellsFrom({ x: pose.x, y: pose.y }, sightRadiusTiles, isOpaqueAt, elevationAt);
   const seen = new Set(inSight.map((cell) => cellKey(cell.x, cell.y)));
   return (x, y) => seen.has(cellKey(x, y));
 }

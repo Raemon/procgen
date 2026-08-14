@@ -37,6 +37,8 @@ function pacingReadings(m: WalkingSimMeasurements): MetricReading[] {
     reading('vista moments /100', m.vistaMomentsPer100Steps, 1, bandScore(m.vistaMomentsPer100Steps, 0.2, 4, 2)),
     reading('retread share', m.retreadShare, 1, bandScore(m.retreadShare, 0, 0.3, 0.35)),
     reading('reveal spread', m.revealSpread, 1, bandScore(m.revealSpread, 0.5, 1, 0.4)),
+    reading('elevation gates', m.elevationGateShare, 1, bandScore(m.elevationGateShare, 0.02, 0.2, 0.15)),
+    reading('climb reveal ratio', m.climbRevealRatio, 1, bandScore(m.climbRevealRatio, 0.8, 3, 1)),
     reading('mystery edge share', m.mysteryEdgeShare, 0.5, bandScore(m.mysteryEdgeShare, 0.03, 0.25, 0.15)),
   ];
 }
@@ -54,6 +56,7 @@ function sceneryReadings(m: WalkingSimMeasurements): MetricReading[] {
 function choiceReadings(m: WalkingSimMeasurements): MetricReading[] {
   return [
     reading('decision points /100', m.decisionPointsPer100Steps, 1, bandScore(m.decisionPointsPer100Steps, 8, 70, 20)),
+    reading('corridor loops /100 cells', m.corridorLoopsPer100Cells, 1, bandScore(m.corridorLoopsPer100Cells, 0.3, 6, 2)),
     reading('branch divergence', m.meanBranchDivergence, 1, bandScore(m.meanBranchDivergence, 0.2, 0.6, 0.25)),
     reading('conflicted choices /100', m.conflictsPer100Steps, 2, bandScore(m.conflictsPer100Steps, 2, 25, 8)),
     reading('promises kept', m.promiseKeptShare, 1.5, bandScore(m.promiseKeptShare, 0.35, 0.85, 0.3)),
@@ -65,6 +68,7 @@ function learningReadings(m: WalkingSimMeasurements): MetricReading[] {
     reading('lessons /100 steps', m.lessonsPer100Steps, 1, bandScore(m.lessonsPer100Steps, 2, 15, 5)),
     reading('lesson spread', m.lessonSpread, 1, bandScore(m.lessonSpread, 0.2, 0.7, 0.3)),
     reading('graspable lessons', m.graspableLessonShare, 1.5, bandScore(m.graspableLessonShare, 0.6, 1, 0.35)),
+    reading('learning curve drop', m.learningCurveDrop, 1, bandScore(m.learningCurveDrop, 0.05, 0.45, 0.25)),
   ];
 }
 

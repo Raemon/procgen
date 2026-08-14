@@ -1,3 +1,4 @@
+import { ANY_CLIMB_ALLOWED, type ClimbGate } from './climbing';
 import { turnedFacing, type FacingIndex } from './facing';
 import { nearestWalkable } from './nearestWalkable';
 import {
@@ -29,6 +30,7 @@ export class World {
   constructor(
     private readonly isWalkableAt: WalkabilityProbe,
     private readonly clearTheWay: ObstacleResolver = NOTHING_IN_THE_WAY,
+    private readonly climbGateAt: ClimbGate = ANY_CLIMB_ALLOWED,
   ) {}
 
   setSightRadiusTiles(radius: number): void {
@@ -46,7 +48,11 @@ export class World {
   tryStep(dx: number, dy: number, mayPush = true): boolean {
     const nextX = this.playerX + dx;
     const nextY = this.playerY + dy;
-    const rules = { isWalkableAt: this.isWalkableAt, clearTheWay: this.clearTheWay };
+    const rules = {
+      isWalkableAt: this.isWalkableAt,
+      clearTheWay: this.clearTheWay,
+      climbGateAt: this.climbGateAt,
+    };
     if (!stepIsAllowed(rules, nextX, nextY, dx, dy, mayPush)) return false;
     this.playerX = nextX;
     this.playerY = nextY;

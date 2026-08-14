@@ -1,4 +1,5 @@
 import '@/features/asset-library/worlds/nodes';
+import { climbGateFrom } from '@/features/game/climbing';
 import { CreatureAssets } from '@/features/asset-library/creatures/creatureAssets';
 import { creaturesAsStoredJson, creaturesFromStoredJson } from '@/features/asset-library/creatures/creatureStorage';
 import { ItemAssets } from '@/features/asset-library/items/itemAssets';
@@ -139,6 +140,7 @@ function buildServerWorld(
     stepRules: {
       isWalkableAt: tileIsWalkable,
       clearTheWay: (x, y, dx, dy, mayPush) => puzzles.clearTheWay(x, y, dx, dy, mayPush),
+      climbGateAt: climbGateFrom((x, y) => sampler.elevationAt(x, y)),
     },
     spawn: () => nearestWalkable(0, 0, SPAWN_SEARCH_RADIUS, isWalkable) ?? { x: 0, y: 0 },
   };
