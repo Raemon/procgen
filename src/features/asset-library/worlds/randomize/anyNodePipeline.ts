@@ -2,10 +2,9 @@ import type { RandomStream } from '../random/mulberry32';
 import { DEFAULT_DAYLIGHT, type NodeInstance, type PipelineState } from '../pipeline/pipelineState';
 import { dropInvalidWires } from '../pipeline/wiringRules';
 import { PRESENT } from '../time/worldTime';
-import { mazeRecipeNodes } from './mazeRecipe';
+import { groundRecipeNodes } from './groundRecipes';
 import { addRandomNode } from './pipelineMutations';
-import { chance, rollInt } from './randomRolls';
-import { terrainRecipeNodes } from './terrainRecipe';
+import { rollInt } from './randomRolls';
 
 const FEWEST_FREE_NODES = 1;
 const MOST_FREE_NODES = 6;
@@ -23,8 +22,7 @@ export function anyNodePipeline(rng: RandomStream, tileIds: readonly number[]): 
 }
 
 function groundToBuildOn(rng: RandomStream, tileIds: readonly number[]): NodeInstance[] {
-  if (chance(rng, 0.25)) return mazeRecipeNodes(rng, tileIds);
-  return terrainRecipeNodes(rng, tileIds);
+  return groundRecipeNodes(rng, tileIds);
 }
 
 function growFreeNodes(

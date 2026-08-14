@@ -2,6 +2,7 @@ import { mulberry32, type RandomStream } from '../random/mulberry32';
 import { chance, pick } from '../randomize/randomRolls';
 import { touristLimits, type TouristLimits } from '../walkingSim/touristWalk';
 import { batchScore, type BatchScore } from './batchScore';
+import { bredGenome } from './breedGenomes';
 import { EliteArchive } from './eliteArchive';
 import { mutatedGenome } from './mutateGenome';
 import { scoredGenome, walkSeedOf, type ScoredWorld } from './scoreGenome';
@@ -34,6 +35,7 @@ export interface TrainingRun {
 }
 
 const FRESH_ROLL_SHARE = 0.3;
+const BRED_SHARE = 0.35;
 const CANDIDATE_PATIENCE_MS = 8000;
 
 export function runTraining(
@@ -91,7 +93,18 @@ function candidateGenomesOf(state: RunState, settings: TrainingSettings): WorldG
 function nextCandidate(state: RunState): WorldGenome {
   const elites = state.archive.all();
   if (elites.length === 0 || chance(state.rng, FRESH_ROLL_SHARE)) return rolledGenome(state.rng);
+  if (elites.length >= 2 && chance(state.rng, BRED_SHARE)) return bredCandidate(state, elites);
   return mutatedGenome(pick(state.rng, elites).genome, state.rng);
+}
+
+function bredCandidate(state: RunState, elites: readonly ScoredWorld[]): WorldGenome {
+  const one = pick(state.rng, elites);
+  const other = pick(
+    state.rng,
+    elites.filter((elite) => elite !== one),
+  );
+  const child = bredGenome(one.genome, other.genome, state.rng);
+  return chance(state.rng, 0.5) ? mutatedGenome(child, state.rng) : child;
 }
 
 function recordOf(

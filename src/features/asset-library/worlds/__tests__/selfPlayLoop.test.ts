@@ -1,6 +1,7 @@
 import { mulberry32 } from '../random/mulberry32';
 import { nodeTypeOf } from '../nodeRegistry';
 import { batchScore } from '../selfPlay/batchScore';
+import { bredGenome } from '../selfPlay/breedGenomes';
 import { worldOfGenome } from '../selfPlay/genomeWorld';
 import { mutatedGenome } from '../selfPlay/mutateGenome';
 import { SaturationWatch } from '../selfPlay/saturationWatch';
@@ -22,8 +23,28 @@ const SMOKE_WALK_SEED = 3;
 
 export function checkSelfPlayLoop(check: (name: string, condition: boolean) => void): void {
   checkGenomesReplayExactly(check);
+  checkGenomesBreedTrue(check);
   checkWorldsAreToldApart(check);
   checkTrainingClimbsAndStops(check);
+}
+
+function checkGenomesBreedTrue(check: (name: string, condition: boolean) => void): void {
+  const one = rolledGenome(mulberry32(21));
+  const other = rolledGenome(mulberry32(22));
+  const child = bredGenome(one, other, mulberry32(7));
+  check('breeding the same parents with the same stream yields the same child, so a cross can be replayed', genomeAsJson(child) === genomeAsJson(bredGenome(one, other, mulberry32(7))));
+  check('a bred child inherits its palette genes whole from one parent rather than a broken mixture', [one, other].some((parent) => parent.kitSeed === child.kitSeed && parent.accentKitSeed === child.accentKitSeed));
+  check('a bred child carries nodes and survives its own sanitize, so a cross is always a legal world', child.pipeline.nodes.length > 0 && genomeAsJson(genomeFromJson(JSON.parse(genomeAsJson(child)))) === genomeAsJson(child));
+  check('a bred child splices ground from both parents rather than cloning one of them', genomeAsJson(child) !== genomeAsJson(one) && genomeAsJson(child) !== genomeAsJson(other));
+  check('rolled genomes sometimes settle their worlds with village streets and plots', someRolledGenomeFoundsAVillage());
+}
+
+function someRolledGenomeFoundsAVillage(): boolean {
+  return Array.from({ length: 30 }, (_each, at) => rolledGenome(mulberry32(300 + at))).some(
+    (genome) =>
+      genome.pipeline.nodes.some((node) => node.type === 'villagePlots') &&
+      genome.pipeline.nodes.some((node) => node.type === 'villageStreets'),
+  );
 }
 
 function checkGenomesReplayExactly(check: (name: string, condition: boolean) => void): void {

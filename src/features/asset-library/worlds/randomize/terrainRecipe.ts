@@ -64,7 +64,7 @@ function applyElevationDisplay(nodes: NodeInstance[], rng: RandomStream, fieldId
   if (field) field.display = { mode: 'elevation', heightScale: snappedToStep(rollBetween(rng, 1, 5), 0.5, 8, 0.5) };
 }
 
-function appendBandLayers(
+export function appendBandLayers(
   nodes: NodeInstance[],
   rng: RandomStream,
   tileIds: readonly number[],
@@ -107,7 +107,7 @@ function bandTiles(rng: RandomStream, tileIds: readonly number[], count: number)
   return Array.from({ length: count }, (_, index) => pool[index % pool.length]!);
 }
 
-function appendScatterLayers(
+export function appendScatterLayers(
   nodes: NodeInstance[],
   rng: RandomStream,
   tileIds: readonly number[],

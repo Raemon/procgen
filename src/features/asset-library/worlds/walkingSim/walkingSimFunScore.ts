@@ -34,6 +34,9 @@ function pacingReadings(m: WalkingSimMeasurements): MetricReading[] {
     reading('longest drought', m.longestDroughtRatio, 1, bandScore(m.longestDroughtRatio, 0, 0.15, 0.25)),
     reading('enclosed share', m.timeShareEnclosed, 1, bandScore(m.timeShareEnclosed, 0.12, 0.6, 0.3)),
     reading('openness swings /100', m.opennessSwingsPer100Steps, 1, bandScore(m.opennessSwingsPer100Steps, 1.5, 12, 3)),
+    reading('vista moments /100', m.vistaMomentsPer100Steps, 1, bandScore(m.vistaMomentsPer100Steps, 0.2, 4, 2)),
+    reading('retread share', m.retreadShare, 1, bandScore(m.retreadShare, 0, 0.3, 0.35)),
+    reading('reveal spread', m.revealSpread, 1, bandScore(m.revealSpread, 0.5, 1, 0.4)),
     reading('mystery edge share', m.mysteryEdgeShare, 0.5, bandScore(m.mysteryEdgeShare, 0.03, 0.25, 0.15)),
   ];
 }

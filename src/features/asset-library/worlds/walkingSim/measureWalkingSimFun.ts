@@ -72,15 +72,33 @@ function oneWalk(
   return { trace, ...measuredWalk(trace, probes, limits) };
 }
 
+const WEAKEST_SPAWN_WEIGHT = 0.35;
+
 function pooledResult(walks: readonly Walk[]): WalkingSimResult {
   const measurements = meanMeasurementsOf(walks.map((walk) => walk.measurements));
   return {
     trace: walks[0]!.trace,
     measurements,
-    score: walkingSimFunScore(measurements),
+    score: spawnConsistentScore(walkingSimFunScore(measurements), walks),
     seenCharacterShares: pooledShares(walks),
     walksTaken: walks.length,
   };
+}
+
+function spawnConsistentScore(pooled: WalkingSimScore, walks: readonly Walk[]): WalkingSimScore {
+  const funPerSpawn = walks.map((walk) => walkingSimFunScore(walk.measurements).overall);
+  const factor = spawnConsistencyFactor(funPerSpawn);
+  return {
+    overall: pooled.overall * factor,
+    readings: [...pooled.readings, { name: 'spawn consistency', value: factor, score: factor, weight: 0 }],
+  };
+}
+
+function spawnConsistencyFactor(funPerSpawn: readonly number[]): number {
+  const best = Math.max(...funPerSpawn);
+  if (funPerSpawn.length < 2 || best === 0) return 1;
+  const weakest = Math.min(...funPerSpawn);
+  return 1 - WEAKEST_SPAWN_WEIGHT * (1 - weakest / best);
 }
 
 function meanMeasurementsOf(all: readonly WalkingSimMeasurements[]): WalkingSimMeasurements {

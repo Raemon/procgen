@@ -3,6 +3,7 @@ import { choiceStructure } from './metrics/choiceStructure';
 import { conflictedChoices } from './metrics/conflictedChoices';
 import { discoveriesAlongPath } from './metrics/discoveries';
 import { enclosureRhythm } from './metrics/enclosureRhythm';
+import { journeyArc } from './metrics/journeyArc';
 import { landmarkPull } from './metrics/landmarkPull';
 import { learningProgress } from './metrics/learningProgress';
 import { mysteryEdgeShare } from './metrics/mysteryPromise';
@@ -30,6 +31,9 @@ export interface WalkingSimMeasurements {
   timeShareOpen: number;
   timeShareEnclosed: number;
   opennessSwingsPer100Steps: number;
+  vistaMomentsPer100Steps: number;
+  retreadShare: number;
+  revealSpread: number;
   mysteryEdgeShare: number;
   sceneryEntropyBits: number;
   regionEntropyBits: number;
@@ -97,6 +101,7 @@ function pacingAndRhythm(trace: TouristTrace, limits: TouristLimits) {
   return {
     ...revealPacing(trace.revealPerStep),
     ...enclosureRhythm(trace.isovistAreaPerStep, limits.sightRadius),
+    ...journeyArc(trace),
     mysteryEdgeShare: mysteryEdgeShare(trace.mysteryEdgesPerStep, trace.isovistAreaPerStep),
   };
 }

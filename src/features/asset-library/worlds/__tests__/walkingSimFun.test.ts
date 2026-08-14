@@ -36,6 +36,11 @@ export function checkWalkingSimFun(check: (name: string, condition: boolean) => 
   check('a varied world keeps handing the walker fresh views the whole way, not only at the start', varied.measurements.lessonSpread > plain.measurements.lessonSpread);
   check('regions of a varied world read as places, while a corridor maze looks the same everywhere', varied.measurements.regionalDifferentiation > maze.measurements.regionalDifferentiation);
   check('a plain compresses to nothing while a varied world carries a real place grammar', plain.measurements.placeGrammarBits < varied.measurements.placeGrammarBits);
+  check('a maze of dead ends makes the tourist retread its own footsteps, while a plain never does', maze.measurements.retreadShare > 0.2 && plain.measurements.retreadShare < 0.05);
+  check('a varied world wastes far fewer steps on retreading than a corridor maze', varied.measurements.retreadShare < maze.measurements.retreadShare / 2);
+  check('vistas need enclosure first, so a plain that is always open never releases the walker into one', plain.measurements.vistaMomentsPer100Steps === 0 && varied.measurements.vistaMomentsPer100Steps > 0);
+  check('every fixture walk keeps revealing across most of its chapters instead of front-loading the journey', [plain, maze, varied, populated].every((each) => each.measurements.revealSpread >= 0.7));
+  check('a pooled score carries a spawn consistency factor that only ever discounts, never rewards', [plain, maze, varied, populated].every((each) => spawnConsistencyOf(each) > 0.6 && spawnConsistencyOf(each) <= 1));
   check('trees block the eye and shallow water does not, so water gates the feet alone', sightIsBlockedByTreesButNotWater());
 }
 
@@ -52,6 +57,10 @@ function measuredFixture(state: ReturnType<typeof openPlainState>): WalkingSimRe
 
 function sameScore(one: WalkingSimResult, other: WalkingSimResult): boolean {
   return JSON.stringify(one.measurements) === JSON.stringify(other.measurements);
+}
+
+function spawnConsistencyOf(result: WalkingSimResult): number {
+  return result.score.readings.find((each) => each.name === 'spawn consistency')?.value ?? 0;
 }
 
 function sightIsBlockedByTreesButNotWater(): boolean {
