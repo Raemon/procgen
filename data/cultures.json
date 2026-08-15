@@ -100,5 +100,131 @@
     "roofStyle": 0,
     "storyLayers": 2,
     "windowEvery": 4
+  },
+  {
+    "id": 2,
+    "name": "morburmere (morburmere (evolved))",
+    "roleBindings": {
+      "wallSegment": [
+        25
+      ],
+      "wallCorner": [
+        26
+      ],
+      "window": [
+        27
+      ],
+      "door": [
+        28
+      ],
+      "roofEdge": [
+        29
+      ],
+      "roofRidge": [
+        30
+      ],
+      "roofGableEnd": [
+        31
+      ],
+      "floor": [
+        32
+      ],
+      "chimney": [
+        33
+      ]
+    },
+    "wallTileId": 50,
+    "trimTileId": 55,
+    "roofSlopeTileId": 52,
+    "roofRidgeTileId": 53,
+    "floorTileId": 54,
+    "pathTileId": 60,
+    "roofStyle": 0,
+    "storyLayers": 2,
+    "windowEvery": 5
+  },
+  {
+    "id": 3,
+    "name": "fenlingfen (fenlingfen (evolved))",
+    "roleBindings": {
+      "wallSegment": [
+        34
+      ],
+      "wallCorner": [
+        35
+      ],
+      "window": [
+        36
+      ],
+      "door": [
+        37
+      ],
+      "roofEdge": [
+        38
+      ],
+      "roofRidge": [
+        39
+      ],
+      "roofGableEnd": [
+        40
+      ],
+      "floor": [
+        41
+      ],
+      "chimney": [
+        42
+      ]
+    },
+    "wallTileId": 74,
+    "trimTileId": 79,
+    "roofSlopeTileId": 76,
+    "roofRidgeTileId": 77,
+    "floorTileId": 78,
+    "pathTileId": 84,
+    "roofStyle": 0,
+    "storyLayers": 2,
+    "windowEvery": 5
+  },
+  {
+    "id": 4,
+    "name": "gorholmholt (gorholmholt (evolved))",
+    "roleBindings": {
+      "wallSegment": [
+        43
+      ],
+      "wallCorner": [
+        44
+      ],
+      "window": [
+        45
+      ],
+      "door": [
+        46
+      ],
+      "roofEdge": [
+        47
+      ],
+      "roofRidge": [
+        48
+      ],
+      "roofGableEnd": [
+        49
+      ],
+      "floor": [
+        50
+      ],
+      "chimney": [
+        51
+      ]
+    },
+    "wallTileId": 98,
+    "trimTileId": 103,
+    "roofSlopeTileId": 100,
+    "roofRidgeTileId": 101,
+    "floorTileId": 102,
+    "pathTileId": 108,
+    "roofStyle": 1,
+    "storyLayers": 3,
+    "windowEvery": 4
   }
 ]

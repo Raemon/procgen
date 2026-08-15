@@ -1,0 +1,140 @@
+[
+  {
+    "slug": "01-morburmere",
+    "name": "morburmere",
+    "fun": 0.6190572102897661,
+    "verdict": "interesting",
+    "interest": {
+      "colorEntropyBits": 3.519542145512919,
+      "edgeShare": 0.08256665951321206,
+      "coarseStructureShare": 0.6759259259259259,
+      "largestFlatShare": 0.279575,
+      "verdict": "interesting"
+    },
+    "elevationGateShare": 0,
+    "vistaMomentsPer100Steps": 1.9117647058823528,
+    "decisionPointsPer100Steps": 80.74556929746271,
+    "encountersPer100Steps": 5.425219941348973,
+    "shots": [
+      "overhead.png",
+      "spawn-god.png",
+      "vantage-character.png",
+      "frontier-character.png"
+    ]
+  },
+  {
+    "slug": "02-morburmere",
+    "name": "morburmere",
+    "fun": 0.6069298492875304,
+    "verdict": "interesting",
+    "interest": {
+      "colorEntropyBits": 4.216785113412823,
+      "edgeShare": 0.11051251250693281,
+      "coarseStructureShare": 0.7229938271604939,
+      "largestFlatShare": 0.163125,
+      "verdict": "interesting"
+    },
+    "elevationGateShare": 0,
+    "vistaMomentsPer100Steps": 1.4705882352941178,
+    "decisionPointsPer100Steps": 79.09335288367546,
+    "encountersPer100Steps": 9.09090909090909,
+    "shots": [
+      "overhead.png",
+      "spawn-god.png",
+      "vantage-character.png",
+      "frontier-character.png"
+    ]
+  },
+  {
+    "slug": "03-fenlingfen",
+    "name": "fenlingfen",
+    "fun": 0.4943935280046153,
+    "verdict": "interesting",
+    "interest": {
+      "colorEntropyBits": 2.7677265235546478,
+      "edgeShare": 0.04650767417036184,
+      "coarseStructureShare": 0.1712962962962963,
+      "largestFlatShare": 0.323075,
+      "verdict": "interesting"
+    },
+    "elevationGateShare": 0,
+    "vistaMomentsPer100Steps": 1.7647058823529411,
+    "decisionPointsPer100Steps": 67.82481193420887,
+    "encountersPer100Steps": 15.395894428152493,
+    "shots": [
+      "overhead.png",
+      "spawn-god.png",
+      "vantage-character.png",
+      "frontier-character.png"
+    ]
+  },
+  {
+    "slug": "04-gorholmholt",
+    "name": "gorholmholt",
+    "fun": 0.43715194647423095,
+    "verdict": "interesting",
+    "interest": {
+      "colorEntropyBits": 2.09455968984021,
+      "edgeShare": 0.12544558125534766,
+      "coarseStructureShare": 0.7854938271604939,
+      "largestFlatShare": 0.57445,
+      "verdict": "interesting"
+    },
+    "elevationGateShare": 0.09274193548387097,
+    "vistaMomentsPer100Steps": 0.29411764705882354,
+    "decisionPointsPer100Steps": 58.46774193548387,
+    "encountersPer100Steps": 0,
+    "shots": [
+      "overhead.png",
+      "spawn-god.png",
+      "vantage-character.png",
+      "frontier-character.png"
+    ]
+  },
+  {
+    "slug": "05-ramricgarth",
+    "name": "ramricgarth",
+    "fun": 0.4250720218892921,
+    "verdict": "interesting",
+    "interest": {
+      "colorEntropyBits": 3.171008631662631,
+      "edgeShare": 0.11809052929060956,
+      "coarseStructureShare": 0.7970679012345679,
+      "largestFlatShare": 0.247175,
+      "verdict": "interesting"
+    },
+    "elevationGateShare": 0,
+    "vistaMomentsPer100Steps": 2.0588235294117645,
+    "decisionPointsPer100Steps": 54.3377321603128,
+    "encountersPer100Steps": 13.489736070381232,
+    "shots": [
+      "overhead.png",
+      "spawn-god.png",
+      "vantage-character.png",
+      "frontier-character.png"
+    ]
+  },
+  {
+    "slug": "06-gorholmholt",
+    "name": "gorholmholt",
+    "fun": 0.4219616281276657,
+    "verdict": "dull",
+    "interest": {
+      "colorEntropyBits": 1.8347120707045634,
+      "edgeShare": 0.1049969202984384,
+      "coarseStructureShare": 0.7314814814814815,
+      "largestFlatShare": 0.624475,
+      "verdict": "dull"
+    },
+    "elevationGateShare": 0.06928152492668621,
+    "vistaMomentsPer100Steps": 0,
+    "decisionPointsPer100Steps": 78.56687492031111,
+    "encountersPer100Steps": 0,
+    "shots": [
+      "overhead.png",
+      "spawn-god.png",
+      "vantage-character.png",
+      "frontier-character.png"
+    ]
+  }
+]

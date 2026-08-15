@@ -10,7 +10,14 @@ const MOST_INSTALLED = Number(flagValue('install') ?? 3);
 
 const records = JSON.parse(readFileSync(join(SHOTS_DIR, 'report.json'), 'utf8')) as WorldShotRecord[];
 const interesting = records.filter((record) => record.verdict === 'interesting');
-const chosen = (interesting.length > 0 ? interesting : records).slice(0, MOST_INSTALLED);
+const pool = interesting.length > 0 ? interesting : records;
+const seenNames = new Set<string>();
+const distinct = pool.filter((record) =>
+  seenNames.has(record.name) ? false : (seenNames.add(record.name), true),
+);
+const gated = distinct.find((record) => record.elevationGateShare > 0.02);
+const flats = distinct.filter((record) => record !== gated).slice(0, MOST_INSTALLED - (gated ? 1 : 0));
+const chosen = gated ? [...flats, gated] : flats;
 
 const taken = new Set<string>();
 for (const record of chosen) {

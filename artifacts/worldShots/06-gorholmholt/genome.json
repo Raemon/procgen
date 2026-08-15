@@ -1,0 +1,229 @@
+{
+  "kitSeed": 926613,
+  "accentKitSeed": 608215,
+  "paletteSize": 4,
+  "pipeline": {
+    "seed": 718947,
+    "daylight": 1,
+    "time": 0,
+    "nodes": [
+      {
+        "id": "n1",
+        "type": "terrainNoise",
+        "label": "mountain ranges",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.012,
+          "style": 1,
+          "octaves": 6,
+          "lacunarity": 2,
+          "gain": 0.5
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n2",
+        "type": "terrainNoise",
+        "label": "lowlands",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.042,
+          "style": 0,
+          "octaves": 3,
+          "lacunarity": 2,
+          "gain": 0.5
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n3",
+        "type": "blendFields",
+        "label": "relief",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "weight": 0.3
+        },
+        "inputs": {
+          "a": "n1",
+          "b": "n2",
+          "mask": null
+        },
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n4",
+        "type": "hypsometricCurve",
+        "label": "shelving",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "seaLevel": 0.44,
+          "steepness": 7.5
+        },
+        "inputs": {
+          "source": "n3"
+        },
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n5",
+        "type": "terrainNoise",
+        "label": "pass corridors",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.048,
+          "style": 0,
+          "octaves": 3,
+          "lacunarity": 2,
+          "gain": 0.5
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n6",
+        "type": "terraceField",
+        "label": "cliff terraces",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "levels": 4,
+          "passesAbove": 0.65
+        },
+        "inputs": {
+          "source": "n4",
+          "passes": "n5"
+        },
+        "display": {
+          "mode": "elevation",
+          "heightScale": 6.4
+        }
+      },
+      {
+        "id": "n7",
+        "type": "thresholdTiles",
+        "label": "band 1",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.32,
+          "belowTile": 9,
+          "aboveTile": 1
+        },
+        "inputs": {
+          "source": null
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n8",
+        "type": "straitBridges",
+        "label": "strait bridges",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "waterBelow": 0.19,
+          "shallowBand": 0.37,
+          "maxSpan": 20,
+          "pitch": 74,
+          "bridgeTile": 9
+        },
+        "inputs": {
+          "water": "n3"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n9",
+        "type": "thresholdTiles",
+        "label": "band 3",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.6,
+          "belowTile": -1,
+          "aboveTile": 9
+        },
+        "inputs": {
+          "source": null
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n10",
+        "type": "mazeChunk",
+        "label": "labyrinth",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "corridor": 14,
+          "wall": 4,
+          "mazeChunks": 7,
+          "carver": 2,
+          "braid": 0.65,
+          "doorsPerEdge": 2,
+          "rooms": 0.85,
+          "roomCells": 7,
+          "wallTile": 9,
+          "floorTile": 9
+        },
+        "inputs": {},
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n11",
+        "type": "scatterPoints",
+        "label": "monster scatter",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.01,
+          "maskAtLeast": 0.58,
+          "maskAtMost": 0.73
+        },
+        "inputs": {
+          "mask": null
+        },
+        "display": {
+          "mode": "structures",
+          "cultureId": 0
+        }
+      }
+    ]
+  }
+}

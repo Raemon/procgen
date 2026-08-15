@@ -568,5 +568,501 @@
       0,
       0
     ]
+  },
+  {
+    "id": 25,
+    "name": "morburmere wall run (morburmere (evolved))",
+    "role": "wallSegment",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      51,
+      50,
+      50
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 26,
+    "name": "morburmere corner post (morburmere (evolved))",
+    "role": "wallCorner",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      50,
+      50,
+      50
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 27,
+    "name": "morburmere windowed wall (morburmere (evolved))",
+    "role": "window",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      51,
+      56,
+      50
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 28,
+    "name": "morburmere doorway (morburmere (evolved))",
+    "role": "door",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      57,
+      57,
+      55
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 29,
+    "name": "morburmere roof eave (morburmere (evolved))",
+    "role": "roofEdge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      52
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 30,
+    "name": "morburmere roof ridge (morburmere (evolved))",
+    "role": "roofRidge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      53
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 31,
+    "name": "morburmere gable end (morburmere (evolved))",
+    "role": "roofGableEnd",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      50,
+      52
+    ],
+    "facings": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": 32,
+    "name": "morburmere floor slab (morburmere (evolved))",
+    "role": "floor",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      54
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 33,
+    "name": "morburmere chimney stack (morburmere (evolved))",
+    "role": "chimney",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      58,
+      58,
+      51
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 34,
+    "name": "fenlingfen wall run (fenlingfen (evolved))",
+    "role": "wallSegment",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      75,
+      74,
+      74
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 35,
+    "name": "fenlingfen corner post (fenlingfen (evolved))",
+    "role": "wallCorner",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      74,
+      74,
+      74
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 36,
+    "name": "fenlingfen windowed wall (fenlingfen (evolved))",
+    "role": "window",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      75,
+      80,
+      74
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 37,
+    "name": "fenlingfen doorway (fenlingfen (evolved))",
+    "role": "door",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      81,
+      81,
+      79
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 38,
+    "name": "fenlingfen roof eave (fenlingfen (evolved))",
+    "role": "roofEdge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      76
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 39,
+    "name": "fenlingfen roof ridge (fenlingfen (evolved))",
+    "role": "roofRidge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      77
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 40,
+    "name": "fenlingfen gable end (fenlingfen (evolved))",
+    "role": "roofGableEnd",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      74,
+      76
+    ],
+    "facings": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": 41,
+    "name": "fenlingfen floor slab (fenlingfen (evolved))",
+    "role": "floor",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      78
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 42,
+    "name": "fenlingfen chimney stack (fenlingfen (evolved))",
+    "role": "chimney",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      82,
+      82,
+      75
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 43,
+    "name": "gorholmholt wall run (gorholmholt (evolved))",
+    "role": "wallSegment",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      99,
+      98,
+      98
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 44,
+    "name": "gorholmholt corner post (gorholmholt (evolved))",
+    "role": "wallCorner",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      98,
+      98,
+      98
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 45,
+    "name": "gorholmholt windowed wall (gorholmholt (evolved))",
+    "role": "window",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      99,
+      104,
+      98
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 46,
+    "name": "gorholmholt doorway (gorholmholt (evolved))",
+    "role": "door",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      105,
+      105,
+      103
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 47,
+    "name": "gorholmholt roof eave (gorholmholt (evolved))",
+    "role": "roofEdge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      100
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 48,
+    "name": "gorholmholt roof ridge (gorholmholt (evolved))",
+    "role": "roofRidge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      101
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 49,
+    "name": "gorholmholt gable end (gorholmholt (evolved))",
+    "role": "roofGableEnd",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      98,
+      100
+    ],
+    "facings": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": 50,
+    "name": "gorholmholt floor slab (gorholmholt (evolved))",
+    "role": "floor",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      102
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 51,
+    "name": "gorholmholt chimney stack (gorholmholt (evolved))",
+    "role": "chimney",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      106,
+      102
+    ],
+    "facings": [
+      0,
+      0
+    ]
   }
 ]
