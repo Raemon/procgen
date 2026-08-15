@@ -2,6 +2,8 @@ import { mulberry32 } from '../random/mulberry32';
 import { nodeTypeOf } from '../nodeRegistry';
 import { batchScore } from '../selfPlay/batchScore';
 import { bredGenome } from '../selfPlay/breedGenomes';
+import { diagnosisOf, treatedGenome, type Diagnosis } from '../selfPlay/worldDoctor';
+import { readingBandOf } from '../walkingSim/readingBands';
 import { worldOfGenome } from '../selfPlay/genomeWorld';
 import { mutatedGenome } from '../selfPlay/mutateGenome';
 import { SaturationWatch } from '../selfPlay/saturationWatch';
@@ -25,7 +27,47 @@ export function checkSelfPlayLoop(check: (name: string, condition: boolean) => v
   checkGenomesReplayExactly(check);
   checkGenomesBreedTrue(check);
   checkWorldsAreToldApart(check);
+  checkTheWorldDoctor(check);
   checkTrainingClimbsAndStops(check);
+}
+
+function checkTheWorldDoctor(check: (name: string, condition: boolean) => void): void {
+  const patient = scoredGenome(rolledGenome(mulberry32(77)), SMOKE_LIMITS, SMOKE_WALK_SEED);
+  if (!patient) throw new Error('doctor fixture world has nowhere to spawn');
+  const starving = withReading(patient, 'encounters /100 steps', 0);
+  const diagnosis = diagnosisOf(starving);
+  check('a world that is healthy but for one cratered reading gets that reading as its diagnosis', diagnosis !== null && diagnosis.reading === 'encounters /100 steps' && diagnosis.ailment === 'starved');
+  check('a world weak across the board is beyond one treatment, so the doctor declines it', diagnosisOf(withAllReadingsAt(patient, 0.2)) === null);
+
+  const treated = treatedGenome(starving, diagnosis!, mulberry32(9));
+  check('treating a discovery-starved world adds or densifies scatter rather than rebuilding it', treated.pipeline.nodes.some((node) => node.type === 'scatterPoints') && treated.pipeline.nodes.length >= starving.genome.pipeline.nodes.length);
+  check('treatment is deterministic per stream, so a prescription can be replayed', genomeAsJson(treated) === genomeAsJson(treatedGenome(starving, diagnosis!, mulberry32(9))));
+
+  const flatDiagnosis: Diagnosis = { reading: 'elevation gates', ailment: 'starved' };
+  const cured = treatedGenome(withReading(patient, 'elevation gates', 0), flatDiagnosis, mulberry32(11));
+  check('a gate-starved world with an elevation display gains cliff terraces with pass corridors', !hasElevationDisplay(patient.genome.pipeline) || cured.pipeline.nodes.some((node) => node.type === 'terraceField'));
+}
+
+function withReading(world: ScoredWorld, name: string, value: number): ScoredWorld {
+  const band = readingBandOf(name)!;
+  const readings = world.score.readings.map((each) =>
+    each.name === name
+      ? { ...each, value, score: 0.05 }
+      : { ...each, score: Math.max(each.score, 0.6) },
+  );
+  const measurements = { ...world.measurements, [band.key]: value };
+  return { ...world, measurements, score: { ...world.score, readings } };
+}
+
+function withAllReadingsAt(world: ScoredWorld, score: number): ScoredWorld {
+  return {
+    ...world,
+    score: { ...world.score, readings: world.score.readings.map((each) => ({ ...each, score })) },
+  };
+}
+
+function hasElevationDisplay(pipeline: ReturnType<typeof rolledGenome>['pipeline']): boolean {
+  return pipeline.nodes.some((node) => node.display.mode === 'elevation');
 }
 
 function checkGenomesBreedTrue(check: (name: string, condition: boolean) => void): void {
