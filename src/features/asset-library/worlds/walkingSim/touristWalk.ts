@@ -1,9 +1,8 @@
 import type { CellPoint } from '@/features/game/nearestWalkable';
 import type { RandomStream } from '../random/mulberry32';
 import { CARDINAL_STEPS, cellKey, type WalkLimits } from './cellGrid';
-import { visibleCellsFrom } from './isovist';
+import { visibleCellsFrom, type SightProbes } from './isovist';
 import { spawnSitsAtCell, type NearbySpawnsProbe } from './nearbySpawnsProbe';
-import type { OpaqueProbe } from './sightBlocking';
 import type { WalkableProbe } from './worldProbes';
 
 export const TOURIST_SIGHT_RADIUS = 10;
@@ -37,7 +36,7 @@ export interface TouristTrace {
 
 interface TouristWalkContext {
   isWalkableAt: WalkableProbe;
-  isOpaqueAt: OpaqueProbe;
+  sight: SightProbes;
   spawnsNear: NearbySpawnsProbe;
   limits: TouristLimits;
   rng: RandomStream;
@@ -58,13 +57,13 @@ export function touristLimits(stepBudget: number, radiusCap: number): TouristLim
 
 export function walkAsTourist(
   isWalkableAt: WalkableProbe,
-  isOpaqueAt: OpaqueProbe,
+  sight: SightProbes,
   spawnsNear: NearbySpawnsProbe,
   spawn: CellPoint,
   limits: TouristLimits,
   rng: RandomStream,
 ): TouristTrace {
-  const context = freshContext(isWalkableAt, isOpaqueAt, spawnsNear, spawn, limits, rng);
+  const context = freshContext(isWalkableAt, sight, spawnsNear, spawn, limits, rng);
   const walkEndsAt = Date.now() + limits.patienceMs;
   takeInTheViewFromSpawn(context);
   while (stepsWalked(context.trace) < limits.stepBudget && Date.now() < walkEndsAt) {
@@ -79,7 +78,7 @@ export function stepsWalked(trace: TouristTrace): number {
 
 function freshContext(
   isWalkableAt: WalkableProbe,
-  isOpaqueAt: OpaqueProbe,
+  sight: SightProbes,
   spawnsNear: NearbySpawnsProbe,
   spawn: CellPoint,
   limits: TouristLimits,
@@ -102,7 +101,7 @@ function freshContext(
   };
   return {
     isWalkableAt,
-    isOpaqueAt,
+    sight,
     spawnsNear,
     limits,
     rng,
@@ -385,7 +384,7 @@ function cachedIsovistAt(context: TouristWalkContext, cell: CellPoint): CellPoin
   const key = cellKey(cell.x, cell.y);
   const cached = context.isovists.get(key);
   if (cached) return cached;
-  const isovist = visibleCellsFrom(cell, context.limits.sightRadius, context.isOpaqueAt);
+  const isovist = visibleCellsFrom(cell, context.limits.sightRadius, context.sight);
   evictOldestIsovistWhenFull(context.isovists);
   context.isovists.set(key, isovist);
   return isovist;

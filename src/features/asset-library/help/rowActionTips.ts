@@ -1,5 +1,12 @@
 import type { TooltipContent } from '@/features/app-shell/tooltips/tooltipContent';
 
+export function insertRowTip(name: string): TooltipContent {
+  return {
+    title: `insert ${name}`,
+    body: 'Places one in the running world on the tile just ahead of the player, kept as a landmark point node in the world.',
+  };
+}
+
 export function duplicateRowTip(name: string): TooltipContent {
   return { title: `duplicate ${name}`, body: 'Files a copy right below, with its own id and everything else the same.' };
 }

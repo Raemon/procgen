@@ -7,6 +7,7 @@ export interface LibraryEntry {
   icon: ReactNode;
   rowAdornment?: ReactNode;
   tip: TooltipContent;
+  insert?: () => void;
   duplicate?: () => void;
   remove?: () => void;
   run?: () => void;

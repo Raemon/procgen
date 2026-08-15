@@ -8,7 +8,7 @@ import {
   characterViewSize,
   clampSightRadiusTiles,
 } from '@/features/game/vision/characterSight';
-import { BLANK_GLYPH, SELF_GLYPH, observedTileAt, unseenTile } from './observedTile';
+import { BLANK_GLYPH, SELF_GLYPH, agentCanSee, observedTileAt } from './observedTile';
 import { terrainSightlineFor, type TerrainSightline } from './terrainSightline';
 import type { MarkerSource } from '@/features/game/render/markerSource';
 import {
@@ -39,6 +39,7 @@ export interface AgentObservation {
   viewSize: number;
   sightRadiusTiles: number | null;
   view: string[];
+  elevation: string[] | null;
   legend: LegendEntry[];
   interaction: string | null;
 }
@@ -66,14 +67,24 @@ export function buildObservation(
   const legend = new Map<string, LegendEntry>();
   addFixedLegendEntries(legend, mode, radius);
   const view: string[] = [];
+  const heights: string[] = [];
+  const digitsSeen = new Set<string>();
   for (let row = 0; row < size; row++) {
     let line = '';
+    let heightLine = '';
     for (let column = 0; column < size; column++) {
       const x = viewport.originX + column;
       const y = viewport.originY + row;
-      line += observedGlyph(sampler, tileAssets, markers, legend, pose, mode, radius, seesPast, x, y);
+      const seen = cellIsSeen(pose, mode, radius, seesPast, x, y);
+      line += seen
+        ? observedGlyph(sampler, tileAssets, markers, legend, pose, mode, radius, x, y)
+        : BLANK_GLYPH;
+      const digit = seen ? elevationDigit(sampler.elevationAt(x, y)) : BLANK_GLYPH;
+      heightLine += digit;
+      if (seen) digitsSeen.add(digit);
     }
     view.push(line);
+    heights.push(heightLine);
   }
   return {
     mode,
@@ -82,9 +93,28 @@ export function buildObservation(
     viewSize: size,
     sightRadiusTiles: mode === 'character' ? radius : null,
     view,
+    elevation: digitsSeen.size > 1 ? heights : null,
     legend: [...legend.values()],
     interaction: interactPrompt(actionWithinReach(overlay, pose)),
   };
+}
+
+function cellIsSeen(
+  pose: AgentPose,
+  mode: AgentMode,
+  sightRadiusTiles: number,
+  seesPast: TerrainSightline,
+  x: number,
+  y: number,
+): boolean {
+  if (x === pose.x && y === pose.y) return true;
+  return agentCanSee(mode, pose, sightRadiusTiles, x, y) && seesPast(x, y);
+}
+
+const TALLEST_ELEVATION_DIGIT = 35;
+
+function elevationDigit(elevation: number): string {
+  return Math.min(TALLEST_ELEVATION_DIGIT, Math.max(0, Math.round(elevation))).toString(36);
 }
 
 function observedGlyph(
@@ -95,15 +125,10 @@ function observedGlyph(
   pose: AgentPose,
   mode: AgentMode,
   sightRadiusTiles: number,
-  seesPast: TerrainSightline,
   x: number,
   y: number,
 ): string {
-  const isSelf = x === pose.x && y === pose.y;
-  const observed =
-    isSelf || seesPast(x, y)
-      ? observedTileAt(sampler, tileAssets, markers, pose, mode, sightRadiusTiles, x, y)
-      : unseenTile(sightRadiusTiles);
+  const observed = observedTileAt(sampler, tileAssets, markers, pose, mode, sightRadiusTiles, x, y);
   if (theWholeGridSharesOneLegendEntryFor(observed.glyph)) return observed.glyph;
   return collectLegend(legend, observed.glyph, observed.meaning, observed.walkable);
 }
@@ -136,7 +161,7 @@ function addFixedLegendEntries(
     glyph: BLANK_GLYPH,
     meaning:
       mode === 'character'
-        ? `nothing generated here, or unseen: behind you, past your ${sightRadiusTiles}-tile sight radius (fog), or hidden behind tall ground`
+        ? `nothing generated here, or unseen: behind you, past your ${sightRadiusTiles}-tile sight radius (fog), or hidden behind tall ground or a ridge above you`
         : 'nothing generated here',
     walkable: null,
   });

@@ -18,6 +18,7 @@ export function useItemEntries(): LibraryEntry[] {
       title: item.name,
       body: `item ${item.id} · ${renderLabel(item.render)} · ${item.gridWidth}×${item.gridHeight} cells`,
     },
+    insert: () => perform('insert_item', { item_id: item.id }),
     duplicate: () => perform('duplicate_item', { item_id: item.id }),
     remove: () => {
       forgetOpenPanelOfRow(PERSISTED_UI_KEYS.openItemPanels, item.id);

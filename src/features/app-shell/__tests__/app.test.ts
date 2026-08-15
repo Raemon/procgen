@@ -31,10 +31,12 @@ import { checkWorldsAreDocuments } from '@/features/asset-library/worlds/__tests
 import { checkNamedWorldPresets } from '@/features/asset-library/worlds/__tests__/namedWorldPresets.test';
 import { checkAgentObservation } from '@/features/agents/__tests__/agentObservation.test';
 import { checkOccludedObservation } from '@/features/agents/__tests__/occludedObservation.test';
+import { checkElevationObservation } from '@/features/agents/__tests__/elevationObservation.test';
 import { checkAgentApiDocs } from '@/features/agents/__tests__/agentApiDocs.test';
 import { checkCommandDispatch } from '@/features/agents/__tests__/commandDispatch.test';
 import { checkOnlyTheCommandLayerCanMutate } from '@/features/agents/__tests__/commandLayerIsTheOnlyMutator.test';
 import { checkLandmarkAndCeilingInvariants } from '@/features/game/__tests__/landmarkAndCeilingInvariants.test';
+import { checkInsertAhead } from '@/features/game/__tests__/insertAhead.test';
 import { checkTileArtMipInvariants } from '@/features/asset-library/__tests__/tileArtMipInvariants.test';
 import { checkTileArtStorageInvariants } from '@/features/asset-library/__tests__/tileArtStorageInvariants.test';
 import { checkGeneratedAssetInvariants } from '@/features/asset-library/__tests__/generatedAssetInvariants.test';
@@ -95,6 +97,7 @@ describe('the named world presets', () => checkNamedWorldPresets(check));
 describe('worlds and node groups as documents', () => checkWorldsAreDocuments(check));
 describe('agent observation', () => checkAgentObservation(check));
 describe('what a character cannot see past', () => checkOccludedObservation(check));
+describe('what an agent reads of the ground height', () => checkElevationObservation(check));
 describe('the agent api docs', () => checkAgentApiDocs(check));
 describe('command dispatch', () => checkCommandDispatch(check));
 describe('the mutation boundary', () => checkOnlyTheCommandLayerCanMutate(check));
@@ -115,6 +118,7 @@ describe('documentation', () => {
 describe('the design bets', () => checkDesignBetsStillHold(check));
 describe('the api surface', () => checkEveryApiSurfaceIsDescribed(check));
 describe('landmarks and ceilings', () => checkLandmarkAndCeilingInvariants(check));
+describe('inserting assets ahead of the player', () => checkInsertAhead(check));
 describe('performance readouts', () => checkPerformanceReadouts(check));
 describe('the hovered tile readout', () => checkTileHoverReadout(check));
 describe('the API architecture', () => checkApiArchitecture(check));

@@ -46,12 +46,27 @@ An agent is created in one of two modes and stays in it for life.
   blank, and so is everything past your {{SIGHT_RADIUS}}-tile sight radius,
   which is why the corners of the grid are blank too. Ground standing twice
   your height or taller blocks the line of sight: you see the wall, never past
-  it, so what lies behind stays blank until you walk around. The blank half is how you
+  it, so what lies behind stays blank until you walk around. The land itself
+  blocks sight the same way once it rises: ground standing 2 or more above the
+  tile you stand on is a ridge — you see every tile of the climb up to its
+  crest, but past the crest only ground at least as high shows, so the far
+  slope and the valley beyond stay blank until you top it, and a crater rim
+  walls in everything you see from inside the bowl. The blank half is how you
   know which way you face — the observation never states it. That half-disc is
   exactly the ground the 2.5D character view renders before its fog closes in,
   which is first person and shows no more of the world than you are told. You move
   relative to your facing and turn in 45-degree steps. Characters can move and
   can change how far they see.
+
+## Reading the ground's height
+
+When the ground in view varies in height, the observation carries an
+\`elevation\` grid the same shape as the view: one digit per tile — the tile's
+ground height, rounded and written base-36 (0-9 then a-z, capped at z) — blank
+exactly where the view is blank. Flat views omit the grid entirely, so it
+costs nothing where it says nothing. Heights share units with tile heights:
+you stand 1 tall, and ground 2 or more digit-steps above your own tile is a
+ridge that hides lower ground behind it.
 
 ## Sight range, and what it costs
 
@@ -308,7 +323,7 @@ function legendBlock(tileAssets: ReadOnlyTileAssets): string {
     );
   return [
     "- '@' = you",
-    "- ' ' = nothing generated here (in character mode, also: behind you, fogged out past your sight radius, or hidden behind tall ground)",
+    "- ' ' = nothing generated here (in character mode, also: behind you, fogged out past your sight radius, or hidden behind tall ground or a ridge)",
     "- '?' = unrecognized tile",
     ...tiles,
   ].join('\n');

@@ -3,7 +3,7 @@ import { labyrinthCellKey } from '@/features/asset-library/worlds/labyrinth/laby
 import { chunkExitsOf } from '@/features/asset-library/worlds/labyrinth/chunkExits';
 import { roleOf, ROOM } from '@/features/asset-library/worlds/labyrinth/chunkRole';
 import type { LabyrinthKnobs } from '@/features/asset-library/worlds/labyrinth/labyrinthKnobs';
-import { roomGeometryOf, type RoomDoorway, type RoomGeometry } from '@/features/asset-library/worlds/labyrinth/roomLayout';
+import { rectBottom, rectRight, roomGeometryOf, type RoomDoorway, type RoomGeometry, type RoomRect } from '@/features/asset-library/worlds/labyrinth/roomLayout';
 import { hashString } from '@/features/asset-library/worlds/random/hashString';
 import { mulberry32 } from '@/features/asset-library/worlds/random/mulberry32';
 import { fixture, type PuzzleFixture } from '../fixtures/puzzleFixture';
@@ -64,13 +64,17 @@ function furnish(
 }
 
 function entrancesOf(geometry: RoomGeometry): Cell[] {
-  const inner = geometry.doorways.map((doorway) => middleGateCell(doorway));
+  const inner = geometry.doorways.map((doorway) => firstInteriorCell(doorway, geometry.interior));
   if (inner.length > 0) return inner;
   return [{ x: geometry.interior.x, y: geometry.interior.y + Math.floor(geometry.interior.height / 2) }];
 }
 
-function middleGateCell(doorway: RoomDoorway): Cell {
-  return doorway.gate[Math.floor(doorway.gate.length / 2)]!;
+function firstInteriorCell(doorway: RoomDoorway, interior: RoomRect): Cell {
+  const along = doorway.gate[Math.floor(doorway.gate.length / 2)]!;
+  if (doorway.side === 'west') return { x: interior.x, y: along.y };
+  if (doorway.side === 'east') return { x: rectRight(interior), y: along.y };
+  if (doorway.side === 'north') return { x: along.x, y: interior.y };
+  return { x: along.x, y: rectBottom(interior) };
 }
 
 function gatesOf(geometry: RoomGeometry): RoomGates {

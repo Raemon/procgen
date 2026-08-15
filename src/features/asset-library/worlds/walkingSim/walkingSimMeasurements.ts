@@ -16,8 +16,8 @@ import {
   type ShareTally,
 } from './metrics/sceneryShares';
 import { viewDistinctness } from './metrics/viewDistinctness';
+import type { SightProbes } from './isovist';
 import type { NearbySpawnsProbe } from './nearbySpawnsProbe';
-import type { OpaqueProbe } from './sightBlocking';
 import { stepsWalked, type TouristLimits, type TouristTrace } from './touristWalk';
 import type { WalkableProbe } from './worldProbes';
 
@@ -51,7 +51,7 @@ export interface WalkingSimMeasurements {
 
 export interface WalkProbes {
   isWalkableAt: WalkableProbe;
-  isOpaqueAt: OpaqueProbe;
+  sight: SightProbes;
   characterAt: CellCharacterProbe;
   spawnsNear: NearbySpawnsProbe;
 }
@@ -128,6 +128,6 @@ function discoveryAndLandmarkReadings(
 ) {
   return {
     ...discoveriesAlongPath(trace.path, probes.spawnsNear),
-    ...landmarkPull(trace.farSeenPerStep, { ...probes, seenShares }),
+    ...landmarkPull(trace.farSeenPerStep, { ...probes, isOpaqueAt: probes.sight.isOpaqueAt, seenShares }),
   };
 }

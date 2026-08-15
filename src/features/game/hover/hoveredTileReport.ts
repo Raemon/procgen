@@ -4,8 +4,10 @@ import {
   BLANK_GLYPH,
   agentCanSee,
   observedTileAt,
+  unseenTile,
   type ObservedTile,
 } from '../../agents/observedTile';
+import { terrainHidesTileFrom } from '../../agents/terrainSightline';
 import type { ReadOnlyTileAssets } from '@/features/app-shell/runtime/readOnlyAssets';
 import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import { pointOverlayLookup } from '../render/ascii/asciiCells';
@@ -33,19 +35,29 @@ export function hoveredTileReport(eyes: AgentEyes, cell: HoveredCell): HoveredTi
   if (!fallsInsideTheAgentsGrid(eyes.pose, size, cell)) {
     return { cell, observed: beyondTheGrid(size), action: null };
   }
+  const hiddenByTerrain = terrainHidesTileFrom(
+    eyes.sampler,
+    eyes.tileAssets,
+    eyes.pose,
+    eyes.mode,
+    cell.x,
+    cell.y,
+  );
   return {
     cell,
-    observed: observedTileAt(
-      eyes.sampler,
-      eyes.tileAssets,
-      markersOnJustThisCell(eyes, cell),
-      eyes.pose,
-      eyes.mode,
-      radius,
-      cell.x,
-      cell.y,
-    ),
-    action: agentCanSee(eyes.mode, eyes.pose, radius, cell.x, cell.y)
+    observed: hiddenByTerrain
+      ? unseenTile(radius)
+      : observedTileAt(
+          eyes.sampler,
+          eyes.tileAssets,
+          markersOnJustThisCell(eyes, cell),
+          eyes.pose,
+          eyes.mode,
+          radius,
+          cell.x,
+          cell.y,
+        ),
+    action: !hiddenByTerrain && agentCanSee(eyes.mode, eyes.pose, radius, cell.x, cell.y)
       ? eyes.overlay.actionAt(cell.x, cell.y)
       : null,
   };

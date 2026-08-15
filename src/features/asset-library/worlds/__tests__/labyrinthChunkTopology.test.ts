@@ -4,6 +4,7 @@ import { chunkExitsOf, openExitCount, seamIsOpen } from '../labyrinth/chunkExits
 import { ringOf } from '../labyrinth/chunkRing';
 import { roleOf, ROOM } from '../labyrinth/chunkRole';
 import { labyrinthKnobsFrom, type LabyrinthKnobs } from '../labyrinth/labyrinthKnobs';
+import { rectContains, roomGeometryOf, type RoomDoorway, type RoomGeometry } from '../labyrinth/roomLayout';
 import { buildPuzzleRoom } from '@/features/game/puzzles/rooms/buildPuzzleRoom';
 import type { PuzzleRoomLayout } from '@/features/game/puzzles/rooms/puzzleRoomLayout';
 import { forwardSolutionWorks } from '@/features/game/puzzles/kinds/forwardSolutionWorks';
@@ -164,6 +165,56 @@ function warrenCountsAsSolved(knobs: LabyrinthKnobs): boolean {
   return roomIsSolved(buildPuzzleRoom(knobs, warren[0], warren[1]), new PuzzleState());
 }
 
+function roomsInRings(knobs: LabyrinthKnobs, rings: number): RoomGeometry[] {
+  return everyChunkWithin(rings)
+    .filter(([cx, cy]) => roleOf(cx, cy, knobs) === ROOM)
+    .map(([cx, cy]) => roomGeometryOf(cx, cy, chunkExitsOf(cx, cy, knobs), knobs));
+}
+
+function doorsSitInTheWall(knobs: LabyrinthKnobs): boolean {
+  return roomsInRings(knobs, CHECKED_RINGS).every((geometry) =>
+    geometry.doorways.every((doorway) =>
+      doorway.gate.every(
+        (cell) =>
+          doorway.cells.some((hole) => hole.x === cell.x && hole.y === cell.y) &&
+          !rectContains(geometry.interior, cell.x, cell.y),
+      ),
+    ),
+  );
+}
+
+const DIAGONAL_STEPS: ReadonlyArray<[number, number]> = [[1, 1], [1, -1], [-1, 1], [-1, -1]];
+
+function aDiagonalStepCanSkipTheDoor(geometry: RoomGeometry): boolean {
+  return geometry.doorways.some((doorway) => {
+    const gateKeys = new Set(doorway.gate.map((cell) => `${cell.x},${cell.y}`));
+    return tilesOutsideTheDoor(doorway, gateKeys).some((from) =>
+      DIAGONAL_STEPS.some(([dx, dy]) => {
+        const x = from.x + dx;
+        const y = from.y + dy;
+        return rectContains(geometry.interior, x, y) && !gateKeys.has(`${x},${y}`);
+      }),
+    );
+  });
+}
+
+function tilesOutsideTheDoor(
+  doorway: RoomDoorway,
+  gateKeys: Set<string>,
+): Array<{ x: number; y: number }> {
+  const outward = outwardStep(doorway.side);
+  const holesBesideTheLeaf = doorway.cells.filter((cell) => !gateKeys.has(`${cell.x},${cell.y}`));
+  const justOutside = doorway.gate.map((cell) => ({ x: cell.x + outward[0], y: cell.y + outward[1] }));
+  return [...holesBesideTheLeaf, ...justOutside];
+}
+
+function outwardStep(side: RoomDoorway['side']): [number, number] {
+  if (side === 'west') return [-1, 0];
+  if (side === 'east') return [1, 0];
+  if (side === 'north') return [0, -1];
+  return [0, 1];
+}
+
 function worldFilesImportingNodes(): string[] {
   return filesUnder('world', endingIn('.ts', '.tsx')).filter((path) =>
     /from '[^']*procgen\/nodes\//.test(readFileSync(path, 'utf8')),
@@ -203,6 +254,17 @@ export function checkLabyrinthChunkTopology(check: CheckReporter): void {
   check(
     'a warren chunk is born solved, so its side of every doorway never locks',
     knobs.every(warrenCountsAsSolved),
+  );
+  const thickWall = knobs.map((k) => ({ ...k, wall: 2 }));
+  check(
+    'room doors sit in the wall opening, not on the floor inside, for wall 1 and 2',
+    [...knobs, ...thickWall].every(doorsSitInTheWall),
+  );
+  check(
+    'a diagonal step from the doorway cannot skip into the room around the door',
+    [...knobs, ...thickWall].every((k) =>
+      roomsInRings(k, CHECKED_RINGS).every((geometry) => !aDiagonalStepCanSkipTheDoor(geometry)),
+    ),
   );
   const strays = worldFilesImportingNodes();
   reportOffenders('world files importing procgen/nodes', strays);

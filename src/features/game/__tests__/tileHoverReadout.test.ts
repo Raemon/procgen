@@ -1,6 +1,5 @@
 import type { AgentMode, AgentPose } from '../../agents/agentMode';
 import { buildObservation, NO_OVERLAY, type AgentObservation } from '../../agents/observation';
-import { observationLines, viewFirstLineIndex } from '../../agents/observationText';
 import { PipelineEvaluator } from '@/features/asset-library/worlds/eval/evaluator';
 import { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
 import { noiseTerrainState } from '@/features/asset-library/worlds/__tests__/terrainFixtureState';
@@ -41,25 +40,18 @@ function checkTheHoverReadoutMatchesTheAgentGrid(check: CheckReporter): void {
 function checkTheTextGridMapsBackToWorldCells(check: CheckReporter): void {
   const obs = observationOf('god');
   const center = Math.floor(obs.viewSize / 2);
-  const firstGridLine = viewFirstLineIndex(obs);
-  check(
-    'the agent text view puts its grid where the pointer mapping counts the first grid line',
-    observationLines(obs)[firstGridLine] === obs.view[0] &&
-      observationLines(obs)[firstGridLine + obs.viewSize - 1] === obs.view[obs.viewSize - 1],
-  );
   check(
     'hovering the middle character of the drawn grid lands on the tile the player stands on',
-    sameCell(worldCellOfObservationGridCell(obs, { column: center, row: firstGridLine + center }), {
+    sameCell(worldCellOfObservationGridCell(obs, { column: center, row: center }), {
       x: POSE.x,
       y: POSE.y,
     }),
   );
   check(
-    'hovering the header, the legend, or past the right edge of the grid names no tile at all',
-    worldCellOfObservationGridCell(obs, { column: 0, row: firstGridLine - 1 }) === null &&
-      worldCellOfObservationGridCell(obs, { column: 0, row: firstGridLine + obs.viewSize }) ===
-        null &&
-      worldCellOfObservationGridCell(obs, { column: obs.viewSize, row: firstGridLine }) === null,
+    'hovering above, below, or past the right edge of the grid names no tile at all',
+    worldCellOfObservationGridCell(obs, { column: 0, row: -1 }) === null &&
+      worldCellOfObservationGridCell(obs, { column: 0, row: obs.viewSize }) === null &&
+      worldCellOfObservationGridCell(obs, { column: obs.viewSize, row: 0 }) === null,
   );
 }
 

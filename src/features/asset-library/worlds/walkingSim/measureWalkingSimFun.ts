@@ -15,7 +15,7 @@ import {
   type WalkingSimMeasurements,
   type WalkProbes,
 } from './walkingSimMeasurements';
-import { cachedTileIdProbe, walkableProbeFrom } from './worldProbes';
+import { cachedElevationProbe, cachedTileIdProbe, walkableProbeFrom } from './worldProbes';
 
 export const WALKS_PER_WORLD = 2;
 
@@ -45,7 +45,10 @@ function walkProbesOf(sampler: WorldSampler, tileAssets: TileAssets): WalkProbes
   const tileIdAt = cachedTileIdProbe(sampler);
   return {
     isWalkableAt: walkableProbeFrom(tileIdAt, tileAssets),
-    isOpaqueAt: opaqueProbeFrom(tileIdAt, tileAssets),
+    sight: {
+      isOpaqueAt: opaqueProbeFrom(tileIdAt, tileAssets),
+      elevationAt: cachedElevationProbe(sampler),
+    },
     characterAt: cellCharacterProbe(sampler, tileIdAt, tileAssets),
     spawnsNear: nearbySpawnsProbe(sampler),
   };
@@ -63,7 +66,7 @@ function oneWalk(
 ): Walk {
   const trace = walkAsTourist(
     probes.isWalkableAt,
-    probes.isOpaqueAt,
+    probes.sight,
     probes.spawnsNear,
     spawn,
     limits,

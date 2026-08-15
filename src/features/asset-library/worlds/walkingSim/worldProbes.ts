@@ -18,6 +18,18 @@ export function cachedTileIdProbe(sampler: WorldSampler): TileIdProbe {
   };
 }
 
+export function cachedElevationProbe(sampler: WorldSampler): (x: number, y: number) => number {
+  const cache = new Map<string, number>();
+  return (x, y) => {
+    const key = cellKey(x, y);
+    const hit = cache.get(key);
+    if (hit !== undefined) return hit;
+    const elevation = sampler.elevationAt(x, y);
+    cache.set(key, elevation);
+    return elevation;
+  };
+}
+
 export function walkableProbeFrom(tileIdAt: TileIdProbe, tileAssets: TileAssets): WalkableProbe {
   return (x, y) => isWalkableTile(tileAssets, tileIdAt(x, y));
 }

@@ -1,20 +1,36 @@
 import type { CellPoint } from '@/features/game/nearestWalkable';
-import type { OpaqueProbe } from './sightBlocking';
+import { SIGHT_BLOCKING_TILE_HEIGHT, type OpaqueProbe } from './sightBlocking';
+
+export type GroundElevationProbe = (x: number, y: number) => number;
+
+export interface SightProbes {
+  isOpaqueAt: OpaqueProbe;
+  elevationAt: GroundElevationProbe;
+}
 
 export function visibleCellsFrom(
   origin: CellPoint,
   radius: number,
-  isOpaqueAt: OpaqueProbe,
+  sight: SightProbes,
 ): CellPoint[] {
   const visible: CellPoint[] = [];
+  const eyeGround = sight.elevationAt(origin.x, origin.y);
   for (let dy = -radius; dy <= radius; dy++) {
     for (let dx = -radius; dx <= radius; dx++) {
       if (dx * dx + dy * dy > radius * radius) continue;
       const target = { x: origin.x + dx, y: origin.y + dy };
-      if (sightLineIsClear(origin, target, isOpaqueAt)) visible.push(target);
+      if (sightLineIsClear(origin, target, eyeGround, sight)) visible.push(target);
     }
   }
   return visible;
+}
+
+export function cellIsVisibleFrom(
+  origin: CellPoint,
+  target: CellPoint,
+  sight: SightProbes,
+): boolean {
+  return sightLineIsClear(origin, target, sight.elevationAt(origin.x, origin.y), sight);
 }
 
 export function cellsInSightDisc(radius: number): number {
@@ -27,9 +43,18 @@ export function cellsInSightDisc(radius: number): number {
   return count;
 }
 
-function sightLineIsClear(origin: CellPoint, target: CellPoint, isOpaqueAt: OpaqueProbe): boolean {
+function sightLineIsClear(
+  origin: CellPoint,
+  target: CellPoint,
+  eyeGround: number,
+  sight: SightProbes,
+): boolean {
+  const targetGround = sight.elevationAt(target.x, target.y);
+  const ridgeRise = eyeGround + SIGHT_BLOCKING_TILE_HEIGHT;
   for (const cell of cellsStrictlyBetween(origin, target)) {
-    if (isOpaqueAt(cell.x, cell.y)) return false;
+    if (sight.isOpaqueAt(cell.x, cell.y)) return false;
+    const ground = sight.elevationAt(cell.x, cell.y);
+    if (ground >= ridgeRise && ground > targetGround) return false;
   }
   return true;
 }
