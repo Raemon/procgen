@@ -478,5 +478,173 @@
     "roofStyle": 1,
     "storyLayers": 2,
     "windowEvery": 3
+  },
+  {
+    "id": 11,
+    "name": "ashstangarth (ashstangarth (evolved))",
+    "roleBindings": {
+      "wallSegment": [
+        106
+      ],
+      "wallCorner": [
+        107
+      ],
+      "window": [
+        108
+      ],
+      "door": [
+        109
+      ],
+      "roofEdge": [
+        110
+      ],
+      "roofRidge": [
+        111
+      ],
+      "roofGableEnd": [
+        112
+      ],
+      "floor": [
+        113
+      ],
+      "chimney": [
+        114
+      ]
+    },
+    "wallTileId": 232,
+    "trimTileId": 237,
+    "roofSlopeTileId": 234,
+    "roofRidgeTileId": 235,
+    "floorTileId": 236,
+    "pathTileId": 242,
+    "roofStyle": 1,
+    "storyLayers": 2,
+    "windowEvery": 3
+  },
+  {
+    "id": 12,
+    "name": "ramburtor (ramburtor (evolved))",
+    "roleBindings": {
+      "wallSegment": [
+        115
+      ],
+      "wallCorner": [
+        116
+      ],
+      "window": [
+        117
+      ],
+      "door": [
+        118
+      ],
+      "roofEdge": [
+        119
+      ],
+      "roofRidge": [
+        120
+      ],
+      "roofGableEnd": [
+        121
+      ],
+      "floor": [
+        122
+      ],
+      "chimney": [
+        123
+      ]
+    },
+    "wallTileId": 256,
+    "trimTileId": 261,
+    "roofSlopeTileId": 258,
+    "roofRidgeTileId": 259,
+    "floorTileId": 260,
+    "pathTileId": 266,
+    "roofStyle": 0,
+    "storyLayers": 2,
+    "windowEvery": 4
+  },
+  {
+    "id": 13,
+    "name": "okederby (okederby (evolved))",
+    "roleBindings": {
+      "wallSegment": [
+        124
+      ],
+      "wallCorner": [
+        125
+      ],
+      "window": [
+        126
+      ],
+      "door": [
+        127
+      ],
+      "roofEdge": [
+        128
+      ],
+      "roofRidge": [
+        129
+      ],
+      "roofGableEnd": [
+        130
+      ],
+      "floor": [
+        131
+      ],
+      "chimney": [
+        132
+      ]
+    },
+    "wallTileId": 268,
+    "trimTileId": 273,
+    "roofSlopeTileId": 270,
+    "roofRidgeTileId": 271,
+    "floorTileId": 272,
+    "pathTileId": 278,
+    "roofStyle": 1,
+    "storyLayers": 3,
+    "windowEvery": 3
+  },
+  {
+    "id": 14,
+    "name": "halstanness (halstanness (evolved))",
+    "roleBindings": {
+      "wallSegment": [
+        133
+      ],
+      "wallCorner": [
+        134
+      ],
+      "window": [
+        135
+      ],
+      "door": [
+        136
+      ],
+      "roofEdge": [
+        137
+      ],
+      "roofRidge": [
+        138
+      ],
+      "roofGableEnd": [
+        139
+      ],
+      "floor": [
+        140
+      ],
+      "chimney": [
+        141
+      ]
+    },
+    "wallTileId": 293,
+    "trimTileId": 298,
+    "roofSlopeTileId": 295,
+    "roofRidgeTileId": 296,
+    "floorTileId": 297,
+    "pathTileId": 303,
+    "roofStyle": 0,
+    "storyLayers": 3,
+    "windowEvery": 4
   }
 ]

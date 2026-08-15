@@ -29,6 +29,7 @@ import { checkNodeFolders } from '@/features/asset-library/worlds/__tests__/node
 import { checkTemplates } from '@/features/asset-library/worlds/__tests__/templates.test';
 import { checkWorldsAreDocuments } from '@/features/asset-library/worlds/__tests__/worldsAreDocuments.test';
 import { checkNamedWorldPresets } from '@/features/asset-library/worlds/__tests__/namedWorldPresets.test';
+import { checkPresetSync } from '@/features/asset-library/worlds/__tests__/presetSync.test';
 import { checkAgentObservation } from '@/features/agents/__tests__/agentObservation.test';
 import { checkOccludedObservation } from '@/features/agents/__tests__/occludedObservation.test';
 import { checkElevationObservation } from '@/features/agents/__tests__/elevationObservation.test';
@@ -95,6 +96,7 @@ describe('node folders', () => checkNodeFolders(check));
 describe('standing and broken water', () => checkStandingAndBrokenWater(check));
 describe('templates', () => checkTemplates(check));
 describe('the named world presets', () => checkNamedWorldPresets(check));
+describe('presets shipped in data files sync into the database', () => checkPresetSync(check));
 describe('worlds and node groups as documents', () => checkWorldsAreDocuments(check));
 describe('agent observation', () => checkAgentObservation(check));
 describe('what a character cannot see past', () => checkOccludedObservation(check));

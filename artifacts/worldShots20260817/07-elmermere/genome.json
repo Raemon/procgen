@@ -1,0 +1,245 @@
+{
+  "kitSeed": 420158,
+  "accentKitSeed": 631977,
+  "paletteSize": 6,
+  "pipeline": {
+    "seed": 645929,
+    "daylight": 1,
+    "time": 0,
+    "nodes": [
+      {
+        "id": "n1",
+        "type": "terrainNoise",
+        "label": "relief",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.016,
+          "style": 1,
+          "octaves": 5,
+          "lacunarity": 2,
+          "gain": 0.5
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n2",
+        "type": "terrainNoise",
+        "label": "pass corridors",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.034,
+          "style": 0,
+          "octaves": 2,
+          "lacunarity": 2,
+          "gain": 0.5
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n3",
+        "type": "terraceField",
+        "label": "cliff terraces",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "levels": 5,
+          "passesAbove": 0.67
+        },
+        "inputs": {
+          "source": "n1",
+          "passes": "n2"
+        },
+        "display": {
+          "mode": "elevation",
+          "heightScale": 8
+        }
+      },
+      {
+        "id": "n4",
+        "type": "terrainNoise",
+        "label": "climate",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.008,
+          "style": 0,
+          "octaves": 2,
+          "lacunarity": 2,
+          "gain": 0.5
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n5",
+        "type": "biomeBands",
+        "label": "biome ≥0",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "seaLevel": 0.41,
+          "deepDrop": 0.06,
+          "shoreBand": 0.04,
+          "rockAbove": 0.45,
+          "snowLine": 0.82,
+          "regionAtLeast": 0,
+          "deepTile": 13,
+          "waterTile": 25,
+          "shoreTile": 17,
+          "groundTile": 1,
+          "rockTile": 17,
+          "snowTile": 4
+        },
+        "inputs": {
+          "elevation": "n3",
+          "steepness": null,
+          "shoreDistance": null,
+          "region": "n4"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n6",
+        "type": "biomeBands",
+        "label": "biome ≥0.5",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "seaLevel": 0.41,
+          "deepDrop": 0.06,
+          "shoreBand": 0.08,
+          "rockAbove": 0.45,
+          "snowLine": 0.77,
+          "regionAtLeast": 0.5,
+          "deepTile": 13,
+          "waterTile": 25,
+          "shoreTile": 1,
+          "groundTile": 14,
+          "rockTile": 1,
+          "snowTile": 17
+        },
+        "inputs": {
+          "elevation": "n3",
+          "steepness": null,
+          "shoreDistance": null,
+          "region": "n4"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n7",
+        "type": "biomeBands",
+        "label": "biome ≥0.72",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "seaLevel": 0.41,
+          "deepDrop": 0.06,
+          "shoreBand": 0.04,
+          "rockAbove": 0.45,
+          "snowLine": 0.83,
+          "regionAtLeast": 0.72,
+          "deepTile": 13,
+          "waterTile": 25,
+          "shoreTile": 14,
+          "groundTile": 4,
+          "rockTile": 14,
+          "snowTile": 1
+        },
+        "inputs": {
+          "elevation": "n3",
+          "steepness": null,
+          "shoreDistance": null,
+          "region": "n4"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n8",
+        "type": "straitBridges",
+        "label": "bridges",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "waterBelow": 0.41,
+          "shallowBand": 0.16,
+          "maxSpan": 11,
+          "pitch": 28,
+          "bridgeTile": 14
+        },
+        "inputs": {
+          "water": "n3"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n9",
+        "type": "scatterPoints",
+        "label": "monster scatter",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.007,
+          "maskAtLeast": 0.5,
+          "maskAtMost": 0.8
+        },
+        "inputs": {
+          "mask": "n4"
+        },
+        "display": {
+          "mode": "structures",
+          "cultureId": 0
+        }
+      },
+      {
+        "id": "n10",
+        "type": "scatterPoints",
+        "label": "shrine scatter",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.01,
+          "maskAtLeast": 0.72,
+          "maskAtMost": 1
+        },
+        "inputs": {
+          "mask": "n4"
+        },
+        "display": {
+          "mode": "markers",
+          "tileId": 14,
+          "glyph": "✶",
+          "color": "#2d6a34"
+        }
+      }
+    ]
+  }
+}

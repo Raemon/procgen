@@ -1,0 +1,267 @@
+{
+  "kitSeed": 827722,
+  "accentKitSeed": 827722,
+  "paletteSize": 4,
+  "pipeline": {
+    "seed": 842470,
+    "daylight": 1,
+    "time": 0,
+    "nodes": [
+      {
+        "id": "n1",
+        "type": "terrainNoise",
+        "label": "mountain ranges",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.008,
+          "style": 1,
+          "octaves": 5,
+          "lacunarity": 2,
+          "gain": 0.51
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n2",
+        "type": "terrainNoise",
+        "label": "lowlands",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.052,
+          "style": 0,
+          "octaves": 4,
+          "lacunarity": 2,
+          "gain": 0.5
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n3",
+        "type": "blendFields",
+        "label": "relief",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "weight": 0.2
+        },
+        "inputs": {
+          "a": "n1",
+          "b": "n2",
+          "mask": null
+        },
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n4",
+        "type": "terrainNoise",
+        "label": "pass corridors",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.074,
+          "style": 0,
+          "octaves": 2,
+          "lacunarity": 2,
+          "gain": 0.5
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n5",
+        "type": "terraceField",
+        "label": "cliff terraces",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "levels": 5,
+          "passesAbove": 0.69
+        },
+        "inputs": {
+          "source": "n3",
+          "passes": "n4"
+        },
+        "display": {
+          "mode": "elevation",
+          "heightScale": 8
+        }
+      },
+      {
+        "id": "n6",
+        "type": "thresholdTiles",
+        "label": "band 1",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.43,
+          "belowTile": 6,
+          "aboveTile": 10
+        },
+        "inputs": {
+          "source": "n5"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n7",
+        "type": "thresholdTiles",
+        "label": "band 2",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.53,
+          "belowTile": -1,
+          "aboveTile": 1
+        },
+        "inputs": {
+          "source": "n5"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n8",
+        "type": "thresholdTiles",
+        "label": "band 3",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.62,
+          "belowTile": -1,
+          "aboveTile": 4
+        },
+        "inputs": {
+          "source": "n5"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n9",
+        "type": "thresholdTiles",
+        "label": "band 4",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.73,
+          "belowTile": -1,
+          "aboveTile": 6
+        },
+        "inputs": {
+          "source": "n5"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n10",
+        "type": "thresholdTiles",
+        "label": "crags",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.95,
+          "belowTile": -1,
+          "aboveTile": 6
+        },
+        "inputs": {
+          "source": "n3"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n11",
+        "type": "scatterPoints",
+        "label": "loot scatter",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.004,
+          "maskAtLeast": 0.62,
+          "maskAtMost": 1
+        },
+        "inputs": {
+          "mask": "n5"
+        },
+        "display": {
+          "mode": "structures",
+          "cultureId": 0
+        }
+      },
+      {
+        "id": "n12",
+        "type": "scatterPoints",
+        "label": "crystal scatter",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.09,
+          "maskAtLeast": 0.62,
+          "maskAtMost": 0.78
+        },
+        "inputs": {
+          "mask": "n5"
+        },
+        "display": {
+          "mode": "markers",
+          "tileId": -1,
+          "glyph": "▲",
+          "color": "#2d6a34"
+        }
+      },
+      {
+        "id": "n13",
+        "type": "scatterPoints",
+        "label": "tree scatter",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.0015,
+          "maskAtLeast": 0,
+          "maskAtMost": 1
+        },
+        "inputs": {
+          "mask": "n5"
+        },
+        "display": {
+          "mode": "markers",
+          "tileId": 6,
+          "glyph": "▲",
+          "color": "#c2c2c2"
+        }
+      }
+    ]
+  }
+}
