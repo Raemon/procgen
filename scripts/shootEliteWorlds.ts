@@ -36,8 +36,16 @@ const run = runTraining(settings, (record) =>
     `gen ${String(record.generation).padStart(3)}  best ${record.archiveBestFun.toFixed(3)}  coverage ${record.coverage.toFixed(2)}  admitted ${record.admissions}  ${Math.round((Date.now() - startedAt) / 1000)}s`,
   ),
 );
-const elites = run.archive.rankedByFun().slice(0, TOP_WORLDS);
+const elites = showcaseSlateOf(run.archive.rankedByFun());
 console.log(`shooting ${elites.length} elites into ${OUT_DIR}...`);
+
+function showcaseSlateOf(ranked: readonly ScoredWorld[]): ScoredWorld[] {
+  const gated = ranked.filter((elite) => elite.measurements.elevationGateShare > 0.02);
+  console.log(`archive holds ${ranked.length} elites, ${gated.length} with real elevation gates`);
+  const cliffs = gated.slice(0, 2);
+  const flats = ranked.filter((elite) => !cliffs.includes(elite)).slice(0, TOP_WORLDS - cliffs.length);
+  return [...flats, ...cliffs].sort((one, other) => funOf(other) - funOf(one)).slice(0, TOP_WORLDS);
+}
 mkdirSync(OUT_DIR, { recursive: true });
 const bundle = SKIP_3D ? '' : await browserViewBundle();
 
