@@ -1,3 +1,4 @@
+import { appendStraitBridges } from './bridgeSeasoning';
 import { NOISE_STYLE_FBM, NOISE_STYLE_RIDGED } from '../noise/terrainOctaves';
 import type { NodeInstance } from '../pipeline/pipelineState';
 import type { RandomStream } from '../random/mulberry32';
@@ -14,6 +15,7 @@ export function riverlandsRecipeNodes(rng: RandomStream, tileIds: readonly numbe
   const waterTiles = shuffled(rng, tileIds);
   appendRiver(nodes, rng, waterTiles, heightId, floodedId, seaLevel);
   if (chance(rng, 0.6)) appendLakes(nodes, rng, waterTiles, heightId, floodedId, seaLevel);
+  if (chance(rng, 0.65)) appendStraitBridges(nodes, rng, tileIds, heightId, seaLevel);
   appendScatterLayers(nodes, rng, tileIds, heightId);
   return nodes;
 }

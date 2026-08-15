@@ -18,6 +18,7 @@ import './hydrology/carveValleysNode';
 import './hydrology/riverFromFlowNode';
 import './hydrology/lakeFromFillNode';
 import './hydrology/rapidsFromFlowNode';
+import './hydrology/straitBridgesNode';
 import './maze/mazeChunkNode';
 import './labyrinth/labyrinthChunksNode';
 import './labyrinth/labyrinthDenizensNode';

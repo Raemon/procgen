@@ -1,7 +1,8 @@
 import type { NodeInstance } from '../pipeline/pipelineState';
 import type { RandomStream } from '../random/mulberry32';
+import { appendStraitBridges } from './bridgeSeasoning';
 import { appendBandLayers, appendScatterLayers } from './terrainRecipe';
-import { rollBetween, rollInt, snappedToStep } from './randomRolls';
+import { chance, rollBetween, rollInt, snappedToStep } from './randomRolls';
 import { nextRecipeId, recipeNode } from './recipeNode';
 
 export function volcanicIsleRecipeNodes(
@@ -10,8 +11,10 @@ export function volcanicIsleRecipeNodes(
 ): NodeInstance[] {
   const nodes: NodeInstance[] = [];
   const conesId = appendHotspots(nodes, rng);
-  const reliefId = appendConeField(nodes, rng, conesId);
+  const seaLevel = snappedToStep(rollBetween(rng, 0.4, 0.5), 0, 1, 0.01);
+  const reliefId = appendConeField(nodes, rng, conesId, seaLevel);
   appendBandLayers(nodes, rng, tileIds, reliefId);
+  if (chance(rng, 0.7)) appendStraitBridges(nodes, rng, tileIds, reliefId, seaLevel);
   appendScatterLayers(nodes, rng, tileIds, reliefId);
   return nodes;
 }
@@ -34,14 +37,19 @@ function appendHotspots(nodes: NodeInstance[], rng: RandomStream): string {
   return id;
 }
 
-function appendConeField(nodes: NodeInstance[], rng: RandomStream, conesId: string): string {
+function appendConeField(
+  nodes: NodeInstance[],
+  rng: RandomStream,
+  conesId: string,
+  seaLevel: number,
+): string {
   const id = nextRecipeId(nodes);
   nodes.push(
     recipeNode({
       id,
       type: 'volcanoConeField',
       label: 'isles',
-      params: { seaLevel: snappedToStep(rollBetween(rng, 0.4, 0.5), 0, 1, 0.01) },
+      params: { seaLevel },
       inputs: { volcanoes: conesId },
       display: { mode: 'elevation', heightScale: snappedToStep(rollBetween(rng, 2, 6), 0.5, 8, 0.5) },
     }),
