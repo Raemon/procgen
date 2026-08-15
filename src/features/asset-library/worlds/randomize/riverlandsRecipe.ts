@@ -4,19 +4,20 @@ import type { NodeInstance } from '../pipeline/pipelineState';
 import type { RandomStream } from '../random/mulberry32';
 import { chance, rollBetween, rollInt, shuffled, snappedToStep } from './randomRolls';
 import { nextRecipeId, recipeNode } from './recipeNode';
+import { preferring, type RecipeTiles } from './recipeTiles';
 import { appendBandLayers, appendScatterLayers } from './terrainRecipe';
 
-export function riverlandsRecipeNodes(rng: RandomStream, tileIds: readonly number[]): NodeInstance[] {
+export function riverlandsRecipeNodes(rng: RandomStream, tiles: RecipeTiles): NodeInstance[] {
   const nodes: NodeInstance[] = [];
   const seaLevel = snappedToStep(rollBetween(rng, 0.35, 0.5), 0, 1, 0.01);
   const heightId = appendHighlands(nodes, rng);
   const floodedId = appendDrainableSurface(nodes, rng, heightId, seaLevel);
-  appendBandLayers(nodes, rng, tileIds, heightId);
-  const waterTiles = shuffled(rng, tileIds);
+  appendBandLayers(nodes, rng, tiles, heightId);
+  const waterTiles = shuffled(rng, preferring(tiles, 'blockers'));
   appendRiver(nodes, rng, waterTiles, heightId, floodedId, seaLevel);
   if (chance(rng, 0.6)) appendLakes(nodes, rng, waterTiles, heightId, floodedId, seaLevel);
-  if (chance(rng, 0.65)) appendStraitBridges(nodes, rng, tileIds, heightId, seaLevel);
-  appendScatterLayers(nodes, rng, tileIds, heightId);
+  if (chance(rng, 0.65)) appendStraitBridges(nodes, rng, tiles, heightId, seaLevel);
+  appendScatterLayers(nodes, rng, tiles, heightId);
   return nodes;
 }
 

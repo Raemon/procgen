@@ -4,18 +4,19 @@ import { appendStraitBridges } from './bridgeSeasoning';
 import { appendBandLayers, appendScatterLayers } from './terrainRecipe';
 import { chance, rollBetween, rollInt, snappedToStep } from './randomRolls';
 import { nextRecipeId, recipeNode } from './recipeNode';
+import type { RecipeTiles } from './recipeTiles';
 
 export function volcanicIsleRecipeNodes(
   rng: RandomStream,
-  tileIds: readonly number[],
+  tiles: RecipeTiles,
 ): NodeInstance[] {
   const nodes: NodeInstance[] = [];
   const conesId = appendHotspots(nodes, rng);
   const seaLevel = snappedToStep(rollBetween(rng, 0.4, 0.5), 0, 1, 0.01);
   const reliefId = appendConeField(nodes, rng, conesId, seaLevel);
-  appendBandLayers(nodes, rng, tileIds, reliefId);
-  if (chance(rng, 0.7)) appendStraitBridges(nodes, rng, tileIds, reliefId, seaLevel);
-  appendScatterLayers(nodes, rng, tileIds, reliefId);
+  appendBandLayers(nodes, rng, tiles, reliefId);
+  if (chance(rng, 0.7)) appendStraitBridges(nodes, rng, tiles, reliefId, seaLevel);
+  appendScatterLayers(nodes, rng, tiles, reliefId);
   return nodes;
 }
 

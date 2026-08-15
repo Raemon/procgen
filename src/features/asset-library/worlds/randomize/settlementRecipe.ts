@@ -2,20 +2,21 @@ import type { NodeInstance } from '../pipeline/pipelineState';
 import type { RandomStream } from '../random/mulberry32';
 import { chance, rollBetween, rollInt, shuffled, snappedToStep } from './randomRolls';
 import { nextRecipeId, recipeNode } from './recipeNode';
+import { preferring, type RecipeTiles } from './recipeTiles';
 import { riverlandsRecipeNodes } from './riverlandsRecipe';
 import { terrainRecipeNodes } from './terrainRecipe';
 
 export function settlementRecipeNodes(
   rng: RandomStream,
-  tileIds: readonly number[],
+  tiles: RecipeTiles,
   cultureId: number,
 ): NodeInstance[] {
   const nodes = chance(rng, 0.4)
-    ? riverlandsRecipeNodes(rng, tileIds)
-    : terrainRecipeNodes(rng, tileIds);
+    ? riverlandsRecipeNodes(rng, tiles)
+    : terrainRecipeNodes(rng, tiles);
   const groundId = firstFieldIdOf(nodes);
   if (groundId === null) return nodes;
-  appendVillages(nodes, rng, tileIds, groundId, cultureId);
+  appendVillages(nodes, rng, tiles, groundId, cultureId);
   return nodes;
 }
 
@@ -27,7 +28,7 @@ function firstFieldIdOf(nodes: readonly NodeInstance[]): string | null {
 function appendVillages(
   nodes: NodeInstance[],
   rng: RandomStream,
-  tileIds: readonly number[],
+  tiles: RecipeTiles,
   groundId: string,
   cultureId: number,
 ): void {
@@ -38,7 +39,7 @@ function appendVillages(
   };
   const buildAbove = snappedToStep(rollBetween(rng, 0.4, 0.55), 0, 1, 0.01);
   const centersId = appendVillageCenters(nodes, rng, groundId, buildAbove);
-  appendStreets(nodes, rng, tileIds, centersId, layout);
+  appendStreets(nodes, rng, tiles, centersId, layout);
   appendPlots(nodes, centersId, groundId, layout, buildAbove, cultureId);
 }
 
@@ -74,11 +75,11 @@ interface VillageLayout {
 function appendStreets(
   nodes: NodeInstance[],
   rng: RandomStream,
-  tileIds: readonly number[],
+  tiles: RecipeTiles,
   centersId: string,
   layout: VillageLayout,
 ): void {
-  const paving = shuffled(rng, tileIds);
+  const paving = shuffled(rng, preferring(tiles, 'walkable'));
   nodes.push(
     recipeNode({
       id: nextRecipeId(nodes),

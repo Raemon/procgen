@@ -6,24 +6,25 @@ import type { RandomStream } from '../random/mulberry32';
 import { randomMarkerDisplay, randomMarkerTag } from './markerPalette';
 import { chance, rollBetween, rollInt, shuffled, snappedToStep } from './randomRolls';
 import { nextRecipeId, recipeNode } from './recipeNode';
+import { preferring, type RecipeTiles } from './recipeTiles';
 
 const CLIMATE_CUTS = [0, 0.5, 0.72];
 
 export function biomePartitionRecipeNodes(
   rng: RandomStream,
-  tileIds: readonly number[],
+  tiles: RecipeTiles,
 ): NodeInstance[] {
   const nodes: NodeInstance[] = [];
   const smoothId = appendRelief(nodes, rng);
   const reliefId = chance(rng, 0.6) ? appendTerracedRelief(nodes, rng, smoothId) : smoothId;
   const climateId = appendClimate(nodes, rng);
-  const biomes = biomePalettesOf(rng, tileIds);
+  const biomes = biomePalettesOf(rng, tiles);
   const seaLevel = snappedToStep(rollBetween(rng, 0.38, 0.48), 0, 1, 0.01);
   biomes.forEach((palette, at) =>
     appendBiome(nodes, rng, reliefId, climateId, palette, CLIMATE_CUTS[at]!, seaLevel),
   );
-  if (chance(rng, 0.6)) appendStraitBridges(nodes, rng, tileIds, reliefId, seaLevel);
-  appendBiomeScatter(nodes, rng, tileIds, climateId);
+  if (chance(rng, 0.6)) appendStraitBridges(nodes, rng, tiles, reliefId, seaLevel);
+  appendBiomeScatter(nodes, rng, tiles, climateId);
   return nodes;
 }
 
@@ -112,15 +113,17 @@ interface BiomePalette {
   deep: number;
 }
 
-function biomePalettesOf(rng: RandomStream, tileIds: readonly number[]): BiomePalette[] {
-  const pool = shuffled(rng, tileIds);
-  if (pool.length === 0) {
+function biomePalettesOf(rng: RandomStream, tiles: RecipeTiles): BiomePalette[] {
+  if (tiles.all.length === 0) {
     const empty = { ground: -1, rock: -1, snow: -1, shore: -1, water: -1, deep: -1 };
     return CLIMATE_CUTS.map(() => ({ ...empty }));
   }
-  const water = pool[0]!;
-  const deep = pool[1 % pool.length]!;
-  const land = pool.length > 2 ? pool.slice(2) : pool;
+  const wet = shuffled(rng, preferring(tiles, 'blockers'));
+  const water = wet[0]!;
+  const deep = wet[1 % wet.length]!;
+  const dry = shuffled(rng, preferring(tiles, 'walkable'));
+  const land = dry.filter((id) => id !== water && id !== deep);
+  if (land.length === 0) land.push(...dry);
   return CLIMATE_CUTS.map((_cut, biome) => ({
     ground: drawn(land, biome * 3),
     rock: drawn(land, biome * 3 + 1),
@@ -169,7 +172,7 @@ function appendBiome(
 function appendBiomeScatter(
   nodes: NodeInstance[],
   rng: RandomStream,
-  tileIds: readonly number[],
+  tiles: RecipeTiles,
   climateId: string,
 ): void {
   const scatters = rollInt(rng, 1, 2);
@@ -186,7 +189,7 @@ function appendBiomeScatter(
           maskAtMost: snappedToStep(cut + 0.3, 0, 1, 0.01),
         },
         inputs: { mask: climateId },
-        display: randomMarkerDisplay(rng, tileIds),
+        display: randomMarkerDisplay(rng, tiles.all),
       }),
     );
   }

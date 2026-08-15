@@ -10,9 +10,10 @@ import { randomWorldPipeline } from '../randomize/randomWorldPipeline';
 import { EMPTY_TILE } from '../values/chunkValues';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { islandsState, tileIdsInRegion, worldFromState } from './pipelineWorldFixtures';
+import { recipeTilesOf } from '../randomize/recipeTiles';
 import { fixtureTileAssets } from './walkingSimFixtures';
 
-const randomizeTileIds = fixtureTileAssets.all().map((tile) => tile.id);
+const randomizeTileIds = recipeTilesOf(fixtureTileAssets.all());
 
 function paramWithinSpec(nodeType: string, name: string, value: unknown): boolean {
   const spec = nodeTypeOf(nodeType)?.params[name];

@@ -2,11 +2,12 @@ import type { NodeInstance } from '../pipeline/pipelineState';
 import type { RandomStream } from '../random/mulberry32';
 import { pick, rollBetween, rollInt, shuffled, snappedToStep } from './randomRolls';
 import { nextRecipeId, recipeNode } from './recipeNode';
+import { preferring, type RecipeTiles } from './recipeTiles';
 
 export function appendStraitBridges(
   nodes: NodeInstance[],
   rng: RandomStream,
-  tileIds: readonly number[],
+  tiles: RecipeTiles,
   waterId: string,
   seaLevel: number,
 ): void {
@@ -20,14 +21,14 @@ export function appendStraitBridges(
         shallowBand: snappedToStep(rollBetween(rng, 0.08, 0.25), 0.02, 0.5, 0.01),
         maxSpan: rollInt(rng, 5, 14),
         pitch: pick(rng, [20, 28, 36, 48]),
-        bridgeTile: bridgeTileOf(rng, tileIds),
+        bridgeTile: bridgeTileOf(rng, tiles),
       },
       inputs: { water: waterId },
     }),
   );
 }
 
-function bridgeTileOf(rng: RandomStream, tileIds: readonly number[]): number {
-  if (tileIds.length === 0) return -1;
-  return shuffled(rng, tileIds)[0]!;
+function bridgeTileOf(rng: RandomStream, tiles: RecipeTiles): number {
+  if (tiles.all.length === 0) return -1;
+  return shuffled(rng, preferring(tiles, 'walkable'))[0]!;
 }

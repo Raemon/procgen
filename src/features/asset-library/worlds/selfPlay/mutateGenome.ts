@@ -4,6 +4,7 @@ import { sanitizePipeline } from '../pipeline/sanitizePipeline';
 import { clonedState } from '../randomize/clonedState';
 import { permutedNodeCombination } from '../randomize/permuteNodeCombination';
 import { permutedSliderParams } from '../randomize/permuteSliderParams';
+import { recipeTilesOf, type RecipeTiles } from '../randomize/recipeTiles';
 import { chance, clamped, pick, rollInt } from '../randomize/randomRolls';
 import {
   LARGEST_PALETTE,
@@ -45,7 +46,7 @@ function nudgedKnobs(genome: WorldGenome, rng: RandomStream): WorldGenome {
 function permutedNodes(genome: WorldGenome, rng: RandomStream): WorldGenome {
   return {
     ...genome,
-    pipeline: permutedNodeCombination(genome.pipeline, rng, paletteIdsOf(genome)),
+    pipeline: permutedNodeCombination(genome.pipeline, rng, recipeTilesFor(genome)),
   };
 }
 
@@ -97,7 +98,10 @@ function resizedPalette(genome: WorldGenome, rng: RandomStream): WorldGenome {
 
 function regrownPipeline(genome: WorldGenome, rng: RandomStream): WorldGenome {
   const palette = paletteOf(genome);
-  return { ...genome, pipeline: rolledPipeline(rng, palette.paletteIds, palette.culture.id) };
+  return {
+    ...genome,
+    pipeline: rolledPipeline(rng, recipeTilesOf(palette.tiles, palette.paletteIds), palette.culture.id),
+  };
 }
 
 function settledBuildings(genome: WorldGenome, rng: RandomStream): WorldGenome {
@@ -107,6 +111,11 @@ function settledBuildings(genome: WorldGenome, rng: RandomStream): WorldGenome {
 
 function paletteIdsOf(genome: WorldGenome): number[] {
   return paletteOf(genome).paletteIds;
+}
+
+function recipeTilesFor(genome: WorldGenome): RecipeTiles {
+  const palette = paletteOf(genome);
+  return recipeTilesOf(palette.tiles, palette.paletteIds);
 }
 
 function paletteOf(genome: WorldGenome): WorldPalette {

@@ -3,12 +3,13 @@ import type { RandomStream } from '../random/mulberry32';
 import { biomePartitionRecipeNodes } from './biomePartitionRecipe';
 import { highlandsRecipeNodes } from './highlandsRecipe';
 import { mazeRecipeNodes } from './mazeRecipe';
+import type { RecipeTiles } from './recipeTiles';
 import { riverlandsRecipeNodes } from './riverlandsRecipe';
 import { rollBetween } from './randomRolls';
 import { terrainRecipeNodes } from './terrainRecipe';
 import { volcanicIsleRecipeNodes } from './volcanicIsleRecipe';
 
-type GroundRecipe = (rng: RandomStream, tileIds: readonly number[]) => NodeInstance[];
+type GroundRecipe = (rng: RandomStream, tiles: RecipeTiles) => NodeInstance[];
 
 const WEIGHED_RECIPES: ReadonlyArray<[GroundRecipe, number]> = [
   [terrainRecipeNodes, 0.16],
@@ -19,8 +20,8 @@ const WEIGHED_RECIPES: ReadonlyArray<[GroundRecipe, number]> = [
   [biomePartitionRecipeNodes, 0.22],
 ];
 
-export function groundRecipeNodes(rng: RandomStream, tileIds: readonly number[]): NodeInstance[] {
-  return pickWeighed(rng)(rng, tileIds);
+export function groundRecipeNodes(rng: RandomStream, tiles: RecipeTiles): NodeInstance[] {
+  return pickWeighed(rng)(rng, tiles);
 }
 
 function pickWeighed(rng: RandomStream): GroundRecipe {

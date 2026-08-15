@@ -3,6 +3,7 @@ import { NOISE_STYLE_FBM, NOISE_STYLE_RIDGED } from '../noise/terrainOctaves';
 import type { NodeInstance } from '../pipeline/pipelineState';
 import type { RandomStream } from '../random/mulberry32';
 import { randomMarkerDisplay, randomMarkerTag } from './markerPalette';
+import type { RecipeTiles } from './recipeTiles';
 import { chance, rollBetween, rollInt, snappedToStep } from './randomRolls';
 import { nextRecipeId, recipeNode } from './recipeNode';
 import { appendBandLayers, appendScatterLayers } from './terrainRecipe';
@@ -12,23 +13,23 @@ const MACRO_SCALE_HI = 0.016;
 const RELIEF_HEIGHT_LO = 4;
 const RELIEF_HEIGHT_HI = 7;
 
-export function highlandsRecipeNodes(rng: RandomStream, tileIds: readonly number[]): NodeInstance[] {
+export function highlandsRecipeNodes(rng: RandomStream, tiles: RecipeTiles): NodeInstance[] {
   const nodes: NodeInstance[] = [];
   const rangesId = appendRanges(nodes, rng);
   const lowlandsId = appendLowlands(nodes, rng);
   const blendedId = appendReliefBlend(nodes, rng, rangesId, lowlandsId);
   const shelvedId = appendShelving(nodes, rng, blendedId);
   const reliefId = appendTerraces(nodes, rng, shelvedId);
-  appendBandLayers(nodes, rng, tileIds, reliefId);
-  appendPlateauSpoils(nodes, rng, tileIds, reliefId);
-  appendScatterLayers(nodes, rng, tileIds, reliefId);
+  appendBandLayers(nodes, rng, tiles, reliefId);
+  appendPlateauSpoils(nodes, rng, tiles, reliefId);
+  appendScatterLayers(nodes, rng, tiles, reliefId);
   return nodes;
 }
 
 function appendPlateauSpoils(
   nodes: NodeInstance[],
   rng: RandomStream,
-  tileIds: readonly number[],
+  tiles: RecipeTiles,
   reliefId: string,
 ): void {
   nodes.push(
@@ -42,7 +43,7 @@ function appendPlateauSpoils(
         maskAtMost: 1,
       },
       inputs: { mask: reliefId },
-      display: randomMarkerDisplay(rng, tileIds),
+      display: randomMarkerDisplay(rng, tiles.all),
     }),
   );
 }

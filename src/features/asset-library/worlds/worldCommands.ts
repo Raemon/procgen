@@ -4,6 +4,7 @@ import { examplePipelines } from '@/features/asset-library/worlds/presets/exampl
 import { permutedNodeCombination } from '@/features/asset-library/worlds/randomize/permuteNodeCombination';
 import { permutedSliderParams } from '@/features/asset-library/worlds/randomize/permuteSliderParams';
 import { randomWorldPipeline } from '@/features/asset-library/worlds/randomize/randomWorldPipeline';
+import { recipeTilesOf, type RecipeTiles } from '@/features/asset-library/worlds/randomize/recipeTiles';
 import { copyNameFor } from '@/features/asset-library/worlds/presets/copyName';
 import { stampTemplateInto } from '@/features/asset-library/node-groups/stampTemplate';
 import { templateFromNodes } from '@/features/asset-library/node-groups/templateFromNodes';
@@ -201,7 +202,7 @@ const ROLLS: readonly {
     action: 'randomize_world',
     humanControl: 'detail panel, world: 🎲 world',
     description: 'Replace the pipeline with a freshly rolled node combination.',
-    roll: (context, rng) => randomWorldPipeline(rng, tileIdsOf(context)),
+    roll: (context, rng) => randomWorldPipeline(rng, recipeTilesFor(context)),
   },
   {
     action: 'randomize_sliders',
@@ -213,7 +214,7 @@ const ROLLS: readonly {
     action: 'randomize_nodes',
     humanControl: 'detail panel, world: ⇄ nodes',
     description: 'Mutate the node combination: swap, add, remove or rewire a node or two.',
-    roll: (context, rng) => permutedNodeCombination(context.store.snapshot(), rng, tileIdsOf(context)),
+    roll: (context, rng) => permutedNodeCombination(context.store.snapshot(), rng, recipeTilesFor(context)),
   },
 ];
 
@@ -244,8 +245,8 @@ registerWorldCommand({
   },
 });
 
-function tileIdsOf(context: CommandContext): number[] {
-  return context.tileAssets.all().map((tile) => tile.id);
+function recipeTilesFor(context: CommandContext): RecipeTiles {
+  return recipeTilesOf(context.tileAssets.all());
 }
 
 function applyRoll(

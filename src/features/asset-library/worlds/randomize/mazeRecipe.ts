@@ -4,16 +4,17 @@ import type { NodeInstance } from '../pipeline/pipelineState';
 import { randomMarkerDisplay, randomMarkerTag } from './markerPalette';
 import { chance, pick, rollBetween, rollInt, shuffled, snappedToStep } from './randomRolls';
 import { nextRecipeId, recipeNode } from './recipeNode';
+import { preferring, type RecipeTiles } from './recipeTiles';
 
-export function mazeRecipeNodes(rng: RandomStream, tileIds: readonly number[]): NodeInstance[] {
+export function mazeRecipeNodes(rng: RandomStream, tiles: RecipeTiles): NodeInstance[] {
   const nodes: NodeInstance[] = [];
-  appendMaze(nodes, rng, tileIds);
-  if (chance(rng, 0.45)) appendDwellers(nodes, rng, tileIds);
+  appendMaze(nodes, rng, tiles);
+  if (chance(rng, 0.45)) appendDwellers(nodes, rng, tiles);
   return nodes;
 }
 
-function appendMaze(nodes: NodeInstance[], rng: RandomStream, tileIds: readonly number[]): void {
-  const [wallTile, floorTile] = wallAndFloorTiles(rng, tileIds);
+function appendMaze(nodes: NodeInstance[], rng: RandomStream, tiles: RecipeTiles): void {
+  const [wallTile, floorTile] = wallAndFloorTiles(rng, tiles);
   nodes.push(
     recipeNode({
       id: nextRecipeId(nodes),
@@ -33,13 +34,14 @@ function appendMaze(nodes: NodeInstance[], rng: RandomStream, tileIds: readonly 
   );
 }
 
-function wallAndFloorTiles(rng: RandomStream, tileIds: readonly number[]): [number, number] {
-  if (tileIds.length === 0) return [-1, -1];
-  const pool = shuffled(rng, tileIds);
-  return [pool[0]!, pool[1 % pool.length]!];
+function wallAndFloorTiles(rng: RandomStream, tiles: RecipeTiles): [number, number] {
+  if (tiles.all.length === 0) return [-1, -1];
+  const wall = shuffled(rng, preferring(tiles, 'blockers'))[0]!;
+  const floor = shuffled(rng, preferring(tiles, 'walkable'))[0]!;
+  return [wall, floor];
 }
 
-function appendDwellers(nodes: NodeInstance[], rng: RandomStream, tileIds: readonly number[]): void {
+function appendDwellers(nodes: NodeInstance[], rng: RandomStream, tiles: RecipeTiles): void {
   const tag = randomMarkerTag(rng);
   nodes.push(
     recipeNode({
@@ -51,7 +53,7 @@ function appendDwellers(nodes: NodeInstance[], rng: RandomStream, tileIds: reado
         maskAtLeast: 0,
         maskAtMost: 1,
       },
-      display: randomMarkerDisplay(rng, tileIds),
+      display: randomMarkerDisplay(rng, tiles.all),
     }),
   );
 }
