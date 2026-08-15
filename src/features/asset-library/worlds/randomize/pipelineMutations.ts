@@ -1,7 +1,8 @@
 import type { RandomStream } from '../random/mulberry32';
 import { defaultBindingForKind, isBindingValidForKind } from '../display/displayBinding';
 import { nodeTypeOf } from '../nodeRegistry';
-import type { NodeTypeDef } from '../nodeType';
+import { outputKindOf, type NodeTypeDef } from '../nodeType';
+import type { ValueKind } from '../values/chunkValues';
 import { nextNodeId } from '../pipeline/createNodeInstance';
 import type { NodeInstance, PipelineState } from '../pipeline/pipelineState';
 import { randomMarkerDisplay } from './markerPalette';
@@ -25,6 +26,7 @@ export type PipelineMutation = (
 export const PIPELINE_MUTATIONS: readonly PipelineMutation[] = [
   swapRandomNodeType,
   addRandomNode,
+  insertNodeIntoWire,
   removeRandomNode,
   rewireRandomInput,
 ];
@@ -100,6 +102,83 @@ function applyRandomDisplay(
   if (kind === 'field' && chance(rng, 0.5)) {
     node.display = { mode: 'elevation', heightScale: snappedToStep(rollBetween(rng, 1, 5), 0.5, 8, 0.5) };
   }
+}
+
+export function insertNodeIntoWire(
+  state: PipelineState,
+  rng: RandomStream,
+  tileIds: readonly number[],
+): boolean {
+  for (const wire of shuffled(rng, liveWiresOf(state))) {
+    const insertable = insertableTypesFor(state, wire);
+    if (insertable.length === 0) continue;
+    spliceNodeIntoWire(state, wire, pick(rng, insertable), rng, tileIds);
+    return true;
+  }
+  return false;
+}
+
+interface LiveWire {
+  consumerIndex: number;
+  inputName: string;
+  sourceId: string;
+  kind: ValueKind;
+}
+
+function liveWiresOf(state: PipelineState): LiveWire[] {
+  const wires: LiveWire[] = [];
+  state.nodes.forEach((node, consumerIndex) => {
+    const def = nodeTypeOf(node.type);
+    if (!def) return;
+    for (const inputName of Object.keys(def.inputs)) {
+      const sourceId = node.inputs[inputName];
+      const kind = sourceId ? outputKindOfNodeId(state, sourceId) : null;
+      if (sourceId && kind) wires.push({ consumerIndex, inputName, sourceId, kind });
+    }
+  });
+  return wires;
+}
+
+function outputKindOfNodeId(state: PipelineState, nodeId: string): ValueKind | null {
+  const source = state.nodes.find((node) => node.id === nodeId);
+  const def = source ? nodeTypeOf(source.type) : undefined;
+  return source && def ? outputKindOf(def, source.params) : null;
+}
+
+function insertableTypesFor(state: PipelineState, wire: LiveWire): NodeTypeDef[] {
+  return randomizableNodeTypes().filter(
+    (def) =>
+      defaultOutputKindOf(def) === wire.kind &&
+      carrierInputOf(def, wire.kind) !== null &&
+      requiredInputsSatisfiable(state, wire.consumerIndex, def),
+  );
+}
+
+function carrierInputOf(def: NodeTypeDef, kind: ValueKind): string | null {
+  const carrier = Object.entries(def.inputs).find(
+    ([, spec]) => spec.kind === kind || spec.kind === 'any',
+  );
+  return carrier ? carrier[0] : null;
+}
+
+function spliceNodeIntoWire(
+  state: PipelineState,
+  wire: LiveWire,
+  def: NodeTypeDef,
+  rng: RandomStream,
+  tileIds: readonly number[],
+): void {
+  const consumer = state.nodes[wire.consumerIndex]!;
+  const node = recipeNode({ id: nextNodeId(state), type: def.type, label: def.title });
+  node.params = randomParams(def, rng, tileIds);
+  for (const [name, spec] of Object.entries(def.inputs)) {
+    node.inputs[name] =
+      name === carrierInputOf(def, wire.kind)
+        ? wire.sourceId
+        : randomWireFor(state, wire.consumerIndex, spec, rng);
+  }
+  state.nodes.splice(wire.consumerIndex, 0, node);
+  consumer.inputs[wire.inputName] = node.id;
 }
 
 function removeRandomNode(state: PipelineState, rng: RandomStream): boolean {

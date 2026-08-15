@@ -1,5 +1,6 @@
 import type { RandomStream } from '../random/mulberry32';
 import { anyNodePipeline } from '../randomize/anyNodePipeline';
+import { freeGrownPipeline } from '../randomize/freeGrownPipeline';
 import { randomWorldPipeline } from '../randomize/randomWorldPipeline';
 import { recipeTilesOf, type RecipeTiles } from '../randomize/recipeTiles';
 import { settlementRecipeNodes } from '../randomize/settlementRecipe';
@@ -34,6 +35,7 @@ export function rolledGenome(rng: RandomStream): WorldGenome {
 }
 
 const SETTLED_ROLL_SHARE = 0.2;
+const FREE_GROWN_ROLL_SHARE = 0.25;
 
 export function rolledPipeline(
   rng: RandomStream,
@@ -48,7 +50,11 @@ export function rolledPipeline(
       nodes: settlementRecipeNodes(rng, tiles, cultureId),
     });
   }
-  const rolled = chance(rng, 0.5) ? anyNodePipeline(rng, tiles) : randomWorldPipeline(rng, tiles);
+  const rolled = chance(rng, FREE_GROWN_ROLL_SHARE)
+    ? freeGrownPipeline(rng, tiles)
+    : chance(rng, 0.5)
+      ? anyNodePipeline(rng, tiles)
+      : randomWorldPipeline(rng, tiles);
   return settledPipeline(sanitizePipeline(rolled), rng, cultureId);
 }
 

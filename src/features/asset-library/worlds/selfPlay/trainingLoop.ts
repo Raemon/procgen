@@ -101,10 +101,10 @@ function candidateGenomesOf(state: RunState, settings: TrainingSettings): WorldG
 function nextCandidate(state: RunState): WorldGenome {
   const treated = treatedCandidate(state);
   if (treated) return treated;
-  const elites = state.archive.all();
-  if (elites.length === 0 || chance(state.rng, FRESH_ROLL_SHARE)) return rolledGenome(state.rng);
-  if (elites.length >= 2 && chance(state.rng, BRED_SHARE)) return bredCandidate(state, elites);
-  return mutatedGenome(pick(state.rng, elites).genome, state.rng);
+  const parents = state.archive.breedingPool();
+  if (parents.length === 0 || chance(state.rng, FRESH_ROLL_SHARE)) return rolledGenome(state.rng);
+  if (parents.length >= 2 && chance(state.rng, BRED_SHARE)) return bredCandidate(state, parents);
+  return mutatedGenome(pick(state.rng, parents).genome, state.rng);
 }
 
 function treatedCandidate(state: RunState): WorldGenome | null {
@@ -123,11 +123,11 @@ function admitToClinic(state: RunState, world: ScoredWorld): void {
   if (state.clinic.length > CLINIC_BEDS) state.clinic.length = CLINIC_BEDS;
 }
 
-function bredCandidate(state: RunState, elites: readonly ScoredWorld[]): WorldGenome {
-  const one = pick(state.rng, elites);
+function bredCandidate(state: RunState, parents: readonly ScoredWorld[]): WorldGenome {
+  const one = pick(state.rng, parents);
   const other = pick(
     state.rng,
-    elites.filter((elite) => elite !== one),
+    parents.filter((parent) => parent !== one),
   );
   const child = bredGenome(one.genome, other.genome, state.rng);
   return chance(state.rng, 0.5) ? mutatedGenome(child, state.rng) : child;
