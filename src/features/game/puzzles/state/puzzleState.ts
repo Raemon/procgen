@@ -3,6 +3,11 @@ export interface CratePosition {
   y: number;
 }
 
+export interface PuzzleStateSnapshot {
+  on: string[];
+  crates: Array<[string, number, number]>;
+}
+
 export class PuzzleState {
   private readonly switchedOn = new Set<string>();
   private readonly crates = new Map<string, CratePosition>();
@@ -45,5 +50,20 @@ export class PuzzleState {
     this.changes++;
     this.switchedOn.clear();
     this.crates.clear();
+  }
+
+  snapshot(): PuzzleStateSnapshot {
+    return {
+      on: [...this.switchedOn],
+      crates: [...this.crates].map(([id, at]) => [id, at.x, at.y]),
+    };
+  }
+
+  replaceAll(snapshot: PuzzleStateSnapshot): void {
+    this.changes++;
+    this.switchedOn.clear();
+    this.crates.clear();
+    for (const id of snapshot.on) this.switchedOn.add(id);
+    for (const [id, x, y] of snapshot.crates) this.crates.set(id, { x, y });
   }
 }

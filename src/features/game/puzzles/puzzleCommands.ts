@@ -1,4 +1,4 @@
-import { facingVector } from '@/features/game/facing';
+import { useHereOrAhead } from '@/features/game/puzzles/interaction/useAtPose';
 import type { UseOutcome } from '@/features/game/puzzles/interaction/useFixture';
 import {
   commandFailed,
@@ -35,7 +35,7 @@ for (const spec of USE_ACTIONS) {
     params: {},
     example: { action: spec.action },
     changesWorld: true,
-    apply: (context) => useHereOrAhead(context),
+    apply: (context) => useUnderOrAheadOfActor(context),
   });
 }
 
@@ -58,12 +58,9 @@ for (const spec of RESET_ACTIONS) {
   });
 }
 
-function useHereOrAhead(context: CommandContext): CommandResult {
+function useUnderOrAheadOfActor(context: CommandContext): CommandResult {
   const pose = context.actor.pose();
-  const underfoot = context.puzzles.use(pose.x, pose.y);
-  if (underfoot.ok || underfoot.code !== 'nothing_to_use') return asCommandResult(underfoot);
-  const ahead = facingVector(pose.facing);
-  return asCommandResult(context.puzzles.use(pose.x + ahead.dx, pose.y + ahead.dy));
+  return asCommandResult(useHereOrAhead(context.puzzles, pose.x, pose.y, pose.facing));
 }
 
 function resetRoomUnderActor(context: CommandContext): CommandResult {

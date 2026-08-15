@@ -1,6 +1,6 @@
 import { TICK_MS } from '../../sim/movementOrder';
-import { tickMovement } from '../../sim/tickMovement';
 import type { AgentEntitySync } from './agentEntitySync';
+import { stepPlayerEntity } from './playerStep';
 import type { EntityRegistry } from './entities';
 import type { SnapshotFeed } from './snapshotFeed';
 import type { WorldHost } from './worldHost';
@@ -12,6 +12,7 @@ export class GameLoop {
   private running = false;
   private nextAt = 0;
   private timer?: ReturnType<typeof setTimeout>;
+  private lastPuzzleRevision: number | null = null;
 
   constructor(
     private readonly registry: EntityRegistry,
@@ -50,6 +51,7 @@ export class GameLoop {
   private step(): void {
     this.agentSync.sync();
     this.stepPlayers();
+    this.sharePuzzleChanges();
     this.feed.broadcast(this.tick);
     this.tick++;
   }
@@ -57,9 +59,15 @@ export class GameLoop {
   private stepPlayers(): void {
     const world = this.worldHost.current();
     for (const entity of this.registry.byId.values()) {
-      if (entity.kind !== 'player') continue;
-      const delta = tickMovement(entity, entity.x, entity.y, world.isWalkable);
-      if (delta) this.registry.moveTo(entity, entity.x + delta.dx, entity.y + delta.dy);
+      if (entity.kind === 'player') stepPlayerEntity(world, this.registry, entity);
     }
+  }
+
+  private sharePuzzleChanges(): void {
+    const revision = this.worldHost.current().puzzles.state.revision();
+    if (revision === this.lastPuzzleRevision) return;
+    const isFirstLook = this.lastPuzzleRevision === null;
+    this.lastPuzzleRevision = revision;
+    if (!isFirstLook) this.feed.broadcastPuzzles(this.worldHost.current().puzzles.state);
   }
 }

@@ -1,6 +1,6 @@
 import type { FacingIndex } from '../../facing';
 
-export const PROTOCOL_VERSION = 3;
+export const PROTOCOL_VERSION = 4;
 
 export const Op = {
   Order: 1,
@@ -60,5 +60,26 @@ export interface KickMsg {
   message: string;
 }
 
-export type ClientMsg = HelloMsg | SayMsg | OrderMsg | TurnMsg;
-export type ServerMsg = WelcomeMsg | EntityMetaMsg | SaidMsg | DocChangedMsg | KickMsg | SnapshotMsg;
+export interface UseMsg {
+  t: 'use';
+}
+
+export interface ResetRoomMsg {
+  t: 'resetRoom';
+}
+
+export interface PuzzlesMsg {
+  t: 'puzzles';
+  on: string[];
+  crates: Array<[string, number, number]>;
+}
+
+export type ClientMsg = HelloMsg | SayMsg | OrderMsg | TurnMsg | UseMsg | ResetRoomMsg;
+export type ServerMsg =
+  | WelcomeMsg
+  | EntityMetaMsg
+  | SaidMsg
+  | DocChangedMsg
+  | KickMsg
+  | SnapshotMsg
+  | PuzzlesMsg;
