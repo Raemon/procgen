@@ -142,7 +142,7 @@ function recordOf(
   let admissions = 0;
   for (const world of batch) {
     if (state.archive.admit(world)) admissions++;
-    else admitToClinic(state, world);
+    admitToClinic(state, world);
   }
   const archiveBestFun = state.archive.bestFun();
   const coverage = state.archive.coverage();

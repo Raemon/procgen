@@ -2,6 +2,7 @@ import { defaultBindingForKind } from '../display/displayBinding';
 import { NOISE_STYLE_FBM, NOISE_STYLE_RIDGED } from '../noise/terrainOctaves';
 import type { NodeInstance } from '../pipeline/pipelineState';
 import type { RandomStream } from '../random/mulberry32';
+import { randomMarkerDisplay, randomMarkerTag } from './markerPalette';
 import { chance, rollBetween, rollInt, snappedToStep } from './randomRolls';
 import { nextRecipeId, recipeNode } from './recipeNode';
 import { appendBandLayers, appendScatterLayers } from './terrainRecipe';
@@ -19,8 +20,31 @@ export function highlandsRecipeNodes(rng: RandomStream, tileIds: readonly number
   const shelvedId = appendShelving(nodes, rng, blendedId);
   const reliefId = appendTerraces(nodes, rng, shelvedId);
   appendBandLayers(nodes, rng, tileIds, reliefId);
+  appendPlateauSpoils(nodes, rng, tileIds, reliefId);
   appendScatterLayers(nodes, rng, tileIds, reliefId);
   return nodes;
+}
+
+function appendPlateauSpoils(
+  nodes: NodeInstance[],
+  rng: RandomStream,
+  tileIds: readonly number[],
+  reliefId: string,
+): void {
+  nodes.push(
+    recipeNode({
+      id: nextRecipeId(nodes),
+      type: 'scatterPoints',
+      label: `${randomMarkerTag(rng)} scatter`,
+      params: {
+        density: snappedToStep(rollBetween(rng, 0.006, 0.02), 0, 1, 0.001),
+        maskAtLeast: snappedToStep(rollBetween(rng, 0.5, 0.65), 0, 1, 0.01),
+        maskAtMost: 1,
+      },
+      inputs: { mask: reliefId },
+      display: randomMarkerDisplay(rng, tileIds),
+    }),
+  );
 }
 
 function appendTerraces(nodes: NodeInstance[], rng: RandomStream, sourceId: string): string {

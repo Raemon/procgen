@@ -2,7 +2,7 @@ import { defaultBindingForKind } from '../display/displayBinding';
 import { nodeTypeOf } from '../nodeRegistry';
 import { NOISE_STYLE_FBM } from '../noise/terrainOctaves';
 import { nextNodeId } from '../pipeline/createNodeInstance';
-import type { PipelineState } from '../pipeline/pipelineState';
+import type { NodeInstance, PipelineState } from '../pipeline/pipelineState';
 import { sanitizePipeline } from '../pipeline/sanitizePipeline';
 import type { RandomStream } from '../random/mulberry32';
 import { clonedState } from '../randomize/clonedState';
@@ -43,8 +43,25 @@ export function treatedGenome(
   const genome = world.genome;
   const pipeline = clonedState(genome.pipeline);
   const palette = worldPaletteOfKit(genome.kitSeed, genome.accentKitSeed, genome.paletteSize);
-  applyTreatment(pipeline, diagnosis, rng, palette);
+  if (walkIsBarren(world)) treatBarrenWalk(pipeline, rng, palette);
+  else applyTreatment(pipeline, diagnosis, rng, palette);
   return { ...genome, pipeline: sanitizePipeline(pipeline) };
+}
+
+function walkIsBarren(world: ScoredWorld): boolean {
+  return world.measurements.encountersPer100Steps === 0;
+}
+
+function treatBarrenWalk(
+  pipeline: PipelineState,
+  rng: RandomStream,
+  palette: WorldPalette,
+): void {
+  const terrace = pipeline.nodes.find((node) => node.type === 'terraceField');
+  appendScatterNode(pipeline, rng, palette, {
+    maskId: terrace?.id,
+    maskAtLeast: terrace ? 0.5 : 0,
+  });
 }
 
 function applyTreatment(
@@ -135,12 +152,26 @@ function treatElevationGates(
     return;
   }
   if (terraces.length > 0) {
-    for (const terrace of terraces) {
-      terrace.params.levels = Math.min(12, Math.round(Number(terrace.params.levels ?? 4)) + 1);
-    }
+    for (const terrace of terraces) raiseGatingOf(terrace);
     return;
   }
   appendTerracesOverElevation(pipeline, rng);
+}
+
+function raiseGatingOf(terrace: NodeInstance): void {
+  const levels = Math.round(Number(terrace.params.levels ?? 4));
+  const wantedHeight = 1.6 * (levels + 1);
+  if (wantedHeight <= 8) {
+    terrace.params.levels = levels + 1;
+    if (terrace.display.mode === 'elevation') terrace.display.heightScale = wantedHeight;
+    return;
+  }
+  terrace.params.passesAbove = snappedToStep(
+    Math.min(1, Number(terrace.params.passesAbove ?? 0.65) + 0.1),
+    0,
+    1,
+    0.01,
+  );
 }
 
 function treatRouteStructure(
@@ -205,10 +236,13 @@ function treatLandmarks(
   });
 }
 
+const SIGHTABLE_DISPLAYS = new Set(['markers', 'creatures', 'items']);
+
 function scaleScatterDensities(pipeline: PipelineState, factor: number): number {
   let touched = 0;
   for (const node of pipeline.nodes) {
     if (node.type !== 'scatterPoints') continue;
+    if (!SIGHTABLE_DISPLAYS.has(node.display.mode)) continue;
     const density = Number(node.params.density ?? 0);
     node.params.density = snappedToStep(
       Math.min(0.2, Math.max(0.0005, density * factor)),
@@ -240,9 +274,9 @@ function appendScatterNode(
   pipeline: PipelineState,
   rng: RandomStream,
   palette: WorldPalette,
-  wanted?: { density?: number; tileId?: number },
+  wanted?: { density?: number; tileId?: number; maskId?: string; maskAtLeast?: number },
 ): void {
-  const maskId = lastFieldNodeIdOf(pipeline);
+  const maskId = wanted?.maskId ?? paintingSourceFieldIdOf(pipeline);
   pipeline.nodes.push(
     recipeNode({
       id: nextNodeId(pipeline),
@@ -250,7 +284,7 @@ function appendScatterNode(
       label: `${randomMarkerTag(rng)} scatter`,
       params: {
         density: wanted?.density ?? snappedToStep(rollBetween(rng, 0.008, 0.03), 0, 1, 0.001),
-        maskAtLeast: 0,
+        maskAtLeast: wanted?.maskAtLeast ?? 0,
         maskAtMost: 1,
       },
       inputs: maskId ? { mask: maskId } : {},
@@ -268,7 +302,7 @@ function appendWoodsBand(
   palette: WorldPalette,
 ): void {
   const blockers = blockerTileIdsOf(palette);
-  const maskId = lastFieldNodeIdOf(pipeline);
+  const maskId = paintingSourceFieldIdOf(pipeline);
   if (blockers.length === 0 || !maskId) return;
   const at = snappedToStep(rollBetween(rng, 0.5, 0.7), 0, 1, 0.01);
   pipeline.nodes.push(
@@ -316,7 +350,7 @@ function appendBridgesOverWater(
   rng: RandomStream,
   palette: WorldPalette,
 ): void {
-  const waterId = lastFieldNodeIdOf(pipeline);
+  const waterId = paintingSourceFieldIdOf(pipeline);
   const walkable = walkableTileIdsOf(palette);
   if (!waterId || walkable.length === 0) return;
   pipeline.nodes.push(
@@ -336,9 +370,21 @@ function appendBridgesOverWater(
   );
 }
 
-function lastFieldNodeIdOf(pipeline: PipelineState): string | null {
+function paintingSourceFieldIdOf(pipeline: PipelineState): string | null {
+  const painters = pipeline.nodes.filter(
+    (node) => node.type === 'thresholdTiles' || node.type === 'biomeBands',
+  );
+  for (const painter of painters) {
+    const sourceId = painter.inputs.source ?? painter.inputs.elevation;
+    if (sourceId) return sourceId;
+  }
+  return lastPlainFieldNodeIdOf(pipeline);
+}
+
+function lastPlainFieldNodeIdOf(pipeline: PipelineState): string | null {
   for (let at = pipeline.nodes.length - 1; at >= 0; at--) {
     const node = pipeline.nodes[at]!;
+    if (node.type === 'terraceField') continue;
     const def = nodeTypeOf(node.type);
     if (def && def.output === 'field') return node.id;
   }
