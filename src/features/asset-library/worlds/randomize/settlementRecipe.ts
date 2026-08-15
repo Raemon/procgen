@@ -1,3 +1,5 @@
+import { REGION_ROLE_FOCUS } from '../nodes/composition/regionPlanNode';
+import { COMBINE_MULTIPLY } from '../nodes/examples/combineFields';
 import type { NodeInstance } from '../pipeline/pipelineState';
 import type { RandomStream } from '../random/mulberry32';
 import { chance, rollBetween, rollInt, shuffled, snappedToStep } from './randomRolls';
@@ -17,7 +19,28 @@ export function settlementRecipeNodes(
   const groundId = firstFieldIdOf(nodes);
   if (groundId === null) return nodes;
   appendVillages(nodes, rng, tiles, groundId, cultureId);
+  appendKeep(nodes, rng, tiles);
   return nodes;
+}
+
+function appendKeep(nodes: NodeInstance[], rng: RandomStream, tiles: RecipeTiles): void {
+  const wall = preferring(tiles, 'blockers')[0];
+  if (wall === undefined) return;
+  nodes.push(
+    recipeNode({
+      id: nextRecipeId(nodes),
+      type: 'landmarkRoom',
+      label: 'the keep',
+      params: {
+        x: rollInt(rng, -60, 60),
+        y: rollInt(rng, -60, 60),
+        width: rollInt(rng, 9, 13),
+        height: rollInt(rng, 9, 13),
+        wallThickness: 1,
+        wallTile: wall,
+      },
+    }),
+  );
 }
 
 function firstFieldIdOf(nodes: readonly NodeInstance[]): string | null {
@@ -49,6 +72,7 @@ function appendVillageCenters(
   groundId: string,
   buildAbove: number,
 ): string {
+  const settledId = appendSettledGround(nodes, rng, groundId);
   const id = nextRecipeId(nodes);
   nodes.push(
     recipeNode({
@@ -56,14 +80,46 @@ function appendVillageCenters(
       type: 'scatterPoints',
       label: 'village centers',
       params: {
-        density: snappedToStep(rollBetween(rng, 0.0005, 0.002), 0, 1, 0.0005),
-        maskAtLeast: buildAbove,
-        maskAtMost: snappedToStep(buildAbove + rollBetween(rng, 0.15, 0.35), 0, 1, 0.01),
+        density: snappedToStep(rollBetween(rng, 0.002, 0.006), 0, 1, 0.0005),
+        maskAtLeast: snappedToStep(buildAbove * 0.55, 0, 1, 0.01),
+        maskAtMost: 1,
       },
-      inputs: { mask: groundId },
+      inputs: { mask: settledId },
     }),
   );
   return id;
+}
+
+function appendSettledGround(
+  nodes: NodeInstance[],
+  rng: RandomStream,
+  groundId: string,
+): string {
+  const focusId = nextRecipeId(nodes);
+  nodes.push(
+    recipeNode({
+      id: focusId,
+      type: 'regionPlan',
+      label: 'heartlands',
+      params: {
+        pitch: rollInt(rng, 256, 512),
+        focusShare: snappedToStep(rollBetween(rng, 0.1, 0.3), 0.05, 0.6, 0.05),
+        falloff: snappedToStep(rollBetween(rng, 0.4, 0.7), 0.25, 1.2, 0.05),
+        role: REGION_ROLE_FOCUS,
+      },
+    }),
+  );
+  const settledId = nextRecipeId(nodes);
+  nodes.push(
+    recipeNode({
+      id: settledId,
+      type: 'combineFields',
+      label: 'settled ground',
+      params: { operation: COMBINE_MULTIPLY, clamp: 1 },
+      inputs: { a: groundId, b: focusId },
+    }),
+  );
+  return settledId;
 }
 
 interface VillageLayout {

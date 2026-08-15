@@ -1,9 +1,11 @@
 import { defaultBindingForKind } from '../display/displayBinding';
+import { REGION_ROLE_FOCUS } from '../nodes/composition/regionPlanNode';
+import { COMBINE_MULTIPLY } from '../nodes/examples/combineFields';
 import { NOISE_STYLE_FBM, NOISE_STYLE_RIDGED } from '../noise/terrainOctaves';
 import type { NodeInstance } from '../pipeline/pipelineState';
 import type { RandomStream } from '../random/mulberry32';
 import { randomMarkerDisplay, randomMarkerTag } from './markerPalette';
-import type { RecipeTiles } from './recipeTiles';
+import { preferring, type RecipeTiles } from './recipeTiles';
 import { chance, rollBetween, rollInt, snappedToStep } from './randomRolls';
 import { nextRecipeId, recipeNode } from './recipeNode';
 import { appendBandLayers, appendScatterLayers } from './terrainRecipe';
@@ -15,12 +17,14 @@ const RELIEF_HEIGHT_HI = 7;
 
 export function highlandsRecipeNodes(rng: RandomStream, tiles: RecipeTiles): NodeInstance[] {
   const nodes: NodeInstance[] = [];
-  const rangesId = appendRanges(nodes, rng);
+  const rawRangesId = appendRanges(nodes, rng);
+  const rangesId = chance(rng, 0.6) ? appendMassifFocus(nodes, rng, rawRangesId) : rawRangesId;
   const lowlandsId = appendLowlands(nodes, rng);
   const blendedId = appendReliefBlend(nodes, rng, rangesId, lowlandsId);
   const shelvedId = appendShelving(nodes, rng, blendedId);
   const reliefId = appendTerraces(nodes, rng, shelvedId);
   appendBandLayers(nodes, rng, tiles, reliefId);
+  appendCrags(nodes, rng, tiles, shelvedId);
   appendPlateauSpoils(nodes, rng, tiles, reliefId);
   appendScatterLayers(nodes, rng, tiles, reliefId);
   return nodes;
@@ -44,6 +48,29 @@ function appendPlateauSpoils(
       },
       inputs: { mask: reliefId },
       display: randomMarkerDisplay(rng, tiles.all),
+    }),
+  );
+}
+
+export function appendCrags(
+  nodes: NodeInstance[],
+  rng: RandomStream,
+  tiles: RecipeTiles,
+  reliefId: string,
+): void {
+  const crag = preferring(tiles, 'blockers')[0];
+  if (crag === undefined) return;
+  nodes.push(
+    recipeNode({
+      id: nextRecipeId(nodes),
+      type: 'thresholdTiles',
+      label: 'crags',
+      params: {
+        threshold: snappedToStep(rollBetween(rng, 0.9, 0.96), 0, 1, 0.01),
+        belowTile: -1,
+        aboveTile: crag,
+      },
+      inputs: { source: reliefId },
     }),
   );
 }
@@ -93,6 +120,34 @@ function moveReliefDisplayTo(
   const heightScale = Math.min(8, Math.max(RELIEF_HEIGHT_LO, riserGates));
   terraced.display = { mode: 'elevation', heightScale };
   source.display = defaultBindingForKind('field');
+}
+
+function appendMassifFocus(nodes: NodeInstance[], rng: RandomStream, rangesId: string): string {
+  const focusId = nextRecipeId(nodes);
+  nodes.push(
+    recipeNode({
+      id: focusId,
+      type: 'regionPlan',
+      label: 'massif',
+      params: {
+        pitch: rollInt(rng, 384, 768),
+        focusShare: snappedToStep(rollBetween(rng, 0.1, 0.2), 0.05, 0.6, 0.05),
+        falloff: snappedToStep(rollBetween(rng, 0.7, 1.1), 0.25, 1.2, 0.05),
+        role: REGION_ROLE_FOCUS,
+      },
+    }),
+  );
+  const massifId = nextRecipeId(nodes);
+  nodes.push(
+    recipeNode({
+      id: massifId,
+      type: 'combineFields',
+      label: 'gathered ranges',
+      params: { operation: COMBINE_MULTIPLY, clamp: 1 },
+      inputs: { a: rangesId, b: focusId },
+    }),
+  );
+  return massifId;
 }
 
 function appendRanges(nodes: NodeInstance[], rng: RandomStream): string {

@@ -53,6 +53,7 @@ export interface WalkingSimMeasurements {
   graspableLessonShare: number;
   encountersPer100Steps: number;
   discoveryKinds: number;
+  eventGapCv: number;
   landmarkStepShare: number;
   landmarkHoldSteps: number;
 }

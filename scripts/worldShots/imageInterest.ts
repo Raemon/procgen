@@ -16,8 +16,15 @@ export interface ImageInterest {
   edgeShare: number;
   coarseStructureShare: number;
   largestFlatShare: number;
-  verdict: 'interesting' | 'monotonous' | 'noisy' | 'dull';
+  largestRegionShare: number;
+  confettiShare: number;
+  verdict: 'interesting' | 'monotonous' | 'noisy' | 'dull' | 'uniform';
 }
+
+const REGION_QUANT_BITS = 3;
+const CONFETTI_REGION_SHARE = 0.001;
+const UNIFORM_CONFETTI_ABOVE = 0.4;
+const COMPOSED_REGION_SHARE = 0.08;
 
 export function imageInterest(image: RgbImage): ImageInterest {
   const pixels = rasterOf(image);
@@ -25,13 +32,20 @@ export function imageInterest(image: RgbImage): ImageInterest {
   const edgeShare = edgeShareOf(pixels, image.width);
   const coarseStructureShare = coarseEdgeShareOf(pixels, image.width);
   const largestFlatShare = largestBinShare(quantizedHistogram(pixels), pixels.length / 3);
+  const regions = regionSizeStats(pixels, image.width);
   return {
     colorEntropyBits,
     edgeShare,
     coarseStructureShare,
     largestFlatShare,
-    verdict: verdictOf(colorEntropyBits, edgeShare, coarseStructureShare, largestFlatShare),
+    ...regions,
+    verdict: verdictOf(colorEntropyBits, edgeShare, coarseStructureShare, largestFlatShare, regions),
   };
+}
+
+interface RegionStats {
+  largestRegionShare: number;
+  confettiShare: number;
 }
 
 function verdictOf(
@@ -39,12 +53,81 @@ function verdictOf(
   edgeShare: number,
   coarseStructureShare: number,
   largestFlatShare: number,
+  regions: RegionStats,
 ): ImageInterest['verdict'] {
   if (largestFlatShare > MONOTONE_FLAT_SHARE) return 'monotonous';
   if (edgeShare > NOISY_FINE_SHARE && coarseStructureShare < NOISY_COARSE_SHARE) return 'noisy';
   if (colorEntropyBits < DULL_COLOR_BITS) return 'dull';
   if (edgeShare < DULL_EDGE_SHARE && coarseStructureShare < DULL_COARSE_SHARE) return 'dull';
+  if (regions.confettiShare > UNIFORM_CONFETTI_ABOVE && regions.largestRegionShare < COMPOSED_REGION_SHARE) {
+    return 'uniform';
+  }
   return 'interesting';
+}
+
+function regionSizeStats(pixels: Uint8Array, width: number): RegionStats {
+  const height = pixels.length / 3 / width;
+  const total = width * height;
+  const labels = new Int32Array(total).fill(-1);
+  const keys = regionKeysOf(pixels, total);
+  let largest = 0;
+  let confetti = 0;
+  for (let start = 0; start < total; start++) {
+    if (labels[start] !== -1) continue;
+    const size = floodRegion(labels, keys, width, height, start);
+    largest = Math.max(largest, size);
+    if (size < total * CONFETTI_REGION_SHARE) confetti += size;
+  }
+  return { largestRegionShare: largest / total, confettiShare: confetti / total };
+}
+
+function regionKeysOf(pixels: Uint8Array, total: number): Int32Array {
+  const keys = new Int32Array(total);
+  const shift = 8 - REGION_QUANT_BITS;
+  for (let at = 0; at < total; at++) {
+    keys[at] =
+      ((pixels[at * 3]! >> shift) << (2 * REGION_QUANT_BITS)) |
+      ((pixels[at * 3 + 1]! >> shift) << REGION_QUANT_BITS) |
+      (pixels[at * 3 + 2]! >> shift);
+  }
+  return keys;
+}
+
+function floodRegion(
+  labels: Int32Array,
+  keys: Int32Array,
+  width: number,
+  height: number,
+  start: number,
+): number {
+  const wanted = keys[start]!;
+  const queue = [start];
+  labels[start] = start;
+  let size = 0;
+  while (queue.length > 0) {
+    const at = queue.pop()!;
+    size++;
+    const x = at % width;
+    const y = Math.floor(at / width);
+    if (x > 0) tryGrow(labels, keys, queue, at - 1, wanted, start);
+    if (x < width - 1) tryGrow(labels, keys, queue, at + 1, wanted, start);
+    if (y > 0) tryGrow(labels, keys, queue, at - width, wanted, start);
+    if (y < height - 1) tryGrow(labels, keys, queue, at + width, wanted, start);
+  }
+  return size;
+}
+
+function tryGrow(
+  labels: Int32Array,
+  keys: Int32Array,
+  queue: number[],
+  at: number,
+  wanted: number,
+  label: number,
+): void {
+  if (labels[at] !== -1 || keys[at] !== wanted) return;
+  labels[at] = label;
+  queue.push(at);
 }
 
 function coarseEdgeShareOf(pixels: Uint8Array, width: number): number {

@@ -73,6 +73,12 @@ export function checkRandomizeAndPermutation(check: CheckReporter): void {
       recipeSignatures.has(signature),
     ),
   );
+  check(
+    'random worlds roll the composition vocabulary: terraces, region plans and strait bridges',
+    ['terraceField', 'regionPlan', 'straitBridges'].every((signature) =>
+      recipeSignatures.has(signature),
+    ),
+  );
   check('most random rolls paint a world rather than an empty void', paintedWorlds > RANDOM_WORLD_ROLLS / 2);
 
   const sliderBase = islandsState();

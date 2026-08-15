@@ -1,4 +1,5 @@
 import { appendStraitBridges } from './bridgeSeasoning';
+import { appendCrags } from './highlandsRecipe';
 import { defaultBindingForKind } from '../display/displayBinding';
 import { NOISE_STYLE_FBM, NOISE_STYLE_RIDGED } from '../noise/terrainOctaves';
 import type { NodeInstance } from '../pipeline/pipelineState';
@@ -24,6 +25,7 @@ export function biomePartitionRecipeNodes(
     appendBiome(nodes, rng, reliefId, climateId, palette, CLIMATE_CUTS[at]!, seaLevel),
   );
   if (chance(rng, 0.6)) appendStraitBridges(nodes, rng, tiles, reliefId, seaLevel);
+  if (chance(rng, 0.7)) appendCrags(nodes, rng, tiles, smoothId);
   appendBiomeScatter(nodes, rng, tiles, climateId);
   return nodes;
 }

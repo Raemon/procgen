@@ -9,6 +9,7 @@ import { randomMarkerDisplay, randomMarkerTag } from './markerPalette';
 import { chance, pick, rollBetween, rollInt, shuffled, snappedToStep } from './randomRolls';
 import { nextRecipeId, recipeNode } from './recipeNode';
 import { preferring, type RecipeTiles } from './recipeTiles';
+import { REGION_ROLE_FOCUS } from '../nodes/composition/regionPlanNode';
 
 const BLEND_OPERATIONS = [COMBINE_AVERAGE, COMBINE_MIN, COMBINE_MAX] as const;
 
@@ -16,8 +17,44 @@ export function terrainRecipeNodes(rng: RandomStream, tiles: RecipeTiles): NodeI
   const nodes: NodeInstance[] = [];
   const heightId = appendHeightField(nodes, rng);
   appendBandLayers(nodes, rng, tiles, heightId);
+  if (chance(rng, 0.5)) appendClumpedSpoils(nodes, rng, tiles);
   appendScatterLayers(nodes, rng, tiles, heightId);
   return nodes;
+}
+
+export function appendClumpedSpoils(
+  nodes: NodeInstance[],
+  rng: RandomStream,
+  tiles: RecipeTiles,
+): void {
+  const focusId = nextRecipeId(nodes);
+  nodes.push(
+    recipeNode({
+      id: focusId,
+      type: 'regionPlan',
+      label: 'gathering places',
+      params: {
+        pitch: rollInt(rng, 192, 448),
+        focusShare: snappedToStep(rollBetween(rng, 0.15, 0.35), 0.05, 0.6, 0.05),
+        falloff: snappedToStep(rollBetween(rng, 0.35, 0.6), 0.25, 1.2, 0.05),
+        role: REGION_ROLE_FOCUS,
+      },
+    }),
+  );
+  nodes.push(
+    recipeNode({
+      id: nextRecipeId(nodes),
+      type: 'scatterPoints',
+      label: `${randomMarkerTag(rng)} scatter`,
+      params: {
+        density: snappedToStep(rollBetween(rng, 0.03, 0.08), 0, 1, 0.005),
+        maskAtLeast: snappedToStep(rollBetween(rng, 0.35, 0.55), 0, 1, 0.01),
+        maskAtMost: 1,
+      },
+      inputs: { mask: focusId },
+      display: randomMarkerDisplay(rng, tiles.all),
+    }),
+  );
 }
 
 function appendHeightField(nodes: NodeInstance[], rng: RandomStream): string {

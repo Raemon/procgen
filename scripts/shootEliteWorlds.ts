@@ -77,7 +77,8 @@ async function shootWorld(elite: ScoredWorld, index: number): Promise<WorldShotR
   });
   writeFileSync(join(dir, 'overhead.png'), pngBuffer(overhead));
   const interest = imageInterest(overhead);
-  const shots = ['overhead.png', ...(SKIP_3D ? [] : await threeDShots(elite, dir, points))];
+  const eyeLevel = SKIP_3D ? [] : await threeDShots(elite, dir, points);
+  const shots = ['overhead.png', ...eyeLevel.map((shot) => shot.name)];
   writeFileSync(join(dir, 'genome.json'), genomeAsJson(elite.genome));
   const record: WorldShotRecord = {
     slug,
@@ -89,6 +90,9 @@ async function shootWorld(elite: ScoredWorld, index: number): Promise<WorldShotR
     vistaMomentsPer100Steps: elite.measurements.vistaMomentsPer100Steps,
     decisionPointsPer100Steps: elite.measurements.decisionPointsPer100Steps,
     encountersPer100Steps: elite.measurements.encountersPer100Steps,
+    blindAtEyeLevel: eyeLevel.some(
+      (shot) => shot.style === 'character' && (shot.meanLuminance < 25 || shot.luminanceSpread < 8),
+    ),
     shots,
   };
   writeFileSync(join(dir, 'world.json'), `${JSON.stringify({ ...record, measurements: elite.measurements }, null, 2)}\n`);
@@ -104,13 +108,20 @@ function shotPointsFor(elite: ScoredWorld): ShotPoint[] {
   return shotPointsOf(walked.trace, (x, y) => world.sampler.elevationAt(x, y));
 }
 
+interface EyeLevelShot {
+  name: string;
+  style: 'god' | 'character';
+  meanLuminance: number;
+  luminanceSpread: number;
+}
+
 async function threeDShots(
   elite: ScoredWorld,
   dir: string,
   points: readonly ShotPoint[],
-): Promise<string[]> {
+): Promise<EyeLevelShot[]> {
   const document = documentOfGenome(elite.genome);
-  const shots: string[] = [];
+  const shots: EyeLevelShot[] = [];
   const wanted: Array<[ShotPoint, 'god' | 'character']> = [
     [points[0]!, 'god'],
     [points[1] ?? points[0]!, 'character'],
@@ -121,7 +132,12 @@ async function threeDShots(
     try {
       const rendered = await captureWorldViewPng(requestFor(document, point, style), bundle);
       writeFileSync(join(dir, name), Buffer.from(rendered.pngDataUrl.split(',')[1]!, 'base64'));
-      shots.push(name);
+      shots.push({
+        name,
+        style,
+        meanLuminance: rendered.meanLuminance,
+        luminanceSpread: rendered.luminanceSpread,
+      });
     } catch (error) {
       console.error(`  3d shot failed (${name}): ${(error as Error).message}`);
     }

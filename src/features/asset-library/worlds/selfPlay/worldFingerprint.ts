@@ -35,6 +35,7 @@ const READING_SCALES: Array<[keyof WalkingSimMeasurements, number]> = [
   ['graspableLessonShare', 1],
   ['encountersPer100Steps', 10],
   ['discoveryKinds', 8],
+  ['eventGapCv', 3],
   ['landmarkStepShare', 1],
   ['landmarkHoldSteps', 25],
 ];

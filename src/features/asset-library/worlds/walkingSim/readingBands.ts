@@ -36,6 +36,7 @@ export const READING_BANDS: readonly ReadingBand[] = [
   { name: 'learning curve drop', key: 'learningCurveDrop', weight: 1, lo: 0.05, hi: 0.45, falloff: 0.25 },
   { name: 'encounters /100 steps', key: 'encountersPer100Steps', weight: 1.5, lo: 1, hi: 8, falloff: 4 },
   { name: 'discovery kinds', key: 'discoveryKinds', weight: 1, lo: 2, hi: 8, falloff: 3 },
+  { name: 'event rhythm', key: 'eventGapCv', weight: 1, lo: 0.9, hi: 2.6, falloff: 0.8 },
   { name: 'landmark pull', key: 'landmarkStepShare', weight: 1, lo: 0.1, hi: 0.6, falloff: 0.3 },
   { name: 'landmark hold (steps)', key: 'landmarkHoldSteps', weight: 0.5, lo: 3, hi: 25, falloff: 12 },
 ];

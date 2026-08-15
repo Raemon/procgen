@@ -7,6 +7,7 @@ import './terrain/terrainNoiseNode';
 import './terrain/tectonicUpliftNode';
 import './terrain/domainWarpNode';
 import './terrain/terraceFieldNode';
+import './composition/regionPlanNode';
 import './terrain/hypsometricCurveNode';
 import './terrain/blendFieldsNode';
 import './terrain/slopeFieldNode';

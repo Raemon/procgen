@@ -44,6 +44,7 @@ export function treatedGenome(
   const pipeline = clonedState(genome.pipeline);
   const palette = worldPaletteOfKit(genome.kitSeed, genome.accentKitSeed, genome.paletteSize);
   if (walkIsBarren(world)) treatBarrenWalk(pipeline, rng, palette);
+  else if (world.measurements.landmarkStepShare === 0) appendCragsOverRelief(pipeline, rng, palette);
   else applyTreatment(pipeline, diagnosis, rng, palette);
   return { ...genome, pipeline: sanitizePipeline(pipeline) };
 }
@@ -237,6 +238,29 @@ function treatLandmarks(
 }
 
 const SIGHTABLE_DISPLAYS = new Set(['markers', 'creatures', 'items']);
+
+function appendCragsOverRelief(
+  pipeline: PipelineState,
+  rng: RandomStream,
+  palette: WorldPalette,
+): void {
+  const blockers = blockerTileIdsOf(palette);
+  const reliefId = paintingSourceFieldIdOf(pipeline);
+  if (blockers.length === 0 || !reliefId) return;
+  pipeline.nodes.push(
+    recipeNode({
+      id: nextNodeId(pipeline),
+      type: 'thresholdTiles',
+      label: 'crags',
+      params: {
+        threshold: snappedToStep(rollBetween(rng, 0.9, 0.96), 0, 1, 0.01),
+        belowTile: -1,
+        aboveTile: pick(rng, blockers),
+      },
+      inputs: { source: reliefId },
+    }),
+  );
+}
 
 function scaleScatterDensities(pipeline: PipelineState, factor: number): number {
   let touched = 0;

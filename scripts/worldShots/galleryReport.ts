@@ -10,6 +10,7 @@ export interface WorldShotRecord {
   vistaMomentsPer100Steps: number;
   decisionPointsPer100Steps: number;
   encountersPer100Steps: number;
+  blindAtEyeLevel: boolean;
   shots: string[];
 }
 
@@ -36,8 +37,9 @@ ${records.map(worldCard).join('\n')}
 }
 
 function worldCard(record: WorldShotRecord): string {
+  const blind = record.blindAtEyeLevel ? ' <span class="verdict-dull">[blind at eye level]</span>' : '';
   return `<div class="world">
-<h2>${escapeHtml(record.name)} <span class="verdict-${record.verdict}">[${record.verdict}]</span></h2>
+<h2>${escapeHtml(record.name)} <span class="verdict-${record.verdict}">[${record.verdict}]</span>${blind}</h2>
 <div class="stats">fun ${record.fun.toFixed(3)} · gates ${record.elevationGateShare.toFixed(2)} · vistas/100 ${record.vistaMomentsPer100Steps.toFixed(1)} · decisions/100 ${record.decisionPointsPer100Steps.toFixed(1)} · encounters/100 ${record.encountersPer100Steps.toFixed(1)} · color bits ${record.interest.colorEntropyBits.toFixed(1)} · edges ${(record.interest.edgeShare * 100).toFixed(0)}%</div>
 <div class="shots">${record.shots.map((shot) => shotFigure(record.slug, shot)).join('')}</div>
 </div>`;
