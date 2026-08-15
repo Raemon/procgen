@@ -8,15 +8,53 @@ import type { NodeInstance } from '../pipeline/pipelineState';
 import { randomMarkerDisplay, randomMarkerTag } from './markerPalette';
 import { chance, pick, rollBetween, rollInt, shuffled, snappedToStep } from './randomRolls';
 import { nextRecipeId, recipeNode } from './recipeNode';
+import { preferring, type RecipeTiles } from './recipeTiles';
+import { REGION_ROLE_FOCUS } from '../nodes/composition/regionPlanNode';
 
 const BLEND_OPERATIONS = [COMBINE_AVERAGE, COMBINE_MIN, COMBINE_MAX] as const;
 
-export function terrainRecipeNodes(rng: RandomStream, tileIds: readonly number[]): NodeInstance[] {
+export function terrainRecipeNodes(rng: RandomStream, tiles: RecipeTiles): NodeInstance[] {
   const nodes: NodeInstance[] = [];
   const heightId = appendHeightField(nodes, rng);
-  appendBandLayers(nodes, rng, tileIds, heightId);
-  appendScatterLayers(nodes, rng, tileIds, heightId);
+  appendBandLayers(nodes, rng, tiles, heightId);
+  if (chance(rng, 0.5)) appendClumpedSpoils(nodes, rng, tiles);
+  appendScatterLayers(nodes, rng, tiles, heightId);
   return nodes;
+}
+
+export function appendClumpedSpoils(
+  nodes: NodeInstance[],
+  rng: RandomStream,
+  tiles: RecipeTiles,
+): void {
+  const focusId = nextRecipeId(nodes);
+  nodes.push(
+    recipeNode({
+      id: focusId,
+      type: 'regionPlan',
+      label: 'gathering places',
+      params: {
+        pitch: rollInt(rng, 192, 448),
+        focusShare: snappedToStep(rollBetween(rng, 0.15, 0.35), 0.05, 0.6, 0.05),
+        falloff: snappedToStep(rollBetween(rng, 0.35, 0.6), 0.25, 1.2, 0.05),
+        role: REGION_ROLE_FOCUS,
+      },
+    }),
+  );
+  nodes.push(
+    recipeNode({
+      id: nextRecipeId(nodes),
+      type: 'scatterPoints',
+      label: `${randomMarkerTag(rng)} scatter`,
+      params: {
+        density: snappedToStep(rollBetween(rng, 0.03, 0.08), 0, 1, 0.005),
+        maskAtLeast: snappedToStep(rollBetween(rng, 0.35, 0.55), 0, 1, 0.01),
+        maskAtMost: 1,
+      },
+      inputs: { mask: focusId },
+      display: randomMarkerDisplay(rng, tiles.all),
+    }),
+  );
 }
 
 function appendHeightField(nodes: NodeInstance[], rng: RandomStream): string {
@@ -64,17 +102,17 @@ function applyElevationDisplay(nodes: NodeInstance[], rng: RandomStream, fieldId
   if (field) field.display = { mode: 'elevation', heightScale: snappedToStep(rollBetween(rng, 1, 5), 0.5, 8, 0.5) };
 }
 
-function appendBandLayers(
+export function appendBandLayers(
   nodes: NodeInstance[],
   rng: RandomStream,
-  tileIds: readonly number[],
+  tiles: RecipeTiles,
   sourceId: string,
 ): void {
   const bandCount = rollInt(rng, 2, 4);
-  const tiles = bandTiles(rng, tileIds, bandCount + 1);
+  const bandTileIds = bandTiles(rng, tiles, bandCount + 1);
   let threshold = rollBetween(rng, 0.32, 0.5);
   for (let band = 0; band < bandCount; band++) {
-    appendBand(nodes, sourceId, band, snappedToStep(threshold, 0, 1, 0.01), tiles);
+    appendBand(nodes, sourceId, band, snappedToStep(threshold, 0, 1, 0.01), bandTileIds);
     threshold += rollBetween(rng, 0.07, 0.16);
   }
 }
@@ -101,26 +139,27 @@ function appendBand(
   );
 }
 
-function bandTiles(rng: RandomStream, tileIds: readonly number[], count: number): number[] {
-  if (tileIds.length === 0) return Array.from({ length: count }, () => -1);
-  const pool = shuffled(rng, tileIds);
-  return Array.from({ length: count }, (_, index) => pool[index % pool.length]!);
+function bandTiles(rng: RandomStream, tiles: RecipeTiles, count: number): number[] {
+  if (tiles.all.length === 0) return Array.from({ length: count }, () => -1);
+  const low = shuffled(rng, preferring(tiles, 'blockers'))[0]!;
+  const pool = shuffled(rng, tiles.all);
+  return [low, ...Array.from({ length: count - 1 }, (_, index) => pool[index % pool.length]!)];
 }
 
-function appendScatterLayers(
+export function appendScatterLayers(
   nodes: NodeInstance[],
   rng: RandomStream,
-  tileIds: readonly number[],
+  tiles: RecipeTiles,
   maskId: string,
 ): void {
   const scatterCount = rollInt(rng, 0, 2);
-  for (let i = 0; i < scatterCount; i++) appendScatter(nodes, rng, tileIds, maskId);
+  for (let i = 0; i < scatterCount; i++) appendScatter(nodes, rng, tiles, maskId);
 }
 
 function appendScatter(
   nodes: NodeInstance[],
   rng: RandomStream,
-  tileIds: readonly number[],
+  tiles: RecipeTiles,
   maskId: string,
 ): void {
   const tag = randomMarkerTag(rng);
@@ -136,7 +175,7 @@ function appendScatter(
         maskAtMost: snappedToStep(maskAtLeast + rollBetween(rng, 0.08, 0.3), 0, 1, 0.01),
       },
       inputs: { mask: maskId },
-      display: randomMarkerDisplay(rng, tileIds),
+      display: randomMarkerDisplay(rng, tiles.all),
     }),
   );
 }

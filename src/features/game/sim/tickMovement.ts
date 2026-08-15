@@ -14,18 +14,21 @@ export interface StepDelta {
 }
 
 export type WalkabilityProbe = (x: number, y: number) => boolean;
+export type StepGate = (fromX: number, fromY: number, toX: number, toY: number) => boolean;
 
 export function tickMovement(
   body: MovingBody,
   x: number,
   y: number,
   isWalkable: WalkabilityProbe,
+  climbGateAt: StepGate = () => true,
 ): StepDelta | null {
   if (body.cooldown > 0) body.cooldown -= 1;
   if (body.cooldown > 0) return null;
   const order = body.order;
   if (order.kind === ORDER_NONE) return null;
-  const delta = walkableStepToward(order.dir, x, y, isWalkable);
+  const canEnter = (nx: number, ny: number) => isWalkable(nx, ny) && climbGateAt(x, y, nx, ny);
+  const delta = walkableStepToward(order.dir, x, y, canEnter);
   if (order.kind === ORDER_STEP) body.order = idleOrder();
   if (!delta) return null;
   order.stepped = true;

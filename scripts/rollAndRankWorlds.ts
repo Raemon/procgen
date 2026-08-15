@@ -15,6 +15,7 @@ import type { PipelineState } from '@/features/asset-library/worlds/pipeline/pip
 import { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
 import { sanitizePipeline } from '@/features/asset-library/worlds/pipeline/sanitizePipeline';
 import { randomWorldPipeline } from '@/features/asset-library/worlds/randomize/randomWorldPipeline';
+import { recipeTilesOf } from '@/features/asset-library/worlds/randomize/recipeTiles';
 import { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import { mulberry32 } from '@/features/asset-library/worlds/random/mulberry32';
 import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
@@ -55,7 +56,7 @@ function currentPipelineCandidate(): Candidate {
 
 function rolledCandidates(activeTiles: TileAssets): Candidate[] {
   const rng = mulberry32(ROLL_SEED);
-  const tileIds = activeTiles.all().map((tile) => tile.id);
+  const tileIds = recipeTilesOf(activeTiles.all());
   return Array.from({ length: ROLL_COUNT }, (_, i) => ({
     index: i + 1,
     title: `roll ${i + 1}`,

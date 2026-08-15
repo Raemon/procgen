@@ -1,8 +1,11 @@
 import type { RandomStream } from '../random/mulberry32';
 import { anyNodePipeline } from '../randomize/anyNodePipeline';
 import { randomWorldPipeline } from '../randomize/randomWorldPipeline';
-import type { PipelineState } from '../pipeline/pipelineState';
+import { recipeTilesOf, type RecipeTiles } from '../randomize/recipeTiles';
+import { settlementRecipeNodes } from '../randomize/settlementRecipe';
+import { DEFAULT_DAYLIGHT, type PipelineState } from '../pipeline/pipelineState';
 import { sanitizePipeline } from '../pipeline/sanitizePipeline';
+import { PRESENT } from '../time/worldTime';
 import { chance, rollInt } from '../randomize/randomRolls';
 import { settledPipeline } from './settleTheWorld';
 import { worldPaletteOfKit } from './worldPalette';
@@ -26,16 +29,26 @@ export function rolledGenome(rng: RandomStream): WorldGenome {
     kitSeed,
     accentKitSeed,
     paletteSize,
-    pipeline: rolledPipeline(rng, palette.paletteIds, palette.culture.id),
+    pipeline: rolledPipeline(rng, recipeTilesOf(palette.tiles, palette.paletteIds), palette.culture.id),
   };
 }
 
+const SETTLED_ROLL_SHARE = 0.2;
+
 export function rolledPipeline(
   rng: RandomStream,
-  tileIds: readonly number[],
+  tiles: RecipeTiles,
   cultureId: number,
 ): PipelineState {
-  const rolled = chance(rng, 0.5) ? anyNodePipeline(rng, tileIds) : randomWorldPipeline(rng, tileIds);
+  if (chance(rng, SETTLED_ROLL_SHARE)) {
+    return sanitizePipeline({
+      seed: rollInt(rng, 1, 999_999),
+      daylight: DEFAULT_DAYLIGHT,
+      time: PRESENT,
+      nodes: settlementRecipeNodes(rng, tiles, cultureId),
+    });
+  }
+  const rolled = chance(rng, 0.5) ? anyNodePipeline(rng, tiles) : randomWorldPipeline(rng, tiles);
   return settledPipeline(sanitizePipeline(rolled), rng, cultureId);
 }
 

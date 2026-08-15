@@ -2,7 +2,7 @@ import type { CellPoint } from '@/features/game/nearestWalkable';
 import type { CellCharacterProbe } from '../cellCharacter';
 import { CARDINAL_STEPS, cellKey } from '../cellGrid';
 import { spawnSitsAtCell, type NearbySpawnsProbe } from '../nearbySpawnsProbe';
-import type { WalkableProbe } from '../worldProbes';
+import type { StepProbe, WalkableProbe } from '../worldProbes';
 import { meanOf, shareOf } from './meanOf';
 import { sharesOfCounts, type ShareTally } from './sceneryShares';
 
@@ -23,6 +23,7 @@ export interface ChoiceStructure {
 
 export interface ChoiceProbes {
   isWalkableAt: WalkableProbe;
+  canStep: StepProbe;
   characterAt: CellCharacterProbe;
   spawnsNear: NearbySpawnsProbe;
   seen: ReadonlySet<string>;
@@ -36,7 +37,7 @@ interface BranchFuture {
 }
 
 export function choiceStructure(path: readonly CellPoint[], probes: ChoiceProbes): ChoiceStructure {
-  const forks = forksAlongPath(path, probes.isWalkableAt);
+  const forks = forksAlongPath(path, probes.canStep);
   const divergences = weighedForks(forks).map((fork) => divergenceAtFork(fork, probes));
   return {
     decisionPointsPer100Steps: tradeoffsPer100Steps(forks, divergences, path.length),
@@ -56,8 +57,8 @@ function tradeoffsPer100Steps(
   return shareOf(forks.length * tradeoffShare, pathLength) * 100;
 }
 
-function forksAlongPath(path: readonly CellPoint[], isWalkableAt: WalkableProbe): CellPoint[] {
-  return path.filter((cell) => walkableNeighborsOf(cell, isWalkableAt).length > 2);
+function forksAlongPath(path: readonly CellPoint[], canStep: StepProbe): CellPoint[] {
+  return path.filter((cell) => walkableNeighborsOf(cell, canStep).length > 2);
 }
 
 function weighedForks(forks: readonly CellPoint[]): CellPoint[] {
@@ -72,7 +73,7 @@ function divergenceAtFork(fork: CellPoint, probes: ChoiceProbes): number {
 }
 
 function futuresOfEachWayOn(fork: CellPoint, probes: ChoiceProbes): BranchFuture[] {
-  return [...groundNearestToEachWayOn(fork, probes.isWalkableAt).values()]
+  return [...groundNearestToEachWayOn(fork, probes.canStep).values()]
     .filter((reached) => reached.length >= SMALLEST_MEANINGFUL_BRANCH)
     .map((reached) => futureOfReach(reached, probes));
 }
@@ -105,14 +106,14 @@ function unseenCountOf(reached: readonly CellPoint[], seen: ReadonlySet<string>)
 
 function groundNearestToEachWayOn(
   fork: CellPoint,
-  isWalkableAt: WalkableProbe,
+  canStep: StepProbe,
 ): Map<string, CellPoint[]> {
-  const entrances = walkableNeighborsOf(fork, isWalkableAt);
+  const entrances = walkableNeighborsOf(fork, canStep);
   const owner = new Map<string, string>([[cellKey(fork.x, fork.y), '']]);
   const grounds = new Map<string, CellPoint[]>();
   const queue = seededQueueOf(entrances, owner, grounds);
   for (let head = 0; head < queue.length && queue.length < HORIZON_CELLS; head++) {
-    spreadOwnershipFrom(queue[head]!, isWalkableAt, owner, grounds, queue);
+    spreadOwnershipFrom(queue[head]!, canStep, owner, grounds, queue);
   }
   return grounds;
 }
@@ -132,13 +133,13 @@ function seededQueueOf(
 
 function spreadOwnershipFrom(
   cell: CellPoint,
-  isWalkableAt: WalkableProbe,
+  canStep: StepProbe,
   owner: Map<string, string>,
   grounds: Map<string, CellPoint[]>,
   queue: CellPoint[],
 ): void {
   const claim = owner.get(cellKey(cell.x, cell.y))!;
-  for (const next of walkableNeighborsOf(cell, isWalkableAt)) {
+  for (const next of walkableNeighborsOf(cell, canStep)) {
     const key = cellKey(next.x, next.y);
     if (owner.has(key)) continue;
     owner.set(key, claim);
@@ -147,11 +148,11 @@ function spreadOwnershipFrom(
   }
 }
 
-function walkableNeighborsOf(cell: CellPoint, isWalkableAt: WalkableProbe): CellPoint[] {
+function walkableNeighborsOf(cell: CellPoint, canStep: StepProbe): CellPoint[] {
   const neighbors: CellPoint[] = [];
   for (const step of CARDINAL_STEPS) {
     const next = { x: cell.x + step.dx, y: cell.y + step.dy };
-    if (isWalkableAt(next.x, next.y)) neighbors.push(next);
+    if (canStep(cell.x, cell.y, next.x, next.y)) neighbors.push(next);
   }
   return neighbors;
 }

@@ -1,8 +1,12 @@
 import type { CellCharacterProbe } from './cellCharacter';
 import { choiceStructure } from './metrics/choiceStructure';
+import { learningCurveDrop } from './metrics/compressionProgress';
 import { conflictedChoices } from './metrics/conflictedChoices';
 import { discoveriesAlongPath } from './metrics/discoveries';
+import { elevationExperience } from './metrics/elevationExperience';
 import { enclosureRhythm } from './metrics/enclosureRhythm';
+import { journeyArc } from './metrics/journeyArc';
+import { corridorLoopsPer100Cells } from './metrics/loopTopology';
 import { landmarkPull } from './metrics/landmarkPull';
 import { learningProgress } from './metrics/learningProgress';
 import { mysteryEdgeShare } from './metrics/mysteryPromise';
@@ -16,10 +20,7 @@ import {
   type ShareTally,
 } from './metrics/sceneryShares';
 import { viewDistinctness } from './metrics/viewDistinctness';
-import type { SightProbes } from './isovist';
-import type { NearbySpawnsProbe } from './nearbySpawnsProbe';
-import { stepsWalked, type TouristLimits, type TouristTrace } from './touristWalk';
-import type { WalkableProbe } from './worldProbes';
+import { stepsWalked, type TouristLimits, type TouristProbes, type TouristTrace } from './touristWalk';
 
 export interface WalkingSimMeasurements {
   stepsWalked: number;
@@ -30,6 +31,13 @@ export interface WalkingSimMeasurements {
   timeShareOpen: number;
   timeShareEnclosed: number;
   opennessSwingsPer100Steps: number;
+  vistaMomentsPer100Steps: number;
+  retreadShare: number;
+  revealSpread: number;
+  elevationGateShare: number;
+  climbRevealRatio: number;
+  learningCurveDrop: number;
+  corridorLoopsPer100Cells: number;
   mysteryEdgeShare: number;
   sceneryEntropyBits: number;
   regionEntropyBits: number;
@@ -45,15 +53,13 @@ export interface WalkingSimMeasurements {
   graspableLessonShare: number;
   encountersPer100Steps: number;
   discoveryKinds: number;
+  eventGapCv: number;
   landmarkStepShare: number;
   landmarkHoldSteps: number;
 }
 
-export interface WalkProbes {
-  isWalkableAt: WalkableProbe;
-  sight: SightProbes;
+export interface WalkProbes extends TouristProbes {
   characterAt: CellCharacterProbe;
-  spawnsNear: NearbySpawnsProbe;
 }
 
 export interface MeasuredWalk {
@@ -78,7 +84,7 @@ function measurementsOf(
 ): WalkingSimMeasurements {
   return {
     ...walkShape(trace),
-    ...pacingAndRhythm(trace, limits),
+    ...pacingAndRhythm(trace, limits, probes),
     ...sceneryReadings(trace, probes, seenShares),
     ...choiceAndLearningReadings(trace, probes),
     ...discoveryAndLandmarkReadings(trace, probes, seenShares),
@@ -93,10 +99,13 @@ function walkShape(trace: TouristTrace) {
   };
 }
 
-function pacingAndRhythm(trace: TouristTrace, limits: TouristLimits) {
+function pacingAndRhythm(trace: TouristTrace, limits: TouristLimits, probes: WalkProbes) {
   return {
     ...revealPacing(trace.revealPerStep),
     ...enclosureRhythm(trace.isovistAreaPerStep, limits.sightRadius),
+    ...journeyArc(trace),
+    ...elevationExperience(trace, probes),
+    corridorLoopsPer100Cells: corridorLoopsPer100Cells(trace.visited, probes.canStep),
     mysteryEdgeShare: mysteryEdgeShare(trace.mysteryEdgesPerStep, trace.isovistAreaPerStep),
   };
 }
@@ -118,6 +127,7 @@ function choiceAndLearningReadings(trace: TouristTrace, probes: WalkProbes) {
     ...choiceStructure(trace.path, { ...probes, seen: trace.seen }),
     ...conflictedChoices(trace),
     ...learningProgress(trace.path, probes.characterAt),
+    learningCurveDrop: learningCurveDrop(trace.path, probes.characterAt),
   };
 }
 
@@ -128,6 +138,6 @@ function discoveryAndLandmarkReadings(
 ) {
   return {
     ...discoveriesAlongPath(trace.path, probes.spawnsNear),
-    ...landmarkPull(trace.farSeenPerStep, { ...probes, isOpaqueAt: probes.sight.isOpaqueAt, seenShares }),
+    ...landmarkPull(trace.farSeenPerStep, { ...probes, seenShares }),
   };
 }

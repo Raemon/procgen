@@ -2,9 +2,11 @@ import { mulberry32, type RandomStream } from '../random/mulberry32';
 import { chance, pick } from '../randomize/randomRolls';
 import { touristLimits, type TouristLimits } from '../walkingSim/touristWalk';
 import { batchScore, type BatchScore } from './batchScore';
+import { bredGenome } from './breedGenomes';
 import { EliteArchive } from './eliteArchive';
+import { diagnosisOf, treatedGenome, worthTreating } from './worldDoctor';
 import { mutatedGenome } from './mutateGenome';
-import { scoredGenome, walkSeedOf, type ScoredWorld } from './scoreGenome';
+import { funOf, scoredGenome, walkSeedOf, type ScoredWorld } from './scoreGenome';
 import { SaturationWatch } from './saturationWatch';
 import { rolledGenome, type WorldGenome } from './worldGenome';
 
@@ -23,6 +25,7 @@ export interface GenerationRecord {
   archiveBestFun: number;
   coverage: number;
   admissions: number;
+  patientsTreated: number;
   worldsWithNowhereToWalk: number;
   generationsSinceGain: number;
 }
@@ -34,6 +37,9 @@ export interface TrainingRun {
 }
 
 const FRESH_ROLL_SHARE = 0.3;
+const BRED_SHARE = 0.35;
+const TREATED_SHARE = 0.25;
+const CLINIC_BEDS = 12;
 const CANDIDATE_PATIENCE_MS = 8000;
 
 export function runTraining(
@@ -55,6 +61,8 @@ interface RunState {
   rng: RandomStream;
   watch: SaturationWatch;
   limits: TouristLimits;
+  clinic: ScoredWorld[];
+  treatedThisGeneration: number;
 }
 
 function freshRun(settings: TrainingSettings): RunState {
@@ -64,6 +72,8 @@ function freshRun(settings: TrainingSettings): RunState {
     rng: mulberry32(settings.seed),
     watch: new SaturationWatch(settings.patience),
     limits: { ...touristLimits(settings.stepBudget, settings.radiusCap), patienceMs: CANDIDATE_PATIENCE_MS },
+    clinic: [],
+    treatedThisGeneration: 0,
   };
 }
 
@@ -89,9 +99,38 @@ function candidateGenomesOf(state: RunState, settings: TrainingSettings): WorldG
 }
 
 function nextCandidate(state: RunState): WorldGenome {
+  const treated = treatedCandidate(state);
+  if (treated) return treated;
   const elites = state.archive.all();
   if (elites.length === 0 || chance(state.rng, FRESH_ROLL_SHARE)) return rolledGenome(state.rng);
+  if (elites.length >= 2 && chance(state.rng, BRED_SHARE)) return bredCandidate(state, elites);
   return mutatedGenome(pick(state.rng, elites).genome, state.rng);
+}
+
+function treatedCandidate(state: RunState): WorldGenome | null {
+  if (state.clinic.length === 0 || !chance(state.rng, TREATED_SHARE)) return null;
+  const patient = state.clinic.shift()!;
+  const diagnosis = diagnosisOf(patient);
+  if (!diagnosis) return null;
+  state.treatedThisGeneration++;
+  return treatedGenome(patient, diagnosis, state.rng);
+}
+
+function admitToClinic(state: RunState, world: ScoredWorld): void {
+  if (!worthTreating(world)) return;
+  state.clinic.push(world);
+  state.clinic.sort((one, other) => funOf(other) - funOf(one));
+  if (state.clinic.length > CLINIC_BEDS) state.clinic.length = CLINIC_BEDS;
+}
+
+function bredCandidate(state: RunState, elites: readonly ScoredWorld[]): WorldGenome {
+  const one = pick(state.rng, elites);
+  const other = pick(
+    state.rng,
+    elites.filter((elite) => elite !== one),
+  );
+  const child = bredGenome(one.genome, other.genome, state.rng);
+  return chance(state.rng, 0.5) ? mutatedGenome(child, state.rng) : child;
 }
 
 function recordOf(
@@ -100,16 +139,23 @@ function recordOf(
   candidateCount: number,
   state: RunState,
 ): GenerationRecord {
-  const admissions = batch.filter((world) => state.archive.admit(world)).length;
+  let admissions = 0;
+  for (const world of batch) {
+    if (state.archive.admit(world)) admissions++;
+    admitToClinic(state, world);
+  }
   const archiveBestFun = state.archive.bestFun();
   const coverage = state.archive.coverage();
   state.watch.notice(archiveBestFun, state.archive.meanFun());
+  const patientsTreated = state.treatedThisGeneration;
+  state.treatedThisGeneration = 0;
   return {
     generation,
     batch: batchScore(batch),
     archiveBestFun,
     coverage,
     admissions,
+    patientsTreated,
     worldsWithNowhereToWalk: candidateCount - batch.length,
     generationsSinceGain: state.watch.generationsSinceGain(),
   };

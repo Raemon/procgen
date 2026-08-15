@@ -118,4 +118,58 @@ export function checkHydrologyNodes(check: CheckReporter): void {
     for (let x = -SPAN; x < SPAN; x++) if (tileAtNode(hydrology.evaluator, 'wideRivers', x, y) !== EMPTY_TILE) wideRiverCells++;
   }
   check('rivers widen with the max width knob', wideRiverCells > flowRiverCells.length);
+
+  checkStraitBridges(check);
+}
+
+const STRAIT_SCRIPT = `const field = ctx.newField();
+for (let i = 0; i < field.length; i++) {
+  const x = ctx.originX + (i % ctx.size);
+  const strait = ((x % 40) + 40) % 40 < 6;
+  field[i] = strait ? 0.42 : 0.8;
+}
+return field;`;
+
+function straitState(): PipelineState {
+  return stateOfNodes([
+    { id: 'straits', type: 'customScript', params: { outputKind: 'field', code: STRAIT_SCRIPT }, inputs: {} },
+    { id: 'bridges', type: 'straitBridges', params: { waterBelow: 0.5, shallowBand: 0.2, maxSpan: 10, pitch: 16, bridgeTile: 3 }, inputs: { water: 'straits' } },
+    { id: 'noDeepBridges', type: 'straitBridges', params: { waterBelow: 0.5, shallowBand: 0.05, maxSpan: 10, pitch: 16, bridgeTile: 3 }, inputs: { water: 'straits' } },
+  ]);
+}
+
+function checkStraitBridges(check: CheckReporter): void {
+  const world = worldFromState(straitState());
+  const bridged: Array<[number, number]> = [];
+  let deepBridged = 0;
+  for (let y = -80; y < 80; y++) {
+    for (let x = -80; x < 80; x++) {
+      if (tileAtNode(world.evaluator, 'bridges', x, y) !== EMPTY_TILE) bridged.push([x, y]);
+      if (tileAtNode(world.evaluator, 'noDeepBridges', x, y) !== EMPTY_TILE) deepBridged++;
+    }
+  }
+  check('shallow straits gain bridges on the crossing lattice', bridged.length > 0);
+  check(
+    'every bridge tile stands on water rather than paving dry land',
+    bridged.every(([x, y]) => fieldAt(world.evaluator, 'straits', x, y) <= 0.5),
+  );
+  check(
+    'every bridge span touches a shore within its longest span',
+    bridged.every(([x, y]) => shoreWithinSpan(world, x, y)),
+  );
+  check('water deeper than the shallow band stays unspanned', deepBridged === 0);
+}
+
+function shoreWithinSpan(
+  world: ReturnType<typeof worldFromState>,
+  x: number,
+  y: number,
+): boolean {
+  for (let step = 1; step <= 10; step++) {
+    if (fieldAt(world.evaluator, 'straits', x + step, y) > 0.5) return true;
+    if (fieldAt(world.evaluator, 'straits', x - step, y) > 0.5) return true;
+    if (fieldAt(world.evaluator, 'straits', x, y + step) > 0.5) return true;
+    if (fieldAt(world.evaluator, 'straits', x, y - step) > 0.5) return true;
+  }
+  return false;
 }

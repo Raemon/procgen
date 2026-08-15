@@ -1,6 +1,6 @@
 import type { CellPoint } from '@/features/game/nearestWalkable';
 import { CARDINAL_STEPS, cellKey } from './cellGrid';
-import type { WalkableProbe } from './worldProbes';
+import { flatStepProbe, type StepProbe, type WalkableProbe } from './worldProbes';
 
 const SPAWN_SEARCH_RADIUS = 48;
 const SPAWN_CANDIDATES_TRIED = 12;
@@ -16,6 +16,7 @@ export function spawnsWithRoomToWalk(
   isWalkableAt: WalkableProbe,
   wanted: number,
   notAfterMs: number,
+  canStep: StepProbe = flatStepProbe(isWalkableAt),
 ): CellPoint[] {
   const roomy: CellPoint[] = [];
   let roomiest: CellPoint | null = null;
@@ -23,7 +24,7 @@ export function spawnsWithRoomToWalk(
   for (const candidate of spawnCandidates(isWalkableAt)) {
     if (Date.now() > notAfterMs) break;
     if (!standsWellApartFrom(candidate, roomy)) continue;
-    const reach = reachableFrom(candidate, isWalkableAt);
+    const reach = reachableFrom(candidate, canStep);
     if (reach >= ROOM_TO_WALK_CELLS) roomy.push(candidate);
     if (roomy.length >= wanted) return roomy;
     if (reach > roomiestReach) {
@@ -67,25 +68,25 @@ function standsApartFrom(cell: CellPoint, chosen: readonly CellPoint[]): boolean
   );
 }
 
-function reachableFrom(start: CellPoint, isWalkableAt: WalkableProbe): number {
+function reachableFrom(start: CellPoint, canStep: StepProbe): number {
   const visited = new Set([cellKey(start.x, start.y)]);
   const queue: CellPoint[] = [start];
   for (let head = 0; head < queue.length && queue.length < ROOM_TO_WALK_CELLS; head++) {
-    enqueueWalkableNeighbors(queue[head]!, isWalkableAt, visited, queue);
+    enqueueWalkableNeighbors(queue[head]!, canStep, visited, queue);
   }
   return queue.length;
 }
 
 function enqueueWalkableNeighbors(
   cell: CellPoint,
-  isWalkableAt: WalkableProbe,
+  canStep: StepProbe,
   visited: Set<string>,
   queue: CellPoint[],
 ): void {
   for (const step of CARDINAL_STEPS) {
     const next = { x: cell.x + step.dx, y: cell.y + step.dy };
     const key = cellKey(next.x, next.y);
-    if (visited.has(key) || !isWalkableAt(next.x, next.y)) continue;
+    if (visited.has(key) || !canStep(cell.x, cell.y, next.x, next.y)) continue;
     visited.add(key);
     queue.push(next);
   }

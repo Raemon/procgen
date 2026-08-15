@@ -35,8 +35,8 @@ function broadcastDocChanged(deps: DocSyncDeps, name: string): void {
 function snapEntitiesToWalkableGround(deps: DocSyncDeps): void {
   const world = deps.worldHost.current();
   for (const entity of deps.registry.byId.values()) {
-    if (entity.kind !== 'player' || world.isWalkable(entity.x, entity.y)) continue;
-    const spot = nearestWalkable(entity.x, entity.y, SNAP_SEARCH_RADIUS, world.isWalkable) ?? world.spawn();
+    if (entity.kind !== 'player' || world.isStandable(entity.x, entity.y)) continue;
+    const spot = nearestWalkable(entity.x, entity.y, SNAP_SEARCH_RADIUS, world.isStandable) ?? world.spawn();
     deps.registry.moveTo(entity, spot.x, spot.y);
   }
 }

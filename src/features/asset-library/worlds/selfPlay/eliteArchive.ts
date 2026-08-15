@@ -6,8 +6,9 @@ import { funOf, type ScoredWorld } from './scoreGenome';
 const OPENNESS_EDGES = [0.05, 0.25, 0.6];
 const GRAMMAR_EDGES = [0.5, 1.2, 2];
 const DECISION_EDGES = [1, 8, 20];
+const GATE_EDGES = [0.01, 0.08];
 
-export const ARCHIVE_CELLS = (OPENNESS_EDGES.length + 1) ** 3;
+export const ARCHIVE_CELLS = (OPENNESS_EDGES.length + 1) ** 3 * (GATE_EDGES.length + 1);
 
 export class EliteArchive {
   private readonly elites = new Map<string, ScoredWorld>();
@@ -58,6 +59,7 @@ export function cellOf(measurements: WalkingSimMeasurements): string {
     bandOf(measurements.timeShareOpen, OPENNESS_EDGES),
     bandOf(measurements.placeGrammarBits, GRAMMAR_EDGES),
     bandOf(measurements.decisionPointsPer100Steps, DECISION_EDGES),
+    bandOf(measurements.elevationGateShare, GATE_EDGES),
   ].join('/');
 }
 

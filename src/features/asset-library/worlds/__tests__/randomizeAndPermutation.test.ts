@@ -9,9 +9,11 @@ import { RandomizeHistory } from '../randomize/randomizeHistory';
 import { randomWorldPipeline } from '../randomize/randomWorldPipeline';
 import { EMPTY_TILE } from '../values/chunkValues';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
-import { islandsState, tileAssets, tileIdsInRegion, worldFromState } from './pipelineWorldFixtures';
+import { islandsState, tileIdsInRegion, worldFromState } from './pipelineWorldFixtures';
+import { recipeTilesOf } from '../randomize/recipeTiles';
+import { fixtureTileAssets } from './walkingSimFixtures';
 
-const randomizeTileIds = tileAssets.all().map((tile) => tile.id);
+const randomizeTileIds = recipeTilesOf(fixtureTileAssets.all());
 
 function paramWithinSpec(nodeType: string, name: string, value: unknown): boolean {
   const spec = nodeTypeOf(nodeType)?.params[name];
@@ -56,18 +58,28 @@ export function checkRandomizeAndPermutation(check: CheckReporter): void {
   check('random worlds keep every param inside its declared range', allParamsWithinSpecs(rolledOnce));
 
   let paintedWorlds = 0;
-  let sawTerrainRoll = false;
-  let sawMazeRoll = false;
-  const RANDOM_WORLD_ROLLS = 20;
+  const recipeSignatures = new Set<string>();
+  const RANDOM_WORLD_ROLLS = 40;
   for (let roll = 1; roll <= RANDOM_WORLD_ROLLS; roll++) {
     const rolled = sanitizePipeline(randomWorldPipeline(mulberry32(roll * 37), randomizeTileIds));
     const kinds = tileIdsInRegion(worldFromState(rolled).sampler, 48);
     kinds.delete(EMPTY_TILE);
     if (kinds.size >= 2) paintedWorlds++;
-    if (rolled.nodes.some((node) => node.type === 'mazeChunk')) sawMazeRoll = true;
-    if (rolled.nodes.some((node) => node.type === 'thresholdTiles')) sawTerrainRoll = true;
+    for (const node of rolled.nodes) recipeSignatures.add(node.type);
   }
-  check('random worlds cover both terrain and maze recipes', sawTerrainRoll && sawMazeRoll);
+  check(
+    'random worlds cover the terrain, maze, riverlands and volcanic recipes',
+    ['thresholdTiles', 'mazeChunk', 'riverFromFlow', 'volcanoConeField'].every((signature) =>
+      recipeSignatures.has(signature),
+    ),
+  );
+  check(
+    'random worlds roll the composition vocabulary: terraces, region plans and strait bridges',
+    ['terraceField', 'regionPlan', 'straitBridges'].every((signature) =>
+      recipeSignatures.has(signature),
+    ),
+  );
+  check('most random rolls paint a world rather than an empty void', paintedWorlds > RANDOM_WORLD_ROLLS / 2);
 
   const sliderBase = islandsState();
   const sliderShuffled = permutedSliderParams(sliderBase, mulberry32(5));

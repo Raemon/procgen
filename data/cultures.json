@@ -100,5 +100,215 @@
     "roofStyle": 0,
     "storyLayers": 2,
     "windowEvery": 4
+  },
+  {
+    "id": 2,
+    "name": "morburmere (morburmere (evolved))",
+    "roleBindings": {
+      "wallSegment": [
+        25
+      ],
+      "wallCorner": [
+        26
+      ],
+      "window": [
+        27
+      ],
+      "door": [
+        28
+      ],
+      "roofEdge": [
+        29
+      ],
+      "roofRidge": [
+        30
+      ],
+      "roofGableEnd": [
+        31
+      ],
+      "floor": [
+        32
+      ],
+      "chimney": [
+        33
+      ]
+    },
+    "wallTileId": 50,
+    "trimTileId": 55,
+    "roofSlopeTileId": 52,
+    "roofRidgeTileId": 53,
+    "floorTileId": 54,
+    "pathTileId": 60,
+    "roofStyle": 0,
+    "storyLayers": 2,
+    "windowEvery": 5
+  },
+  {
+    "id": 3,
+    "name": "fenlingfen (fenlingfen (evolved))",
+    "roleBindings": {
+      "wallSegment": [
+        34
+      ],
+      "wallCorner": [
+        35
+      ],
+      "window": [
+        36
+      ],
+      "door": [
+        37
+      ],
+      "roofEdge": [
+        38
+      ],
+      "roofRidge": [
+        39
+      ],
+      "roofGableEnd": [
+        40
+      ],
+      "floor": [
+        41
+      ],
+      "chimney": [
+        42
+      ]
+    },
+    "wallTileId": 74,
+    "trimTileId": 79,
+    "roofSlopeTileId": 76,
+    "roofRidgeTileId": 77,
+    "floorTileId": 78,
+    "pathTileId": 84,
+    "roofStyle": 0,
+    "storyLayers": 2,
+    "windowEvery": 5
+  },
+  {
+    "id": 4,
+    "name": "gorholmholt (gorholmholt (evolved))",
+    "roleBindings": {
+      "wallSegment": [
+        43
+      ],
+      "wallCorner": [
+        44
+      ],
+      "window": [
+        45
+      ],
+      "door": [
+        46
+      ],
+      "roofEdge": [
+        47
+      ],
+      "roofRidge": [
+        48
+      ],
+      "roofGableEnd": [
+        49
+      ],
+      "floor": [
+        50
+      ],
+      "chimney": [
+        51
+      ]
+    },
+    "wallTileId": 98,
+    "trimTileId": 103,
+    "roofSlopeTileId": 100,
+    "roofRidgeTileId": 101,
+    "floorTileId": 102,
+    "pathTileId": 108,
+    "roofStyle": 1,
+    "storyLayers": 3,
+    "windowEvery": 4
+  },
+  {
+    "id": 5,
+    "name": "okestanwold (okestanwold (evolved))",
+    "roleBindings": {
+      "wallSegment": [
+        52
+      ],
+      "wallCorner": [
+        53
+      ],
+      "window": [
+        54
+      ],
+      "door": [
+        55
+      ],
+      "roofEdge": [
+        56
+      ],
+      "roofRidge": [
+        57
+      ],
+      "roofGableEnd": [
+        58
+      ],
+      "floor": [
+        59
+      ],
+      "chimney": [
+        60
+      ]
+    },
+    "wallTileId": 122,
+    "trimTileId": 127,
+    "roofSlopeTileId": 124,
+    "roofRidgeTileId": 125,
+    "floorTileId": 126,
+    "pathTileId": 132,
+    "roofStyle": 1,
+    "storyLayers": 3,
+    "windowEvery": 3
+  },
+  {
+    "id": 6,
+    "name": "ashburholt (ashburholt (evolved))",
+    "roleBindings": {
+      "wallSegment": [
+        61
+      ],
+      "wallCorner": [
+        62
+      ],
+      "window": [
+        63
+      ],
+      "door": [
+        64
+      ],
+      "roofEdge": [
+        65
+      ],
+      "roofRidge": [
+        66
+      ],
+      "roofGableEnd": [
+        67
+      ],
+      "floor": [
+        68
+      ],
+      "chimney": [
+        69
+      ]
+    },
+    "wallTileId": 147,
+    "trimTileId": 152,
+    "roofSlopeTileId": 149,
+    "roofRidgeTileId": 150,
+    "floorTileId": 151,
+    "pathTileId": 157,
+    "roofStyle": 0,
+    "storyLayers": 3,
+    "windowEvery": 4
   }
 ]

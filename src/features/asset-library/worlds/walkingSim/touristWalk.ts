@@ -1,11 +1,16 @@
 import type { CellPoint } from '@/features/game/nearestWalkable';
+import { climbEffortOfRise, type ElevationProbe } from '@/features/game/climbing';
 import type { RandomStream } from '../random/mulberry32';
 import { CARDINAL_STEPS, cellKey, type WalkLimits } from './cellGrid';
-import { visibleCellsFrom, type SightProbes } from './isovist';
+import { visibleCellsFrom } from './isovist';
 import { spawnSitsAtCell, type NearbySpawnsProbe } from './nearbySpawnsProbe';
-import type { WalkableProbe } from './worldProbes';
+import type { OpaqueProbe } from './sightBlocking';
+import type { StepProbe, WalkableProbe } from './worldProbes';
 
-export const TOURIST_SIGHT_RADIUS = 10;
+export const TOURIST_SIGHT_RADIUS = 14;
+const VANTAGE_RADIUS_PER_UNIT = 2;
+const MOST_VANTAGE_BONUS = 12;
+const VANTAGE_BASELINE_RING = 6;
 const FAR_RING_SHARE = 0.75;
 const PROMISE_HORIZON_STEPS = 25;
 const PROMISE_DRIVE_WEIGHT = 18;
@@ -14,6 +19,14 @@ const CONFLICTING_DRIVE_FLOOR = 12;
 export interface TouristLimits extends WalkLimits {
   sightRadius: number;
   patienceMs: number;
+}
+
+export interface TouristProbes {
+  isWalkableAt: WalkableProbe;
+  isOpaqueAt: OpaqueProbe;
+  spawnsNear: NearbySpawnsProbe;
+  canStep: StepProbe;
+  elevationAt: ElevationProbe;
 }
 
 export const ALL_THE_TIME_IN_THE_WORLD = Number.MAX_SAFE_INTEGER;
@@ -29,15 +42,14 @@ export interface TouristTrace {
   waysOnPerStep: number[];
   farSeenPerStep: string[][];
   conflictCostPerStep: number[];
+  climbEffortPerStep: number[];
   promisesSighted: number;
   promisesKept: number;
   exhaustedRegion: boolean;
 }
 
 interface TouristWalkContext {
-  isWalkableAt: WalkableProbe;
-  sight: SightProbes;
-  spawnsNear: NearbySpawnsProbe;
+  probes: TouristProbes;
   limits: TouristLimits;
   rng: RandomStream;
   isovists: Map<string, CellPoint[]>;
@@ -56,14 +68,12 @@ export function touristLimits(stepBudget: number, radiusCap: number): TouristLim
 }
 
 export function walkAsTourist(
-  isWalkableAt: WalkableProbe,
-  sight: SightProbes,
-  spawnsNear: NearbySpawnsProbe,
+  probes: TouristProbes,
   spawn: CellPoint,
   limits: TouristLimits,
   rng: RandomStream,
 ): TouristTrace {
-  const context = freshContext(isWalkableAt, sight, spawnsNear, spawn, limits, rng);
+  const context = freshContext(probes, spawn, limits, rng);
   const walkEndsAt = Date.now() + limits.patienceMs;
   takeInTheViewFromSpawn(context);
   while (stepsWalked(context.trace) < limits.stepBudget && Date.now() < walkEndsAt) {
@@ -77,9 +87,7 @@ export function stepsWalked(trace: TouristTrace): number {
 }
 
 function freshContext(
-  isWalkableAt: WalkableProbe,
-  sight: SightProbes,
-  spawnsNear: NearbySpawnsProbe,
+  probes: TouristProbes,
   spawn: CellPoint,
   limits: TouristLimits,
   rng: RandomStream,
@@ -95,14 +103,13 @@ function freshContext(
     waysOnPerStep: [],
     farSeenPerStep: [],
     conflictCostPerStep: [],
+    climbEffortPerStep: [],
     promisesSighted: 0,
     promisesKept: 0,
     exhaustedRegion: false,
   };
   return {
-    isWalkableAt,
-    sight,
-    spawnsNear,
+    probes,
     limits,
     rng,
     isovists: new Map(),
@@ -228,7 +235,7 @@ function walkableNeighborsOf(context: TouristWalkContext, cell: CellPoint): Cell
   for (const step of CARDINAL_STEPS) {
     const next = { x: cell.x + step.dx, y: cell.y + step.dy };
     if (!withinRadiusOfSpawn(context, next)) continue;
-    if (context.isWalkableAt(next.x, next.y)) neighbors.push(next);
+    if (context.probes.canStep(cell.x, cell.y, next.x, next.y)) neighbors.push(next);
   }
   return neighbors;
 }
@@ -254,6 +261,7 @@ function recordStepTo(
   conflictCost: number,
 ): void {
   const { trace } = context;
+  const cameFrom = trace.path[trace.path.length - 1]!;
   trace.path.push(cell);
   trace.visited.add(cellKey(cell.x, cell.y));
   const isovist = cachedIsovistAt(context, cell);
@@ -263,15 +271,27 @@ function recordStepTo(
   trace.waysOnPerStep.push(waysOn);
   trace.farSeenPerStep.push(farRingKeysOf(cell, isovist, context.limits.sightRadius));
   trace.conflictCostPerStep.push(conflictCost);
+  trace.climbEffortPerStep.push(climbEffortBetween(context, cameFrom, cell));
   sightPromisesAmong(context, isovist);
   keepPromisesAround(context, cell);
+}
+
+function climbEffortBetween(
+  context: TouristWalkContext,
+  cameFrom: CellPoint,
+  cell: CellPoint,
+): number {
+  const rise =
+    context.probes.elevationAt(cell.x, cell.y) -
+    context.probes.elevationAt(cameFrom.x, cameFrom.y);
+  return climbEffortOfRise(rise);
 }
 
 function sightPromisesAmong(context: TouristWalkContext, isovist: readonly CellPoint[]): void {
   for (const cell of isovist) {
     const key = cellKey(cell.x, cell.y);
     if (context.promisesEverSighted.has(key)) continue;
-    if (!spawnSitsAtCell(context.spawnsNear, cell.x, cell.y)) continue;
+    if (!spawnSitsAtCell(context.probes.spawnsNear, cell.x, cell.y)) continue;
     context.promisesEverSighted.add(key);
     context.promises.set(key, cell);
     context.trace.promisesSighted++;
@@ -279,7 +299,7 @@ function sightPromisesAmong(context: TouristWalkContext, isovist: readonly CellP
 }
 
 function keepPromisesAround(context: TouristWalkContext, cell: CellPoint): void {
-  for (const sighting of context.spawnsNear(cell.x, cell.y)) {
+  for (const sighting of context.probes.spawnsNear(cell.x, cell.y)) {
     const key = cellKey(sighting.x, sighting.y);
     if (!context.promises.delete(key)) continue;
     context.trace.promisesKept++;
@@ -311,7 +331,7 @@ function absorbNewScenery(trace: TouristTrace, isovist: CellPoint[]): number {
 function mysteryEdgeCount(context: TouristWalkContext, isovist: CellPoint[]): number {
   let edges = 0;
   for (const cell of isovist) {
-    if (!context.isWalkableAt(cell.x, cell.y)) continue;
+    if (!context.probes.isWalkableAt(cell.x, cell.y)) continue;
     if (hasUnseenNeighbor(context.trace, cell)) edges++;
   }
   return edges;
@@ -384,10 +404,34 @@ function cachedIsovistAt(context: TouristWalkContext, cell: CellPoint): CellPoin
   const key = cellKey(cell.x, cell.y);
   const cached = context.isovists.get(key);
   if (cached) return cached;
-  const isovist = visibleCellsFrom(cell, context.limits.sightRadius, context.sight);
+  const isovist = visibleCellsFrom(cell, sightRadiusWithVantage(context, cell), {
+    isOpaqueAt: context.probes.isOpaqueAt,
+    elevationAt: context.probes.elevationAt,
+  });
   evictOldestIsovistWhenFull(context.isovists);
   context.isovists.set(key, isovist);
   return isovist;
+}
+
+function sightRadiusWithVantage(context: TouristWalkContext, cell: CellPoint): number {
+  const advantage =
+    context.probes.elevationAt(cell.x, cell.y) - baselineElevationAround(context, cell);
+  const bonus = Math.min(
+    MOST_VANTAGE_BONUS,
+    Math.max(0, Math.round(advantage * VANTAGE_RADIUS_PER_UNIT)),
+  );
+  return context.limits.sightRadius + bonus;
+}
+
+function baselineElevationAround(context: TouristWalkContext, cell: CellPoint): number {
+  let total = 0;
+  for (const step of CARDINAL_STEPS) {
+    total += context.probes.elevationAt(
+      cell.x + step.dx * VANTAGE_BASELINE_RING,
+      cell.y + step.dy * VANTAGE_BASELINE_RING,
+    );
+  }
+  return total / CARDINAL_STEPS.length;
 }
 
 function evictOldestIsovistWhenFull(isovists: Map<string, CellPoint[]>): void {

@@ -15,7 +15,12 @@ import {
   type WalkingSimMeasurements,
   type WalkProbes,
 } from './walkingSimMeasurements';
-import { cachedElevationProbe, cachedTileIdProbe, walkableProbeFrom } from './worldProbes';
+import {
+  cachedElevationProbe,
+  cachedTileIdProbe,
+  stepProbeFrom,
+  walkableProbeFrom,
+} from './worldProbes';
 
 export const WALKS_PER_WORLD = 2;
 
@@ -35,7 +40,12 @@ export function measureWalkingSimFun(
 ): WalkingSimResult | null {
   const probes = walkProbesOf(sampler, tileAssets);
   const spawnSearchEndsAt = Date.now() + limits.patienceMs;
-  const spawns = spawnsWithRoomToWalk(probes.isWalkableAt, WALKS_PER_WORLD, spawnSearchEndsAt);
+  const spawns = spawnsWithRoomToWalk(
+    probes.isWalkableAt,
+    WALKS_PER_WORLD,
+    spawnSearchEndsAt,
+    probes.canStep,
+  );
   if (spawns.length === 0) return null;
   const walks = spawns.map((spawn, leg) => oneWalk(spawn, probes, limits, walkSeed + leg));
   return pooledResult(walks);
@@ -43,14 +53,15 @@ export function measureWalkingSimFun(
 
 function walkProbesOf(sampler: WorldSampler, tileAssets: TileAssets): WalkProbes {
   const tileIdAt = cachedTileIdProbe(sampler);
+  const isWalkableAt = walkableProbeFrom(tileIdAt, tileAssets);
+  const elevationAt = cachedElevationProbe(sampler);
   return {
-    isWalkableAt: walkableProbeFrom(tileIdAt, tileAssets),
-    sight: {
-      isOpaqueAt: opaqueProbeFrom(tileIdAt, tileAssets),
-      elevationAt: cachedElevationProbe(sampler),
-    },
+    isWalkableAt,
+    isOpaqueAt: opaqueProbeFrom(tileIdAt, tileAssets),
     characterAt: cellCharacterProbe(sampler, tileIdAt, tileAssets),
     spawnsNear: nearbySpawnsProbe(sampler),
+    canStep: stepProbeFrom(isWalkableAt, elevationAt),
+    elevationAt,
   };
 }
 
@@ -64,26 +75,37 @@ function oneWalk(
   limits: TouristLimits,
   walkSeed: number,
 ): Walk {
-  const trace = walkAsTourist(
-    probes.isWalkableAt,
-    probes.sight,
-    probes.spawnsNear,
-    spawn,
-    limits,
-    mulberry32(walkSeed),
-  );
+  const trace = walkAsTourist(probes, spawn, limits, mulberry32(walkSeed));
   return { trace, ...measuredWalk(trace, probes, limits) };
 }
+
+const WEAKEST_SPAWN_WEIGHT = 0.35;
 
 function pooledResult(walks: readonly Walk[]): WalkingSimResult {
   const measurements = meanMeasurementsOf(walks.map((walk) => walk.measurements));
   return {
     trace: walks[0]!.trace,
     measurements,
-    score: walkingSimFunScore(measurements),
+    score: spawnConsistentScore(walkingSimFunScore(measurements), walks),
     seenCharacterShares: pooledShares(walks),
     walksTaken: walks.length,
   };
+}
+
+function spawnConsistentScore(pooled: WalkingSimScore, walks: readonly Walk[]): WalkingSimScore {
+  const funPerSpawn = walks.map((walk) => walkingSimFunScore(walk.measurements).overall);
+  const factor = spawnConsistencyFactor(funPerSpawn);
+  return {
+    overall: pooled.overall * factor,
+    readings: [...pooled.readings, { name: 'spawn consistency', value: factor, score: factor, weight: 0 }],
+  };
+}
+
+function spawnConsistencyFactor(funPerSpawn: readonly number[]): number {
+  const best = Math.max(...funPerSpawn);
+  if (funPerSpawn.length < 2 || best === 0) return 1;
+  const weakest = Math.min(...funPerSpawn);
+  return 1 - WEAKEST_SPAWN_WEIGHT * (1 - weakest / best);
 }
 
 function meanMeasurementsOf(all: readonly WalkingSimMeasurements[]): WalkingSimMeasurements {

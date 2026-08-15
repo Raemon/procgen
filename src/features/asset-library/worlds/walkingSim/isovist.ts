@@ -8,18 +8,22 @@ export interface SightProbes {
   elevationAt: GroundElevationProbe;
 }
 
+export const EYE_HEIGHT = 1;
+const TARGET_STANDOUT = 0.5;
+const OPAQUE_SIGHT_HEIGHT = 2;
+const RAY_SLACK = 0.01;
+
 export function visibleCellsFrom(
   origin: CellPoint,
   radius: number,
   sight: SightProbes,
 ): CellPoint[] {
   const visible: CellPoint[] = [];
-  const eyeGround = sight.elevationAt(origin.x, origin.y);
   for (let dy = -radius; dy <= radius; dy++) {
     for (let dx = -radius; dx <= radius; dx++) {
       if (dx * dx + dy * dy > radius * radius) continue;
       const target = { x: origin.x + dx, y: origin.y + dy };
-      if (sightLineIsClear(origin, target, eyeGround, sight)) visible.push(target);
+      if (cellIsVisibleFrom(origin, target, sight)) visible.push(target);
     }
   }
   return visible;
@@ -30,7 +34,21 @@ export function cellIsVisibleFrom(
   target: CellPoint,
   sight: SightProbes,
 ): boolean {
-  return sightLineIsClear(origin, target, sight.elevationAt(origin.x, origin.y), sight);
+  const eyeGround = sight.elevationAt(origin.x, origin.y);
+  const eye = eyeGround + EYE_HEIGHT;
+  const targetGround = sight.elevationAt(target.x, target.y);
+  const targetTop = targetGround + TARGET_STANDOUT;
+  const span = Math.max(Math.abs(target.x - origin.x), Math.abs(target.y - origin.y));
+  if (span === 0) return true;
+  for (const cell of cellsStrictlyBetween(origin, target)) {
+    const ground = sight.elevationAt(cell.x, cell.y);
+    if (ground >= eyeGround + SIGHT_BLOCKING_TILE_HEIGHT && ground > targetGround) return false;
+    if (!sight.isOpaqueAt(cell.x, cell.y)) continue;
+    const along = Math.max(Math.abs(cell.x - origin.x), Math.abs(cell.y - origin.y)) / span;
+    const rayHeight = eye + (targetTop - eye) * along;
+    if (ground + OPAQUE_SIGHT_HEIGHT > rayHeight + RAY_SLACK) return false;
+  }
+  return true;
 }
 
 export function cellsInSightDisc(radius: number): number {
@@ -41,22 +59,6 @@ export function cellsInSightDisc(radius: number): number {
     }
   }
   return count;
-}
-
-function sightLineIsClear(
-  origin: CellPoint,
-  target: CellPoint,
-  eyeGround: number,
-  sight: SightProbes,
-): boolean {
-  const targetGround = sight.elevationAt(target.x, target.y);
-  const ridgeRise = eyeGround + SIGHT_BLOCKING_TILE_HEIGHT;
-  for (const cell of cellsStrictlyBetween(origin, target)) {
-    if (sight.isOpaqueAt(cell.x, cell.y)) return false;
-    const ground = sight.elevationAt(cell.x, cell.y);
-    if (ground >= ridgeRise && ground > targetGround) return false;
-  }
-  return true;
 }
 
 function cellsStrictlyBetween(origin: CellPoint, target: CellPoint): CellPoint[] {

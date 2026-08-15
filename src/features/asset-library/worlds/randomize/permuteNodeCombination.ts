@@ -4,16 +4,17 @@ import { dropInvalidWires } from '../pipeline/wiringRules';
 import { clonedState } from './clonedState';
 import { PIPELINE_MUTATIONS } from './pipelineMutations';
 import { randomWorldPipeline } from './randomWorldPipeline';
+import type { RecipeTiles } from './recipeTiles';
 import { rollInt, shuffled } from './randomRolls';
 
 export function permutedNodeCombination(
   state: PipelineState,
   rng: RandomStream,
-  tileIds: readonly number[],
+  tiles: RecipeTiles,
 ): PipelineState {
   const next = clonedState(state);
-  if (next.nodes.length === 0) return { ...next, nodes: randomWorldPipeline(rng, tileIds).nodes };
-  applyMutations(next, rng, tileIds, rollInt(rng, 1, 2));
+  if (next.nodes.length === 0) return { ...next, nodes: randomWorldPipeline(rng, tiles).nodes };
+  applyMutations(next, rng, tiles.all, rollInt(rng, 1, 2));
   dropInvalidWires(next);
   return next;
 }

@@ -130,6 +130,40 @@ export function variedStructuredState(): PipelineState {
   });
 }
 
+const TERRACE_SCRIPT = `const field = ctx.newField();
+const TERRACE_SPAN = 16;
+const LEVELS = 4;
+const PASS_EVERY = 24;
+const PASS_WIDTH = 4;
+for (let i = 0; i < field.length; i++) {
+  const x = ctx.originX + (i % ctx.size);
+  const y = ctx.originY + Math.floor(i / ctx.size);
+  const along = ((x % (TERRACE_SPAN * LEVELS)) + TERRACE_SPAN * LEVELS) % (TERRACE_SPAN * LEVELS);
+  const smooth = along / (TERRACE_SPAN * LEVELS);
+  const stepped = Math.floor(along / TERRACE_SPAN) / (LEVELS - 1);
+  const onPass = ((y % PASS_EVERY) + PASS_EVERY) % PASS_EVERY < PASS_WIDTH;
+  field[i] = onPass ? smooth : Math.min(1, stepped);
+}
+return field;`;
+
+export function terracedHighlandState(): PipelineState {
+  return sanitizePipeline({
+    seed: 15,
+    nodes: [
+      {
+        id: 'n1',
+        type: 'customScript',
+        label: 'terraces',
+        enabled: true,
+        params: { outputKind: 'field', code: TERRACE_SCRIPT },
+        inputs: {},
+        display: { mode: 'elevation', heightScale: 6 },
+      },
+      thresholdNode('n2', 'n1', 'meadow floor', 0.55, GRASS_TILE, SAND_TILE),
+    ],
+  });
+}
+
 function fixtureTile(
   id: number,
   name: string,
