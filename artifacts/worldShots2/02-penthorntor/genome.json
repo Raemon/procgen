@@ -1,0 +1,230 @@
+{
+  "kitSeed": 386308,
+  "accentKitSeed": 836361,
+  "paletteSize": 9,
+  "pipeline": {
+    "seed": 568407,
+    "daylight": 1,
+    "time": 0,
+    "nodes": [
+      {
+        "id": "n1",
+        "type": "terrainNoise",
+        "label": "relief",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.006,
+          "style": 1,
+          "octaves": 6,
+          "lacunarity": 2,
+          "gain": 0.5
+        },
+        "inputs": {},
+        "display": {
+          "mode": "elevation",
+          "heightScale": 5
+        }
+      },
+      {
+        "id": "n2",
+        "type": "terrainNoise",
+        "label": "climate",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.004,
+          "style": 0,
+          "octaves": 2,
+          "lacunarity": 2,
+          "gain": 0.5
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n3",
+        "type": "biomeBands",
+        "label": "biome ≥0",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "seaLevel": 0.43,
+          "deepDrop": 0.06,
+          "shoreBand": 0.02,
+          "rockAbove": 0.45,
+          "snowLine": 0.95,
+          "regionAtLeast": 0,
+          "deepTile": 18,
+          "waterTile": 5,
+          "shoreTile": 22,
+          "groundTile": 21,
+          "rockTile": 22,
+          "snowTile": 10
+        },
+        "inputs": {
+          "elevation": "n1",
+          "steepness": null,
+          "shoreDistance": null,
+          "region": "n2"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n4",
+        "type": "biomeBands",
+        "label": "biome ≥0.5",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "seaLevel": 0.43,
+          "deepDrop": 0.06,
+          "shoreBand": 0.05,
+          "rockAbove": 0.45,
+          "snowLine": 0.82,
+          "regionAtLeast": 0.5,
+          "deepTile": 18,
+          "waterTile": 5,
+          "shoreTile": 22,
+          "groundTile": 21,
+          "rockTile": 22,
+          "snowTile": 10
+        },
+        "inputs": {
+          "elevation": "n1",
+          "steepness": null,
+          "shoreDistance": null,
+          "region": "n2"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n5",
+        "type": "biomeBands",
+        "label": "biome ≥0.72",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "seaLevel": 0.43,
+          "deepDrop": 0.06,
+          "shoreBand": 0.05,
+          "rockAbove": 0.45,
+          "snowLine": 0.94,
+          "regionAtLeast": 0.72,
+          "deepTile": 18,
+          "waterTile": 5,
+          "shoreTile": 22,
+          "groundTile": 21,
+          "rockTile": 22,
+          "snowTile": 10
+        },
+        "inputs": {
+          "elevation": "n1",
+          "steepness": null,
+          "shoreDistance": null,
+          "region": "n2"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n6",
+        "type": "straitBridges",
+        "label": "bridges",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "waterBelow": 0.43,
+          "shallowBand": 0.11,
+          "maxSpan": 7,
+          "pitch": 36,
+          "bridgeTile": 21
+        },
+        "inputs": {
+          "water": "n1"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n7",
+        "type": "thresholdTiles",
+        "label": "crags",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.91,
+          "belowTile": -1,
+          "aboveTile": 5
+        },
+        "inputs": {
+          "source": "n1"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n8",
+        "type": "mazeChunk",
+        "label": "labyrinth",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "corridor": 5,
+          "wall": 2,
+          "mazeChunks": 1,
+          "carver": 0,
+          "braid": 0.45,
+          "doorsPerEdge": 3,
+          "rooms": 0,
+          "roomCells": 3,
+          "wallTile": 3,
+          "floorTile": 10
+        },
+        "inputs": {},
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n9",
+        "type": "scatterPoints",
+        "label": "spring scatter",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.005,
+          "maskAtLeast": 0,
+          "maskAtMost": 1
+        },
+        "inputs": {
+          "mask": null
+        },
+        "display": {
+          "mode": "markers",
+          "tileId": -1,
+          "glyph": "◆",
+          "color": "#3fbf9f"
+        }
+      }
+    ]
+  }
+}

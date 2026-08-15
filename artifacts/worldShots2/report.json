@@ -1,0 +1,210 @@
+[
+  {
+    "slug": "01-elwentor",
+    "name": "elwentor",
+    "fun": 0.7231318783097068,
+    "verdict": "interesting",
+    "interest": {
+      "colorEntropyBits": 2.722412452091422,
+      "edgeShare": 0.08645739560369119,
+      "coarseStructureShare": 0.5370370370370371,
+      "largestFlatShare": 0.410425,
+      "largestRegionShare": 0.171725,
+      "confettiShare": 0.229825,
+      "verdict": "interesting"
+    },
+    "elevationGateShare": 0,
+    "vistaMomentsPer100Steps": 1.375,
+    "decisionPointsPer100Steps": 27.59767248545304,
+    "encountersPer100Steps": 2.369077306733167,
+    "blindAtEyeLevel": false,
+    "shots": [
+      "overhead.png",
+      "spawn-god.png",
+      "vantage-character.png",
+      "frontier-character.png"
+    ]
+  },
+  {
+    "slug": "02-penthorntor",
+    "name": "penthorntor",
+    "fun": 0.6707431849510053,
+    "verdict": "dull",
+    "interest": {
+      "colorEntropyBits": 2.259468199504664,
+      "edgeShare": 0.0011454817572972204,
+      "coarseStructureShare": 0.020061728395061727,
+      "largestFlatShare": 0.379875,
+      "largestRegionShare": 0.155925,
+      "confettiShare": 0.29995,
+      "verdict": "dull"
+    },
+    "elevationGateShare": 0,
+    "vistaMomentsPer100Steps": 2.25,
+    "decisionPointsPer100Steps": 27.052161263507898,
+    "encountersPer100Steps": 4.364089775561097,
+    "blindAtEyeLevel": false,
+    "shots": [
+      "overhead.png",
+      "spawn-god.png",
+      "vantage-character.png",
+      "frontier-character.png"
+    ]
+  },
+  {
+    "slug": "03-halmergarth",
+    "name": "halmergarth",
+    "fun": 0.6528285701956533,
+    "verdict": "uniform",
+    "interest": {
+      "colorEntropyBits": 4.361248332926784,
+      "edgeShare": 0.10691720480154737,
+      "coarseStructureShare": 0.7708333333333334,
+      "largestFlatShare": 0.26775,
+      "largestRegionShare": 0.051375,
+      "confettiShare": 0.60515,
+      "verdict": "uniform"
+    },
+    "elevationGateShare": 0,
+    "vistaMomentsPer100Steps": 2.125,
+    "decisionPointsPer100Steps": 27.92339802667245,
+    "encountersPer100Steps": 6.857855361596011,
+    "blindAtEyeLevel": false,
+    "shots": [
+      "overhead.png",
+      "spawn-god.png",
+      "vantage-character.png",
+      "frontier-character.png"
+    ]
+  },
+  {
+    "slug": "04-tarnlingwold",
+    "name": "tarnlingwold",
+    "fun": 0.6487622878230611,
+    "verdict": "interesting",
+    "interest": {
+      "colorEntropyBits": 3.2939848538805943,
+      "edgeShare": 0.04571336200289297,
+      "coarseStructureShare": 0.4236111111111111,
+      "largestFlatShare": 0.23955,
+      "largestRegionShare": 0.7085,
+      "confettiShare": 0.27405,
+      "verdict": "interesting"
+    },
+    "elevationGateShare": 0,
+    "vistaMomentsPer100Steps": 2.25,
+    "decisionPointsPer100Steps": 0,
+    "encountersPer100Steps": 4.987531172069826,
+    "blindAtEyeLevel": false,
+    "shots": [
+      "overhead.png",
+      "spawn-god.png",
+      "vantage-character.png",
+      "frontier-character.png"
+    ]
+  },
+  {
+    "slug": "05-tarnlingwold",
+    "name": "tarnlingwold",
+    "fun": 0.6407290285404469,
+    "verdict": "uniform",
+    "interest": {
+      "colorEntropyBits": 2.970217484642568,
+      "edgeShare": 0.018681664766820604,
+      "coarseStructureShare": 0.18055555555555555,
+      "largestFlatShare": 0.40735,
+      "largestRegionShare": 0.03195,
+      "confettiShare": 0.545025,
+      "verdict": "uniform"
+    },
+    "elevationGateShare": 0,
+    "vistaMomentsPer100Steps": 0,
+    "decisionPointsPer100Steps": 66.8588944305902,
+    "encountersPer100Steps": 8.354114713216958,
+    "blindAtEyeLevel": false,
+    "shots": [
+      "overhead.png",
+      "spawn-god.png",
+      "vantage-character.png",
+      "frontier-character.png"
+    ]
+  },
+  {
+    "slug": "06-haldalegarth",
+    "name": "haldalegarth",
+    "fun": 0.6323763217596939,
+    "verdict": "interesting",
+    "interest": {
+      "colorEntropyBits": 3.401724645423801,
+      "edgeShare": 0.048113020866719994,
+      "coarseStructureShare": 0.5084876543209876,
+      "largestFlatShare": 0.315,
+      "largestRegionShare": 0.461525,
+      "confettiShare": 0.3554,
+      "verdict": "interesting"
+    },
+    "elevationGateShare": 0,
+    "vistaMomentsPer100Steps": 1.875,
+    "decisionPointsPer100Steps": 1.973327550688496,
+    "encountersPer100Steps": 2.493765586034913,
+    "blindAtEyeLevel": false,
+    "shots": [
+      "overhead.png",
+      "spawn-god.png",
+      "vantage-character.png",
+      "frontier-character.png"
+    ]
+  },
+  {
+    "slug": "07-calderfen",
+    "name": "calderfen",
+    "fun": 0.586331280345316,
+    "verdict": "interesting",
+    "interest": {
+      "colorEntropyBits": 2.467560269790675,
+      "edgeShare": 0.04793186195133235,
+      "coarseStructureShare": 0.27546296296296297,
+      "largestFlatShare": 0.4781,
+      "largestRegionShare": 0.2809,
+      "confettiShare": 0.14875,
+      "verdict": "interesting"
+    },
+    "elevationGateShare": 0.05357289966888991,
+    "vistaMomentsPer100Steps": 0,
+    "decisionPointsPer100Steps": 66.51080631753949,
+    "encountersPer100Steps": 6.109725685785536,
+    "blindAtEyeLevel": false,
+    "shots": [
+      "overhead.png",
+      "spawn-god.png",
+      "vantage-character.png",
+      "frontier-character.png"
+    ]
+  },
+  {
+    "slug": "08-linwenholt",
+    "name": "linwenholt",
+    "fun": 0.5689105255419152,
+    "verdict": "interesting",
+    "interest": {
+      "colorEntropyBits": 2.739826006360374,
+      "edgeShare": 0.11753033018302625,
+      "coarseStructureShare": 0.716820987654321,
+      "largestFlatShare": 0.4699,
+      "largestRegionShare": 0.2544,
+      "confettiShare": 0.42555,
+      "verdict": "interesting"
+    },
+    "elevationGateShare": 0.02233824032865457,
+    "vistaMomentsPer100Steps": 1.125,
+    "decisionPointsPer100Steps": 30.382377389858686,
+    "encountersPer100Steps": 8.229426433915211,
+    "blindAtEyeLevel": false,
+    "shots": [
+      "overhead.png",
+      "spawn-god.png",
+      "vantage-character.png",
+      "frontier-character.png"
+    ]
+  }
+]

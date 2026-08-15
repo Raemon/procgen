@@ -1,0 +1,379 @@
+{
+  "kitSeed": 873693,
+  "accentKitSeed": 873693,
+  "paletteSize": 7,
+  "pipeline": {
+    "seed": 825835,
+    "daylight": 1,
+    "time": 0,
+    "nodes": [
+      {
+        "id": "n1",
+        "type": "terrainNoise",
+        "label": "mountain ranges",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.008,
+          "style": 1,
+          "octaves": 7,
+          "lacunarity": 2,
+          "gain": 0.53
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n2",
+        "type": "terrainNoise",
+        "label": "lowlands",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.028,
+          "style": 0,
+          "octaves": 4,
+          "lacunarity": 2,
+          "gain": 0.5
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n3",
+        "type": "blendFields",
+        "label": "relief",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "weight": 0.35
+        },
+        "inputs": {
+          "a": "n1",
+          "b": "n2",
+          "mask": null
+        },
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n4",
+        "type": "hypsometricCurve",
+        "label": "shelving",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "seaLevel": 0.49,
+          "steepness": 9.5
+        },
+        "inputs": {
+          "source": "n3"
+        },
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n5",
+        "type": "terrainNoise",
+        "label": "pass corridors",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.08,
+          "style": 0,
+          "octaves": 3,
+          "lacunarity": 2,
+          "gain": 0.5
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n6",
+        "type": "terraceField",
+        "label": "cliff terraces",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "levels": 5,
+          "passesAbove": 0.56
+        },
+        "inputs": {
+          "source": "n4",
+          "passes": "n5"
+        },
+        "display": {
+          "mode": "elevation",
+          "heightScale": 8
+        }
+      },
+      {
+        "id": "n7",
+        "type": "thresholdTiles",
+        "label": "band 1",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.33,
+          "belowTile": 0,
+          "aboveTile": 16
+        },
+        "inputs": {
+          "source": "n6"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n8",
+        "type": "thresholdTiles",
+        "label": "band 2",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.47,
+          "belowTile": -1,
+          "aboveTile": 13
+        },
+        "inputs": {
+          "source": "n6"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n9",
+        "type": "thresholdTiles",
+        "label": "band 3",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.61,
+          "belowTile": -1,
+          "aboveTile": 0
+        },
+        "inputs": {
+          "source": "n6"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n10",
+        "type": "thresholdTiles",
+        "label": "crags",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.91,
+          "belowTile": -1,
+          "aboveTile": 0
+        },
+        "inputs": {
+          "source": "n4"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n11",
+        "type": "scatterPoints",
+        "label": "monster scatter",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.009,
+          "maskAtLeast": 0.57,
+          "maskAtMost": 1
+        },
+        "inputs": {
+          "mask": "n6"
+        },
+        "display": {
+          "mode": "markers",
+          "tileId": -1,
+          "glyph": "♠",
+          "color": "#ff4444"
+        }
+      },
+      {
+        "id": "n12",
+        "type": "biomeBands",
+        "label": "biome ≥0",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "seaLevel": 0.41,
+          "deepDrop": 0.06,
+          "shoreBand": 0.07,
+          "rockAbove": 0.45,
+          "snowLine": 0.77,
+          "regionAtLeast": 0,
+          "deepTile": 7,
+          "waterTile": 2,
+          "shoreTile": 9,
+          "groundTile": 10,
+          "rockTile": 9,
+          "snowTile": 4
+        },
+        "inputs": {
+          "elevation": null,
+          "steepness": null,
+          "shoreDistance": null,
+          "region": null
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n13",
+        "type": "biomeBands",
+        "label": "biome ≥0.5",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "seaLevel": 0.41,
+          "deepDrop": 0.06,
+          "shoreBand": 0.06,
+          "rockAbove": 0.45,
+          "snowLine": 0.82,
+          "regionAtLeast": 0.5,
+          "deepTile": 7,
+          "waterTile": 2,
+          "shoreTile": 10,
+          "groundTile": 1,
+          "rockTile": 10,
+          "snowTile": 9
+        },
+        "inputs": {
+          "elevation": null,
+          "steepness": null,
+          "shoreDistance": null,
+          "region": null
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n14",
+        "type": "biomeBands",
+        "label": "biome ≥0.72",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "seaLevel": 0.41,
+          "deepDrop": 0.06,
+          "shoreBand": 0.06,
+          "rockAbove": 0.45,
+          "snowLine": 0.94,
+          "regionAtLeast": 0.72,
+          "deepTile": 7,
+          "waterTile": 2,
+          "shoreTile": 1,
+          "groundTile": 4,
+          "rockTile": 1,
+          "snowTile": 10
+        },
+        "inputs": {
+          "elevation": null,
+          "steepness": null,
+          "shoreDistance": null,
+          "region": null
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n15",
+        "type": "straitBridges",
+        "label": "bridges",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "waterBelow": 0.41,
+          "shallowBand": 0.1,
+          "maxSpan": 7,
+          "pitch": 20,
+          "bridgeTile": 1
+        },
+        "inputs": {
+          "water": null
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n16",
+        "type": "thresholdTiles",
+        "label": "crags",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.94,
+          "belowTile": -1,
+          "aboveTile": 2
+        },
+        "inputs": {
+          "source": null
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n17",
+        "type": "scatterPoints",
+        "label": "shrine scatter",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.0095,
+          "maskAtLeast": 0.72,
+          "maskAtMost": 1
+        },
+        "inputs": {
+          "mask": null
+        },
+        "display": {
+          "mode": "markers",
+          "tileId": -1,
+          "glyph": "♣",
+          "color": "#c2c2c2"
+        }
+      }
+    ]
+  }
+}
