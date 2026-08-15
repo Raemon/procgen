@@ -1,66 +1,23 @@
 [
   {
-    "slug": "01-morburmere",
-    "name": "morburmere",
-    "fun": 0.6190572102897661,
-    "verdict": "interesting",
+    "slug": "01-penburholt",
+    "name": "penburholt",
+    "fun": 0.6951992622825487,
+    "verdict": "uniform",
     "interest": {
-      "colorEntropyBits": 3.519542145512919,
-      "edgeShare": 0.08256665951321206,
-      "coarseStructureShare": 0.6759259259259259,
-      "largestFlatShare": 0.279575,
-      "verdict": "interesting"
+      "colorEntropyBits": 2.975910874243412,
+      "edgeShare": 0.1346986212413009,
+      "coarseStructureShare": 0.7700617283950617,
+      "largestFlatShare": 0.419825,
+      "largestRegionShare": 0.0722,
+      "confettiShare": 0.482425,
+      "verdict": "uniform"
     },
-    "elevationGateShare": 0,
-    "vistaMomentsPer100Steps": 1.9117647058823528,
-    "decisionPointsPer100Steps": 80.74556929746271,
-    "encountersPer100Steps": 5.425219941348973,
-    "shots": [
-      "overhead.png",
-      "spawn-god.png",
-      "vantage-character.png",
-      "frontier-character.png"
-    ]
-  },
-  {
-    "slug": "02-morburmere",
-    "name": "morburmere",
-    "fun": 0.6069298492875304,
-    "verdict": "interesting",
-    "interest": {
-      "colorEntropyBits": 4.216785113412823,
-      "edgeShare": 0.11051251250693281,
-      "coarseStructureShare": 0.7229938271604939,
-      "largestFlatShare": 0.163125,
-      "verdict": "interesting"
-    },
-    "elevationGateShare": 0,
-    "vistaMomentsPer100Steps": 1.4705882352941178,
-    "decisionPointsPer100Steps": 79.09335288367546,
-    "encountersPer100Steps": 9.09090909090909,
-    "shots": [
-      "overhead.png",
-      "spawn-god.png",
-      "vantage-character.png",
-      "frontier-character.png"
-    ]
-  },
-  {
-    "slug": "03-fenlingfen",
-    "name": "fenlingfen",
-    "fun": 0.4943935280046153,
-    "verdict": "interesting",
-    "interest": {
-      "colorEntropyBits": 2.7677265235546478,
-      "edgeShare": 0.04650767417036184,
-      "coarseStructureShare": 0.1712962962962963,
-      "largestFlatShare": 0.323075,
-      "verdict": "interesting"
-    },
-    "elevationGateShare": 0,
+    "elevationGateShare": 0.06866393008474576,
     "vistaMomentsPer100Steps": 1.7647058823529411,
-    "decisionPointsPer100Steps": 67.82481193420887,
-    "encountersPer100Steps": 15.395894428152493,
+    "decisionPointsPer100Steps": 64.72996089931573,
+    "encountersPer100Steps": 7.038123167155424,
+    "blindAtEyeLevel": true,
     "shots": [
       "overhead.png",
       "spawn-god.png",
@@ -69,21 +26,24 @@
     ]
   },
   {
-    "slug": "04-gorholmholt",
-    "name": "gorholmholt",
-    "fun": 0.43715194647423095,
+    "slug": "02-penburholt",
+    "name": "penburholt",
+    "fun": 0.6497980922959344,
     "verdict": "interesting",
     "interest": {
-      "colorEntropyBits": 2.09455968984021,
-      "edgeShare": 0.12544558125534766,
-      "coarseStructureShare": 0.7854938271604939,
-      "largestFlatShare": 0.57445,
+      "colorEntropyBits": 2.9712953057782507,
+      "edgeShare": 0.13000242474240595,
+      "coarseStructureShare": 0.7376543209876543,
+      "largestFlatShare": 0.4273,
+      "largestRegionShare": 0.214925,
+      "confettiShare": 0.4846,
       "verdict": "interesting"
     },
-    "elevationGateShare": 0.09274193548387097,
-    "vistaMomentsPer100Steps": 0.29411764705882354,
-    "decisionPointsPer100Steps": 58.46774193548387,
-    "encountersPer100Steps": 0,
+    "elevationGateShare": 0.08170723792983031,
+    "vistaMomentsPer100Steps": 2.3529411764705883,
+    "decisionPointsPer100Steps": 51.600153002677544,
+    "encountersPer100Steps": 6.451612903225806,
+    "blindAtEyeLevel": true,
     "shots": [
       "overhead.png",
       "spawn-god.png",
@@ -92,44 +52,102 @@
     ]
   },
   {
-    "slug": "05-ramricgarth",
-    "name": "ramricgarth",
-    "fun": 0.4250720218892921,
+    "slug": "03-penburholt",
+    "name": "penburholt",
+    "fun": 0.6018973081445944,
+    "verdict": "uniform",
+    "interest": {
+      "colorEntropyBits": 3.057384354542638,
+      "edgeShare": 0.1340659585675625,
+      "coarseStructureShare": 0.6967592592592593,
+      "largestFlatShare": 0.410625,
+      "largestRegionShare": 0.04975,
+      "confettiShare": 0.488175,
+      "verdict": "uniform"
+    },
+    "elevationGateShare": 0.10029532424954682,
+    "vistaMomentsPer100Steps": 2.352941176470588,
+    "decisionPointsPer100Steps": 70.54618768328446,
+    "encountersPer100Steps": 5.2785923753665696,
+    "blindAtEyeLevel": true,
+    "shots": [
+      "overhead.png",
+      "spawn-god.png",
+      "vantage-character.png",
+      "frontier-character.png"
+    ]
+  },
+  {
+    "slug": "04-penburholt",
+    "name": "penburholt",
+    "fun": 0.601227808805717,
+    "verdict": "uniform",
+    "interest": {
+      "colorEntropyBits": 3.006654641364983,
+      "edgeShare": 0.1375637191646623,
+      "coarseStructureShare": 0.7561728395061729,
+      "largestFlatShare": 0.42305,
+      "largestRegionShare": 0.0463,
+      "confettiShare": 0.471175,
+      "verdict": "uniform"
+    },
+    "elevationGateShare": 0.053116163329940055,
+    "vistaMomentsPer100Steps": 2.5,
+    "decisionPointsPer100Steps": 71.01236771643505,
+    "encountersPer100Steps": 7.771260997067449,
+    "blindAtEyeLevel": false,
+    "shots": [
+      "overhead.png",
+      "spawn-god.png",
+      "vantage-character.png",
+      "frontier-character.png"
+    ]
+  },
+  {
+    "slug": "05-ashburholt",
+    "name": "ashburholt",
+    "fun": 0.5688405440720475,
     "verdict": "interesting",
     "interest": {
-      "colorEntropyBits": 3.171008631662631,
-      "edgeShare": 0.11809052929060956,
-      "coarseStructureShare": 0.7970679012345679,
-      "largestFlatShare": 0.247175,
+      "colorEntropyBits": 2.5006788395921946,
+      "edgeShare": 0.06746079303011976,
+      "coarseStructureShare": 0.30941358024691357,
+      "largestFlatShare": 0.389375,
+      "largestRegionShare": 0.3573,
+      "confettiShare": 0.210975,
+      "verdict": "interesting"
+    },
+    "elevationGateShare": 0.046059722327428554,
+    "vistaMomentsPer100Steps": 0,
+    "decisionPointsPer100Steps": 39.98469973224532,
+    "encountersPer100Steps": 6.451612903225806,
+    "blindAtEyeLevel": false,
+    "shots": [
+      "overhead.png",
+      "spawn-god.png",
+      "vantage-character.png",
+      "frontier-character.png"
+    ]
+  },
+  {
+    "slug": "06-okestanwold",
+    "name": "okestanwold",
+    "fun": 0.560750174047379,
+    "verdict": "interesting",
+    "interest": {
+      "colorEntropyBits": 2.5013642164043044,
+      "edgeShare": 0.04108405494967963,
+      "coarseStructureShare": 0.41512345679012347,
+      "largestFlatShare": 0.4522,
+      "largestRegionShare": 0.4514,
+      "confettiShare": 0.076425,
       "verdict": "interesting"
     },
     "elevationGateShare": 0,
-    "vistaMomentsPer100Steps": 2.0588235294117645,
-    "decisionPointsPer100Steps": 54.3377321603128,
-    "encountersPer100Steps": 13.489736070381232,
-    "shots": [
-      "overhead.png",
-      "spawn-god.png",
-      "vantage-character.png",
-      "frontier-character.png"
-    ]
-  },
-  {
-    "slug": "06-gorholmholt",
-    "name": "gorholmholt",
-    "fun": 0.4219616281276657,
-    "verdict": "dull",
-    "interest": {
-      "colorEntropyBits": 1.8347120707045634,
-      "edgeShare": 0.1049969202984384,
-      "coarseStructureShare": 0.7314814814814815,
-      "largestFlatShare": 0.624475,
-      "verdict": "dull"
-    },
-    "elevationGateShare": 0.06928152492668621,
     "vistaMomentsPer100Steps": 0,
-    "decisionPointsPer100Steps": 78.56687492031111,
-    "encountersPer100Steps": 0,
+    "decisionPointsPer100Steps": 50,
+    "encountersPer100Steps": 4.838709677419354,
+    "blindAtEyeLevel": false,
     "shots": [
       "overhead.png",
       "spawn-god.png",

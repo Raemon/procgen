@@ -9,8 +9,11 @@ const SHOTS_DIR = flagValue('shots') ?? 'artifacts/worldShots';
 const MOST_INSTALLED = Number(flagValue('install') ?? 3);
 
 const records = JSON.parse(readFileSync(join(SHOTS_DIR, 'report.json'), 'utf8')) as WorldShotRecord[];
+const presentable = records.filter(
+  (record) => record.verdict === 'interesting' && !record.blindAtEyeLevel,
+);
 const interesting = records.filter((record) => record.verdict === 'interesting');
-const pool = interesting.length > 0 ? interesting : records;
+const pool = presentable.length > 0 ? presentable : interesting.length > 0 ? interesting : records;
 const seenNames = new Set<string>();
 const distinct = pool.filter((record) =>
   seenNames.has(record.name) ? false : (seenNames.add(record.name), true),

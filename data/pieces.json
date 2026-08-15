@@ -1064,5 +1064,335 @@
       0,
       0
     ]
+  },
+  {
+    "id": 52,
+    "name": "okestanwold wall run (okestanwold (evolved))",
+    "role": "wallSegment",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      123,
+      122,
+      122
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 53,
+    "name": "okestanwold corner post (okestanwold (evolved))",
+    "role": "wallCorner",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      122,
+      122,
+      122
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 54,
+    "name": "okestanwold windowed wall (okestanwold (evolved))",
+    "role": "window",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      123,
+      128,
+      122
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 55,
+    "name": "okestanwold doorway (okestanwold (evolved))",
+    "role": "door",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      129,
+      129,
+      127
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 56,
+    "name": "okestanwold roof eave (okestanwold (evolved))",
+    "role": "roofEdge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      124
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 57,
+    "name": "okestanwold roof ridge (okestanwold (evolved))",
+    "role": "roofRidge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      125
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 58,
+    "name": "okestanwold gable end (okestanwold (evolved))",
+    "role": "roofGableEnd",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      122,
+      124
+    ],
+    "facings": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": 59,
+    "name": "okestanwold floor slab (okestanwold (evolved))",
+    "role": "floor",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      126
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 60,
+    "name": "okestanwold chimney stack (okestanwold (evolved))",
+    "role": "chimney",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      130,
+      126
+    ],
+    "facings": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": 61,
+    "name": "ashburholt wall run (ashburholt (evolved))",
+    "role": "wallSegment",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      148,
+      147,
+      147
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 62,
+    "name": "ashburholt corner post (ashburholt (evolved))",
+    "role": "wallCorner",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      147,
+      147,
+      147
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 63,
+    "name": "ashburholt windowed wall (ashburholt (evolved))",
+    "role": "window",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      148,
+      153,
+      147
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 64,
+    "name": "ashburholt doorway (ashburholt (evolved))",
+    "role": "door",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      154,
+      154,
+      152
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 65,
+    "name": "ashburholt roof eave (ashburholt (evolved))",
+    "role": "roofEdge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      149
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 66,
+    "name": "ashburholt roof ridge (ashburholt (evolved))",
+    "role": "roofRidge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      150
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 67,
+    "name": "ashburholt gable end (ashburholt (evolved))",
+    "role": "roofGableEnd",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      147,
+      149
+    ],
+    "facings": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": 68,
+    "name": "ashburholt floor slab (ashburholt (evolved))",
+    "role": "floor",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      151
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 69,
+    "name": "ashburholt chimney stack (ashburholt (evolved))",
+    "role": "chimney",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      155,
+      155,
+      148
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
   }
 ]

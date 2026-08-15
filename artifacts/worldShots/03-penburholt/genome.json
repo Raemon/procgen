@@ -1,0 +1,350 @@
+{
+  "kitSeed": 799133,
+  "accentKitSeed": 799133,
+  "paletteSize": 6,
+  "pipeline": {
+    "seed": 845050,
+    "daylight": 1,
+    "time": 0,
+    "nodes": [
+      {
+        "id": "n1",
+        "type": "mazeChunk",
+        "label": "labyrinth",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "corridor": 3,
+          "wall": 2,
+          "mazeChunks": 3,
+          "carver": 2,
+          "braid": 0.05,
+          "doorsPerEdge": 1,
+          "rooms": 0,
+          "roomCells": 3,
+          "wallTile": 3,
+          "floorTile": 1
+        },
+        "inputs": {},
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n2",
+        "type": "landmarkPoint",
+        "label": "landmark point",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "x": 875,
+          "y": 1394
+        },
+        "inputs": {},
+        "display": {
+          "mode": "structures",
+          "cultureId": 0
+        }
+      },
+      {
+        "id": "n3",
+        "type": "terrainNoise",
+        "label": "mountain ranges",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.016,
+          "style": 1,
+          "octaves": 8,
+          "lacunarity": 2,
+          "gain": 0.59
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n4",
+        "type": "terrainNoise",
+        "label": "lowlands",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.026,
+          "style": 0,
+          "octaves": 5,
+          "lacunarity": 2,
+          "gain": 0.5
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n5",
+        "type": "blendFields",
+        "label": "relief",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "weight": 0.25
+        },
+        "inputs": {
+          "a": "n3",
+          "b": "n4",
+          "mask": null
+        },
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n6",
+        "type": "hypsometricCurve",
+        "label": "shelving",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "seaLevel": 0.47,
+          "steepness": 8
+        },
+        "inputs": {
+          "source": "n5"
+        },
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n7",
+        "type": "terrainNoise",
+        "label": "pass corridors",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.052,
+          "style": 0,
+          "octaves": 3,
+          "lacunarity": 2,
+          "gain": 0.5
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n8",
+        "type": "terraceField",
+        "label": "cliff terraces",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "levels": 4,
+          "passesAbove": 0.6
+        },
+        "inputs": {
+          "source": "n6",
+          "passes": "n7"
+        },
+        "display": {
+          "mode": "elevation",
+          "heightScale": 6.4
+        }
+      },
+      {
+        "id": "n9",
+        "type": "thresholdTiles",
+        "label": "band 1",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.34,
+          "belowTile": 6,
+          "aboveTile": 6
+        },
+        "inputs": {
+          "source": "n8"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n10",
+        "type": "thresholdTiles",
+        "label": "band 2",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.48,
+          "belowTile": -1,
+          "aboveTile": 1
+        },
+        "inputs": {
+          "source": "n8"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n11",
+        "type": "thresholdTiles",
+        "label": "band 3",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.56,
+          "belowTile": -1,
+          "aboveTile": 10
+        },
+        "inputs": {
+          "source": "n8"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n12",
+        "type": "thresholdTiles",
+        "label": "band 4",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.68,
+          "belowTile": -1,
+          "aboveTile": 6
+        },
+        "inputs": {
+          "source": "n8"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n13",
+        "type": "thresholdTiles",
+        "label": "crags",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.92,
+          "belowTile": -1,
+          "aboveTile": 6
+        },
+        "inputs": {
+          "source": "n6"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n14",
+        "type": "scatterPoints",
+        "label": "ruin scatter",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.013,
+          "maskAtLeast": 0.54,
+          "maskAtMost": 1
+        },
+        "inputs": {
+          "mask": "n8"
+        },
+        "display": {
+          "mode": "markers",
+          "tileId": -1,
+          "glyph": "✿",
+          "color": "#e0b040"
+        }
+      },
+      {
+        "id": "n15",
+        "type": "scatterPoints",
+        "label": "spring scatter",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.06,
+          "maskAtLeast": 0.47,
+          "maskAtMost": 0.59
+        },
+        "inputs": {
+          "mask": "n8"
+        },
+        "display": {
+          "mode": "markers",
+          "tileId": -1,
+          "glyph": "☗",
+          "color": "#7a5cff"
+        }
+      },
+      {
+        "id": "n16",
+        "type": "mazeChunk",
+        "label": "labyrinth",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "corridor": 7,
+          "wall": 3,
+          "mazeChunks": 1,
+          "carver": 2,
+          "braid": 0.4,
+          "doorsPerEdge": 2,
+          "rooms": 0,
+          "roomCells": 3,
+          "wallTile": 7,
+          "floorTile": 1
+        },
+        "inputs": {},
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n17",
+        "type": "scatterPoints",
+        "label": "crystal scatter",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.002,
+          "maskAtLeast": 0,
+          "maskAtMost": 1
+        },
+        "inputs": {
+          "mask": null
+        },
+        "display": {
+          "mode": "structures",
+          "cultureId": 0
+        }
+      }
+    ]
+  }
+}
