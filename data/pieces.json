@@ -2054,5 +2054,667 @@
       0,
       0
     ]
+  },
+  {
+    "id": 106,
+    "name": "ashstangarth wall run (ashstangarth (evolved))",
+    "role": "wallSegment",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      233,
+      232,
+      232
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 107,
+    "name": "ashstangarth corner post (ashstangarth (evolved))",
+    "role": "wallCorner",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      232,
+      232,
+      232
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 108,
+    "name": "ashstangarth windowed wall (ashstangarth (evolved))",
+    "role": "window",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      233,
+      238,
+      232
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 109,
+    "name": "ashstangarth doorway (ashstangarth (evolved))",
+    "role": "door",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      239,
+      239,
+      237
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 110,
+    "name": "ashstangarth roof eave (ashstangarth (evolved))",
+    "role": "roofEdge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      234
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 111,
+    "name": "ashstangarth roof ridge (ashstangarth (evolved))",
+    "role": "roofRidge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      235
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 112,
+    "name": "ashstangarth gable end (ashstangarth (evolved))",
+    "role": "roofGableEnd",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      232,
+      234
+    ],
+    "facings": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": 113,
+    "name": "ashstangarth floor slab (ashstangarth (evolved))",
+    "role": "floor",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      236
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 114,
+    "name": "ashstangarth chimney stack (ashstangarth (evolved))",
+    "role": "chimney",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      240,
+      240,
+      237
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 115,
+    "name": "ramburtor wall run (ramburtor (evolved))",
+    "role": "wallSegment",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      257,
+      256,
+      256
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 116,
+    "name": "ramburtor corner post (ramburtor (evolved))",
+    "role": "wallCorner",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      256,
+      256,
+      256
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 117,
+    "name": "ramburtor windowed wall (ramburtor (evolved))",
+    "role": "window",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      257,
+      262,
+      256
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 118,
+    "name": "ramburtor doorway (ramburtor (evolved))",
+    "role": "door",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      263,
+      263,
+      261
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 119,
+    "name": "ramburtor roof eave (ramburtor (evolved))",
+    "role": "roofEdge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      258
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 120,
+    "name": "ramburtor roof ridge (ramburtor (evolved))",
+    "role": "roofRidge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      259
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 121,
+    "name": "ramburtor gable end (ramburtor (evolved))",
+    "role": "roofGableEnd",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      256,
+      258
+    ],
+    "facings": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": 122,
+    "name": "ramburtor floor slab (ramburtor (evolved))",
+    "role": "floor",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      260
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 123,
+    "name": "ramburtor chimney stack (ramburtor (evolved))",
+    "role": "chimney",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      264,
+      264,
+      261
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 124,
+    "name": "okederby wall run (okederby (evolved))",
+    "role": "wallSegment",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      269,
+      268,
+      268
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 125,
+    "name": "okederby corner post (okederby (evolved))",
+    "role": "wallCorner",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      268,
+      268,
+      268
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 126,
+    "name": "okederby windowed wall (okederby (evolved))",
+    "role": "window",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      269,
+      274,
+      268
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 127,
+    "name": "okederby doorway (okederby (evolved))",
+    "role": "door",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      275,
+      275,
+      273
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 128,
+    "name": "okederby roof eave (okederby (evolved))",
+    "role": "roofEdge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      270
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 129,
+    "name": "okederby roof ridge (okederby (evolved))",
+    "role": "roofRidge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      271
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 130,
+    "name": "okederby gable end (okederby (evolved))",
+    "role": "roofGableEnd",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      268,
+      270
+    ],
+    "facings": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": 131,
+    "name": "okederby floor slab (okederby (evolved))",
+    "role": "floor",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      272
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 132,
+    "name": "okederby chimney stack (okederby (evolved))",
+    "role": "chimney",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      276,
+      276,
+      273
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 133,
+    "name": "halstanness wall run (halstanness (evolved))",
+    "role": "wallSegment",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      294,
+      293,
+      293
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 134,
+    "name": "halstanness corner post (halstanness (evolved))",
+    "role": "wallCorner",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      293,
+      293,
+      293
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 135,
+    "name": "halstanness windowed wall (halstanness (evolved))",
+    "role": "window",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      294,
+      299,
+      293
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 136,
+    "name": "halstanness doorway (halstanness (evolved))",
+    "role": "door",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      300,
+      300,
+      298
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 137,
+    "name": "halstanness roof eave (halstanness (evolved))",
+    "role": "roofEdge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      295
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 138,
+    "name": "halstanness roof ridge (halstanness (evolved))",
+    "role": "roofRidge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      296
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 139,
+    "name": "halstanness gable end (halstanness (evolved))",
+    "role": "roofGableEnd",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      293,
+      295
+    ],
+    "facings": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": 140,
+    "name": "halstanness floor slab (halstanness (evolved))",
+    "role": "floor",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      297
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 141,
+    "name": "halstanness chimney stack (halstanness (evolved))",
+    "role": "chimney",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      301,
+      297
+    ],
+    "facings": [
+      0,
+      0
+    ]
   }
 ]

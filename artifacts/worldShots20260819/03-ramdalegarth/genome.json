@@ -1,0 +1,313 @@
+{
+  "kitSeed": 212202,
+  "accentKitSeed": 130717,
+  "paletteSize": 6,
+  "pipeline": {
+    "seed": 34990,
+    "daylight": 1,
+    "time": 0,
+    "nodes": [
+      {
+        "id": "n1",
+        "type": "terrainNoise",
+        "label": "highlands",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.024,
+          "style": 1,
+          "octaves": 4,
+          "lacunarity": 2,
+          "gain": 0.5
+        },
+        "inputs": {},
+        "display": {
+          "mode": "elevation",
+          "heightScale": 4
+        }
+      },
+      {
+        "id": "n2",
+        "type": "fillDepressions",
+        "label": "drainable surface",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "seaLevel": 0.46,
+          "maxFill": 0.12,
+          "windowRadius": 64
+        },
+        "inputs": {
+          "elevation": "n1"
+        },
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n3",
+        "type": "thresholdTiles",
+        "label": "band 1",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.35,
+          "belowTile": 25,
+          "aboveTile": 2
+        },
+        "inputs": {
+          "source": "n1"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n4",
+        "type": "thresholdTiles",
+        "label": "band 2",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.47,
+          "belowTile": -1,
+          "aboveTile": 23
+        },
+        "inputs": {
+          "source": "n1"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n5",
+        "type": "thresholdTiles",
+        "label": "band 3",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.59,
+          "belowTile": -1,
+          "aboveTile": 25
+        },
+        "inputs": {
+          "source": "n1"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n6",
+        "type": "thresholdTiles",
+        "label": "band 4",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.7,
+          "belowTile": -1,
+          "aboveTile": 10
+        },
+        "inputs": {
+          "source": "n1"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n7",
+        "type": "flowAccumulation",
+        "label": "drainage",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "seaLevel": 0.46,
+          "catchmentScale": 1785,
+          "convergence": 3,
+          "channelizeAbove": 20,
+          "fillPits": 1,
+          "windowRadius": 40
+        },
+        "inputs": {
+          "elevation": "n2"
+        },
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n8",
+        "type": "riverFromFlow",
+        "label": "rivers",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "minFlow": 0.41,
+          "maxWidth": 6,
+          "seaLevel": 0.46,
+          "riverTile": 2
+        },
+        "inputs": {
+          "flow": "n7",
+          "elevation": "n1"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n9",
+        "type": "lakeFromFill",
+        "label": "lakes",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "seaLevel": 0.46,
+          "minDepth": 0.011,
+          "shallowDepth": 0.02,
+          "lakeTile": 2,
+          "shallowTile": 25
+        },
+        "inputs": {
+          "ground": "n1",
+          "flooded": "n2"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n10",
+        "type": "straitBridges",
+        "label": "bridges",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "waterBelow": 0.46,
+          "shallowBand": 0.12,
+          "maxSpan": 7,
+          "pitch": 20,
+          "bridgeTile": 9
+        },
+        "inputs": {
+          "water": "n1"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n11",
+        "type": "scatterPoints",
+        "label": "ghost scatter",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.005,
+          "maskAtLeast": 0.51,
+          "maskAtMost": 0.72
+        },
+        "inputs": {
+          "mask": "n1"
+        },
+        "display": {
+          "mode": "structures",
+          "cultureId": 0
+        }
+      },
+      {
+        "id": "n12",
+        "type": "noiseField",
+        "label": "noise field",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.075,
+          "octaves": 5
+        },
+        "inputs": {},
+        "display": {
+          "mode": "elevation",
+          "heightScale": 2
+        }
+      },
+      {
+        "id": "n13",
+        "type": "slopeField",
+        "label": "slope",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "radius": 10,
+          "gain": 150
+        },
+        "inputs": {
+          "source": "n2"
+        },
+        "display": {
+          "mode": "elevation",
+          "heightScale": 2.5
+        }
+      },
+      {
+        "id": "n14",
+        "type": "rapidsFromFlow",
+        "label": "rapids from flow",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "minFlow": 0.95,
+          "minSteepness": 0.66,
+          "seaLevel": 0.35,
+          "rapidsTile": 23
+        },
+        "inputs": {
+          "flow": "n2",
+          "steepness": "n13",
+          "elevation": "n7"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n15",
+        "type": "scatterPoints",
+        "label": "shrine scatter",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.009,
+          "maskAtLeast": 0,
+          "maskAtMost": 1
+        },
+        "inputs": {
+          "mask": "n1"
+        },
+        "display": {
+          "mode": "markers",
+          "tileId": -1,
+          "glyph": "✿",
+          "color": "#e0b040"
+        }
+      }
+    ]
+  }
+}

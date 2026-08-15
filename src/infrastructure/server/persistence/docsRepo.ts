@@ -1,5 +1,11 @@
+import { existsSync, readFileSync } from 'node:fs';
 import type { Store } from './db';
 import { PERSISTED_DOCUMENT_NAMES } from '@/features/app-shell/persistence/persistedDocuments';
+import {
+  syncMissingPresets,
+  type LibraryDocs,
+} from '@/features/asset-library/worlds/presets/presetSync';
+import { sanitizeWorldPresets } from '@/features/asset-library/worlds/presets/worldPreset';
 
 export const PERSISTED_DOC_NAMES = PERSISTED_DOCUMENT_NAMES;
 
@@ -54,7 +60,48 @@ async function loadDocs(store: Store): Promise<Map<string, unknown>> {
     if (stored !== undefined) docs.set(name, stored);
   }
   reportDocsTheDatabaseIsMissing(docs);
+  installPresetsShippedInDataFiles(docs, store);
   return docs;
+}
+
+const LIBRARY_DOC_NAMES = ['tiles', 'pieces', 'cultures', 'worldPresets'] as const;
+
+function installPresetsShippedInDataFiles(docs: Map<string, unknown>, store: Store): void {
+  const touched = new Set<string>();
+  for (const name of LIBRARY_DOC_NAMES) {
+    if (docs.has(name)) continue;
+    docs.set(name, dataFileJson(name) ?? []);
+    touched.add(name);
+  }
+  const library = libraryDocsOf((name) => docs.get(name));
+  const shipped = libraryDocsOf(dataFileJson);
+  shipped.worldPresets = sanitizeWorldPresets(shipped.worldPresets);
+  const added = syncMissingPresets(library, shipped);
+  if (added > 0) {
+    for (const name of LIBRARY_DOC_NAMES) touched.add(name);
+    console.log(`[db] installed ${added} world presets shipped in the repo data files`);
+  }
+  for (const name of touched) void saveDoc(store, name, docs.get(name));
+}
+
+function libraryDocsOf(read: (name: string) => unknown): LibraryDocs {
+  const arrayOf = (value: unknown) => (Array.isArray(value) ? value : []);
+  return {
+    tiles: arrayOf(read('tiles')),
+    pieces: arrayOf(read('pieces')),
+    cultures: arrayOf(read('cultures')),
+    worldPresets: arrayOf(read('worldPresets')),
+  } as LibraryDocs;
+}
+
+function dataFileJson(name: string): unknown {
+  const path = `data/${name}.json`;
+  if (!existsSync(path)) return undefined;
+  try {
+    return JSON.parse(readFileSync(path, 'utf8'));
+  } catch {
+    return undefined;
+  }
 }
 
 function reportDocsTheDatabaseIsMissing(docs: Map<string, unknown>): void {

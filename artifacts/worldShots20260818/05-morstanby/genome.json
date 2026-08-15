@@ -1,0 +1,311 @@
+{
+  "kitSeed": 911027,
+  "accentKitSeed": 990733,
+  "paletteSize": 5,
+  "pipeline": {
+    "seed": 219469,
+    "daylight": 1,
+    "time": 0,
+    "nodes": [
+      {
+        "id": "n1",
+        "type": "noiseField",
+        "label": "base noise",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.075,
+          "octaves": 6
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n2",
+        "type": "noiseField",
+        "label": "detail noise",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.085,
+          "octaves": 2
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n3",
+        "type": "combineFields",
+        "label": "blend",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "operation": 4,
+          "clamp": 1
+        },
+        "inputs": {
+          "a": "n1",
+          "b": "n2"
+        },
+        "display": {
+          "mode": "elevation",
+          "heightScale": 2
+        }
+      },
+      {
+        "id": "n4",
+        "type": "thresholdTiles",
+        "label": "band 1",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.36,
+          "belowTile": 19,
+          "aboveTile": 22
+        },
+        "inputs": {
+          "source": "n3"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n5",
+        "type": "thresholdTiles",
+        "label": "band 2",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.47,
+          "belowTile": -1,
+          "aboveTile": 14
+        },
+        "inputs": {
+          "source": "n3"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n6",
+        "type": "thresholdTiles",
+        "label": "band 3",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.56,
+          "belowTile": -1,
+          "aboveTile": 10
+        },
+        "inputs": {
+          "source": "n3"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n7",
+        "type": "regionPlan",
+        "label": "gathering places",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "pitch": 427,
+          "focusShare": 0.35,
+          "falloff": 0.5,
+          "role": 0
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n8",
+        "type": "scatterPoints",
+        "label": "ruin scatter",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.05,
+          "maskAtLeast": 0.47,
+          "maskAtMost": 1
+        },
+        "inputs": {
+          "mask": "n7"
+        },
+        "display": {
+          "mode": "markers",
+          "tileId": 19,
+          "glyph": "⚑",
+          "color": "#3fbf9f"
+        }
+      },
+      {
+        "id": "n9",
+        "type": "regionPlan",
+        "label": "heartlands",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "pitch": 273,
+          "focusShare": 0.1,
+          "falloff": 0.6,
+          "role": 0
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n10",
+        "type": "combineFields",
+        "label": "settled ground",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "operation": 2,
+          "clamp": 1
+        },
+        "inputs": {
+          "a": "n1",
+          "b": "n9"
+        },
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n11",
+        "type": "scatterPoints",
+        "label": "village centers",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.0035,
+          "maskAtLeast": 0.24,
+          "maskAtMost": 1
+        },
+        "inputs": {
+          "mask": "n10"
+        },
+        "display": {
+          "mode": "markers",
+          "tileId": -1,
+          "glyph": "*",
+          "color": "#ff5577"
+        }
+      },
+      {
+        "id": "n12",
+        "type": "villageStreets",
+        "label": "streets",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "radius": 31,
+          "plotCells": 14,
+          "streetWidth": 4,
+          "streetTile": 1,
+          "plazaTile": 22
+        },
+        "inputs": {
+          "centers": "n11"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n13",
+        "type": "villagePlots",
+        "label": "plots",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "radius": 31,
+          "plotCells": 14,
+          "streetWidth": 4,
+          "buildAbove": 0.43,
+          "cottageWeight": 4,
+          "dwellingWeight": 3,
+          "smithyWeight": 2,
+          "innWeight": 1,
+          "townHallWeight": 1
+        },
+        "inputs": {
+          "centers": "n11",
+          "ground": "n1"
+        },
+        "display": {
+          "mode": "structures",
+          "cultureId": 0
+        }
+      },
+      {
+        "id": "n14",
+        "type": "landmarkRoom",
+        "label": "the keep",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "x": -8,
+          "y": -7,
+          "width": 9,
+          "height": 10,
+          "wallThickness": 1,
+          "floorTile": -1,
+          "wallTile": 14
+        },
+        "inputs": {},
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n15",
+        "type": "scatterPoints",
+        "label": "spring scatter",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.01,
+          "maskAtLeast": 0.34,
+          "maskAtMost": 0.63
+        },
+        "inputs": {
+          "mask": null
+        },
+        "display": {
+          "mode": "markers",
+          "tileId": -1,
+          "glyph": "☗",
+          "color": "#ff8c42"
+        }
+      }
+    ]
+  }
+}

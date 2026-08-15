@@ -1,0 +1,431 @@
+{
+  "kitSeed": 317808,
+  "accentKitSeed": 914870,
+  "paletteSize": 6,
+  "pipeline": {
+    "seed": 72531,
+    "daylight": 1,
+    "time": 0,
+    "nodes": [
+      {
+        "id": "n1",
+        "type": "terrainNoise",
+        "label": "mountain ranges",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.012,
+          "style": 1,
+          "octaves": 5,
+          "lacunarity": 2,
+          "gain": 0.42
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n2",
+        "type": "regionPlan",
+        "label": "massif",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "pitch": 398,
+          "focusShare": 0.1,
+          "falloff": 1,
+          "role": 0
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n3",
+        "type": "combineFields",
+        "label": "gathered ranges",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "operation": 2,
+          "clamp": 1
+        },
+        "inputs": {
+          "a": "n1",
+          "b": "n2"
+        },
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n4",
+        "type": "terrainNoise",
+        "label": "lowlands",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.056,
+          "style": 0,
+          "octaves": 4,
+          "lacunarity": 2,
+          "gain": 0.5
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n5",
+        "type": "blendFields",
+        "label": "relief",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "weight": 0.28
+        },
+        "inputs": {
+          "a": "n3",
+          "b": "n4",
+          "mask": null
+        },
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n6",
+        "type": "hypsometricCurve",
+        "label": "shelving",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "seaLevel": 0.44,
+          "steepness": 6.5
+        },
+        "inputs": {
+          "source": "n5"
+        },
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n7",
+        "type": "terrainNoise",
+        "label": "pass corridors",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.034,
+          "style": 0,
+          "octaves": 3,
+          "lacunarity": 2,
+          "gain": 0.5
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n8",
+        "type": "terraceField",
+        "label": "cliff terraces",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "levels": 4,
+          "passesAbove": 0.59
+        },
+        "inputs": {
+          "source": "n6",
+          "passes": "n7"
+        },
+        "display": {
+          "mode": "elevation",
+          "heightScale": 6.4
+        }
+      },
+      {
+        "id": "n9",
+        "type": "thresholdTiles",
+        "label": "band 1",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.38,
+          "belowTile": 23,
+          "aboveTile": 23
+        },
+        "inputs": {
+          "source": "n8"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n10",
+        "type": "thresholdTiles",
+        "label": "band 2",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.46,
+          "belowTile": -1,
+          "aboveTile": 21
+        },
+        "inputs": {
+          "source": "n8"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n11",
+        "type": "thresholdTiles",
+        "label": "band 3",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.55,
+          "belowTile": -1,
+          "aboveTile": 13
+        },
+        "inputs": {
+          "source": "n8"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n12",
+        "type": "thresholdTiles",
+        "label": "band 4",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.63,
+          "belowTile": -1,
+          "aboveTile": 16
+        },
+        "inputs": {
+          "source": "n8"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n13",
+        "type": "thresholdTiles",
+        "label": "crags",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.94,
+          "belowTile": -1,
+          "aboveTile": 14
+        },
+        "inputs": {
+          "source": "n6"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n14",
+        "type": "scatterPoints",
+        "label": "shrine scatter",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.014,
+          "maskAtLeast": 0.57,
+          "maskAtMost": 1
+        },
+        "inputs": {
+          "mask": "n8"
+        },
+        "display": {
+          "mode": "markers",
+          "tileId": -1,
+          "glyph": "♣",
+          "color": "#ff4444"
+        }
+      },
+      {
+        "id": "n15",
+        "type": "scatterPoints",
+        "label": "tree scatter",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.025,
+          "maskAtLeast": 0.45,
+          "maskAtMost": 0.73
+        },
+        "inputs": {
+          "mask": "n8"
+        },
+        "display": {
+          "mode": "markers",
+          "tileId": -1,
+          "glyph": "▲",
+          "color": "#e0b040"
+        }
+      },
+      {
+        "id": "n16",
+        "type": "regionPlan",
+        "label": "region plan",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "pitch": 745,
+          "focusShare": 0.45,
+          "falloff": 0.85,
+          "role": 1
+        },
+        "inputs": {},
+        "display": {
+          "mode": "elevation",
+          "heightScale": 2
+        }
+      },
+      {
+        "id": "n17",
+        "type": "scatterPoints",
+        "label": "scatter points",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.965,
+          "maskAtLeast": 0.54,
+          "maskAtMost": 0.63
+        },
+        "inputs": {
+          "mask": "n5"
+        },
+        "display": {
+          "mode": "markers",
+          "tileId": -1,
+          "glyph": "♦",
+          "color": "#ff8c42"
+        }
+      },
+      {
+        "id": "n18",
+        "type": "lakeFromFill",
+        "label": "lakes from fill",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "seaLevel": 0.65,
+          "minDepth": 0.026,
+          "shallowDepth": 0.033,
+          "lakeTile": 21,
+          "shallowTile": 21
+        },
+        "inputs": {
+          "ground": "n2",
+          "flooded": "n1"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n19",
+        "type": "lakeFromFill",
+        "label": "lakes from fill",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "seaLevel": 0.68,
+          "minDepth": 0.15,
+          "shallowDepth": 0.042,
+          "lakeTile": 23,
+          "shallowTile": 23
+        },
+        "inputs": {
+          "ground": "n4",
+          "flooded": "n2"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n20",
+        "type": "flowAccumulation",
+        "label": "flow accumulation",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "seaLevel": 0.36,
+          "catchmentScale": 610,
+          "convergence": 5,
+          "channelizeAbove": 315,
+          "fillPits": 0,
+          "windowRadius": 116
+        },
+        "inputs": {
+          "elevation": "n1"
+        },
+        "display": {
+          "mode": "elevation",
+          "heightScale": 4.5
+        }
+      },
+      {
+        "id": "n21",
+        "type": "villageStreets",
+        "label": "village streets",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "radius": 59,
+          "plotCells": 15,
+          "streetWidth": 2,
+          "streetTile": 14,
+          "plazaTile": 14
+        },
+        "inputs": {
+          "centers": "n14"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,217 @@
+{
+  "kitSeed": 781572,
+  "accentKitSeed": 755087,
+  "paletteSize": 8,
+  "pipeline": {
+    "seed": 689838,
+    "daylight": 1,
+    "time": 0,
+    "nodes": [
+      {
+        "id": "n1",
+        "type": "terrainNoise",
+        "label": "highlands",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.012,
+          "style": 1,
+          "octaves": 7,
+          "lacunarity": 2,
+          "gain": 0.5
+        },
+        "inputs": {},
+        "display": {
+          "mode": "elevation",
+          "heightScale": 4
+        }
+      },
+      {
+        "id": "n2",
+        "type": "fillDepressions",
+        "label": "drainable surface",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "seaLevel": 0.45,
+          "maxFill": 0.21,
+          "windowRadius": 64
+        },
+        "inputs": {
+          "elevation": "n1"
+        },
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n3",
+        "type": "thresholdTiles",
+        "label": "band 1",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.43,
+          "belowTile": 3,
+          "aboveTile": 4
+        },
+        "inputs": {
+          "source": "n1"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n4",
+        "type": "thresholdTiles",
+        "label": "band 2",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.5,
+          "belowTile": -1,
+          "aboveTile": 9
+        },
+        "inputs": {
+          "source": "n1"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n5",
+        "type": "thresholdTiles",
+        "label": "band 3",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.6,
+          "belowTile": -1,
+          "aboveTile": 13
+        },
+        "inputs": {
+          "source": "n1"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n6",
+        "type": "flowAccumulation",
+        "label": "drainage",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "seaLevel": 0.45,
+          "catchmentScale": 1653,
+          "convergence": 5,
+          "channelizeAbove": 20,
+          "fillPits": 1,
+          "windowRadius": 40
+        },
+        "inputs": {
+          "elevation": "n2"
+        },
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n7",
+        "type": "riverFromFlow",
+        "label": "rivers",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "minFlow": 0.5,
+          "maxWidth": 6,
+          "seaLevel": 0.45,
+          "riverTile": 3
+        },
+        "inputs": {
+          "flow": "n6",
+          "elevation": "n1"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n8",
+        "type": "scatterPoints",
+        "label": "tree scatter",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.014,
+          "maskAtLeast": 0,
+          "maskAtMost": 1
+        },
+        "inputs": {
+          "mask": "n1"
+        },
+        "display": {
+          "mode": "markers",
+          "tileId": 3,
+          "glyph": "☗",
+          "color": "#ff4444"
+        }
+      },
+      {
+        "id": "n9",
+        "type": "scatterPoints",
+        "label": "spring scatter",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.0005,
+          "maskAtLeast": 0,
+          "maskAtMost": 1
+        },
+        "inputs": {
+          "mask": "n1"
+        },
+        "display": {
+          "mode": "markers",
+          "tileId": 12,
+          "glyph": "▲",
+          "color": "#c2c2c2"
+        }
+      },
+      {
+        "id": "n10",
+        "type": "scatterPoints",
+        "label": "crystal scatter",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.002,
+          "maskAtLeast": 0,
+          "maskAtMost": 1
+        },
+        "inputs": {
+          "mask": "n1"
+        },
+        "display": {
+          "mode": "markers",
+          "tileId": 12,
+          "glyph": "▲",
+          "color": "#c2c2c2"
+        }
+      }
+    ]
+  }
+}
