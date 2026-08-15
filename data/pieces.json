@@ -1394,5 +1394,665 @@
       0,
       0
     ]
+  },
+  {
+    "id": 70,
+    "name": "elwentor wall run (elwentor (evolved))",
+    "role": "wallSegment",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      160,
+      159,
+      159
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 71,
+    "name": "elwentor corner post (elwentor (evolved))",
+    "role": "wallCorner",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      159,
+      159,
+      159
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 72,
+    "name": "elwentor windowed wall (elwentor (evolved))",
+    "role": "window",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      160,
+      165,
+      159
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 73,
+    "name": "elwentor doorway (elwentor (evolved))",
+    "role": "door",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      166,
+      166,
+      164
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 74,
+    "name": "elwentor roof eave (elwentor (evolved))",
+    "role": "roofEdge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      161
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 75,
+    "name": "elwentor roof ridge (elwentor (evolved))",
+    "role": "roofRidge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      162
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 76,
+    "name": "elwentor gable end (elwentor (evolved))",
+    "role": "roofGableEnd",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      159,
+      161
+    ],
+    "facings": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": 77,
+    "name": "elwentor floor slab (elwentor (evolved))",
+    "role": "floor",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      163
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 78,
+    "name": "elwentor chimney stack (elwentor (evolved))",
+    "role": "chimney",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      167,
+      164
+    ],
+    "facings": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": 79,
+    "name": "ashthornmere wall run (ashthornmere (evolved))",
+    "role": "wallSegment",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      172,
+      171,
+      171
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 80,
+    "name": "ashthornmere corner post (ashthornmere (evolved))",
+    "role": "wallCorner",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      171,
+      171,
+      171
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 81,
+    "name": "ashthornmere windowed wall (ashthornmere (evolved))",
+    "role": "window",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      172,
+      177,
+      171
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 82,
+    "name": "ashthornmere doorway (ashthornmere (evolved))",
+    "role": "door",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      178,
+      178,
+      176
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 83,
+    "name": "ashthornmere roof eave (ashthornmere (evolved))",
+    "role": "roofEdge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      173
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 84,
+    "name": "ashthornmere roof ridge (ashthornmere (evolved))",
+    "role": "roofRidge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      174
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 85,
+    "name": "ashthornmere gable end (ashthornmere (evolved))",
+    "role": "roofGableEnd",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      171,
+      173
+    ],
+    "facings": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": 86,
+    "name": "ashthornmere floor slab (ashthornmere (evolved))",
+    "role": "floor",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      175
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 87,
+    "name": "ashthornmere chimney stack (ashthornmere (evolved))",
+    "role": "chimney",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      179,
+      175
+    ],
+    "facings": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": 88,
+    "name": "calderfen wall run (calderfen (evolved))",
+    "role": "wallSegment",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      196,
+      195,
+      195
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 89,
+    "name": "calderfen corner post (calderfen (evolved))",
+    "role": "wallCorner",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      195,
+      195,
+      195
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 90,
+    "name": "calderfen windowed wall (calderfen (evolved))",
+    "role": "window",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      196,
+      201,
+      195
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 91,
+    "name": "calderfen doorway (calderfen (evolved))",
+    "role": "door",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      202,
+      202,
+      200
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 92,
+    "name": "calderfen roof eave (calderfen (evolved))",
+    "role": "roofEdge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      197
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 93,
+    "name": "calderfen roof ridge (calderfen (evolved))",
+    "role": "roofRidge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      198
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 94,
+    "name": "calderfen gable end (calderfen (evolved))",
+    "role": "roofGableEnd",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      195,
+      197
+    ],
+    "facings": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": 95,
+    "name": "calderfen floor slab (calderfen (evolved))",
+    "role": "floor",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      199
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 96,
+    "name": "calderfen chimney stack (calderfen (evolved))",
+    "role": "chimney",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      203,
+      203,
+      196
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 97,
+    "name": "calwengarth wall run (calwengarth (evolved))",
+    "role": "wallSegment",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      221,
+      220,
+      220
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 98,
+    "name": "calwengarth corner post (calwengarth (evolved))",
+    "role": "wallCorner",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      220,
+      220,
+      220
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 99,
+    "name": "calwengarth windowed wall (calwengarth (evolved))",
+    "role": "window",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      221,
+      226,
+      220
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 100,
+    "name": "calwengarth doorway (calwengarth (evolved))",
+    "role": "door",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      227,
+      227,
+      225
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 101,
+    "name": "calwengarth roof eave (calwengarth (evolved))",
+    "role": "roofEdge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      222
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 102,
+    "name": "calwengarth roof ridge (calwengarth (evolved))",
+    "role": "roofRidge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      223
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 103,
+    "name": "calwengarth gable end (calwengarth (evolved))",
+    "role": "roofGableEnd",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      220,
+      222
+    ],
+    "facings": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": 104,
+    "name": "calwengarth floor slab (calwengarth (evolved))",
+    "role": "floor",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      224
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 105,
+    "name": "calwengarth chimney stack (calwengarth (evolved))",
+    "role": "chimney",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      228,
+      228,
+      224
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
   }
 ]

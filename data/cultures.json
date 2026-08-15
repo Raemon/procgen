@@ -310,5 +310,173 @@
     "roofStyle": 0,
     "storyLayers": 3,
     "windowEvery": 4
+  },
+  {
+    "id": 7,
+    "name": "elwentor (elwentor (evolved))",
+    "roleBindings": {
+      "wallSegment": [
+        70
+      ],
+      "wallCorner": [
+        71
+      ],
+      "window": [
+        72
+      ],
+      "door": [
+        73
+      ],
+      "roofEdge": [
+        74
+      ],
+      "roofRidge": [
+        75
+      ],
+      "roofGableEnd": [
+        76
+      ],
+      "floor": [
+        77
+      ],
+      "chimney": [
+        78
+      ]
+    },
+    "wallTileId": 159,
+    "trimTileId": 164,
+    "roofSlopeTileId": 161,
+    "roofRidgeTileId": 162,
+    "floorTileId": 163,
+    "pathTileId": 169,
+    "roofStyle": 0,
+    "storyLayers": 2,
+    "windowEvery": 4
+  },
+  {
+    "id": 8,
+    "name": "ashthornmere (ashthornmere (evolved))",
+    "roleBindings": {
+      "wallSegment": [
+        79
+      ],
+      "wallCorner": [
+        80
+      ],
+      "window": [
+        81
+      ],
+      "door": [
+        82
+      ],
+      "roofEdge": [
+        83
+      ],
+      "roofRidge": [
+        84
+      ],
+      "roofGableEnd": [
+        85
+      ],
+      "floor": [
+        86
+      ],
+      "chimney": [
+        87
+      ]
+    },
+    "wallTileId": 171,
+    "trimTileId": 176,
+    "roofSlopeTileId": 173,
+    "roofRidgeTileId": 174,
+    "floorTileId": 175,
+    "pathTileId": 181,
+    "roofStyle": 1,
+    "storyLayers": 3,
+    "windowEvery": 5
+  },
+  {
+    "id": 9,
+    "name": "calderfen (calderfen (evolved))",
+    "roleBindings": {
+      "wallSegment": [
+        88
+      ],
+      "wallCorner": [
+        89
+      ],
+      "window": [
+        90
+      ],
+      "door": [
+        91
+      ],
+      "roofEdge": [
+        92
+      ],
+      "roofRidge": [
+        93
+      ],
+      "roofGableEnd": [
+        94
+      ],
+      "floor": [
+        95
+      ],
+      "chimney": [
+        96
+      ]
+    },
+    "wallTileId": 195,
+    "trimTileId": 200,
+    "roofSlopeTileId": 197,
+    "roofRidgeTileId": 198,
+    "floorTileId": 199,
+    "pathTileId": 205,
+    "roofStyle": 0,
+    "storyLayers": 3,
+    "windowEvery": 3
+  },
+  {
+    "id": 10,
+    "name": "calwengarth (calwengarth (evolved))",
+    "roleBindings": {
+      "wallSegment": [
+        97
+      ],
+      "wallCorner": [
+        98
+      ],
+      "window": [
+        99
+      ],
+      "door": [
+        100
+      ],
+      "roofEdge": [
+        101
+      ],
+      "roofRidge": [
+        102
+      ],
+      "roofGableEnd": [
+        103
+      ],
+      "floor": [
+        104
+      ],
+      "chimney": [
+        105
+      ]
+    },
+    "wallTileId": 220,
+    "trimTileId": 225,
+    "roofSlopeTileId": 222,
+    "roofRidgeTileId": 223,
+    "floorTileId": 224,
+    "pathTileId": 230,
+    "roofStyle": 1,
+    "storyLayers": 2,
+    "windowEvery": 3
   }
 ]
