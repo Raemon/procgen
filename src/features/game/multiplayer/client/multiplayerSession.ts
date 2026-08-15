@@ -5,10 +5,11 @@ import { sanitizePipeline } from '@/features/asset-library/worlds/pipeline/sanit
 import { ORDER_DIR, ORDER_NONE } from '../../sim/movementOrder';
 import { stepDirIndex, type WalkabilityProbe } from '../../sim/tickMovement';
 import type { FacingIndex } from '../../facing';
+import type { PuzzleWorld } from '../../puzzles/puzzleWorld';
 import type { World } from '../../world';
 import { LocalMovementSim } from './localMovementSim';
 import { NetClient, type NetStatus } from './netClient';
-import type { SnapshotRow, WelcomeMsg } from './protocol';
+import type { PuzzlesMsg, SnapshotRow, WelcomeMsg } from './protocol';
 import { RemotePlayers } from './remotePlayers';
 
 const TURN_ECHO_QUIET_MS = 400;
@@ -28,6 +29,8 @@ export class MultiplayerSession {
     private readonly world: World,
     private readonly store: PipelineStore,
     isWalkableAt: WalkabilityProbe,
+    private readonly puzzles: PuzzleWorld,
+    private readonly onPuzzlesApplied: () => void,
   ) {
     this.localSim = new LocalMovementSim(world, isWalkableAt);
     this.client = new NetClient({
@@ -37,6 +40,7 @@ export class MultiplayerSession {
       onEntityMeta: (msg) => this.remotePlayers.applyMeta(msg),
       onSaid: (msg) => this.speech.add(msg.id, msg.text),
       onDocChanged: (name, revision) => this.reloadChangedDoc(name, revision),
+      onPuzzles: (msg) => this.acceptPuzzles(msg),
       onKick: (msg) => console.warn(`[net] kicked: ${msg.code} — ${msg.message}`),
     });
     this.lastFacing = world.facing;
@@ -68,6 +72,18 @@ export class MultiplayerSession {
     else this.localSim.release();
   }
 
+  isOnline(): boolean {
+    return this.online;
+  }
+
+  sendUse(): void {
+    this.client.sendUse();
+  }
+
+  sendResetRoom(): void {
+    this.client.sendResetRoom();
+  }
+
   say(rawText: string): void {
     const text = sanitizeChatText(rawText);
     if (text === '') return;
@@ -95,6 +111,11 @@ export class MultiplayerSession {
     this.remotePlayers.clear();
     this.speech.clear();
     this.snapToServerPose(msg.x, msg.y, msg.facing);
+  }
+
+  private acceptPuzzles(msg: PuzzlesMsg): void {
+    this.puzzles.state.replaceAll({ on: msg.on, crates: msg.crates });
+    this.onPuzzlesApplied();
   }
 
   private acceptSnapshot(rows: SnapshotRow[]): void {

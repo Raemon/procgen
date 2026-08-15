@@ -45,6 +45,11 @@ export const SIGHT_RANGE_TIP: TooltipContent = {
   when: 'Scouting a route from a ridge, or comparing what a far-sighted agent would perceive against a default one.',
 };
 
+export const ASCII_COLOR_TIP: TooltipContent = {
+  title: 'color',
+  body: 'Paints each ASCII glyph with the color of the tile or marker it stands for. A reading aid for this panel only — agents always receive plain text.',
+};
+
 export const LIFE_TIP: TooltipContent = {
   title: 'life',
   body: 'Runs the creature simulation. Paused, creatures hold their positions; the world itself is unaffected either way.',

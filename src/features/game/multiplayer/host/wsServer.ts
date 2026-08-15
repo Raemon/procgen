@@ -10,6 +10,7 @@ import {
   type SayMsg,
 } from '../client/protocol';
 import { sanitizeChatText } from '../../chat/sanitizeChatText';
+import { useHereOrAhead } from '../../puzzles/interaction/useAtPose';
 import {
   ORDER_DIR,
   ORDER_NONE,
@@ -88,7 +89,10 @@ function handleMessage(conn: Connection, msg: ClientMsg, deps: WsDeps): void {
     return;
   }
   if (msg.t === 'hello' && conn.state === 'AWAITING_HELLO') handleHello(conn, msg, deps);
-  if (msg.t === 'say' && conn.state === 'PLAYING' && conn.entity) handleSay(conn, msg, deps);
+  if (conn.state !== 'PLAYING' || !conn.entity) return;
+  if (msg.t === 'say') handleSay(conn, msg, deps);
+  if (msg.t === 'use') useHereOrAhead(deps.worldHost.current().puzzles, conn.entity.x, conn.entity.y, conn.entity.facing);
+  if (msg.t === 'resetRoom') deps.worldHost.current().puzzles.resetRoomAt(conn.entity.x, conn.entity.y);
 }
 
 function handleHello(conn: Connection, hello: HelloMsg, deps: WsDeps): void {

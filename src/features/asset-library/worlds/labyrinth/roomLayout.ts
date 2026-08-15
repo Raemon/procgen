@@ -90,7 +90,7 @@ function doorwayOf(
   const wall = clampedWall(knobs);
   const holeDepths = Array.from({ length: wall }, (_, depth) => depth);
   const cells = holeDepths.flatMap((depth) => doorwayRow(side, offset, depth, cx, cy, knobs));
-  return { side, offset, cells, gate: doorwayRow(side, offset, wall, cx, cy, knobs) };
+  return { side, offset, cells, gate: doorwayRow(side, offset, wall - 1, cx, cy, knobs) };
 }
 
 function doorwayRow(

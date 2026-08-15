@@ -48,7 +48,7 @@ export function observedTileAt(
 export function unseenTile(sightRadiusTiles: number): ObservedTile {
   return {
     glyph: BLANK_GLYPH,
-    meaning: `unseen: behind you, past your ${sightRadiusTiles}-tile sight radius (fog), or hidden behind tall ground`,
+    meaning: `unseen: behind you, past your ${sightRadiusTiles}-tile sight radius (fog), or hidden behind tall ground or a ridge above you`,
     walkable: null,
   };
 }

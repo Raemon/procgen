@@ -9,6 +9,16 @@ export function DuplicateIcon({ size }: { size?: number }) {
   );
 }
 
+export function InsertIcon({ size }: { size?: number }) {
+  return (
+    <Icon size={size}>
+      <path d="M12 4v9" />
+      <path d="M8.5 9.5L12 13l3.5-3.5" />
+      <path d="M4.5 15.5V18A1.5 1.5 0 0 0 6 19.5h12a1.5 1.5 0 0 0 1.5-1.5v-2.5" />
+    </Icon>
+  );
+}
+
 export function RunIcon({ size }: { size?: number }) {
   return (
     <Icon size={size}>

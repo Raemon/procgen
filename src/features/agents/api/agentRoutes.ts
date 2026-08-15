@@ -272,6 +272,7 @@ function observationJson(mode: AgentMode, observation: AgentObservation) {
     view_size: observation.viewSize,
     sight_radius_tiles: observation.sightRadiusTiles,
     view: observation.view,
+    elevation: observation.elevation,
     legend: observation.legend,
     available_actions: commandsForMode(mode).map((spec) => ({
       action: spec.action,

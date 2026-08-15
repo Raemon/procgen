@@ -45,6 +45,49 @@ export function checkOccludedObservation(check: CheckReporter): void {
 
   check('the agent api and the walking-sim tourist share one rule for what blocks sight', touristAgreesWallsBlockAndBenchesDoNot());
   check('the blocking height is exactly twice the player, as the docs promise', SIGHT_BLOCKING_TILE_HEIGHT === 2);
+
+  checkRidgesHideOnlyLowerGround(check);
+}
+
+const TOR_PROFILE = [0, 1, 2, 3, 4, 1, 1, 1, 1, 4];
+const CREST_STEPS_NORTH = 4;
+
+function checkRidgesHideOnlyLowerGround(check: CheckReporter): void {
+  const facingNorth = { x: 0, y: 0, facing: 0 as const };
+  const slope = buildObservation(meadowRisingNorth((steps) => steps), occlusionTiles, facingNorth, 'character');
+  check('a slope climbing away from you stays visible the whole way up', northGlyphs(slope, 1, DEFAULT_CHARACTER_SIGHT_RADIUS_TILES).every((glyph) => glyph === '"'));
+
+  const hill = buildObservation(meadowRisingNorth((steps) => TOR_PROFILE[steps] ?? 0), occlusionTiles, facingNorth, 'character');
+  check('the crest of a hill 2+ above you is still sent, so you learn what blocks the view', glyphAt(hill, 0, -CREST_STEPS_NORTH) === '"');
+  check('ground lower than the crest beyond it is withheld', glyphAt(hill, 0, -CREST_STEPS_NORTH - 2) === ' ');
+  check('a far tor as high as the crest still shows past it', glyphAt(hill, 0, -9) === '"');
+  check('the hollow past that tor is withheld again', glyphAt(hill, 0, -11) === ' ');
+  check('god mode reads past every ridge, since it is an editor and not a pair of eyes', glyphAt(buildObservation(meadowRisingNorth((steps) => TOR_PROFILE[steps] ?? 0), occlusionTiles, facingNorth, 'god'), 0, -CREST_STEPS_NORTH - 2) === '"');
+  check('the blank legend owns up to ridges as a reason a tile is missing', hill.legend.some((entry) => entry.glyph === ' ' && entry.meaning.includes('ridge')));
+
+  const fromCrest = buildObservation(meadowRisingNorth((steps) => TOR_PROFILE[steps] ?? 0), occlusionTiles, { x: 0, y: -CREST_STEPS_NORTH, facing: 0 as const }, 'character');
+  check('standing on the crest, the far slope below you is all in view', glyphAt(fromCrest, 0, -4) === '"' && glyphAt(fromCrest, 0, -7) === '"');
+
+  const lowRise = buildObservation(meadowRisingNorth((steps) => Math.min(1.5, steps * 0.75)), occlusionTiles, facingNorth, 'character');
+  check('ground rising less than twice your height hides nothing behind it', northGlyphs(lowRise, 1, DEFAULT_CHARACTER_SIGHT_RADIUS_TILES).every((glyph) => glyph === '"'));
+
+  const crater = buildObservation(craterRimAround(), occlusionTiles, facingNorth, 'character');
+  check('from inside a crater you see the bowl and its rim', glyphAt(crater, 0, -2) === '"' && glyphAt(crater, 0, -3) === '"');
+  check('the world past the rim is withheld until you climb out', glyphAt(crater, 0, -5) === ' ' && glyphAt(crater, 3, -5) === ' ');
+}
+
+function meadowRisingNorth(elevationOfStepsNorth: (steps: number) => number): WorldSampler {
+  return stubSampler(() => MEADOW_TILE, (_x, y) => (y <= 0 ? elevationOfStepsNorth(-y) : 0));
+}
+
+function craterRimAround(): WorldSampler {
+  return stubSampler(() => MEADOW_TILE, (x, y) => (Math.max(Math.abs(x), Math.abs(y)) === 3 ? 3 : 0));
+}
+
+function northGlyphs(observation: AgentObservation, fromSteps: number, toSteps: number): string[] {
+  const glyphs: string[] = [];
+  for (let steps = fromSteps; steps <= toSteps; steps++) glyphs.push(glyphAt(observation, 0, -steps));
+  return glyphs;
 }
 
 function wallToTheNorthOf(blockerTile: number): WorldSampler {
@@ -57,8 +100,11 @@ function markerBehindTheWall(): WorldSampler {
   return { ...ground, markersIn: () => [marker] } as unknown as WorldSampler;
 }
 
-function stubSampler(tileAt: (x: number, y: number) => number): WorldSampler {
-  return { tileAt, markersIn: () => [], itemSpawnsIn: () => [] } as unknown as WorldSampler;
+function stubSampler(
+  tileAt: (x: number, y: number) => number,
+  elevationAt: (x: number, y: number) => number = () => 0,
+): WorldSampler {
+  return { tileAt, elevationAt, markersIn: () => [], itemSpawnsIn: () => [] } as unknown as WorldSampler;
 }
 
 function glyphAt(observation: AgentObservation, dx: number, dy: number): string {

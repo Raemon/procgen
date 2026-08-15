@@ -79,8 +79,14 @@ function sightIsBlockedByTreesButNotWater(): boolean {
 
 function highGroundSeesOverTrees(): boolean {
   const treeAtTwo = (x: number) => x === 2;
-  const fromGround = visibleCellsFrom({ x: 0, y: 0 }, 6, (x) => treeAtTwo(x), () => 0);
-  const fromHill = visibleCellsFrom({ x: 0, y: 0 }, 6, (x) => treeAtTwo(x), (x) => (x <= 0 ? 4 : 0));
+  const fromGround = visibleCellsFrom({ x: 0, y: 0 }, 6, {
+    isOpaqueAt: (x) => treeAtTwo(x),
+    elevationAt: () => 0,
+  });
+  const fromHill = visibleCellsFrom({ x: 0, y: 0 }, 6, {
+    isOpaqueAt: (x) => treeAtTwo(x),
+    elevationAt: (x) => (x <= 0 ? 4 : 0),
+  });
   const seesPastTree = (cells: { x: number; y: number }[]) =>
     cells.some((cell) => cell.x === 5 && cell.y === 0);
   return !seesPastTree(fromGround) && seesPastTree(fromHill);

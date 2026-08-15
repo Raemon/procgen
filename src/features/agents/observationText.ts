@@ -14,6 +14,7 @@ export function observationLines(obs: AgentObservation): string[] {
     ...headerLines(obs),
     '',
     ...obs.view,
+    ...elevationLines(obs),
     '',
     'legend:',
     ...legendLines(obs.legend),
@@ -21,8 +22,13 @@ export function observationLines(obs: AgentObservation): string[] {
   ];
 }
 
-export function viewFirstLineIndex(obs: AgentObservation): number {
-  return headerLines(obs).length + 1;
+function elevationLines(obs: AgentObservation): string[] {
+  if (obs.elevation === null) return [];
+  return [
+    '',
+    'elevation (ground height per tile, 0-9 then a-z; blank = unseen):',
+    ...obs.elevation,
+  ];
 }
 
 function interactionLines(obs: AgentObservation): string[] {

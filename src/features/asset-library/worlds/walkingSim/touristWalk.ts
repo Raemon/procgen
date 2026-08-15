@@ -404,12 +404,10 @@ function cachedIsovistAt(context: TouristWalkContext, cell: CellPoint): CellPoin
   const key = cellKey(cell.x, cell.y);
   const cached = context.isovists.get(key);
   if (cached) return cached;
-  const isovist = visibleCellsFrom(
-    cell,
-    sightRadiusWithVantage(context, cell),
-    context.probes.isOpaqueAt,
-    context.probes.elevationAt,
-  );
+  const isovist = visibleCellsFrom(cell, sightRadiusWithVantage(context, cell), {
+    isOpaqueAt: context.probes.isOpaqueAt,
+    elevationAt: context.probes.elevationAt,
+  });
   evictOldestIsovistWhenFull(context.isovists);
   context.isovists.set(key, isovist);
   return isovist;

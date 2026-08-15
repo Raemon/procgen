@@ -2,24 +2,48 @@ import type { AgentMode } from '../../../agents/agentMode';
 import {
   buildObservation,
   type AgentObservation,
+  type LegendEntry,
   type ObservedOverlay,
 } from '../../../agents/observation';
-import { observationText } from '../../../agents/observationText';
+import { walkabilityPhrase } from '../../../agents/observationText';
+import { BLANK_GLYPH, SELF_GLYPH } from '../../../agents/observedTile';
 import { measureWork } from '../../performance/workTimers';
 import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import type { ReadOnlyTileAssets } from '@/features/app-shell/runtime/readOnlyAssets';
 import type { ReadOnlyWorld } from '@/features/app-shell/runtime/readOnlyAssets';
 import type { HoveredCell, HoveredTile } from '../../hover/hoveredTile';
 import { listenForTileHover } from '../../hover/listenForTileHover';
+import { pointOverlayLookup } from '../ascii/asciiCells';
+import { viewportCenteredOn } from '../ascii/asciiViewport';
+import { asciiColorOn, onAsciiColorChange } from './asciiColorPreference';
+import { asciiTileInk } from './asciiTileInk';
 import { monospaceCellSize, type MonospaceCellSize } from './monospaceCellSize';
 import { worldCellOfObservationGridCell } from './observationGridCell';
 import { textGridCellUnderPointer } from './textGridCellUnderPointer';
 
-const AGENT_TEXT_CLASSES =
-  'absolute inset-0 m-0 overflow-auto whitespace-pre p-4 font-mono text-[13px] leading-[1.15] text-emerald-100/90';
+const ROOT_CLASSES =
+  'absolute inset-0 flex flex-col gap-3 overflow-auto p-4 font-mono text-[13px] leading-[1.15] text-emerald-100/90';
+const HEADER_CLASSES = 'whitespace-pre-wrap text-emerald-200/70';
+const COLUMNS_CLASSES = 'flex flex-wrap items-start gap-x-8 gap-y-3';
+const GRID_CLASSES = 'm-0 whitespace-pre';
+const COLUMN_TITLE_CLASSES = 'mb-1 text-[11px] uppercase tracking-wider text-emerald-200/50';
+const ELEVATION_CLASSES = 'm-0 whitespace-pre text-emerald-100/60';
+const LEGEND_CLASSES = 'max-w-[30rem] space-y-0.5';
+const LEGEND_LINE_CLASSES = 'whitespace-pre-wrap';
+const INTERACTION_CLASSES = 'mt-2 whitespace-pre-wrap text-amber-200/90';
+const SELF_INK = '#ffffff';
+
+type CellInk = (glyph: string, row: number, column: number) => string | null;
 
 export class AgentTextView {
-  private readonly pre = document.createElement('pre');
+  private readonly root = document.createElement('div');
+  private readonly header = document.createElement('div');
+  private readonly gridPre = document.createElement('pre');
+  private readonly elevationColumn = document.createElement('div');
+  private readonly elevationPre = document.createElement('pre');
+  private readonly legendList = document.createElement('div');
+  private readonly interaction = document.createElement('div');
+  private readonly stopWatchingColor: () => void;
   private drawnObservation: AgentObservation | null = null;
   private cellSize: MonospaceCellSize | null = null;
 
@@ -32,22 +56,59 @@ export class AgentTextView {
     private readonly puzzles: ObservedOverlay,
     hoveredTile: HoveredTile,
   ) {
-    this.pre.className = AGENT_TEXT_CLASSES;
-    container.appendChild(this.pre);
-    listenForTileHover(this.pre, hoveredTile, (x, y) => this.cellAtPixel(x, y));
+    this.root.className = ROOT_CLASSES;
+    this.header.className = HEADER_CLASSES;
+    this.gridPre.className = GRID_CLASSES;
+    this.elevationPre.className = ELEVATION_CLASSES;
+    this.legendList.className = LEGEND_CLASSES;
+    this.interaction.className = INTERACTION_CLASSES;
+    const columns = document.createElement('div');
+    columns.className = COLUMNS_CLASSES;
+    columns.append(
+      this.gridPre,
+      assembleColumn(this.elevationColumn, 'elevation (0-9, a-z)', this.elevationPre),
+      assembleColumn(document.createElement('div'), 'legend', this.legendList, this.interaction),
+    );
+    this.root.append(this.header, columns);
+    container.appendChild(this.root);
+    listenForTileHover(this.gridPre, hoveredTile, (x, y) => this.cellAtPixel(x, y));
+    this.stopWatchingColor = onAsciiColorChange(() => this.draw());
   }
 
   dispose(): void {
-    this.pre.remove();
+    this.stopWatchingColor();
+    this.root.remove();
   }
 
   draw(): void {
-    this.pre.textContent = measureWork('ascii view', () => this.textOfWhatIsDrawn());
+    measureWork('ascii view', () => this.render());
   }
 
-  private textOfWhatIsDrawn(): string {
-    this.drawnObservation = this.currentObservation();
-    return observationText(this.drawnObservation);
+  private render(): void {
+    const obs = (this.drawnObservation = this.currentObservation());
+    const ink = asciiColorOn() ? this.cellInk(obs) : null;
+    const glyphInks = new Map<string, string>();
+    this.header.textContent = headerText(obs);
+    this.gridPre.replaceChildren(...gridNodes(obs, ink, glyphInks));
+    this.elevationColumn.classList.toggle('hidden', obs.elevation === null);
+    this.elevationPre.textContent = obs.elevation?.join('\n') ?? '';
+    this.legendList.replaceChildren(...obs.legend.map((entry) => legendLine(entry, glyphInks)));
+    this.interaction.classList.toggle('hidden', obs.interaction === null);
+    this.interaction.textContent = obs.interaction ?? '';
+  }
+
+  private cellInk(obs: AgentObservation): CellInk {
+    const viewport = viewportCenteredOn(obs.position.x, obs.position.y, obs.viewSize, obs.viewSize);
+    const markers = pointOverlayLookup(this.sampler, viewport, this.puzzles);
+    return (glyph, row, column) => {
+      if (glyph === BLANK_GLYPH) return null;
+      if (glyph === SELF_GLYPH) return SELF_INK;
+      const x = viewport.originX + column;
+      const y = viewport.originY + row;
+      const color =
+        markers.get(`${x},${y}`)?.color ?? this.tileAssets.byId(this.sampler.tileAt(x, y))?.color;
+      return color ? asciiTileInk(color) : null;
+    };
   }
 
   private cellAtPixel(offsetX: number, offsetY: number): HoveredCell | null {
@@ -56,12 +117,12 @@ export class AgentTextView {
     if (!observation || !cellSize) return null;
     return worldCellOfObservationGridCell(
       observation,
-      textGridCellUnderPointer(this.pre, cellSize, offsetX, offsetY),
+      textGridCellUnderPointer(this.gridPre, cellSize, offsetX, offsetY),
     );
   }
 
   private measuredCellSize(): MonospaceCellSize | null {
-    this.cellSize ??= monospaceCellSize(this.pre);
+    this.cellSize ??= monospaceCellSize(this.gridPre);
     return this.cellSize;
   }
 
@@ -76,4 +137,86 @@ export class AgentTextView {
       this.puzzles,
     );
   }
+}
+
+function assembleColumn(column: HTMLElement, title: string, ...content: HTMLElement[]): HTMLElement {
+  const heading = document.createElement('div');
+  heading.className = COLUMN_TITLE_CLASSES;
+  heading.textContent = title;
+  column.append(heading, ...content);
+  return column;
+}
+
+function headerText(obs: AgentObservation): string {
+  const half = Math.floor(obs.viewSize / 2);
+  const originX = obs.position.x - half;
+  const originY = obs.position.y - half;
+  const pose = [
+    `${obs.mode} view`,
+    `@ (${obs.position.x},${obs.position.y})`,
+    obs.facing ? `facing ${obs.facing}` : null,
+    obs.sightRadiusTiles !== null ? `sight ${obs.sightRadiusTiles}t` : null,
+  ]
+    .filter((part) => part !== null)
+    .join(' · ');
+  return `${pose}\norigin (${originX},${originY}) top-left · north is up, y grows south`;
+}
+
+function gridNodes(obs: AgentObservation, ink: CellInk | null, glyphInks: Map<string, string>): Node[] {
+  if (!ink) return [document.createTextNode(obs.view.join('\n'))];
+  const nodes: Node[] = [];
+  obs.view.forEach((line, row) => {
+    if (row > 0) nodes.push(document.createTextNode('\n'));
+    nodes.push(...coloredLineNodes(line, row, ink, glyphInks));
+  });
+  return nodes;
+}
+
+function coloredLineNodes(
+  line: string,
+  row: number,
+  ink: CellInk,
+  glyphInks: Map<string, string>,
+): Node[] {
+  const glyphs = [...line];
+  const nodes: Node[] = [];
+  let run = '';
+  let runInk: string | null = null;
+  const flush = (): void => {
+    if (run === '') return;
+    nodes.push(runInk === null ? document.createTextNode(run) : coloredSpan(run, runInk));
+    run = '';
+  };
+  glyphs.forEach((glyph, column) => {
+    const color = ink(glyph, row, column);
+    if (color !== null && !glyphInks.has(glyph)) glyphInks.set(glyph, color);
+    if (color !== runInk) {
+      flush();
+      runInk = color;
+    }
+    run += glyph;
+  });
+  flush();
+  return nodes;
+}
+
+function coloredSpan(text: string, color: string): HTMLElement {
+  const span = document.createElement('span');
+  span.className = 'pointer-events-none';
+  span.style.color = color;
+  span.textContent = text;
+  return span;
+}
+
+function legendLine(entry: LegendEntry, glyphInks: Map<string, string>): HTMLElement {
+  const line = document.createElement('div');
+  line.className = LEGEND_LINE_CLASSES;
+  const glyph = document.createElement('span');
+  glyph.textContent = `'${entry.glyph}'`;
+  const ink = glyphInks.get(entry.glyph);
+  if (ink) glyph.style.color = ink;
+  const phrase = walkabilityPhrase(entry.walkable);
+  const suffix = phrase === null ? '' : ` (${phrase})`;
+  line.append(glyph, document.createTextNode(` ${entry.meaning}${suffix}`));
+  return line;
 }

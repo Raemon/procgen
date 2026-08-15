@@ -1,13 +1,14 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
 import {
   useRerenderOnCaptureChange,
   useRerenderOnCreatureClockChange,
 } from '@/features/app-shell/runtime/rerenderHooks';
 import { Button } from '@/features/app-shell/controls/Button';
+import { asciiColorOn, setAsciiColorOn } from '../render/agentText/asciiColorPreference';
 import { SightRangeControl } from './SightRangeControl';
-import { CAPTURE_TIP, LIFE_TIP } from './help/gameTips';
-import { isCharacterControlled, type ViewMode } from './viewMode';
+import { ASCII_COLOR_TIP, CAPTURE_TIP, LIFE_TIP } from './help/gameTips';
+import { isCharacterControlled, usesAgentText, type ViewMode } from './viewMode';
 
 export function GameToolbar({ mode }: { mode: ViewMode }) {
   const { capture, clock } = useAppRuntime();
@@ -31,7 +32,21 @@ export function GameToolbar({ mode }: { mode: ViewMode }) {
         life
       </Button>
       {isCharacterControlled(mode) ? <SightRangeControl /> : null}
+      {usesAgentText(mode) ? <AsciiColorToggle /> : null}
     </>
+  );
+}
+
+function AsciiColorToggle() {
+  const [colorOn, setColorOn] = useState(asciiColorOn);
+  const toggle = (): void => {
+    setAsciiColorOn(!colorOn);
+    setColorOn(!colorOn);
+  };
+  return (
+    <Button active={colorOn} onClick={toggle} tip={ASCII_COLOR_TIP}>
+      color
+    </Button>
   );
 }
 

@@ -15,3 +15,7 @@ export function isCharacterControlled(mode: ViewMode): boolean {
 export function usesView3d(mode: ViewMode): boolean {
   return mode === '3d-god' || mode === 'character';
 }
+
+export function usesAgentText(mode: ViewMode): boolean {
+  return mode === 'agent-god' || mode === 'agent-character';
+}

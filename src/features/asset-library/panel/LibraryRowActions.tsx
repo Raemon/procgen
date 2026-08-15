@@ -3,8 +3,8 @@ import { ConfirmModal } from '@/features/app-shell/controls/ConfirmModal';
 import { IconButton } from '@/features/app-shell/controls/IconButton';
 import { classes } from '@/features/app-shell/controls/classes';
 import { REVEALED_ON_ROW_HOVER } from '@/features/app-shell/controls/revealOnRowHover';
-import { DuplicateIcon, RunIcon, TrashIcon } from '@/features/app-shell/icons/rowActionIcons';
-import { deleteRowConfirmation, deleteRowTip, duplicateRowTip, runRowTip } from '../help/rowActionTips';
+import { DuplicateIcon, InsertIcon, RunIcon, TrashIcon } from '@/features/app-shell/icons/rowActionIcons';
+import { deleteRowConfirmation, deleteRowTip, duplicateRowTip, insertRowTip, runRowTip } from '../help/rowActionTips';
 import type { LibraryEntry } from './entries/libraryEntry';
 
 const ACTION_BUTTON_CLASSES = 'h-5 w-5 rounded-sm border-transparent bg-transparent';
@@ -13,6 +13,15 @@ export function LibraryRowActions({ entry }: { entry: LibraryEntry }) {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   return (
     <span className="flex shrink-0 items-center gap-0.5">
+      {entry.insert && (
+        <IconButton
+          className={classes(REVEALED_ON_ROW_HOVER, ACTION_BUTTON_CLASSES)}
+          tip={insertRowTip(entry.name)}
+          onClick={entry.insert}
+        >
+          <InsertIcon />
+        </IconButton>
+      )}
       {entry.duplicate && (
         <IconButton
           className={classes(REVEALED_ON_ROW_HOVER, ACTION_BUTTON_CLASSES)}

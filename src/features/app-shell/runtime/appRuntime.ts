@@ -1,6 +1,10 @@
 import { commandFor } from '@/features/app-shell/runtime/commands/commandCatalog';
 import { performCommand } from '@/features/app-shell/runtime/commands/performCommand';
-import type { CommandMode, CommandResult } from '@/features/app-shell/runtime/commands/command';
+import {
+  commandSucceeded,
+  type CommandMode,
+  type CommandResult,
+} from '@/features/app-shell/runtime/commands/command';
 import { ChatComposerState } from '@/features/game/chat/chatComposerState';
 import { CreatureAssets } from '@/features/asset-library/creatures/creatureAssets';
 import { ItemAssets } from '@/features/asset-library/items/itemAssets';
@@ -129,7 +133,9 @@ export function createAppRuntime(): AppRuntime {
     x: world.playerX,
     y: world.playerY,
   }));
-  const net = new MultiplayerSession(world, store, walkIntoCratesToPushThem);
+  const net = new MultiplayerSession(world, store, walkIntoCratesToPushThem, puzzles, () =>
+    redrawIfPuzzlesChanged(),
+  );
   const chatComposer = new ChatComposerState();
   const playerInventoryPanel = new PlayerInventoryPanelState();
   const pickupFeed = new PickupFeed();
@@ -153,9 +159,24 @@ export function createAppRuntime(): AppRuntime {
   );
 
   function perform(action: string, params: Record<string, unknown> = {}): CommandResult {
+    const remote = performPuzzleActionOnServer(action);
+    if (remote) return remote;
     const result = performCommandOnce(store, action, params);
     redrawIfPuzzlesChanged();
     return result;
+  }
+
+  function performPuzzleActionOnServer(action: string): CommandResult | null {
+    if (!net.isOnline()) return null;
+    if (action === 'use' || action === 'use_fixture') {
+      net.sendUse();
+      return commandSucceeded('working the fixture here');
+    }
+    if (action === 'reset_room' || action === 'reset_puzzle_room') {
+      net.sendResetRoom();
+      return commandSucceeded('resetting this chamber');
+    }
+    return null;
   }
 
   function performOn(
