@@ -1,0 +1,282 @@
+{
+  "kitSeed": 565304,
+  "accentKitSeed": 527749,
+  "paletteSize": 8,
+  "pipeline": {
+    "seed": 324406,
+    "daylight": 1,
+    "time": 0,
+    "nodes": [
+      {
+        "id": "n1",
+        "type": "terrainNoise",
+        "label": "mountain ranges",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.01,
+          "style": 1,
+          "octaves": 6,
+          "lacunarity": 2,
+          "gain": 0.55
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n2",
+        "type": "terrainNoise",
+        "label": "mountain ranges",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.01,
+          "style": 1,
+          "octaves": 7,
+          "lacunarity": 2,
+          "gain": 0.5
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n3",
+        "type": "terrainNoise",
+        "label": "lowlands",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.03,
+          "style": 0,
+          "octaves": 3,
+          "lacunarity": 2,
+          "gain": 0.5
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n4",
+        "type": "blendFields",
+        "label": "relief",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "weight": 0.33
+        },
+        "inputs": {
+          "a": "n2",
+          "b": "n3",
+          "mask": null
+        },
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n5",
+        "type": "hypsometricCurve",
+        "label": "shelving",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "seaLevel": 0.4,
+          "steepness": 9
+        },
+        "inputs": {
+          "source": "n4"
+        },
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n6",
+        "type": "terrainNoise",
+        "label": "pass corridors",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.058,
+          "style": 0,
+          "octaves": 2,
+          "lacunarity": 2,
+          "gain": 0.5
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n7",
+        "type": "terraceField",
+        "label": "cliff terraces",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "levels": 4,
+          "passesAbove": 0.57
+        },
+        "inputs": {
+          "source": "n5",
+          "passes": "n6"
+        },
+        "display": {
+          "mode": "elevation",
+          "heightScale": 6.4
+        }
+      },
+      {
+        "id": "n8",
+        "type": "thresholdTiles",
+        "label": "band 1",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.44,
+          "belowTile": 0,
+          "aboveTile": 1
+        },
+        "inputs": {
+          "source": "n7"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n9",
+        "type": "thresholdTiles",
+        "label": "band 2",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.51,
+          "belowTile": -1,
+          "aboveTile": 0
+        },
+        "inputs": {
+          "source": "n7"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n10",
+        "type": "thresholdTiles",
+        "label": "band 3",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.65,
+          "belowTile": -1,
+          "aboveTile": 11
+        },
+        "inputs": {
+          "source": "n7"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n11",
+        "type": "thresholdTiles",
+        "label": "band 4",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.8,
+          "belowTile": -1,
+          "aboveTile": 9
+        },
+        "inputs": {
+          "source": "n7"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n12",
+        "type": "thresholdTiles",
+        "label": "crags",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.95,
+          "belowTile": -1,
+          "aboveTile": 0
+        },
+        "inputs": {
+          "source": "n5"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n13",
+        "type": "scatterPoints",
+        "label": "tree scatter",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.009,
+          "maskAtLeast": 0.57,
+          "maskAtMost": 1
+        },
+        "inputs": {
+          "mask": "n7"
+        },
+        "display": {
+          "mode": "markers",
+          "tileId": -1,
+          "glyph": "✶",
+          "color": "#2d6a34"
+        }
+      },
+      {
+        "id": "n14",
+        "type": "scatterPoints",
+        "label": "tree scatter",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.009,
+          "maskAtLeast": 0.52,
+          "maskAtMost": 0.67
+        },
+        "inputs": {
+          "mask": "n7"
+        },
+        "display": {
+          "mode": "structures",
+          "cultureId": 0
+        }
+      }
+    ]
+  }
+}

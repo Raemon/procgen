@@ -1,0 +1,293 @@
+{
+  "kitSeed": 871986,
+  "accentKitSeed": 275551,
+  "paletteSize": 6,
+  "pipeline": {
+    "seed": 551025,
+    "daylight": 1,
+    "time": 0,
+    "nodes": [
+      {
+        "id": "n1",
+        "type": "noiseField",
+        "label": "base noise",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.035,
+          "octaves": 4
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n2",
+        "type": "noiseField",
+        "label": "detail noise",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "scale": 0.07,
+          "octaves": 6
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n3",
+        "type": "combineFields",
+        "label": "blend",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "operation": 5,
+          "clamp": 1
+        },
+        "inputs": {
+          "a": "n1",
+          "b": "n2"
+        },
+        "display": {
+          "mode": "elevation",
+          "heightScale": 2.5
+        }
+      },
+      {
+        "id": "n4",
+        "type": "thresholdTiles",
+        "label": "band 1",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.41,
+          "belowTile": 14,
+          "aboveTile": 22
+        },
+        "inputs": {
+          "source": "n3"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n5",
+        "type": "thresholdTiles",
+        "label": "band 2",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.53,
+          "belowTile": -1,
+          "aboveTile": 9
+        },
+        "inputs": {
+          "source": "n3"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n6",
+        "type": "thresholdTiles",
+        "label": "band 3",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.64,
+          "belowTile": -1,
+          "aboveTile": 1
+        },
+        "inputs": {
+          "source": "n3"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      },
+      {
+        "id": "n7",
+        "type": "regionPlan",
+        "label": "gathering places",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "pitch": 381,
+          "focusShare": 0.2,
+          "falloff": 0.5,
+          "role": 0
+        },
+        "inputs": {},
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n8",
+        "type": "scatterPoints",
+        "label": "monster scatter",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.2,
+          "maskAtLeast": 0.43,
+          "maskAtMost": 1
+        },
+        "inputs": {
+          "mask": "n7"
+        },
+        "display": {
+          "mode": "markers",
+          "tileId": -1,
+          "glyph": "▲",
+          "color": "#d268d2"
+        }
+      },
+      {
+        "id": "n9",
+        "type": "scatterPoints",
+        "label": "crystal scatter",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.2,
+          "maskAtLeast": 0.32,
+          "maskAtMost": 0.41
+        },
+        "inputs": {
+          "mask": "n3"
+        },
+        "display": {
+          "mode": "markers",
+          "tileId": -1,
+          "glyph": "▲",
+          "color": "#ff8c42"
+        }
+      },
+      {
+        "id": "n10",
+        "type": "scatterPoints",
+        "label": "ruin scatter",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "density": 0.084,
+          "maskAtLeast": 0.64,
+          "maskAtMost": 0.92
+        },
+        "inputs": {
+          "mask": "n3"
+        },
+        "display": {
+          "mode": "markers",
+          "tileId": -1,
+          "glyph": "⚑",
+          "color": "#d268d2"
+        }
+      },
+      {
+        "id": "n11",
+        "type": "bornFilter",
+        "label": "born by now",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {},
+        "inputs": {
+          "source": "n10"
+        },
+        "display": {
+          "mode": "markers",
+          "tileId": -1,
+          "glyph": "⚑",
+          "color": "#d268d2"
+        }
+      },
+      {
+        "id": "n12",
+        "type": "flowAccumulation",
+        "label": "flow accumulation",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "seaLevel": 0.63,
+          "catchmentScale": 19598,
+          "convergence": 5,
+          "channelizeAbove": 1899,
+          "fillPits": 1,
+          "windowRadius": 37
+        },
+        "inputs": {
+          "elevation": "n1"
+        },
+        "display": {
+          "mode": "hidden"
+        }
+      },
+      {
+        "id": "n13",
+        "type": "villagePlots",
+        "label": "village plots",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "radius": 20,
+          "plotCells": 17,
+          "streetWidth": 6,
+          "buildAbove": 0.89,
+          "cottageWeight": 4,
+          "dwellingWeight": 0,
+          "smithyWeight": 6,
+          "innWeight": 6,
+          "townHallWeight": 7
+        },
+        "inputs": {
+          "centers": "n9",
+          "ground": "n2"
+        },
+        "display": {
+          "mode": "markers",
+          "tileId": 1,
+          "glyph": "☗",
+          "color": "#ff4444"
+        }
+      },
+      {
+        "id": "n14",
+        "type": "thresholdTiles",
+        "label": "woods",
+        "comment": "",
+        "folder": "",
+        "enabled": true,
+        "params": {
+          "threshold": 0.59,
+          "belowTile": -1,
+          "aboveTile": 14
+        },
+        "inputs": {
+          "source": "n3"
+        },
+        "display": {
+          "mode": "tileLayer"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,210 @@
+[
+  {
+    "slug": "01-ashthornmere",
+    "name": "ashthornmere",
+    "fun": 0.7023939483228921,
+    "verdict": "interesting",
+    "interest": {
+      "colorEntropyBits": 2.012573466465429,
+      "edgeShare": 0.05034266905610631,
+      "coarseStructureShare": 0.24305555555555555,
+      "largestFlatShare": 0.405,
+      "largestRegionShare": 0.7018,
+      "confettiShare": 0.086975,
+      "verdict": "interesting"
+    },
+    "elevationGateShare": 0,
+    "vistaMomentsPer100Steps": 2.375,
+    "decisionPointsPer100Steps": 58.95767826809787,
+    "encountersPer100Steps": 4.8628428927680805,
+    "blindAtEyeLevel": false,
+    "shots": [
+      "overhead.png",
+      "spawn-god.png",
+      "vantage-character.png",
+      "frontier-character.png"
+    ]
+  },
+  {
+    "slug": "02-calwengarth",
+    "name": "calwengarth",
+    "fun": 0.6324294064743975,
+    "verdict": "interesting",
+    "interest": {
+      "colorEntropyBits": 2.8965118228027933,
+      "edgeShare": 0.0312624546754329,
+      "coarseStructureShare": 0.26697530864197533,
+      "largestFlatShare": 0.342925,
+      "largestRegionShare": 0.077525,
+      "confettiShare": 0.2887,
+      "verdict": "interesting"
+    },
+    "elevationGateShare": 0,
+    "vistaMomentsPer100Steps": 1.625,
+    "decisionPointsPer100Steps": 56.30714879467996,
+    "encountersPer100Steps": 9.850374064837906,
+    "blindAtEyeLevel": false,
+    "shots": [
+      "overhead.png",
+      "spawn-god.png",
+      "vantage-character.png",
+      "frontier-character.png"
+    ]
+  },
+  {
+    "slug": "03-tarnlingtor",
+    "name": "tarnlingtor",
+    "fun": 0.6036314219048349,
+    "verdict": "interesting",
+    "interest": {
+      "colorEntropyBits": 2.453010234626209,
+      "edgeShare": 0.059952452752361336,
+      "coarseStructureShare": 0.2330246913580247,
+      "largestFlatShare": 0.563725,
+      "largestRegionShare": 0.73115,
+      "confettiShare": 0.15705,
+      "verdict": "interesting"
+    },
+    "elevationGateShare": 0.053888740800927495,
+    "vistaMomentsPer100Steps": 0,
+    "decisionPointsPer100Steps": 47.811178575300886,
+    "encountersPer100Steps": 2.9925187032418954,
+    "blindAtEyeLevel": true,
+    "shots": [
+      "overhead.png",
+      "spawn-god.png",
+      "vantage-character.png",
+      "frontier-character.png"
+    ]
+  },
+  {
+    "slug": "04-ashlingtor",
+    "name": "ashlingtor",
+    "fun": 0.603182124654168,
+    "verdict": "interesting",
+    "interest": {
+      "colorEntropyBits": 2.9363513731556625,
+      "edgeShare": 0.06474619635954192,
+      "coarseStructureShare": 0.38580246913580246,
+      "largestFlatShare": 0.2512,
+      "largestRegionShare": 0.038575,
+      "confettiShare": 0.25335,
+      "verdict": "interesting"
+    },
+    "elevationGateShare": 0,
+    "vistaMomentsPer100Steps": 1.875,
+    "decisionPointsPer100Steps": 51.067982218367135,
+    "encountersPer100Steps": 7.356608478802992,
+    "blindAtEyeLevel": false,
+    "shots": [
+      "overhead.png",
+      "spawn-god.png",
+      "vantage-character.png",
+      "frontier-character.png"
+    ]
+  },
+  {
+    "slug": "05-selholmfen",
+    "name": "selholmfen",
+    "fun": 0.5930611374897905,
+    "verdict": "interesting",
+    "interest": {
+      "colorEntropyBits": 2.774328493249032,
+      "edgeShare": 0.09706773392493331,
+      "coarseStructureShare": 0.6057098765432098,
+      "largestFlatShare": 0.41335,
+      "largestRegionShare": 0.28655,
+      "confettiShare": 0.261275,
+      "verdict": "interesting"
+    },
+    "elevationGateShare": 0,
+    "vistaMomentsPer100Steps": 0.875,
+    "decisionPointsPer100Steps": 9.900972207163251,
+    "encountersPer100Steps": 4.987531172069826,
+    "blindAtEyeLevel": false,
+    "shots": [
+      "overhead.png",
+      "spawn-god.png",
+      "vantage-character.png",
+      "frontier-character.png"
+    ]
+  },
+  {
+    "slug": "06-calwengarth",
+    "name": "calwengarth",
+    "fun": 0.5870507310478892,
+    "verdict": "interesting",
+    "interest": {
+      "colorEntropyBits": 2.7592531138849643,
+      "edgeShare": 0.10290662512088873,
+      "coarseStructureShare": 0.6697530864197531,
+      "largestFlatShare": 0.36945,
+      "largestRegionShare": 0.6149,
+      "confettiShare": 0.25915,
+      "verdict": "interesting"
+    },
+    "elevationGateShare": 0.031235412016435725,
+    "vistaMomentsPer100Steps": 0.125,
+    "decisionPointsPer100Steps": 48.95370269977231,
+    "encountersPer100Steps": 6.483790523690773,
+    "blindAtEyeLevel": false,
+    "shots": [
+      "overhead.png",
+      "spawn-god.png",
+      "vantage-character.png",
+      "frontier-character.png"
+    ]
+  },
+  {
+    "slug": "07-calwengarth",
+    "name": "calwengarth",
+    "fun": 0.5850020220624569,
+    "verdict": "interesting",
+    "interest": {
+      "colorEntropyBits": 2.6936749808412523,
+      "edgeShare": 0.09853372760945482,
+      "coarseStructureShare": 0.6311728395061729,
+      "largestFlatShare": 0.417825,
+      "largestRegionShare": 0.30995,
+      "confettiShare": 0.25485,
+      "verdict": "interesting"
+    },
+    "elevationGateShare": 0,
+    "vistaMomentsPer100Steps": 0.875,
+    "decisionPointsPer100Steps": 7.844970906068163,
+    "encountersPer100Steps": 5.860349127182045,
+    "blindAtEyeLevel": false,
+    "shots": [
+      "overhead.png",
+      "spawn-god.png",
+      "vantage-character.png",
+      "frontier-character.png"
+    ]
+  },
+  {
+    "slug": "08-morholmgarth",
+    "name": "morholmgarth",
+    "fun": 0.5444294802811926,
+    "verdict": "interesting",
+    "interest": {
+      "colorEntropyBits": 2.973913545505693,
+      "edgeShare": 0.06429190554095446,
+      "coarseStructureShare": 0.22762345679012347,
+      "largestFlatShare": 0.2512,
+      "largestRegionShare": 0.029225,
+      "confettiShare": 0.34595,
+      "verdict": "interesting"
+    },
+    "elevationGateShare": 0,
+    "vistaMomentsPer100Steps": 1.875,
+    "decisionPointsPer100Steps": 0,
+    "encountersPer100Steps": 5.7356608478802995,
+    "blindAtEyeLevel": false,
+    "shots": [
+      "overhead.png",
+      "spawn-god.png",
+      "vantage-character.png",
+      "frontier-character.png"
+    ]
+  }
+]
