@@ -3,16 +3,24 @@ import { opaqueInk } from '@/features/asset-library/tiles/inkColor';
 import { canLoadPngTextures, pngColorTexture, pngNormalTexture } from './pngTileTextures';
 import type { TextureFace } from '@/features/asset-library/textures/materialSynth';
 import { glowSelfLit } from './selfLitGlow';
+import { MAX_FACE_ART_SIZE } from '@/features/asset-library/tiles/tileFaceArt';
+import { drawsPngColorAt, drawsPngNormalAt } from './tileDetailBudget';
 
 const BOX_FACE_TEXTURE_FACES: TextureFace[] = ['side', 'side', 'top', 'top', 'side', 'side'];
 const NORMAL_RELIEF = 0.85;
 const cachedCubes = new Map<string, THREE.Material[]>();
 
-export function pngCubeMaterials(textureId: string, baseColor: string, glow: number): THREE.Material[] {
-  const key = `${textureId}|${baseColor}|${glow}`;
+export function pngCubeMaterials(
+  textureId: string,
+  baseColor: string,
+  glow: number,
+  sideBudget: number = MAX_FACE_ART_SIZE,
+): THREE.Material[] {
+  const detail = materialDetail(sideBudget);
+  const key = `${textureId}|${baseColor}|${glow}|${detail}`;
   const cached = cachedCubes.get(key);
   if (cached) return cached;
-  const materials = builtCubeMaterials(textureId, baseColor, glow);
+  const materials = builtCubeMaterials(textureId, baseColor, glow, sideBudget);
   cachedCubes.set(key, materials);
   return materials;
 }
@@ -22,8 +30,15 @@ export function disposeSharedPngMaterials(): void {
   cachedCubes.clear();
 }
 
-function builtCubeMaterials(textureId: string, baseColor: string, glow: number): THREE.Material[] {
-  const materials = BOX_FACE_TEXTURE_FACES.map((face) => pngFaceMaterial(textureId, face, baseColor));
+function builtCubeMaterials(
+  textureId: string,
+  baseColor: string,
+  glow: number,
+  sideBudget: number,
+): THREE.Material[] {
+  const materials = BOX_FACE_TEXTURE_FACES.map((face) =>
+    pngFaceMaterial(textureId, face, sideBudget),
+  );
   glowSelfLit(materials, glow, opaqueInk(baseColor));
   return materials;
 }
@@ -31,12 +46,19 @@ function builtCubeMaterials(textureId: string, baseColor: string, glow: number):
 function pngFaceMaterial(
   textureId: string,
   face: TextureFace,
-  baseColor: string,
+  sideBudget: number,
 ): THREE.MeshLambertMaterial {
-  if (!canLoadPngTextures()) return new THREE.MeshLambertMaterial({ color: baseColor });
+  if (!canLoadPngTextures() || !drawsPngColorAt(sideBudget)) {
+    return new THREE.MeshLambertMaterial();
+  }
   return new THREE.MeshLambertMaterial({
     map: pngColorTexture(textureId, face),
-    normalMap: pngNormalTexture(textureId, face),
+    normalMap: drawsPngNormalAt(sideBudget) ? pngNormalTexture(textureId, face) : null,
     normalScale: new THREE.Vector2(NORMAL_RELIEF, NORMAL_RELIEF),
   });
+}
+
+function materialDetail(sideBudget: number): 'flat' | 'color' | 'normal' {
+  if (!drawsPngColorAt(sideBudget)) return 'flat';
+  return drawsPngNormalAt(sideBudget) ? 'normal' : 'color';
 }

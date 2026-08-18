@@ -1,15 +1,24 @@
 import type { Feature } from '@/features/asset-library/worlds/features/feature';
 import { clusterFeatures, clusterLabel, type FeatureCluster } from './featureClusters';
 import { featureEdgesOf, type FeatureEdge } from './featureEdges';
-import type { FeaturesCamera, ScreenPoint } from './featuresCamera';
+import { screenOfWorld, type FeaturesCamera, type ScreenPoint } from './featuresCamera';
 import { layoutLabels, type LabelCandidate, type PlacedLabel } from './featureLabelLayout';
 import type { PickTarget } from './featurePicking';
 import { shapeOfCluster } from './featureShapes';
+import { surveyRectOf } from './featuresSurveyRect';
+
+export interface SurveyBounds {
+  x: number;
+  y: number;
+  widthPx: number;
+  heightPx: number;
+}
 
 export interface FeatureScene {
   targets: PickTarget[];
   edges: FeatureEdge[];
   labels: PlacedLabel[];
+  surveyBounds: SurveyBounds | null;
 }
 
 export type TextMeasurer = (text: string) => number;
@@ -28,7 +37,22 @@ export function buildFeatureScene(
     targets: clusters.map((cluster) => ({ cluster, shape: shapeOfCluster(cluster, camera.pixelsPerTile) })),
     edges: featureEdgesOf(singletonsOf(clusters), singletonPositionsOf(clusters), view),
     labels: layoutLabels(clusters.map((cluster) => labelCandidateOf(cluster, measure)), camera.pixelsPerTile),
+    surveyBounds: surveyBoundsOf(camera),
   };
+}
+
+export function surveyBoundsOf(camera: FeaturesCamera): SurveyBounds | null {
+  const rect = surveyRectOf(camera);
+  const topLeft = screenOfWorld(camera, rect.minX, rect.minY);
+  const bottomRight = screenOfWorld(camera, rect.maxX + 1, rect.maxY + 1);
+  const bounds = {
+    x: topLeft.x,
+    y: topLeft.y,
+    widthPx: bottomRight.x - topLeft.x,
+    heightPx: bottomRight.y - topLeft.y,
+  };
+  const fillsView = bounds.widthPx >= camera.widthPx && bounds.heightPx >= camera.heightPx;
+  return fillsView ? null : bounds;
 }
 
 function singletonsOf(clusters: FeatureCluster[]): FeatureCluster[] {

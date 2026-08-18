@@ -14,6 +14,7 @@ export interface PanelChrome {
   icon: ReactNode;
   tone: string;
   rail: ReactNode;
+  headerActions?: ReactNode;
   collapsed: boolean;
   onToggleCollapsed(): void;
 }
@@ -45,6 +46,7 @@ function PanelHeader({ chrome }: { chrome: PanelChrome }) {
         <h2 className="text-[13px] tracking-[0.12em] uppercase">{chrome.title}</h2>
       </span>
       <span className="flex-1" />
+      {chrome.headerActions}
       <HintsToggle />
       <button
         type="button"

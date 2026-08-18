@@ -2,13 +2,14 @@ import { useEffect, useRef } from 'react';
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
 import { ChatComposer } from '../chat/ui/ChatComposer';
 import { classes } from '@/features/app-shell/controls/classes';
+import { CharacterLegend } from './CharacterLegend';
 import { mountWorldViews, type MountedWorldViews } from './mountWorldViews';
 import { InteractPrompt } from './InteractPrompt';
 import { FpsBadge } from './performance/FpsBadge';
 import { PickupNotices } from './PickupNotices';
 import { PlayerInventoryOverlay } from './PlayerInventoryOverlay';
 import { TileHoverDetails } from './TileHoverDetails';
-import { usesView3d, type ViewMode } from './viewMode';
+import { isGodView, usesView3d, type ViewMode } from './viewMode';
 
 export function GameStage({ mode }: { mode: ViewMode }) {
   const runtime = useAppRuntime();
@@ -56,6 +57,7 @@ export function GameStage({ mode }: { mode: ViewMode }) {
         className={classes('absolute inset-0', mode !== 'features' && 'hidden')}
       />
       {usesView3d(mode) && <InteractPrompt />}
+      {isGodView(mode) && <CharacterLegend />}
       <div className="pointer-events-none absolute bottom-3 left-3 flex flex-col items-start gap-1">
         <PickupNotices />
         <TileHoverDetails />

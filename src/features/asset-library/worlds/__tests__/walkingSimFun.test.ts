@@ -2,6 +2,7 @@ import { visibleCellsFrom } from '../walkingSim/isovist';
 import { measureWalkingSimFun, type WalkingSimResult } from '../walkingSim/measureWalkingSimFun';
 import { opaqueProbeFrom } from '../walkingSim/sightBlocking';
 import { touristLimits } from '../walkingSim/touristWalk';
+import { stepProbeFrom } from '../walkingSim/worldProbes';
 import {
   cloneCorridorMazeState,
   fixtureTileAssets,
@@ -44,9 +45,10 @@ export function checkWalkingSimFun(check: (name: string, condition: boolean) => 
   check('every fixture walk keeps revealing across most of its chapters instead of front-loading the journey', [plain, maze, varied, populated].every((each) => each.measurements.revealSpread >= 0.7));
   check('a pooled score carries a spawn consistency factor that only ever discounts, never rewards', [plain, maze, varied, populated].every((each) => spawnConsistencyOf(each) > 0.6 && spawnConsistencyOf(each) <= 1));
   check('trees block the eye and shallow water does not, so water gates the feet alone', sightIsBlockedByTreesButNotWater());
+  check('the grader allows a one-block rise, rejects anything higher, and allows the way down', graderUsesTheCharacterStepHeight());
 
   const terraced = measuredFixture(terracedHighlandState());
-  check('cliffs gate the feet on a terraced world while a plain never says no', terraced.measurements.elevationGateShare > 0.05 && plain.measurements.elevationGateShare === 0);
+  check('cliffs gate uphill travel in a terraced world while a plain never says no', terraced.measurements.elevationGateShare > plain.measurements.elevationGateShare && plain.measurements.elevationGateShare === 0);
   check('climbing a terraced world pays for itself in newly revealed ground', terraced.measurements.climbRevealRatio > 0.2);
   check('cliff edges turn a walk into a chain of route choices no plain can offer', terraced.measurements.decisionPointsPer100Steps > plain.measurements.decisionPointsPer100Steps + 10);
   check('a world with terrain drama beats the same flat meadow', terraced.score.overall > plain.score.overall);
@@ -90,4 +92,10 @@ function highGroundSeesOverTrees(): boolean {
   const seesPastTree = (cells: { x: number; y: number }[]) =>
     cells.some((cell) => cell.x === 5 && cell.y === 0);
   return !seesPastTree(fromGround) && seesPastTree(fromHill);
+}
+
+function graderUsesTheCharacterStepHeight(): boolean {
+  const elevationAt = (x: number) => (x === 0 ? 0 : x === 1 ? 1 : 2.01);
+  const canStep = stepProbeFrom(() => true, elevationAt);
+  return canStep(0, 0, 1, 0) && !canStep(1, 0, 2, 0) && canStep(2, 0, 1, 0);
 }

@@ -8,7 +8,11 @@ export function AssetIconFrame({ tint, children }: { tint?: string; children: Re
   return (
     <span
       className="flex shrink-0 items-center justify-center overflow-hidden rounded-sm border border-panel-edge bg-field"
-      style={{ ...ASSET_ICON_STYLE, color: tint }}
+      style={{
+        width: `var(--asset-icon-size, ${ASSET_ICON_PX}px)`,
+        height: `var(--asset-icon-size, ${ASSET_ICON_PX}px)`,
+        color: tint,
+      }}
     >
       {children}
     </span>

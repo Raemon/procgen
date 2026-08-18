@@ -1,7 +1,7 @@
 import { allCommands } from '@/features/app-shell/runtime/commands/commandCatalog';
 import { newPieceWithId } from '@/features/asset-library/pieces/pieceDef';
 import { paintVoxel } from '@/features/asset-library/pieces/piecePainting';
-import { pieceTopColors } from '@/features/asset-library/pieces/pieceTopColors';
+import { pieceThumbnailKey } from '@/features/asset-library/panel/icons/PieceIcon';
 import { copyNameFor } from '@/features/asset-library/worlds/presets/copyName';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 
@@ -18,7 +18,7 @@ const DUPLICATING_ABILITIES = [
 export function checkLibraryRowActions(check: CheckReporter): void {
   checkEveryLibraryFolderCanCopyItsRows(check);
   checkACopyNeverTakesANameAlreadyInUse(check);
-  checkAPieceIconShowsWhatIsOnTop(check);
+  checkAPieceIconIncludesTheWholeRender(check);
 }
 
 function checkEveryLibraryFolderCanCopyItsRows(check: CheckReporter): void {
@@ -40,15 +40,16 @@ function checkACopyNeverTakesANameAlreadyInUse(check: CheckReporter): void {
   );
 }
 
-function checkAPieceIconShowsWhatIsOnTop(check: CheckReporter): void {
+function checkAPieceIconIncludesTheWholeRender(check: CheckReporter): void {
   const piece = newPieceWithId(0);
   paintVoxel(piece, 1, 1, 0, 4);
   paintVoxel(piece, 1, 1, 2, 7);
-  const colors = pieceTopColors(piece, (tileId) => `#${tileId}`);
+  const firstRender = pieceThumbnailKey(piece, (tileId) => `#${tileId}`);
+  paintVoxel(piece, 1, 1, 0, 5);
+  const changedCoveredVoxel = pieceThumbnailKey(piece, (tileId) => `#${tileId}`);
+  const changedTileColor = pieceThumbnailKey(piece, (tileId) => `changed-${tileId}`);
   check(
-    'a piece seen from above shows the highest painted voxel of each column, and nothing where none is painted',
-    colors.length === piece.width * piece.depth &&
-      colors[piece.width + 1] === '#7' &&
-      colors[0] === null,
+    'a piece icon snapshot follows the whole rendered model and its tile colors',
+    firstRender !== changedCoveredVoxel && changedCoveredVoxel !== changedTileColor,
   );
 }

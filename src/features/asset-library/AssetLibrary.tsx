@@ -6,8 +6,11 @@ import { DetailPanel } from './detail/DetailPanel';
 import { DetailRail } from './panel/DetailRail';
 import { LibraryPanel } from './panel/LibraryPanel';
 import { LibraryRail } from './panel/LibraryRail';
+import { LibraryViewModeToggle } from './panel/LibraryViewModeToggle';
+import { usePersistedLibraryViewMode } from './panel/libraryViewMode';
 
 export function AssetLibrary({ layout }: { layout: PanelLayout }) {
+  const [viewMode, setViewMode] = usePersistedLibraryViewMode();
   return (
     <div className="contents">
       <PanelColumn
@@ -17,9 +20,10 @@ export function AssetLibrary({ layout }: { layout: PanelLayout }) {
         icon={<LibraryIcon />}
         tone="bg-panel"
         rail={<LibraryRail />}
+        headerActions={<LibraryViewModeToggle mode={viewMode} onChange={setViewMode} />}
         layout={layout}
       >
-        <LibraryPanel />
+        <LibraryPanel viewMode={viewMode} />
       </PanelColumn>
       <PanelColumn
         panelKey="detail"

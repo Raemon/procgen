@@ -15,6 +15,7 @@ import { checkTileSurfaceRendering } from '@/features/asset-library/__tests__/ti
 import { checkGroundHidesWhatIsUnderIt } from '@/features/game/__tests__/groundHidesWhatIsUnderIt.test';
 import { checkInkTransparency } from '@/features/game/__tests__/inkTransparency.test';
 import { checkCameraMovementAndZoom } from '@/features/game/__tests__/cameraMovementAndZoom.test';
+import { checkCharactersOnStage } from '@/features/game/__tests__/charactersOnStage.test';
 import { checkViewRecentering } from '@/features/game/__tests__/viewRecentering.test';
 import { checkRandomizeAndPermutation } from '@/features/asset-library/worlds/__tests__/randomizeAndPermutation.test';
 import { checkTerrainFieldNodes } from '@/features/asset-library/worlds/__tests__/terrainFieldNodes.test';
@@ -47,7 +48,10 @@ import { checkCultureEditing } from '@/features/asset-library/__tests__/cultureE
 import { checkShapedTileInvariants } from '@/features/asset-library/__tests__/shapedTileInvariants.test';
 import { checkMarkerBillboardInvariants } from '@/features/game/__tests__/markerBillboardInvariants.test';
 import { checkSourceArchitecture } from './sourceArchitecture.test';
+import { sourceCatalogTests } from './sourceCatalog.test';
+import { sourceExplorerStateTests } from './sourceExplorerState.test';
 import { checkLibraryRowActions } from '@/features/asset-library/__tests__/libraryRowActions.test';
+import { checkLibraryViewMode } from '@/features/asset-library/__tests__/libraryViewMode.test';
 import { checkDesignBetsStillHold } from './designBetsStillHold.test';
 import { checkEveryApiSurfaceIsDescribed } from '@/features/agents/__tests__/everyApiSurfaceIsDescribed.test';
 import { checkClaudeMdPointsAtThingsThatExist } from './claudeMdPointsAtThingsThatExist.test';
@@ -83,6 +87,7 @@ describe('tile surfaces', () => checkTileSurfaceRendering(check));
 describe('the depth of ground', () => checkGroundHidesWhatIsUnderIt(check));
 describe('transparent ink', () => checkInkTransparency(check));
 describe('camera movement and zoom', () => checkCameraMovementAndZoom(check));
+describe('characters on stage', () => checkCharactersOnStage(check));
 describe('view recentering', () => checkViewRecentering(check));
 describe('randomize and permutation', () => checkRandomizeAndPermutation(check));
 describe('terrain field nodes', () => checkTerrainFieldNodes(check));
@@ -113,7 +118,10 @@ describe('villages', () => checkVillageInvariants(check));
 describe('the cultures editor', () => checkCultureEditing(check));
 describe('generated asset kits', () => checkGeneratedAssetInvariants(check));
 describe('the source architecture', () => checkSourceArchitecture(check));
+describe('the source explorer catalog', sourceCatalogTests);
+describe('the source explorer tree', sourceExplorerStateTests);
 describe('library row actions', () => checkLibraryRowActions(check));
+describe('library view mode', () => checkLibraryViewMode(check));
 describe('documentation', () => {
   checkDocumentationHasNotRegrown(check);
   checkClaudeMdPointsAtThingsThatExist(check);

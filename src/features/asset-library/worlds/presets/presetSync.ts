@@ -4,6 +4,7 @@ import type { Piece } from '@/features/asset-library/pieces/pieceDef';
 import type { TileDef } from '@/features/asset-library/tiles/tileDef';
 import { nodeTypeOf } from '../nodeRegistry';
 import type { NodeInstance, PipelineState } from '../pipeline/pipelineState';
+import { worldLibraryFromStoredJson, type StoredWorldLibrary } from './storedWorldLibrary';
 import type { WorldPreset } from './worldPreset';
 
 export interface LibraryDocs {
@@ -11,6 +12,25 @@ export interface LibraryDocs {
   pieces: Piece[];
   cultures: Culture[];
   worldPresets: WorldPreset[];
+}
+
+export interface LibraryDocsView {
+  library: LibraryDocs;
+  worldLibrary: StoredWorldLibrary;
+}
+
+export function libraryDocsFrom(read: (name: string) => unknown): LibraryDocsView {
+  const arrayOf = (value: unknown) => (Array.isArray(value) ? value : []);
+  const worldLibrary = worldLibraryFromStoredJson(read('worldPresets'));
+  return {
+    worldLibrary,
+    library: {
+      tiles: arrayOf(read('tiles')) as TileDef[],
+      pieces: arrayOf(read('pieces')) as Piece[],
+      cultures: arrayOf(read('cultures')) as Culture[],
+      worldPresets: worldLibrary.presets,
+    },
+  };
 }
 
 export interface AssetIdMaps {

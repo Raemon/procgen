@@ -10,6 +10,7 @@ import type { CreatureSim } from '../creatureSim/creatureSim';
 import type { RemotePlayers } from '../multiplayer/client/remotePlayers';
 import type { PipelineEvaluator } from '@/features/asset-library/worlds/eval/evaluator';
 import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
+import type { CameraFocus } from './camera/cameraFocus';
 import type { CaptureTool } from '../capture/captureTool';
 import type { HoveredTile } from '../hover/hoveredTile';
 import type { MarkerSource } from './markerSource';
@@ -27,5 +28,6 @@ export interface WorldViewDeps {
   capture: CaptureTool;
   hoveredTile: HoveredTile;
   remotePlayers: RemotePlayers;
+  cameraFocus: CameraFocus;
   speech: SpeechBubbles;
 }

@@ -15,7 +15,13 @@ export function stepPlayerEntity(
   entity: Entity,
 ): void {
   const canEnter = playerCanEnter(world.isWalkable, world.puzzles, () => entity);
-  const delta = tickMovement(entity, entity.x, entity.y, canEnter);
+  const delta = tickMovement(
+    entity,
+    entity.x,
+    entity.y,
+    canEnter,
+    world.stepRules.climbGateAt,
+  );
   if (!delta) return;
   const nextX = entity.x + delta.dx;
   const nextY = entity.y + delta.dy;

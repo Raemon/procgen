@@ -3546,5 +3546,1603 @@
         }
       ]
     }
+  },
+  {
+    "name": "tarnwengarth (evolved)",
+    "description": "Evolved walking-sim elite: fun 0.753, elevation gates 0.03, vistas 2.6/100 steps, decisions 57/100 steps.",
+    "state": {
+      "seed": 85507,
+      "daylight": 1,
+      "time": 0,
+      "nodes": [
+        {
+          "id": "n1",
+          "type": "terrainNoise",
+          "label": "mountain ranges",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "scale": 0.012,
+            "style": 1,
+            "octaves": 7,
+            "lacunarity": 2,
+            "gain": 0.55
+          },
+          "inputs": {},
+          "display": {
+            "mode": "hidden"
+          }
+        },
+        {
+          "id": "n2",
+          "type": "terrainNoise",
+          "label": "lowlands",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "scale": 0.022,
+            "style": 0,
+            "octaves": 5,
+            "lacunarity": 2,
+            "gain": 0.5
+          },
+          "inputs": {},
+          "display": {
+            "mode": "hidden"
+          }
+        },
+        {
+          "id": "n3",
+          "type": "blendFields",
+          "label": "relief",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "weight": 0.29
+          },
+          "inputs": {
+            "a": "n1",
+            "b": "n2",
+            "mask": null
+          },
+          "display": {
+            "mode": "hidden"
+          }
+        },
+        {
+          "id": "n4",
+          "type": "hypsometricCurve",
+          "label": "shelving",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "seaLevel": 0.5,
+            "steepness": 11.5
+          },
+          "inputs": {
+            "source": "n3"
+          },
+          "display": {
+            "mode": "hidden"
+          }
+        },
+        {
+          "id": "n5",
+          "type": "terrainNoise",
+          "label": "pass corridors",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "scale": 0.038,
+            "style": 0,
+            "octaves": 2,
+            "lacunarity": 2,
+            "gain": 0.5
+          },
+          "inputs": {},
+          "display": {
+            "mode": "hidden"
+          }
+        },
+        {
+          "id": "n6",
+          "type": "terraceField",
+          "label": "cliff terraces",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "levels": 5,
+            "passesAbove": 0.66
+          },
+          "inputs": {
+            "source": "n4",
+            "passes": "n5"
+          },
+          "display": {
+            "mode": "elevation",
+            "heightScale": 8
+          }
+        },
+        {
+          "id": "n7",
+          "type": "thresholdTiles",
+          "label": "band 1",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.36,
+            "belowTile": 324,
+            "aboveTile": 328
+          },
+          "inputs": {
+            "source": "n6"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n8",
+          "type": "thresholdTiles",
+          "label": "band 2",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.47,
+            "belowTile": -1,
+            "aboveTile": 329
+          },
+          "inputs": {
+            "source": "n6"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n9",
+          "type": "thresholdTiles",
+          "label": "band 3",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.6,
+            "belowTile": -1,
+            "aboveTile": 324
+          },
+          "inputs": {
+            "source": "n6"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n10",
+          "type": "thresholdTiles",
+          "label": "band 4",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.73,
+            "belowTile": -1,
+            "aboveTile": 328
+          },
+          "inputs": {
+            "source": "n6"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n11",
+          "type": "thresholdTiles",
+          "label": "crags",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.92,
+            "belowTile": -1,
+            "aboveTile": 324
+          },
+          "inputs": {
+            "source": "n4"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n12",
+          "type": "scatterPoints",
+          "label": "monster scatter",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "density": 0.0005,
+            "maskAtLeast": 0.52,
+            "maskAtMost": 1
+          },
+          "inputs": {
+            "mask": "n6"
+          },
+          "display": {
+            "mode": "markers",
+            "tileId": -1,
+            "glyph": "✶",
+            "color": "#e0b040"
+          }
+        },
+        {
+          "id": "n14",
+          "type": "thresholdTiles",
+          "label": "crags",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.92,
+            "belowTile": -1,
+            "aboveTile": 324
+          },
+          "inputs": {
+            "source": null
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n15",
+          "type": "scatterPoints",
+          "label": "ghost scatter",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "density": 0.001,
+            "maskAtLeast": 0.53,
+            "maskAtMost": 1
+          },
+          "inputs": {
+            "mask": null
+          },
+          "display": {
+            "mode": "markers",
+            "tileId": -1,
+            "glyph": "☗",
+            "color": "#d268d2"
+          }
+        },
+        {
+          "id": "n16",
+          "type": "scatterPoints",
+          "label": "shrine scatter",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "density": 0.009,
+            "maskAtLeast": 0.47,
+            "maskAtMost": 0.64
+          },
+          "inputs": {
+            "mask": null
+          },
+          "display": {
+            "mode": "structures",
+            "cultureId": 15
+          }
+        },
+        {
+          "id": "n17",
+          "type": "biomeBands",
+          "label": "biome",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "seaLevel": 0.54,
+            "deepDrop": 0.13,
+            "shoreBand": 0.42,
+            "rockAbove": 0.68,
+            "snowLine": 0.56,
+            "regionAtLeast": 0.3,
+            "deepTile": 328,
+            "waterTile": 320,
+            "shoreTile": 323,
+            "groundTile": 329,
+            "rockTile": 323,
+            "snowTile": 327
+          },
+          "inputs": {
+            "elevation": null,
+            "steepness": null,
+            "shoreDistance": null,
+            "region": null
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n18",
+          "type": "hotspotChain",
+          "label": "hotspot chains",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "hotspotSpacing": 580,
+            "driftRate": 0.0004,
+            "eruptionPeriod": 675000,
+            "coneRadius": 69,
+            "coneHeight": 0.84,
+            "chainFraction": 0.15
+          },
+          "inputs": {},
+          "display": {
+            "mode": "markers",
+            "tileId": 324,
+            "glyph": "▲",
+            "color": "#7a5cff"
+          }
+        },
+        {
+          "id": "n19",
+          "type": "tectonicUplift",
+          "label": "tectonic uplift",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "plateSize": 3229,
+            "oceanFraction": 0.85,
+            "beltWidth": 101,
+            "rangeHeight": 0.31,
+            "landHeight": 0.82,
+            "basinDepth": 0.3
+          },
+          "inputs": {},
+          "display": {
+            "mode": "elevation",
+            "heightScale": 2.5
+          }
+        },
+        {
+          "id": "n20",
+          "type": "bornFilter",
+          "label": "born by now",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {},
+          "inputs": {
+            "source": "n16"
+          },
+          "display": {
+            "mode": "markers",
+            "tileId": -1,
+            "glyph": "◆",
+            "color": "#7a5cff"
+          }
+        },
+        {
+          "id": "n21",
+          "type": "labyrinthChunks",
+          "label": "infinite labyrinth",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "roomFraction": 0.25,
+            "tutorialRings": 4,
+            "corridor": 2,
+            "wall": 2,
+            "braid": 0.85,
+            "carver": 0,
+            "doorJitter": 0.85,
+            "wallTile": 323,
+            "floorTile": 327
+          },
+          "inputs": {},
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n22",
+          "type": "riverFromFlow",
+          "label": "rivers",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "minFlow": 0.44,
+            "maxWidth": 3,
+            "seaLevel": 0.36,
+            "riverTile": 321
+          },
+          "inputs": {
+            "flow": null,
+            "elevation": null
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n23",
+          "type": "straitBridges",
+          "label": "bridges",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "waterBelow": 0.36,
+            "shallowBand": 0.12,
+            "maxSpan": 13,
+            "pitch": 28,
+            "bridgeTile": 333
+          },
+          "inputs": {
+            "water": null
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n24",
+          "type": "scatterPoints",
+          "label": "crystal scatter",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "density": 0.0005,
+            "maskAtLeast": 0,
+            "maskAtMost": 1
+          },
+          "inputs": {
+            "mask": null
+          },
+          "display": {
+            "mode": "markers",
+            "tileId": 342,
+            "glyph": "⚑",
+            "color": "#c2c2c2"
+          }
+        },
+        {
+          "id": "n25",
+          "type": "flowAccumulation",
+          "label": "flow accumulation",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "seaLevel": 0.74,
+            "catchmentScale": 5929,
+            "convergence": 7.5,
+            "channelizeAbove": 1015,
+            "fillPits": 1,
+            "windowRadius": 39
+          },
+          "inputs": {
+            "elevation": "n4"
+          },
+          "display": {
+            "mode": "elevation",
+            "heightScale": 4.5
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "tarnlingwold (evolved)",
+    "description": "Evolved walking-sim elite: fun 0.649, elevation gates 0.00, vistas 2.3/100 steps, decisions 0/100 steps.",
+    "state": {
+      "seed": 432692,
+      "daylight": 1,
+      "time": 0,
+      "nodes": [
+        {
+          "id": "n1",
+          "type": "noiseField",
+          "label": "base noise",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "scale": 0.095,
+            "octaves": 4
+          },
+          "inputs": {},
+          "display": {
+            "mode": "hidden"
+          }
+        },
+        {
+          "id": "n2",
+          "type": "noiseField",
+          "label": "detail noise",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "scale": 0.095,
+            "octaves": 2
+          },
+          "inputs": {},
+          "display": {
+            "mode": "hidden"
+          }
+        },
+        {
+          "id": "n3",
+          "type": "combineFields",
+          "label": "blend",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "operation": 3,
+            "clamp": 1
+          },
+          "inputs": {
+            "a": "n1",
+            "b": "n2"
+          },
+          "display": {
+            "mode": "elevation",
+            "heightScale": 4.5
+          }
+        },
+        {
+          "id": "n4",
+          "type": "thresholdTiles",
+          "label": "band 1",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.48,
+            "belowTile": 356,
+            "aboveTile": 353
+          },
+          "inputs": {
+            "source": "n3"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n5",
+          "type": "thresholdTiles",
+          "label": "band 2",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.56,
+            "belowTile": -1,
+            "aboveTile": 348
+          },
+          "inputs": {
+            "source": "n3"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n6",
+          "type": "thresholdTiles",
+          "label": "band 3",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.7,
+            "belowTile": -1,
+            "aboveTile": 364
+          },
+          "inputs": {
+            "source": "n3"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n7",
+          "type": "thresholdTiles",
+          "label": "band 4",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.8,
+            "belowTile": -1,
+            "aboveTile": 356
+          },
+          "inputs": {
+            "source": "n3"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n8",
+          "type": "scatterPoints",
+          "label": "loot scatter",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "density": 0.05,
+            "maskAtLeast": 0.37,
+            "maskAtMost": 0.47
+          },
+          "inputs": {
+            "mask": "n3"
+          },
+          "display": {
+            "mode": "markers",
+            "tileId": 356,
+            "glyph": "♦",
+            "color": "#3fbf9f"
+          }
+        },
+        {
+          "id": "n9",
+          "type": "regionPlan",
+          "label": "heartlands",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "pitch": 431,
+            "focusShare": 0.1,
+            "falloff": 0.5,
+            "role": 0
+          },
+          "inputs": {},
+          "display": {
+            "mode": "hidden"
+          }
+        },
+        {
+          "id": "n10",
+          "type": "combineFields",
+          "label": "settled ground",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "operation": 2,
+            "clamp": 1
+          },
+          "inputs": {
+            "a": "n1",
+            "b": "n9"
+          },
+          "display": {
+            "mode": "hidden"
+          }
+        },
+        {
+          "id": "n11",
+          "type": "scatterPoints",
+          "label": "village centers",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "density": 0.0055,
+            "maskAtLeast": 0.29,
+            "maskAtMost": 1
+          },
+          "inputs": {
+            "mask": "n10"
+          },
+          "display": {
+            "mode": "markers",
+            "tileId": -1,
+            "glyph": "*",
+            "color": "#ff5577"
+          }
+        },
+        {
+          "id": "n12",
+          "type": "villageStreets",
+          "label": "streets",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "radius": 36,
+            "plotCells": 14,
+            "streetWidth": 2,
+            "streetTile": 348,
+            "plazaTile": 354
+          },
+          "inputs": {
+            "centers": "n11"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n13",
+          "type": "villagePlots",
+          "label": "plots",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "radius": 36,
+            "plotCells": 14,
+            "streetWidth": 2,
+            "buildAbove": 0.53,
+            "cottageWeight": 4,
+            "dwellingWeight": 3,
+            "smithyWeight": 2,
+            "innWeight": 1,
+            "townHallWeight": 1
+          },
+          "inputs": {
+            "centers": "n11",
+            "ground": "n1"
+          },
+          "display": {
+            "mode": "structures",
+            "cultureId": 16
+          }
+        },
+        {
+          "id": "n14",
+          "type": "landmarkRoom",
+          "label": "the keep",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "x": 27,
+            "y": -13,
+            "width": 9,
+            "height": 11,
+            "wallThickness": 1,
+            "floorTile": -1,
+            "wallTile": 356
+          },
+          "inputs": {},
+          "display": {
+            "mode": "tileLayer"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "haldalegarth (evolved)",
+    "description": "Evolved walking-sim elite: fun 0.632, elevation gates 0.00, vistas 1.9/100 steps, decisions 2/100 steps.",
+    "state": {
+      "seed": 114764,
+      "daylight": 1,
+      "time": 0,
+      "nodes": [
+        {
+          "id": "n1",
+          "type": "noiseField",
+          "label": "base noise",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "scale": 0.095,
+            "octaves": 4
+          },
+          "inputs": {},
+          "display": {
+            "mode": "hidden"
+          }
+        },
+        {
+          "id": "n2",
+          "type": "noiseField",
+          "label": "detail noise",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "scale": 0.095,
+            "octaves": 2
+          },
+          "inputs": {},
+          "display": {
+            "mode": "hidden"
+          }
+        },
+        {
+          "id": "n3",
+          "type": "combineFields",
+          "label": "blend",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "operation": 3,
+            "clamp": 1
+          },
+          "inputs": {
+            "a": "n1",
+            "b": "n2"
+          },
+          "display": {
+            "mode": "elevation",
+            "heightScale": 4.5
+          }
+        },
+        {
+          "id": "n4",
+          "type": "thresholdTiles",
+          "label": "band 1",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.48,
+            "belowTile": 381,
+            "aboveTile": 378
+          },
+          "inputs": {
+            "source": "n3"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n5",
+          "type": "thresholdTiles",
+          "label": "band 2",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.56,
+            "belowTile": -1,
+            "aboveTile": 373
+          },
+          "inputs": {
+            "source": "n3"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n6",
+          "type": "thresholdTiles",
+          "label": "band 3",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.7,
+            "belowTile": -1,
+            "aboveTile": 389
+          },
+          "inputs": {
+            "source": "n3"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n7",
+          "type": "thresholdTiles",
+          "label": "band 4",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.8,
+            "belowTile": -1,
+            "aboveTile": 381
+          },
+          "inputs": {
+            "source": "n3"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n8",
+          "type": "scatterPoints",
+          "label": "loot scatter",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "density": 0.05,
+            "maskAtLeast": 0.37,
+            "maskAtMost": 0.47
+          },
+          "inputs": {
+            "mask": "n3"
+          },
+          "display": {
+            "mode": "markers",
+            "tileId": 381,
+            "glyph": "♦",
+            "color": "#3fbf9f"
+          }
+        },
+        {
+          "id": "n9",
+          "type": "regionPlan",
+          "label": "heartlands",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "pitch": 431,
+            "focusShare": 0.1,
+            "falloff": 0.5,
+            "role": 0
+          },
+          "inputs": {},
+          "display": {
+            "mode": "hidden"
+          }
+        },
+        {
+          "id": "n10",
+          "type": "combineFields",
+          "label": "settled ground",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "operation": 2,
+            "clamp": 1
+          },
+          "inputs": {
+            "a": "n1",
+            "b": "n9"
+          },
+          "display": {
+            "mode": "hidden"
+          }
+        },
+        {
+          "id": "n11",
+          "type": "scatterPoints",
+          "label": "village centers",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "density": 0.0055,
+            "maskAtLeast": 0.29,
+            "maskAtMost": 1
+          },
+          "inputs": {
+            "mask": "n10"
+          },
+          "display": {
+            "mode": "markers",
+            "tileId": -1,
+            "glyph": "*",
+            "color": "#ff5577"
+          }
+        },
+        {
+          "id": "n12",
+          "type": "villageStreets",
+          "label": "streets",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "radius": 36,
+            "plotCells": 14,
+            "streetWidth": 2,
+            "streetTile": 373,
+            "plazaTile": 379
+          },
+          "inputs": {
+            "centers": "n11"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n13",
+          "type": "villagePlots",
+          "label": "plots",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "radius": 36,
+            "plotCells": 14,
+            "streetWidth": 2,
+            "buildAbove": 0.53,
+            "cottageWeight": 4,
+            "dwellingWeight": 3,
+            "smithyWeight": 2,
+            "innWeight": 1,
+            "townHallWeight": 1
+          },
+          "inputs": {
+            "centers": "n11",
+            "ground": "n1"
+          },
+          "display": {
+            "mode": "structures",
+            "cultureId": 17
+          }
+        },
+        {
+          "id": "n14",
+          "type": "landmarkRoom",
+          "label": "the keep",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "x": 27,
+            "y": -13,
+            "width": 9,
+            "height": 11,
+            "wallThickness": 1,
+            "floorTile": -1,
+            "wallTile": 381
+          },
+          "inputs": {},
+          "display": {
+            "mode": "tileLayer"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "tarnholmfen (evolved)",
+    "description": "Evolved walking-sim elite: fun 0.647, elevation gates 0.09, vistas 0.6/100 steps, decisions 46/100 steps.",
+    "state": {
+      "seed": 8140,
+      "daylight": 1,
+      "time": 0,
+      "nodes": [
+        {
+          "id": "n2",
+          "type": "terrainNoise",
+          "label": "lowlands",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "scale": 0.044,
+            "style": 0,
+            "octaves": 4,
+            "lacunarity": 2,
+            "gain": 0.5
+          },
+          "inputs": {},
+          "display": {
+            "mode": "hidden"
+          }
+        },
+        {
+          "id": "n3",
+          "type": "blendFields",
+          "label": "relief",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "weight": 0.32
+          },
+          "inputs": {
+            "a": "n2",
+            "b": "n2",
+            "mask": null
+          },
+          "display": {
+            "mode": "hidden"
+          }
+        },
+        {
+          "id": "n4",
+          "type": "hypsometricCurve",
+          "label": "shelving",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "seaLevel": 0.49,
+            "steepness": 9.5
+          },
+          "inputs": {
+            "source": "n3"
+          },
+          "display": {
+            "mode": "hidden"
+          }
+        },
+        {
+          "id": "n5",
+          "type": "terrainNoise",
+          "label": "pass corridors",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "scale": 0.032,
+            "style": 0,
+            "octaves": 2,
+            "lacunarity": 2,
+            "gain": 0.5
+          },
+          "inputs": {},
+          "display": {
+            "mode": "hidden"
+          }
+        },
+        {
+          "id": "n6",
+          "type": "terraceField",
+          "label": "cliff terraces",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "levels": 5,
+            "passesAbove": 0.68
+          },
+          "inputs": {
+            "source": "n4",
+            "passes": "n5"
+          },
+          "display": {
+            "mode": "elevation",
+            "heightScale": 8
+          }
+        },
+        {
+          "id": "n7",
+          "type": "thresholdTiles",
+          "label": "band 1",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.35,
+            "belowTile": 397,
+            "aboveTile": 398
+          },
+          "inputs": {
+            "source": "n6"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n8",
+          "type": "thresholdTiles",
+          "label": "band 2",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.47,
+            "belowTile": -1,
+            "aboveTile": 403
+          },
+          "inputs": {
+            "source": "n6"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n9",
+          "type": "thresholdTiles",
+          "label": "band 3",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.58,
+            "belowTile": -1,
+            "aboveTile": 395
+          },
+          "inputs": {
+            "source": "n6"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n10",
+          "type": "scatterPoints",
+          "label": "loot scatter",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "density": 0.011,
+            "maskAtLeast": 0,
+            "maskAtMost": 0.3
+          },
+          "inputs": {
+            "mask": null
+          },
+          "display": {
+            "mode": "markers",
+            "tileId": 413,
+            "glyph": "♣",
+            "color": "#c2c2c2"
+          }
+        },
+        {
+          "id": "n11",
+          "type": "thresholdTiles",
+          "label": "crags",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.94,
+            "belowTile": -1,
+            "aboveTile": 399
+          },
+          "inputs": {
+            "source": "n6"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "morstanby (evolved)",
+    "description": "Evolved walking-sim elite: fun 0.620, elevation gates 0.00, vistas 1.5/100 steps, decisions 16/100 steps.",
+    "state": {
+      "seed": 219469,
+      "daylight": 1,
+      "time": 0,
+      "nodes": [
+        {
+          "id": "n1",
+          "type": "noiseField",
+          "label": "base noise",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "scale": 0.075,
+            "octaves": 6
+          },
+          "inputs": {},
+          "display": {
+            "mode": "hidden"
+          }
+        },
+        {
+          "id": "n2",
+          "type": "noiseField",
+          "label": "detail noise",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "scale": 0.085,
+            "octaves": 2
+          },
+          "inputs": {},
+          "display": {
+            "mode": "hidden"
+          }
+        },
+        {
+          "id": "n3",
+          "type": "combineFields",
+          "label": "blend",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "operation": 4,
+            "clamp": 1
+          },
+          "inputs": {
+            "a": "n1",
+            "b": "n2"
+          },
+          "display": {
+            "mode": "elevation",
+            "heightScale": 2
+          }
+        },
+        {
+          "id": "n4",
+          "type": "thresholdTiles",
+          "label": "band 1",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.36,
+            "belowTile": 437,
+            "aboveTile": 440
+          },
+          "inputs": {
+            "source": "n3"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n5",
+          "type": "thresholdTiles",
+          "label": "band 2",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.47,
+            "belowTile": -1,
+            "aboveTile": 432
+          },
+          "inputs": {
+            "source": "n3"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n6",
+          "type": "thresholdTiles",
+          "label": "band 3",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "threshold": 0.56,
+            "belowTile": -1,
+            "aboveTile": 428
+          },
+          "inputs": {
+            "source": "n3"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n7",
+          "type": "regionPlan",
+          "label": "gathering places",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "pitch": 427,
+            "focusShare": 0.35,
+            "falloff": 0.5,
+            "role": 0
+          },
+          "inputs": {},
+          "display": {
+            "mode": "hidden"
+          }
+        },
+        {
+          "id": "n8",
+          "type": "scatterPoints",
+          "label": "ruin scatter",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "density": 0.05,
+            "maskAtLeast": 0.47,
+            "maskAtMost": 1
+          },
+          "inputs": {
+            "mask": "n7"
+          },
+          "display": {
+            "mode": "markers",
+            "tileId": 437,
+            "glyph": "⚑",
+            "color": "#3fbf9f"
+          }
+        },
+        {
+          "id": "n9",
+          "type": "regionPlan",
+          "label": "heartlands",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "pitch": 273,
+            "focusShare": 0.1,
+            "falloff": 0.6,
+            "role": 0
+          },
+          "inputs": {},
+          "display": {
+            "mode": "hidden"
+          }
+        },
+        {
+          "id": "n10",
+          "type": "combineFields",
+          "label": "settled ground",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "operation": 2,
+            "clamp": 1
+          },
+          "inputs": {
+            "a": "n1",
+            "b": "n9"
+          },
+          "display": {
+            "mode": "hidden"
+          }
+        },
+        {
+          "id": "n11",
+          "type": "scatterPoints",
+          "label": "village centers",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "density": 0.0035,
+            "maskAtLeast": 0.24,
+            "maskAtMost": 1
+          },
+          "inputs": {
+            "mask": "n10"
+          },
+          "display": {
+            "mode": "markers",
+            "tileId": -1,
+            "glyph": "*",
+            "color": "#ff5577"
+          }
+        },
+        {
+          "id": "n12",
+          "type": "villageStreets",
+          "label": "streets",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "radius": 31,
+            "plotCells": 14,
+            "streetWidth": 4,
+            "streetTile": 419,
+            "plazaTile": 440
+          },
+          "inputs": {
+            "centers": "n11"
+          },
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n13",
+          "type": "villagePlots",
+          "label": "plots",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "radius": 31,
+            "plotCells": 14,
+            "streetWidth": 4,
+            "buildAbove": 0.43,
+            "cottageWeight": 4,
+            "dwellingWeight": 3,
+            "smithyWeight": 2,
+            "innWeight": 1,
+            "townHallWeight": 1
+          },
+          "inputs": {
+            "centers": "n11",
+            "ground": "n1"
+          },
+          "display": {
+            "mode": "structures",
+            "cultureId": 19
+          }
+        },
+        {
+          "id": "n14",
+          "type": "landmarkRoom",
+          "label": "the keep",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "x": -8,
+            "y": -7,
+            "width": 9,
+            "height": 10,
+            "wallThickness": 1,
+            "floorTile": -1,
+            "wallTile": 432
+          },
+          "inputs": {},
+          "display": {
+            "mode": "tileLayer"
+          }
+        },
+        {
+          "id": "n15",
+          "type": "scatterPoints",
+          "label": "spring scatter",
+          "comment": "",
+          "folder": "",
+          "enabled": true,
+          "params": {
+            "density": 0.01,
+            "maskAtLeast": 0.34,
+            "maskAtMost": 0.63
+          },
+          "inputs": {
+            "mask": null
+          },
+          "display": {
+            "mode": "markers",
+            "tileId": -1,
+            "glyph": "☗",
+            "color": "#ff8c42"
+          }
+        }
+      ]
+    }
   }
 ]

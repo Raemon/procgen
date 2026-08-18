@@ -8,6 +8,8 @@ import type { WorldShotRecord } from './worldShots/galleryReport';
 const SHOTS_DIR = flagValue('shots') ?? 'artifacts/worldShots';
 const MOST_INSTALLED = Number(flagValue('install') ?? 3);
 
+const WANTED_SLUGS = (flagValue('slugs') ?? '').split(',').filter((slug) => slug.length > 0);
+
 const records = JSON.parse(readFileSync(join(SHOTS_DIR, 'report.json'), 'utf8')) as WorldShotRecord[];
 const presentable = records.filter(
   (record) => record.verdict === 'interesting' && !record.blindAtEyeLevel,
@@ -18,9 +20,7 @@ const seenNames = new Set<string>();
 const distinct = pool.filter((record) =>
   seenNames.has(record.name) ? false : (seenNames.add(record.name), true),
 );
-const gated = distinct.find((record) => record.elevationGateShare > 0.02);
-const flats = distinct.filter((record) => record !== gated).slice(0, MOST_INSTALLED - (gated ? 1 : 0));
-const chosen = gated ? [...flats, gated] : flats;
+const chosen = WANTED_SLUGS.length > 0 ? namedRecords(records, WANTED_SLUGS) : autoChosen(distinct);
 
 const taken = new Set<string>();
 for (const record of chosen) {
@@ -34,6 +34,25 @@ for (const record of chosen) {
   );
 }
 console.log('run `npm run docs:seed` (or open a fresh database) to load the new presets');
+
+function namedRecords(
+  records: readonly WorldShotRecord[],
+  slugs: readonly string[],
+): WorldShotRecord[] {
+  return slugs.map((slug) => {
+    const found = records.find((record) => record.slug === slug);
+    if (!found) throw new Error(`no world in ${SHOTS_DIR}/report.json has slug ${slug}`);
+    return found;
+  });
+}
+
+function autoChosen(distinct: readonly WorldShotRecord[]): WorldShotRecord[] {
+  const gated = distinct.find((record) => record.elevationGateShare > 0.02);
+  const flats = distinct
+    .filter((record) => record !== gated)
+    .slice(0, MOST_INSTALLED - (gated ? 1 : 0));
+  return gated ? [...flats, gated] : flats;
+}
 
 function descriptionOf(record: WorldShotRecord): string {
   return `Evolved walking-sim elite: fun ${record.fun.toFixed(3)}, elevation gates ${record.elevationGateShare.toFixed(2)}, vistas ${record.vistaMomentsPer100Steps.toFixed(1)}/100 steps, decisions ${record.decisionPointsPer100Steps.toFixed(0)}/100 steps.`;

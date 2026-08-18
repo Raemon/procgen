@@ -37,6 +37,8 @@ export function mountWorldViews(
     'god',
     runtime.puzzles,
     runtime.hoveredTile,
+    runtime.net.remotePlayers,
+    runtime.cameraFocus,
   );
   const agentCharacterView = new AgentTextView(
     slots.agentCharacter,
@@ -46,6 +48,8 @@ export function mountWorldViews(
     'character',
     runtime.puzzles,
     runtime.hoveredTile,
+    runtime.net.remotePlayers,
+    runtime.cameraFocus,
   );
   const featuresView = new FeaturesView(slots.features, worldViewDepsOf(runtime));
 
@@ -129,6 +133,7 @@ export function mountWorldViews(
       agentCharacterView.dispose();
     },
     onModeChanged: (mode) => {
+      if (isCharacterControlled(mode)) runtime.cameraFocus.clear();
       runtime.setPlayerMode(isCharacterControlled(mode) ? 'character' : 'god');
       view3d.setCameraStyle(mode === 'character' ? 'character' : 'god');
       runtime.hoveredTile.clear();
@@ -154,6 +159,7 @@ function worldViewDepsOf(runtime: AppRuntime): WorldViewDeps {
     capture: runtime.capture,
     hoveredTile: runtime.hoveredTile,
     remotePlayers: runtime.net.remotePlayers,
+    cameraFocus: runtime.cameraFocus,
     speech: runtime.net.speech,
   };
 }

@@ -35,6 +35,7 @@ import { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import { PieceAssets } from '@/features/asset-library/pieces/pieceAssets';
 import { CultureAssets } from '@/features/asset-library/cultures/cultureAssets';
 import { debounce } from './debounce';
+import { CameraFocus } from '@/features/game/render/camera/cameraFocus';
 import { CaptureTool } from '@/features/game/capture/captureTool';
 import { HoveredTile } from '@/features/game/hover/hoveredTile';
 import { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
@@ -85,6 +86,7 @@ export interface AppRuntime {
   sim: CreatureSim;
   clock: CreatureClock;
   capture: CaptureTool;
+  cameraFocus: CameraFocus;
   hoveredTile: HoveredTile;
   puzzles: PuzzleWorld;
   renderers: WorldRenderers;
@@ -144,6 +146,7 @@ export function createAppRuntime(): AppRuntime {
   const clock = new CreatureClock(sim);
   const renderers = new WorldRenderers();
   const hoveredTile = new HoveredTile();
+  const cameraFocus = new CameraFocus();
   const worldChanged = new ChangeNotifier();
   const randomizeHistory = new RandomizeHistory();
   let playerMode: CommandMode = 'god';
@@ -303,6 +306,7 @@ export function createAppRuntime(): AppRuntime {
     sim,
     clock,
     capture,
+    cameraFocus,
     hoveredTile,
     puzzles,
     renderers,

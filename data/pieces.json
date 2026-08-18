@@ -2716,5 +2716,833 @@
       0,
       0
     ]
+  },
+  {
+    "id": 142,
+    "name": "tarnwengarth wall run (tarnwengarth (evolved))",
+    "role": "wallSegment",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      320,
+      319,
+      319
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 143,
+    "name": "tarnwengarth corner post (tarnwengarth (evolved))",
+    "role": "wallCorner",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      319,
+      319,
+      319
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 144,
+    "name": "tarnwengarth windowed wall (tarnwengarth (evolved))",
+    "role": "window",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      320,
+      325,
+      319
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 145,
+    "name": "tarnwengarth doorway (tarnwengarth (evolved))",
+    "role": "door",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      326,
+      326,
+      324
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 146,
+    "name": "tarnwengarth roof eave (tarnwengarth (evolved))",
+    "role": "roofEdge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      321
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 147,
+    "name": "tarnwengarth roof ridge (tarnwengarth (evolved))",
+    "role": "roofRidge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      322
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 148,
+    "name": "tarnwengarth gable end (tarnwengarth (evolved))",
+    "role": "roofGableEnd",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      319,
+      321
+    ],
+    "facings": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": 149,
+    "name": "tarnwengarth floor slab (tarnwengarth (evolved))",
+    "role": "floor",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      323
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 150,
+    "name": "tarnwengarth chimney stack (tarnwengarth (evolved))",
+    "role": "chimney",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      327,
+      327,
+      324
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 151,
+    "name": "tarnlingwold wall run (tarnlingwold (evolved))",
+    "role": "wallSegment",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      345,
+      344,
+      344
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 152,
+    "name": "tarnlingwold corner post (tarnlingwold (evolved))",
+    "role": "wallCorner",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      344,
+      344,
+      344
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 153,
+    "name": "tarnlingwold windowed wall (tarnlingwold (evolved))",
+    "role": "window",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      345,
+      350,
+      344
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 154,
+    "name": "tarnlingwold doorway (tarnlingwold (evolved))",
+    "role": "door",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      351,
+      351,
+      349
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 155,
+    "name": "tarnlingwold roof eave (tarnlingwold (evolved))",
+    "role": "roofEdge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      346
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 156,
+    "name": "tarnlingwold roof ridge (tarnlingwold (evolved))",
+    "role": "roofRidge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      347
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 157,
+    "name": "tarnlingwold gable end (tarnlingwold (evolved))",
+    "role": "roofGableEnd",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      344,
+      346
+    ],
+    "facings": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": 158,
+    "name": "tarnlingwold floor slab (tarnlingwold (evolved))",
+    "role": "floor",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      348
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 159,
+    "name": "tarnlingwold chimney stack (tarnlingwold (evolved))",
+    "role": "chimney",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      352,
+      352,
+      349
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 160,
+    "name": "haldalegarth wall run (haldalegarth (evolved))",
+    "role": "wallSegment",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      370,
+      369,
+      369
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 161,
+    "name": "haldalegarth corner post (haldalegarth (evolved))",
+    "role": "wallCorner",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      369,
+      369,
+      369
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 162,
+    "name": "haldalegarth windowed wall (haldalegarth (evolved))",
+    "role": "window",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      370,
+      375,
+      369
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 163,
+    "name": "haldalegarth doorway (haldalegarth (evolved))",
+    "role": "door",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      376,
+      376,
+      374
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 164,
+    "name": "haldalegarth roof eave (haldalegarth (evolved))",
+    "role": "roofEdge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      371
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 165,
+    "name": "haldalegarth roof ridge (haldalegarth (evolved))",
+    "role": "roofRidge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      372
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 166,
+    "name": "haldalegarth gable end (haldalegarth (evolved))",
+    "role": "roofGableEnd",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      369,
+      371
+    ],
+    "facings": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": 167,
+    "name": "haldalegarth floor slab (haldalegarth (evolved))",
+    "role": "floor",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      373
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 168,
+    "name": "haldalegarth chimney stack (haldalegarth (evolved))",
+    "role": "chimney",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      377,
+      377,
+      373
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 169,
+    "name": "tarnholmfen wall run (tarnholmfen (evolved))",
+    "role": "wallSegment",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      395,
+      394,
+      394
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 170,
+    "name": "tarnholmfen corner post (tarnholmfen (evolved))",
+    "role": "wallCorner",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      394,
+      394,
+      394
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 171,
+    "name": "tarnholmfen windowed wall (tarnholmfen (evolved))",
+    "role": "window",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      395,
+      400,
+      394
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 172,
+    "name": "tarnholmfen doorway (tarnholmfen (evolved))",
+    "role": "door",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      401,
+      401,
+      399
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 173,
+    "name": "tarnholmfen roof eave (tarnholmfen (evolved))",
+    "role": "roofEdge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      396
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 174,
+    "name": "tarnholmfen roof ridge (tarnholmfen (evolved))",
+    "role": "roofRidge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      397
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 175,
+    "name": "tarnholmfen gable end (tarnholmfen (evolved))",
+    "role": "roofGableEnd",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      394,
+      396
+    ],
+    "facings": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": 176,
+    "name": "tarnholmfen floor slab (tarnholmfen (evolved))",
+    "role": "floor",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      398
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 177,
+    "name": "tarnholmfen chimney stack (tarnholmfen (evolved))",
+    "role": "chimney",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      402,
+      402,
+      399
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 178,
+    "name": "morstanby wall run (morstanby (evolved))",
+    "role": "wallSegment",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      419,
+      418,
+      418
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 179,
+    "name": "morstanby corner post (morstanby (evolved))",
+    "role": "wallCorner",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      418,
+      418,
+      418
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 180,
+    "name": "morstanby windowed wall (morstanby (evolved))",
+    "role": "window",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      419,
+      424,
+      418
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 181,
+    "name": "morstanby doorway (morstanby (evolved))",
+    "role": "door",
+    "width": 1,
+    "depth": 1,
+    "layers": 3,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      425,
+      425,
+      423
+    ],
+    "facings": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 182,
+    "name": "morstanby roof eave (morstanby (evolved))",
+    "role": "roofEdge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      420
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 183,
+    "name": "morstanby roof ridge (morstanby (evolved))",
+    "role": "roofRidge",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      421
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 184,
+    "name": "morstanby gable end (morstanby (evolved))",
+    "role": "roofGableEnd",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      418,
+      420
+    ],
+    "facings": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": 185,
+    "name": "morstanby floor slab (morstanby (evolved))",
+    "role": "floor",
+    "width": 1,
+    "depth": 1,
+    "layers": 1,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      422
+    ],
+    "facings": [
+      0
+    ]
+  },
+  {
+    "id": 186,
+    "name": "morstanby chimney stack (morstanby (evolved))",
+    "role": "chimney",
+    "width": 1,
+    "depth": 1,
+    "layers": 2,
+    "anchorX": 0,
+    "anchorY": 0,
+    "voxels": [
+      426,
+      423
+    ],
+    "facings": [
+      0,
+      0
+    ]
   }
 ]

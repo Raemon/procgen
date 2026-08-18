@@ -2,7 +2,8 @@ import type { WorldRect } from '@/features/asset-library/worlds/values/pointsInR
 import type { FeaturesCamera } from './featuresCamera';
 
 export const FEATURE_SURVEY_SPAN_TILES = 256;
-export const MAX_PIXELS_PER_TILE = 64;
+const SMALLEST_USEFUL_PIXELS_PER_TILE = 1e-4;
+const LARGEST_USEFUL_PIXELS_PER_TILE = 1e6;
 
 export function surveyRectOf(camera: FeaturesCamera): WorldRect {
   const halfWidth = visibleTiles(camera.widthPx, camera.pixelsPerTile) / 2;
@@ -19,10 +20,9 @@ function visibleTiles(spanPx: number, pixelsPerTile: number): number {
   return Math.min(FEATURE_SURVEY_SPAN_TILES, spanPx / pixelsPerTile);
 }
 
-export function minPixelsPerTile(widthPx: number, heightPx: number): number {
-  return Math.max(widthPx, heightPx) / FEATURE_SURVEY_SPAN_TILES;
-}
-
-export function clampedPixelsPerTile(raw: number, widthPx: number, heightPx: number): number {
-  return Math.max(minPixelsPerTile(widthPx, heightPx), Math.min(MAX_PIXELS_PER_TILE, raw));
+export function clampedPixelsPerTile(raw: number): number {
+  return Math.max(
+    SMALLEST_USEFUL_PIXELS_PER_TILE,
+    Math.min(LARGEST_USEFUL_PIXELS_PER_TILE, raw),
+  );
 }

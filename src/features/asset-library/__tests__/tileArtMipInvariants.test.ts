@@ -1,7 +1,12 @@
 import { averageInk } from '@/features/asset-library/tiles/mips/averageInk';
 import { faceArtMips, mipLevelWithin, mipWithin } from '@/features/asset-library/tiles/mips/faceArtMips';
 import { blankFacePixels, type FacePixels } from '@/features/asset-library/tiles/tileFaceArt';
-import { drawsNormalMapAt, tileSideBudget } from '@/features/game/render/view3d/tileDetailBudget';
+import {
+  drawsNormalMapAt,
+  drawsPngColorAt,
+  drawsPngNormalAt,
+  tileSideBudget,
+} from '@/features/game/render/view3d/tileDetailBudget';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 
 const VIEWPORT_HEIGHT_PIXELS = 900;
@@ -70,6 +75,14 @@ function checkDistanceBuysCoarserArtAndDropsRelief(check: CheckReporter): void {
   check(
     'relief survives at the finest level and is dropped as soon as the art is scaled down',
     drawsNormalMapAt(mipLevelWithin(art, near)) && !drawsNormalMapAt(mipLevelWithin(art, far)),
+  );
+  check(
+    'baked textures drop their normal map below full tile detail',
+    drawsPngNormalAt(256) && !drawsPngNormalAt(128),
+  );
+  check(
+    'baked textures become a flat tile color once they are down to one texel',
+    drawsPngColorAt(2) && !drawsPngColorAt(1),
   );
 }
 

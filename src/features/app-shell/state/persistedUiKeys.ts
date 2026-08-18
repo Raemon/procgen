@@ -4,6 +4,7 @@ export const PERSISTED_UI_KEYS = {
   librarySelection: 'library.selection',
   runningWorld: 'library.runningWorld',
   openLibraryFolders: 'library.openFolders',
+  libraryViewMode: 'library.viewMode',
   openTileArt: 'assets.openTileArt',
   openCreaturePanels: 'assets.openCreaturePanels',
   openItemPanels: 'assets.openItemPanels',

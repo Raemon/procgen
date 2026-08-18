@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/features/app-shell/controls/Button';
+import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
+import { characterNamed } from '@/features/game/multiplayer/client/charactersInPlay';
 import { Select } from '@/features/app-shell/controls/Select';
 import { DIM_READOUT_CLASSES, FIELD_CLASSES } from '@/features/app-shell/controls/fieldClasses';
 import { PanelHint } from '@/features/app-shell/help/PanelHint';
@@ -27,6 +29,7 @@ export function AgentsPanel({
   selectedId: string | null;
   onSelect(id: string | null): void;
 }) {
+  const runtime = useAppRuntime();
   const { agents, refresh } = useAgentsRoster();
   const [name, setName] = useState('');
   const [mode, setMode] = useState<AgentMode>('character');
@@ -42,6 +45,14 @@ export function AgentsPanel({
     await createAgent(mode, name.trim());
     setName('');
     refresh();
+  }
+
+  function selectAndWatch(agent: RosterAgent): void {
+    const alreadySelected = agent.id === selectedId;
+    onSelect(alreadySelected ? null : agent.id);
+    if (alreadySelected) return runtime.cameraFocus.clear();
+    const inPlay = characterNamed(runtime.world, runtime.net.remotePlayers, agent.name);
+    if (inPlay) runtime.cameraFocus.follow(inPlay.id);
   }
 
   async function run(agent: RosterAgent): Promise<void> {
@@ -124,7 +135,7 @@ export function AgentsPanel({
             key={agent.id}
             agent={agent}
             selected={agent.id === selectedId}
-            onSelect={() => onSelect(agent.id === selectedId ? null : agent.id)}
+            onSelect={() => selectAndWatch(agent)}
             onRun={() => void run(agent)}
             onStop={() => void stopRun(agent.id).then(refresh)}
             onDelete={() =>

@@ -14,6 +14,7 @@ export interface LabelCandidate {
 
 export interface PlacedLabel {
   key: string;
+  nodeId: string;
   text: string;
   x: number;
   y: number;
@@ -67,6 +68,7 @@ function byPriority(a: LabelCandidate, b: LabelCandidate): number {
 function boxOf(candidate: LabelCandidate): PlacedLabel {
   return {
     key: candidate.key,
+    nodeId: candidate.nodeId,
     text: candidate.text,
     x: candidate.anchorX + LABEL_GAP_PX,
     y: candidate.anchorY - candidate.heightPx / 2,

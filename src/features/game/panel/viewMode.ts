@@ -12,6 +12,10 @@ export function isCharacterControlled(mode: ViewMode): boolean {
   return mode === 'character' || mode === 'agent-character';
 }
 
+export function isGodView(mode: ViewMode): boolean {
+  return mode === '3d-god' || mode === 'agent-god';
+}
+
 export function usesView3d(mode: ViewMode): boolean {
   return mode === '3d-god' || mode === 'character';
 }

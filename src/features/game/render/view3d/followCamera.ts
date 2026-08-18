@@ -9,10 +9,23 @@ const FOCUS_SMOOTHING_RATE = 10;
 const PITCH_DEG = 52;
 const FIELD_OF_VIEW_DEG = 50;
 const DISTANCE_AT_UNIT_ZOOM = 16;
-const FARTHEST_CAMERA_DISTANCE = 800;
-const CLOSEST_CAMERA_DISTANCE = 1.2;
+const FARTHEST_CAMERA_DISTANCE = 1e7;
+const CLOSEST_CAMERA_DISTANCE = 0.02;
 const MIN_MAGNIFICATION = DISTANCE_AT_UNIT_ZOOM / FARTHEST_CAMERA_DISTANCE;
 const MAX_MAGNIFICATION = DISTANCE_AT_UNIT_ZOOM / CLOSEST_CAMERA_DISTANCE;
+const NEAR_PLANE_OF_DISTANCE = 0.005;
+const FAR_PLANE_OF_DISTANCE = 8;
+const MIN_NEAR_PLANE = 0.0001;
+const GROUND_FRUSTUM_POINTS = [
+  [-1, -1],
+  [0, -1],
+  [1, -1],
+  [-1, 0],
+  [1, 0],
+  [-1, 1],
+  [0, 1],
+  [1, 1],
+] as const;
 
 export interface FocusPoint {
   x: number;
@@ -20,7 +33,7 @@ export interface FocusPoint {
 }
 
 export class FollowCamera {
-  readonly camera = new THREE.PerspectiveCamera(FIELD_OF_VIEW_DEG, 1, 0.1, FARTHEST_CAMERA_DISTANCE * 3);
+  readonly camera = new THREE.PerspectiveCamera(FIELD_OF_VIEW_DEG, 1, 0.1, DISTANCE_AT_UNIT_ZOOM * FAR_PLANE_OF_DISTANCE);
 
   private readonly zoom = new ZoomScale(1, MIN_MAGNIFICATION, MAX_MAGNIFICATION);
   private readonly pan = new PanOffset();
@@ -30,6 +43,9 @@ export class FollowCamera {
   private followY = 0;
   private viewportHeightPx = 1;
   private snapOnNextUpdate = true;
+  private readonly unprojectedPoint = new THREE.Vector3();
+  private readonly groundDirection = new THREE.Vector3();
+  private readonly groundIntersection = new THREE.Vector3();
 
   yaw(): number {
     return this.currentYaw;
@@ -51,13 +67,35 @@ export class FollowCamera {
     this.pan.recenter();
   }
 
+  lookAtTile(x: number, y: number): void {
+    this.pan.setTo(x - this.followX, y - this.followY);
+  }
+
   focusPoint(): FocusPoint {
     return { x: this.followX + this.pan.tilesX(), y: this.followY + this.pan.tilesY() };
   }
 
-  visibleGroundRadiusTiles(): number {
-    const halfHeight = this.cameraDistance() * Math.tan(halfFieldOfViewRadians());
-    return Math.max(halfHeight / Math.sin(pitchRadians()), halfHeight * this.camera.aspect);
+  visibleGroundRadiusTiles(groundElevation: number = 0): number {
+    this.camera.updateMatrixWorld();
+    const focus = this.focusPoint();
+    const centerX = focus.x + 0.5;
+    const centerZ = focus.y + 0.5;
+    let radius = 0;
+    for (const [x, y] of GROUND_FRUSTUM_POINTS) {
+      this.unprojectedPoint.set(x, y, 1).unproject(this.camera);
+      this.groundDirection.subVectors(this.unprojectedPoint, this.camera.position);
+      if (this.groundDirection.y >= 0) continue;
+      const distance = (groundElevation - this.camera.position.y) / this.groundDirection.y;
+      if (distance < 0) continue;
+      this.groundIntersection
+        .copy(this.camera.position)
+        .addScaledVector(this.groundDirection, distance);
+      radius = Math.max(
+        radius,
+        Math.hypot(this.groundIntersection.x - centerX, this.groundIntersection.z - centerZ),
+      );
+    }
+    return radius;
   }
 
   snapToFocusOnNextUpdate(): void {
@@ -99,8 +137,18 @@ export class FollowCamera {
     this.currentYaw += shortestArc(this.currentYaw, this.yawTarget) * easeFraction(TURN_SMOOTHING_RATE, dtSeconds);
   }
 
+  private clipPlanesForDistance(distance: number): void {
+    const near = Math.max(MIN_NEAR_PLANE, distance * NEAR_PLANE_OF_DISTANCE);
+    const far = distance * FAR_PLANE_OF_DISTANCE;
+    if (this.camera.near === near && this.camera.far === far) return;
+    this.camera.near = near;
+    this.camera.far = far;
+    this.camera.updateProjectionMatrix();
+  }
+
   private placeCameraBehindFocus(): void {
     const distance = this.cameraDistance();
+    this.clipPlanesForDistance(distance);
     const distanceBehind = distance * Math.cos(pitchRadians());
     const focus = this.focusPoint();
     const centerX = focus.x + 0.5;

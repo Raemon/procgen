@@ -3,6 +3,7 @@ import type { ScreenPoint } from './featuresCamera';
 
 export interface FeatureEdge {
   kind: 'parent' | 'link';
+  nodeId: string;
   from: ScreenPoint;
   to: ScreenPoint;
   control: ScreenPoint | null;
@@ -36,7 +37,7 @@ function collectParentEdge(
   into: FeatureEdge[],
 ): void {
   const to = cluster.feature.parentKey ? positions.get(cluster.feature.parentKey) : undefined;
-  if (to) into.push({ kind: 'parent', from, to, control: arcControlOf(from, to) });
+  if (to) into.push({ kind: 'parent', nodeId: cluster.feature.nodeId, from, to, control: arcControlOf(from, to) });
 }
 
 function collectLinkEdges(
@@ -47,7 +48,7 @@ function collectLinkEdges(
 ): void {
   for (const key of cluster.feature.linkKeys) {
     const to = positions.get(key);
-    if (to) into.push({ kind: 'link', from, to, control: null });
+    if (to) into.push({ kind: 'link', nodeId: cluster.feature.nodeId, from, to, control: null });
   }
 }
 

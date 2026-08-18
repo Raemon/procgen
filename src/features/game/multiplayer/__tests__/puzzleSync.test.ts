@@ -1,6 +1,7 @@
 import { EntityRegistry, type Entity } from '../game/entities';
 import { stepPlayerEntity, type PlayerStepWorld } from '../game/playerStep';
 import { holdDirection } from '../../sim/movementOrder';
+import { climbGateFrom } from '../../climbing';
 import { useHereOrAhead } from '../../puzzles/interaction/useAtPose';
 import type { UseOutcome } from '../../puzzles/interaction/useFixture';
 import { PuzzleState } from '../../puzzles/state/puzzleState';
@@ -12,6 +13,7 @@ export function checkPuzzleSync(check: CheckReporter): void {
   checkSnapshotRoundTrip(check);
   checkReplaceAllDropsStaleEntries(check);
   checkAClosedGateStopsTheServerStep(check);
+  checkATallRiseStopsTheServerStep(check);
   checkWalkingIntoACratePushesItServerSide(check);
   checkKeysAreTakenWhereThePlayerLands(check);
   checkUseFallsBackToTheTileAhead(check);
@@ -47,6 +49,15 @@ function checkAClosedGateStopsTheServerStep(check: CheckReporter): void {
   check(
     'a closed gate holds the server-side player in place',
     setup.entity.x === 1 && setup.entity.y === 1,
+  );
+}
+
+function checkATallRiseStopsTheServerStep(check: CheckReporter): void {
+  const setup = walkingSetup({ riseToNext: 1.01 });
+  stepPlayerEntity(setup.world, setup.registry, setup.entity);
+  check(
+    'a rise over one block holds the server-side player in place without starting a hop',
+    setup.entity.x === 1 && setup.entity.y === 1 && setup.entity.cooldown === 0,
   );
 }
 
@@ -92,7 +103,11 @@ interface WalkingSetup {
   keysTakenAt: Array<{ x: number; y: number }>;
 }
 
-function walkingSetup(scene: { gateClosed?: boolean; crateAt?: { x: number; y: number } }): WalkingSetup {
+function walkingSetup(scene: {
+  gateClosed?: boolean;
+  crateAt?: { x: number; y: number };
+  riseToNext?: number;
+}): WalkingSetup {
   const registry = new EntityRegistry();
   const entity = registry.add('char', 'walker', 'player', 1, 1, EAST);
   holdDirection(entity, EAST);
@@ -105,6 +120,7 @@ function walkingSetup(scene: { gateClosed?: boolean; crateAt?: { x: number; y: n
     isWalkable: (x, y) => tileIsWalkable(x, y) && !gateBlocks(x, y) && !crateBlocks(x, y),
     stepRules: {
       isWalkableAt: tileIsWalkable,
+      climbGateAt: climbGateFrom((x) => (x === 2 ? (scene.riseToNext ?? 0) : 0)),
       clearTheWay: (x, y, dx, dy) => {
         if (gateBlocks(x, y)) return false;
         if (!crateBlocks(x, y)) return true;

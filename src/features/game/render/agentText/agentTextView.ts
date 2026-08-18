@@ -15,6 +15,14 @@ import type { HoveredCell, HoveredTile } from '../../hover/hoveredTile';
 import { listenForTileHover } from '../../hover/listenForTileHover';
 import { pointOverlayLookup } from '../ascii/asciiCells';
 import { viewportCenteredOn } from '../ascii/asciiViewport';
+import type { CameraFocus } from '../camera/cameraFocus';
+import {
+  charactersInPlay,
+  characterWithId,
+  type CharacterListing,
+} from '../../multiplayer/client/charactersInPlay';
+import type { RemotePlayers } from '../../multiplayer/client/remotePlayers';
+import { SELF_INK, characterInkLookup, withCharactersPainted } from './characterGlyphs';
 import { asciiColorOn, onAsciiColorChange } from './asciiColorPreference';
 import { asciiTileInk } from './asciiTileInk';
 import { monospaceCellSize, type MonospaceCellSize } from './monospaceCellSize';
@@ -31,7 +39,7 @@ const ELEVATION_CLASSES = 'm-0 whitespace-pre text-emerald-100/60';
 const LEGEND_CLASSES = 'max-w-[30rem] space-y-0.5';
 const LEGEND_LINE_CLASSES = 'whitespace-pre-wrap';
 const INTERACTION_CLASSES = 'mt-2 whitespace-pre-wrap text-amber-200/90';
-const SELF_INK = '#ffffff';
+const CHARACTER_POLL_MS = 250;
 
 type CellInk = (glyph: string, row: number, column: number) => string | null;
 
@@ -44,8 +52,11 @@ export class AgentTextView {
   private readonly legendList = document.createElement('div');
   private readonly interaction = document.createElement('div');
   private readonly stopWatchingColor: () => void;
+  private readonly stopWatchingFocus: () => void;
+  private readonly characterPoll: ReturnType<typeof setInterval>;
   private drawnObservation: AgentObservation | null = null;
   private cellSize: MonospaceCellSize | null = null;
+  private drawnCharacters = '';
 
   constructor(
     container: HTMLElement,
@@ -55,6 +66,8 @@ export class AgentTextView {
     private readonly mode: AgentMode,
     private readonly puzzles: ObservedOverlay,
     hoveredTile: HoveredTile,
+    private readonly remotePlayers: RemotePlayers,
+    private readonly cameraFocus: CameraFocus,
   ) {
     this.root.className = ROOT_CLASSES;
     this.header.className = HEADER_CLASSES;
@@ -73,9 +86,13 @@ export class AgentTextView {
     container.appendChild(this.root);
     listenForTileHover(this.gridPre, hoveredTile, (x, y) => this.cellAtPixel(x, y));
     this.stopWatchingColor = onAsciiColorChange(() => this.draw());
+    this.stopWatchingFocus = cameraFocus.subscribe(() => this.draw());
+    this.characterPoll = setInterval(() => this.drawIfCharactersMoved(), CHARACTER_POLL_MS);
   }
 
   dispose(): void {
+    clearInterval(this.characterPoll);
+    this.stopWatchingFocus();
     this.stopWatchingColor();
     this.root.remove();
   }
@@ -84,11 +101,26 @@ export class AgentTextView {
     measureWork('ascii view', () => this.render());
   }
 
+  private drawIfCharactersMoved(): void {
+    const signature = charactersSignature(this.characters());
+    if (signature === this.drawnCharacters) return;
+    this.draw();
+  }
+
+  private characters(): CharacterListing[] {
+    return charactersInPlay(this.world, this.remotePlayers);
+  }
+
   private render(): void {
-    const obs = (this.drawnObservation = this.currentObservation());
-    const ink = asciiColorOn() ? this.cellInk(obs) : null;
+    const characters = this.characters();
+    this.drawnCharacters = charactersSignature(characters);
+    const obs = (this.drawnObservation = withCharactersPainted(
+      this.currentObservation(),
+      characters,
+    ));
+    const ink = asciiColorOn() ? this.cellInk(obs, characters) : null;
     const glyphInks = new Map<string, string>();
-    this.header.textContent = headerText(obs);
+    this.header.textContent = headerText(obs, this.followedName(characters));
     this.gridPre.replaceChildren(...gridNodes(obs, ink, glyphInks));
     this.elevationColumn.classList.toggle('hidden', obs.elevation === null);
     this.elevationPre.textContent = obs.elevation?.join('\n') ?? '';
@@ -97,14 +129,17 @@ export class AgentTextView {
     this.interaction.textContent = obs.interaction ?? '';
   }
 
-  private cellInk(obs: AgentObservation): CellInk {
+  private cellInk(obs: AgentObservation, characters: CharacterListing[]): CellInk {
     const viewport = viewportCenteredOn(obs.position.x, obs.position.y, obs.viewSize, obs.viewSize);
     const markers = pointOverlayLookup(this.sampler, viewport, this.puzzles);
+    const characterInks = characterInkLookup(characters);
     return (glyph, row, column) => {
       if (glyph === BLANK_GLYPH) return null;
-      if (glyph === SELF_GLYPH) return SELF_INK;
       const x = viewport.originX + column;
       const y = viewport.originY + row;
+      const characterInk = characterInks.get(`${x},${y}`);
+      if (characterInk) return characterInk;
+      if (glyph === SELF_GLYPH) return SELF_INK;
       const color =
         markers.get(`${x},${y}`)?.color ?? this.tileAssets.byId(this.sampler.tileAt(x, y))?.color;
       return color ? asciiTileInk(color) : null;
@@ -127,7 +162,7 @@ export class AgentTextView {
   }
 
   private currentObservation(): AgentObservation {
-    const pose = { x: this.world.playerX, y: this.world.playerY, facing: this.world.facing };
+    const pose = { ...this.viewCenter(), facing: this.world.facing };
     return buildObservation(
       this.sampler,
       this.tileAssets,
@@ -137,6 +172,26 @@ export class AgentTextView {
       this.puzzles,
     );
   }
+
+  private followedName(characters: CharacterListing[]): string | null {
+    if (this.mode !== 'god') return null;
+    const followed = characters.find((character) => character.id === this.cameraFocus.followedId());
+    return followed && !followed.isSelf ? followed.name : null;
+  }
+
+  private viewCenter(): { x: number; y: number } {
+    const followedId = this.cameraFocus.followedId();
+    const followed =
+      followedId === null || this.mode !== 'god'
+        ? null
+        : characterWithId(this.world, this.remotePlayers, followedId);
+    if (!followed) return { x: this.world.playerX, y: this.world.playerY };
+    return { x: followed.x, y: followed.y };
+  }
+}
+
+function charactersSignature(characters: CharacterListing[]): string {
+  return characters.map((character) => `${character.id}:${character.x},${character.y}`).join('|');
 }
 
 function assembleColumn(column: HTMLElement, title: string, ...content: HTMLElement[]): HTMLElement {
@@ -147,13 +202,15 @@ function assembleColumn(column: HTMLElement, title: string, ...content: HTMLElem
   return column;
 }
 
-function headerText(obs: AgentObservation): string {
+function headerText(obs: AgentObservation, followedName: string | null): string {
   const half = Math.floor(obs.viewSize / 2);
   const originX = obs.position.x - half;
   const originY = obs.position.y - half;
   const pose = [
     `${obs.mode} view`,
-    `@ (${obs.position.x},${obs.position.y})`,
+    followedName === null
+      ? `@ (${obs.position.x},${obs.position.y})`
+      : `centered on ${followedName} (${obs.position.x},${obs.position.y})`,
     obs.facing ? `facing ${obs.facing}` : null,
     obs.sightRadiusTiles !== null ? `sight ${obs.sightRadiusTiles}t` : null,
   ]

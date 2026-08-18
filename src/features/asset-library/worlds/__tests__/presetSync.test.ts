@@ -6,12 +6,31 @@ import { newTileWithId } from '@/features/asset-library/tiles/tileDef';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { nodeTypeOf } from '../nodeRegistry';
 import type { NodeInstance, PipelineState } from '../pipeline/pipelineState';
-import { syncMissingPresets, type LibraryDocs } from '../presets/presetSync';
+import { libraryDocsFrom, syncMissingPresets, type LibraryDocs } from '../presets/presetSync';
 import { sanitizeWorldPresets } from '../presets/worldPreset';
 
 export function checkPresetSync(check: CheckReporter): void {
   checkSyntheticSync(check);
   checkShippedDataFilesSync(check);
+  checkBootSyncReadsTheShapeTheAppWrites(check);
+}
+
+function checkBootSyncReadsTheShapeTheAppWrites(check: CheckReporter): void {
+  const shipped = shippedFixture();
+  const docs = new Map<string, unknown>([
+    ['tiles', []],
+    ['pieces', []],
+    ['cultures', []],
+    ['worldPresets', { presets: [], hiddenExamples: ['volcanic islands'] }],
+  ]);
+  const held = libraryDocsFrom((name) => docs.get(name));
+  const added = syncMissingPresets(held.library, shipped);
+  check('boot sync installs into a world library the app saved as an envelope', added === 1);
+  check('the installed preset lands in the envelope the app reads back', held.worldLibrary.presets.length === 1);
+  check('boot sync keeps the hidden examples the app recorded', held.worldLibrary.hiddenExamples.length === 1);
+
+  const bare = libraryDocsFrom((name) => (name === 'worldPresets' ? shipped.worldPresets : []));
+  check('boot sync still reads a world library saved as a bare array', bare.library.worldPresets.length === 1);
 }
 
 function checkSyntheticSync(check: CheckReporter): void {

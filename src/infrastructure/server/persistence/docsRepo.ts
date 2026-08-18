@@ -2,8 +2,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import type { Store } from './db';
 import { PERSISTED_DOCUMENT_NAMES } from '@/features/app-shell/persistence/persistedDocuments';
 import {
+  libraryDocsFrom,
   syncMissingPresets,
-  type LibraryDocs,
 } from '@/features/asset-library/worlds/presets/presetSync';
 import { sanitizeWorldPresets } from '@/features/asset-library/worlds/presets/worldPreset';
 
@@ -73,25 +73,16 @@ function installPresetsShippedInDataFiles(docs: Map<string, unknown>, store: Sto
     docs.set(name, dataFileJson(name) ?? []);
     touched.add(name);
   }
-  const library = libraryDocsOf((name) => docs.get(name));
-  const shipped = libraryDocsOf(dataFileJson);
+  const held = libraryDocsFrom((name) => docs.get(name));
+  const shipped = libraryDocsFrom(dataFileJson).library;
   shipped.worldPresets = sanitizeWorldPresets(shipped.worldPresets);
-  const added = syncMissingPresets(library, shipped);
+  const added = syncMissingPresets(held.library, shipped);
   if (added > 0) {
+    docs.set('worldPresets', held.worldLibrary);
     for (const name of LIBRARY_DOC_NAMES) touched.add(name);
     console.log(`[db] installed ${added} world presets shipped in the repo data files`);
   }
   for (const name of touched) void saveDoc(store, name, docs.get(name));
-}
-
-function libraryDocsOf(read: (name: string) => unknown): LibraryDocs {
-  const arrayOf = (value: unknown) => (Array.isArray(value) ? value : []);
-  return {
-    tiles: arrayOf(read('tiles')),
-    pieces: arrayOf(read('pieces')),
-    cultures: arrayOf(read('cultures')),
-    worldPresets: arrayOf(read('worldPresets')),
-  } as LibraryDocs;
 }
 
 function dataFileJson(name: string): unknown {

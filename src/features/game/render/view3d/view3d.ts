@@ -6,6 +6,7 @@ import { facingYawRadians } from '../../facing';
 import type { CameraView } from './cameraView';
 import { listenForCaptureDrag } from '../../capture/listenForCaptureDrag';
 import { listenForTileHover } from '../../hover/listenForTileHover';
+import { characterWithId } from '../../multiplayer/client/charactersInPlay';
 import { listenForDragPan } from '../camera/dragPanListener';
 import { listenForWheelZoom } from '../camera/wheelZoomListener';
 import { containerSize, devicePixelRatioCapped, isCollapsed } from '../canvasSurface';
@@ -29,9 +30,14 @@ import { SelectionBox } from './selectionBox';
 import { speechBubbleAnchors } from './speechBubbleAnchors';
 import { SpeechBubbleLabels } from './speechBubbleLabels';
 import { squareThumbnailOf } from './squareThumbnail';
-import { streamingRadiusChunks } from './streamingRadius';
+import {
+  detailedContentRadiusTiles,
+  needsTerrainOverview,
+  streamingRadiusChunks,
+} from './streamingRadius';
 import { disposeSharedWorldArt } from './sharedWorldArt';
 import { clampSightRadiusTiles, isWithinSightRadius } from '../../vision/characterSight';
+import { TerrainOverview } from './terrainOverview';
 
 const MAX_FRAME_MS = 100;
 const MOST_SNAPSHOTS_WORTH_QUEUEING = 4;
@@ -59,6 +65,7 @@ export class View3D {
   private readonly player: PlayerCharacterMesh;
   private readonly easedPlayer: EasedPoint;
   private readonly streamer: ChunkMeshStreamer;
+  private readonly terrainOverview: TerrainOverview;
   private readonly creatureMeshes: CreatureMeshes;
   private readonly itemMeshes: ItemMeshes;
   private readonly remotePlayerMeshes: RemotePlayerMeshes;
@@ -88,6 +95,7 @@ export class View3D {
       deps.tileAssets,
       deps.puzzles,
     );
+    this.terrainOverview = new TerrainOverview(this.worldGroup, deps.sampler, deps.tileAssets);
     this.creatureMeshes = new CreatureMeshes(
       this.worldGroup,
       deps.creatures,
@@ -124,6 +132,7 @@ export class View3D {
     this.selectionBox.dispose();
     this.worldLights.dispose();
     this.speechLabels.dispose();
+    this.terrainOverview.dispose();
     this.streamer.dispose();
     disposeSharedWorldArt();
     this.renderer.dispose();
@@ -154,11 +163,13 @@ export class View3D {
   }
 
   recenterOnPlayer(): void {
+    if (this.deps.cameraFocus.followedId() !== null) return;
     this.followCamera.recenterOnPlayer();
   }
 
   onWorldChanged(): void {
     this.streamer.invalidateAll();
+    this.terrainOverview.invalidate();
     this.worldLights.invalidate();
     this.itemMeshes.invalidate();
     this.creatureMeshes.forgetSprites();
@@ -206,11 +217,16 @@ export class View3D {
     listenForDragPan(
       this.canvas,
       (dxPixels, dyPixels) => {
-        if (this.cameraStyle === 'god') this.followCamera.panByDragPixels(dxPixels, dyPixels);
+        if (this.cameraStyle !== 'god') return;
+        this.deps.cameraFocus.clear();
+        this.followCamera.panByDragPixels(dxPixels, dyPixels);
       },
       () => !this.deps.capture.isActive(),
     );
-    this.canvas.addEventListener('dblclick', () => this.recenterOnPlayer());
+    this.canvas.addEventListener('dblclick', () => {
+      this.deps.cameraFocus.clear();
+      this.followCamera.recenterOnPlayer();
+    });
   }
 
   private resize(): void {
@@ -304,6 +320,7 @@ export class View3D {
     const eased = this.easedPlayer;
     if (this.cameraStyle === 'god') {
       this.followCamera.update(dtSeconds, eased.x, eased.y, facingYawRadians(this.deps.world.facing));
+      this.aimAtFollowedCharacter();
       return;
     }
     this.characterCamera.update(
@@ -315,6 +332,18 @@ export class View3D {
     );
   }
 
+  private aimAtFollowedCharacter(): void {
+    const followedId = this.deps.cameraFocus.followedId();
+    if (followedId === null) return;
+    const followed = characterWithId(this.deps.world, this.deps.remotePlayers, followedId);
+    if (!followed) {
+      this.deps.cameraFocus.clear();
+      this.followCamera.recenterOnPlayer();
+      return;
+    }
+    this.followCamera.lookAtTile(followed.x, followed.y);
+  }
+
   private lightAroundPlayer(): void {
     this.daylight.setLevel(this.deps.store.daylight());
     measureWork('world lights', () =>
@@ -324,17 +353,30 @@ export class View3D {
 
   private streamAroundCameraFocus(): void {
     const focus = this.focusPoint();
-    this.streamer.detailFromCamera(
-      this.activeCamera(),
-      this.renderer.domElement.clientHeight,
-      this.focusGroundHeight(),
-    );
+    const camera = this.activeCamera();
+    const viewportHeight = this.renderer.domElement.clientHeight;
+    const groundElevation = this.focusGroundHeight();
     const radiusTiles =
       this.cameraStyle === 'god'
-        ? this.followCamera.visibleGroundRadiusTiles()
+        ? this.followCamera.visibleGroundRadiusTiles(groundElevation)
         : this.sightRadiusTiles();
+    const overviewVisible = this.cameraStyle === 'god' && needsTerrainOverview(radiusTiles);
+    if (overviewVisible) {
+      measureWork('terrain overview', () =>
+        this.terrainOverview.syncAround(focus.x, focus.y, radiusTiles),
+      );
+    } else {
+      this.terrainOverview.hide();
+    }
+    this.streamer.detailFromCamera(camera, viewportHeight, groundElevation);
     this.streamer.streamAround(focus.x, focus.y, streamingRadiusChunks(radiusTiles));
-    measureWork('item meshes', () => this.itemMeshes.syncAround(focus.x, focus.y, radiusTiles));
+    measureWork('item meshes', () =>
+      this.itemMeshes.syncAround(
+        focus.x,
+        focus.y,
+        detailedContentRadiusTiles(radiusTiles),
+      ),
+    );
   }
 
   private placePlayer(view: CameraView): void {

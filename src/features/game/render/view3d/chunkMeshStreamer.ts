@@ -61,8 +61,12 @@ export class ChunkMeshStreamer {
     this.buildNearestStaleChunks(centerChunkX, centerChunkY, radiusChunks);
   }
 
-  dispose(): void {
+  clear(): void {
     for (const key of [...this.builtChunks.keys()]) this.dropChunk(key);
+  }
+
+  dispose(): void {
+    this.clear();
   }
 
   private dropChunksOutsideRadius(
@@ -94,12 +98,20 @@ export class ChunkMeshStreamer {
     const existing = this.builtChunks.get(key);
     if (existing && existing.version === this.version) return false;
     if (existing) this.dropChunk(key);
+    const sideBudget = this.sideBudgetAtChunk(chunkX, chunkY);
     const group = measureWork('chunk meshing', () =>
-      buildChunkMeshGroup(this.sampler, this.tileAssets, chunkX, chunkY, this.extraMarkers),
+      buildChunkMeshGroup(
+        this.sampler,
+        this.tileAssets,
+        chunkX,
+        chunkY,
+        this.extraMarkers,
+        sideBudget,
+      ),
     );
     this.applyCeilingVisibility(group);
     this.root.add(group);
-    const built = { version: this.version, group, sideBudget: MAX_FACE_ART_SIZE };
+    const built = { version: this.version, group, sideBudget };
     this.builtChunks.set(key, built);
     this.applyDetail(key, built);
     return true;

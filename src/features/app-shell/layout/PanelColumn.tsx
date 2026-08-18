@@ -11,6 +11,7 @@ export function PanelColumn({
   icon,
   tone,
   rail,
+  headerActions,
   layout,
   children,
 }: {
@@ -20,6 +21,7 @@ export function PanelColumn({
   icon: ReactNode;
   tone: string;
   rail: ReactNode;
+  headerActions?: ReactNode;
   layout: PanelLayout;
   children: ReactNode;
 }) {
@@ -32,6 +34,7 @@ export function PanelColumn({
           icon,
           tone,
           rail,
+          headerActions,
           collapsed: layout.isCollapsed(panelKey),
           onToggleCollapsed: () => layout.toggleCollapsed(panelKey),
         }}

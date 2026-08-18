@@ -1,14 +1,30 @@
 import * as THREE from 'three';
 import { tileSurfaceMaterials, type TileSurface } from './tileSurfaces';
+import { pngCubeMaterials } from './pngFaceMaterials';
 
-const SURFACE_KEY = 'tileSurface';
+const DETAIL_KEY = 'tileMaterialDetail';
 
-export function rememberTileSurface(mesh: THREE.Mesh, surface: TileSurface): void {
-  mesh.userData[SURFACE_KEY] = surface;
+export type TileMaterialDetail =
+  | { kind: 'faceArt'; surface: TileSurface }
+  | { kind: 'png'; textureId: string; baseColor: string; glow: number };
+
+export function rememberTileMaterialDetail(
+  mesh: THREE.Mesh,
+  detail: TileMaterialDetail,
+): void {
+  mesh.userData[DETAIL_KEY] = detail;
 }
 
 export function hasSharedMaterials(mesh: THREE.Mesh): boolean {
-  return mesh.userData[SURFACE_KEY] !== undefined;
+  return mesh.userData[DETAIL_KEY] !== undefined;
+}
+
+export function tileMaterialsAtDetail(
+  detail: TileMaterialDetail,
+  sideBudget: number,
+): THREE.Material | THREE.Material[] {
+  if (detail.kind === 'faceArt') return tileSurfaceMaterials(detail.surface, sideBudget);
+  return pngCubeMaterials(detail.textureId, detail.baseColor, detail.glow, sideBudget);
 }
 
 export function applyTileSideBudget(group: THREE.Object3D, sideBudget: number): void {
@@ -18,6 +34,6 @@ export function applyTileSideBudget(group: THREE.Object3D, sideBudget: number): 
 }
 
 function applyToMesh(mesh: THREE.Mesh, sideBudget: number): void {
-  const surface = mesh.userData[SURFACE_KEY] as TileSurface | undefined;
-  if (surface) mesh.material = tileSurfaceMaterials(surface, sideBudget);
+  const detail = mesh.userData[DETAIL_KEY] as TileMaterialDetail | undefined;
+  if (detail) mesh.material = tileMaterialsAtDetail(detail, sideBudget);
 }

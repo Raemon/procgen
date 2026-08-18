@@ -5,10 +5,12 @@ import { isTransparentInk, opaqueInk } from '@/features/asset-library/tiles/inkC
 import type { ReadOnlyTileAssets } from '@/features/app-shell/runtime/readOnlyAssets';
 import { instancedTileMesh } from './instancedTileMesh';
 import { MAX_FACE_ART_SIZE } from '@/features/asset-library/tiles/tileFaceArt';
-import { tileSurfaceMaterials, type TileSurface } from './tileSurfaces';
-import { rememberTileSurface } from './chunkDetail';
+import {
+  rememberTileMaterialDetail,
+  tileMaterialsAtDetail,
+  type TileMaterialDetail,
+} from './chunkDetail';
 import { glowSelfLit } from './selfLitGlow';
-import { pngCubeMaterials } from './pngFaceMaterials';
 import { markerPlacementsForRect } from './markerPlacements';
 import { NO_EXTRA_MARKERS, type MarkerSource } from '../markerSource';
 import type { TilePlacement } from './tilePlacements';
@@ -40,24 +42,30 @@ import { groupedByShapeAndFacing } from './shapedPlacementGroups';
 
 export const CEILING_GROUP_NAME = 'ceiling';
 
+interface MeshBuildDetail {
+  sideBudget: number;
+}
+
 export function buildChunkMeshGroup(
   sampler: WorldSampler,
   tileAssets: ReadOnlyTileAssets,
   chunkX: number,
   chunkY: number,
   extraMarkers: MarkerSource = NO_EXTRA_MARKERS,
+  sideBudget: number = MAX_FACE_ART_SIZE,
 ): THREE.Group {
   const minX = chunkOrigin(chunkX);
   const minY = chunkOrigin(chunkY);
   const around = placementsAroundChunk(sampler, tileAssets, minX, minY);
   const markers = markerPlacementsForRect(sampler, minX, minY, CHUNK_SIZE, CHUNK_SIZE, extraMarkers);
+  const detail = { sideBudget };
   const group = new THREE.Group();
   group.add(
-    ...terrainMeshes(around, minX, minY),
-    ...meshesForShape(markers.pins, markerShape()),
-    ...meshesForShape(markers.billboards, billboardShape()),
-    ...meshesForShape(markers.standingFixtures, standingFixtureShape()),
-    ceilingGroup(around, minX, minY),
+    ...terrainMeshes(around, minX, minY, detail),
+    ...meshesForShape(markers.pins, markerShape(), detail),
+    ...meshesForShape(markers.billboards, billboardShape(), detail),
+    ...meshesForShape(markers.standingFixtures, standingFixtureShape(), detail),
+    ceilingGroup(around, minX, minY, detail),
   );
   return group;
 }
@@ -66,19 +74,23 @@ function terrainMeshes(
   around: ChunkSurroundings,
   minX: number,
   minY: number,
+  detail: MeshBuildDetail,
 ): THREE.InstancedMesh[] {
   const field = occluderFieldOfPlacements(around.window, terrainOccluders(around));
   return [
-    ...meshesForShape(insideChunk(around.floors, minX, minY), floorShape(), field),
-    ...meshesForShape(insideChunk(around.blocks, minX, minY), blockShape(), field),
-    ...meshesForShape(insideChunk(around.voxels, minX, minY), voxelShape(), field),
-    ...shapedMeshes(insideChunk(around.shaped, minX, minY)),
+    ...meshesForShape(insideChunk(around.floors, minX, minY), floorShape(), detail, field),
+    ...meshesForShape(insideChunk(around.blocks, minX, minY), blockShape(), detail, field),
+    ...meshesForShape(insideChunk(around.voxels, minX, minY), voxelShape(), detail, field),
+    ...shapedMeshes(insideChunk(around.shaped, minX, minY), detail),
   ];
 }
 
-function shapedMeshes(placements: readonly TilePlacement[]): THREE.InstancedMesh[] {
+function shapedMeshes(
+  placements: readonly TilePlacement[],
+  detail: MeshBuildDetail,
+): THREE.InstancedMesh[] {
   return groupedByShapeAndFacing(placements).flatMap((solid) =>
-    meshesForShape(solid.placements, shapedShape(solid.shape, solid.facing)),
+    meshesForShape(solid.placements, shapedShape(solid.shape, solid.facing), detail),
   );
 }
 
@@ -90,13 +102,23 @@ function terrainOccluders(around: ChunkSurroundings): ShapedPlacements[] {
   ];
 }
 
-function ceilingGroup(around: ChunkSurroundings, minX: number, minY: number): THREE.Group {
+function ceilingGroup(
+  around: ChunkSurroundings,
+  minX: number,
+  minY: number,
+  detail: MeshBuildDetail,
+): THREE.Group {
   const field = occluderFieldOfPlacements(around.window, [
     { placements: around.ceilings, shape: ceilingShape() },
   ]);
   const group = new THREE.Group();
   group.name = CEILING_GROUP_NAME;
-  const meshes = meshesForShape(insideChunk(around.ceilings, minX, minY), ceilingShape(), field);
+  const meshes = meshesForShape(
+    insideChunk(around.ceilings, minX, minY),
+    ceilingShape(),
+    detail,
+    field,
+  );
   if (meshes.length > 0) group.add(...meshes);
   return group;
 }
@@ -104,10 +126,11 @@ function ceilingGroup(around: ChunkSurroundings, minX: number, minY: number): TH
 function meshesForShape(
   placements: readonly TilePlacement[],
   shape: TileShape,
+  detail: MeshBuildDetail,
   field?: ChunkOccluderField,
 ): THREE.InstancedMesh[] {
   return groupsOfLikeSurfaceAndFaces(foldRareFaceVariants(facedPlacements(placements, shape, field)))
-    .map((group) => groupMesh(group, shape))
+    .map((group) => groupMesh(group, shape, detail))
     .filter((mesh): mesh is THREE.InstancedMesh => mesh !== null);
 }
 
@@ -138,28 +161,40 @@ function visibleFacesOfPlacement(
   return visibleFacesOf(field, placement.x, placement.y, shape.occluderBoxOf(placement));
 }
 
-function groupMesh(group: PlacementGroup, shape: TileShape): THREE.InstancedMesh | null {
+function groupMesh(
+  group: PlacementGroup,
+  shape: TileShape,
+  buildDetail: MeshBuildDetail,
+): THREE.InstancedMesh | null {
   if (group.placements.length === 0) return null;
-  const surface = surfaceOf(group);
+  const detail = materialDetailOf(group);
   const mesh = instancedTileMesh(
     shape.geometry(group.faces),
-    surface ? tileSurfaceMaterials(surface, MAX_FACE_ART_SIZE) : groupMaterials(group),
+    detail ? tileMaterialsAtDetail(detail, buildDetail.sideBudget) : untexturedMaterial(group),
     group.placements,
     shape.positionOf,
     shape.scaleOf,
   );
-  if (mesh && surface) rememberTileSurface(mesh, surface);
+  if (mesh && detail) rememberTileMaterialDetail(mesh, detail);
   return mesh;
 }
 
-function surfaceOf(group: PlacementGroup): TileSurface | null {
-  if (!group.art) return null;
-  return { art: group.art, baseColor: group.baseColor, glow: group.glow };
-}
-
-function groupMaterials(group: PlacementGroup): THREE.Material | THREE.Material[] {
-  if (group.textureId !== null) return pngCubeMaterials(group.textureId, group.baseColor, group.glow);
-  return untexturedMaterial(group);
+function materialDetailOf(group: PlacementGroup): TileMaterialDetail | null {
+  if (group.art) {
+    return {
+      kind: 'faceArt',
+      surface: { art: group.art, baseColor: group.baseColor, glow: group.glow },
+    };
+  }
+  if (group.textureId !== null) {
+    return {
+      kind: 'png',
+      textureId: group.textureId,
+      baseColor: group.baseColor,
+      glow: group.glow,
+    };
+  }
+  return null;
 }
 
 function untexturedMaterial(group: PlacementGroup): THREE.Material {

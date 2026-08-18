@@ -1,6 +1,7 @@
 import { MAX_FACE_ART_SIZE } from '@/features/asset-library/tiles/tileFaceArt';
 
 const SMALLEST_BUDGET = 1;
+const PNG_TEXTURE_SIDE = 256;
 const DEGREES_TO_RADIANS = Math.PI / 180;
 
 export function tileSideBudget(
@@ -15,6 +16,14 @@ export function tileSideBudget(
 
 export function drawsNormalMapAt(mipLevel: number): boolean {
   return mipLevel === 0;
+}
+
+export function drawsPngColorAt(sideBudget: number): boolean {
+  return sideBudget > SMALLEST_BUDGET;
+}
+
+export function drawsPngNormalAt(sideBudget: number): boolean {
+  return sideBudget >= PNG_TEXTURE_SIDE;
 }
 
 function pixelsPerTile(

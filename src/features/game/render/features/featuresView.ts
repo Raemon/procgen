@@ -10,6 +10,7 @@ import { FeatureLegend } from './featureLegend';
 import { pickFeatureAt } from './featurePicking';
 import { featuresCameraOf, worldOfScreen, type FeaturesCamera } from './featuresCamera';
 import { FEATURE_LABEL_FONT, paintFeatureScene } from './featuresPainter';
+import { FeatureVisibility } from './featureVisibility';
 import { buildFeatureScene, type FeatureScene } from './featuresScene';
 import { clampedPixelsPerTile, surveyRectOf } from './featuresSurveyRect';
 import { SurveyedFeatures } from './surveyedFeatures';
@@ -21,6 +22,7 @@ export class FeaturesView {
   private readonly canvas = document.createElement('canvas');
   private readonly pan = new PanOffset();
   private readonly surveyed: SurveyedFeatures;
+  private readonly visibility = new FeatureVisibility();
   private readonly legend: FeatureLegend;
   private readonly card: FeatureDetailCard;
   private pixelsPerTile = DEFAULT_PIXELS_PER_TILE;
@@ -33,7 +35,7 @@ export class FeaturesView {
   ) {
     this.canvas.className = 'absolute inset-0 touch-none';
     container.appendChild(this.canvas);
-    this.legend = new FeatureLegend(container);
+    this.legend = new FeatureLegend(container, this.visibility, () => this.draw());
     this.card = new FeatureDetailCard(container);
     this.surveyed = new SurveyedFeatures(deps.store, deps.evaluator);
     listenForDragPan(this.canvas, (dx, dy) => this.panByPixels(dx, dy));
@@ -47,9 +49,11 @@ export class FeaturesView {
     if (isCollapsed(size)) return;
     const ratio = sizeCanvasToContainer(this.canvas, size);
     const camera = this.cameraFor(size);
-    const features = this.surveyed.featuresFor(surveyRectOf(camera));
-    this.featuresByKey = new Map(features.map((feature) => [feature.key, feature]));
-    this.paint(camera, features, ratio);
+    const surveyed = this.surveyed.featuresFor(surveyRectOf(camera));
+    const shown = surveyed.filter((feature) => !this.visibility.isHidden(feature.nodeId));
+    this.featuresByKey = new Map(shown.map((feature) => [feature.key, feature]));
+    this.paint(camera, shown, ratio);
+    this.legend.update(surveyed);
   }
 
   recenterOnPlayer(): void {
@@ -69,12 +73,13 @@ export class FeaturesView {
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
     ctx.font = FEATURE_LABEL_FONT;
     this.scene = buildFeatureScene(features, camera, (text) => ctx.measureText(text).width);
-    paintFeatureScene(ctx, camera.widthPx, camera.heightPx, this.scene);
-    this.legend.update(features);
+    paintFeatureScene(ctx, camera.widthPx, camera.heightPx, this.scene, (nodeId) =>
+      this.visibility.opacityOf(nodeId),
+    );
   }
 
   private cameraFor(size: CanvasSize): FeaturesCamera {
-    this.pixelsPerTile = clampedPixelsPerTile(this.pixelsPerTile, size.cssWidth, size.cssHeight);
+    this.pixelsPerTile = clampedPixelsPerTile(this.pixelsPerTile);
     const player = { x: this.deps.world.playerX, y: this.deps.world.playerY };
     return featuresCameraOf(player, this.pan, this.pixelsPerTile, size);
   }

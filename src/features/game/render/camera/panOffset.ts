@@ -10,6 +10,11 @@ export class PanOffset {
     return this.y;
   }
 
+  setTo(xTiles: number, yTiles: number): void {
+    this.x = xTiles;
+    this.y = yTiles;
+  }
+
   shiftBy(dxTiles: number, dyTiles: number): void {
     this.x += dxTiles;
     this.y += dyTiles;

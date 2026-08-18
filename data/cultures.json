@@ -646,5 +646,215 @@
     "roofStyle": 0,
     "storyLayers": 3,
     "windowEvery": 4
+  },
+  {
+    "id": 15,
+    "name": "tarnwengarth (tarnwengarth (evolved))",
+    "roleBindings": {
+      "wallSegment": [
+        142
+      ],
+      "wallCorner": [
+        143
+      ],
+      "window": [
+        144
+      ],
+      "door": [
+        145
+      ],
+      "roofEdge": [
+        146
+      ],
+      "roofRidge": [
+        147
+      ],
+      "roofGableEnd": [
+        148
+      ],
+      "floor": [
+        149
+      ],
+      "chimney": [
+        150
+      ]
+    },
+    "wallTileId": 319,
+    "trimTileId": 324,
+    "roofSlopeTileId": 321,
+    "roofRidgeTileId": 322,
+    "floorTileId": 323,
+    "pathTileId": 329,
+    "roofStyle": 1,
+    "storyLayers": 3,
+    "windowEvery": 3
+  },
+  {
+    "id": 16,
+    "name": "tarnlingwold (tarnlingwold (evolved))",
+    "roleBindings": {
+      "wallSegment": [
+        151
+      ],
+      "wallCorner": [
+        152
+      ],
+      "window": [
+        153
+      ],
+      "door": [
+        154
+      ],
+      "roofEdge": [
+        155
+      ],
+      "roofRidge": [
+        156
+      ],
+      "roofGableEnd": [
+        157
+      ],
+      "floor": [
+        158
+      ],
+      "chimney": [
+        159
+      ]
+    },
+    "wallTileId": 344,
+    "trimTileId": 349,
+    "roofSlopeTileId": 346,
+    "roofRidgeTileId": 347,
+    "floorTileId": 348,
+    "pathTileId": 354,
+    "roofStyle": 1,
+    "storyLayers": 2,
+    "windowEvery": 4
+  },
+  {
+    "id": 17,
+    "name": "haldalegarth (haldalegarth (evolved))",
+    "roleBindings": {
+      "wallSegment": [
+        160
+      ],
+      "wallCorner": [
+        161
+      ],
+      "window": [
+        162
+      ],
+      "door": [
+        163
+      ],
+      "roofEdge": [
+        164
+      ],
+      "roofRidge": [
+        165
+      ],
+      "roofGableEnd": [
+        166
+      ],
+      "floor": [
+        167
+      ],
+      "chimney": [
+        168
+      ]
+    },
+    "wallTileId": 369,
+    "trimTileId": 374,
+    "roofSlopeTileId": 371,
+    "roofRidgeTileId": 372,
+    "floorTileId": 373,
+    "pathTileId": 379,
+    "roofStyle": 0,
+    "storyLayers": 2,
+    "windowEvery": 3
+  },
+  {
+    "id": 18,
+    "name": "tarnholmfen (tarnholmfen (evolved))",
+    "roleBindings": {
+      "wallSegment": [
+        169
+      ],
+      "wallCorner": [
+        170
+      ],
+      "window": [
+        171
+      ],
+      "door": [
+        172
+      ],
+      "roofEdge": [
+        173
+      ],
+      "roofRidge": [
+        174
+      ],
+      "roofGableEnd": [
+        175
+      ],
+      "floor": [
+        176
+      ],
+      "chimney": [
+        177
+      ]
+    },
+    "wallTileId": 394,
+    "trimTileId": 399,
+    "roofSlopeTileId": 396,
+    "roofRidgeTileId": 397,
+    "floorTileId": 398,
+    "pathTileId": 404,
+    "roofStyle": 1,
+    "storyLayers": 3,
+    "windowEvery": 4
+  },
+  {
+    "id": 19,
+    "name": "morstanby (morstanby (evolved))",
+    "roleBindings": {
+      "wallSegment": [
+        178
+      ],
+      "wallCorner": [
+        179
+      ],
+      "window": [
+        180
+      ],
+      "door": [
+        181
+      ],
+      "roofEdge": [
+        182
+      ],
+      "roofRidge": [
+        183
+      ],
+      "roofGableEnd": [
+        184
+      ],
+      "floor": [
+        185
+      ],
+      "chimney": [
+        186
+      ]
+    },
+    "wallTileId": 418,
+    "trimTileId": 423,
+    "roofSlopeTileId": 420,
+    "roofRidgeTileId": 421,
+    "floorTileId": 422,
+    "pathTileId": 428,
+    "roofStyle": 0,
+    "storyLayers": 2,
+    "windowEvery": 4
   }
 ]

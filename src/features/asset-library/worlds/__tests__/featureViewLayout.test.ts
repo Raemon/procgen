@@ -13,13 +13,32 @@ import {
   FEATURE_SURVEY_SPAN_TILES,
   surveyRectOf,
 } from '@/features/game/render/features/featuresSurveyRect';
+import { FeatureVisibility } from '@/features/game/render/features/featureVisibility';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 
 export function checkFeatureViewLayout(check: CheckReporter): void {
   checkLabelsNeverOverlap(check);
   checkPickingPrefersContainingRects(check);
-  checkMinZoomHoldsTheSurveySpan(check);
+  checkSurveyNeverExceedsItsSpan(check);
   checkClustersReportTheirCount(check);
+  checkVisibilityCyclesThroughItsThreeStates(check);
+}
+
+function checkVisibilityCyclesThroughItsThreeStates(check: CheckReporter): void {
+  const visibility = new FeatureVisibility();
+  check(
+    'a node starts fully shown',
+    visibility.stateOf('groves') === 'shown' && visibility.opacityOf('groves') === 1,
+  );
+  check(
+    'one click fades the node to a fifth of its opacity without hiding it',
+    visibility.cycle('groves') === 'faded' &&
+      visibility.opacityOf('groves') === 0.2 &&
+      !visibility.isHidden('groves'),
+  );
+  check('a second click hides the node', visibility.cycle('groves') === 'hidden' && visibility.isHidden('groves'));
+  check('a third click brings it back', visibility.cycle('groves') === 'shown' && !visibility.isHidden('groves'));
+  check('toggling one node leaves the others alone', visibility.stateOf('reefs') === 'shown');
 }
 
 function checkLabelsNeverOverlap(check: CheckReporter): void {
@@ -87,19 +106,23 @@ function targetOf(key: string, shape: PickTarget['shape']): PickTarget {
   return { cluster: { feature: featureAt(key, 0, 0), count: 1, screenX: shape.x, screenY: shape.y }, shape };
 }
 
-function checkMinZoomHoldsTheSurveySpan(check: CheckReporter): void {
+function checkSurveyNeverExceedsItsSpan(check: CheckReporter): void {
   const sizes = [
     { widthPx: 800, heightPx: 600 },
     { widthPx: 2400, heightPx: 1200 },
   ];
   check(
-    'the minimum zoom refuses any viewport wider or taller than the survey span',
+    'zooming out past the survey span still surveys no more than the span',
     sizes.every((size) => surveyFitsSpan(size.widthPx, size.heightPx)),
+  );
+  check(
+    'zoom is no longer clamped to what the survey span can fill',
+    clampedPixelsPerTile(0.0001) === 0.0001 && clampedPixelsPerTile(4096) === 4096,
   );
 }
 
 function surveyFitsSpan(widthPx: number, heightPx: number): boolean {
-  const pixelsPerTile = clampedPixelsPerTile(0.0001, widthPx, heightPx);
+  const pixelsPerTile = clampedPixelsPerTile(0.0001);
   const rect = surveyRectOf(cameraOf(widthPx, heightPx, pixelsPerTile));
   return (
     rect.maxX - rect.minX <= FEATURE_SURVEY_SPAN_TILES + 2 &&

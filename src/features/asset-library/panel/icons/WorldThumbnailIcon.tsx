@@ -11,7 +11,7 @@ export function WorldThumbnailIcon({ worldName }: { worldName: string }) {
       {thumbnail ? (
         <img src={thumbnail} alt="" className="h-full w-full object-cover" />
       ) : (
-        <span className="text-ink-dim">
+        <span className="flex h-full w-full items-center justify-center text-ink-dim [&>svg]:h-[62.5%] [&>svg]:w-[62.5%]">
           <WorldIcon size={GLYPH_SIZE} />
         </span>
       )}

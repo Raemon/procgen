@@ -1,4 +1,4 @@
-export const CLIMB_LIMIT = 1.45;
+export const CLIMB_LIMIT = 1;
 export const CLIMB_EFFORT_WEIGHT = 1.5;
 
 export type ElevationProbe = (x: number, y: number) => number;
@@ -16,7 +16,7 @@ const EXIT_STEPS = [
 
 export function climbGateFrom(elevationAt: ElevationProbe): ClimbGate {
   return (fromX, fromY, toX, toY) =>
-    Math.abs(elevationAt(toX, toY) - elevationAt(fromX, fromY)) <= CLIMB_LIMIT;
+    elevationAt(toX, toY) - elevationAt(fromX, fromY) <= CLIMB_LIMIT;
 }
 
 export function climbEffortOfRise(rise: number): number {

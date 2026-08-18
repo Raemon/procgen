@@ -1,11 +1,15 @@
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
-import { useRerenderOnPieceChange } from '@/features/app-shell/runtime/rerenderHooks';
+import {
+  useRerenderOnPieceChange,
+  useRerenderOnTileAssetChange,
+} from '@/features/app-shell/runtime/rerenderHooks';
 import { PieceIcon } from '../icons/PieceIcon';
 import type { LibraryEntry } from './libraryEntry';
 
 export function usePieceEntries(): LibraryEntry[] {
   const { pieces, perform } = useAppRuntime();
   useRerenderOnPieceChange();
+  useRerenderOnTileAssetChange();
   return pieces.all().map((piece) => ({
     key: String(piece.id),
     name: piece.name,

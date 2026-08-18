@@ -9,37 +9,25 @@ const MAX_PITCH = 1.4;
 
 export class PiecePreviewScene {
   private readonly renderer: THREE.WebGLRenderer;
-  private readonly scene = new THREE.Scene();
-  private readonly camera = new THREE.PerspectiveCamera(45, 1, 0.1, 500);
-  private readonly voxelGroup = new THREE.Group();
-  private yaw = Math.PI / 5;
-  private pitch = 0.7;
-  private radius = 12;
+  private readonly renderScene = new PieceRenderScene();
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-    this.scene.background = new THREE.Color(BACKGROUND_INK);
-    this.scene.add(new THREE.AmbientLight(0xbfd0e0, 0.7), sunlight(), this.voxelGroup);
     this.listenForOrbitDrag();
   }
 
   dispose(): void {
-    this.clearVoxels();
+    this.renderScene.dispose();
     this.renderer.dispose();
   }
 
   showPiece(piece: Piece, tileAssets: ReadOnlyTileAssets): void {
-    this.clearVoxels();
-    this.voxelGroup.add(...voxelMeshes(piece, tileAssets));
-    this.voxelGroup.position.set(-piece.width / 2, 0, -piece.depth / 2);
-    this.radius = Math.max(piece.width, piece.depth, piece.layers) * 2.2;
+    this.renderScene.showPiece(piece, tileAssets);
     this.render();
   }
 
   render(): void {
-    this.sizeToCanvas();
-    this.placeCamera();
-    this.renderer.render(this.scene, this.camera);
+    this.renderScene.render(this.renderer, this.canvas.clientWidth, this.canvas.clientHeight);
   }
 
   private listenForOrbitDrag(): void {
@@ -54,7 +42,7 @@ export class PiecePreviewScene {
     });
     this.canvas.addEventListener('pointermove', (event) => {
       if (!dragging) return;
-      this.orbitBy(event.clientX - lastX, event.clientY - lastY);
+      this.renderScene.orbitBy(event.clientX - lastX, event.clientY - lastY);
       lastX = event.clientX;
       lastY = event.clientY;
       this.render();
@@ -65,22 +53,47 @@ export class PiecePreviewScene {
     this.canvas.addEventListener('pointerup', end);
     this.canvas.addEventListener('pointercancel', end);
   }
+}
 
-  private orbitBy(dxPixels: number, dyPixels: number): void {
+export class PieceRenderScene {
+  private readonly scene = new THREE.Scene();
+  private readonly camera = new THREE.PerspectiveCamera(45, 1, 0.1, 500);
+  private readonly voxelGroup = new THREE.Group();
+  private yaw = Math.PI / 5;
+  private pitch = 0.7;
+  private radius = 12;
+
+  constructor() {
+    this.scene.background = new THREE.Color(BACKGROUND_INK);
+    this.scene.add(new THREE.AmbientLight(0xbfd0e0, 0.7), sunlight(), this.voxelGroup);
+  }
+
+  dispose(): void {
+    this.clearVoxels();
+  }
+
+  showPiece(piece: Piece, tileAssets: ReadOnlyTileAssets): void {
+    this.clearVoxels();
+    this.voxelGroup.add(...voxelMeshes(piece, tileAssets));
+    this.voxelGroup.position.set(-piece.width / 2, 0, -piece.depth / 2);
+    this.radius = Math.max(piece.width, piece.depth, piece.layers) * 2.2;
+  }
+
+  render(renderer: THREE.WebGLRenderer, width: number, height: number): void {
+    if (width === 0 || height === 0) return;
+    renderer.setSize(width, height, false);
+    this.camera.aspect = width / height;
+    this.camera.updateProjectionMatrix();
+    this.placeCamera();
+    renderer.render(this.scene, this.camera);
+  }
+
+  orbitBy(dxPixels: number, dyPixels: number): void {
     this.yaw -= dxPixels / ORBIT_PIXELS_PER_RADIAN;
     this.pitch = Math.min(
       MAX_PITCH,
       Math.max(MIN_PITCH, this.pitch + dyPixels / ORBIT_PIXELS_PER_RADIAN),
     );
-  }
-
-  private sizeToCanvas(): void {
-    const width = this.canvas.clientWidth;
-    const height = this.canvas.clientHeight;
-    if (width === 0 || height === 0) return;
-    this.renderer.setSize(width, height, false);
-    this.camera.aspect = width / height;
-    this.camera.updateProjectionMatrix();
   }
 
   private placeCamera(): void {
