@@ -1,34 +1,40 @@
-import '@/features/asset-library/worlds/nodes';
 import { join } from 'node:path';
-import type { EliteArchive } from '@/features/asset-library/worlds/selfPlay/eliteArchive';
+import type { GenerationRecord } from '@/features/asset-library/worlds/selfPlay/trainingRunner';
 import {
-  runTraining,
-  type GenerationRecord,
-  type TrainingRun,
-} from '@/features/asset-library/worlds/selfPlay/trainingLoop';
+  followLabRun,
+  labServerUrl,
+  reportWorldsOf,
+  startLabRun,
+  stopOnInterrupt,
+  type LabRunJson,
+} from './labClient';
 import { trainingSettingsOf } from './selfPlay/trainingOptions';
-import {
-  TRAINING_REPORT_DIR,
-  trainingHeadlineOf,
-  writeTrainingReport,
-} from './selfPlay/writeTrainingReport';
+import { TRAINING_REPORT_DIR, writeTrainingReport } from './selfPlay/writeTrainingReport';
 
 const settings = trainingSettingsOf(process.argv.slice(2));
 const startedAt = Date.now();
-const trajectory: GenerationRecord[] = [];
 
-reportRun(runTraining(settings, reportGeneration));
+let runId: string | null = null;
+stopOnInterrupt(() => runId);
 
-function reportGeneration(record: GenerationRecord, archive: EliteArchive): void {
-  trajectory.push(record);
-  console.log(generationLine(record));
-  writeTrainingReport(
-    TRAINING_REPORT_DIR,
-    archive.rankedByFun(),
-    trajectory,
-    trainingHeadlineOf(settings, trajectory),
-    true,
-  );
+runId = await startLabRun('/asset-library/worlds/train', {
+  generations: settings.generations,
+  batch_size: settings.batchSize,
+  step_budget: settings.stepBudget,
+  radius_cap: settings.radiusCap,
+  seed: settings.seed,
+  patience: settings.patience,
+});
+console.log(`breeding worlds on ${labServerUrl()} as ${runId}`);
+
+reportRun(await followLabRun(runId, reportGeneration));
+
+let generationsPrinted = 0;
+
+function reportGeneration(run: LabRunJson): void {
+  for (const record of run.generations.slice(generationsPrinted)) console.log(generationLine(record));
+  generationsPrinted = run.generations.length;
+  writeTrainingReport(TRAINING_REPORT_DIR, reportWorldsOf(run), run.generations, headlineOf(run), true);
 }
 
 function generationLine(record: GenerationRecord): string {
@@ -45,23 +51,31 @@ function generationLine(record: GenerationRecord): string {
   ].join('  ');
 }
 
-function reportRun(run: TrainingRun): void {
-  writeTrainingReport(
-    TRAINING_REPORT_DIR,
-    run.archive.rankedByFun(),
-    run.trajectory,
-    trainingHeadlineOf(settings, run.trajectory),
-    false,
-  );
+function reportRun(run: LabRunJson): void {
+  writeTrainingReport(TRAINING_REPORT_DIR, reportWorldsOf(run), run.generations, headlineOf(run), false);
   console.log(finishedLine(run));
   console.log(`report: ${join(TRAINING_REPORT_DIR, 'index.html')}`);
+  console.log(`run: ${labServerUrl()}/api/v1/asset-library/worlds/lab/${run.id}`);
 }
 
-function finishedLine(run: TrainingRun): string {
-  const why = run.saturated
-    ? `saturated after ${settings.patience} generations without a gain`
-    : 'ran out of generations';
-  const found = `best fun ${run.archive.bestFun().toFixed(3)}, coverage ${run.archive.coverage().toFixed(2)}, elites ${run.archive.all().length}`;
+function headlineOf(run: LabRunJson): string {
+  return [
+    `${run.generations.length} of ${settings.generations} generations`,
+    `batch ${settings.batchSize}`,
+    `${settings.stepBudget}-step walks`,
+    `seed ${settings.seed}`,
+    `generated ${new Date().toISOString()}`,
+  ].join(' · ');
+}
+
+function finishedLine(run: LabRunJson): string {
+  const why =
+    run.status === 'stopped'
+      ? 'stopped'
+      : run.generations.length < settings.generations
+        ? `saturated after ${settings.patience} generations without a gain`
+        : 'ran out of generations';
+  const found = `best fun ${(run.best_fun ?? 0).toFixed(3)}, elites ${run.worlds.length}`;
   return `\n${why}: ${found}, ${secondsSinceStart()}s`;
 }
 

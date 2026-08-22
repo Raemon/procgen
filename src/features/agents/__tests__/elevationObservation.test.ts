@@ -1,3 +1,4 @@
+import { assetId } from '@/features/asset-library/asset';
 import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
 import { newTileWithId } from '@/features/asset-library/tiles/tileDef';
 import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
@@ -5,7 +6,7 @@ import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { buildObservation, type AgentObservation } from '../observation';
 import { observationText } from '../observationText';
 
-const MEADOW_TILE = 0;
+const MEADOW_TILE = assetId<'tiles'>(0);
 
 const meadowTiles = new TileAssets([
   { ...newTileWithId(MEADOW_TILE), name: 'meadow', symbol: '"', walkable: true, height: 1 },

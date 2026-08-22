@@ -1,8 +1,15 @@
+import {
+  NO_CREATURE,
+  NO_CULTURE,
+  NO_ITEM,
+  NO_PIECE,
+  NO_TILE,
+  roundedAssetId,
+} from '@/features/asset-library/asset';
 import '../nodes';
 import {
   DEFAULT_CEILING_HEIGHT,
   isBindingValidForKind,
-  NO_CULTURE,
   RANDOM_ROTATION,
   type DisplayBinding,
 } from '../display/displayBinding';
@@ -115,15 +122,15 @@ function applyStoredDisplay(node: NodeInstance, def: NodeTypeDef, rawDisplay: un
 
 function normalizedBinding(binding: DisplayBinding): DisplayBinding {
   if (binding.mode === 'ceiling') {
-    return { mode: 'ceiling', height: finiteOr(binding.height, DEFAULT_CEILING_HEIGHT) };
+    return { mode: 'ceiling', height: numberOr(binding.height, DEFAULT_CEILING_HEIGHT) };
   }
   if (binding.mode === 'elevation') {
-    return { mode: 'elevation', heightScale: finiteOr(binding.heightScale, 3) };
+    return { mode: 'elevation', heightScale: numberOr(binding.heightScale, 3) };
   }
   if (binding.mode === 'markers') {
     return {
       mode: 'markers',
-      tileId: Math.round(finiteOr(binding.tileId, -1)),
+      tileId: roundedAssetId<'tiles'>(numberOr(binding.tileId, NO_TILE), NO_TILE),
       glyph: typeof binding.glyph === 'string' && binding.glyph ? binding.glyph : '*',
       color: typeof binding.color === 'string' ? binding.color : '#ff5577',
     };
@@ -131,22 +138,22 @@ function normalizedBinding(binding: DisplayBinding): DisplayBinding {
   if (binding.mode === 'pieces') {
     return {
       mode: 'pieces',
-      pieceId: Math.round(finiteOr(binding.pieceId, -1)),
-      rotation: Math.round(finiteOr(binding.rotation, RANDOM_ROTATION)),
+      pieceId: roundedAssetId<'pieces'>(numberOr(binding.pieceId, NO_PIECE), NO_PIECE),
+      rotation: Math.round(numberOr(binding.rotation, RANDOM_ROTATION)),
     };
   }
   if (binding.mode === 'structures') {
-    return { mode: 'structures', cultureId: Math.round(finiteOr(binding.cultureId, NO_CULTURE)) };
+    return { mode: 'structures', cultureId: roundedAssetId<'cultures'>(numberOr(binding.cultureId, NO_CULTURE), NO_CULTURE) };
   }
   if (binding.mode === 'creatures') {
-    return { mode: 'creatures', creatureId: Math.round(finiteOr(binding.creatureId, -1)) };
+    return { mode: 'creatures', creatureId: roundedAssetId<'creatures'>(numberOr(binding.creatureId, NO_CREATURE), NO_CREATURE) };
   }
   if (binding.mode === 'items') {
-    return { mode: 'items', itemId: Math.round(finiteOr(binding.itemId, -1)) };
+    return { mode: 'items', itemId: roundedAssetId<'items'>(numberOr(binding.itemId, NO_ITEM), NO_ITEM) };
   }
   return { mode: binding.mode };
 }
 
-function finiteOr(value: unknown, fallback: number): number {
+function numberOr(value: unknown, fallback: number): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
 }

@@ -1,3 +1,4 @@
+import type { TileId } from '@/features/asset-library/asset';
 import { EMPTY_TILE } from '@/features/asset-library/worlds/values/chunkValues';
 import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import type { ReadOnlyTileAssets } from '@/features/app-shell/runtime/readOnlyAssets';
@@ -49,7 +50,7 @@ function addGlowingCeiling(
   into.push(lightSourceAt(tile, x, y, elevation - 0.5));
 }
 
-function tileAt(tileAssets: ReadOnlyTileAssets, tileId: number) {
+function tileAt(tileAssets: ReadOnlyTileAssets, tileId: TileId) {
   if (tileId === EMPTY_TILE) return null;
   const tile = tileAssets.byId(tileId);
   return tile && emitsLight(tile) ? tile : null;

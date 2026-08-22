@@ -1,3 +1,4 @@
+import type { CreatureId } from '../asset';
 import { blankInventory, type InventoryDef } from '../items/inventory/inventoryDef';
 import { BLANK_CHARACTER_ART, builtInBillboard } from './art/builtInBillboards';
 import type { CharacterBillboard } from '../characters/characterBillboard';
@@ -9,7 +10,7 @@ export const CREATURE_BODY = { width: 0.7, height: 0.7 };
 export const CHARACTER_BODY = { width: 1, height: 2 };
 
 export interface CreatureDef {
-  id: number;
+  id: CreatureId;
   name: string;
   symbol: string;
   color: string;
@@ -27,7 +28,7 @@ export interface CreatureDef {
   billboard: CharacterBillboard | null;
 }
 
-export function newCreatureWithId(id: number): CreatureDef {
+export function newCreatureWithId(id: CreatureId): CreatureDef {
   return {
     id,
     name: `creature ${id}`,
@@ -48,7 +49,7 @@ export function newCreatureWithId(id: number): CreatureDef {
   };
 }
 
-export function newCharacterWithId(id: number): CreatureDef {
+export function newCharacterWithId(id: CreatureId): CreatureDef {
   return {
     ...newCreatureWithId(id),
     name: `character ${id}`,

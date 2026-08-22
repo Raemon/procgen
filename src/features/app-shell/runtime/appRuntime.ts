@@ -4,6 +4,7 @@ import {
   commandSucceeded,
   type CommandMode,
   type CommandResult,
+  type CommandParams,
 } from '@/features/app-shell/runtime/commands/command';
 import { ChatComposerState } from '@/features/game/chat/chatComposerState';
 import { CreatureAssets } from '@/features/asset-library/creatures/creatureAssets';
@@ -90,7 +91,7 @@ export interface AppRuntime {
   hoveredTile: HoveredTile;
   puzzles: PuzzleWorld;
   renderers: WorldRenderers;
-  perform(action: string, params?: Record<string, unknown>): CommandResult;
+  perform(action: string, params?: CommandParams): CommandResult;
   playerMode(): CommandMode;
   setPlayerMode(mode: CommandMode): void;
   subscribeToWorldChange(listener: () => void): () => void;
@@ -161,7 +162,7 @@ export function createAppRuntime(): AppRuntime {
     }),
   );
 
-  function perform(action: string, params: Record<string, unknown> = {}): CommandResult {
+  function perform(action: string, params: CommandParams = {}): CommandResult {
     const remote = performPuzzleActionOnServer(action);
     if (remote) return remote;
     const result = performCommandOnce(store, action, params);
@@ -185,7 +186,7 @@ export function createAppRuntime(): AppRuntime {
   function performOn(
     edited: PipelineStore,
     action: string,
-    params: Record<string, unknown> = {},
+    params: CommandParams = {},
   ): CommandResult {
     return edited === store ? perform(action, params) : performCommandOnce(edited, action, params);
   }
@@ -199,7 +200,7 @@ export function createAppRuntime(): AppRuntime {
   function performCommandOnce(
     store: PipelineStore,
     action: string,
-    params: Record<string, unknown>,
+    params: CommandParams,
   ): CommandResult {
     return performCommand(
       {
@@ -214,6 +215,8 @@ export function createAppRuntime(): AppRuntime {
         runningWorld,
         randomizeHistory,
         regionSampler: sampler,
+        worldSampler: sampler,
+        lab: null,
         groundItems,
         puzzles,
         actor: {

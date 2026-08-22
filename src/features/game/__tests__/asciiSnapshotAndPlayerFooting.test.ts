@@ -29,6 +29,8 @@ export function checkAsciiSnapshotAndPlayerFooting(check: CheckReporter): void {
   check('a refused step leaves the player in place', !blockedWorld.tryStep(1, 0) && blockedWorld.playerX === 0);
   check('a character may step up exactly one block but no higher', exactStepUpIsTheLimit());
   check('a character may step down more than one block', aLongStepDownIsAllowed());
+  check('a fractional rise climbs when both heights round to adjacent levels', aRoundedOneLevelRiseIsClimbable());
+  check('a small raw rise refuses when its heights round two levels apart', aRoundedTwoLevelRiseIsRefused());
 
   const snapshot = asciiSnapshot(caves.sampler, tileAssets, world.playerX, world.playerY, 31, 21);
   const snapshotRows = snapshot.split('\n');
@@ -40,9 +42,21 @@ export function checkAsciiSnapshotAndPlayerFooting(check: CheckReporter): void {
 }
 
 function exactStepUpIsTheLimit(): boolean {
-  const elevationAt = (x: number) => (x === 0 ? 0 : x === 1 ? 1 : 2.01);
+  const elevationAt = (x: number) => (x === 0 ? 0 : x === 1 ? 1 : 3);
   const world = new World(() => true, undefined, climbGateFrom(elevationAt));
   return world.tryStep(1, 0) && !world.tryStep(1, 0) && world.playerX === 1;
+}
+
+function aRoundedOneLevelRiseIsClimbable(): boolean {
+  const elevationAt = (x: number) => (x === 0 ? 1.6 : 3.2);
+  const world = new World(() => true, undefined, climbGateFrom(elevationAt));
+  return world.tryStep(1, 0) && world.playerX === 1;
+}
+
+function aRoundedTwoLevelRiseIsRefused(): boolean {
+  const elevationAt = (x: number) => (x === 0 ? 1.49 : 2.51);
+  const world = new World(() => true, undefined, climbGateFrom(elevationAt));
+  return !world.tryStep(1, 0) && world.playerX === 0;
 }
 
 function aLongStepDownIsAllowed(): boolean {

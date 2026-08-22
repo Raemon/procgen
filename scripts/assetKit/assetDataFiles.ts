@@ -1,3 +1,4 @@
+import { assetId } from '@/features/asset-library/asset';
 import { readFileSync, writeFileSync } from 'node:fs';
 import type { AssetLibrary } from '@/features/asset-library/generation/assetKit';
 
@@ -30,9 +31,9 @@ export function libraryOfDataFiles(files: AssetDataFiles): AssetLibrary {
     tileNames: files.tiles.map((tile) => tile.name ?? ''),
     tileSymbols: files.tiles.map((tile) => tile.symbol ?? ''),
     cultureNames: files.cultures.map((culture) => culture.name ?? ''),
-    nextTileId: nextIdAfter(files.tiles),
-    nextPieceId: nextIdAfter(files.pieces),
-    nextCultureId: nextIdAfter(files.cultures),
+    nextTileId: assetId<'tiles'>(nextIdAfter(files.tiles)),
+    nextPieceId: assetId<'pieces'>(nextIdAfter(files.pieces)),
+    nextCultureId: assetId<'cultures'>(nextIdAfter(files.cultures)),
   };
 }
 

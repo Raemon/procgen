@@ -1,3 +1,4 @@
+import type { TileId } from '@/features/asset-library/asset';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import '@/features/asset-library/worlds/nodes';
 import { tileIdOfVoxel } from '@/features/asset-library/worlds/structureOverlay/packedVoxel';
@@ -41,7 +42,7 @@ function cellColor(world: HeadlessWorld, x: number, y: number): [number, number,
   return lift(base, layers);
 }
 
-function topTileAt(world: HeadlessWorld, x: number, y: number): number {
+function topTileAt(world: HeadlessWorld, x: number, y: number): TileId {
   const column = world.sampler.packedVoxelColumnAt(x, y);
   if (column && column.length > 0) return tileIdOfVoxel(column[column.length - 1]!);
   return world.sampler.tileAt(x, y);

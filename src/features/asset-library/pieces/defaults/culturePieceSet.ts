@@ -1,3 +1,4 @@
+import type { TileId } from '@/features/asset-library/asset';
 import { paintColumn, type PieceBlueprint } from './pieceBlueprint';
 
 export interface CulturePieceNames {
@@ -13,16 +14,16 @@ export interface CulturePieceNames {
 }
 
 export interface CulturePieceTiles {
-  footing: number;
-  wall: number;
-  frame: number;
-  door: number;
-  window: number;
-  roofSlope: number;
-  roofRidge: number;
-  floor: number;
-  chimney: number;
-  chimneyCap: number;
+  footing: TileId;
+  wall: TileId;
+  frame: TileId;
+  door: TileId;
+  window: TileId;
+  roofSlope: TileId;
+  roofRidge: TileId;
+  floor: TileId;
+  chimney: TileId;
+  chimneyCap: TileId;
 }
 
 export interface CulturePieceVariation {
@@ -155,7 +156,7 @@ function chimneyOf(
 
 const SHORTEST_CHIMNEY_LAYERS = 2;
 
-function chimneyStackOf(tiles: CulturePieceTiles, layers: number): number[] {
+function chimneyStackOf(tiles: CulturePieceTiles, layers: number): TileId[] {
   const height = Math.max(SHORTEST_CHIMNEY_LAYERS, layers);
-  return [...new Array<number>(height - 1).fill(tiles.chimney), tiles.chimneyCap];
+  return [...new Array<TileId>(height - 1).fill(tiles.chimney), tiles.chimneyCap];
 }

@@ -1,6 +1,8 @@
 import { slideAlongEachAxis, type Step } from '@/features/game/input/cameraRelativeStep';
 import { facingRelativeStep } from '@/features/game/input/facingRelativeStep';
 import { FACING_NAMES, facingVector, type FacingIndex } from '@/features/game/facing';
+import { CLIMB_LIMIT, climbGateFrom, navigationLevelOf } from '@/features/game/climbing';
+import { isWalkableTile } from '@/features/game/tileWalkability';
 import {
   commandFailed,
   commandSucceeded,
@@ -107,12 +109,33 @@ function vectorStep(facing: FacingIndex): Step {
 function stepBy(context: CommandContext, step: Step): CommandResult {
   const mayPush = step[0] === 0 || step[1] === 0;
   let moved = false;
+  const refusals: string[] = [];
   slideAlongEachAxis(step, (dx, dy) => {
     if (context.actor.tryStep(dx, dy, mayPush)) moved = true;
+    else refusals.push(refusalAhead(context, dx, dy));
   });
   const pose = context.actor.pose();
-  if (!moved) return commandFailed('blocked', `nothing gave way from (${pose.x},${pose.y})`);
+  if (!moved) return commandFailed('blocked', refusals.join('; '));
   return commandSucceeded(`moved to (${pose.x},${pose.y})${keysPickedUp(context, pose)}`);
+}
+
+function refusalAhead(context: CommandContext, dx: number, dy: number): string {
+  const pose = context.actor.pose();
+  const x = pose.x + dx;
+  const y = pose.y + dy;
+  const elevationAt = (px: number, py: number) => context.worldSampler.elevationAt(px, py);
+  if (!climbGateFrom(elevationAt)(pose.x, pose.y, x, y)) {
+    const from = navigationLevelOf(elevationAt(pose.x, pose.y));
+    const to = navigationLevelOf(elevationAt(x, y));
+    return `the ground at (${x},${y}) is level ${to}, ${to - from} above your level ${from}; a step climbs at most ${CLIMB_LIMIT} level`;
+  }
+  if (!isWalkableTile(context.tileAssets, context.worldSampler.tileAt(x, y))) {
+    const tile = context.tileAssets.byId(context.worldSampler.tileAt(x, y));
+    return tile
+      ? `the ${tile.name} at (${x},${y}) blocks you`
+      : `the ground at (${x},${y}) blocks you`;
+  }
+  return `something solid at (${x},${y}) is in the way`;
 }
 
 function keysPickedUp(context: CommandContext, pose: { x: number; y: number }): string {

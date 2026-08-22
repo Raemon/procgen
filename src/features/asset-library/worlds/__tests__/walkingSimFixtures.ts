@@ -1,3 +1,4 @@
+import { assetId, type TileId } from '@/features/asset-library/asset';
 import '../nodes';
 import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
 import { newTileWithId, type TileDef } from '@/features/asset-library/tiles/tileDef';
@@ -7,13 +8,13 @@ import { PipelineStore } from '../pipeline/pipelineStore';
 import { sanitizePipeline } from '../pipeline/sanitizePipeline';
 import { WorldSampler } from '../worldSampler';
 
-export const FLOOR_TILE = 0;
-export const WALL_TILE = 1;
-export const WATER_TILE = 2;
-export const SAND_TILE = 3;
-export const GRASS_TILE = 4;
-export const FOREST_TILE = 5;
-export const RIDGE_TILE = 6;
+export const FLOOR_TILE = assetId<'tiles'>(0);
+export const WALL_TILE = assetId<'tiles'>(1);
+export const WATER_TILE = assetId<'tiles'>(2);
+export const SAND_TILE = assetId<'tiles'>(3);
+export const GRASS_TILE = assetId<'tiles'>(4);
+export const FOREST_TILE = assetId<'tiles'>(5);
+export const RIDGE_TILE = assetId<'tiles'>(6);
 
 export const fixtureTileAssets = new TileAssets([
   fixtureTile(FLOOR_TILE, 'flagstone', '#8a8a86', true, 1),
@@ -165,7 +166,7 @@ export function terracedHighlandState(): PipelineState {
 }
 
 function fixtureTile(
-  id: number,
+  id: TileId,
   name: string,
   color: string,
   walkable: boolean,

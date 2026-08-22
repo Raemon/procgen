@@ -1,5 +1,7 @@
+import type { PieceId } from '@/features/asset-library/asset';
+import type { PieceRoleBindings } from './cultureDef';
 import { readPersistedFile, writePersistedFile } from '@/features/app-shell/persistence/repoFileStore';
-import { isPieceRole, type PieceRole } from '../pieces/pieceDef';
+import { isPieceRole } from '../pieces/pieceDef';
 import {
   MAX_STORY_LAYERS,
   MAX_WINDOW_EVERY,
@@ -42,8 +44,8 @@ function withValidatedFields(stored: Culture): Culture {
   };
 }
 
-function validatedRoleBindings(stored: unknown): Partial<Record<PieceRole, number[]>> {
-  const bindings: Partial<Record<PieceRole, number[]>> = {};
+function validatedRoleBindings(stored: unknown): PieceRoleBindings {
+  const bindings: PieceRoleBindings = {};
   if (typeof stored !== 'object' || stored === null) return bindings;
   for (const [role, ids] of Object.entries(stored)) {
     if (isPieceRole(role) && isPieceIdList(ids)) bindings[role] = [...ids];
@@ -51,7 +53,7 @@ function validatedRoleBindings(stored: unknown): Partial<Record<PieceRole, numbe
   return bindings;
 }
 
-function isPieceIdList(value: unknown): value is number[] {
+function isPieceIdList(value: unknown): value is PieceId[] {
   return Array.isArray(value) && value.every((id) => typeof id === 'number' && id >= 0);
 }
 

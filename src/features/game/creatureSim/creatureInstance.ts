@@ -1,9 +1,10 @@
+import type { CreatureId } from '@/features/asset-library/asset';
 import { mulberry32, type RandomStream } from '@/features/asset-library/worlds/random/mulberry32';
 import { hashString } from '@/features/asset-library/worlds/random/hashString';
 
 export interface CreatureInstance {
   key: string;
-  creatureId: number;
+  creatureId: CreatureId;
   homeX: number;
   homeY: number;
   x: number;
@@ -21,7 +22,7 @@ export function spawnKeyOf(tag: string, x: number, y: number): string {
   return `${tag}:${x},${y}`;
 }
 
-export function spawnedCreature(key: string, creatureId: number, x: number, y: number): CreatureInstance {
+export function spawnedCreature(key: string, creatureId: CreatureId, x: number, y: number): CreatureInstance {
   return {
     key,
     creatureId,

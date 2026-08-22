@@ -4,9 +4,10 @@ import {
   commandSucceeded,
   type CommandContext,
   type CommandResult,
+  type CommandParams,
 } from '@/features/app-shell/runtime/commands/command';
 import { createCommandCollection } from '@/features/app-shell/runtime/commands/commandCollection';
-import { listOf, readInt } from '@/features/app-shell/runtime/commands/commandParams';
+import { listOf, readAssetId } from '@/features/app-shell/runtime/commands/commandParams';
 import { facingVector } from '../facing';
 
 const { define: registerCommand, commands: insertCommands } = createCommandCollection();
@@ -44,9 +45,9 @@ registerCommand({
 
 function insertItemAhead(
   context: CommandContext,
-  params: Record<string, unknown>,
+  params: CommandParams,
 ): CommandResult {
-  const id = readInt(params, 'item_id');
+  const id = readAssetId<'items'>(params, 'item_id');
   if (!id.ok) return id.failure;
   const item = context.items.byId(id.value);
   if (!item) {
@@ -60,9 +61,9 @@ function insertItemAhead(
 
 function insertCreatureAhead(
   context: CommandContext,
-  params: Record<string, unknown>,
+  params: CommandParams,
 ): CommandResult {
-  const id = readInt(params, 'creature_id');
+  const id = readAssetId<'creatures'>(params, 'creature_id');
   if (!id.ok) return id.failure;
   const creature = context.creatures.byId(id.value);
   if (!creature) {

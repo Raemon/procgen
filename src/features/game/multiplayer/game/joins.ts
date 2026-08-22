@@ -1,3 +1,4 @@
+import type { Cell } from '@/features/asset-library/worlds/values/cell';
 import { randomBytes } from 'node:crypto';
 import { nearestWalkable } from '../../nearestWalkable';
 import type { Connection } from '../host/connection';
@@ -49,7 +50,7 @@ function mintPlayerName(): string {
   return 'wanderer-' + randomBytes(3).toString('hex');
 }
 
-function walkableSpot(world: ServerWorld, x: number | null, y: number | null): { x: number; y: number } {
+function walkableSpot(world: ServerWorld, x: number | null, y: number | null): Cell {
   if (x === null || y === null) return world.spawn();
   if (world.isStandable(x, y)) return { x, y };
   return nearestWalkable(x, y, SNAP_SEARCH_RADIUS, world.isStandable) ?? world.spawn();

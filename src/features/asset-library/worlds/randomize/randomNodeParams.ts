@@ -1,3 +1,4 @@
+import type { TileId } from '@/features/asset-library/asset';
 import type { RandomStream } from '../random/mulberry32';
 import { defaultParamValue, type NodeTypeDef, type ParamSpec, type ParamValue } from '../nodeType';
 import { chance, pick, rollBetween, rollInt, snappedToStep } from './randomRolls';
@@ -5,7 +6,7 @@ import { chance, pick, rollBetween, rollInt, snappedToStep } from './randomRolls
 export function randomParams(
   def: NodeTypeDef,
   rng: RandomStream,
-  tileIds: readonly number[],
+  tileIds: readonly TileId[],
 ): Record<string, ParamValue> {
   const params: Record<string, ParamValue> = {};
   for (const [name, spec] of Object.entries(def.params)) {
@@ -17,7 +18,7 @@ export function randomParams(
 function randomParamValue(
   spec: ParamSpec,
   rng: RandomStream,
-  tileIds: readonly number[],
+  tileIds: readonly TileId[],
 ): ParamValue {
   if (spec.kind === 'number') return snappedToStep(rollBetween(rng, spec.min, spec.max), spec.min, spec.max, spec.step);
   if (spec.kind === 'int') return rollInt(rng, spec.min, spec.max);

@@ -1,3 +1,4 @@
+import type { PersistedUiState } from '../persistence/persistedDocumentContents';
 import { readPersistedFile, writePersistedFile } from '../persistence/repoFileStore';
 
 const UI_STATE_DOC = 'uiState';
@@ -38,6 +39,6 @@ function storedOrFallback<T>(
   return isValid(stored) ? stored : fallback;
 }
 
-function storedUiState(): Record<string, unknown> {
-  return readPersistedFile<Record<string, unknown>>(UI_STATE_DOC) ?? {};
+function storedUiState(): PersistedUiState {
+  return readPersistedFile<PersistedUiState>(UI_STATE_DOC) ?? {};
 }

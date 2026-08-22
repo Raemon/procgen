@@ -1,6 +1,7 @@
+import type { TileId } from '@/features/asset-library/asset';
 import { EMPTY_VOXEL, voxelAt, type Piece } from './pieceDef';
 
-export type ColorOfTile = (tileId: number) => string | null;
+export type ColorOfTile = (tileId: TileId) => string | null;
 
 export function pieceTopColors(piece: Piece, colorOfTile: ColorOfTile): (string | null)[] {
   const seenFromAbove: (string | null)[] = [];
@@ -13,7 +14,7 @@ export function pieceTopColors(piece: Piece, colorOfTile: ColorOfTile): (string 
   return seenFromAbove;
 }
 
-function highestVoxelAt(piece: Piece, x: number, y: number): number {
+function highestVoxelAt(piece: Piece, x: number, y: number): TileId {
   for (let layer = piece.layers - 1; layer >= 0; layer -= 1) {
     const tileId = voxelAt(piece, x, y, layer);
     if (tileId !== EMPTY_VOXEL) return tileId;

@@ -1,3 +1,4 @@
+import type { ItemId } from '@/features/asset-library/asset';
 import {
   clampGridSide,
   isItemOrientation,
@@ -15,8 +16,9 @@ import {
   type CommandContext,
   type CommandResult,
   type CommandSpec,
+  type CommandParams,
 } from '@/features/app-shell/runtime/commands/command';
-import { listOf, readInt, readNumber, readText } from '@/features/app-shell/runtime/commands/commandParams';
+import { listOf, readAssetId, readInt, readNumber, readText } from '@/features/app-shell/runtime/commands/commandParams';
 import { createCommandCollection } from '@/features/app-shell/runtime/commands/commandCollection';
 import { faceArtFrom } from '@/features/asset-library/tiles/tileCommands';
 
@@ -129,10 +131,10 @@ function choiceList(choices: readonly { value: number; label: string }[]): strin
 
 export function withItem(
   context: CommandContext,
-  params: Record<string, unknown>,
-  use: (itemId: number) => CommandResult,
+  params: CommandParams,
+  use: (itemId: ItemId) => CommandResult,
 ): CommandResult {
-  const read = readInt(params, 'item_id');
+  const read = readAssetId<'items'>(params, 'item_id');
   if (!read.ok) return read.failure;
   if (!context.items.byId(read.value)) {
     return commandFailed(
@@ -143,7 +145,7 @@ export function withItem(
   return use(read.value);
 }
 
-function updateItem(context: CommandContext, params: Record<string, unknown>): CommandResult {
+function updateItem(context: CommandContext, params: CommandParams): CommandResult {
   return withItem(context, params, (itemId) => {
     const patch = itemPatchFrom(params);
     if (!patch.ok) return patch.failure;
@@ -154,7 +156,7 @@ function updateItem(context: CommandContext, params: Record<string, unknown>): C
 
 type ItemPatchRead = { ok: true; value: ItemPatch } | { ok: false; failure: CommandResult };
 
-function itemPatchFrom(params: Record<string, unknown>): ItemPatchRead {
+function itemPatchFrom(params: CommandParams): ItemPatchRead {
   const patch: ItemPatch = {};
   applyTextFields(patch, params);
   applyNumberFields(patch, params);
@@ -168,7 +170,7 @@ function itemPatchFrom(params: Record<string, unknown>): ItemPatchRead {
   return { ok: true, value: patch };
 }
 
-function applyTextFields(patch: ItemPatch, params: Record<string, unknown>): void {
+function applyTextFields(patch: ItemPatch, params: CommandParams): void {
   const name = readText(params, 'name');
   if (name.ok) patch.name = name.value;
   const color = readText(params, 'color');
@@ -181,7 +183,7 @@ function applyTextFields(patch: ItemPatch, params: Record<string, unknown>): voi
   if (symbol.ok) patch.symbol = [...symbol.value][0]!;
 }
 
-function applyNumberFields(patch: ItemPatch, params: Record<string, unknown>): void {
+function applyNumberFields(patch: ItemPatch, params: CommandParams): void {
   for (const knob of ['thickness', 'size', 'hover'] as const) {
     const read = readNumber(params, knob);
     if (read.ok) patch[knob] = read.value;
@@ -196,7 +198,7 @@ function applyNumberFields(patch: ItemPatch, params: Record<string, unknown>): v
 
 function applyChoiceFields(
   patch: ItemPatch,
-  params: Record<string, unknown>,
+  params: CommandParams,
 ): { ok: true } | { ok: false; failure: CommandResult } {
   const render = readInt(params, 'render');
   if (render.ok) {
@@ -220,7 +222,7 @@ function applyChoiceFields(
 
 function applyArtFields(
   patch: ItemPatch,
-  params: Record<string, unknown>,
+  params: CommandParams,
 ): { ok: true } | { ok: false; failure: CommandResult } {
   const sprite = spriteFrom(params);
   if (!sprite.ok) return sprite;
@@ -235,7 +237,7 @@ type SpriteRead =
   | { ok: true; value: ItemPatch['sprite'] | undefined }
   | { ok: false; failure: CommandResult };
 
-export function spriteFrom(params: Record<string, unknown>, name = 'sprite'): SpriteRead {
+export function spriteFrom(params: CommandParams, name = 'sprite'): SpriteRead {
   const raw = params[name];
   if (raw === undefined) return { ok: true, value: undefined };
   if (raw === null) return { ok: true, value: null };
@@ -253,7 +255,7 @@ export function spriteFrom(params: Record<string, unknown>, name = 'sprite'): Sp
 
 type TagsRead = { ok: true; value: string[] | undefined } | { ok: false; failure: CommandResult };
 
-export function tagsFrom(params: Record<string, unknown>, name = 'tags'): TagsRead {
+export function tagsFrom(params: CommandParams, name = 'tags'): TagsRead {
   const raw = params[name];
   if (raw === undefined) return { ok: true, value: undefined };
   if (!Array.isArray(raw) || raw.some((tag) => typeof tag !== 'string')) {

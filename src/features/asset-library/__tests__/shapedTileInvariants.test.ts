@@ -1,3 +1,4 @@
+import { assetId, type TileId } from '@/features/asset-library/asset';
 import * as THREE from 'three';
 import { blankFacings, blankVoxels, VOXEL_FACING_COUNT, type Piece } from '@/features/asset-library/pieces/pieceDef';
 import { TILE_SHAPE_KINDS, type TileShapeKind } from '@/features/asset-library/tiles/tileShapeKind';
@@ -14,8 +15,8 @@ import { shapedShape } from '@/features/game/render/view3d/tileShapes';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 
 const EVERY_FACING = [...Array(VOXEL_FACING_COUNT).keys()];
-const SYNTHETIC_TILE_ID = 9;
-const SYNTHETIC_PIECE_ID = 1;
+const SYNTHETIC_TILE_ID = assetId<'tiles'>(9);
+const SYNTHETIC_PIECE_ID = assetId<'pieces'>(1);
 const STAMPED_AT = { x: 4, y: 6 };
 
 export function checkShapedTileInvariants(check: CheckReporter): void {
@@ -45,8 +46,8 @@ function checkPackedVoxelsCarryBothTileAndFacing(check: CheckReporter): void {
   );
 }
 
-function tileIdsWorthPacking(): number[] {
-  return [0, 1, 2, 3, 7, 64, 255, 4096];
+function tileIdsWorthPacking(): TileId[] {
+  return [0, 1, 2, 3, 7, 64, 255, 4096].map(assetId<'tiles'>);
 }
 
 function checkEveryShapeAndFacingBuildsGeometry(check: CheckReporter): void {

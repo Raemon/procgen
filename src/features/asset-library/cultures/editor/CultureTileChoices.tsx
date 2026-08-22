@@ -1,3 +1,5 @@
+import { assetId } from '@/features/asset-library/asset';
+import type { TileId } from '@/features/asset-library/asset';
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
 import { DrawerPanel } from '@/features/app-shell/controls/DrawerPanel';
 import { KnobRow } from '@/features/app-shell/controls/KnobRow';
@@ -12,7 +14,7 @@ import { cultureTileSlotTip } from './help/cultureTips';
 export function CultureTileChoices({ culture }: { culture: Culture }) {
   const { perform, tileAssets } = useAppRuntime();
   useRerenderOnTileAssetChange();
-  const chooseTile = (param: string, tileId: number) =>
+  const chooseTile = (param: string, tileId: TileId) =>
     perform('set_culture_tiles', { culture_id: culture.id, [param]: tileId });
   return (
     <DrawerPanel>
@@ -21,7 +23,7 @@ export function CultureTileChoices({ culture }: { culture: Culture }) {
           <Select
             value={String(tileChosenForSlot(culture, slot))}
             options={tileSelectOptions(tileAssets, '(none)')}
-            onChange={(value) => chooseTile(slot.param, Number(value))}
+            onChange={(value) => chooseTile(slot.param, assetId<'tiles'>(Number(value)))}
           />
         </KnobRow>
       ))}

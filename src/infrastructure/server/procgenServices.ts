@@ -1,3 +1,4 @@
+import type { PersistedDocumentName } from '@/features/app-shell/persistence/persistedDocuments';
 import type { Server as HttpServer } from 'node:http';
 import { newAgentApiState, type AgentApiState } from '@/features/agents/api/nodeEntry';
 import { AgentEntitySync } from '@/features/game/multiplayer/game/agentEntitySync';
@@ -25,7 +26,7 @@ export interface ProcgenServices {
   agents: AgentApiState;
   registry: EntityRegistry;
   loop: GameLoop;
-  documentChanged(name: string): void;
+  documentChanged(name: PersistedDocumentName): void;
   eventLoopLagMs(): number;
   attachGameSocket(server: HttpServer, handleUpgradeTheGameDoesNotOwn: UpgradeHandler): () => void;
   stop(): Promise<void>;

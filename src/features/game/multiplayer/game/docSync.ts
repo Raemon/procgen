@@ -4,6 +4,7 @@ import { PERSISTED_DOC_NAMES } from '@/infrastructure/server/persistence/docsRep
 import type { EntityRegistry } from './entities';
 import type { WorldHost } from './worldHost';
 import type { DocStore } from '@/infrastructure/server/persistence/docsRepo';
+import type { PersistedDocumentName } from '@/features/app-shell/persistence/persistedDocuments';
 
 const SNAP_SEARCH_RADIUS = 64;
 
@@ -14,7 +15,7 @@ export interface DocSyncDeps {
   docs: DocStore;
 }
 
-export function afterDocChanged(deps: DocSyncDeps, name: string): void {
+export function afterDocChanged(deps: DocSyncDeps, name: PersistedDocumentName): void {
   broadcastDocChanged(deps, name);
   snapEntitiesToWalkableGround(deps);
 }
@@ -24,7 +25,7 @@ export function afterWorldPersistedByAgent(deps: DocSyncDeps): void {
   snapEntitiesToWalkableGround(deps);
 }
 
-function broadcastDocChanged(deps: DocSyncDeps, name: string): void {
+function broadcastDocChanged(deps: DocSyncDeps, name: PersistedDocumentName): void {
   for (const conn of deps.connections) {
     if (conn.state === 'PLAYING') {
       conn.send({ t: 'docChanged', name, revision: deps.docs.revision(name) });

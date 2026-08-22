@@ -1,3 +1,4 @@
+import type { CommandParams } from '@/features/app-shell/runtime/commands/command';
 import {
   commandFailed,
   type CommandContext,
@@ -11,7 +12,7 @@ export function performCommand(
   context: CommandContext,
   mode: CommandMode,
   action: string,
-  params: Record<string, unknown> = {},
+  params: CommandParams = {},
 ): CommandResult {
   const spec = commandFor(mode, action);
   if (!spec) return unknownAction(mode, action);
@@ -31,7 +32,7 @@ function unknownAction(mode: CommandMode, action: string): CommandResult {
 
 function missingRequiredParams(
   declared: Record<string, { optional?: boolean }>,
-  params: Record<string, unknown>,
+  params: CommandParams,
 ): string | null {
   const missing = Object.entries(declared)
     .filter(([name, spec]) => !spec.optional && params[name] === undefined)

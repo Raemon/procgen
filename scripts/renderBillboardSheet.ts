@@ -1,3 +1,4 @@
+import { assetId } from '@/features/asset-library/asset';
 import { writeFileSync } from 'node:fs';
 import { TILE_ART_SIZE } from '@/features/asset-library/tiles/art/artSize';
 import { markerBillboardArt } from '@/features/asset-library/tiles/art/billboards/markerBillboardArt';
@@ -41,7 +42,7 @@ function spritePixelAt(tile: TileDef, acrossCell: number, downCell: number): Rgb
 }
 
 function recoloured(tile: TileDef, color: string): TileDef {
-  return { ...tile, color, id: tile.id + color.length * 1000 };
+  return { ...tile, color, id: assetId<'tiles'>(tile.id + color.length * 1000) };
 }
 
 function tileNamed(name: string): TileDef {

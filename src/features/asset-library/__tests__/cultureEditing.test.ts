@@ -1,3 +1,4 @@
+import { assetId } from '@/features/asset-library/asset';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { allCommands } from '@/features/app-shell/runtime/commands/commandCatalog';
@@ -126,7 +127,7 @@ function checkTheKnobsCoverEveryParamTheCommandsTake(check: CheckReporter): void
 function checkPiecesAreOfferedToTheRolesTheyWereAuthoredFor(check: CheckReporter): void {
   const door = pieceWithRole(1, 'door');
   const window = pieceWithRole(2, 'window');
-  const culture = newCultureWithId(0);
+  const culture = newCultureWithId(assetId<'cultures'>(0));
   check(
     'a role is offered the pieces authored for it and nothing else',
     idsOf(piecesOfferedForRole([door, window], culture, 'door')) === '1',
@@ -141,12 +142,12 @@ function checkPiecesAreOfferedToTheRolesTheyWereAuthoredFor(check: CheckReporter
       .map((offer) => offer.role)
       .join() === 'door,window',
   );
-  check('binding a piece to a role adds it in ascending id order', JSON.stringify(pieceIdsWithPieceToggled([3, 7], 5)) === '[3,5,7]');
-  check('clicking a bound piece again unbinds just that piece', JSON.stringify(pieceIdsWithPieceToggled([3, 5, 7], 5)) === '[3,7]');
+  check('binding a piece to a role adds it in ascending id order', JSON.stringify(pieceIdsWithPieceToggled([3, 7].map(assetId<'pieces'>), assetId<'pieces'>(5))) === '[3,5,7]');
+  check('clicking a bound piece again unbinds just that piece', JSON.stringify(pieceIdsWithPieceToggled([3, 5, 7].map(assetId<'pieces'>), assetId<'pieces'>(5))) === '[3,7]');
 }
 
 function checkARowSaysWhatTheCultureWillBuild(check: CheckReporter): void {
-  const culture = newCultureWithId(0);
+  const culture = newCultureWithId(assetId<'cultures'>(0));
   check(
     'a culture row reads out the roof style, the story height and the window rhythm',
     proportionsSummaryOf({ ...culture, roofStyle: HIP_ROOF, storyLayers: 4, windowEvery: 2 }) ===
@@ -164,10 +165,10 @@ function checkARowSaysWhatTheCultureWillBuild(check: CheckReporter): void {
 }
 
 function checkADeletedPieceLeavesNoBindingBehind(check: CheckReporter): void {
-  const culture = boundTo(boundTo(newCultureWithId(0), 'door', [1, 2]), 'window', [2]);
+  const culture = boundTo(boundTo(newCultureWithId(assetId<'cultures'>(0)), 'door', [1, 2]), 'window', [2]);
   check(
     'forgetting a deleted piece drops it from every role it was bound to and leaves the rest bound',
-    JSON.stringify(roleBindingsWithoutPiece(culture, 2)) === JSON.stringify({ door: [1], window: [] }),
+    JSON.stringify(roleBindingsWithoutPiece(culture, assetId<'pieces'>(2))) === JSON.stringify({ door: [1], window: [] }),
   );
 }
 
@@ -215,10 +216,11 @@ function sourceFilesUnder(root: string): string[] {
 }
 
 function pieceWithRole(id: number, role: PieceRole): Piece {
-  return { ...newPieceWithId(id), role };
+  return { ...newPieceWithId(assetId<'pieces'>(id)), role };
 }
 
-function boundTo(culture: Culture, role: PieceRole, pieceIds: number[]): Culture {
+function boundTo(culture: Culture, role: PieceRole, ids: number[]): Culture {
+  const pieceIds = ids.map(assetId<'pieces'>);
   return { ...culture, roleBindings: { ...culture.roleBindings, [role]: pieceIds } };
 }
 

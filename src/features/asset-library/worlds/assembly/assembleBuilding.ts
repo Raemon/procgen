@@ -1,3 +1,5 @@
+import type { Cell } from '../values/cell';
+import type { TileId } from '@/features/asset-library/asset';
 import { MIN_STORY_LAYERS, wallLayersOf, type Culture } from '@/features/asset-library/cultures/cultureDef';
 import type { PieceRole } from '@/features/asset-library/pieces/pieceDef';
 import { hashString } from '../random/hashString';
@@ -134,7 +136,7 @@ function shellPieceRoleOf(building: AssembledBuilding, cell: ShellCell): PieceRo
   return 'wallSegment';
 }
 
-function shellTileOf(culture: Culture, role: PieceRole): number {
+function shellTileOf(culture: Culture, role: PieceRole): TileId {
   if (role === 'wallSegment') return culture.wallTileId;
   return culture.trimTileId >= 0 ? culture.trimTileId : culture.wallTileId;
 }
@@ -167,7 +169,7 @@ function roofPieceRoleOf(voxel: RoofVoxel, baseLayer: number): PieceRole | null 
   return voxel.layer === baseLayer ? 'roofEdge' : null;
 }
 
-function roofTileOf(culture: Culture, voxel: RoofVoxel): number {
+function roofTileOf(culture: Culture, voxel: RoofVoxel): TileId {
   const tileId = voxel.isRidge ? culture.roofRidgeTileId : culture.roofSlopeTileId;
   return tileId >= 0 ? tileId : culture.wallTileId;
 }
@@ -211,6 +213,6 @@ function pieceAt(
   return pieceForRole(building.culture, building.pieces, role, rng);
 }
 
-function worldCellOf(spec: BuildingSpec, x: number, y: number): { x: number; y: number } {
+function worldCellOf(spec: BuildingSpec, x: number, y: number): Cell {
   return { x: spec.x + x, y: spec.y + y };
 }

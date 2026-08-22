@@ -1,3 +1,4 @@
+import type { TileId } from '@/features/asset-library/asset';
 import type { RandomStream } from '../random/mulberry32';
 import type { PipelineState } from '../pipeline/pipelineState';
 import { dropInvalidWires } from '../pipeline/wiringRules';
@@ -22,7 +23,7 @@ export function permutedNodeCombination(
 function applyMutations(
   state: PipelineState,
   rng: RandomStream,
-  tileIds: readonly number[],
+  tileIds: readonly TileId[],
   count: number,
 ): void {
   for (let i = 0; i < count; i++) applyFirstViableMutation(state, rng, tileIds);
@@ -31,7 +32,7 @@ function applyMutations(
 function applyFirstViableMutation(
   state: PipelineState,
   rng: RandomStream,
-  tileIds: readonly number[],
+  tileIds: readonly TileId[],
 ): void {
   for (const mutation of shuffled(rng, PIPELINE_MUTATIONS)) {
     if (mutation(state, rng, tileIds)) return;

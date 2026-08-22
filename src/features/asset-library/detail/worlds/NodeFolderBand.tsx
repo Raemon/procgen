@@ -1,3 +1,4 @@
+import type { CommandParams } from '@/features/app-shell/runtime/commands/command';
 import { useState, useSyncExternalStore, type ReactNode } from 'react';
 import { useEditedPipeline } from './editing/editedPipelineContext';
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
@@ -142,7 +143,7 @@ function CollapsedSummary({ run }: { run: NodeRun }) {
 }
 
 function setFolderOfNodes(
-  perform: (action: string, params: Record<string, unknown>) => unknown,
+  perform: (action: string, params: CommandParams) => unknown,
   nodeIds: readonly string[],
   folder: string,
 ): void {

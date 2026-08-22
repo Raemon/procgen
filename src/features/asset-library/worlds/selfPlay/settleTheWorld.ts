@@ -1,3 +1,4 @@
+import type { CultureId } from '@/features/asset-library/asset';
 import { nodeTypeOf } from '../nodeRegistry';
 import { outputKindOf } from '../nodeType';
 import type { NodeInstance, PipelineState } from '../pipeline/pipelineState';
@@ -11,7 +12,7 @@ const DENSEST_BUILDINGS = 0.012;
 export function settledPipeline(
   state: PipelineState,
   rng: RandomStream,
-  cultureId: number,
+  cultureId: CultureId,
 ): PipelineState {
   const sites = state.nodes.filter(nodeMakesPoints);
   if (sites.length === 0 || !chance(rng, SETTLING_CHANCE)) return state;
@@ -19,7 +20,7 @@ export function settledPipeline(
   return state;
 }
 
-function raiseBuildingsOn(node: NodeInstance, rng: RandomStream, cultureId: number): void {
+function raiseBuildingsOn(node: NodeInstance, rng: RandomStream, cultureId: CultureId): void {
   node.display = { mode: 'structures', cultureId };
   if (typeof node.params.density === 'number') node.params.density = buildingDensity(rng);
 }

@@ -1,3 +1,4 @@
+import type { CultureId } from '@/features/asset-library/asset';
 import { REGION_ROLE_FOCUS } from '../nodes/composition/regionPlanNode';
 import { COMBINE_MULTIPLY } from '../nodes/examples/combineFields';
 import type { NodeInstance } from '../pipeline/pipelineState';
@@ -11,7 +12,7 @@ import { terrainRecipeNodes } from './terrainRecipe';
 export function settlementRecipeNodes(
   rng: RandomStream,
   tiles: RecipeTiles,
-  cultureId: number,
+  cultureId: CultureId,
 ): NodeInstance[] {
   const nodes = chance(rng, 0.4)
     ? riverlandsRecipeNodes(rng, tiles)
@@ -53,7 +54,7 @@ function appendVillages(
   rng: RandomStream,
   tiles: RecipeTiles,
   groundId: string,
-  cultureId: number,
+  cultureId: CultureId,
 ): void {
   const layout = {
     radius: rollInt(rng, 24, 64),
@@ -157,7 +158,7 @@ function appendPlots(
   groundId: string,
   layout: VillageLayout,
   buildAbove: number,
-  cultureId: number,
+  cultureId: CultureId,
 ): void {
   nodes.push(
     recipeNode({

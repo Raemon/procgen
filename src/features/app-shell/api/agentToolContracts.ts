@@ -10,7 +10,7 @@ export interface AgentToolContract {
   description: string;
   input_schema: object;
   transport: 'http' | 'websocket';
-  method: 'PUT' | 'POST';
+  method: 'GET' | 'PUT' | 'POST';
   path: string;
 }
 
@@ -18,21 +18,45 @@ export function agentToolContracts(mode: CommandMode): AgentToolContract[] {
   return commandsForMode(mode).map(toolContract);
 }
 
+const LAB_PATHS: Readonly<Record<string, string>> = {
+  grade_world: '/asset-library/worlds/grade',
+  roll_worlds: '/asset-library/worlds/roll',
+  train_worlds: '/asset-library/worlds/train',
+  read_world_lab: '/asset-library/worlds/lab',
+  stop_lab_run: '/asset-library/worlds/lab/{id}/stop',
+  install_lab_worlds: '/asset-library/worlds/lab/{id}/install',
+};
+
 function toolContract(spec: CommandSpec): AgentToolContract {
   const entries = Object.entries(spec.params);
   const gameInput = spec.mode === 'character' || spec.group === 'movement' || spec.group === 'senses';
+  const labPath = LAB_PATHS[spec.action];
+  if (labPath) {
+    return {
+      name: spec.action,
+      description: `${spec.description} (the human does this with: ${spec.humanControl})`,
+      input_schema: inputSchema(entries),
+      transport: 'http',
+      method: spec.action === 'read_world_lab' ? 'GET' : 'POST',
+      path: labPath,
+    };
+  }
   return {
     name: spec.action,
     description: `${spec.description} (the human does this with: ${spec.humanControl})`,
-    input_schema: {
-      type: 'object',
-      properties: Object.fromEntries(entries.map(([name, param]) => [name, paramSchema(param)])),
-      required: entries.filter(([, param]) => !param.optional).map(([name]) => name),
-      additionalProperties: false,
-    },
+    input_schema: inputSchema(entries),
     transport: gameInput ? 'websocket' : 'http',
     method: gameInput ? 'POST' : 'PUT',
     path: gameInput ? '/game/socket' : resourcePath(spec.action),
+  };
+}
+
+function inputSchema(entries: [string, CommandParamSpec][]): object {
+  return {
+    type: 'object',
+    properties: Object.fromEntries(entries.map(([name, param]) => [name, paramSchema(param)])),
+    required: entries.filter(([, param]) => !param.optional).map(([name]) => name),
+    additionalProperties: false,
   };
 }
 

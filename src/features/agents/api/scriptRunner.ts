@@ -1,3 +1,4 @@
+import type { WorldLab } from '@/features/asset-library/worlds/lab/worldLab';
 import { performVerb, type VerbResult } from './performVerb';
 import { parseScriptForMode, scriptFaultText, type ScriptFault, type ScriptLine } from './scriptSyntax';
 import type { ServerWorld } from './serverWorld';
@@ -13,12 +14,17 @@ export interface ScriptRun {
   summary: string;
 }
 
-export function runScript(session: AgentSession, world: ServerWorld, script: SavedScript): ScriptRun {
+export function runScript(
+  session: AgentSession,
+  world: ServerWorld,
+  script: SavedScript,
+  lab: WorldLab | null = null,
+): ScriptRun {
   const parsed = parseScriptForMode(session.mode, script.body);
   if (!parsed.ok) {
     return { actionsRun: 0, changedPipeline: false, fault: parsed.fault, summary: 'the script did not run' };
   }
-  return performLines(session, world, script, parsed.lines);
+  return performLines(session, world, script, parsed.lines, lab);
 }
 
 export function scriptRunText(run: ScriptRun): string {
@@ -30,6 +36,7 @@ function performLines(
   world: ServerWorld,
   script: SavedScript,
   lines: readonly ScriptLine[],
+  lab: WorldLab | null,
 ): ScriptRun {
   let actionsRun = 0;
   let changedPipeline = false;
@@ -38,7 +45,7 @@ function performLines(
       if (actionsRun >= MAX_ACTIONS_PER_RUN) {
         return stoppedRun(script, actionsRun, changedPipeline, line, actionLimitReached());
       }
-      const result = performVerb(session, world, line.action, line.params);
+      const result = performVerb(session, world, line.action, line.params, lab);
       changedPipeline = changedPipeline || result.changedPipeline;
       if (result.failure) {
         return stoppedRun(script, actionsRun, changedPipeline, line, failureText(result));

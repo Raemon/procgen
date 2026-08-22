@@ -1,3 +1,4 @@
+import type { PieceId } from '@/features/asset-library/asset';
 import type { CulturePatch } from '@/features/asset-library/cultures/cultureAssets';
 import {
   MAX_STORY_LAYERS,
@@ -13,8 +14,10 @@ import {
   type CommandContext,
   type CommandResult,
   type CommandSpec,
+  type CommandParams,
 } from '@/features/app-shell/runtime/commands/command';
-import { listOf, readInt, readOptionalInt, readText } from '@/features/app-shell/runtime/commands/commandParams';
+import { listOf, readAssetId, readOptionalAssetId,
+  readOptionalInt, readText } from '@/features/app-shell/runtime/commands/commandParams';
 import { createCommandCollection } from '@/features/app-shell/runtime/commands/commandCollection';
 
 const { define: registerCommand, commands: cultureCommands } = createCommandCollection();
@@ -154,10 +157,10 @@ registerCultureCommand({
 
 function withCulture(
   context: CommandContext,
-  params: Record<string, unknown>,
+  params: CommandParams,
   use: (culture: Culture) => CommandResult,
 ): CommandResult {
-  const read = readInt(params, 'culture_id');
+  const read = readAssetId<'cultures'>(params, 'culture_id');
   if (!read.ok) return read.failure;
   const culture = context.cultures.byId(read.value);
   if (!culture) {
@@ -169,18 +172,18 @@ function withCulture(
   return use(culture);
 }
 
-function tilePatchOf(culture: Culture, params: Record<string, unknown>): CulturePatch {
+function tilePatchOf(culture: Culture, params: CommandParams): CulturePatch {
   return {
-    wallTileId: readOptionalInt(params, 'wall_tile', culture.wallTileId),
-    trimTileId: readOptionalInt(params, 'trim_tile', culture.trimTileId),
-    roofSlopeTileId: readOptionalInt(params, 'roof_slope_tile', culture.roofSlopeTileId),
-    roofRidgeTileId: readOptionalInt(params, 'roof_ridge_tile', culture.roofRidgeTileId),
-    floorTileId: readOptionalInt(params, 'floor_tile', culture.floorTileId),
-    pathTileId: readOptionalInt(params, 'path_tile', culture.pathTileId),
+    wallTileId: readOptionalAssetId<'tiles'>(params, 'wall_tile', culture.wallTileId),
+    trimTileId: readOptionalAssetId<'tiles'>(params, 'trim_tile', culture.trimTileId),
+    roofSlopeTileId: readOptionalAssetId<'tiles'>(params, 'roof_slope_tile', culture.roofSlopeTileId),
+    roofRidgeTileId: readOptionalAssetId<'tiles'>(params, 'roof_ridge_tile', culture.roofRidgeTileId),
+    floorTileId: readOptionalAssetId<'tiles'>(params, 'floor_tile', culture.floorTileId),
+    pathTileId: readOptionalAssetId<'tiles'>(params, 'path_tile', culture.pathTileId),
   };
 }
 
-function numberPatchOf(culture: Culture, params: Record<string, unknown>): CulturePatch {
+function numberPatchOf(culture: Culture, params: CommandParams): CulturePatch {
   return {
     roofStyle: readOptionalInt(params, 'roof_style', culture.roofStyle) === 1 ? 1 : 0,
     storyLayers: clamped(
@@ -199,7 +202,7 @@ function numberPatchOf(culture: Culture, params: Record<string, unknown>): Cultu
 function bindRole(
   context: CommandContext,
   culture: Culture,
-  params: Record<string, unknown>,
+  params: CommandParams,
 ): CommandResult {
   const role = readText(params, 'role');
   if (!role.ok) return role.failure;
@@ -218,13 +221,13 @@ type PieceIdsRead = { ok: true; value: number[] } | { ok: false; failure: Comman
 
 function readPieceIds(
   context: CommandContext,
-  params: Record<string, unknown>,
+  params: CommandParams,
 ): PieceIdsRead {
   const raw = params.piece_ids;
   if (!Array.isArray(raw) || raw.some((id) => typeof id !== 'number')) {
     return { ok: false, failure: commandFailed('invalid_value', "'piece_ids' must be an array of piece ids") };
   }
-  const unknown = (raw as number[]).filter((id) => !context.pieces.byId(id));
+  const unknown = (raw as PieceId[]).filter((id) => !context.pieces.byId(id));
   if (unknown.length > 0) {
     return {
       ok: false,

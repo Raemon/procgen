@@ -1,3 +1,4 @@
+import type { CommandParams } from '@/features/app-shell/runtime/commands/command';
 import { commandFor } from '@/features/app-shell/runtime/commands/commandCatalog';
 import { listOf } from '@/features/app-shell/runtime/commands/commandParams';
 import type { CommandMode } from '@/features/app-shell/runtime/commands/command';
@@ -9,7 +10,7 @@ export interface ScriptLine {
   text: string;
   repeat: number;
   action: string;
-  params: Record<string, unknown>;
+  params: CommandParams;
 }
 
 export interface ScriptFault {
@@ -80,7 +81,7 @@ function parseTokens(tokens: Token[]): TokenParse {
   }
   const action = rest.shift();
   if (!action) return { ok: false, reason: 'no action on this line' };
-  const params: Record<string, unknown> = {};
+  const params: CommandParams = {};
   for (const token of rest) {
     const split = token.text.indexOf('=');
     if (split <= 0) return { ok: false, reason: `'${token.text}' is not a key=value param` };

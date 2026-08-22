@@ -1,3 +1,4 @@
+import type { TileId } from '@/features/asset-library/asset';
 import { EMPTY_VOXEL } from '@/features/asset-library/pieces/pieceDef';
 import { packedVoxel } from '../structureOverlay/packedVoxel';
 import type { PaintVoxel } from './buildingSpec';
@@ -11,7 +12,7 @@ export function paintTile(
   worldX: number,
   worldY: number,
   layer: number,
-  tileId: number,
+  tileId: TileId,
   facing: number,
 ): void {
   if (tileId === EMPTY_VOXEL) return;
@@ -23,7 +24,7 @@ export function paintWallColumn(
   worldX: number,
   worldY: number,
   wallLayers: number,
-  tileId: number,
+  tileId: TileId,
   facing: number,
 ): void {
   for (let layer = FIRST_WALL_LAYER; layer <= wallLayers; layer++) {
@@ -36,7 +37,7 @@ export function paintDoorColumn(
   worldX: number,
   worldY: number,
   wallLayers: number,
-  tileId: number,
+  tileId: TileId,
   facing: number,
 ): void {
   for (let layer = FIRST_WALL_LAYER + DOOR_OPENING_LAYERS; layer <= wallLayers; layer++) {

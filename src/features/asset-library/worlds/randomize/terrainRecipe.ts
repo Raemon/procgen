@@ -1,3 +1,4 @@
+import { NO_TILE, type TileId } from '@/features/asset-library/asset';
 import type { RandomStream } from '../random/mulberry32';
 import {
   COMBINE_AVERAGE,
@@ -122,7 +123,7 @@ function appendBand(
   sourceId: string,
   band: number,
   threshold: number,
-  tiles: readonly number[],
+  tiles: readonly TileId[],
 ): void {
   nodes.push(
     recipeNode({
@@ -139,8 +140,8 @@ function appendBand(
   );
 }
 
-function bandTiles(rng: RandomStream, tiles: RecipeTiles, count: number): number[] {
-  if (tiles.all.length === 0) return Array.from({ length: count }, () => -1);
+function bandTiles(rng: RandomStream, tiles: RecipeTiles, count: number): TileId[] {
+  if (tiles.all.length === 0) return Array.from({ length: count }, () => NO_TILE);
   const low = shuffled(rng, preferring(tiles, 'blockers'))[0]!;
   const pool = shuffled(rng, tiles.all);
   return [low, ...Array.from({ length: count - 1 }, (_, index) => pool[index % pool.length]!)];

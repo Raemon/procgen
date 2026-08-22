@@ -1,3 +1,4 @@
+import type { CommandParams } from '@/features/app-shell/runtime/commands/command';
 import { useSyncExternalStore } from 'react';
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
 import type { WorldPreset } from '@/features/asset-library/worlds/presets/worldPreset';
@@ -19,7 +20,7 @@ export function useWorldEntries(): LibraryEntry[] {
   return shelf.map((world) => worldEntry(world, running, perform));
 }
 
-type Perform = (action: string, params?: Record<string, unknown>) => unknown;
+type Perform = (action: string, params?: CommandParams) => unknown;
 
 function worldEntry(world: WorldPreset, running: string, perform: Perform): LibraryEntry {
   return {

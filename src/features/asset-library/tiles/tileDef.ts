@@ -1,3 +1,4 @@
+import type { TileId } from '../asset';
 import { clampLightRadius, DEFAULT_LIGHT_INK } from '@/features/game/light/lightEmission';
 import type { CubeFaceArt } from './tileFaceArt';
 import { DEFAULT_TILE_SHAPE, type TileShapeKind } from './tileShapeKind';
@@ -6,7 +7,7 @@ import { WALKABLE_TILE_HEIGHT } from './tileHeight';
 export type TileRole = 'water' | 'sand' | 'grass' | 'tree' | 'rock';
 
 export interface TileDef {
-  id: number;
+  id: TileId;
   name: string;
   symbol: string;
   color: string;
@@ -20,7 +21,7 @@ export interface TileDef {
   lightInk: string;
 }
 
-export function newTileWithId(id: number): TileDef {
+export function newTileWithId(id: TileId): TileDef {
   return {
     id,
     name: `tile ${id}`,

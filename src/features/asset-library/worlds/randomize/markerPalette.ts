@@ -1,3 +1,4 @@
+import { NO_TILE, type TileId } from '@/features/asset-library/asset';
 import type { RandomStream } from '../random/mulberry32';
 import type { DisplayBinding } from '../display/displayBinding';
 import { chance, pick } from './randomRolls';
@@ -21,11 +22,11 @@ export function randomMarkerTag(rng: RandomStream): string {
   return pick(rng, MARKER_TAGS);
 }
 
-export function randomMarkerDisplay(rng: RandomStream, tileIds: readonly number[]): DisplayBinding {
+export function randomMarkerDisplay(rng: RandomStream, tileIds: readonly TileId[]): DisplayBinding {
   const tileSourced = tileIds.length > 0 && chance(rng, 0.4);
   return {
     mode: 'markers',
-    tileId: tileSourced ? pick(rng, tileIds) : -1,
+    tileId: tileSourced ? pick(rng, tileIds) : NO_TILE,
     glyph: pick(rng, MARKER_GLYPHS),
     color: pick(rng, MARKER_COLORS),
   };

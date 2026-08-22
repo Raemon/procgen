@@ -1,3 +1,4 @@
+import type { TileId } from '@/features/asset-library/asset';
 import { defaultBindingForKind } from '../display/displayBinding';
 import { nodeTypeOf } from '../nodeRegistry';
 import { NOISE_STYLE_FBM } from '../noise/terrainOctaves';
@@ -298,7 +299,7 @@ function appendScatterNode(
   pipeline: PipelineState,
   rng: RandomStream,
   palette: WorldPalette,
-  wanted?: { density?: number; tileId?: number; maskId?: string; maskAtLeast?: number },
+  wanted?: { density?: number; tileId?: TileId; maskId?: string; maskAtLeast?: number },
 ): void {
   const maskId = wanted?.maskId ?? paintingSourceFieldIdOf(pipeline);
   pipeline.nodes.push(
@@ -424,7 +425,7 @@ function dropOneNodePainting(pipeline: PipelineState, blockers: readonly number[
   if (painting >= 0 && pipeline.nodes.length > 1) pipeline.nodes.splice(painting, 1);
 }
 
-function blockerTileIdsOf(palette: WorldPalette): number[] {
+function blockerTileIdsOf(palette: WorldPalette): TileId[] {
   return palette.tiles.filter((tile) => !tile.walkable).map((tile) => tile.id)
     .filter((id) => palette.paletteIds.includes(id));
 }

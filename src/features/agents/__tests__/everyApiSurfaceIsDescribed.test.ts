@@ -1,5 +1,5 @@
-import { API_CONTRACTS } from '@/features/app-shell/api/apiContracts';
 import { openApiDocument } from '@/features/app-shell/api/openApiDocument';
+import { buildApiEndpointCatalog } from '@/features/app-shell/documentation/apiEndpointCatalog';
 import { allCommands } from '@/features/app-shell/runtime/commands/commandCatalog';
 
 interface DocumentShape {
@@ -11,9 +11,14 @@ export function checkEveryApiSurfaceIsDescribed(
   check: (name: string, condition: boolean) => void,
 ): void {
   const document = openApiDocument() as DocumentShape;
+  const endpoints = buildApiEndpointCatalog().filter((endpoint) => endpoint.path.startsWith('/api/v1'));
   check(
-    'every canonical HTTP contract reaches the OpenAPI document',
-    API_CONTRACTS.every((contract) => document.paths[contract.path]?.[contract.method.toLowerCase()]),
+    'every discovered API endpoint reaches the OpenAPI document',
+    endpoints.every((endpoint) => {
+      const path = endpoint.path.slice('/api/v1'.length) || '/';
+      const method = endpoint.transport === 'websocket' ? 'get' : endpoint.method.toLowerCase();
+      return document.paths[path]?.[method];
+    }),
   );
 
   const tools = Object.values(document['x-agent-tools']).flat();

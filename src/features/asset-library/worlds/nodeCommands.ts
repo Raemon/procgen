@@ -1,3 +1,4 @@
+import { assetId } from '@/features/asset-library/asset';
 import {
   defaultBindingForMode,
   displayModesForKind,
@@ -16,6 +17,7 @@ import {
   type CommandContext,
   type CommandResult,
   type CommandSpec,
+  type CommandParams,
 } from '@/features/app-shell/runtime/commands/command';
 import { listOf, readInt, readNumber, readOptionalText, readText } from '@/features/app-shell/runtime/commands/commandParams';
 import { createCommandCollection } from '@/features/app-shell/runtime/commands/commandCollection';
@@ -252,7 +254,7 @@ registerNodeCommand({
 
 function withNode(
   context: CommandContext,
-  params: Record<string, unknown>,
+  params: CommandParams,
   use: (node: NodeInstance) => CommandResult,
 ): CommandResult {
   const rawId = params.node_id;
@@ -268,7 +270,7 @@ function withNode(
 
 function withTypedNode(
   context: CommandContext,
-  params: Record<string, unknown>,
+  params: CommandParams,
   use: (node: NodeInstance, def: NodeTypeDef) => CommandResult,
 ): CommandResult {
   return withNode(context, params, (node) => {
@@ -279,7 +281,7 @@ function withTypedNode(
   });
 }
 
-function addNode(context: CommandContext, params: Record<string, unknown>): CommandResult {
+function addNode(context: CommandContext, params: CommandParams): CommandResult {
   const type = readText(params, 'type');
   if (!type.ok) return type.failure;
   const node = context.store.addNode(type.value);
@@ -297,7 +299,7 @@ function addNode(context: CommandContext, params: Record<string, unknown>): Comm
 function placeBeforeIfAsked(
   context: CommandContext,
   node: NodeInstance,
-  params: Record<string, unknown>,
+  params: CommandParams,
 ): CommandResult | null {
   const before = params.before_node_id;
   if (typeof before !== 'string') return null;
@@ -320,7 +322,7 @@ function describeWiring(node: NodeInstance): string {
 function moveNode(
   context: CommandContext,
   node: NodeInstance,
-  params: Record<string, unknown>,
+  params: CommandParams,
 ): CommandResult {
   const before = params.before_node_id;
   const state = context.store.snapshot();
@@ -336,7 +338,7 @@ function setParam(
   context: CommandContext,
   node: NodeInstance,
   def: NodeTypeDef,
-  params: Record<string, unknown>,
+  params: CommandParams,
 ): CommandResult {
   const name = readText(params, 'param');
   if (!name.ok) return name.failure;
@@ -389,7 +391,7 @@ function acceptKnobValue(
           ),
         };
   }
-  return value === -1 || context.tileAssets.byId(value)
+  return value === -1 || context.tileAssets.byId(assetId<'tiles'>(value))
     ? { ok: true, value }
     : {
         ok: false,
@@ -424,7 +426,7 @@ function wireInput(
   context: CommandContext,
   node: NodeInstance,
   def: NodeTypeDef,
-  params: Record<string, unknown>,
+  params: CommandParams,
 ): CommandResult {
   const name = readText(params, 'input');
   if (!name.ok) return name.failure;
@@ -470,7 +472,7 @@ function setDisplay(
   context: CommandContext,
   node: NodeInstance,
   def: NodeTypeDef,
-  params: Record<string, unknown>,
+  params: CommandParams,
 ): CommandResult {
   const mode = params.display;
   if (!isDisplayMode(mode)) {
@@ -510,7 +512,7 @@ function isDisplayMode(value: unknown): value is DisplayMode {
 function bindingFrom(
   mode: DisplayMode,
   current: DisplayBinding,
-  params: Record<string, unknown>,
+  params: CommandParams,
 ): DisplayBinding {
   const base = current.mode === mode ? current : defaultBindingForMode(mode);
   if (base.mode === 'ceiling') {
@@ -543,7 +545,7 @@ function bindingFrom(
 
 function markerBindingFrom(
   base: DisplayBinding & { mode: 'markers' },
-  params: Record<string, unknown>,
+  params: CommandParams,
 ): DisplayBinding {
   const glyph = readOptionalText(params, 'glyph');
   const color = readOptionalText(params, 'color');
@@ -555,13 +557,13 @@ function markerBindingFrom(
   };
 }
 
-function readOptionalId(
-  params: Record<string, unknown>,
+function readOptionalId<Id extends number>(
+  params: CommandParams,
   name: string,
-  fallback: number,
-): number {
+  fallback: Id,
+): Id {
   const read = readInt(params, name);
-  return read.ok ? read.value : fallback;
+  return read.ok ? (read.value as Id) : fallback;
 }
 
 function rejectMissingBindingTarget(

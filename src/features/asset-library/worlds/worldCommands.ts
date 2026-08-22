@@ -15,6 +15,7 @@ import {
   type CommandContext,
   type CommandResult,
   type CommandSpec,
+  type CommandParams,
 } from '@/features/app-shell/runtime/commands/command';
 import { listOf, readInt, readNumber, readOptionalText, readText } from '@/features/app-shell/runtime/commands/commandParams';
 import { createCommandCollection } from '@/features/app-shell/runtime/commands/commandCollection';
@@ -251,7 +252,7 @@ function recipeTilesFor(context: CommandContext): RecipeTiles {
 
 function applyRoll(
   context: CommandContext,
-  params: Record<string, unknown>,
+  params: CommandParams,
   roll: (context: CommandContext, rng: RandomStream) => PipelineState,
 ): CommandResult {
   const seed = readInt(params, 'seed');
@@ -265,7 +266,7 @@ function arbitrarySeed(): number {
   return (Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0;
 }
 
-function loadPreset(context: CommandContext, params: Record<string, unknown>): CommandResult {
+function loadPreset(context: CommandContext, params: CommandParams): CommandResult {
   const name = readText(params, 'name');
   if (!name.ok) return name.failure;
   const state = presetStateOf(context, name.value);
@@ -276,7 +277,7 @@ function loadPreset(context: CommandContext, params: Record<string, unknown>): C
   return commandSucceeded(`loaded preset '${name.value}'`);
 }
 
-function runWorld(context: CommandContext, params: Record<string, unknown>): CommandResult {
+function runWorld(context: CommandContext, params: CommandParams): CommandResult {
   const name = readText(params, 'name');
   if (!name.ok) return name.failure;
   if (context.runningWorld.name() === name.value) {
@@ -301,7 +302,7 @@ function presetNames(context: CommandContext): string[] {
   ];
 }
 
-function savePreset(context: CommandContext, params: Record<string, unknown>): CommandResult {
+function savePreset(context: CommandContext, params: CommandParams): CommandResult {
   const name = readText(params, 'name');
   if (!name.ok) return name.failure;
   if (context.store.nodes().length === 0) {
@@ -319,7 +320,7 @@ function describedElsewhere(context: CommandContext, name: string): string {
   return worldPresetNamed(context, name)?.description ?? '';
 }
 
-function duplicatePreset(context: CommandContext, params: Record<string, unknown>): CommandResult {
+function duplicatePreset(context: CommandContext, params: CommandParams): CommandResult {
   const name = readText(params, 'name');
   if (!name.ok) return name.failure;
   const original = worldPresetNamed(context, name.value);
@@ -341,7 +342,7 @@ function worldPresetNamed(context: CommandContext, name: string) {
   );
 }
 
-function duplicateTemplate(context: CommandContext, params: Record<string, unknown>): CommandResult {
+function duplicateTemplate(context: CommandContext, params: CommandParams): CommandResult {
   const name = readText(params, 'name');
   if (!name.ok) return name.failure;
   const original = context.templates.byName(name.value);
@@ -356,7 +357,7 @@ function duplicateTemplate(context: CommandContext, params: Record<string, unkno
   return commandSucceeded(`copied group '${original.name}' as '${copy}'`);
 }
 
-function deletePreset(context: CommandContext, params: Record<string, unknown>): CommandResult {
+function deletePreset(context: CommandContext, params: CommandParams): CommandResult {
   const name = readText(params, 'name');
   if (!name.ok) return name.failure;
   if (!worldPresetNamed(context, name.value)) {
@@ -372,7 +373,7 @@ function deletePreset(context: CommandContext, params: Record<string, unknown>):
   return commandSucceeded(`deleted world '${name.value}'`);
 }
 
-function stampTemplate(context: CommandContext, params: Record<string, unknown>): CommandResult {
+function stampTemplate(context: CommandContext, params: CommandParams): CommandResult {
   const name = readText(params, 'name');
   if (!name.ok) return name.failure;
   const template = context.templates.byName(name.value);
@@ -395,7 +396,7 @@ function indexOfNode(context: CommandContext, nodeId: string): number {
   return context.store.nodes().findIndex((node) => node.id === nodeId);
 }
 
-function saveTemplate(context: CommandContext, params: Record<string, unknown>): CommandResult {
+function saveTemplate(context: CommandContext, params: CommandParams): CommandResult {
   const name = readText(params, 'name');
   if (!name.ok) return name.failure;
   const ids = nodeIdsFrom(params);
@@ -415,7 +416,7 @@ function saveTemplate(context: CommandContext, params: Record<string, unknown>):
 
 type NodeIdsRead = { ok: true; value: string[] } | { ok: false; failure: CommandResult };
 
-function nodeIdsFrom(params: Record<string, unknown>): NodeIdsRead {
+function nodeIdsFrom(params: CommandParams): NodeIdsRead {
   const raw = params.node_ids;
   if (!Array.isArray(raw) || raw.some((id) => typeof id !== 'string') || raw.length === 0) {
     return {
@@ -426,7 +427,7 @@ function nodeIdsFrom(params: Record<string, unknown>): NodeIdsRead {
   return { ok: true, value: raw as string[] };
 }
 
-function deleteTemplate(context: CommandContext, params: Record<string, unknown>): CommandResult {
+function deleteTemplate(context: CommandContext, params: CommandParams): CommandResult {
   const name = readText(params, 'name');
   if (!name.ok) return name.failure;
   if (!context.templates.savedTemplates().some((template) => template.name === name.value)) {

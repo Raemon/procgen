@@ -1,22 +1,37 @@
 import type { PersistedDocumentName } from '@/features/app-shell/persistence/persistedDocuments';
+import type { UnparsedDocument } from '@/features/app-shell/persistence/persistedDocumentContents';
+import {
+  type ApiErrorBody,
+  type ApiErrorCode,
+  type PersistedDocumentBody,
+} from '@/features/app-shell/api/persistedDocumentResponses';
 import { persistedDocumentIsValid } from '@/features/app-shell/api/persistedDocumentValidation';
 import { processServices } from '@/infrastructure/server/processServices';
+import type { DocumentRevision } from '@/infrastructure/server/persistence/docsRepo';
 
-export function persistedDocumentRoute(name: PersistedDocumentName) {
+export interface PersistedDocumentHandlers {
+  GET(): Response;
+  PUT(request: Request): Promise<Response>;
+}
+
+export function persistedDocumentRoute(name: PersistedDocumentName): PersistedDocumentHandlers {
   return {
     GET: () => readDocument(name),
     PUT: (request: Request) => writeDocument(name, request),
   };
 }
 
-function readDocument(name: PersistedDocumentName): Response {
+function readDocument<Name extends PersistedDocumentName>(name: Name): Response {
   const { docs } = processServices();
   const data = docs.read(name);
   if (data === null) return apiError(404, 'not_found', `${name} has not been seeded`);
   return documentResponse(data, docs.revision(name));
 }
 
-async function writeDocument(name: PersistedDocumentName, request: Request): Promise<Response> {
+async function writeDocument<Name extends PersistedDocumentName>(
+  name: Name,
+  request: Request,
+): Promise<Response> {
   const expected = expectedRevision(request);
   if (expected === null) return apiError(428, 'revision_required', 'send the current ETag in If-Match');
   const data = await jsonBody(request);
@@ -33,7 +48,7 @@ async function writeDocument(name: PersistedDocumentName, request: Request): Pro
   return documentResponse(data, revision);
 }
 
-function expectedRevision(request: Request): string | null {
+function expectedRevision(request: Request): DocumentRevision | null {
   const header = request.headers.get('if-match');
   if (header === null) return null;
   return header.replace(/^W\//, '').replace(/^"|"$/g, '');
@@ -49,18 +64,18 @@ async function jsonBody(request: Request): Promise<unknown | typeof INVALID_JSON
   }
 }
 
-function documentResponse(data: unknown, revision: string): Response {
-  return Response.json(
-    { data, revision },
-    {
-      headers: {
-        ETag: `"${revision}"`,
-        'Cache-Control': 'no-store',
-      },
+function documentResponse<Name extends PersistedDocumentName>(
+  data: UnparsedDocument<Name>,
+  revision: DocumentRevision,
+): Response {
+  return Response.json({ data, revision } satisfies PersistedDocumentBody<Name>, {
+    headers: {
+      ETag: `"${revision}"`,
+      'Cache-Control': 'no-store',
     },
-  );
+  });
 }
 
-function apiError(status: number, code: string, message: string): Response {
-  return Response.json({ error: { code, message } }, { status });
+function apiError(status: number, code: ApiErrorCode, message: string): Response {
+  return Response.json({ error: { code, message } } satisfies ApiErrorBody, { status });
 }

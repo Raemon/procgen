@@ -1,9 +1,11 @@
+import { NO_PIECE } from '@/features/asset-library/asset';
 import { pieceFromWorldRegion, regionSize, type WorldRegion } from '@/features/asset-library/pieces/captureRegionAsPiece';
 import { withCenteredAnchor } from '@/features/asset-library/pieces/pieceDef';
 import {
   commandSucceeded,
   type CommandContext,
   type CommandResult,
+  type CommandParams,
 } from '@/features/app-shell/runtime/commands/command';
 import { createCommandCollection } from '@/features/app-shell/runtime/commands/commandCollection';
 import { readInt, readText } from '@/features/app-shell/runtime/commands/commandParams';
@@ -29,7 +31,7 @@ define({
   apply: captureRegion,
 });
 
-function captureRegion(context: CommandContext, params: Record<string, unknown>): CommandResult {
+function captureRegion(context: CommandContext, params: CommandParams): CommandResult {
   const region = regionFrom(params);
   if (!region.ok) return region.failure;
   const name = readText(params, 'name');
@@ -38,14 +40,14 @@ function captureRegion(context: CommandContext, params: Record<string, unknown>)
     region.value,
     name.ok ? name.value : capturedName(region.value),
   );
-  const added = context.pieces.insert(withCenteredAnchor({ ...captured, id: 0 }));
+  const added = context.pieces.insert(withCenteredAnchor({ ...captured, id: NO_PIECE }));
   const { width, depth } = regionSize(region.value);
   return commandSucceeded(`captured ${width}×${depth} into piece ${added.id} ('${added.name}')`);
 }
 
 type RegionRead = { ok: true; value: WorldRegion } | { ok: false; failure: CommandResult };
 
-function regionFrom(params: Record<string, unknown>): RegionRead {
+function regionFrom(params: CommandParams): RegionRead {
   const minX = readInt(params, 'min_x');
   if (!minX.ok) return minX;
   const minY = readInt(params, 'min_y');

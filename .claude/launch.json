@@ -4,8 +4,20 @@
     {
       "name": "procgen-dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 1111
+    },
+    {
+      "name": "apiscope-dev",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /Users/raymondarnold/Documents/git-projects/apiscope && exec npm run dev"
+      ],
+      "port": 1112
     }
   ]
 }

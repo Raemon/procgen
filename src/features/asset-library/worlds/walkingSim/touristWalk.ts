@@ -1,5 +1,5 @@
 import type { CellPoint } from '@/features/game/nearestWalkable';
-import { climbEffortOfRise, type ElevationProbe } from '@/features/game/climbing';
+import { climbEffortOfRise, navigationRiseBetween, type ElevationProbe } from '@/features/game/climbing';
 import type { RandomStream } from '../random/mulberry32';
 import { CARDINAL_STEPS, cellKey, type WalkLimits } from './cellGrid';
 import { visibleCellsFrom } from './isovist';
@@ -281,9 +281,10 @@ function climbEffortBetween(
   cameFrom: CellPoint,
   cell: CellPoint,
 ): number {
-  const rise =
-    context.probes.elevationAt(cell.x, cell.y) -
-    context.probes.elevationAt(cameFrom.x, cameFrom.y);
+  const rise = navigationRiseBetween(
+    context.probes.elevationAt(cameFrom.x, cameFrom.y),
+    context.probes.elevationAt(cell.x, cell.y),
+  );
   return climbEffortOfRise(rise);
 }
 

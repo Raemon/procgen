@@ -1,3 +1,4 @@
+import type { CultureId, PieceId, TileId } from '@/features/asset-library/asset';
 import type { Culture } from '../cultures/cultureDef';
 import type { Piece } from '../pieces/pieceDef';
 import type { TileDef } from '../tiles/tileDef';
@@ -12,9 +13,9 @@ export interface AssetLibrary {
   tileNames: readonly string[];
   tileSymbols: readonly string[];
   cultureNames: readonly string[];
-  nextTileId: number;
-  nextPieceId: number;
-  nextCultureId: number;
+  nextTileId: TileId;
+  nextPieceId: PieceId;
+  nextCultureId: CultureId;
 }
 
 export interface AssetKit {

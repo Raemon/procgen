@@ -1,3 +1,4 @@
+import type { Footprint } from '../values/footprint';
 import type { RandomStream } from '../random/mulberry32';
 import { massingRulesFor, MAX_WING_SIDE, type MassingRules } from './buildingPrograms';
 
@@ -16,7 +17,7 @@ export function massingFor(program: number, rng: RandomStream): RoomBox[] {
   return wanted && wing ? [main, wing] : [main];
 }
 
-export function massingExtent(boxes: readonly RoomBox[]): { width: number; depth: number } {
+export function massingExtent(boxes: readonly RoomBox[]): Footprint {
   return {
     width: Math.max(...boxes.map((box) => box.x + box.width)),
     depth: Math.max(...boxes.map((box) => box.y + box.depth)),

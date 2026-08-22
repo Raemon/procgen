@@ -1,11 +1,9 @@
+import type { Cell } from '@/features/asset-library/worlds/values/cell';
+export type { Cell };
 import { cellKey } from './cellKey';
 import type { RandomStream } from '@/features/asset-library/worlds/random/mulberry32';
 import type { RoomRect } from '@/features/asset-library/worlds/labyrinth/roomLayout';
 
-export interface Cell {
-  x: number;
-  y: number;
-}
 
 export class RoomCells {
   private readonly taken = new Set<number>();

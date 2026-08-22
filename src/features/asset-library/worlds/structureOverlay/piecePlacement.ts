@@ -1,3 +1,4 @@
+import type { PieceId } from '@/features/asset-library/asset';
 import { hashString } from '../random/hashString';
 import type { Piece } from '@/features/asset-library/pieces/pieceDef';
 import { rotatedAnchorX, rotatedAnchorY, normalizedQuarterTurns } from '@/features/asset-library/pieces/pieceRotation';
@@ -6,7 +7,7 @@ import { RANDOM_ROTATION } from '../display/displayBinding';
 export interface PiecePlacement {
   x: number;
   y: number;
-  pieceId: number;
+  pieceId: PieceId;
   rotation: number;
 }
 

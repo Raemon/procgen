@@ -14,9 +14,17 @@ const EXIT_STEPS = [
   [0, -1],
 ] as const;
 
+export function navigationLevelOf(elevation: number): number {
+  return Math.round(elevation);
+}
+
+export function navigationRiseBetween(fromElevation: number, toElevation: number): number {
+  return navigationLevelOf(toElevation) - navigationLevelOf(fromElevation);
+}
+
 export function climbGateFrom(elevationAt: ElevationProbe): ClimbGate {
   return (fromX, fromY, toX, toY) =>
-    elevationAt(toX, toY) - elevationAt(fromX, fromY) <= CLIMB_LIMIT;
+    navigationRiseBetween(elevationAt(fromX, fromY), elevationAt(toX, toY)) <= CLIMB_LIMIT;
 }
 
 export function climbEffortOfRise(rise: number): number {

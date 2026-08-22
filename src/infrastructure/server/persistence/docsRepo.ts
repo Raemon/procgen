@@ -1,6 +1,14 @@
 import { existsSync, readFileSync } from 'node:fs';
 import type { Store } from './db';
-import { PERSISTED_DOCUMENT_NAMES } from '@/features/app-shell/persistence/persistedDocuments';
+import {
+  PERSISTED_DOCUMENT_NAMES,
+  type PersistedDocumentName,
+} from '@/features/app-shell/persistence/persistedDocuments';
+import {
+  unparsedDocument,
+  type StoredDocument,
+  type UnparsedDocument,
+} from '@/features/app-shell/persistence/persistedDocumentContents';
 import {
   libraryDocsFrom,
   syncMissingPresets,
@@ -14,16 +22,23 @@ const PERSISTED_DOCUMENT_NAME_SET = new Set<string>(PERSISTED_DOCUMENT_NAMES);
 
 const DOC_NAMES_BEFORE_THE_ASSETS_RENAME: Record<string, string> = { tiles: 'tileset' };
 
-export function isPersistedDocName(name: string): boolean {
+export function isPersistedDocName(name: string): name is PersistedDocumentName {
   return PERSISTED_DOCUMENT_NAME_SET.has(name);
 }
 
+export type DocumentRevision = string;
+export type LibraryStamp = string;
+
 export interface DocStore {
-  read(name: string): unknown;
-  revision(name: string): string;
-  stamp(): string;
-  write(name: string, json: unknown): void;
-  writeIfCurrent(name: string, revision: string, json: unknown): string | null;
+  read<Name extends PersistedDocumentName>(name: Name): UnparsedDocument<Name> | null;
+  revision(name: PersistedDocumentName): DocumentRevision;
+  stamp(): LibraryStamp;
+  write<Name extends PersistedDocumentName>(name: Name, json: StoredDocument<Name>): void;
+  writeIfCurrent<Name extends PersistedDocumentName>(
+    name: Name,
+    revision: DocumentRevision,
+    json: UnparsedDocument<Name>,
+  ): DocumentRevision | null;
 }
 
 export async function createDocStore(store: Store): Promise<DocStore> {
@@ -31,7 +46,7 @@ export async function createDocStore(store: Store): Promise<DocStore> {
   const revisions = new Map<string, number>();
   let version = 0;
   return {
-    read: (name) => (docs.has(name) ? docs.get(name) : null),
+    read: (name) => (docs.has(name) ? unparsedDocument(docs.get(name)) : null),
     revision: (name) => String(revisions.get(name) ?? 0),
     stamp: () => String(version),
     write(name, json) {

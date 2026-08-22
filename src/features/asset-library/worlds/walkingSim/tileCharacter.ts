@@ -1,3 +1,4 @@
+import type { TileId } from '@/features/asset-library/asset';
 import type { TileAssets } from '@/features/asset-library/tiles/tileAssets';
 import { storedTileHeight } from '@/features/asset-library/tiles/tileHeight';
 import type { TileDef } from '@/features/asset-library/tiles/tileDef';
@@ -8,7 +9,7 @@ export const VOID_CHARACTER = 'void';
 const HUE_BANDS = 6;
 const TALLEST_BAND = 3;
 
-export type TileCharacterOf = (tileId: number) => string;
+export type TileCharacterOf = (tileId: TileId) => string;
 
 export function tileCharacterProbe(tileAssets: TileAssets): TileCharacterOf {
   const cache = new Map<number, string>();
@@ -21,7 +22,7 @@ export function tileCharacterProbe(tileAssets: TileAssets): TileCharacterOf {
   };
 }
 
-function characterOfTile(tile: TileDef | undefined, tileId: number): string {
+function characterOfTile(tile: TileDef | undefined, tileId: TileId): string {
   if (tileId === EMPTY_TILE || !tile) return VOID_CHARACTER;
   return [footingOf(tile), heightBandOf(tile), hueBandOfHex(tile.color)].join('/');
 }

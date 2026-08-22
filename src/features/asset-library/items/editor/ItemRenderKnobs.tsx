@@ -1,3 +1,4 @@
+import type { CommandParams } from '@/features/app-shell/runtime/commands/command';
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
 import {
   BILLBOARD,
@@ -63,7 +64,7 @@ const SIZE_KNOBS: readonly SizeKnob[] = [
 
 export function ItemRenderKnobs({ item }: { item: ItemDef }) {
   const { perform } = useAppRuntime();
-  const edit = (patch: Record<string, unknown>) => perform('update_item', { item_id: item.id, ...patch });
+  const edit = (patch: CommandParams) => perform('update_item', { item_id: item.id, ...patch });
   const isBillboard = item.render === BILLBOARD;
   return (
     <DrawerPanel>

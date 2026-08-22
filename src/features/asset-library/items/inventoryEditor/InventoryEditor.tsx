@@ -1,3 +1,5 @@
+import type { CommandParams } from '@/features/app-shell/runtime/commands/command';
+import type { CreatureId } from '@/features/asset-library/asset';
 import { useState } from 'react';
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
 import { useRerenderOnItemChange } from '@/features/app-shell/runtime/rerenderHooks';
@@ -53,7 +55,7 @@ function InventoryPanel({
   const [mode, setMode] = useState<InventoryEditorMode>('slots');
   const [selected, setSelected] = useState<GridCell | null>(null);
   const [heldItemId, setHeldItemId] = useState(() => items.all()[0]?.id ?? -1);
-  const act = (action: string, params: Record<string, unknown>) =>
+  const act = (action: string, params: CommandParams) =>
     perform(action, { creature_id: creature.id, ...params });
 
   function clickCell(cell: GridCell): void {
@@ -188,7 +190,7 @@ function SlotTagsRow({
 }: {
   inventory: InventoryDef;
   selected: GridCell | null;
-  creatureId: number;
+  creatureId: CreatureId;
 }) {
   const { perform } = useAppRuntime();
   if (!selected) return <PanelHint className="mt-2">Click a slot to tag it.</PanelHint>;

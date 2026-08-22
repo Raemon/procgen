@@ -1,3 +1,5 @@
+import { NO_TILE } from '@/features/asset-library/asset';
+import type { TileId } from '@/features/asset-library/asset';
 import type * as THREE from 'three';
 import { billboardHeightOfTile, billboardKindOfTile } from '@/features/asset-library/tiles/art/billboards/billboardKind';
 import { billboardPalette } from '@/features/asset-library/tiles/art/billboards/billboardPalette';
@@ -122,7 +124,7 @@ function checkPropArtIsSharedSoItsTexturesAreBuiltOnce(check: CheckReporter): vo
 }
 
 function checkMarkersWithoutATileStayPins(check: CheckReporter): void {
-  const look = markerAppearance(new TileAssets(), { mode: 'markers', tileId: -1, glyph: '⌂', color: '#e0b06a' });
+  const look = markerAppearance(new TileAssets(), { mode: 'markers', tileId: NO_TILE, glyph: '⌂', color: '#e0b06a' });
   check('a marker with no tile behind it grows no billboard', look.faceArt === null);
   check('a marker with no tile behind it keeps its own glyph', look.glyph === '⌂');
 }
@@ -156,7 +158,7 @@ function propMarker(): Marker {
   return { x: 1, y: 1, tag: 'oak', ...markerAppearance(new TileAssets(defaultTiles()), markerBindingFor(tile)) };
 }
 
-function markerBindingFor(tile: TileDef): { mode: 'markers'; tileId: number; glyph: string; color: string } {
+function markerBindingFor(tile: TileDef): { mode: 'markers'; tileId: TileId; glyph: string; color: string } {
   return { mode: 'markers', tileId: tile.id, glyph: tile.symbol, color: tile.color };
 }
 

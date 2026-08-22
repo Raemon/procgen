@@ -1,3 +1,4 @@
+import type { TileId } from '@/features/asset-library/asset';
 import { massingExtent, massingFor } from '@/features/asset-library/worlds/assembly/buildingMassing';
 import { programNameOf } from '@/features/asset-library/worlds/assembly/buildingPrograms';
 import type { BuildingSpec } from '@/features/asset-library/worlds/assembly/buildingSpec';
@@ -32,7 +33,7 @@ export function villageSnapshotAround(
   world: HeadlessWorld,
   center: WorldPoint,
   side: number,
-  doorTileIds: readonly number[],
+  doorTileIds: readonly TileId[],
 ): VillageSnapshot {
   const region = regionAround(center, side);
   const buildings = buildingsIn(world, region);
@@ -130,7 +131,7 @@ function groundRowOf(world: HeadlessWorld, region: SampledRegion, y: number): st
   return row;
 }
 
-function visibleTileIdAt(world: HeadlessWorld, x: number, y: number): number {
+function visibleTileIdAt(world: HeadlessWorld, x: number, y: number): TileId {
   const top = world.sampler.topVoxelTileIdAt(x, y);
   return top < 0 ? world.sampler.tileAt(x, y) : top;
 }
@@ -168,7 +169,7 @@ function countShapesInColumn(
 function hasDoor(
   world: HeadlessWorld,
   spec: BuildingSpec,
-  doorTileIds: readonly number[],
+  doorTileIds: readonly TileId[],
 ): boolean {
   const extent = massingExtent(massingFor(spec.program, mulberry32(hashString(spec.seedKey))));
   for (let y = spec.y; y < spec.y + extent.depth; y++) {
@@ -183,7 +184,7 @@ function columnHoldsAnyTile(
   world: HeadlessWorld,
   x: number,
   y: number,
-  tileIds: readonly number[],
+  tileIds: readonly TileId[],
 ): boolean {
   const column = world.sampler.packedVoxelColumnAt(x, y) ?? [];
   return column.some((packed) => tileIds.includes(tileIdOfVoxel(packed)));

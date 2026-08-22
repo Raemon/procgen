@@ -1,3 +1,4 @@
+import type { TileId } from '@/features/asset-library/asset';
 import '@/features/asset-library/worlds/nodes';
 import { defaultTileId } from '@/features/asset-library/tiles/defaultTiles';
 import { villageFixtureState } from './village/villageFixtureWorld';
@@ -25,7 +26,7 @@ function reportVillageOf(world: HeadlessWorld, node: NodeInstance): void {
   reportSnapshot(node, villageSnapshotAround(world, center, REGION_SIDE, doorTileIds()));
 }
 
-function doorTileIds(): number[] {
+function doorTileIds(): TileId[] {
   return [defaultTileId('iron-strapped oak door'), defaultTileId('oak plank door')];
 }
 

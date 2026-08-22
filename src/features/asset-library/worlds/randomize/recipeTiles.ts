@@ -1,17 +1,18 @@
+import type { TileId } from '@/features/asset-library/asset';
 export interface RecipeTiles {
-  all: readonly number[];
-  walkable: readonly number[];
-  blockers: readonly number[];
+  all: readonly TileId[];
+  walkable: readonly TileId[];
+  blockers: readonly TileId[];
 }
 
 export interface TileFacts {
-  id: number;
+  id: TileId;
   walkable: boolean;
 }
 
 export function recipeTilesOf(
   tiles: readonly TileFacts[],
-  limitTo?: readonly number[],
+  limitTo?: readonly TileId[],
 ): RecipeTiles {
   const kept = limitTo ? tiles.filter((tile) => limitTo.includes(tile.id)) : tiles;
   return {
@@ -21,11 +22,11 @@ export function recipeTilesOf(
   };
 }
 
-export function idsOnly(ids: readonly number[]): RecipeTiles {
+export function idsOnly(ids: readonly TileId[]): RecipeTiles {
   return { all: ids, walkable: ids, blockers: [] };
 }
 
-export function preferring(tiles: RecipeTiles, wanted: 'walkable' | 'blockers'): readonly number[] {
+export function preferring(tiles: RecipeTiles, wanted: 'walkable' | 'blockers'): readonly TileId[] {
   const preferred = tiles[wanted];
   return preferred.length > 0 ? preferred : tiles.all;
 }

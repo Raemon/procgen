@@ -1,10 +1,11 @@
+import type { TileId } from '@/features/asset-library/asset';
 import type { TileAssets } from '@/features/asset-library/tiles/tileAssets';
 import { climbGateFrom, type ElevationProbe } from '@/features/game/climbing';
 import { isWalkableTile } from '@/features/game/tileWalkability';
 import type { WorldSampler } from '../worldSampler';
 import { cellKey } from './cellGrid';
 
-export type TileIdProbe = (x: number, y: number) => number;
+export type TileIdProbe = (x: number, y: number) => TileId;
 export type WalkableProbe = (x: number, y: number) => boolean;
 export type StepProbe = (fromX: number, fromY: number, toX: number, toY: number) => boolean;
 
@@ -33,7 +34,7 @@ export function flatStepProbe(isWalkableAt: WalkableProbe): StepProbe {
 }
 
 export function cachedTileIdProbe(sampler: WorldSampler): TileIdProbe {
-  const cache = new Map<string, number>();
+  const cache = new Map<string, TileId>();
   return (x, y) => {
     const key = cellKey(x, y);
     const hit = cache.get(key);

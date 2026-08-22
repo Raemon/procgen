@@ -8,7 +8,8 @@ export const FAILURES: readonly FailureSpec[] = [
   {
     code: 'blocked',
     meaning: 'You tried to step onto a tile that would not take you.',
-    recovery: 'Observe and go a different way.',
+    recovery:
+      'The hint names what refused you. The elevation digits in your observation are climb levels: a step up at most 1 level succeeds, higher ground needs another route, and stepping down any drop is free.',
   },
   {
     code: 'unknown_action',

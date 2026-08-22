@@ -1,3 +1,4 @@
+import type { TileId } from '@/features/asset-library/asset';
 import { DEFAULT_LIGHT_INK } from '@/features/game/light/lightEmission';
 import { newTileWithId, type TileDef, type TileRole } from './tileDef';
 import { defaultHeightForTile } from './tileHeight';
@@ -87,14 +88,14 @@ const TILE_CATALOG = [
 export type DefaultTileName = (typeof TILE_CATALOG)[number]['name'];
 
 export function defaultTiles(): TileDef[] {
-  return TILE_CATALOG.map(tileFromEntry);
+  return TILE_CATALOG.map((entry, index) => tileFromEntry(entry, index as TileId));
 }
 
-export function defaultTileId(name: DefaultTileName): number {
-  return TILE_CATALOG.findIndex((entry) => entry.name === name);
+export function defaultTileId(name: DefaultTileName): TileId {
+  return TILE_CATALOG.findIndex((entry) => entry.name === name) as TileId;
 }
 
-function tileFromEntry(entry: TileEntry, id: number): TileDef {
+function tileFromEntry(entry: TileEntry, id: TileId): TileDef {
   const { texture, shape, height, light, lightInk, ...fields } = entry;
   return {
     ...newTileWithId(id),

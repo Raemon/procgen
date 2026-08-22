@@ -1,3 +1,4 @@
+import type { CreatureId } from '@/features/asset-library/asset';
 import {
   blankCharacterBillboard,
   CHARACTER_ANIMATIONS,
@@ -21,8 +22,9 @@ import {
   type CommandContext,
   type CommandResult,
   type CommandSpec,
+  type CommandParams,
 } from '@/features/app-shell/runtime/commands/command';
-import { listOf, readInt, readNumber, readText } from '@/features/app-shell/runtime/commands/commandParams';
+import { listOf,  readInt, readNumber, readText } from '@/features/app-shell/runtime/commands/commandParams';
 import { createCommandCollection } from '@/features/app-shell/runtime/commands/commandCollection';
 import { withCreature } from '@/features/asset-library/creatures/creatureCommands';
 import { spriteFrom } from '@/features/asset-library/items/itemCommands';
@@ -123,7 +125,7 @@ function animationHelp(): string {
   return `'idle' or 'moving' — ${listOf(CHARACTER_ANIMATIONS)}`;
 }
 
-function setFrame(context: CommandContext, params: Record<string, unknown>): CommandResult {
+function setFrame(context: CommandContext, params: CommandParams): CommandResult {
   return withClip(context, params, (creatureId, billboard, rotation, animation) => {
     const sprite = spriteFrom(params);
     if (!sprite.ok) return sprite.failure;
@@ -142,7 +144,7 @@ function setFrame(context: CommandContext, params: Record<string, unknown>): Com
   });
 }
 
-function removeFrame(context: CommandContext, params: Record<string, unknown>): CommandResult {
+function removeFrame(context: CommandContext, params: CommandParams): CommandResult {
   return withClip(context, params, (creatureId, billboard, rotation, animation) => {
     const frames = framesOf(billboard, rotation, animation);
     const index = readInt(params, 'frame');
@@ -159,7 +161,7 @@ function removeFrame(context: CommandContext, params: Record<string, unknown>): 
   });
 }
 
-function setFps(context: CommandContext, params: Record<string, unknown>): CommandResult {
+function setFps(context: CommandContext, params: CommandParams): CommandResult {
   return withCreature(context, params, (creatureId) => {
     const animation = animationFrom(params);
     if (!animation.ok) return animation.failure;
@@ -179,9 +181,9 @@ function setFps(context: CommandContext, params: Record<string, unknown>): Comma
 
 function withClip(
   context: CommandContext,
-  params: Record<string, unknown>,
+  params: CommandParams,
   use: (
-    creatureId: number,
+    creatureId: CreatureId,
     billboard: CharacterBillboard,
     rotation: CharacterRotation,
     animation: CharacterAnimation,
@@ -198,7 +200,7 @@ function withClip(
 }
 
 function rotationFrom(
-  params: Record<string, unknown>,
+  params: CommandParams,
 ): { ok: true; value: CharacterRotation } | { ok: false; failure: CommandResult } {
   const read = readText(params, 'rotation');
   if (!read.ok) return read;
@@ -209,7 +211,7 @@ function rotationFrom(
 }
 
 function animationFrom(
-  params: Record<string, unknown>,
+  params: CommandParams,
 ): { ok: true; value: CharacterAnimation } | { ok: false; failure: CommandResult } {
   const read = readText(params, 'animation');
   if (!read.ok) return read;
@@ -258,13 +260,13 @@ function replacedFrames(
 
 function saveBillboard(
   context: CommandContext,
-  creatureId: number,
+  creatureId: CreatureId,
   billboard: CharacterBillboard | null,
 ): void {
   context.creatures.update(creatureId, { billboardArt: null, billboard, kind: CHARACTER });
 }
 
-function noBillboard(creatureId: number): CommandResult {
+function noBillboard(creatureId: CreatureId): CommandResult {
   return commandFailed(
     'no_billboard',
     `creature ${creatureId} has no billboard sprites — paint one with set_character_frame`,

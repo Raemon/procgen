@@ -1,4 +1,4 @@
-import type { AssetKind } from '@/features/asset-library/asset';
+import type { AssetId, AssetKind } from '@/features/asset-library/asset';
 import type { LibrarySelection } from '../librarySelection';
 import { useLibrarySelection } from '../panel/useLibrarySelection';
 import { CreatureDetail } from './CreatureDetail';
@@ -24,7 +24,7 @@ function detailFor(selection: LibrarySelection) {
   return assetDetail(selection.folder, id);
 }
 
-function assetDetail(folder: AssetKind, id: number) {
+function assetDetail(folder: AssetKind, id: AssetId) {
   switch (folder) {
     case 'tiles':
       return <TileDetail id={id} />;
@@ -41,7 +41,7 @@ function assetDetail(folder: AssetKind, id: number) {
   }
 }
 
-function assetIdOf(key: string): number | null {
+function assetIdOf(key: string): AssetId | null {
   const id = Number(key);
-  return key.trim() === '' || !Number.isFinite(id) ? null : id;
+  return key.trim() === '' || !Number.isFinite(id) ? null : (id as AssetId);
 }

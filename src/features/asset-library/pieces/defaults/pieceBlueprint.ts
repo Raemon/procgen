@@ -1,3 +1,4 @@
+import type { PieceId, TileId } from '@/features/asset-library/asset';
 import {
   blankFacings,
   blankVoxels,
@@ -16,7 +17,7 @@ export interface PieceBlueprint {
   paint: (piece: Piece) => void;
 }
 
-export function pieceFromBlueprint(blueprint: PieceBlueprint, id: number): Piece {
+export function pieceFromBlueprint(blueprint: PieceBlueprint, id: PieceId): Piece {
   const piece = blankPieceOfBlueprint(blueprint, id);
   blueprint.paint(piece);
   return piece;
@@ -26,7 +27,7 @@ export function paintColumn(
   piece: Piece,
   x: number,
   y: number,
-  tileIds: readonly number[],
+  tileIds: readonly TileId[],
   facing = 0,
 ): void {
   tileIds.forEach((tileId, layer) => {
@@ -35,13 +36,13 @@ export function paintColumn(
   });
 }
 
-export function paintLayerAcross(piece: Piece, layer: number, tileId: number): void {
+export function paintLayerAcross(piece: Piece, layer: number, tileId: TileId): void {
   for (let y = 0; y < piece.depth; y++) {
     for (let x = 0; x < piece.width; x++) paintVoxel(piece, x, y, layer, tileId);
   }
 }
 
-function blankPieceOfBlueprint(blueprint: PieceBlueprint, id: number): Piece {
+function blankPieceOfBlueprint(blueprint: PieceBlueprint, id: PieceId): Piece {
   const { width, depth, layers } = blueprint;
   return withCenteredAnchor({
     id,

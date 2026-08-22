@@ -1,3 +1,4 @@
+import type { ItemId } from '@/features/asset-library/asset';
 import * as THREE from 'three';
 import type { ReadOnlyItemAssets } from '@/features/app-shell/runtime/readOnlyAssets';
 import type { ItemDef } from '@/features/asset-library/items/itemDef';
@@ -71,8 +72,8 @@ export class ItemMeshes {
   }
 }
 
-function spawnsByItemId(spawns: readonly ItemSpawn[]): Map<number, ItemSpawn[]> {
-  const grouped = new Map<number, ItemSpawn[]>();
+function spawnsByItemId(spawns: readonly ItemSpawn[]): Map<ItemId, ItemSpawn[]> {
+  const grouped = new Map<ItemId, ItemSpawn[]>();
   for (const spawn of spawns) {
     const forItem = grouped.get(spawn.itemId) ?? [];
     if (forItem.length === 0) grouped.set(spawn.itemId, forItem);

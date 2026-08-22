@@ -1,3 +1,4 @@
+import type { CreatureId } from '@/features/asset-library/asset';
 import type { CreatureDef } from '@/features/asset-library/creatures/creatureDef';
 import { CHARACTER } from '@/features/asset-library/creatures/entityKinds';
 import {
@@ -23,6 +24,7 @@ import {
   type CommandContext,
   type CommandResult,
   type CommandSpec,
+  type CommandParams,
 } from '@/features/app-shell/runtime/commands/command';
 import { readInt } from '@/features/app-shell/runtime/commands/commandParams';
 import { createCommandCollection } from '@/features/app-shell/runtime/commands/commandCollection';
@@ -131,7 +133,7 @@ registerInventoryCommand({
   apply: (context, params) => removeItem(context, params),
 });
 
-function setInventory(context: CommandContext, params: Record<string, unknown>): CommandResult {
+function setInventory(context: CommandContext, params: CommandParams): CommandResult {
   return withCreature(context, params, (creatureId) => {
     const width = readInt(params, 'width');
     if (!width.ok) return width.failure;
@@ -151,7 +153,7 @@ function setInventory(context: CommandContext, params: Record<string, unknown>):
   });
 }
 
-function updateSlot(context: CommandContext, params: Record<string, unknown>): CommandResult {
+function updateSlot(context: CommandContext, params: CommandParams): CommandResult {
   return withSlot(context, params, (creatureId, inventory, x, y) => {
     const tags = tagsFrom(params);
     if (!tags.ok) return tags.failure;
@@ -165,7 +167,7 @@ function updateSlot(context: CommandContext, params: Record<string, unknown>): C
   });
 }
 
-function setBackground(context: CommandContext, params: Record<string, unknown>): CommandResult {
+function setBackground(context: CommandContext, params: CommandParams): CommandResult {
   return withInventory(context, params, (creatureId, inventory) => {
     const sprite = spriteFrom(params);
     if (!sprite.ok) return sprite.failure;
@@ -176,7 +178,7 @@ function setBackground(context: CommandContext, params: Record<string, unknown>)
   });
 }
 
-function placeItem(context: CommandContext, params: Record<string, unknown>): CommandResult {
+function placeItem(context: CommandContext, params: CommandParams): CommandResult {
   return withSlot(context, params, (creatureId, inventory, x, y) =>
     withItem(context, params, (itemId) => {
       const item = context.items.byId(itemId)!;
@@ -188,7 +190,7 @@ function placeItem(context: CommandContext, params: Record<string, unknown>): Co
   );
 }
 
-function removeItem(context: CommandContext, params: Record<string, unknown>): CommandResult {
+function removeItem(context: CommandContext, params: CommandParams): CommandResult {
   return withSlot(context, params, (creatureId, inventory, x, y) => {
     const covering = placementCovering(inventory, context.items, x, y);
     if (!covering) return commandFailed('placement_refused', `no item covers slot ${x},${y}`);
@@ -199,8 +201,8 @@ function removeItem(context: CommandContext, params: Record<string, unknown>): C
 
 function withInventory(
   context: CommandContext,
-  params: Record<string, unknown>,
-  use: (creatureId: number, inventory: InventoryDef) => CommandResult,
+  params: CommandParams,
+  use: (creatureId: CreatureId, inventory: InventoryDef) => CommandResult,
 ): CommandResult {
   return withCreature(context, params, (creatureId) => {
     const creature = context.creatures.byId(creatureId) as CreatureDef;
@@ -216,8 +218,8 @@ function withInventory(
 
 function withSlot(
   context: CommandContext,
-  params: Record<string, unknown>,
-  use: (creatureId: number, inventory: InventoryDef, x: number, y: number) => CommandResult,
+  params: CommandParams,
+  use: (creatureId: CreatureId, inventory: InventoryDef, x: number, y: number) => CommandResult,
 ): CommandResult {
   return withInventory(context, params, (creatureId, inventory) => {
     const x = readInt(params, 'slot_x');
@@ -236,7 +238,7 @@ function withSlot(
 
 function saveInventory(
   context: CommandContext,
-  creatureId: number,
+  creatureId: CreatureId,
   inventory: InventoryDef,
 ): void {
   context.creatures.update(creatureId, { inventory });

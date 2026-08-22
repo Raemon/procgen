@@ -1,5 +1,10 @@
+import type { CommandParams } from '@/features/app-shell/runtime/commands/command';
+import { assetId } from '@/features/asset-library/asset';
 import { emptyPipeline } from '@/features/asset-library/worlds/pipeline/pipelineState';
 import { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
+import { PipelineEvaluator } from '@/features/asset-library/worlds/eval/evaluator';
+import { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
+import { WorldLab } from '@/features/asset-library/worlds/lab/worldLab';
 import { RandomizeHistory } from '@/features/asset-library/worlds/randomize/randomizeHistory';
 import { TemplateLibrary } from '@/features/asset-library/node-groups/templateLibrary';
 import { RunningWorld } from '@/features/asset-library/worlds/presets/runningWorld';
@@ -31,6 +36,7 @@ function abilityWorld() {
   const cultures = new CultureAssets();
   const pose = { x: 0, y: 0, facing: 0 as FacingIndex };
   const sight: { radius: number } = { radius: DEFAULT_CHARACTER_SIGHT_RADIUS_TILES };
+  const sampler = new WorldSampler(store, new PipelineEvaluator(store), abilityTiles, pieces);
   const context = {
     store,
     tileAssets: abilityTiles,
@@ -45,10 +51,12 @@ function abilityWorld() {
     groundItems: NO_GROUND_ITEMS,
     puzzles: new PuzzleWorld(store, () => true),
     regionSampler: {
-      tileAt: () => 0,
+      tileAt: () => assetId<'tiles'>(0),
       elevationAt: () => 0,
       packedVoxelColumnAt: () => null,
     },
+    worldSampler: sampler,
+    lab: new WorldLab(),
     actor: {
       pose: () => pose,
       tryStep: (dx: number, dy: number) => ((pose.x += dx), (pose.y += dy), true),
@@ -60,9 +68,23 @@ function abilityWorld() {
   return { context, store, pose, sight, pieces, tileAssets: abilityTiles };
 }
 
+function steppingWorld(elevationAt: (x: number, y: number) => number) {
+  const ground = abilityWorld();
+  return {
+    ...ground.context,
+    worldSampler: {
+      tileAt: () => assetId<'tiles'>(0),
+      elevationAt,
+      markersIn: () => [],
+      itemSpawnsIn: () => [],
+    } as unknown as WorldSampler,
+    actor: { ...ground.context.actor, tryStep: () => false },
+  };
+}
+
 export function checkCommandDispatch(check: CheckReporter): void {
   const commands = abilityWorld();
-  const act = (mode: 'god' | 'character', action: string, params: Record<string, unknown> = {}) =>
+  const act = (mode: 'god' | 'character', action: string, params: CommandParams = {}) =>
     performCommand(commands.context, mode, action, params);
   const addedCulture = () => {
     act('god', 'add_culture');
@@ -97,6 +119,22 @@ export function checkCommandDispatch(check: CheckReporter): void {
     const moved = act('god', 'step_east');
     const turned = act('character', 'turn_right');
     return moved.ok && commands.pose.x === 1 && turned.ok && commands.pose.facing === 1;
+  })());
+  check('a step refused by high ground names the levels in its hint', (() => {
+    const steep = steppingWorld((x) => (x === 0 ? 0.4 : 2.6));
+    const result = performCommand(steep, 'god', 'step_east', {});
+    return (
+      !result.ok &&
+      result.code === 'blocked' &&
+      result.hint.includes('level 3') &&
+      result.hint.includes('your level 0') &&
+      result.hint.includes('climbs at most 1')
+    );
+  })());
+  check('a step refused on flat walkable ground blames an obstacle instead', (() => {
+    const walled = steppingWorld(() => 0);
+    const result = performCommand(walled, 'god', 'step_east', {});
+    return !result.ok && result.code === 'blocked' && result.hint.includes('something solid at (1,0)');
   })());
   check('set_sight_radius is a character power, and god mode has no such knob', (() => {
     const widened = act('character', 'set_sight_radius', { radius_tiles: 24 });

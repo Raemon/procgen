@@ -9,14 +9,16 @@ import {
   type WorldAccess,
 } from './serverWorld';
 import type { SessionStore } from './sessions';
+import { WorldLab } from '@/features/asset-library/worlds/lab/worldLab';
 
 export interface AgentApiState {
   sessions: SessionStore;
   world: ServerWorld | null;
+  lab: WorldLab;
 }
 
 export function newAgentApiState(): AgentApiState {
-  return { sessions: new Map(), world: null };
+  return { sessions: new Map(), world: null, lab: new WorldLab() };
 }
 
 export async function serveAgentApi(
@@ -44,6 +46,7 @@ function worldAccess(
   onPipelinePersisted?: () => void,
 ): WorldAccess {
   return {
+    lab: state.lab,
     current: () => {
       state.world = currentServerWorld(docs, state.world);
       return state.world;

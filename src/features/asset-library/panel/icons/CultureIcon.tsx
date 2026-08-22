@@ -1,3 +1,4 @@
+import type { TileId } from '@/features/asset-library/asset';
 import type { Culture } from '@/features/asset-library/cultures/cultureDef';
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
 import { AssetIconFrame } from './AssetIconFrame';
@@ -6,7 +7,7 @@ const UNCHOSEN_TILE = '#00000000';
 
 export function CultureIcon({ culture }: { culture: Culture }) {
   const { tileAssets } = useAppRuntime();
-  const colorOf = (tileId: number) => tileAssets.byId(tileId)?.color ?? UNCHOSEN_TILE;
+  const colorOf = (tileId: TileId) => tileAssets.byId(tileId)?.color ?? UNCHOSEN_TILE;
   return (
     <AssetIconFrame>
       <span className="grid h-full w-full grid-cols-2 grid-rows-2">
@@ -18,6 +19,6 @@ export function CultureIcon({ culture }: { culture: Culture }) {
   );
 }
 
-function buildingMaterialsOf(culture: Culture): number[] {
+function buildingMaterialsOf(culture: Culture): TileId[] {
   return [culture.roofSlopeTileId, culture.roofRidgeTileId, culture.wallTileId, culture.floorTileId];
 }

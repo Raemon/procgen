@@ -1,3 +1,4 @@
+import type { CreatureId } from '@/features/asset-library/asset';
 import { BEHAVIOR_CHOICES } from '@/features/asset-library/creatures/behaviorKinds';
 import { CHARACTER, ENTITY_KIND_CHOICES, isEntityKind } from '@/features/asset-library/creatures/entityKinds';
 import type { CreaturePatch } from '@/features/asset-library/creatures/creatureAssets';
@@ -8,8 +9,9 @@ import {
   type CommandContext,
   type CommandResult,
   type CommandSpec,
+  type CommandParams,
 } from '@/features/app-shell/runtime/commands/command';
-import { listOf, readInt, readNumber, readText } from '@/features/app-shell/runtime/commands/commandParams';
+import { listOf, readAssetId, readInt, readNumber, readText } from '@/features/app-shell/runtime/commands/commandParams';
 import { createCommandCollection } from '@/features/app-shell/runtime/commands/commandCollection';
 import { faceArtFrom } from '@/features/asset-library/tiles/tileCommands';
 
@@ -116,10 +118,10 @@ function entityKindHelp(): string {
 
 export function withCreature(
   context: CommandContext,
-  params: Record<string, unknown>,
-  use: (creatureId: number) => CommandResult,
+  params: CommandParams,
+  use: (creatureId: CreatureId) => CommandResult,
 ): CommandResult {
-  const read = readInt(params, 'creature_id');
+  const read = readAssetId<'creatures'>(params, 'creature_id');
   if (!read.ok) return read.failure;
   if (!context.creatures.byId(read.value)) {
     return commandFailed(
@@ -130,7 +132,7 @@ export function withCreature(
   return use(read.value);
 }
 
-function updateCreature(context: CommandContext, params: Record<string, unknown>): CommandResult {
+function updateCreature(context: CommandContext, params: CommandParams): CommandResult {
   return withCreature(context, params, (creatureId) => {
     const patch = creaturePatchFrom(params);
     if (!patch.ok) return patch.failure;
@@ -144,7 +146,7 @@ type CreaturePatchRead =
   | { ok: true; value: CreaturePatch }
   | { ok: false; failure: CommandResult };
 
-function creaturePatchFrom(params: Record<string, unknown>): CreaturePatchRead {
+function creaturePatchFrom(params: CommandParams): CreaturePatchRead {
   const patch: CreaturePatch = {};
   const name = readText(params, 'name');
   if (name.ok) patch.name = name.value;
@@ -176,7 +178,7 @@ const BODY_SIZE_PARAMS = [
   ['body_height', 'bodyHeight'],
 ] as const;
 
-function addBodySizeToPatch(params: Record<string, unknown>, patch: CreaturePatch): void {
+function addBodySizeToPatch(params: CommandParams, patch: CreaturePatch): void {
   for (const [param, field] of BODY_SIZE_PARAMS) {
     const read = readNumber(params, param);
     if (read.ok && read.value > 0) patch[field] = read.value;
@@ -184,7 +186,7 @@ function addBodySizeToPatch(params: Record<string, unknown>, patch: CreaturePatc
 }
 
 function behaviorFrom(
-  params: Record<string, unknown>,
+  params: CommandParams,
 ): { ok: true; value: number | undefined } | { ok: false; failure: CommandResult } {
   const read = readInt(params, 'behavior');
   if (!read.ok) return { ok: true, value: undefined };
@@ -195,7 +197,7 @@ function behaviorFrom(
 }
 
 function entityKindFrom(
-  params: Record<string, unknown>,
+  params: CommandParams,
 ): { ok: true; value: number | undefined } | { ok: false; failure: CommandResult } {
   const read = readInt(params, 'kind');
   if (!read.ok) return { ok: true, value: undefined };
@@ -207,7 +209,7 @@ function entityKindFrom(
 
 function inventoryForKind(
   context: CommandContext,
-  creatureId: number,
+  creatureId: CreatureId,
   patch: CreaturePatch,
 ): CreaturePatch {
   const alreadyHasOne = context.creatures.byId(creatureId)?.inventory !== null;

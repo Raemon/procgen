@@ -1,14 +1,16 @@
+import type { CultureId, PieceId } from '@/features/asset-library/asset';
+import type { PieceRoleBindings } from './cultureDef';
 import { defaultPieceId } from '../pieces/defaultPieces';
 import { FURNISHING_PIECE_NAMES } from '../pieces/defaults/furnishingPieces';
 import { STONEWOLD_PIECE_NAMES } from '../pieces/defaults/stonewoldPieces';
 import { THATCHMERE_PIECE_NAMES } from '../pieces/defaults/thatchmerePieces';
 import type { CulturePieceNames } from '../pieces/defaults/culturePieceSet';
-import type { PieceRole } from '../pieces/pieceDef';
+
 import { defaultTileId } from '../tiles/defaultTiles';
 import { GABLE_ROOF, HIP_ROOF, type Culture } from './cultureDef';
 
-export const STONEWOLD_CULTURE_ID = 0;
-export const THATCHMERE_CULTURE_ID = 1;
+export const STONEWOLD_CULTURE_ID = 0 as CultureId;
+export const THATCHMERE_CULTURE_ID = 1 as CultureId;
 
 export function defaultCultures(): Culture[] {
   return [stonewold(), thatchmere()];
@@ -48,7 +50,7 @@ function thatchmere(): Culture {
   };
 }
 
-function roleBindingsOf(names: CulturePieceNames): Partial<Record<PieceRole, number[]>> {
+function roleBindingsOf(names: CulturePieceNames): PieceRoleBindings {
   return {
     wallSegment: [defaultPieceId(names.wallRun)],
     wallCorner: [defaultPieceId(names.cornerPost)],
@@ -63,6 +65,6 @@ function roleBindingsOf(names: CulturePieceNames): Partial<Record<PieceRole, num
   };
 }
 
-function sharedFurnishingIds(): number[] {
+function sharedFurnishingIds(): PieceId[] {
   return Object.values(FURNISHING_PIECE_NAMES).map(defaultPieceId);
 }

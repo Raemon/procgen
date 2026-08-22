@@ -1,3 +1,4 @@
+import { assetId } from '@/features/asset-library/asset';
 import { persistWorld, type ServerWorld } from '../../agents/api/serverWorld';
 import { compactFaceArtOf } from '@/features/asset-library/tiles/storage/compactFaceArtEncode';
 import { isCompactFaceArt } from '@/features/asset-library/tiles/storage/compactFaceArtShape';
@@ -145,5 +146,5 @@ function animatedArtWithHeightAndTransparency(): CubeFaceArt {
 }
 
 function oneTileCarryingArt(): TileDef {
-  return { ...newTileWithId(0), faceArt: animatedArtWithHeightAndTransparency() };
+  return { ...newTileWithId(assetId<'tiles'>(0)), faceArt: animatedArtWithHeightAndTransparency() };
 }

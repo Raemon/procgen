@@ -1,44 +1,52 @@
-import '@/features/asset-library/worlds/nodes';
 import { join } from 'node:path';
-import { mulberry32 } from '@/features/asset-library/worlds/random/mulberry32';
-import { batchScore } from '@/features/asset-library/worlds/selfPlay/batchScore';
-import { funOf, scoredGenome, walkSeedOf, type ScoredWorld } from '@/features/asset-library/worlds/selfPlay/scoreGenome';
-import { rolledGenome } from '@/features/asset-library/worlds/selfPlay/worldGenome';
-import { touristLimits } from '@/features/asset-library/worlds/walkingSim/touristWalk';
+import {
+  followLabRun,
+  labServerUrl,
+  reportWorldsOf,
+  startLabRun,
+  stopOnInterrupt,
+  type LabRunJson,
+} from './labClient';
 import { RANKING_REPORT_DIR, writeTrainingReport } from './selfPlay/writeTrainingReport';
 
 const ROLL_COUNT = Number(process.argv[2] ?? 12);
 const ROLL_SEED = Number(process.argv[3] ?? 20260812);
 const STEP_BUDGET = Number(process.argv[4] ?? 350);
 
-const rng = mulberry32(ROLL_SEED);
-const limits = touristLimits(STEP_BUDGET, 140);
-const rolled = Array.from({ length: ROLL_COUNT }, () => rolledGenome(rng));
-const walked = rolled
-  .map((genome) => scoredGenome(genome, limits, walkSeedOf(genome)))
-  .filter((world): world is ScoredWorld => world !== null)
-  .sort((one, other) => funOf(other) - funOf(one));
+let runId: string | null = null;
+stopOnInterrupt(() => runId);
 
-const batch = batchScore(walked);
-writeTrainingReport(RANKING_REPORT_DIR, walked, [], headline(), false);
-printRanking();
+runId = await startLabRun('/asset-library/worlds/roll', {
+  count: ROLL_COUNT,
+  seed: ROLL_SEED,
+  step_budget: STEP_BUDGET,
+  radius_cap: 140,
+});
+console.log(`rolling ${ROLL_COUNT} worlds on ${labServerUrl()} as ${runId}`);
 
-function headline(): string {
+const run = await followLabRun(runId, (progress) =>
+  console.log(`walked ${progress.progress.done}/${progress.progress.total}`),
+);
+writeTrainingReport(RANKING_REPORT_DIR, reportWorldsOf(run), [], headline(run), false);
+printRanking(run);
+
+function headline(run: LabRunJson): string {
   return [
-    `${walked.length} of ${ROLL_COUNT} rolls walkable`,
+    `${run.worlds.length} of ${ROLL_COUNT} rolls walkable`,
     `rng seed ${ROLL_SEED}`,
     `${STEP_BUDGET}-step walks`,
-    `batch score ${batch.overall.toFixed(3)}`,
-    `diversity ${batch.diversity.toFixed(3)}`,
-    `near duplicates ${batch.nearDuplicatePairs}`,
+    `batch score ${(run.batch?.overall ?? 0).toFixed(3)}`,
+    `diversity ${(run.batch?.diversity ?? 0).toFixed(3)}`,
+    `near duplicates ${run.batch?.nearDuplicatePairs ?? 0}`,
   ].join(' · ');
 }
 
-function printRanking(): void {
+function printRanking(run: LabRunJson): void {
   console.log('rank   fun  palette');
-  walked.forEach((world, position) => {
-    console.log(`${String(position + 1).padStart(4)}  ${funOf(world).toFixed(3)}  ${world.paletteName}`);
+  run.worlds.forEach((world, position) => {
+    console.log(`${String(position + 1).padStart(4)}  ${world.fun.toFixed(3)}  ${world.name}`);
   });
-  console.log(`\nbatch: ${headline()}`);
+  console.log(`\nbatch: ${headline(run)}`);
   console.log(`report: ${join(RANKING_REPORT_DIR, 'index.html')}`);
+  console.log(`run: ${labServerUrl()}/api/v1/asset-library/worlds/lab/${run.id}`);
 }

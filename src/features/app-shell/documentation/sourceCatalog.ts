@@ -65,6 +65,21 @@ interface CatalogFile {
   sourceId: string;
 }
 
+export interface CatalogedSourceFile {
+  absolutePath: string;
+  path: string;
+  source: string;
+}
+
+export function catalogSourceFiles(root: string = process.cwd()): CatalogedSourceFile[] {
+  const realRoot = realDirectory(root);
+  return catalogFiles(realRoot).map((file) => ({
+    absolutePath: file.absolutePath,
+    path: file.path,
+    source: readFileSync(file.absolutePath, 'utf8'),
+  }));
+}
+
 export function buildSourceTree(root: string = process.cwd()): SourceFolder {
   const realRoot = realDirectory(root);
   const tree: SourceFolder = {

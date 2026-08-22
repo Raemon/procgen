@@ -1,4 +1,5 @@
-export const EMPTY_VOXEL = -1;
+import { NO_TILE, type PieceId, type TileId } from '../asset';
+export const EMPTY_VOXEL = NO_TILE;
 export const MAX_PIECE_SIDE = 48;
 export const MAX_PIECE_LAYERS = 24;
 export const DEFAULT_FACING = 0;
@@ -25,7 +26,7 @@ export type PieceRole = (typeof PIECE_ROLES)[number];
 export const DEFAULT_PIECE_ROLE: PieceRole = 'freestanding';
 
 export interface Piece {
-  id: number;
+  id: PieceId;
   name: string;
   role: PieceRole;
   width: number;
@@ -33,7 +34,7 @@ export interface Piece {
   layers: number;
   anchorX: number;
   anchorY: number;
-  voxels: number[];
+  voxels: TileId[];
   facings: number[];
 }
 
@@ -41,7 +42,7 @@ export function isPieceRole(value: unknown): value is PieceRole {
   return PIECE_ROLES.includes(value as PieceRole);
 }
 
-export function newPieceWithId(id: number): Piece {
+export function newPieceWithId(id: PieceId): Piece {
   return withCenteredAnchor({
     id,
     name: `piece ${id}`,
@@ -56,8 +57,8 @@ export function newPieceWithId(id: number): Piece {
   });
 }
 
-export function blankVoxels(width: number, depth: number, layers: number): number[] {
-  return new Array<number>(width * depth * layers).fill(EMPTY_VOXEL);
+export function blankVoxels(width: number, depth: number, layers: number): TileId[] {
+  return new Array<TileId>(width * depth * layers).fill(EMPTY_VOXEL);
 }
 
 export function blankFacings(width: number, depth: number, layers: number): number[] {
@@ -74,7 +75,7 @@ export function isInsidePiece(piece: Piece, x: number, y: number, layer: number)
   );
 }
 
-export function voxelAt(piece: Piece, x: number, y: number, layer: number): number {
+export function voxelAt(piece: Piece, x: number, y: number, layer: number): TileId {
   if (!isInsidePiece(piece, x, y, layer)) return EMPTY_VOXEL;
   return piece.voxels[voxelIndex(piece, x, y, layer)] ?? EMPTY_VOXEL;
 }
@@ -94,4 +95,11 @@ export function withCenteredAnchor(piece: Piece): Piece {
 
 export function pieceFootprintRadius(piece: Piece): number {
   return Math.max(piece.width, piece.depth);
+}
+
+export interface PieceCellEdit {
+  x: number;
+  y: number;
+  layer: number;
+  tileId: TileId;
 }

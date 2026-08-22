@@ -1,10 +1,11 @@
+import type { CultureId } from '@/features/asset-library/asset';
 import type { PointData } from '../values/chunkValues';
 import type { PiecePlacement } from './piecePlacement';
 
 export interface CultureStructurePlacement {
   x: number;
   y: number;
-  cultureId: number;
+  cultureId: CultureId;
   tag: string;
   data?: PointData;
 }

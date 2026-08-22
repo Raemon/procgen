@@ -1,3 +1,4 @@
+import type { ItemId } from '@/features/asset-library/asset';
 import type { SpriteArt } from '../../tiles/spriteArt';
 import { normalizedTags } from '../itemDef';
 
@@ -11,7 +12,7 @@ export interface InventorySlot {
 }
 
 export interface InventoryPlacement {
-  itemId: number;
+  itemId: ItemId;
   x: number;
   y: number;
 }

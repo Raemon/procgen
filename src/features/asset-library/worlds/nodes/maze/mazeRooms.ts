@@ -1,3 +1,4 @@
+import type { Cell } from '../../values/cell';
 import type { RandomStream } from '../../random/mulberry32';
 
 export const NO_ROOM = -1;
@@ -69,7 +70,7 @@ function stampRoom(rooms: MazeRooms, rect: RoomRect, roomId: number): void {
   }
 }
 
-function everyCellOfRect(rect: RoomRect): { x: number; y: number }[] {
+function everyCellOfRect(rect: RoomRect): Cell[] {
   const cells: { x: number; y: number }[] = [];
   for (let y = rect.y; y < rect.y + rect.height; y++) {
     for (let x = rect.x; x < rect.x + rect.width; x++) cells.push({ x, y });

@@ -1,3 +1,4 @@
+import type { TileId } from '@/features/asset-library/asset';
 import type { RandomStream } from '../random/mulberry32';
 import { nodeTypeOf } from '../nodeRegistry';
 import { sanitizePipeline } from '../pipeline/sanitizePipeline';
@@ -70,7 +71,7 @@ function nodeLinksTiles(node: WorldGenome['pipeline']['nodes'][number]): boolean
 function repaintNode(
   node: WorldGenome['pipeline']['nodes'][number],
   rng: RandomStream,
-  tileIds: readonly number[],
+  tileIds: readonly TileId[],
 ): void {
   const def = nodeTypeOf(node.type);
   for (const [name, spec] of Object.entries(def?.params ?? {})) {
@@ -78,7 +79,7 @@ function repaintNode(
   }
 }
 
-function repaintedTileId(rng: RandomStream, tileIds: readonly number[]): number {
+function repaintedTileId(rng: RandomStream, tileIds: readonly TileId[]): number {
   if (tileIds.length === 0 || chance(rng, 0.15)) return -1;
   return pick(rng, tileIds);
 }
@@ -109,7 +110,7 @@ function settledBuildings(genome: WorldGenome, rng: RandomStream): WorldGenome {
   return { ...genome, pipeline };
 }
 
-function paletteIdsOf(genome: WorldGenome): number[] {
+function paletteIdsOf(genome: WorldGenome): TileId[] {
   return paletteOf(genome).paletteIds;
 }
 

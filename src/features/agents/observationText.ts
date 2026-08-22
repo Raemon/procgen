@@ -26,7 +26,7 @@ function elevationLines(obs: AgentObservation): string[] {
   if (obs.elevation === null) return [];
   return [
     '',
-    'elevation (ground height per tile, 0-9 then a-z; blank = unseen):',
+    'elevation (climb level per tile, 0-9 then a-z; you can step up at most 1 level, down any; blank = unseen):',
     ...obs.elevation,
   ];
 }

@@ -1,3 +1,5 @@
+import type { TileId } from '@/features/asset-library/asset';
+import { assetId } from '@/features/asset-library/asset';
 import { GABLE_ROOF, HIP_ROOF, wallLayersOf, type Culture } from '@/features/asset-library/cultures/cultureDef';
 import type { Piece } from '@/features/asset-library/pieces/pieceDef';
 import { assembleBuilding } from '../assembly/assembleBuilding';
@@ -22,12 +24,12 @@ import {
 } from '../structureOverlay/structureOverlay';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 
-const SYNTHETIC_CULTURE_ID = 2;
+const SYNTHETIC_CULTURE_ID = assetId<'cultures'>(2);
 const TWO_STORY_PROGRAM = 1;
 const SHORT_STORY_LAYERS = 2;
-const WALL_PIECE_LAYERS = 3;
-const WALL_PIECE_ID = 41;
-const WALL_PIECE_TILE_ID = 11;
+const WALL_PIECE_LAYERS = assetId<'pieces'>(3);
+const WALL_PIECE_ID = assetId<'pieces'>(41);
+const WALL_PIECE_TILE_ID = assetId<'tiles'>(11);
 const STRADDLING_ANCHOR = { x: 28, y: 28 };
 const ROOF_CHECK_BOX = { x: 0, y: 0, width: 9, depth: 7 };
 
@@ -194,7 +196,7 @@ function wallRunPieceOfLayers(layers: number): Piece {
     layers,
     anchorX: 0,
     anchorY: 0,
-    voxels: new Array<number>(layers).fill(WALL_PIECE_TILE_ID),
+    voxels: new Array<TileId>(layers).fill(WALL_PIECE_TILE_ID),
     facings: new Array<number>(layers).fill(0),
   };
 }
@@ -320,12 +322,12 @@ function syntheticCulture(): Culture {
     id: SYNTHETIC_CULTURE_ID,
     name: 'check culture',
     roleBindings: {},
-    wallTileId: 11,
-    trimTileId: 12,
-    roofSlopeTileId: 13,
-    roofRidgeTileId: 14,
-    floorTileId: 15,
-    pathTileId: 16,
+    wallTileId: assetId<'tiles'>(11),
+    trimTileId: assetId<'tiles'>(12),
+    roofSlopeTileId: assetId<'tiles'>(13),
+    roofRidgeTileId: assetId<'tiles'>(14),
+    floorTileId: assetId<'tiles'>(15),
+    pathTileId: assetId<'tiles'>(16),
     roofStyle: 0,
     storyLayers: 3,
     windowEvery: 3,

@@ -53,7 +53,7 @@ function checkAClosedGateStopsTheServerStep(check: CheckReporter): void {
 }
 
 function checkATallRiseStopsTheServerStep(check: CheckReporter): void {
-  const setup = walkingSetup({ riseToNext: 1.01 });
+  const setup = walkingSetup({ riseToNext: 2 });
   stepPlayerEntity(setup.world, setup.registry, setup.entity);
   check(
     'a rise over one block holds the server-side player in place without starting a hop',

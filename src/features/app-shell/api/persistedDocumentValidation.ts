@@ -1,3 +1,4 @@
+import type { UnparsedDocument } from '@/features/app-shell/persistence/persistedDocumentContents';
 import type { PersistedDocumentName } from '@/features/app-shell/persistence/persistedDocuments';
 
 const COLLECTION_DOCUMENTS = new Set<PersistedDocumentName>([
@@ -10,7 +11,10 @@ const COLLECTION_DOCUMENTS = new Set<PersistedDocumentName>([
   'items',
 ]);
 
-export function persistedDocumentIsValid(name: PersistedDocumentName, data: unknown): boolean {
+export function persistedDocumentIsValid<Name extends PersistedDocumentName>(
+  name: Name,
+  data: unknown,
+): data is UnparsedDocument<Name> {
   if (COLLECTION_DOCUMENTS.has(name)) return Array.isArray(data);
   return typeof data === 'object' && data !== null && !Array.isArray(data);
 }

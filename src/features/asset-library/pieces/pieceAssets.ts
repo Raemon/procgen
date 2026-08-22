@@ -1,3 +1,5 @@
+import type { AssetOfKind } from '@/features/asset-library/asset';
+import type { PieceId } from '@/features/asset-library/asset';
 import { AssetCollection } from '../collection/assetCollection';
 import { newPieceWithId, pieceFootprintRadius, type Piece } from './pieceDef';
 import { loadStoredPieces, storePieces } from './pieceStorage';
@@ -5,7 +7,7 @@ import { loadStoredPieces, storePieces } from './pieceStorage';
 export type PiecePatch = Partial<Omit<Piece, 'id'>>;
 export type PieceAddedListener = (piece: Piece) => void;
 
-export class PieceAssets extends AssetCollection<Piece> {
+export class PieceAssets extends AssetCollection<AssetOfKind<'pieces'>> {
   private readonly addedListeners = new Set<PieceAddedListener>();
 
   constructor(initialPieces?: Piece[]) {
@@ -19,16 +21,12 @@ export class PieceAssets extends AssetCollection<Piece> {
     );
   }
 
-  insert(piece: Omit<Piece, 'id'> & { id?: number }): Piece {
-    return this.append({ ...piece, id: this.claimId() } as Piece);
-  }
-
   onPieceAdded(listener: PieceAddedListener): () => void {
     this.addedListeners.add(listener);
     return () => this.addedListeners.delete(listener);
   }
 
-  protected blankAsset(id: number): Piece {
+  protected blankAsset(id: PieceId): Piece {
     return newPieceWithId(id);
   }
 

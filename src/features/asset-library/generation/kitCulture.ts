@@ -1,5 +1,8 @@
-import { GABLE_ROOF, HIP_ROOF, type Culture } from '../cultures/cultureDef';
-import type { Piece, PieceRole } from '../pieces/pieceDef';
+import type { TileId } from '@/features/asset-library/asset';
+import type { TileIdBySlot } from './tileIdBySlot';
+import type { CultureId } from '@/features/asset-library/asset';
+import { GABLE_ROOF, HIP_ROOF, type Culture, type PieceRoleBindings } from '../cultures/cultureDef';
+import type { Piece } from '../pieces/pieceDef';
 import { intBetween, kitStream, pickOne } from './kitRandom';
 
 const FEWEST_STORY_LAYERS = 2;
@@ -10,9 +13,9 @@ const SPARSEST_WINDOWS = 5;
 export function generateKitCulture(
   seed: number,
   name: string,
-  idBySlot: ReadonlyMap<string, number>,
+  idBySlot: TileIdBySlot,
   pieces: readonly Piece[],
-  id: number,
+  id: CultureId,
 ): Culture {
   const random = kitStream(seed, 'culture');
   return {
@@ -26,8 +29,8 @@ export function generateKitCulture(
   };
 }
 
-function cultureTileIds(idBySlot: ReadonlyMap<string, number>) {
-  const tileOf = (key: string): number => idBySlot.get(key) as number;
+function cultureTileIds(idBySlot: TileIdBySlot) {
+  const tileOf = (key: string): TileId => idBySlot.get(key) as TileId;
   return {
     wallTileId: tileOf('wall'),
     trimTileId: tileOf('beam'),
@@ -38,8 +41,8 @@ function cultureTileIds(idBySlot: ReadonlyMap<string, number>) {
   };
 }
 
-function roleBindingsOfPieces(pieces: readonly Piece[]): Partial<Record<PieceRole, number[]>> {
-  const bindings: Partial<Record<PieceRole, number[]>> = {};
+function roleBindingsOfPieces(pieces: readonly Piece[]): PieceRoleBindings {
+  const bindings: PieceRoleBindings = {};
   for (const piece of pieces) bindings[piece.role] = [...(bindings[piece.role] ?? []), piece.id];
   return bindings;
 }

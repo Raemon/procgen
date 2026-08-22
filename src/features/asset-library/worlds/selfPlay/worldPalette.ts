@@ -1,3 +1,4 @@
+import { assetId, type TileId } from '@/features/asset-library/asset';
 import { generateAssetKit } from '@/features/asset-library/generation/assetKit';
 import type { Culture } from '@/features/asset-library/cultures/cultureDef';
 import type { Piece } from '@/features/asset-library/pieces/pieceDef';
@@ -10,16 +11,16 @@ export interface WorldPalette {
   tiles: TileDef[];
   pieces: Piece[];
   culture: Culture;
-  paletteIds: number[];
+  paletteIds: TileId[];
 }
 
 const EMPTY_LIBRARY = {
   tileNames: [],
   tileSymbols: [],
   cultureNames: [],
-  nextTileId: 0,
-  nextPieceId: 0,
-  nextCultureId: 0,
+  nextTileId: assetId<'tiles'>(0),
+  nextPieceId: assetId<'pieces'>(0),
+  nextCultureId: assetId<'cultures'>(0),
 };
 
 export function worldPaletteOfKit(
@@ -28,7 +29,7 @@ export function worldPaletteOfKit(
   paletteSize: number,
 ): WorldPalette {
   const kit = generateAssetKit(kitSeed, EMPTY_LIBRARY);
-  const tiles = [...kit.tiles, ...accentTilesOf(accentKitSeed, kitSeed, kit.tiles.length)];
+  const tiles = [...kit.tiles, ...accentTilesOf(accentKitSeed, kitSeed, assetId<'tiles'>(kit.tiles.length))];
   return {
     name: kit.name,
     tiles,
@@ -38,7 +39,7 @@ export function worldPaletteOfKit(
   };
 }
 
-function accentTilesOf(accentKitSeed: number, kitSeed: number, firstId: number): TileDef[] {
+function accentTilesOf(accentKitSeed: number, kitSeed: number, firstId: TileId): TileDef[] {
   if (accentKitSeed === kitSeed) return [];
   return generateAssetKit(accentKitSeed, { ...EMPTY_LIBRARY, nextTileId: firstId }).tiles;
 }
@@ -49,7 +50,7 @@ function paletteMostlyGround(
   tiles: readonly TileDef[],
   paletteSize: number,
   kitSeed: number,
-): number[] {
+): TileId[] {
   const random = mulberry32(kitSeed);
   const ground = shuffled(random, tiles.filter((tile) => tile.walkable));
   const blockers = shuffled(random, tiles.filter((tile) => !tile.walkable));
@@ -60,7 +61,7 @@ function paletteMostlyGround(
   ];
 }
 
-function drawnCycling(tiles: readonly TileDef[], wanted: number): number[] {
+function drawnCycling(tiles: readonly TileDef[], wanted: number): TileId[] {
   if (tiles.length === 0) return [];
   return Array.from({ length: wanted }, (_each, at) => tiles[at % tiles.length]!.id);
 }

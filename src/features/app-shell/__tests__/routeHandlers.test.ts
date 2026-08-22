@@ -1,3 +1,4 @@
+import type { PersistedDocumentName } from '@/features/app-shell/persistence/persistedDocuments';
 import assert from 'node:assert';
 import { test } from 'node:test';
 import { persistedDocumentRoute } from '@/infrastructure/api/persistedDocumentRoute';
@@ -26,7 +27,7 @@ export function routeHandlerTests(): void {
     };
     setProcessServices({
       docs,
-      documentChanged: (name: string) => {
+      documentChanged: (name: PersistedDocumentName) => {
         changed.push(name);
       },
     } as unknown as ProcgenServices);

@@ -1,3 +1,5 @@
+import type { Footprint } from '@/features/asset-library/worlds/values/footprint';
+import { NO_PIECE, type TileId } from '@/features/asset-library/asset';
 import {
   blankFacings,
   blankVoxels,
@@ -19,12 +21,12 @@ export interface WorldRegion {
 }
 
 export interface RegionSampler {
-  tileAt(x: number, y: number): number;
+  tileAt(x: number, y: number): TileId;
   elevationAt(x: number, y: number): number;
   packedVoxelColumnAt(x: number, y: number): number[] | null;
 }
 
-export function regionSize(region: WorldRegion): { width: number; depth: number } {
+export function regionSize(region: WorldRegion): Footprint {
   return {
     width: Math.min(MAX_PIECE_SIDE, region.maxX - region.minX + 1),
     depth: Math.min(MAX_PIECE_SIDE, region.maxY - region.minY + 1),
@@ -40,7 +42,7 @@ export function pieceFromWorldRegion(
   const groundLayers = groundLayersForRegion(sampler, region, width, depth);
   const layers = Math.min(MAX_PIECE_LAYERS, tallestColumn(sampler, region, width, depth, groundLayers));
   const piece: Piece = {
-    id: 0,
+    id: NO_PIECE,
     name,
     role: DEFAULT_PIECE_ROLE,
     width,
@@ -109,7 +111,7 @@ function fillGroundColumn(
   x: number,
   y: number,
   topLayer: number,
-  tileId: number,
+  tileId: TileId,
 ): void {
   if (tileId === EMPTY_VOXEL) return;
   for (let layer = 0; layer <= topLayer; layer++) paintVoxel(piece, x, y, layer, tileId);

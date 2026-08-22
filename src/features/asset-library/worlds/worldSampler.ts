@@ -1,3 +1,5 @@
+import type { CreatureId, ItemId } from '@/features/asset-library/asset';
+import type { TileId } from '@/features/asset-library/asset';
 import { NO_ITEMS, type ItemSource } from '@/features/asset-library/items/itemAssets';
 import { measureWork } from '@/features/game/performance/workTimers';
 import { TakenItemSpawns } from '@/features/asset-library/items/pickups/takenItemSpawns';
@@ -42,14 +44,14 @@ export interface Marker {
 export interface CreatureSpawn {
   x: number;
   y: number;
-  creatureId: number;
+  creatureId: CreatureId;
   tag: string;
 }
 
 export interface ItemSpawn {
   x: number;
   y: number;
-  itemId: number;
+  itemId: ItemId;
   name: string;
   glyph: string;
   color: string;
@@ -95,15 +97,15 @@ export class WorldSampler {
     this.sampledChunks.clear();
   }
 
-  tileAt(x: number, y: number): number {
-    return this.sampledChunkOfCell(x, y).tiles[cellIndexInChunk(x, y)]!;
+  tileAt(x: number, y: number): TileId {
+    return this.sampledChunkOfCell(x, y).tiles[cellIndexInChunk(x, y)]! as TileId;
   }
 
   packedVoxelColumnAt(x: number, y: number): VoxelColumn | null {
     return this.sampledChunkOfCell(x, y).columns.packedColumnAt(cellIndexInChunk(x, y));
   }
 
-  topVoxelTileIdAt(x: number, y: number): number {
+  topVoxelTileIdAt(x: number, y: number): TileId {
     return tileIdOfVoxel(topPackedVoxelOf(this.packedVoxelColumnAt(x, y)));
   }
 
@@ -111,8 +113,8 @@ export class WorldSampler {
     return this.sampledChunkOfCell(x, y).groundFacing[cellIndexInChunk(x, y)]!;
   }
 
-  ceilingTileAt(x: number, y: number): number {
-    return this.sampledChunkOfCell(x, y).ceiling.tiles[cellIndexInChunk(x, y)]!;
+  ceilingTileAt(x: number, y: number): TileId {
+    return this.sampledChunkOfCell(x, y).ceiling.tiles[cellIndexInChunk(x, y)]! as TileId;
   }
 
   ceilingHeightAt(x: number, y: number): number {

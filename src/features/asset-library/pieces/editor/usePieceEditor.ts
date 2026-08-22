@@ -1,3 +1,5 @@
+import type { CommandParams } from '@/features/app-shell/runtime/commands/command';
+import type { TileId } from '@/features/asset-library/asset';
 import { useRef, useState } from 'react';
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
 import { EMPTY_VOXEL, voxelAt, VOXEL_FACING_COUNT, type Piece } from '../pieceDef';
@@ -11,11 +13,11 @@ export interface PieceEditor {
   piece: Piece;
   layer: number;
   tool: VoxelTool;
-  tileId: number;
+  tileId: TileId;
   facing: number;
   selectLayer(layer: number): void;
   setTool(tool: VoxelTool): void;
-  setTileId(tileId: number): void;
+  setTileId(tileId: TileId): void;
   cycleFacing(): void;
   paintCell(x: number, y: number): void;
   addLayer(): void;
@@ -35,13 +37,13 @@ export function usePieceEditor(piece: Piece): PieceEditor {
   const [tileId, setTileId] = useState(EMPTY_VOXEL);
   const [facing, setFacing] = useState(0);
   const history = useRef<number[][]>([]);
-  const clipboard = useRef<number[] | null>(null);
+  const clipboard = useRef<TileId[] | null>(null);
 
   function remember(): void {
     history.current = [...history.current.slice(-UNDO_DEPTH), [...piece.voxels]];
   }
 
-  function act(action: string, params: Record<string, unknown>): void {
+  function act(action: string, params: CommandParams): void {
     remember();
     perform(action, { piece_id: piece.id, ...params });
   }

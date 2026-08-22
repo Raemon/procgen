@@ -1,3 +1,4 @@
+import { assetId } from '@/features/asset-library/asset';
 import { generateAssetKit, type AssetKit, type AssetLibrary } from '@/features/asset-library/generation/assetKit';
 import { defaultCultures } from '@/features/asset-library/cultures/defaultCultures';
 import { defaultPieces } from '@/features/asset-library/pieces/defaultPieces';
@@ -91,9 +92,9 @@ function libraryOfDefaults(): AssetLibrary {
     tileNames: tiles.map((tile) => tile.name),
     tileSymbols: tiles.map((tile) => tile.symbol),
     cultureNames: defaultCultures().map((culture) => culture.name),
-    nextTileId: tiles.length,
-    nextPieceId: defaultPieces().length,
-    nextCultureId: defaultCultures().length,
+    nextTileId: assetId<'tiles'>(tiles.length),
+    nextPieceId: assetId<'pieces'>(defaultPieces().length),
+    nextCultureId: assetId<'cultures'>(defaultCultures().length),
   };
 }
 

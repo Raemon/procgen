@@ -5,6 +5,7 @@ import { cultureCommands } from './cultures/cultureCommands';
 import { itemCommands } from './items/itemCommands';
 import { pieceCommands } from './pieces/pieceCommands';
 import { tileCommands } from './tiles/tileCommands';
+import { labCommands } from './worlds/labCommands';
 import { nodeCommands } from './worlds/nodeCommands';
 import { worldCommands } from './worlds/worldCommands';
 
@@ -18,4 +19,5 @@ export const assetLibraryCommands = [
   ...cultureCommands,
   ...nodeCommands,
   ...worldCommands,
+  ...labCommands,
 ];

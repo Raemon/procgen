@@ -1,3 +1,4 @@
+import { assetId } from '@/features/asset-library/asset';
 import '@/features/asset-library/worlds/nodes';
 import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
 import { newTileWithId } from '@/features/asset-library/tiles/tileDef';
@@ -10,10 +11,10 @@ import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { buildObservation, type AgentObservation } from '../observation';
 import { DEFAULT_CHARACTER_SIGHT_RADIUS_TILES } from '@/features/game/vision/characterSight';
 
-const MEADOW_TILE = 0;
-const WALL_TILE = 1;
-const HEDGE_TILE = 2;
-const BENCH_TILE = 3;
+const MEADOW_TILE = assetId<'tiles'>(0);
+const WALL_TILE = assetId<'tiles'>(1);
+const HEDGE_TILE = assetId<'tiles'>(2);
+const BENCH_TILE = assetId<'tiles'>(3);
 
 const occlusionTiles = new TileAssets([
   { ...newTileWithId(MEADOW_TILE), name: 'meadow', symbol: '"', walkable: true, height: 1 },

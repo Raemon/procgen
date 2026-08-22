@@ -1,3 +1,4 @@
+import type { CommandParams } from '@/features/app-shell/runtime/commands/command';
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
 import { BILLBOARD, renderLabel, type ItemDef } from '../itemDef';
 import { Button } from '@/features/app-shell/controls/Button';
@@ -30,7 +31,7 @@ export function ItemRow({ item }: { item: ItemDef }) {
     ITEM_PANELS,
     item.id,
   );
-  const edit = (patch: Record<string, unknown>) => perform('update_item', { item_id: item.id, ...patch });
+  const edit = (patch: CommandParams) => perform('update_item', { item_id: item.id, ...patch });
   const removeItem = () => {
     forgetRow();
     perform('remove_item', { item_id: item.id });

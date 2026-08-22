@@ -1,3 +1,4 @@
+import type { CultureId } from '@/features/asset-library/asset';
 import type { RandomStream } from '../random/mulberry32';
 import { anyNodePipeline } from '../randomize/anyNodePipeline';
 import { randomWorldPipeline } from '../randomize/randomWorldPipeline';
@@ -38,7 +39,7 @@ const SETTLED_ROLL_SHARE = 0.2;
 export function rolledPipeline(
   rng: RandomStream,
   tiles: RecipeTiles,
-  cultureId: number,
+  cultureId: CultureId,
 ): PipelineState {
   if (chance(rng, SETTLED_ROLL_SHARE)) {
     return sanitizePipeline({

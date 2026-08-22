@@ -1,3 +1,4 @@
+import type { TileId } from '@/features/asset-library/asset';
 import { useEffect, useRef, useState } from 'react';
 import type { Piece } from '@/features/asset-library/pieces/pieceDef';
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
@@ -53,7 +54,7 @@ function PieceThumbnail({ piece, renderKey }: { piece: Piece; renderKey: string 
 
 export function pieceThumbnailKey(
   piece: Piece,
-  colorOfTile: (tileId: number) => string | null,
+  colorOfTile: (tileId: TileId) => string | null,
 ): string {
   const tileColors = [...new Set(piece.voxels)]
     .sort((left, right) => left - right)

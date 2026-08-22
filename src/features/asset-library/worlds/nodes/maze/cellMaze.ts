@@ -1,13 +1,11 @@
+import type { Cell } from '../../values/cell';
+export type { Cell };
 export interface CellMaze {
   cells: number;
   eastOpen: Uint8Array;
   southOpen: Uint8Array;
 }
 
-export interface Cell {
-  x: number;
-  y: number;
-}
 
 export function newCellMaze(cells: number): CellMaze {
   return {

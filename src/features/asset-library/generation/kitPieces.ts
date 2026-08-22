@@ -1,3 +1,5 @@
+import { assetId, type TileId } from '@/features/asset-library/asset';
+import type { TileIdBySlot } from './tileIdBySlot';
 import {
   culturePieceBlueprints,
   type CulturePieceNames,
@@ -26,14 +28,14 @@ const CHIMNEY_CAP_SLOTS: readonly string[] = ['footing', 'floor', 'beam'];
 export function generateKitPieces(
   seed: number,
   kitName: string,
-  idBySlot: ReadonlyMap<string, number>,
+  idBySlot: TileIdBySlot,
   firstId: number,
 ): Piece[] {
   const random = kitStream(seed, 'pieces');
   const variation = { chimneyLayers: intBetween(random, SHORTEST_CHIMNEY, TALLEST_CHIMNEY) };
   const tiles = pieceTilesOf(idBySlot, pickOne(random, CHIMNEY_CAP_SLOTS));
   return culturePieceBlueprints(pieceNamesPrefixedWith(kitName), tiles, variation).map(
-    (blueprint, index) => pieceFromBlueprint(blueprint, firstId + index),
+    (blueprint, index) => pieceFromBlueprint(blueprint, assetId<'pieces'>(firstId + index)),
   );
 }
 
@@ -43,10 +45,10 @@ function pieceNamesPrefixedWith(kitName: string): CulturePieceNames {
 }
 
 function pieceTilesOf(
-  idBySlot: ReadonlyMap<string, number>,
+  idBySlot: TileIdBySlot,
   chimneyCapSlot: string,
 ): CulturePieceTiles {
-  const tileOf = (key: string): number => idBySlot.get(key) as number;
+  const tileOf = (key: string): TileId => idBySlot.get(key) as TileId;
   return {
     footing: tileOf('footing'),
     wall: tileOf('wall'),

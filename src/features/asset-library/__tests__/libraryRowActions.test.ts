@@ -1,3 +1,4 @@
+import { assetId } from '@/features/asset-library/asset';
 import { allCommands } from '@/features/app-shell/runtime/commands/commandCatalog';
 import { newPieceWithId } from '@/features/asset-library/pieces/pieceDef';
 import { paintVoxel } from '@/features/asset-library/pieces/piecePainting';
@@ -41,11 +42,11 @@ function checkACopyNeverTakesANameAlreadyInUse(check: CheckReporter): void {
 }
 
 function checkAPieceIconIncludesTheWholeRender(check: CheckReporter): void {
-  const piece = newPieceWithId(0);
-  paintVoxel(piece, 1, 1, 0, 4);
-  paintVoxel(piece, 1, 1, 2, 7);
+  const piece = newPieceWithId(assetId<'pieces'>(0));
+  paintVoxel(piece, 1, 1, 0, assetId<'tiles'>(4));
+  paintVoxel(piece, 1, 1, 2, assetId<'tiles'>(7));
   const firstRender = pieceThumbnailKey(piece, (tileId) => `#${tileId}`);
-  paintVoxel(piece, 1, 1, 0, 5);
+  paintVoxel(piece, 1, 1, 0, assetId<'tiles'>(5));
   const changedCoveredVoxel = pieceThumbnailKey(piece, (tileId) => `#${tileId}`);
   const changedTileColor = pieceThumbnailKey(piece, (tileId) => `changed-${tileId}`);
   check(

@@ -5,6 +5,8 @@ import type { CultureAssets } from '@/features/asset-library/cultures/cultureAss
 import type { PieceAssets } from '@/features/asset-library/pieces/pieceAssets';
 import type { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
 import type { RegionSampler } from '@/features/asset-library/pieces/captureRegionAsPiece';
+import type { WorldLab } from '@/features/asset-library/worlds/lab/worldLab';
+import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import type { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
 import type { RunningWorld } from '@/features/asset-library/worlds/presets/runningWorld';
 import type { WorldPresetLibrary } from '@/features/asset-library/worlds/presets/worldPresetLibrary';
@@ -36,6 +38,8 @@ export interface CommandContext {
   runningWorld: RunningWorld;
   randomizeHistory: RandomizeHistory;
   regionSampler: RegionSampler;
+  worldSampler: WorldSampler;
+  lab: WorldLab | null;
   groundItems: GroundItems;
   puzzles: PuzzleWorld;
   actor: CommandActor;
@@ -53,16 +57,20 @@ export type CommandResult =
   | { ok: true; summary: string }
   | { ok: false; code: string; hint: string };
 
+export type CommandParams = Record<string, unknown>;
+
+export type CommandParamSpecs = Record<string, CommandParamSpec>;
+
 export interface CommandSpec {
   action: string;
   mode: CommandMode;
   group: CommandGroup;
   humanControl: string;
   description: string;
-  params: Record<string, CommandParamSpec>;
-  example: Record<string, unknown>;
+  params: CommandParamSpecs;
+  example: CommandParams;
   changesWorld: boolean;
-  apply(context: CommandContext, params: Record<string, unknown>): CommandResult;
+  apply(context: CommandContext, params: CommandParams): CommandResult;
 }
 
 export function commandSucceeded(summary: string): CommandResult {

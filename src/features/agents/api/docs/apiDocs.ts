@@ -62,11 +62,15 @@ An agent is created in one of two modes and stays in it for life.
 
 When the ground in view varies in height, the observation carries an
 \`elevation\` grid the same shape as the view: one digit per tile — the tile's
-ground height, rounded and written base-36 (0-9 then a-z, capped at z) — blank
-exactly where the view is blank. Flat views omit the grid entirely, so it
-costs nothing where it says nothing. Heights share units with tile heights:
-you stand 1 tall, and ground 2 or more digit-steps above your own tile is a
-ridge that hides lower ground behind it.
+climb level, written base-36 (0-9 then a-z, capped at z) — blank exactly
+where the view is blank. Flat views omit the grid entirely, so it costs
+nothing where it says nothing. The digits are the truth movement runs on: a
+step onto ground at most 1 level above your own succeeds, ground 2 or more
+levels up refuses you, and stepping down any drop is always allowed — so a
+route is walkable exactly when its digits never rise by more than 1 per
+step. Levels share units with tile heights: you stand 1 tall, and ground 2
+or more levels above your own tile is a ridge that hides lower ground behind
+it.
 
 ## Sight range, and what it costs
 

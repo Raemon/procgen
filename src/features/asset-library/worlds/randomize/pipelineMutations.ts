@@ -1,3 +1,4 @@
+import type { TileId } from '@/features/asset-library/asset';
 import type { RandomStream } from '../random/mulberry32';
 import { defaultBindingForKind, isBindingValidForKind } from '../display/displayBinding';
 import { nodeTypeOf } from '../nodeRegistry';
@@ -19,7 +20,7 @@ import { recipeNode } from './recipeNode';
 export type PipelineMutation = (
   state: PipelineState,
   rng: RandomStream,
-  tileIds: readonly number[],
+  tileIds: readonly TileId[],
 ) => boolean;
 
 export const PIPELINE_MUTATIONS: readonly PipelineMutation[] = [
@@ -32,7 +33,7 @@ export const PIPELINE_MUTATIONS: readonly PipelineMutation[] = [
 function swapRandomNodeType(
   state: PipelineState,
   rng: RandomStream,
-  tileIds: readonly number[],
+  tileIds: readonly TileId[],
 ): boolean {
   for (const index of shuffled(rng, state.nodes.map((_, i) => i))) {
     const def = nodeTypeOf(state.nodes[index]!.type);
@@ -52,7 +53,7 @@ function replaceNodeWithType(
   index: number,
   def: NodeTypeDef,
   rng: RandomStream,
-  tileIds: readonly number[],
+  tileIds: readonly TileId[],
 ): void {
   const previous = state.nodes[index]!;
   const node = recipeNode({ id: previous.id, type: def.type, label: def.title });
@@ -67,7 +68,7 @@ function replaceNodeWithType(
 export function addRandomNode(
   state: PipelineState,
   rng: RandomStream,
-  tileIds: readonly number[],
+  tileIds: readonly TileId[],
 ): boolean {
   const index = state.nodes.length;
   const pool = randomizableNodeTypes().filter((def) => requiredInputsSatisfiable(state, index, def));
@@ -80,7 +81,7 @@ function builtRandomNode(
   state: PipelineState,
   def: NodeTypeDef,
   rng: RandomStream,
-  tileIds: readonly number[],
+  tileIds: readonly TileId[],
 ): NodeInstance {
   const node = recipeNode({ id: nextNodeId(state), type: def.type, label: def.title });
   node.params = randomParams(def, rng, tileIds);
@@ -93,7 +94,7 @@ function applyRandomDisplay(
   node: NodeInstance,
   def: NodeTypeDef,
   rng: RandomStream,
-  tileIds: readonly number[],
+  tileIds: readonly TileId[],
 ): void {
   const kind = defaultOutputKindOf(def);
   if (kind === 'points') node.display = randomMarkerDisplay(rng, tileIds);

@@ -1,7 +1,8 @@
+import type { ItemId } from '@/features/asset-library/asset';
 export interface TakenSpawnKey {
   x: number;
   y: number;
-  itemId: number;
+  itemId: ItemId;
 }
 
 export class TakenItemSpawns {

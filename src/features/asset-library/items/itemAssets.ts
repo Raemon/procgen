@@ -1,3 +1,5 @@
+import type { AssetOfKind } from '@/features/asset-library/asset';
+import type { ItemId } from '@/features/asset-library/asset';
 import { AssetCollection } from '../collection/assetCollection';
 import { defaultItems } from './defaultItems';
 import { newItemWithId, type ItemDef } from './itemDef';
@@ -9,12 +11,12 @@ export interface ItemSource {
   byId(id: number): ItemDef | undefined;
 }
 
-export class ItemAssets extends AssetCollection<ItemDef> implements ItemSource {
+export class ItemAssets extends AssetCollection<AssetOfKind<'items'>> implements ItemSource {
   constructor(initialItems?: ItemDef[]) {
     super(initialItems ?? loadStoredItems() ?? defaultItems());
   }
 
-  protected blankAsset(id: number): ItemDef {
+  protected blankAsset(id: ItemId): ItemDef {
     return newItemWithId(id);
   }
 

@@ -1,3 +1,4 @@
+import type { CommandParams } from '@/features/app-shell/runtime/commands/command';
 import { hashString } from '../random/hashString';
 import type { PipelineState } from './pipelineState';
 
@@ -21,7 +22,7 @@ export function computeNodeSignatures(
 function signatureOf(
   seed: number,
   time: number | null,
-  node: { type: string; enabled: boolean; params: Record<string, unknown> },
+  node: { type: string; enabled: boolean; params: CommandParams },
   wiredSignatures: string[],
 ): string {
   const paramsInStableOrder = Object.entries(node.params).sort(([a], [b]) => a.localeCompare(b));

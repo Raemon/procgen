@@ -1,3 +1,4 @@
+import { NO_TILE, type CultureId, type PieceId, type TileId } from '../asset';
 import type { PieceRole } from '../pieces/pieceDef';
 
 export const GABLE_ROOF = 0;
@@ -7,22 +8,24 @@ export const MAX_STORY_LAYERS = 6;
 export const MIN_WINDOW_EVERY = 1;
 export const MAX_WINDOW_EVERY = 12;
 
+export type PieceRoleBindings = Partial<Record<PieceRole, PieceId[]>>;
+
 export interface Culture {
-  id: number;
+  id: CultureId;
   name: string;
-  roleBindings: Partial<Record<PieceRole, number[]>>;
-  wallTileId: number;
-  trimTileId: number;
-  roofSlopeTileId: number;
-  roofRidgeTileId: number;
-  floorTileId: number;
-  pathTileId: number;
+  roleBindings: PieceRoleBindings;
+  wallTileId: TileId;
+  trimTileId: TileId;
+  roofSlopeTileId: TileId;
+  roofRidgeTileId: TileId;
+  floorTileId: TileId;
+  pathTileId: TileId;
   roofStyle: number;
   storyLayers: number;
   windowEvery: number;
 }
 
-export function newCultureWithId(id: number): Culture {
+export function newCultureWithId(id: CultureId): Culture {
   return {
     id,
     name: `culture ${id}`,
@@ -39,16 +42,16 @@ export function noTilesChosenYet(): Pick<
   'wallTileId' | 'trimTileId' | 'roofSlopeTileId' | 'roofRidgeTileId' | 'floorTileId' | 'pathTileId'
 > {
   return {
-    wallTileId: -1,
-    trimTileId: -1,
-    roofSlopeTileId: -1,
-    roofRidgeTileId: -1,
-    floorTileId: -1,
-    pathTileId: -1,
+    wallTileId: NO_TILE,
+    trimTileId: NO_TILE,
+    roofSlopeTileId: NO_TILE,
+    roofRidgeTileId: NO_TILE,
+    floorTileId: NO_TILE,
+    pathTileId: NO_TILE,
   };
 }
 
-export function piecesBoundToRole(culture: Culture, role: PieceRole): readonly number[] {
+export function piecesBoundToRole(culture: Culture, role: PieceRole): readonly PieceId[] {
   return culture.roleBindings[role] ?? [];
 }
 

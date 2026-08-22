@@ -1,3 +1,4 @@
+import type { ItemId } from '../asset';
 import { clampLightRadius, DEFAULT_LIGHT_INK } from '@/features/game/light/lightEmission';
 import type { SpriteArt } from '../tiles/spriteArt';
 import type { CubeFaceArt } from '../tiles/tileFaceArt';
@@ -37,7 +38,7 @@ export const ORIENTATION_CHOICES = [
 export const MAX_ITEM_GRID_SIDE = 8;
 
 export interface ItemDef {
-  id: number;
+  id: ItemId;
   name: string;
   symbol: string;
   color: string;
@@ -56,7 +57,7 @@ export interface ItemDef {
   lightInk: string;
 }
 
-export function newItemWithId(id: number): ItemDef {
+export function newItemWithId(id: ItemId): ItemDef {
   return {
     id,
     name: `item ${id}`,

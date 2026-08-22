@@ -1,3 +1,4 @@
+import { assetId } from '@/features/asset-library/asset';
 import { readFileSync, writeFileSync } from 'node:fs';
 import type { Culture } from '@/features/asset-library/cultures/cultureDef';
 import type { Piece } from '@/features/asset-library/pieces/pieceDef';
@@ -30,9 +31,9 @@ export function installGenomeAsPreset(
   const cultures = readData<Culture[]>('cultures', []);
 
   const maps: AssetIdMaps = {
-    tileMap: new Map(palette.tiles.map((tile, at) => [tile.id, nextIdAfter(tiles) + at])),
-    pieceMap: new Map(palette.pieces.map((piece, at) => [piece.id, nextIdAfter(pieces) + at])),
-    cultureMap: new Map([[palette.culture.id, nextIdAfter(cultures)]]),
+    tileMap: new Map(palette.tiles.map((tile, at) => [tile.id, assetId<'tiles'>(nextIdAfter(tiles) + at)])),
+    pieceMap: new Map(palette.pieces.map((piece, at) => [piece.id, assetId<'pieces'>(nextIdAfter(pieces) + at)])),
+    cultureMap: new Map([[palette.culture.id, assetId<'cultures'>(nextIdAfter(cultures))]]),
   };
 
   tiles.push(

@@ -1,3 +1,5 @@
+import type { Cell } from '../values/cell';
+export type { Cell };
 import { clampedWall, doorwaySpread, CLOSED, type ChunkExits } from './chunkExits';
 import { LABYRINTH_CELL_SIZE, labyrinthCellOrigin } from './labyrinthLattice';
 import type { LabyrinthKnobs } from './labyrinthKnobs';
@@ -9,10 +11,6 @@ export interface RoomRect {
   height: number;
 }
 
-export interface Cell {
-  x: number;
-  y: number;
-}
 
 export type DoorwaySide = 'west' | 'north' | 'east' | 'south';
 

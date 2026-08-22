@@ -1,28 +1,21 @@
-import { API_CONTRACTS } from '@/features/app-shell/api/apiContracts';
+import { ApiEndpointDocumentation } from '@/features/app-shell/documentation/ApiEndpointDocumentation';
+import { AppRouteDocumentation } from '@/features/app-shell/documentation/AppRouteDocumentation';
+import { ApiTypeDocumentation } from '@/features/app-shell/documentation/ApiTypeDocumentation';
 import { SourceDocumentation } from '@/features/app-shell/documentation/SourceDocumentation';
 
 export default function ApiDocsPage() {
   return (
     <main className="min-h-full bg-bg p-6 text-ink">
-      <div className="mx-auto max-w-5xl">
-        <h1 className="mb-2 text-xl text-accent">Procgen API</h1>
-        <p className="mb-5 text-sm text-ink-dim">
-          The same HTTP and WebSocket interface is used by the editor, agents, and external clients.{' '}
-          <a className="text-accent underline" href="/api/v1/openapi.json">
+      <div className="mx-auto max-w-[96rem]">
+        <div className="mb-4 flex justify-end">
+          <a className="text-xs text-accent underline underline-offset-4" href="/api/v1/openapi.json">
             OpenAPI JSON
           </a>
-        </p>
-        <div className="overflow-hidden rounded border border-panel-edge">
-          {API_CONTRACTS.map((contract) => (
-            <div
-              key={`${contract.method}-${contract.path}`}
-              className="grid grid-cols-[5rem_1fr_2fr] gap-3 border-b border-panel-edge px-3 py-2 text-sm last:border-b-0 max-md:grid-cols-[4.5rem_1fr]"
-            >
-              <span className="text-accent">{contract.method}</span>
-              <code>/api/v1{contract.path}</code>
-              <span className="text-ink-dim max-md:col-start-2">{contract.summary}</span>
-            </div>
-          ))}
+        </div>
+        <div className="flex flex-wrap items-start gap-8">
+          <ApiEndpointDocumentation />
+          <ApiTypeDocumentation />
+          <AppRouteDocumentation />
         </div>
       </div>
       <SourceDocumentation />

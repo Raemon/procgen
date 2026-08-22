@@ -1,3 +1,4 @@
+import type { CommandParams } from '@/features/app-shell/runtime/commands/command';
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
 import { behaviorLabel } from '../behaviorKinds';
 import { isCharacter, type CreatureDef } from '../creatureDef';
@@ -35,7 +36,7 @@ export function CreatureRow({ creature }: { creature: CreatureDef }) {
     CREATURE_PANELS,
     creature.id,
   );
-  const edit = (patch: Record<string, unknown>) =>
+  const edit = (patch: CommandParams) =>
     perform('update_creature', { creature_id: creature.id, ...patch });
   const removeCreature = () => {
     forgetRow();

@@ -1,3 +1,5 @@
+import type { TileId } from '@/features/asset-library/asset';
+import type { TileIdBySlot } from './tileIdBySlot';
 import { DEFAULT_LIGHT_INK } from '@/features/game/light/lightEmission';
 import { newTileWithId, type TileDef } from '../tiles/tileDef';
 import { defaultHeightForTile } from '../tiles/tileHeight';
@@ -10,7 +12,7 @@ import { chosenTileSymbols } from './kitTileSymbols';
 
 export interface GeneratedTiles {
   tiles: TileDef[];
-  idBySlot: Map<string, number>;
+  idBySlot: TileIdBySlot;
 }
 
 export interface TileNamingContext {
@@ -60,7 +62,7 @@ function tileOfSlot(
   fields: TileFields,
 ): TileDef {
   return {
-    ...newTileWithId(fields.firstId + index),
+    ...newTileWithId((fields.firstId + index) as TileId),
     name: fields.names[index] as string,
     symbol: fields.symbols[index] as string,
     color: fields.colors[index] as string,
@@ -73,6 +75,6 @@ function tileOfSlot(
   };
 }
 
-function idsBySlotKey(slots: readonly TileSlot[], firstId: number): Map<string, number> {
-  return new Map(slots.map((slot, index) => [slot.key, firstId + index]));
+function idsBySlotKey(slots: readonly TileSlot[], firstId: number): TileIdBySlot {
+  return new Map(slots.map((slot, index) => [slot.key, (firstId + index) as TileId]));
 }

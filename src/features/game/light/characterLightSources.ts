@@ -1,3 +1,4 @@
+import type { CreatureId } from '@/features/asset-library/asset';
 import type { CreatureInstance } from '../creatureSim/creatureInstance';
 import { brightestCarriedLight } from '@/features/asset-library/items/inventory/carriedLight';
 import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
@@ -10,7 +11,7 @@ import { lightSourceAt, type LightSource } from './lightEmission';
 const CARRIED_LIGHT_HEIGHT = 0.9;
 
 export function carriedLightSourceOf(
-  creatureId: number,
+  creatureId: CreatureId,
   x: number,
   y: number,
   creatures: ReadOnlyCreatureAssets,

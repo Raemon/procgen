@@ -1,7 +1,8 @@
+import type { ItemId } from '@/features/asset-library/asset';
 import { torchSprite } from './art/torchArt';
 import { BILLBOARD, newItemWithId, UPRIGHT, type ItemDef } from './itemDef';
 
-export const TORCH_ITEM_ID = 5;
+export const TORCH_ITEM_ID = 5 as ItemId;
 
 export function defaultItems(): ItemDef[] {
   return [

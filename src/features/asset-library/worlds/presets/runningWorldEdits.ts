@@ -1,3 +1,4 @@
+import type { CommandParams } from '@/features/app-shell/runtime/commands/command';
 import type { PipelineStore } from '../pipeline/pipelineStore';
 import { sanitizePipeline } from '../pipeline/sanitizePipeline';
 import { freeWorldName } from './freeWorldName';
@@ -15,7 +16,7 @@ export function runningWorldEdits(editor: {
   store: PipelineStore;
   worlds: WorldShelf;
   runningWorld: RunningWorld;
-  perform(action: string, params?: Record<string, unknown>): unknown;
+  perform(action: string, params?: CommandParams): unknown;
 }): RunningWorldEdits {
   function saveWhatIsOpen(): void {
     const name = editor.runningWorld.name();

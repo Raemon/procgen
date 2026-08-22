@@ -1,3 +1,4 @@
+import { assetId } from '@/features/asset-library/asset';
 import { pieceFromWorldRegion, type RegionSampler } from '@/features/asset-library/pieces/captureRegionAsPiece';
 import {
   blankFacings,
@@ -21,7 +22,7 @@ import { facingOfVoxel, tileIdOfVoxel } from '@/features/asset-library/worlds/st
 import { StructureOverlay, type PieceSource } from '@/features/asset-library/worlds/structureOverlay/structureOverlay';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 
-const SYNTHETIC_PIECE_ID = 3;
+const SYNTHETIC_PIECE_ID = assetId<'pieces'>(3);
 const STAMPED_AT = { x: 5, y: 7 };
 
 export function checkPieceInvariants(check: CheckReporter): void {
@@ -173,7 +174,7 @@ function capturedFromStamp(piece: Piece): Piece {
   };
   return {
     ...pieceFromWorldRegion(samplerOverEmptyGround(stampedOverlay(piece, 0)), region, 'captured'),
-    id: 0,
+    id: assetId<'pieces'>(0),
   };
 }
 
@@ -204,7 +205,7 @@ function syntheticPiece(): Piece {
 
 function paintDistinctVoxel(piece: Piece, x: number, y: number, layer: number): boolean {
   const index = voxelIndex(piece, x, y, layer);
-  piece.voxels[index] = index === 0 ? EMPTY_VOXEL : 10 + index;
+  piece.voxels[index] = index === 0 ? EMPTY_VOXEL : assetId<'tiles'>(10 + index);
   piece.facings[index] = index % 4;
   return true;
 }

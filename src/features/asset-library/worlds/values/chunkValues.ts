@@ -1,6 +1,7 @@
+import type { TileId } from '@/features/asset-library/asset';
 import { CELLS_PER_CHUNK } from '../chunk';
 
-export const EMPTY_TILE = -1;
+export const EMPTY_TILE = -1 as TileId;
 
 export type ValueKind = 'field' | 'tiles' | 'points';
 

@@ -1,3 +1,4 @@
+import type { Cell } from '../../values/cell';
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { PRESENT } from '../../time/worldTime';
@@ -172,7 +173,7 @@ function shoreInsideGrid(
   return best;
 }
 
-function searchSpots(landfall: Landfall, reach: number): { x: number; y: number }[] {
+function searchSpots(landfall: Landfall, reach: number): Cell[] {
   const step = Math.max(8, Math.round(reach / 12));
   const spots: { x: number; y: number }[] = [];
   for (let dy = -reach; dy <= reach; dy += step) {

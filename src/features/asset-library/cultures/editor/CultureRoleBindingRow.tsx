@@ -1,3 +1,4 @@
+import type { PieceId } from '@/features/asset-library/asset';
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
 import { Button } from '@/features/app-shell/controls/Button';
 import { KnobRow } from '@/features/app-shell/controls/KnobRow';
@@ -19,7 +20,7 @@ export function CultureRoleBindingRow({
 }) {
   const { perform } = useAppRuntime();
   const bound = piecesBoundToRole(culture, role);
-  const bind = (pieceIds: readonly number[]) =>
+  const bind = (pieceIds: readonly PieceId[]) =>
     perform('bind_culture_role', { culture_id: culture.id, role, piece_ids: [...pieceIds] });
   return (
     <KnobRow label={role} tip={roleBindingTip(role, bound.length)} className="items-start">

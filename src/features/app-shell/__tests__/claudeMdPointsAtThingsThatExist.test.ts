@@ -1,9 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { reportOffenders } from './reportOffenders';
-import { API_CONTRACTS } from '@/features/app-shell/api/apiContracts';
+import { buildApiEndpointCatalog } from '@/features/app-shell/documentation/apiEndpointCatalog';
 
 const CLAUDE_MD = 'claude.md';
-const API_PREFIX = '/api/v1';
 const FILE_PATH = /\b[\w.-]+\/[\w./-]+\.(?:tsx?|json|css|sh)\b/g;
 const NPM_SCRIPT = /\bnpm run ([\w:]+)/g;
 const HTTP_ROUTE = /\b(?:GET|POST|PUT|DELETE) (\/[\w./{}-]*)/g;
@@ -38,12 +37,8 @@ export function checkClaudeMdPointsAtThingsThatExist(
 }
 
 function isServed(path: string): boolean {
-  if (['/api/health', '/api/v1/openapi.json', '/api/v1/game/socket', '/docs'].includes(path)) {
-    return true;
-  }
-  if (!path.startsWith(API_PREFIX)) return false;
-  const withinApi = path.slice(API_PREFIX.length);
-  return API_CONTRACTS.some((contract) => contract.path === withinApi);
+  if (path === '/docs') return true;
+  return buildApiEndpointCatalog().some((endpoint) => endpoint.path === path);
 }
 
 function npmScripts(): string[] {

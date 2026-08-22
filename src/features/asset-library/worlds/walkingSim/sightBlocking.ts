@@ -1,3 +1,4 @@
+import type { TileId } from '@/features/asset-library/asset';
 import type { TileAssets } from '@/features/asset-library/tiles/tileAssets';
 import { storedTileHeight, WALKABLE_TILE_HEIGHT } from '@/features/asset-library/tiles/tileHeight';
 import { EMPTY_TILE } from '../values/chunkValues';
@@ -22,7 +23,7 @@ export function opaqueProbeFrom(tileIdAt: TileIdProbe, tileAssets: SightAssets):
   };
 }
 
-function tileBlocksSight(tileId: number, tileAssets: SightAssets): boolean {
+function tileBlocksSight(tileId: TileId, tileAssets: SightAssets): boolean {
   if (tileId === EMPTY_TILE) return false;
   const tile = tileAssets.byId(tileId);
   if (!tile) return false;

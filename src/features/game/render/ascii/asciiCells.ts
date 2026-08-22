@@ -1,3 +1,4 @@
+import type { TileId } from '@/features/asset-library/asset';
 import type { Marker, WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import { EMPTY_TILE } from '@/features/asset-library/worlds/values/chunkValues';
 import type { ReadOnlyTileAssets } from '@/features/app-shell/runtime/readOnlyAssets';
@@ -61,7 +62,7 @@ function tileCell(
   return { glyph: tile?.symbol ?? UNKNOWN_GLYPH, ink: tile?.color ?? UNKNOWN_INK };
 }
 
-function visibleTileAt(sampler: WorldSampler, x: number, y: number): number {
+function visibleTileAt(sampler: WorldSampler, x: number, y: number): TileId {
   const topVoxel = sampler.topVoxelTileIdAt(x, y);
   return topVoxel === EMPTY_TILE ? sampler.tileAt(x, y) : topVoxel;
 }

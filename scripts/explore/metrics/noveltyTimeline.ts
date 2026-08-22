@@ -1,3 +1,4 @@
+import type { TileId } from '@/features/asset-library/asset';
 import type { TileIdProbe } from '../cachedWorldProbes';
 import { stepsTaken, type ExplorationTrace } from '../explorationTrace';
 import type { MarkerEncounter } from './markerEncounters';
@@ -36,8 +37,8 @@ function firstTileSightings(trace: ExplorationTrace, tileIdAt: TileIdProbe): Nov
   return events;
 }
 
-function sightedTileIds(cell: { x: number; y: number }, tileIdAt: TileIdProbe): number[] {
-  const tileIds: number[] = [];
+function sightedTileIds(cell: { x: number; y: number }, tileIdAt: TileIdProbe): TileId[] {
+  const tileIds: TileId[] = [];
   for (let dy = -1; dy <= 1; dy++) {
     for (let dx = -1; dx <= 1; dx++) tileIds.push(tileIdAt(cell.x + dx, cell.y + dy));
   }

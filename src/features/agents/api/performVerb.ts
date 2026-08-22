@@ -1,4 +1,6 @@
+import type { CommandParams } from '@/features/app-shell/runtime/commands/command';
 import { performCommand } from '@/features/app-shell/runtime/commands/performCommand';
+import type { WorldLab } from '@/features/asset-library/worlds/lab/worldLab';
 import { commandFor } from '@/features/app-shell/runtime/commands/commandCatalog';
 import { failureByCode } from '../failures';
 import type { ServerWorld } from './serverWorld';
@@ -22,7 +24,8 @@ export function performVerb(
   session: AgentSession,
   world: ServerWorld,
   action: string,
-  params: Record<string, unknown>,
+  params: CommandParams,
+  lab: WorldLab | null = null,
 ): VerbResult {
   const result = performCommand(
     {
@@ -37,6 +40,8 @@ export function performVerb(
       runningWorld: world.runningWorld,
       randomizeHistory: world.randomizeHistory,
       regionSampler: world.sampler,
+      worldSampler: world.sampler,
+      lab,
       groundItems: world.groundItems,
       puzzles: world.puzzles,
       actor: sessionActor(session, world.stepRules),

@@ -1,3 +1,5 @@
+import { NO_TILE } from '@/features/asset-library/asset';
+import { assetId } from '@/features/asset-library/asset';
 import { CHUNK_SIZE } from '@/features/asset-library/worlds/chunk';
 import {
   DEFAULT_CEILING_HEIGHT,
@@ -13,9 +15,9 @@ import { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 
-const FLOOR_TILE = 15;
-const WALL_TILE = 17;
-const ROOF_TILE = 4;
+const FLOOR_TILE = assetId<'tiles'>(15);
+const WALL_TILE = assetId<'tiles'>(17);
+const ROOF_TILE = assetId<'tiles'>(4);
 
 export function checkLandmarkAndCeilingInvariants(check: CheckReporter): void {
   checkLandmarkRoomStampsWhereItSays(check);
@@ -142,7 +144,7 @@ function landmarkPointNode(x: number, y: number): NodeInstance {
     enabled: true,
     params: { x, y },
     inputs: {},
-    display: { mode: 'markers', tileId: -1, glyph: '*', color: '#ffffff' },
+    display: { mode: 'markers', tileId: NO_TILE, glyph: '*', color: '#ffffff' },
   };
 }
 

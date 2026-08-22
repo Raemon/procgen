@@ -1,3 +1,4 @@
+import type { PieceId } from '@/features/asset-library/asset';
 import { PIECE_ROLES, type Piece, type PieceRole } from '../pieces/pieceDef';
 import { piecesBoundToRole, type Culture } from './cultureDef';
 
@@ -24,9 +25,9 @@ export function piecesOfferedForRole(
 }
 
 export function pieceIdsWithPieceToggled(
-  bound: readonly number[],
-  pieceId: number,
-): number[] {
+  bound: readonly PieceId[],
+  pieceId: PieceId,
+): PieceId[] {
   const kept = bound.filter((id) => id !== pieceId);
   return kept.length < bound.length ? kept : [...bound, pieceId].sort(byAscendingId);
 }

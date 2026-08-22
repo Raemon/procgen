@@ -1,3 +1,5 @@
+import type { TileId } from '@/features/asset-library/asset';
+import type { PieceCellEdit } from '@/features/asset-library/pieces/pieceDef';
 import { forgetRemovedPieceInRoleBindings } from '@/features/asset-library/cultures/forgetRemovedPieceInRoleBindings';
 import {
   isInsidePiece,
@@ -19,8 +21,9 @@ import {
   type CommandContext,
   type CommandResult,
   type CommandSpec,
+  type CommandParams,
 } from '@/features/app-shell/runtime/commands/command';
-import { listOf, readInt, readOptionalInt, readText } from '@/features/app-shell/runtime/commands/commandParams';
+import { listOf, readAssetId, readInt, readOptionalInt, readText } from '@/features/app-shell/runtime/commands/commandParams';
 import { createCommandCollection } from '@/features/app-shell/runtime/commands/commandCollection';
 
 const { define: registerCommand, commands: pieceCommands } = createCommandCollection();
@@ -238,10 +241,10 @@ registerPieceCommand({
 
 function withPiece(
   context: CommandContext,
-  params: Record<string, unknown>,
+  params: CommandParams,
   use: (piece: Piece) => CommandResult,
 ): CommandResult {
-  const read = readInt(params, 'piece_id');
+  const read = readAssetId<'pieces'>(params, 'piece_id');
   if (!read.ok) return read.failure;
   const piece = context.pieces.byId(read.value);
   if (!piece) {
@@ -256,7 +259,7 @@ function withPiece(
 function setRole(
   context: CommandContext,
   piece: Piece,
-  params: Record<string, unknown>,
+  params: CommandParams,
 ): CommandResult {
   const role = readText(params, 'role');
   if (!role.ok) return role.failure;
@@ -270,7 +273,7 @@ function setRole(
 function setVoxelFacing(
   context: CommandContext,
   piece: Piece,
-  params: Record<string, unknown>,
+  params: CommandParams,
 ): CommandResult {
   const rect = facingRectFrom(params);
   if (!rect.ok) return rect.failure;
@@ -303,7 +306,7 @@ type FacingRect =
     }
   | { ok: false; failure: CommandResult };
 
-function facingRectFrom(params: Record<string, unknown>): FacingRect {
+function facingRectFrom(params: CommandParams): FacingRect {
   const x = readInt(params, 'x');
   if (!x.ok) return x;
   const y = readInt(params, 'y');
@@ -358,7 +361,7 @@ function patchOf(piece: Piece): PiecePatch {
 function paintPiece(
   context: CommandContext,
   piece: Piece,
-  params: Record<string, unknown>,
+  params: CommandParams,
 ): CommandResult {
   const cell = paintCellFrom(params);
   if (!cell.ok) return cell.failure;
@@ -372,17 +375,17 @@ function paintPiece(
 }
 
 type PaintCell =
-  | { ok: true; value: { x: number; y: number; layer: number; tileId: number } }
+  | { ok: true; value: PieceCellEdit }
   | { ok: false; failure: CommandResult };
 
-function paintCellFrom(params: Record<string, unknown>): PaintCell {
+function paintCellFrom(params: CommandParams): PaintCell {
   const x = readInt(params, 'x');
   if (!x.ok) return x;
   const y = readInt(params, 'y');
   if (!y.ok) return y;
   const layer = readInt(params, 'layer');
   if (!layer.ok) return layer;
-  const tileId = readInt(params, 'tile_id');
+  const tileId = readAssetId<'tiles'>(params, 'tile_id');
   if (!tileId.ok) return tileId;
   return { ok: true, value: { x: x.value, y: y.value, layer: layer.value, tileId: tileId.value } };
 }
@@ -390,7 +393,7 @@ function paintCellFrom(params: Record<string, unknown>): PaintCell {
 function writeVoxels(
   context: CommandContext,
   piece: Piece,
-  params: Record<string, unknown>,
+  params: CommandParams,
   indicesOf: (cell: { x: number; y: number; layer: number }) => number[],
 ): CommandResult {
   const cell = paintCellFrom(params);
@@ -406,7 +409,7 @@ function writeVoxels(
 function rejectUnpaintableCell(
   context: CommandContext,
   piece: Piece,
-  cell: { x: number; y: number; layer: number; tileId: number },
+  cell: PieceCellEdit,
 ): CommandResult | null {
   if (!isInsidePiece(piece, cell.x, cell.y, cell.layer)) {
     return outsidePieceFailure(piece, cell.x, cell.y, cell.layer);
@@ -428,7 +431,7 @@ function layerIndices(piece: Piece, layer: number): number[] {
 function setVoxels(
   context: CommandContext,
   piece: Piece,
-  params: Record<string, unknown>,
+  params: CommandParams,
 ): CommandResult {
   const voxels = params.voxels;
   const expected = piece.width * piece.depth * piece.layers;
@@ -441,6 +444,6 @@ function setVoxels(
       `piece ${piece.id} is ${piece.width}×${piece.depth}×${piece.layers}, so 'voxels' must be ${expected} long, not ${voxels.length}`,
     );
   }
-  context.pieces.update(piece.id, { voxels: voxels as number[] });
+  context.pieces.update(piece.id, { voxels: voxels as TileId[] });
   return commandSucceeded(`piece ${piece.id} voxels replaced`);
 }

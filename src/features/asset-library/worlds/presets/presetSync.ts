@@ -1,3 +1,14 @@
+import {
+  assetId,
+  type Asset,
+  type AssetId,
+  type AssetIdMap,
+  type AssetIdOf,
+  type AssetKind,
+  type CultureId,
+  type PieceId,
+  type TileId,
+} from '@/features/asset-library/asset';
 import '../nodes';
 import type { Culture } from '@/features/asset-library/cultures/cultureDef';
 import type { Piece } from '@/features/asset-library/pieces/pieceDef';
@@ -34,9 +45,9 @@ export function libraryDocsFrom(read: (name: string) => unknown): LibraryDocsVie
 }
 
 export interface AssetIdMaps {
-  tileMap: Map<number, number>;
-  pieceMap: Map<number, number>;
-  cultureMap: Map<number, number>;
+  tileMap: AssetIdMap<'tiles'>;
+  pieceMap: AssetIdMap<'pieces'>;
+  cultureMap: AssetIdMap<'cultures'>;
 }
 
 export function syncMissingPresets(library: LibraryDocs, shipped: LibraryDocs): number {
@@ -79,9 +90,9 @@ function assetsReferencedBy(
   state: PipelineState,
   shipped: LibraryDocs,
 ): { tiles: TileDef[]; pieces: Piece[]; cultures: Culture[] } {
-  const tileIds = new Set<number>();
-  const pieceIds = new Set<number>();
-  const cultureIds = new Set<number>();
+  const tileIds = new Set<TileId>();
+  const pieceIds = new Set<PieceId>();
+  const cultureIds = new Set<CultureId>();
   for (const node of state.nodes) {
     for (const id of tileParamIdsOf(node)) tileIds.add(id);
     if (node.display.mode === 'markers') tileIds.add(node.display.tileId);
@@ -102,18 +113,18 @@ function assetsReferencedBy(
   return { tiles: pickedById(shipped.tiles, tileIds), pieces, cultures };
 }
 
-function tileParamIdsOf(node: NodeInstance): number[] {
+function tileParamIdsOf(node: NodeInstance): TileId[] {
   const def = nodeTypeOf(node.type);
-  const ids: number[] = [];
+  const ids: TileId[] = [];
   for (const [name, spec] of Object.entries(def?.params ?? {})) {
     if (spec.kind !== 'tile') continue;
     const value = node.params[name];
-    if (typeof value === 'number' && value >= 0) ids.push(value);
+    if (typeof value === 'number' && value >= 0) ids.push(assetId<'tiles'>(value));
   }
   return ids;
 }
 
-function cultureTileIdsOf(culture: Culture): number[] {
+function cultureTileIdsOf(culture: Culture): TileId[] {
   return [
     culture.wallTileId,
     culture.trimTileId,
@@ -124,22 +135,22 @@ function cultureTileIdsOf(culture: Culture): number[] {
   ].filter((id) => typeof id === 'number' && id >= 0);
 }
 
-function pickedById<Asset extends { id: number }>(
-  assets: readonly Asset[],
-  ids: ReadonlySet<number>,
-): Asset[] {
+function pickedById<Held extends Asset>(
+  assets: readonly Held[],
+  ids: ReadonlySet<AssetId>,
+): Held[] {
   return assets.filter((asset) => ids.has(asset.id));
 }
 
-function idMapOnto(
-  existing: ReadonlyArray<{ id: number }>,
-  wanted: ReadonlyArray<{ id: number }>,
-): Map<number, number> {
-  const next = existing.reduce((highest, asset) => Math.max(highest, asset.id), -1) + 1;
-  return new Map(wanted.map((asset, at) => [asset.id, next + at]));
+function idMapOnto<Kind extends AssetKind>(
+  existing: ReadonlyArray<{ id: AssetIdOf<Kind> }>,
+  wanted: ReadonlyArray<{ id: AssetIdOf<Kind> }>,
+): AssetIdMap<Kind> {
+  const next = existing.reduce<number>((highest, asset) => Math.max(highest, asset.id), -1) + 1;
+  return new Map(wanted.map((asset, at) => [asset.id, assetId<Kind>(next + at)]));
 }
 
-export function remappedPieceTiles(piece: Piece, tileMap: Map<number, number>): Piece {
+export function remappedPieceTiles(piece: Piece, tileMap: AssetIdMap<'tiles'>): Piece {
   return {
     ...piece,
     voxels: piece.voxels.map((voxel) => (voxel >= 0 ? (tileMap.get(voxel) ?? voxel) : voxel)),
@@ -174,12 +185,12 @@ export function remappedPipeline(pipeline: PipelineState, maps: AssetIdMaps): Pi
   return state;
 }
 
-function remapTileParams(node: NodeInstance, tileMap: Map<number, number>): void {
+function remapTileParams(node: NodeInstance, tileMap: AssetIdMap<'tiles'>): void {
   const def = nodeTypeOf(node.type);
   for (const [name, spec] of Object.entries(def?.params ?? {})) {
     if (spec.kind !== 'tile') continue;
     const value = node.params[name];
-    if (typeof value === 'number') node.params[name] = remappedId(value, tileMap);
+    if (typeof value === 'number') node.params[name] = remappedId(assetId<'tiles'>(value), tileMap);
   }
 }
 
@@ -191,7 +202,10 @@ function remapDisplay(node: NodeInstance, maps: AssetIdMaps): void {
     display.cultureId = remappedId(display.cultureId, maps.cultureMap);
 }
 
-function remappedId(id: number, map: Map<number, number>): number {
+function remappedId<Kind extends AssetKind>(
+  id: AssetIdOf<Kind>,
+  map: AssetIdMap<Kind>,
+): AssetIdOf<Kind> {
   if (id < 0) return id;
   return map.get(id) ?? id;
 }

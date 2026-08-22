@@ -1,3 +1,4 @@
+import type { TileId } from '@/features/asset-library/asset';
 import { EMPTY_VOXEL } from '../pieceDef';
 import type { ReadOnlyTileAssets } from '@/features/app-shell/runtime/readOnlyAssets';
 import { classes } from '@/features/app-shell/controls/classes';
@@ -13,8 +14,8 @@ export function TilePalette({
   onPick,
 }: {
   tileAssets: ReadOnlyTileAssets;
-  tileId: number;
-  onPick(tileId: number): void;
+  tileId: TileId;
+  onPick(tileId: TileId): void;
 }) {
   return (
     <div className="mt-1.5 flex max-h-16 flex-wrap gap-1 overflow-y-auto">

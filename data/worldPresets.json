@@ -1,6 +1,6 @@
 [
   {
-    "name": "morburmere (evolved)",
+    "name": "61 morburmere (evolved)",
     "description": "Evolved walking-sim elite: fun 0.619, elevation gates 0.00, vistas 1.9/100 steps, decisions 81/100 steps.",
     "state": {
       "seed": 459125,
@@ -156,7 +156,7 @@
           "display": {
             "mode": "markers",
             "tileId": -1,
-            "glyph": "☗",
+            "glyph": "\u2617",
             "color": "#c2c2c2"
           }
         },
@@ -178,7 +178,7 @@
           "display": {
             "mode": "markers",
             "tileId": 59,
-            "glyph": "♦",
+            "glyph": "\u2666",
             "color": "#ff4444"
           }
         },
@@ -256,7 +256,7 @@
     }
   },
   {
-    "name": "fenlingfen (evolved)",
+    "name": "49 fenlingfen (evolved)",
     "description": "Evolved walking-sim elite: fun 0.494, elevation gates 0.00, vistas 1.8/100 steps, decisions 68/100 steps.",
     "state": {
       "seed": 882103,
@@ -422,7 +422,7 @@
           "display": {
             "mode": "markers",
             "tileId": 90,
-            "glyph": "✶",
+            "glyph": "\u2736",
             "color": "#c2c2c2"
           }
         },
@@ -444,7 +444,7 @@
           "display": {
             "mode": "markers",
             "tileId": -1,
-            "glyph": "♦",
+            "glyph": "\u2666",
             "color": "#7a5cff"
           }
         },
@@ -473,7 +473,7 @@
     }
   },
   {
-    "name": "gorholmholt (evolved)",
+    "name": "43 gorholmholt (evolved)",
     "description": "Evolved walking-sim elite: fun 0.437, elevation gates 0.09, vistas 0.3/100 steps, decisions 58/100 steps.",
     "state": {
       "seed": 594690,
@@ -701,7 +701,7 @@
     }
   },
   {
-    "name": "okestanwold (evolved)",
+    "name": "56 okestanwold (evolved)",
     "description": "Evolved walking-sim elite: fun 0.561, elevation gates 0.00, vistas 0.0/100 steps, decisions 50/100 steps.",
     "state": {
       "seed": 12722,
@@ -750,7 +750,7 @@
         {
           "id": "n3",
           "type": "biomeBands",
-          "label": "biome ≥0",
+          "label": "biome \u22650",
           "comment": "",
           "folder": "",
           "enabled": true,
@@ -781,7 +781,7 @@
         {
           "id": "n4",
           "type": "biomeBands",
-          "label": "biome ≥0.5",
+          "label": "biome \u22650.5",
           "comment": "",
           "folder": "",
           "enabled": true,
@@ -812,7 +812,7 @@
         {
           "id": "n5",
           "type": "biomeBands",
-          "label": "biome ≥0.72",
+          "label": "biome \u22650.72",
           "comment": "",
           "folder": "",
           "enabled": true,
@@ -877,7 +877,7 @@
           "display": {
             "mode": "markers",
             "tileId": -1,
-            "glyph": "▲",
+            "glyph": "\u25b2",
             "color": "#e0b040"
           }
         },
@@ -946,7 +946,7 @@
     }
   },
   {
-    "name": "ashburholt (evolved)",
+    "name": "56 ashburholt (evolved)",
     "description": "Evolved walking-sim elite: fun 0.569, elevation gates 0.05, vistas 0.0/100 steps, decisions 40/100 steps.",
     "state": {
       "seed": 755193,
@@ -1033,7 +1033,7 @@
         {
           "id": "n5",
           "type": "biomeBands",
-          "label": "biome ≥0",
+          "label": "biome \u22650",
           "comment": "",
           "folder": "",
           "enabled": true,
@@ -1064,7 +1064,7 @@
         {
           "id": "n6",
           "type": "biomeBands",
-          "label": "biome ≥0.5",
+          "label": "biome \u22650.5",
           "comment": "",
           "folder": "",
           "enabled": true,
@@ -1095,7 +1095,7 @@
         {
           "id": "n7",
           "type": "biomeBands",
-          "label": "biome ≥0.72",
+          "label": "biome \u22650.72",
           "comment": "",
           "folder": "",
           "enabled": true,
@@ -1181,7 +1181,7 @@
           "display": {
             "mode": "markers",
             "tileId": -1,
-            "glyph": "◆",
+            "glyph": "\u25c6",
             "color": "#3fbf9f"
           }
         }
@@ -1189,7 +1189,7 @@
     }
   },
   {
-    "name": "elwentor (evolved)",
+    "name": "72 elwentor (evolved)",
     "description": "Evolved walking-sim elite: fun 0.723, elevation gates 0.00, vistas 1.4/100 steps, decisions 28/100 steps.",
     "state": {
       "seed": 795843,
@@ -1377,7 +1377,7 @@
           "display": {
             "mode": "markers",
             "tileId": 169,
-            "glyph": "◆",
+            "glyph": "\u25c6",
             "color": "#3fbf9f"
           }
         },
@@ -1513,7 +1513,7 @@
     }
   },
   {
-    "name": "ashthornmere (evolved)",
+    "name": "70 ashthornmere (evolved)",
     "description": "Evolved walking-sim elite: fun 0.702, elevation gates 0.00, vistas 2.4/100 steps, decisions 59/100 steps.",
     "state": {
       "seed": 352412,
@@ -1845,7 +1845,7 @@
           "display": {
             "mode": "markers",
             "tileId": 191,
-            "glyph": "▲",
+            "glyph": "\u25b2",
             "color": "#d268d2"
           }
         }
@@ -1853,7 +1853,7 @@
     }
   },
   {
-    "name": "calderfen (evolved)",
+    "name": "58 calderfen (evolved)",
     "description": "Evolved walking-sim elite: fun 0.586, elevation gates 0.05, vistas 0.0/100 steps, decisions 67/100 steps.",
     "state": {
       "seed": 958326,
@@ -1940,7 +1940,7 @@
         {
           "id": "n5",
           "type": "biomeBands",
-          "label": "biome ≥0",
+          "label": "biome \u22650",
           "comment": "",
           "folder": "",
           "enabled": true,
@@ -1971,7 +1971,7 @@
         {
           "id": "n6",
           "type": "biomeBands",
-          "label": "biome ≥0.5",
+          "label": "biome \u22650.5",
           "comment": "",
           "folder": "",
           "enabled": true,
@@ -2002,7 +2002,7 @@
         {
           "id": "n7",
           "type": "biomeBands",
-          "label": "biome ≥0.72",
+          "label": "biome \u22650.72",
           "comment": "",
           "folder": "",
           "enabled": true,
@@ -2067,7 +2067,7 @@
           "display": {
             "mode": "markers",
             "tileId": -1,
-            "glyph": "⚑",
+            "glyph": "\u2691",
             "color": "#ff8c42"
           }
         },
@@ -2089,7 +2089,7 @@
           "display": {
             "mode": "markers",
             "tileId": -1,
-            "glyph": "♦",
+            "glyph": "\u2666",
             "color": "#2d6a34"
           }
         }
@@ -2097,7 +2097,7 @@
     }
   },
   {
-    "name": "calwengarth (evolved)",
+    "name": "58 calwengarth (evolved)",
     "description": "Evolved walking-sim elite: fun 0.587, elevation gates 0.03, vistas 0.1/100 steps, decisions 49/100 steps.",
     "state": {
       "seed": 970664,
@@ -2331,7 +2331,7 @@
           "display": {
             "mode": "markers",
             "tileId": -1,
-            "glyph": "✶",
+            "glyph": "\u2736",
             "color": "#2d6a34"
           }
         },
@@ -2359,7 +2359,7 @@
     }
   },
   {
-    "name": "ashstangarth (evolved)",
+    "name": "73 ashstangarth (evolved)",
     "description": "Evolved walking-sim elite: fun 0.738, elevation gates 0.00, vistas 1.6/100 steps, decisions 59/100 steps.",
     "state": {
       "seed": 689838,
@@ -2523,7 +2523,7 @@
           "display": {
             "mode": "markers",
             "tileId": 235,
-            "glyph": "☗",
+            "glyph": "\u2617",
             "color": "#ff4444"
           }
         },
@@ -2545,7 +2545,7 @@
           "display": {
             "mode": "markers",
             "tileId": 244,
-            "glyph": "▲",
+            "glyph": "\u25b2",
             "color": "#c2c2c2"
           }
         },
@@ -2567,7 +2567,7 @@
           "display": {
             "mode": "markers",
             "tileId": 244,
-            "glyph": "▲",
+            "glyph": "\u25b2",
             "color": "#c2c2c2"
           }
         }
@@ -2575,7 +2575,7 @@
     }
   },
   {
-    "name": "ramburtor (evolved)",
+    "name": "65 ramburtor (evolved)",
     "description": "Evolved walking-sim elite: fun 0.652, elevation gates 0.00, vistas 0.5/100 steps, decisions 56/100 steps.",
     "state": {
       "seed": 212515,
@@ -2659,7 +2659,7 @@
         {
           "id": "n5",
           "type": "biomeBands",
-          "label": "biome ≥0",
+          "label": "biome \u22650",
           "comment": "",
           "folder": "",
           "enabled": true,
@@ -2690,7 +2690,7 @@
         {
           "id": "n6",
           "type": "biomeBands",
-          "label": "biome ≥0.5",
+          "label": "biome \u22650.5",
           "comment": "",
           "folder": "",
           "enabled": true,
@@ -2721,7 +2721,7 @@
         {
           "id": "n7",
           "type": "biomeBands",
-          "label": "biome ≥0.72",
+          "label": "biome \u22650.72",
           "comment": "",
           "folder": "",
           "enabled": true,
@@ -2791,7 +2791,7 @@
           "display": {
             "mode": "markers",
             "tileId": 256,
-            "glyph": "♣",
+            "glyph": "\u2663",
             "color": "#e0b040"
           }
         },
@@ -2813,7 +2813,7 @@
           "display": {
             "mode": "markers",
             "tileId": -1,
-            "glyph": "☗",
+            "glyph": "\u2617",
             "color": "#7a5cff"
           }
         },
@@ -2840,7 +2840,7 @@
     }
   },
   {
-    "name": "okederby (evolved)",
+    "name": "58 okederby (evolved)",
     "description": "Evolved walking-sim elite: fun 0.583, elevation gates 0.02, vistas 0.0/100 steps, decisions 21/100 steps.",
     "state": {
       "seed": 227574,
@@ -2927,7 +2927,7 @@
         {
           "id": "n5",
           "type": "biomeBands",
-          "label": "biome ≥0",
+          "label": "biome \u22650",
           "comment": "",
           "folder": "",
           "enabled": true,
@@ -2958,7 +2958,7 @@
         {
           "id": "n6",
           "type": "biomeBands",
-          "label": "biome ≥0.5",
+          "label": "biome \u22650.5",
           "comment": "",
           "folder": "",
           "enabled": true,
@@ -2989,7 +2989,7 @@
         {
           "id": "n7",
           "type": "biomeBands",
-          "label": "biome ≥0.72",
+          "label": "biome \u22650.72",
           "comment": "",
           "folder": "",
           "enabled": true,
@@ -3075,7 +3075,7 @@
           "display": {
             "mode": "markers",
             "tileId": 291,
-            "glyph": "⚑",
+            "glyph": "\u2691",
             "color": "#3fbf9f"
           }
         },
@@ -3184,7 +3184,7 @@
     }
   },
   {
-    "name": "halstanness (evolved)",
+    "name": "61 halstanness (evolved)",
     "description": "Evolved walking-sim elite: fun 0.618, elevation gates 0.04, vistas 1.9/100 steps, decisions 6/100 steps.",
     "state": {
       "seed": 582557,
@@ -3400,7 +3400,7 @@
           "display": {
             "mode": "markers",
             "tileId": 299,
-            "glyph": "♣",
+            "glyph": "\u2663",
             "color": "#3fbf9f"
           }
         },
@@ -3422,7 +3422,7 @@
           "display": {
             "mode": "markers",
             "tileId": -1,
-            "glyph": "☗",
+            "glyph": "\u2617",
             "color": "#3fbf9f"
           }
         },
@@ -3548,7 +3548,7 @@
     }
   },
   {
-    "name": "tarnwengarth (evolved)",
+    "name": "75 tarnwengarth (evolved)",
     "description": "Evolved walking-sim elite: fun 0.753, elevation gates 0.03, vistas 2.6/100 steps, decisions 57/100 steps.",
     "state": {
       "seed": 85507,
@@ -3782,7 +3782,7 @@
           "display": {
             "mode": "markers",
             "tileId": -1,
-            "glyph": "✶",
+            "glyph": "\u2736",
             "color": "#e0b040"
           }
         },
@@ -3823,7 +3823,7 @@
           "display": {
             "mode": "markers",
             "tileId": -1,
-            "glyph": "☗",
+            "glyph": "\u2617",
             "color": "#d268d2"
           }
         },
@@ -3897,7 +3897,7 @@
           "display": {
             "mode": "markers",
             "tileId": 324,
-            "glyph": "▲",
+            "glyph": "\u25b2",
             "color": "#7a5cff"
           }
         },
@@ -3936,7 +3936,7 @@
           "display": {
             "mode": "markers",
             "tileId": -1,
-            "glyph": "◆",
+            "glyph": "\u25c6",
             "color": "#7a5cff"
           }
         },
@@ -4023,7 +4023,7 @@
           "display": {
             "mode": "markers",
             "tileId": 342,
-            "glyph": "⚑",
+            "glyph": "\u2691",
             "color": "#c2c2c2"
           }
         },
@@ -4054,7 +4054,7 @@
     }
   },
   {
-    "name": "tarnlingwold (evolved)",
+    "name": "64 tarnlingwold (evolved)",
     "description": "Evolved walking-sim elite: fun 0.649, elevation gates 0.00, vistas 2.3/100 steps, decisions 0/100 steps.",
     "state": {
       "seed": 432692,
@@ -4207,7 +4207,7 @@
           "display": {
             "mode": "markers",
             "tileId": 356,
-            "glyph": "♦",
+            "glyph": "\u2666",
             "color": "#3fbf9f"
           }
         },
@@ -4343,7 +4343,7 @@
     }
   },
   {
-    "name": "haldalegarth (evolved)",
+    "name": "63 haldalegarth (evolved)",
     "description": "Evolved walking-sim elite: fun 0.632, elevation gates 0.00, vistas 1.9/100 steps, decisions 2/100 steps.",
     "state": {
       "seed": 114764,
@@ -4496,7 +4496,7 @@
           "display": {
             "mode": "markers",
             "tileId": 381,
-            "glyph": "♦",
+            "glyph": "\u2666",
             "color": "#3fbf9f"
           }
         },
@@ -4632,7 +4632,7 @@
     }
   },
   {
-    "name": "tarnholmfen (evolved)",
+    "name": "64 tarnholmfen (evolved)",
     "description": "Evolved walking-sim elite: fun 0.647, elevation gates 0.09, vistas 0.6/100 steps, decisions 46/100 steps.",
     "state": {
       "seed": 8140,
@@ -4809,7 +4809,7 @@
           "display": {
             "mode": "markers",
             "tileId": 413,
-            "glyph": "♣",
+            "glyph": "\u2663",
             "color": "#c2c2c2"
           }
         },
@@ -4836,7 +4836,7 @@
     }
   },
   {
-    "name": "morstanby (evolved)",
+    "name": "62 morstanby (evolved)",
     "description": "Evolved walking-sim elite: fun 0.620, elevation gates 0.00, vistas 1.5/100 steps, decisions 16/100 steps.",
     "state": {
       "seed": 219469,
@@ -4988,7 +4988,7 @@
           "display": {
             "mode": "markers",
             "tileId": 437,
-            "glyph": "⚑",
+            "glyph": "\u2691",
             "color": "#3fbf9f"
           }
         },
@@ -5138,7 +5138,7 @@
           "display": {
             "mode": "markers",
             "tileId": -1,
-            "glyph": "☗",
+            "glyph": "\u2617",
             "color": "#ff8c42"
           }
         }

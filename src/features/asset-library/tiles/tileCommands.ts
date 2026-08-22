@@ -1,3 +1,4 @@
+import type { TileId } from '@/features/asset-library/asset';
 import { clampLightRadius, MAX_LIGHT_RADIUS } from '@/features/game/light/lightEmission';
 import { isCubeFaceArt } from '@/features/asset-library/tiles/tileFaceArt';
 import type { EditableTileFields } from '@/features/asset-library/tiles/tileAssets';
@@ -8,8 +9,9 @@ import {
   type CommandContext,
   type CommandResult,
   type CommandSpec,
+  type CommandParams,
 } from '@/features/app-shell/runtime/commands/command';
-import { listOf, readInt, readNumber, readText } from '@/features/app-shell/runtime/commands/commandParams';
+import { listOf, readAssetId, readInt, readNumber, readText } from '@/features/app-shell/runtime/commands/commandParams';
 import { createCommandCollection } from '@/features/app-shell/runtime/commands/commandCollection';
 
 const { define: registerCommand, commands: tileCommands } = createCommandCollection();
@@ -110,7 +112,7 @@ registerTileCommand({
   apply: (context, params) => setTileShape(context, params),
 });
 
-function setTileShape(context: CommandContext, params: Record<string, unknown>): CommandResult {
+function setTileShape(context: CommandContext, params: CommandParams): CommandResult {
   return withTile(context, params, (tileId) => {
     const read = readInt(params, 'shape');
     if (!read.ok) return read.failure;
@@ -123,10 +125,10 @@ function setTileShape(context: CommandContext, params: Record<string, unknown>):
 
 function withTile(
   context: CommandContext,
-  params: Record<string, unknown>,
-  use: (tileId: number) => CommandResult,
+  params: CommandParams,
+  use: (tileId: TileId) => CommandResult,
 ): CommandResult {
-  const read = readInt(params, 'tile_id');
+  const read = readAssetId<'tiles'>(params, 'tile_id');
   if (!read.ok) return read.failure;
   if (!context.tileAssets.byId(read.value)) {
     return commandFailed(
@@ -137,7 +139,7 @@ function withTile(
   return use(read.value);
 }
 
-function updateTile(context: CommandContext, params: Record<string, unknown>): CommandResult {
+function updateTile(context: CommandContext, params: CommandParams): CommandResult {
   return withTile(context, params, (tileId) => {
     const patch = tilePatchFrom(params);
     if (!patch.ok) return patch.failure;
@@ -148,7 +150,7 @@ function updateTile(context: CommandContext, params: Record<string, unknown>): C
 
 type TilePatch = { ok: true; value: EditableTileFields } | { ok: false; failure: CommandResult };
 
-function tilePatchFrom(params: Record<string, unknown>): TilePatch {
+function tilePatchFrom(params: CommandParams): TilePatch {
   const patch: EditableTileFields = {};
   const name = readText(params, 'name');
   if (name.ok) patch.name = name.value;
@@ -170,7 +172,7 @@ function tilePatchFrom(params: Record<string, unknown>): TilePatch {
   return { ok: true, value: patch };
 }
 
-function symbolFrom(params: Record<string, unknown>): string | null {
+function symbolFrom(params: CommandParams): string | null {
   const symbol = readText(params, 'symbol');
   return symbol.ok ? [...symbol.value][0]! : null;
 }
@@ -179,7 +181,7 @@ type ArtRead =
   | { ok: true; value: EditableTileFields['faceArt'] | undefined }
   | { ok: false; failure: CommandResult };
 
-export function faceArtFrom(params: Record<string, unknown>): ArtRead {
+export function faceArtFrom(params: CommandParams): ArtRead {
   const raw = params.face_art;
   if (raw === undefined) return { ok: true, value: undefined };
   if (raw === null) return { ok: true, value: null };

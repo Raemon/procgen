@@ -23,6 +23,10 @@ import { runScript, scriptRunText } from './scriptRunner';
 import type { WorldAccess } from './serverWorld';
 import { appendTranscript, sessionPose, type AgentSession, type AutopilotRun } from './sessions';
 
+export type ToolInput = Record<string, unknown>;
+
+export type MessageBlock = Record<string, unknown>;
+
 const MAX_RESPONSE_TOKENS = 16000;
 const HISTORY_MESSAGE_CAP = 40;
 const RUNAWAY_TURN_CAP = 500;
@@ -242,15 +246,15 @@ function toolResultBlock(turn: Turn, toolUse: ContentBlock): object {
 }
 
 function toolOutcome(turn: Turn, toolUse: ContentBlock): ToolOutcome {
-  const input = (toolUse.input ?? {}) as Record<string, unknown>;
+  const input = (toolUse.input ?? {}) as ToolInput;
   const name = toolUse.name ?? '';
   if (isMetaTool(turn.session.mode, name)) return metaToolOutcome(turn, name, input);
   return worldActionOutcome(turn, name, input);
 }
 
-function worldActionOutcome(turn: Turn, action: string, input: Record<string, unknown>): ToolOutcome {
+function worldActionOutcome(turn: Turn, action: string, input: ToolInput): ToolOutcome {
   const world = turn.access.current();
-  const result = performVerb(turn.session, world, action, input);
+  const result = performVerb(turn.session, world, action, input, turn.access.lab);
   if (result.changedPipeline) turn.access.persistWorld(world);
   turn.run.steps += 1;
   const note = result.summary ?? result.failure?.hint ?? '';
@@ -269,7 +273,7 @@ function worldActionOutcome(turn: Turn, action: string, input: Record<string, un
   };
 }
 
-function metaToolOutcome(turn: Turn, name: string, input: Record<string, unknown>): ToolOutcome {
+function metaToolOutcome(turn: Turn, name: string, input: ToolInput): ToolOutcome {
   if (name === META_TOOLS.inspectPipeline) {
     return readOnlyOutcome(JSON.stringify(pipelineJson(turn.access.current().store), null, 1), 'pipeline inspected');
   }
@@ -279,7 +283,7 @@ function metaToolOutcome(turn: Turn, name: string, input: Record<string, unknown
   return notebookOutcome(turn, name, input);
 }
 
-function notebookOutcome(turn: Turn, name: string, input: Record<string, unknown>): ToolOutcome {
+function notebookOutcome(turn: Turn, name: string, input: ToolInput): ToolOutcome {
   const { notebook, mode } = turn.session;
   if (name === META_TOOLS.remember) {
     return notebookEcho(turn, remember(notebook, String(input.note ?? '')));
@@ -308,7 +312,7 @@ function runScriptOutcome(turn: Turn, name: string): ToolOutcome {
   const script = scriptNamed(turn.session.notebook, name);
   if (!script) return failedOutcome(`no script called '${name}'`);
   const world = turn.access.current();
-  const scriptRun = runScript(turn.session, world, script);
+  const scriptRun = runScript(turn.session, world, script, turn.access.lab);
   if (scriptRun.changedPipeline) turn.access.persistWorld(world);
   turn.run.steps += scriptRun.actionsRun;
   const text = scriptRunText(scriptRun);
@@ -360,6 +364,6 @@ function moveCacheBreakpointToNewestTurn(messages: AnthropicMessage[]): void {
   if (last) last.cache_control = { type: 'ephemeral' };
 }
 
-function blocksOf(message: AnthropicMessage | undefined): Record<string, unknown>[] {
-  return Array.isArray(message?.content) ? (message.content as Record<string, unknown>[]) : [];
+function blocksOf(message: AnthropicMessage | undefined): MessageBlock[] {
+  return Array.isArray(message?.content) ? (message.content as MessageBlock[]) : [];
 }

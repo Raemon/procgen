@@ -1,3 +1,4 @@
+import { assetId } from '@/features/asset-library/asset';
 import '../nodes';
 import { readFileSync } from 'node:fs';
 import { newCultureWithId } from '@/features/asset-library/cultures/cultureDef';
@@ -74,10 +75,10 @@ function shippedDataFiles(): LibraryDocs {
 }
 
 function shippedFixture(): LibraryDocs {
-  const stone = { ...newTileWithId(0), name: 'shipped stone' };
-  const moss = { ...newTileWithId(1), name: 'shipped moss' };
-  const arch = { ...newPieceWithId(0), voxels: newPieceWithId(0).voxels.map((_, at) => (at === 0 ? 1 : -1)) };
-  const culture = { ...newCultureWithId(0), roleBindings: { door: [0] }, wallTileId: 1 };
+  const stone = { ...newTileWithId(assetId<'tiles'>(0)), name: 'shipped stone' };
+  const moss = { ...newTileWithId(assetId<'tiles'>(1)), name: 'shipped moss' };
+  const arch = { ...newPieceWithId(assetId<'pieces'>(0)), voxels: newPieceWithId(assetId<'pieces'>(0)).voxels.map((_, at) => assetId<'tiles'>(at === 0 ? 1 : -1)) };
+  const culture = { ...newCultureWithId(assetId<'cultures'>(0)), roleBindings: { door: [assetId<'pieces'>(0)] }, wallTileId: assetId<'tiles'>(1) };
   const state: PipelineState = {
     seed: 7,
     daylight: 1,
@@ -112,9 +113,9 @@ function emptyLibrary(): LibraryDocs {
 
 function crowdedLibrary(): LibraryDocs {
   return {
-    tiles: [{ ...newTileWithId(0), name: 'stranger tile' }],
-    pieces: [newPieceWithId(0)],
-    cultures: [newCultureWithId(0)],
+    tiles: [{ ...newTileWithId(assetId<'tiles'>(0)), name: 'stranger tile' }],
+    pieces: [newPieceWithId(assetId<'pieces'>(0))],
+    cultures: [newCultureWithId(assetId<'cultures'>(0))],
     worldPresets: [],
   };
 }
@@ -134,7 +135,7 @@ function danglingRefsOf(library: LibraryDocs): number {
       for (const [name, spec] of Object.entries(nodeTypeOf(node.type)?.params ?? {})) {
         if (spec.kind !== 'tile') continue;
         const value = node.params[name];
-        if (typeof value === 'number' && value >= 0 && !tileIds.has(value)) dangling += 1;
+        if (typeof value === 'number' && value >= 0 && !tileIds.has(assetId<'tiles'>(value))) dangling += 1;
       }
       const display = node.display;
       if (display.mode === 'markers' && display.tileId >= 0 && !tileIds.has(display.tileId)) dangling += 1;

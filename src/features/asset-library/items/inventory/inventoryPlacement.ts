@@ -1,3 +1,4 @@
+import type { Cell } from '@/features/asset-library/worlds/values/cell';
 import type { ItemDef } from '../itemDef';
 import type { ItemSource } from '../itemAssets';
 import {
@@ -16,7 +17,7 @@ export const REFUSAL_HINTS: Readonly<Record<PlacementRefusal, string>> = {
   slot_taken: 'another item already covers one of those cells',
 };
 
-export function footprintCells(item: ItemDef, x: number, y: number): { x: number; y: number }[] {
+export function footprintCells(item: ItemDef, x: number, y: number): Cell[] {
   const cells: { x: number; y: number }[] = [];
   for (let row = 0; row < item.gridHeight; row++) {
     for (let column = 0; column < item.gridWidth; column++) {
