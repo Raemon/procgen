@@ -18,6 +18,7 @@ import { shotRenderer, type ShotSize } from './shotRenderer';
 const GOD_CAMERA_DISTANCE_TILES = 40;
 const LONGEST_SHOT_MS = 12_000;
 const SETTLED_FRAMES = 3;
+const CONTEXT_LOST = 'the WebGL context was lost while shooting; re-shoot to try again';
 
 interface WorldShotStage {
   world: GenomeWorld;
@@ -36,6 +37,7 @@ export async function shootGenomeWorld(genome: WorldGenome, size: ShotSize): Pro
   const stage = stagedGenomeWorld(genome, size);
   try {
     await paintUntilSettled(stage, renderer);
+    if (renderer.getContext().isContextLost()) throw new Error(CONTEXT_LOST);
     return renderer.domElement.toDataURL('image/png');
   } finally {
     dismantle(stage);

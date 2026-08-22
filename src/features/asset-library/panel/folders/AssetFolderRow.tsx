@@ -1,4 +1,4 @@
-import { useState, type DragEvent, type ReactNode } from 'react';
+import { useRef, useState, type DragEvent, type ReactNode } from 'react';
 import { ConfirmModal } from '@/features/app-shell/controls/ConfirmModal';
 import { IconButton } from '@/features/app-shell/controls/IconButton';
 import { classes } from '@/features/app-shell/controls/classes';
@@ -170,9 +170,14 @@ function AssetFolderNameInput({
 }) {
   const { perform } = useAppRuntime();
   const [draft, setDraft] = useState(folder.name);
-  function commit(): void {
+  const settled = useRef(false);
+  function settle(abandoned: boolean): void {
+    if (settled.current) return;
+    settled.current = true;
     const name = draft.trim();
-    if (name && name !== folder.name) perform('rename_asset_folder', { folder_id: folder.id, name });
+    if (!abandoned && name && name !== folder.name) {
+      perform('rename_asset_folder', { folder_id: folder.id, name });
+    }
     onDone();
   }
   return (
@@ -183,10 +188,11 @@ function AssetFolderNameInput({
       value={draft}
       aria-label={`rename ${folder.name}`}
       onChange={(event) => setDraft(event.target.value)}
-      onBlur={commit}
+      onBlur={() => settle(false)}
       onKeyDown={(event) => {
-        if (event.key === 'Enter') commit();
-        if (event.key === 'Escape') onDone();
+        event.stopPropagation();
+        if (event.key === 'Enter') settle(false);
+        if (event.key === 'Escape') settle(true);
       }}
       {...tooltipHandlers(ASSET_FOLDER_NAME_TIP)}
     />

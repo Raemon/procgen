@@ -6,14 +6,20 @@ import type { LibraryEntry } from './entries/libraryEntry';
 
 export function LibraryRowName({ entry, className }: { entry: LibraryEntry; className?: string }) {
   const [editing, setEditing] = useState(false);
-  const abandoned = useRef(false);
+  const settled = useRef(false);
   const rename = entry.rename;
 
-  function finish(typed: string): void {
+  function finish(typed: string, abandoned: boolean): void {
+    if (settled.current) return;
+    settled.current = true;
     setEditing(false);
     const named = typed.trim();
-    if (abandoned.current) return void (abandoned.current = false);
-    if (rename && named !== '' && named !== entry.name) rename(named);
+    if (!abandoned && rename && named !== '' && named !== entry.name) rename(named);
+  }
+
+  function startEditing(): void {
+    settled.current = false;
+    setEditing(true);
   }
 
   if (editing && rename) {
@@ -29,12 +35,11 @@ export function LibraryRowName({ entry, className }: { entry: LibraryEntry; clas
         defaultValue={entry.name}
         onFocus={(event) => event.currentTarget.select()}
         onClick={(event) => event.stopPropagation()}
-        onBlur={(event) => finish(event.currentTarget.value)}
+        onBlur={(event) => finish(event.currentTarget.value, false)}
         onKeyDown={(event) => {
           event.stopPropagation();
-          if (event.key !== 'Enter' && event.key !== 'Escape') return;
-          abandoned.current = event.key === 'Escape';
-          event.currentTarget.blur();
+          if (event.key === 'Enter') finish(event.currentTarget.value, false);
+          if (event.key === 'Escape') finish(event.currentTarget.value, true);
         }}
       />
     );
@@ -50,7 +55,7 @@ export function LibraryRowName({ entry, className }: { entry: LibraryEntry; clas
         rename &&
         ((event) => {
           event.stopPropagation();
-          setEditing(true);
+          startEditing();
         })
       }
       {...tooltipHandlers(rename ? renameRowTip(entry.name) : undefined)}
