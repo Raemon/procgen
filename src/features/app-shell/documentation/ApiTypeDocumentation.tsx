@@ -1,8 +1,9 @@
-import { ApiTypeRow } from './ApiTypeRow';
-import { buildApiTypeCatalog } from './apiTypeCatalog';
+import { ApiTypeSections } from './ApiTypeSections';
+import { buildApiTypeSections } from './apiTypeSectionCatalog';
 
 export function ApiTypeDocumentation() {
-  const entries = buildApiTypeCatalog();
+  const sections = buildApiTypeSections();
+  const entries = sections.flatMap((section) => section.entries);
   const reached = entries.filter((entry) => entry.reachedByApi).length;
 
   return (
@@ -11,13 +12,13 @@ export function ApiTypeDocumentation() {
         <p className="mb-1 text-[10px] uppercase tracking-[0.18em] text-ink-dim">Declared in the working tree</p>
         <h2 id="types-heading" className="text-xl text-accent">Vocabulary</h2>
         <p className="mt-1 text-xs leading-5 text-ink-dim">
-          Every type this codebase invents, ordered by when the server boundary first needs it.
+          Every type this codebase invents: first what mutations hand back, then each owning feature in the order the server boundary needs it.
         </p>
         <p className="mt-2 font-mono text-[11px] text-ink-dim">
-          {reached} on the API path · {entries.length} total
+          {reached} on the API path · {entries.length} total · {sections.length} sections
         </p>
       </div>
-      <div className="max-h-[70vh] w-fit max-w-full overflow-auto rounded border border-panel-edge bg-panel">
+      <div className="w-fit max-w-full overflow-x-auto rounded border border-panel-edge bg-panel">
         <table className="table-auto border-collapse">
           <caption className="sr-only">Types and interfaces declared in this codebase</caption>
           <thead className="sr-only">
@@ -27,9 +28,7 @@ export function ApiTypeDocumentation() {
             </tr>
           </thead>
           <tbody>
-            {entries.map((entry) => (
-              <ApiTypeRow key={`${entry.file}:${entry.line}:${entry.name}`} entry={entry} />
-            ))}
+            <ApiTypeSections sections={sections} />
           </tbody>
         </table>
       </div>

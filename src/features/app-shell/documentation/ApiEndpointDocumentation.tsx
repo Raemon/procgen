@@ -1,12 +1,11 @@
 import { buildApiEndpointCatalog } from './apiEndpointCatalog';
-import { apiMethodColumns, displayApiPath, groupApiEndpoints, type ApiEndpointGroup } from './apiEndpointGroups';
-import { ApiPathOperations } from './ApiPathOperations';
+import { apiMethodColumns, groupApiEndpoints } from './apiEndpointGroups';
+import { ApiEndpointTree } from './ApiEndpointTree';
 
 export function ApiEndpointDocumentation() {
   const endpoints = buildApiEndpointCatalog();
   const groups = groupApiEndpoints(endpoints);
   const methods = apiMethodColumns(endpoints);
-  const rows = flattenGroups(groups);
   const httpCount = endpoints.filter((endpoint) => endpoint.transport === 'http').length;
   const socketCount = endpoints.length - httpCount;
 
@@ -22,7 +21,7 @@ export function ApiEndpointDocumentation() {
           {httpCount} HTTP{socketCount > 0 ? ` · ${socketCount} WebSocket` : ''}
         </p>
       </div>
-      <div className="max-h-[70vh] w-fit max-w-full overflow-auto rounded border border-panel-edge bg-panel">
+      <div className="w-fit max-w-full overflow-x-auto rounded border border-panel-edge bg-panel">
         <table className="table-auto border-collapse">
           <caption className="sr-only">API endpoints grouped by URL layer</caption>
           <colgroup>
@@ -36,46 +35,10 @@ export function ApiEndpointDocumentation() {
             </tr>
           </thead>
           <tbody>
-            {rows.map(({ group, depth }) => group.endpoints.length > 0 ? (
-              <ApiPathOperations key={group.path} path={group.path} endpoints={group.endpoints} methods={methods} depth={depth} />
-            ) : (
-              <PathLayerRow key={group.path} group={group} methods={methods} depth={depth} />
-            ))}
+            <ApiEndpointTree groups={groups} methods={methods} />
           </tbody>
         </table>
       </div>
     </section>
   );
-}
-
-function PathLayerRow({
-  group,
-  methods,
-  depth,
-}: {
-  group: ApiEndpointGroup;
-  methods: string[];
-  depth: number;
-}) {
-  return (
-    <tr className="border-b border-panel-edge/70 bg-bg/20 text-ink-dim last:border-b-0">
-      <th scope="row" className="h-7 whitespace-nowrap py-0 pl-2 pr-2.5 text-left font-normal">
-        <div className="flex items-center gap-2" style={{ paddingLeft: `${depth * 12}px` }}>
-          <span className="text-[10px]" aria-hidden="true">{depth === 0 ? '/' : '↳'}</span>
-          <code className="text-[11px]">{displayApiPath(group.path)}</code>
-        </div>
-      </th>
-      {methods.map((method) => <td key={method} />)}
-    </tr>
-  );
-}
-
-function flattenGroups(
-  groups: ApiEndpointGroup[],
-  depth: number = 0,
-): Array<{ group: ApiEndpointGroup; depth: number }> {
-  return groups.flatMap((group) => [
-    { group, depth },
-    ...flattenGroups(group.children, depth + 1),
-  ]);
 }

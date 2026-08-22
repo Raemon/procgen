@@ -1,6 +1,6 @@
 'use client';
 
-import type { ApiInput, ApiOutput, ApiSignature } from './apiEndpointTypes';
+import type { ApiInput, ApiOutput, ApiOutputType, ApiSignature } from './apiEndpointTypes';
 
 export function apiSignatureIsEmpty(signature: ApiSignature): boolean {
   return signature.summary === '' && signature.inputs.length === 0 && signature.outputs.length === 0;
@@ -61,8 +61,15 @@ function OutputRow({ output }: { output: ApiOutput }) {
           ? `{ ${output.fields.map(fieldText).join(', ')} }`
           : output.type}
       </span>
+      {output.types.length > 0 ? (
+        <span className="ml-1.5 text-ink-dim">{output.types.map(outputTypeText).join(', ')}</span>
+      ) : null}
     </div>
   );
+}
+
+function outputTypeText(type: ApiOutputType): string {
+  return type.through === '' ? type.name : `${type.name} via ${type.through}`;
 }
 
 function fieldText(field: { name: string; type: string }): string {
