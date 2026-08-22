@@ -1,10 +1,16 @@
 import { CreatureAssets } from '@/features/asset-library/creatures/creatureAssets';
-import type { WorldViewDeps } from '@/features/game/render/worldViewDeps';
-import type { HeadlessWorld } from '../../headlessWorld';
+import type { TileAssets } from '@/features/asset-library/tiles/tileAssets';
+import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
+import type { WorldViewDeps } from '../worldViewDeps';
 
 const NO_ITEM_ASSETS = { all: () => [], byId: () => undefined, onChange: () => () => {} };
 
-export function tileLightsOnlyDeps(world: HeadlessWorld): WorldViewDeps {
+export interface TileLitWorld {
+  sampler: WorldSampler;
+  tileAssets: TileAssets;
+}
+
+export function tileLightsOnlyDeps(world: TileLitWorld): WorldViewDeps {
   return {
     sampler: world.sampler,
     tileAssets: world.tileAssets,

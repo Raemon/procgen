@@ -49,6 +49,13 @@ export function installCountOf(params: CommandParams): number {
   return clamped(params.count, LAB_LIMITS.install);
 }
 
+export function installNamesOf(params: CommandParams): string[] {
+  if (!Array.isArray(params.names)) return [];
+  return params.names
+    .filter((name): name is string => typeof name === 'string')
+    .slice(0, LAB_LIMITS.install.hi);
+}
+
 function clamped(raw: unknown, band: { lo: number; hi: number; fallback: number }): number {
   const value = whole(raw, band.fallback);
   return Math.min(band.hi, Math.max(band.lo, value));

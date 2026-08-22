@@ -10,6 +10,10 @@ export function runListJson(run: LabRun) {
     finished_at: run.finishedAt,
     settings: run.settings,
     progress: { done: run.done, total: run.total },
+    generations_done: run.generationsDone,
+    candidates_done: run.done,
+    elites: run.worlds.length,
+    coverage: latestCoverageOf(run),
     worlds_graded: run.worlds.length,
     worlds_with_nowhere_to_walk: run.unwalkable,
     best_fun: run.worlds[0]?.grade.fun ?? null,
@@ -25,6 +29,10 @@ export function runDetailJson(run: LabRun) {
     generations: run.trajectory,
     installed: run.installed,
   };
+}
+
+function latestCoverageOf(run: LabRun): number {
+  return run.trajectory[run.trajectory.length - 1]?.coverage ?? 0;
 }
 
 function worldJson(world: LabWorld, at: number) {

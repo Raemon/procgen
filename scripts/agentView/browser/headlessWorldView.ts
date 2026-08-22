@@ -9,10 +9,10 @@ import {
 import { streamingRadiusChunks } from '@/features/game/render/view3d/streamingRadius';
 import { WorldLights } from '@/features/game/render/view3d/worldLights';
 import { createCharacterFog, createWorldScene } from '@/features/game/render/view3d/worldScene';
+import type { FramedCamera } from '@/features/game/render/view3d/framedCamera';
+import { tileLightsOnlyDeps } from '@/features/game/render/view3d/tileLightsOnlyDeps';
 import type { HeadlessWorld } from '../../headlessWorld';
 import type { WorldViewRequest } from '../worldViewRequest';
-import type { FramedCamera } from './framedCamera';
-import { tileLightsOnlyDeps } from './tileLightsOnlyDeps';
 
 export class HeadlessWorldView {
   private readonly renderer: THREE.WebGLRenderer;
