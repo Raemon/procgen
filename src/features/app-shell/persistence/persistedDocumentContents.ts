@@ -1,4 +1,5 @@
 import type { PersistedDocumentName } from './persistedDocuments';
+import type { StoredAssetFolders } from '@/features/asset-library/folders/assetFolder';
 import type { CreatureDef } from '@/features/asset-library/creatures/creatureDef';
 import type { Culture } from '@/features/asset-library/cultures/cultureDef';
 import type { ItemDef } from '@/features/asset-library/items/itemDef';
@@ -27,6 +28,7 @@ export interface StoredDocumentContents {
   items: StoredArtOf<ItemDef>[];
   uiState: PersistedUiState;
   worldThumbnails: WorldThumbnailIndex;
+  assetFolders: StoredAssetFolders;
 }
 
 export interface ParsedDocumentContents {
@@ -40,6 +42,7 @@ export interface ParsedDocumentContents {
   items: ItemDef[];
   uiState: PersistedUiState;
   worldThumbnails: WorldThumbnailIndex;
+  assetFolders: StoredAssetFolders;
 }
 
 export type StoredDocument<Name extends PersistedDocumentName> = StoredDocumentContents[Name];

@@ -5,8 +5,8 @@ import { ADD_PIECE_TIP } from '@/features/asset-library/pieces/editor/help/piece
 import { usePieceEntries } from '../entries/usePieceEntries';
 import { FOLDER_TIPS } from '../../help/libraryTips';
 import { LibraryFolder } from '../LibraryFolder';
-import { LibraryRow } from '../LibraryRow';
 import { useLibrarySelection } from '../useLibrarySelection';
+import { AssetFolderSection } from './AssetFolderSection';
 
 export function PiecesFolder() {
   const { pieces, perform } = useAppRuntime();
@@ -19,12 +19,11 @@ export function PiecesFolder() {
 
   return (
     <LibraryFolder folder="pieces" tip={FOLDER_TIPS.pieces} count={entries.length}>
-      {entries.map((entry) => (
-        <LibraryRow key={entry.key} folder="pieces" entry={entry} />
-      ))}
-      <Button className="mt-1 w-full" tip={ADD_PIECE_TIP} onClick={() => perform('add_piece')}>
-        + add piece
-      </Button>
+      <AssetFolderSection section="pieces" entries={entries}>
+        <Button className="mt-1 w-full" tip={ADD_PIECE_TIP} onClick={() => perform('add_piece')}>
+          + add piece
+        </Button>
+      </AssetFolderSection>
     </LibraryFolder>
   );
 }

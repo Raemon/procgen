@@ -5,6 +5,7 @@ import { tooltipHandlers } from '@/features/app-shell/tooltips/tooltipHandlers';
 import type { LibraryEntry } from './entries/libraryEntry';
 import type { LibraryFolder } from '../librarySelection';
 import { selects } from '../librarySelection';
+import { startAssetDrag } from './folders/assetDragTransfer';
 import { LibraryRowActions } from './LibraryRowActions';
 import { LIBRARY_GRID_PREVIEW_PX, useLibraryViewMode } from './libraryViewMode';
 import { useLibrarySelection } from './useLibrarySelection';
@@ -16,6 +17,7 @@ export function LibraryRow({ folder, entry }: { folder: LibraryFolder; entry: Li
   if (viewMode === 'grid') {
     return (
       <LibraryGridTile
+        folder={folder}
         entry={entry}
         selected={selected}
         onSelect={() => toggle(folder, entry.key)}
@@ -24,6 +26,8 @@ export function LibraryRow({ folder, entry }: { folder: LibraryFolder; entry: Li
   }
   return (
     <div
+      draggable
+      onDragStart={(event) => startAssetDrag(event.dataTransfer, folder, entry.key)}
       className={classes(
         ROW_HOVER_GROUP,
         'mb-0.5 flex w-full items-center gap-1.5 rounded border px-1 py-1',
@@ -49,16 +53,20 @@ export function LibraryRow({ folder, entry }: { folder: LibraryFolder; entry: Li
 }
 
 function LibraryGridTile({
+  folder,
   entry,
   selected,
   onSelect,
 }: {
+  folder: LibraryFolder;
   entry: LibraryEntry;
   selected: boolean;
   onSelect: () => void;
 }) {
   return (
     <div
+      draggable
+      onDragStart={(event) => startAssetDrag(event.dataTransfer, folder, entry.key)}
       className={classes(
         ROW_HOVER_GROUP,
         'relative min-w-0 rounded border p-1',

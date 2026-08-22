@@ -53,6 +53,7 @@ import { sourceCatalogTests } from './sourceCatalog.test';
 import { sourceExplorerStateTests } from './sourceExplorerState.test';
 import { checkLibraryRowActions } from '@/features/asset-library/__tests__/libraryRowActions.test';
 import { checkLibraryViewMode } from '@/features/asset-library/__tests__/libraryViewMode.test';
+import { checkAssetFolders } from '@/features/asset-library/__tests__/assetFolders.test';
 import { checkDesignBetsStillHold } from './designBetsStillHold.test';
 import { checkEveryApiSurfaceIsDescribed } from '@/features/agents/__tests__/everyApiSurfaceIsDescribed.test';
 import { checkClaudeMdPointsAtThingsThatExist } from './claudeMdPointsAtThingsThatExist.test';
@@ -124,6 +125,7 @@ describe('the source explorer catalog', sourceCatalogTests);
 describe('the source explorer tree', sourceExplorerStateTests);
 describe('library row actions', () => checkLibraryRowActions(check));
 describe('library view mode', () => checkLibraryViewMode(check));
+describe('asset folders', () => checkAssetFolders(check));
 describe('documentation', () => {
   checkDocumentationHasNotRegrown(check);
   checkClaudeMdPointsAtThingsThatExist(check);

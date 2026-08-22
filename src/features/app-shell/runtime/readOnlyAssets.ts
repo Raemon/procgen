@@ -1,3 +1,4 @@
+import type { AssetFolders } from '@/features/asset-library/folders/assetFolders';
 import type { CreatureAssets } from '@/features/asset-library/creatures/creatureAssets';
 import type { ItemAssets } from '@/features/asset-library/items/itemAssets';
 import type { CultureAssets } from '@/features/asset-library/cultures/cultureAssets';
@@ -22,6 +23,10 @@ export type ReadOnlyPieceAssets = Pick<
 export type ReadOnlyCultureAssets = Pick<CultureAssets, 'all' | 'byId' | 'onChange'>;
 export type ReadOnlyCreatureAssets = Pick<CreatureAssets, 'all' | 'byId' | 'onChange'>;
 export type ReadOnlyItemAssets = Pick<ItemAssets, 'all' | 'byId' | 'onChange'>;
+export type ReadOnlyAssetFolders = Pick<
+  AssetFolders,
+  'all' | 'byId' | 'inSection' | 'childrenOf' | 'folderOf' | 'keysIn' | 'stored' | 'onChange'
+>;
 export type ReadOnlyTemplateLibrary = Pick<
   TemplateLibrary,
   'builtIn' | 'savedTemplates' | 'all' | 'byName' | 'onChange'

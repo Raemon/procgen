@@ -1,6 +1,7 @@
 import '@/features/asset-library/worlds/nodes';
 import { climbGateFrom, standableProbeFrom } from '@/features/game/climbing';
 import type { WorldLab } from '@/features/asset-library/worlds/lab/worldLab';
+import { AssetFolders } from '@/features/asset-library/folders/assetFolders';
 import { CreatureAssets } from '@/features/asset-library/creatures/creatureAssets';
 import { creaturesAsStoredJson } from '@/features/asset-library/creatures/creatureStorage';
 import { ItemAssets } from '@/features/asset-library/items/itemAssets';
@@ -51,6 +52,7 @@ export interface ServerWorld {
   creatures: CreatureAssets;
   items: ItemAssets;
   templates: TemplateLibrary;
+  assetFolders: AssetFolders;
   worldPresets: WorldPresetLibrary;
   runningWorld: RunningWorld;
   randomizeHistory: RandomizeHistory;
@@ -87,6 +89,7 @@ export function persistWorld(docs: DocSink, world: ServerWorld): void {
   docs.write('items', itemsAsStoredJson(world.items.all()));
   docs.write('templates', world.templates.savedTemplates());
   docs.write('worldPresets', world.worldPresets.stored());
+  docs.write('assetFolders', world.assetFolders.stored());
 }
 
 export function currentServerWorld(docs: DocSource, previous: ServerWorld | null): ServerWorld {
@@ -118,6 +121,7 @@ function buildServerWorld(
   const creatures = new CreatureAssets(collection('creatures'));
   const items = new ItemAssets(collection('items'));
   const templates = new TemplateLibrary(defaulted('templates'));
+  const assetFolders = new AssetFolders(defaulted('assetFolders'));
   const worldPresets = new WorldPresetLibrary(defaulted('worldPresets'));
   const runningWorld = new RunningWorld(runningWorldNameIn(defaulted('uiState')));
   const store = new PipelineStore(defaulted('pipeline'));
@@ -148,6 +152,7 @@ function buildServerWorld(
     creatures,
     items,
     templates,
+    assetFolders,
     worldPresets,
     runningWorld,
     randomizeHistory,

@@ -9,6 +9,7 @@ export const PERSISTED_DOCUMENT_NAMES = [
   'items',
   'uiState',
   'worldThumbnails',
+  'assetFolders',
 ] as const;
 
 export type PersistedDocumentName = (typeof PERSISTED_DOCUMENT_NAMES)[number];
@@ -19,6 +20,7 @@ export const DEFAULTED_DOCUMENT_NAMES = [
   'worldPresets',
   'uiState',
   'worldThumbnails',
+  'assetFolders',
 ] as const;
 
 export type DefaultedDocumentName = (typeof DEFAULTED_DOCUMENT_NAMES)[number];

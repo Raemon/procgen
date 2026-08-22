@@ -1,0 +1,32 @@
+{
+  "folders": [
+    {
+      "id": "round-1",
+      "name": "Round 1",
+      "section": "worlds",
+      "parentId": null
+    }
+  ],
+  "placements": {
+    "worlds": {
+      "61 morburmere (evolved)": "round-1",
+      "49 fenlingfen (evolved)": "round-1",
+      "43 gorholmholt (evolved)": "round-1",
+      "56 okestanwold (evolved)": "round-1",
+      "56 ashburholt (evolved)": "round-1",
+      "72 elwentor (evolved)": "round-1",
+      "70 ashthornmere (evolved)": "round-1",
+      "58 calderfen (evolved)": "round-1",
+      "58 calwengarth (evolved)": "round-1",
+      "73 ashstangarth (evolved)": "round-1",
+      "65 ramburtor (evolved)": "round-1",
+      "58 okederby (evolved)": "round-1",
+      "61 halstanness (evolved)": "round-1",
+      "75 tarnwengarth (evolved)": "round-1",
+      "64 tarnlingwold (evolved)": "round-1",
+      "63 haldalegarth (evolved)": "round-1",
+      "64 tarnholmfen (evolved)": "round-1",
+      "62 morstanby (evolved)": "round-1"
+    }
+  }
+}

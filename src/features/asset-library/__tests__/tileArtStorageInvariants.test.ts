@@ -102,6 +102,7 @@ function worldSavingOnlyTiles(): ServerWorld {
     items: nothing,
     templates: nothing,
     worldPresets: nothing,
+    assetFolders: nothing,
   } as unknown as ServerWorld;
 }
 

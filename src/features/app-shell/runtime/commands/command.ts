@@ -1,3 +1,4 @@
+import type { AssetFolders } from '@/features/asset-library/folders/assetFolders';
 import type { CreatureAssets } from '@/features/asset-library/creatures/creatureAssets';
 import type { ItemAssets } from '@/features/asset-library/items/itemAssets';
 import type { GroundItems } from '@/features/asset-library/items/pickups/groundItems';
@@ -34,6 +35,7 @@ export interface CommandContext {
   creatures: CreatureAssets;
   items: ItemAssets;
   templates: TemplateLibrary;
+  assetFolders: AssetFolders;
   worldPresets: WorldPresetLibrary;
   runningWorld: RunningWorld;
   randomizeHistory: RandomizeHistory;

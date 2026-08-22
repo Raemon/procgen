@@ -14,6 +14,8 @@ import {
   syncMissingPresets,
 } from '@/features/asset-library/worlds/presets/presetSync';
 import { sanitizeWorldPresets } from '@/features/asset-library/worlds/presets/worldPreset';
+import { assetFoldersFromStoredJson } from '@/features/asset-library/folders/assetFolder';
+import { syncMissingAssetFolders } from '@/features/asset-library/folders/folderSync';
 
 export const PERSISTED_DOC_NAMES = PERSISTED_DOCUMENT_NAMES;
 
@@ -76,7 +78,27 @@ async function loadDocs(store: Store): Promise<Map<string, unknown>> {
   }
   reportDocsTheDatabaseIsMissing(docs);
   installPresetsShippedInDataFiles(docs, store);
+  installAssetFoldersShippedInDataFiles(docs, store);
   return docs;
+}
+
+function installAssetFoldersShippedInDataFiles(docs: Map<string, unknown>, store: Store): void {
+  const shipped = assetFoldersFromStoredJson(dataFileJson('assetFolders'));
+  if (shipped.folders.length === 0) return;
+  if (!docs.has('assetFolders')) {
+    docs.set('assetFolders', shipped);
+    void saveDoc(store, 'assetFolders', shipped);
+    console.log(`[db] installed the ${shipped.folders.length} asset folders shipped in the repo data files`);
+    return;
+  }
+  const held = assetFoldersFromStoredJson(docs.get('assetFolders'));
+  const synced = syncMissingAssetFolders(held, shipped);
+  if (synced.addedFolders + synced.addedPlacements === 0) return;
+  docs.set('assetFolders', synced.stored);
+  void saveDoc(store, 'assetFolders', synced.stored);
+  console.log(
+    `[db] installed ${synced.addedFolders} asset folders and filed ${synced.addedPlacements} assets shipped in the repo data files`,
+  );
 }
 
 const LIBRARY_DOC_NAMES = ['tiles', 'pieces', 'cultures', 'worldPresets'] as const;

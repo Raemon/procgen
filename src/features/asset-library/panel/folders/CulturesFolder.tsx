@@ -4,8 +4,8 @@ import { ADD_CULTURE_TIP } from '@/features/asset-library/cultures/editor/help/c
 import { useCultureEntries } from '../entries/useCultureEntries';
 import { FOLDER_TIPS } from '../../help/libraryTips';
 import { LibraryFolder } from '../LibraryFolder';
-import { LibraryRow } from '../LibraryRow';
 import { useLibrarySelection } from '../useLibrarySelection';
+import { AssetFolderSection } from './AssetFolderSection';
 
 export function CulturesFolder() {
   const { cultures, perform } = useAppRuntime();
@@ -20,12 +20,11 @@ export function CulturesFolder() {
 
   return (
     <LibraryFolder folder="cultures" tip={FOLDER_TIPS.cultures} count={entries.length}>
-      {entries.map((entry) => (
-        <LibraryRow key={entry.key} folder="cultures" entry={entry} />
-      ))}
-      <Button className="mt-1 w-full" tip={ADD_CULTURE_TIP} onClick={addCultureAndSelectIt}>
-        + add culture
-      </Button>
+      <AssetFolderSection section="cultures" entries={entries}>
+        <Button className="mt-1 w-full" tip={ADD_CULTURE_TIP} onClick={addCultureAndSelectIt}>
+          + add culture
+        </Button>
+      </AssetFolderSection>
     </LibraryFolder>
   );
 }

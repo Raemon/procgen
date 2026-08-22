@@ -1,3 +1,4 @@
+import { assetFoldersFromStoredJson } from '@/features/asset-library/folders/assetFolder';
 import { creaturesFromStoredJson } from '@/features/asset-library/creatures/creatureStorage';
 import { culturesFromStoredJson } from '@/features/asset-library/cultures/cultureStorage';
 import { itemsFromStoredJson } from '@/features/asset-library/items/itemStorage';
@@ -32,6 +33,7 @@ const PARSERS: DocumentParsers = {
   items: itemsFromStoredJson,
   uiState: persistedUiStateFrom,
   worldThumbnails: worldThumbnailIndexFrom,
+  assetFolders: assetFoldersFromStoredJson,
 };
 
 export function parseStoredCollection<Name extends CollectionDocumentName>(

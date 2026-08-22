@@ -2,6 +2,7 @@ import { characterCommands } from './characters/characterCommands';
 import { inventoryCommands } from './characters/inventoryCommands';
 import { creatureCommands } from './creatures/creatureCommands';
 import { cultureCommands } from './cultures/cultureCommands';
+import { folderCommands } from './folders/folderCommands';
 import { itemCommands } from './items/itemCommands';
 import { pieceCommands } from './pieces/pieceCommands';
 import { tileCommands } from './tiles/tileCommands';
@@ -17,6 +18,7 @@ export const assetLibraryCommands = [
   ...inventoryCommands,
   ...pieceCommands,
   ...cultureCommands,
+  ...folderCommands,
   ...nodeCommands,
   ...worldCommands,
   ...labCommands,
