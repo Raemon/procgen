@@ -29,3 +29,18 @@ export function selects(
 ): boolean {
   return selection?.folder === folder && selection.key === key;
 }
+
+export interface OpenedLibraryRow {
+  selection: LibrarySelection | null;
+  detailIsOpen: boolean;
+}
+
+export function nextSelectionOnOpen(
+  selection: LibrarySelection | null,
+  folder: LibraryFolder,
+  key: string,
+): OpenedLibraryRow {
+  return selects(selection, folder, key)
+    ? { selection: NOTHING_SELECTED, detailIsOpen: false }
+    : { selection: { folder, key }, detailIsOpen: true };
+}

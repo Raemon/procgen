@@ -69,10 +69,18 @@ export interface ApiOutputField {
   type: string;
 }
 
+export interface ApiOutputType {
+  name: string;
+  file: string;
+  line: number;
+  through: string;
+}
+
 export interface ApiOutput {
   status: number;
   type: string;
   fields: ApiOutputField[];
+  types: ApiOutputType[];
 }
 
 export interface ApiSignature {

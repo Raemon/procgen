@@ -2,21 +2,39 @@ import { CultureAssets } from '@/features/asset-library/cultures/cultureAssets';
 import { PieceAssets } from '@/features/asset-library/pieces/pieceAssets';
 import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
-import { installRunWorlds, startGradeRun, startRollRun, startTrainRun } from '../lab/labOperations';
+import {
+  installRunWorlds,
+  startGradeRun,
+  startRollRun,
+  startTrainRun,
+  worldsAskedFor,
+} from '../lab/labOperations';
 import { gradeLimitsOf, trainingSettingsOf } from '../lab/labSettings';
 import type { LabRun } from '../lab/labRun';
 import { WorldLab } from '../lab/worldLab';
 import { READING_BANDS } from '../walkingSim/readingBands';
 import { WorldPresetLibrary } from '../presets/worldPresetLibrary';
+import { TrainingRunner, type GenerationRecord } from '../selfPlay/trainingRunner';
 import { fixtureTileAssets, samplerOfState, variedStructuredState } from './walkingSimFixtures';
 
 const WALK = { step_budget: 120, radius_cap: 60 };
+const FINE_SETTINGS = {
+  generations: 2,
+  batchSize: 3,
+  stepBudget: 120,
+  radiusCap: 60,
+  seed: 8181,
+  patience: 9,
+};
 
 export function checkWorldLab(check: CheckReporter): void {
   checkSettingsAreClamped(check);
   checkGradingTheWorldYouAreIn(check);
   checkRollingRanksByFun(check);
   checkStoppingAndTraining(check);
+  checkCandidateSteppingIsTheSameRun(check);
+  checkATrainRunShowsTheGenerationItIsInside(check);
+  checkTwinPalettesAreStillToldApart(check);
   checkInstallingWinners(check);
 }
 
@@ -78,6 +96,61 @@ function checkStoppingAndTraining(check: CheckReporter): void {
   check('a stopped run asks for no more time', queue.length === 0);
 }
 
+function checkCandidateSteppingIsTheSameRun(check: CheckReporter): void {
+  const whole = new TrainingRunner(FINE_SETTINGS);
+  whole.nextGeneration();
+  whole.nextGeneration();
+
+  const fine = new TrainingRunner(FINE_SETTINGS);
+  for (let generation = 0; generation < FINE_SETTINGS.generations; generation++) {
+    fine.beginGeneration();
+    while (fine.candidatesLeft() > 0) fine.scoreNextCandidate();
+    fine.endGeneration();
+  }
+  check('scoring one candidate at a time breeds exactly the archive a whole generation does', archiveLine(whole) === archiveLine(fine));
+  check('scoring one candidate at a time records the same trajectory numbers', trajectoryLine(whole) === trajectoryLine(fine));
+
+  const candidates = whole.trajectory.flatMap((record) => record.candidates);
+  check('every generation records one candidate per batch slot', whole.trajectory.every((record) => record.candidates.length === FINE_SETTINGS.batchSize));
+  check('the first generation is rolled from nothing, since no elite exists to breed from', whole.trajectory[0]!.candidates.every((each) => each.origin === 'rolled'));
+  check('a candidate says whether the archive kept it, and admissions count those it kept', whole.trajectory.every(admissionsMatchCandidates));
+  check('a walkable candidate carries a fun number and names the readings it is weakest in', candidates.filter((each) => each.walkable).every((each) => each.fun !== null && each.weakest.length === 3));
+  check('a candidate with nowhere to walk is named as such and scores nothing', candidates.every((each) => each.walkable || (each.name === 'nowhere to walk' && each.fun === null)));
+  check('a bred candidate names both parents it came from', candidates.filter((each) => each.origin === 'bred').every((each) => each.parents.length === 2));
+}
+
+function checkATrainRunShowsTheGenerationItIsInside(check: CheckReporter): void {
+  const queue: (() => void)[] = [];
+  const paused = new WorldLab((task) => queue.push(task));
+  const run = startTrainRun(paused, { ...WALK, generations: 2, batch_size: 3, seed: 5150, patience: 9 });
+  check('a train run counts its candidates rather than its generations, so progress moves every step', run.total === 6);
+  queue.shift()!();
+  queue.shift()!();
+  const partial = run.trajectory[0]!;
+  check('a generation still being scored is already readable in the trajectory', run.trajectory.length === 1 && partial.candidates.length === 2);
+  check('a generation still being scored leaves its remaining slots empty', partial.candidates.length < 3 && run.generationsDone === 0);
+  queue.shift()!();
+  check('the finished generation replaces the partial one rather than sitting beside it', run.trajectory.length === 1 && run.trajectory[0]!.candidates.length === 3);
+  check('a finished generation is counted and its elites ranked into the run', run.generationsDone === 1 && run.batch !== null);
+}
+
+function admissionsMatchCandidates(record: GenerationRecord): boolean {
+  return record.admissions === record.candidates.filter((each) => each.admitted).length;
+}
+
+function archiveLine(runner: TrainingRunner): string {
+  return runner.archive
+    .rankedByFun()
+    .map((elite) => `${elite.paletteName}:${elite.score.overall.toFixed(6)}`)
+    .join(' ');
+}
+
+function trajectoryLine(runner: TrainingRunner): string {
+  return runner.trajectory
+    .map((record) => `${record.generation}:${record.admissions}:${record.coverage.toFixed(6)}:${record.batch.meanFun.toFixed(6)}`)
+    .join(' ');
+}
+
 function checkInstallingWinners(check: CheckReporter): void {
   const lab = immediateLab();
   const run = startRollRun(lab, { ...WALK, count: 2, seed: 909 });
@@ -87,15 +160,29 @@ function checkInstallingWinners(check: CheckReporter): void {
     cultures: new CultureAssets([]),
     worldPresets: new WorldPresetLibrary({ presets: [], hiddenExamples: [] }),
   };
-  const installed = installRunWorlds(library, run, 2, new Set());
+  const installed = installRunWorlds(library, run, worldsAskedFor(run, { count: 2 }), new Set());
   check('installing saves one library world per winner', installed.length === run.worlds.length);
   check('an installed world brings the tiles its palette needs', library.tileAssets.all().length > 0);
   check('an installed world brings its own culture, so its buildings still stand', library.cultures.all().length === installed.length);
   check('installed worlds are saved under the names they report', installed.every((each) => library.worldPresets.byName(each.name) !== undefined));
 
-  const clashing = installRunWorlds(library, run, 1, new Set([installed[0]!.name]));
+  const clashing = installRunWorlds(library, run, worldsAskedFor(run, { count: 1 }), new Set([installed[0]!.name]));
   check('a name already taken is stepped around instead of overwritten', clashing[0]!.name !== installed[0]!.name);
   check('the run remembers everything installed from it', run.installed.length === installed.length + clashing.length);
+
+  const wanted = run.worlds[1]!.name;
+  const byName = worldsAskedFor(run, { count: 5, names: [wanted] });
+  check('naming a world installs that one instead of the top of the ranking', byName.length === 1 && byName[0]!.name === wanted);
+  check('a name the run never graded is skipped rather than guessed at', worldsAskedFor(run, { names: ['no such world'] }).length === 0);
+}
+
+function checkTwinPalettesAreStillToldApart(check: CheckReporter): void {
+  const trained = startTrainRun(immediateLab(), { ...WALK, generations: 3, batch_size: 4, seed: 4242, patience: 9 });
+  const names = trained.worlds.map((world) => world.name);
+  const palettes = names.map((name) => name.split(' ')[0]!);
+  check('this run really does grow more than one elite from a single palette, so the check has something to tell apart', new Set(palettes).size < names.length);
+  check('a run names every world it holds exactly once, so a card and an install can point at one of them', names.length > 1 && new Set(names).size === names.length);
+  check('worlds grown from one palette keep that palette at the front of their names', names.every((name, at) => name.startsWith(palettes[at]!)));
 }
 
 function isDescending(values: readonly number[]): boolean {

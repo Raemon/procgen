@@ -14,8 +14,8 @@ import {
   startGradeRun,
   startRollRun,
   startTrainRun,
+  worldsAskedFor,
 } from './lab/labOperations';
-import { installCountOf } from './lab/labSettings';
 import { runSummaryLine, type LabRun } from './lab/labRun';
 import { gradeSummaryLine, weakestReadingsOf } from './lab/worldGrade';
 import type { WorldLab } from './lab/worldLab';
@@ -107,6 +107,11 @@ registerLabCommand({
   params: {
     run_id: { kind: 'text', help: 'the run whose winners to save — see read_world_lab' },
     count: { kind: 'int', help: 'how many of the top worlds to save, 1-20', optional: true },
+    names: {
+      kind: 'json',
+      help: 'the exact world names from the run to save, up to 20; overrides count when given',
+      optional: true,
+    },
   },
   example: { action: 'install_lab_worlds', run_id: 'lab_1', count: 3 },
   apply: (context, params) => installWorlds(context, params),
@@ -203,7 +208,7 @@ function installWorlds(context: CommandContext, params: CommandParams): CommandR
       worldPresets: context.worldPresets,
     },
     run,
-    installCountOf(params),
+    worldsAskedFor(run, params),
     takenWorldNames(context),
   );
   return commandSucceeded(

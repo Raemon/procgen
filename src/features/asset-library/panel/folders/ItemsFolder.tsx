@@ -3,8 +3,8 @@ import { Button } from '@/features/app-shell/controls/Button';
 import { useItemEntries } from '../entries/useItemEntries';
 import { ADD_ITEM_TIP, FOLDER_TIPS } from '../../help/libraryTips';
 import { LibraryFolder } from '../LibraryFolder';
-import { LibraryRow } from '../LibraryRow';
 import { useLibrarySelection } from '../useLibrarySelection';
+import { AssetFolderSection } from './AssetFolderSection';
 
 export function ItemsFolder() {
   const { items, perform } = useAppRuntime();
@@ -19,12 +19,11 @@ export function ItemsFolder() {
 
   return (
     <LibraryFolder folder="items" tip={FOLDER_TIPS.items} count={entries.length}>
-      {entries.map((entry) => (
-        <LibraryRow key={entry.key} folder="items" entry={entry} />
-      ))}
-      <Button className="mt-1 w-full" tip={ADD_ITEM_TIP} onClick={addItemAndSelectIt}>
-        + add item
-      </Button>
+      <AssetFolderSection section="items" entries={entries}>
+        <Button className="mt-1 w-full" tip={ADD_ITEM_TIP} onClick={addItemAndSelectIt}>
+          + add item
+        </Button>
+      </AssetFolderSection>
     </LibraryFolder>
   );
 }

@@ -18,6 +18,7 @@ export function usePieceEntries(): LibraryEntry[] {
       title: piece.name,
       body: `piece ${piece.id} · role ${piece.role} · ${piece.width}×${piece.depth}, ${piece.layers} layers`,
     },
+    rename: (name: string) => perform('rename_piece', { piece_id: piece.id, name }),
     duplicate: () => perform('duplicate_piece', { piece_id: piece.id }),
     remove: () => perform('remove_piece', { piece_id: piece.id }),
   }));

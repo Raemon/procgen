@@ -15,6 +15,7 @@ import { exampleWorlds } from '../presets/exampleWorlds';
 import { RunningWorld } from '../presets/runningWorld';
 import { WorldPresetLibrary } from '../presets/worldPresetLibrary';
 import { WorldShelf } from '../presets/worldShelf';
+import { AssetFolders } from '@/features/asset-library/folders/assetFolders';
 import { RandomizeHistory } from '../randomize/randomizeHistory';
 import { TemplateLibrary } from '@/features/asset-library/node-groups/templateLibrary';
 import { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
@@ -102,7 +103,7 @@ function worldEditor() {
     hiddenExamples: [],
   });
   const worlds = new WorldShelf(worldPresets);
-  const templates = new TemplateLibrary([]);
+  const templates = new TemplateLibrary({ templates: [], hiddenBuiltIns: [] });
   const runningWorld = new RunningWorld();
   const contextAround = (edited: PipelineStore): CommandContext =>
     ({
@@ -113,6 +114,7 @@ function worldEditor() {
       creatures: new CreatureAssets(),
       items: new ItemAssets(),
       templates,
+      assetFolders: new AssetFolders({ folders: [], placements: {} }),
       worldPresets,
       runningWorld,
       randomizeHistory: new RandomizeHistory(),

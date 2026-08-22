@@ -19,6 +19,7 @@ export function useTileEntries(): LibraryEntry[] {
       title: tile.name,
       body: `tile ${tile.id} · symbol “${tile.symbol}” · ${tile.walkable ? 'walkable' : 'blocking'}`,
     },
+    rename: (name: string) => perform('update_tile', { tile_id: tile.id, name }),
     duplicate: () => perform('duplicate_tile', { tile_id: tile.id }),
     remove: () => perform('remove_tile', { tile_id: tile.id }),
   }));

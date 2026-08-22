@@ -36,6 +36,7 @@ export function performVerb(
       creatures: world.creatures,
       items: world.items,
       templates: world.templates,
+      assetFolders: world.assetFolders,
       worldPresets: world.worldPresets,
       runningWorld: world.runningWorld,
       randomizeHistory: world.randomizeHistory,

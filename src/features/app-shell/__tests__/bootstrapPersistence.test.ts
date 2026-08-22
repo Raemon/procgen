@@ -4,6 +4,7 @@ import {
   preloadPersistedFiles,
   readPersistedFile,
 } from '@/features/app-shell/persistence/repoFileStore';
+import { persistedDocumentIsValid } from '@/features/app-shell/api/persistedDocumentValidation';
 
 export function bootstrapPersistenceTests(): void {
   test('a server restart during bootstrap is retried instead of hanging', async () => {
@@ -21,5 +22,12 @@ export function bootstrapPersistenceTests(): void {
     } finally {
       globalThis.fetch = originalFetch;
     }
+  });
+  test('the world library is accepted as the envelope the browser writes and as the array the data file ships', () => {
+    assert.ok(persistedDocumentIsValid('worldPresets', { presets: [], hiddenExamples: [] }));
+    assert.ok(persistedDocumentIsValid('worldPresets', []));
+    assert.ok(persistedDocumentIsValid('templates', { templates: [], hiddenBuiltIns: [] }));
+    assert.ok(!persistedDocumentIsValid('worldPresets', 'islands'));
+    assert.ok(!persistedDocumentIsValid('tiles', { presets: [] }));
   });
 }

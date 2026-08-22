@@ -1,14 +1,21 @@
 import { builtInTemplates } from './builtInTemplates';
 import type { NodeTemplate } from './nodeTemplate';
-import { loadSavedTemplates, storeSavedTemplates } from './templateStorage';
+import type { StoredTemplateLibrary } from './storedTemplateLibrary';
+import { loadStoredTemplateLibrary, storeTemplateLibrary } from './templateStorage';
 
 export class TemplateLibrary {
   private saved: NodeTemplate[];
+  private hidden: string[];
   private readonly listeners = new Set<() => void>();
   private everyTemplate: NodeTemplate[] | null = null;
 
-  constructor(initialTemplates?: NodeTemplate[]) {
-    this.saved = initialTemplates ?? loadSavedTemplates();
+  constructor(stored: StoredTemplateLibrary = loadStoredTemplateLibrary()) {
+    this.saved = stored.templates;
+    this.hidden = stored.hiddenBuiltIns;
+  }
+
+  stored(): StoredTemplateLibrary {
+    return { templates: this.saved, hiddenBuiltIns: this.hidden };
   }
 
   builtIn(): readonly NodeTemplate[] {
@@ -19,8 +26,12 @@ export class TemplateLibrary {
     return this.saved;
   }
 
+  hiddenBuiltIns(): readonly string[] {
+    return this.hidden;
+  }
+
   all(): NodeTemplate[] {
-    this.everyTemplate ??= [...this.saved, ...this.builtInNotShadowedBySaved()];
+    this.everyTemplate ??= [...this.saved, ...this.builtInStillOnTheShelf()];
     return this.everyTemplate;
   }
 
@@ -28,9 +39,11 @@ export class TemplateLibrary {
     return this.all().find((template) => template.name === name);
   }
 
-  private builtInNotShadowedBySaved(): NodeTemplate[] {
+  private builtInStillOnTheShelf(): NodeTemplate[] {
     return this.builtIn().filter(
-      (template) => !this.saved.some((edited) => edited.name === template.name),
+      (template) =>
+        !this.hidden.includes(template.name) &&
+        !this.saved.some((edited) => edited.name === template.name),
     );
   }
 
@@ -44,6 +57,12 @@ export class TemplateLibrary {
     this.persistAndNotify();
   }
 
+  hideBuiltIn(name: string): void {
+    if (this.hidden.includes(name)) return;
+    this.hidden = [...this.hidden, name];
+    this.persistAndNotify();
+  }
+
   onChange(listener: () => void): () => void {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
@@ -51,7 +70,7 @@ export class TemplateLibrary {
 
   private persistAndNotify(): void {
     this.everyTemplate = null;
-    storeSavedTemplates(this.saved);
+    storeTemplateLibrary(this.stored());
     for (const listener of this.listeners) listener();
   }
 }

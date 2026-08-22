@@ -1,7 +1,7 @@
 import type { CommandParams } from '@/features/app-shell/runtime/commands/command';
 import { gradeStepper, type GradeTarget } from './gradeStepper';
 import { freeWorldName, installLabWorld, type WorldLibrary } from './installLabWorld';
-import { gradeLimitsOf, rollRequestOf, trainingSettingsOf } from './labSettings';
+import { gradeLimitsOf, installCountOf, installNamesOf, rollRequestOf, trainingSettingsOf } from './labSettings';
 import type { InstalledWorld, LabRun, LabWorld } from './labRun';
 import { rollStepper } from './rollStepper';
 import { trainStepper } from './trainStepper';
@@ -54,20 +54,27 @@ export function installableWorldsOf(run: LabRun): LabWorld[] {
   return run.worlds.filter((world) => world.genome !== null);
 }
 
+export function worldsAskedFor(run: LabRun, params: CommandParams): LabWorld[] {
+  const installable = installableWorldsOf(run);
+  const names = installNamesOf(params);
+  if (names.length === 0) return installable.slice(0, installCountOf(params));
+  return names
+    .map((name) => installable.find((world) => world.name === name))
+    .filter((world): world is LabWorld => world !== undefined);
+}
+
 export function installRunWorlds(
   library: WorldLibrary,
   run: LabRun,
-  count: number,
+  wanted: readonly LabWorld[],
   takenNames: ReadonlySet<string>,
 ): InstalledWorld[] {
   const taken = new Set(takenNames);
-  const installed = installableWorldsOf(run)
-    .slice(0, count)
-    .map((world) => {
-      const name = freeWorldName(`${world.name} (${run.kind}ed)`, taken);
-      taken.add(name);
-      return installLabWorld(library, world.genome!, name, describeGrade(world));
-    });
+  const installed = wanted.map((world) => {
+    const name = freeWorldName(`${world.name} (${run.kind}ed)`, taken);
+    taken.add(name);
+    return installLabWorld(library, world.genome!, name, describeGrade(world));
+  });
   run.installed.push(...installed);
   return installed;
 }

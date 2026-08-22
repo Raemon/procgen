@@ -1,31 +1,21 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { ApiCallTreeTrigger, type ApiCallTreeRoot } from './ApiCallTreeTooltip';
-import { displayApiPath } from './apiEndpointGroups';
 import type { ApiEndpoint } from './apiEndpointTypes';
 
 export function ApiPathOperations({
-  path,
   endpoints,
   methods,
-  depth,
+  label,
 }: {
-  path: string;
   endpoints: ApiEndpoint[];
   methods: string[];
-  depth: number;
+  label: ReactNode;
 }) {
-  const roots = endpoints.map(callTreeRoot);
   return (
     <tr className="border-b border-panel-edge/70 bg-btn/18 last:border-b-0">
-      <th scope="row" className="h-7 whitespace-nowrap py-0 pl-2 pr-2.5 text-left font-normal">
-        <div className="flex items-center gap-2" style={{ paddingLeft: `${depth * 12}px` }}>
-          <span className="text-[10px] text-ink-dim" aria-hidden="true">{depth === 0 ? '/' : '↳'}</span>
-          <ApiCallTreeTrigger label={path} roots={roots} className="min-w-0">
-            <code className="truncate text-[11px] text-ink">{displayApiPath(path)}</code>
-          </ApiCallTreeTrigger>
-        </div>
-      </th>
+      <th scope="row" className="h-7 whitespace-nowrap py-0 pl-2 pr-2.5 text-left font-normal">{label}</th>
       {methods.map((method, index) => {
         const endpoint = endpoints.find((candidate) => candidate.method === method);
         const spacing = index === 0 ? 'pl-2.5 pr-1' : 'px-1';
@@ -52,7 +42,7 @@ export function ApiPathOperations({
   );
 }
 
-function callTreeRoot(endpoint: ApiEndpoint): ApiCallTreeRoot {
+export function callTreeRoot(endpoint: ApiEndpoint): ApiCallTreeRoot {
   return {
     label: endpoint.method,
     step: endpoint.code,

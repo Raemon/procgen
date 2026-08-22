@@ -7,6 +7,13 @@ export function insertRowTip(name: string): TooltipContent {
   };
 }
 
+export function renameRowTip(name: string): TooltipContent {
+  return {
+    title: `rename ${name}`,
+    body: 'Click to rename. Enter or clicking away keeps the new name, Esc leaves it as it was.',
+  };
+}
+
 export function duplicateRowTip(name: string): TooltipContent {
   return { title: `duplicate ${name}`, body: 'Files a copy right below, with its own id and everything else the same.' };
 }

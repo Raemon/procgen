@@ -5,9 +5,9 @@ import {
   clampSightRadiusTiles,
   DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
 } from '@/features/game/vision/characterSight';
+import type { FramedCamera } from '@/features/game/render/view3d/framedCamera';
+import { wheelPixelsReaching } from '@/features/game/render/view3d/wheelPixelsReaching';
 import type { WorldViewRequest } from '../worldViewRequest';
-import type { FramedCamera } from './framedCamera';
-import { wheelPixelsReaching } from './wheelPixelsReaching';
 
 export function characterCameraForRequest(
   request: WorldViewRequest,

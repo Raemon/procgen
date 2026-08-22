@@ -4,8 +4,8 @@ import { ADD_CREATURE_TIP } from '@/features/asset-library/creatures/editor/help
 import { useCreatureEntries } from '../entries/useCreatureEntries';
 import { ADD_CHARACTER_TIP, FOLDER_TIPS } from '../../help/libraryTips';
 import { LibraryFolder } from '../LibraryFolder';
-import { LibraryRow } from '../LibraryRow';
 import { useLibrarySelection } from '../useLibrarySelection';
+import { AssetFolderSection } from './AssetFolderSection';
 
 export function CreatureKindFolder({ folder }: { folder: 'creatures' | 'characters' }) {
   const { creatures, perform } = useAppRuntime();
@@ -21,16 +21,15 @@ export function CreatureKindFolder({ folder }: { folder: 'creatures' | 'characte
 
   return (
     <LibraryFolder folder={folder} tip={FOLDER_TIPS[folder]} count={entries.length}>
-      {entries.map((entry) => (
-        <LibraryRow key={entry.key} folder={folder} entry={entry} />
-      ))}
-      <Button
-        className="mt-1 w-full"
-        tip={wantsCharacters ? ADD_CHARACTER_TIP : ADD_CREATURE_TIP}
-        onClick={addAndSelectIt}
-      >
-        + add {wantsCharacters ? 'character' : 'creature'}
-      </Button>
+      <AssetFolderSection section={folder} entries={entries}>
+        <Button
+          className="mt-1 w-full"
+          tip={wantsCharacters ? ADD_CHARACTER_TIP : ADD_CREATURE_TIP}
+          onClick={addAndSelectIt}
+        >
+          + add {wantsCharacters ? 'character' : 'creature'}
+        </Button>
+      </AssetFolderSection>
     </LibraryFolder>
   );
 }

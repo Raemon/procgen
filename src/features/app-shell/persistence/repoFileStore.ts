@@ -20,6 +20,7 @@ const RESOURCE_PATHS: Readonly<Record<string, string>> = {
   items: '/api/v1/asset-library/items',
   uiState: '/api/v1/app-shell/state',
   worldThumbnails: '/api/v1/asset-library/worlds/thumbnails',
+  assetFolders: '/api/v1/asset-library/folders',
 };
 
 export async function preloadPersistedFiles(names: readonly string[]): Promise<void> {

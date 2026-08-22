@@ -7,6 +7,7 @@ import {
   type CommandParams,
 } from '@/features/app-shell/runtime/commands/command';
 import { ChatComposerState } from '@/features/game/chat/chatComposerState';
+import { AssetFolders } from '@/features/asset-library/folders/assetFolders';
 import { CreatureAssets } from '@/features/asset-library/creatures/creatureAssets';
 import { ItemAssets } from '@/features/asset-library/items/itemAssets';
 import { PlayerInventoryPanelState } from '@/features/asset-library/items/inventory/playerInventoryPanelState';
@@ -47,6 +48,7 @@ import { climbGateFrom } from '@/features/game/climbing';
 import { World } from '@/features/game/world';
 import { ChangeNotifier } from './changeNotifier';
 import type {
+  ReadOnlyAssetFolders,
   ReadOnlyCreatureAssets,
   ReadOnlyItemAssets,
   ReadOnlyPipelineStore,
@@ -72,6 +74,7 @@ export interface AppRuntime {
   items: ReadOnlyItemAssets;
   store: ReadOnlyPipelineStore;
   templates: ReadOnlyTemplateLibrary;
+  assetFolders: ReadOnlyAssetFolders;
   worldPresets: ReadOnlyWorldPresetLibrary;
   worlds: ReadOnlyWorldShelf;
   runningWorld: ReadOnlyRunningWorld;
@@ -102,6 +105,7 @@ export interface AppRuntime {
 export function createAppRuntime(): AppRuntime {
   const tileAssets = new TileAssets();
   const templates = new TemplateLibrary();
+  const assetFolders = new AssetFolders();
   const worldPresets = new WorldPresetLibrary();
   const worlds = new WorldShelf(worldPresets);
   const runningWorld = new RunningWorld(loadRunningWorldName());
@@ -211,6 +215,7 @@ export function createAppRuntime(): AppRuntime {
         creatures,
         items,
         templates,
+        assetFolders,
         worldPresets,
         runningWorld,
         randomizeHistory,
@@ -289,6 +294,7 @@ export function createAppRuntime(): AppRuntime {
   return {
     tileAssets,
     templates,
+    assetFolders,
     worldPresets,
     worlds,
     runningWorld,

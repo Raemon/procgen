@@ -1,4 +1,5 @@
 import ts from 'typescript';
+import { responseBodyTypes } from './apiResponseTypes';
 import { apiPropertyName, resolveApiDeclaration } from './apiSourceIndex';
 import type {
   ApiDeclarationRef,
@@ -107,7 +108,7 @@ function scanResponses(
       }
       if (ts.isCallExpression(node)) {
         rememberInput(node, current);
-        const output = outputFrom(node, current);
+        const output = outputFrom(node, current, index);
         if (output) outputs.set(outputKey(output), output);
       }
       if (depth < MAX_DEPTH) follow(node, current, depth);
@@ -178,7 +179,12 @@ function requestLike(node: ts.Node): boolean {
   return ts.isIdentifier(node) && /^(request|req)$/.test(node.text);
 }
 
-function outputFrom(node: ts.CallExpression, ref: ApiDeclarationRef): ApiOutput | null {
+function outputFrom(node: ts.CallExpression, ref: ApiDeclarationRef, index: ApiSourceIndex): ApiOutput | null {
+  const shape = outputShape(node, ref);
+  return shape ? { ...shape, types: responseBodyTypes(node, ref, index) } : null;
+}
+
+function outputShape(node: ts.CallExpression, ref: ApiDeclarationRef): Omit<ApiOutput, 'types'> | null {
   const callee = node.expression;
   if (ts.isIdentifier(callee) && callee.text === 'json') return jsonOutput(node, ref);
   if (ts.isIdentifier(callee) && callee.text === 'failure') {
@@ -194,14 +200,14 @@ function outputFrom(node: ts.CallExpression, ref: ApiDeclarationRef): ApiOutput 
   return null;
 }
 
-function jsonOutput(node: ts.CallExpression, ref: ApiDeclarationRef): ApiOutput | null {
+function jsonOutput(node: ts.CallExpression, ref: ApiDeclarationRef): Omit<ApiOutput, 'types'> | null {
   const status = literalStatus(node.arguments[0]);
   const body = node.arguments[1];
   if (status === null || !body) return null;
   return { status, ...bodyShape(body, ref) };
 }
 
-function responseJsonOutput(node: ts.CallExpression, ref: ApiDeclarationRef): ApiOutput | null {
+function responseJsonOutput(node: ts.CallExpression, ref: ApiDeclarationRef): Omit<ApiOutput, 'types'> | null {
   const body = node.arguments[0];
   if (!body) return null;
   const options = node.arguments[1];

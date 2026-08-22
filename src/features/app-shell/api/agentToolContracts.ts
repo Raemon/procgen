@@ -61,6 +61,7 @@ function inputSchema(entries: [string, CommandParamSpec][]): object {
 }
 
 function resourcePath(action: string): string {
+  if (action.includes('asset_folder') || action === 'file_asset') return '/asset-library/folders';
   if (action.includes('tile')) return '/asset-library/tiles';
   if (action.includes('item') || action.includes('inventory')) return '/asset-library/items';
   if (action.includes('piece') || action === 'capture_region') return '/asset-library/pieces';

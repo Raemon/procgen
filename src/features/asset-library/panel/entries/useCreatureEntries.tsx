@@ -27,6 +27,7 @@ export function useCreatureEntries(folder: 'creatures' | 'characters'): LibraryE
         title: creature.name,
         body: `${folder.slice(0, -1)} ${creature.id} · symbol “${creature.symbol}”`,
       },
+      rename: (name: string) => perform('update_creature', { creature_id: creature.id, name }),
       insert: () => perform('insert_creature', { creature_id: creature.id }),
       duplicate: () => perform('duplicate_creature', { creature_id: creature.id }),
       remove: () => {

@@ -7,6 +7,8 @@ import {
 } from '@/features/app-shell/documentation/apiEndpointCatalog';
 import { apiMethodColumns, displayApiPath, groupApiEndpoints } from '@/features/app-shell/documentation/apiEndpointGroups';
 import { buildApiTypeCatalog, type ApiTypeEntry } from '@/features/app-shell/documentation/apiTypeCatalog';
+import { buildApiTypeSections } from '@/features/app-shell/documentation/apiTypeSectionCatalog';
+import { RETURNED_SECTION_ID } from '@/features/app-shell/documentation/apiTypeSectionTypes';
 import { buildAppRouteCatalog, type AppRouteComponent } from '@/features/app-shell/documentation/appRouteCatalog';
 import { reportOffenders } from './reportOffenders';
 
@@ -51,6 +53,9 @@ export function checkApiArchitecture(check: (name: string, condition: boolean) =
   check('a registered route publishes the shapes it answers with', outputText(agentCreate) === '201 { agent, urls: object }, 400 { error: string, meaning: string, recovery: string, hint: string }');
   check('a document write publishes its revision header and the document envelope', inputText(documentWrite) === 'If-Match:string:header, body:json:body' && outputText(documentRead).startsWith('200 { data, revision }'));
   check('summaries reach the endpoint signature so a reader knows what an operation is for', agentCreate.signature.summary.startsWith('create an agent'));
+  check('a mutation names the types its answer is serialized from', outputTypeText(agentCreate, 201).includes('AgentSession via agentJson') && outputTypeText(endpointAt(endpoints, 'POST', '/api/v1/asset-library/worlds/roll'), 202).includes('LabRun via runListJson'));
+  check('a document write names the envelope it answers with straight from its satisfies clause', outputTypeText(documentWrite, 200) === 'PersistedDocumentBody, UnparsedDocument, DocumentRevision');
+  check('an error answer names its body type through the helper that builds it', outputTypeText(documentWrite, 412).includes('ApiErrorBody via apiError'));
 
   const groups = groupApiEndpoints(endpoints);
   const agents = groupAt(groups, '/api/v1/agents');
@@ -68,6 +73,16 @@ export function checkApiArchitecture(check: (name: string, condition: boolean) =
   check('types the API reaches are introduced before the ones it never touches', types.findIndex((entry) => !entry.reachedByApi) > types.map((entry) => entry.reachedByApi).lastIndexOf(true));
   check('a type a route handler needs is introduced ahead of an unrelated editor type', typeAt(types, 'ApiRequest').reachedByApi && typeNames.indexOf('ApiRequest') < typeNames.indexOf('SourceFolder'));
   check('an interface, a type alias, and an enum are all named as vocabulary', new Set(types.map((entry) => entry.kind)).size >= 2 && typeAt(types, 'ApiEndpoint').kind === 'interface');
+
+  const sections = buildApiTypeSections();
+  const returned = sections[0]!;
+  const sectionTitles = sections.map((section) => section.title);
+  check('the vocabulary opens with what POST and PUT endpoints hand back', returned.id === RETURNED_SECTION_ID && returned.entries.some((entry) => entry.name === 'LabRun') && returned.entries.some((entry) => entry.name === 'PersistedDocumentBody'));
+  check('a returned type says which mutations return it and through which serializer', returned.entries.find((entry) => entry.name === 'AgentSession')?.returnedBy.some((use) => use.method === 'POST' && use.path === '/api/v1/agents' && use.through === 'agentJson') === true);
+  check('types the API answers with outrank the ones only an error answer carries', returned.entries.findIndex((entry) => entry.name === 'ApiErrorBody') > returned.entries.findIndex((entry) => entry.name === 'LabRun'));
+  check('sections together list every type exactly once', sections.reduce((total, section) => total + section.entries.length, 0) === types.length && sections.slice(1).every((section) => section.entries.every((entry) => entry.returnedBy.length === 0)));
+  check('owning features follow the home-page tree order', sectionTitles.indexOf('app-shell') < sectionTitles.indexOf('asset-library') && sectionTitles.indexOf('asset-library') < sectionTitles.indexOf('agents') && sectionTitles.indexOf('agents') < sectionTitles.indexOf('game'));
+  check('a crowded feature splits by folder while a sparse folder stays with its parent', sectionTitles.includes('asset-library / worlds / nodes') && !sectionTitles.some((title) => title.startsWith('game / chat')));
 
   const routes = buildAppRouteCatalog();
   const home = routeAt(routes, '/');
@@ -179,6 +194,14 @@ function includesSymbols(
 function inputText(endpoint: ReturnType<typeof buildApiEndpointCatalog>[number]): string {
   return endpoint.signature.inputs
     .map((input) => `${input.name}${input.optional ? '?' : ''}:${input.type}:${input.source}`)
+    .join(', ');
+}
+
+function outputTypeText(endpoint: ReturnType<typeof buildApiEndpointCatalog>[number], status: number): string {
+  return endpoint.signature.outputs
+    .filter((output) => output.status === status)
+    .flatMap((output) => output.types)
+    .map((type) => type.through === '' ? type.name : `${type.name} via ${type.through}`)
     .join(', ');
 }
 

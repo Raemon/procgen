@@ -9,6 +9,7 @@ import { RandomizeHistory } from '@/features/asset-library/worlds/randomize/rand
 import { TemplateLibrary } from '@/features/asset-library/node-groups/templateLibrary';
 import { RunningWorld } from '@/features/asset-library/worlds/presets/runningWorld';
 import { WorldPresetLibrary } from '@/features/asset-library/worlds/presets/worldPresetLibrary';
+import { AssetFolders } from '@/features/asset-library/folders/assetFolders';
 import { CreatureAssets } from '@/features/asset-library/creatures/creatureAssets';
 import { ItemAssets } from '@/features/asset-library/items/itemAssets';
 import { NO_GROUND_ITEMS } from '@/features/asset-library/items/pickups/groundItems';
@@ -44,7 +45,8 @@ function abilityWorld() {
     cultures,
     creatures: new CreatureAssets(),
     items: new ItemAssets(),
-    templates: new TemplateLibrary([]),
+    templates: new TemplateLibrary({ templates: [], hiddenBuiltIns: [] }),
+    assetFolders: new AssetFolders({ folders: [], placements: {} }),
     worldPresets: new WorldPresetLibrary({ presets: [], hiddenExamples: [] }),
     runningWorld: new RunningWorld(),
     randomizeHistory: new RandomizeHistory(),
