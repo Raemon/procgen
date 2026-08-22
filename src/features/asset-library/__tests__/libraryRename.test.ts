@@ -10,6 +10,7 @@ import { NO_GROUND_ITEMS } from '@/features/asset-library/items/pickups/groundIt
 import { PieceAssets } from '@/features/asset-library/pieces/pieceAssets';
 import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
 import { TemplateLibrary } from '@/features/asset-library/node-groups/templateLibrary';
+import { AssetFolders } from '@/features/asset-library/folders/assetFolders';
 import { builtInTemplates } from '@/features/asset-library/node-groups/builtInTemplates';
 import { templateLibraryFromStoredJson } from '@/features/asset-library/node-groups/storedTemplateLibrary';
 import { emptyPipeline } from '@/features/asset-library/worlds/pipeline/pipelineState';
@@ -44,6 +45,10 @@ function renamer() {
     creatures: new CreatureAssets(),
     items: new ItemAssets(),
     templates: new TemplateLibrary({ templates: [], hiddenBuiltIns: [] }),
+    assetFolders: new AssetFolders({
+      folders: [{ id: 'f1', name: 'Round 1', section: 'worlds', parentId: null }],
+      placements: { worlds: { 'my delve': 'f1' } },
+    }),
     worldPresets,
     runningWorld: new RunningWorld(),
     randomizeHistory: new RandomizeHistory(),
@@ -79,6 +84,11 @@ function checkRenamingAWorld(check: CheckReporter): void {
   check(
     'a world that was running keeps running under the name you gave it',
     saved.context.runningWorld.name() === 'the deep delve',
+  );
+  check(
+    'a renamed world stays in the folder it was filed under',
+    saved.context.assetFolders.folderOf('worlds', 'the deep delve') === 'f1' &&
+      saved.context.assetFolders.folderOf('worlds', 'my delve') === null,
   );
 
   const taken = renamer();

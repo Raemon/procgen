@@ -418,6 +418,7 @@ function renamePreset(context: CommandContext, params: CommandParams): CommandRe
   context.worldPresets.save({ ...world, name: to, state: sanitizePipeline(world.state) });
   takeWorldOffTheShelf(context, from);
   if (context.runningWorld.name() === from) context.runningWorld.setName(to);
+  context.assetFolders.renameKey('worlds', from, to);
   return commandSucceeded(`world '${from}' is now '${to}'`);
 }
 
@@ -441,6 +442,7 @@ function renameTemplate(context: CommandContext, params: CommandParams): Command
   if (context.templates.builtIn().some((shipped) => shipped.name === from)) {
     context.templates.hideBuiltIn(from);
   }
+  context.assetFolders.renameKey('groups', from, to);
   return commandSucceeded(`group '${from}' is now '${to}'`);
 }
 
