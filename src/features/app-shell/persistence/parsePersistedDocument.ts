@@ -1,7 +1,7 @@
 import { creaturesFromStoredJson } from '@/features/asset-library/creatures/creatureStorage';
 import { culturesFromStoredJson } from '@/features/asset-library/cultures/cultureStorage';
 import { itemsFromStoredJson } from '@/features/asset-library/items/itemStorage';
-import { sanitizeTemplates } from '@/features/asset-library/node-groups/nodeTemplate';
+import { templateLibraryFromStoredJson } from '@/features/asset-library/node-groups/storedTemplateLibrary';
 import { piecesFromStoredJson } from '@/features/asset-library/pieces/pieceStorage';
 import { tilesFromStoredJson } from '@/features/asset-library/tiles/tileStorage';
 import { sanitizePipeline } from '@/features/asset-library/worlds/pipeline/sanitizePipeline';
@@ -24,7 +24,7 @@ type DocumentParsers = { [Name in PersistedDocumentName]: DocumentParser<Name> }
 const PARSERS: DocumentParsers = {
   pipeline: sanitizePipeline,
   tiles: tilesFromStoredJson,
-  templates: sanitizeTemplates,
+  templates: templateLibraryFromStoredJson,
   worldPresets: worldLibraryFromStoredJson,
   pieces: piecesFromStoredJson,
   cultures: culturesFromStoredJson,

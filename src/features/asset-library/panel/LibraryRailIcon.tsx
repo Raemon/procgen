@@ -6,7 +6,7 @@ import { selects } from '../librarySelection';
 import { useLibrarySelection } from './useLibrarySelection';
 
 export function LibraryRailIcon({ folder, entry }: { folder: LibraryFolder; entry: LibraryEntry }) {
-  const { selection, toggle } = useLibrarySelection();
+  const { selection, open } = useLibrarySelection();
   const selected = selects(selection, folder, entry.key);
   return (
     <button
@@ -17,7 +17,7 @@ export function LibraryRailIcon({ folder, entry }: { folder: LibraryFolder; entr
       )}
       onClick={(event) => {
         event.stopPropagation();
-        toggle(folder, entry.key);
+        open(folder, entry.key);
       }}
       {...tooltipHandlers(entry.tip)}
     >

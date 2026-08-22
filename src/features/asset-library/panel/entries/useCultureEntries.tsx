@@ -15,6 +15,7 @@ export function useCultureEntries(): LibraryEntry[] {
     name: culture.name,
     icon: <CultureIcon culture={culture} />,
     tip: { title: culture.name, body: `culture ${culture.id} · ${boundRolesOf(culture)}` },
+    rename: (name: string) => perform('rename_culture', { culture_id: culture.id, name }),
     duplicate: () => perform('duplicate_culture', { culture_id: culture.id }),
     remove: () => {
       forgetOpenPanelOfRow(PERSISTED_UI_KEYS.openCulturePanels, culture.id);

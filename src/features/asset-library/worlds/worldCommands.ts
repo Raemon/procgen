@@ -132,6 +132,19 @@ registerWorldCommand({
 });
 
 registerWorldCommand({
+  action: 'rename_preset',
+  humanControl: 'asset library, worlds folder: click the name on a world row',
+  description:
+    'Rename a world. One of yours is filed under the new name; a built-in example is saved under the new name and taken off the shelf under the old one. A world that is running keeps running under its new name.',
+  params: {
+    name: { kind: 'text', help: 'the world to rename — see GET /api/v1/asset-library/worlds' },
+    new_name: { kind: 'text', help: 'the name to file it under; a name already in use is refused' },
+  },
+  example: { action: 'rename_preset', name: 'islands', new_name: 'my archipelago' },
+  apply: (context, params) => renamePreset(context, params),
+});
+
+registerWorldCommand({
   action: 'delete_preset',
   humanControl: 'asset library, worlds folder: ✕ on a world',
   description:
@@ -180,6 +193,19 @@ registerWorldCommand({
   params: { name: { kind: 'text', help: 'the group to copy — see GET /api/v1/asset-library/node-groups' } },
   example: { action: 'duplicate_template', name: 'rivers' },
   apply: (context, params) => duplicateTemplate(context, params),
+});
+
+registerWorldCommand({
+  action: 'rename_template',
+  humanControl: 'asset library, node groups folder: click the name on a group row',
+  description:
+    'Rename a node group. One of yours is filed under the new name; a built-in group is saved under the new name and taken off the shelf under the old one.',
+  params: {
+    name: { kind: 'text', help: 'the group to rename — see GET /api/v1/asset-library/node-groups' },
+    new_name: { kind: 'text', help: 'the name to file it under; a name already in use is refused' },
+  },
+  example: { action: 'rename_template', name: 'rivers', new_name: 'braided rivers' },
+  apply: (context, params) => renameTemplate(context, params),
 });
 
 registerWorldCommand({
@@ -366,11 +392,68 @@ function deletePreset(context: CommandContext, params: CommandParams): CommandRe
       `no world '${name.value}' — the library holds: ${listOf(presetNames(context))}`,
     );
   }
-  context.worldPresets.remove(name.value);
-  if (examplePipelines().some((example) => example.name === name.value)) {
-    context.worldPresets.hideExample(name.value);
-  }
+  takeWorldOffTheShelf(context, name.value);
   return commandSucceeded(`deleted world '${name.value}'`);
+}
+
+function takeWorldOffTheShelf(context: CommandContext, name: string): void {
+  context.worldPresets.remove(name);
+  if (examplePipelines().some((example) => example.name === name)) {
+    context.worldPresets.hideExample(name);
+  }
+}
+
+function renamePreset(context: CommandContext, params: CommandParams): CommandResult {
+  const named = renaming(params);
+  if (!named.ok) return named.failure;
+  const { from, to } = named.value;
+  const world = worldPresetNamed(context, from);
+  if (!world) {
+    return commandFailed('unknown_preset', `name must be one of: ${listOf(presetNames(context))}`);
+  }
+  if (from === to) return commandSucceeded(`world '${from}' keeps the name it had`);
+  if (presetNames(context).includes(to)) {
+    return commandFailed('name_taken', `the library already holds a world called '${to}'`);
+  }
+  context.worldPresets.save({ ...world, name: to, state: sanitizePipeline(world.state) });
+  takeWorldOffTheShelf(context, from);
+  if (context.runningWorld.name() === from) context.runningWorld.setName(to);
+  return commandSucceeded(`world '${from}' is now '${to}'`);
+}
+
+function renameTemplate(context: CommandContext, params: CommandParams): CommandResult {
+  const named = renaming(params);
+  if (!named.ok) return named.failure;
+  const { from, to } = named.value;
+  const group = context.templates.byName(from);
+  if (!group) {
+    return commandFailed(
+      'unknown_template',
+      `name must be one of: ${listOf(context.templates.all().map((each) => each.name))}`,
+    );
+  }
+  if (from === to) return commandSucceeded(`group '${from}' keeps the name it had`);
+  if (context.templates.byName(to)) {
+    return commandFailed('name_taken', `the library already holds a node group called '${to}'`);
+  }
+  context.templates.save({ ...group, name: to });
+  context.templates.remove(from);
+  if (context.templates.builtIn().some((shipped) => shipped.name === from)) {
+    context.templates.hideBuiltIn(from);
+  }
+  return commandSucceeded(`group '${from}' is now '${to}'`);
+}
+
+type Renaming =
+  | { ok: true; value: { from: string; to: string } }
+  | { ok: false; failure: CommandResult };
+
+function renaming(params: CommandParams): Renaming {
+  const from = readText(params, 'name');
+  if (!from.ok) return from;
+  const to = readText(params, 'new_name');
+  if (!to.ok) return to;
+  return { ok: true, value: { from: from.value, to: to.value } };
 }
 
 function stampTemplate(context: CommandContext, params: CommandParams): CommandResult {

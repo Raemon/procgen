@@ -79,6 +79,12 @@ export const FAILURES: readonly FailureSpec[] = [
     recovery: 'Observe first: items show as their own symbol in the legend, then step onto one.',
   },
   {
+    code: 'name_taken',
+    meaning: 'Something in the library already answers to that name.',
+    recovery:
+      'Worlds and node groups are named uniquely: GET /api/v1/asset-library/worlds and /api/v1/asset-library/node-groups list the names in use.',
+  },
+  {
     code: 'bad_request',
     meaning: 'The request body was not valid JSON or is missing a required field.',
     recovery: 'Check the endpoint table in GET /api/v1/openapi.json.',

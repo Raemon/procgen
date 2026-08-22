@@ -2,7 +2,7 @@ import type { PersistedDocumentName } from './persistedDocuments';
 import type { CreatureDef } from '@/features/asset-library/creatures/creatureDef';
 import type { Culture } from '@/features/asset-library/cultures/cultureDef';
 import type { ItemDef } from '@/features/asset-library/items/itemDef';
-import type { NodeTemplate } from '@/features/asset-library/node-groups/nodeTemplate';
+import type { StoredTemplateLibrary } from '@/features/asset-library/node-groups/storedTemplateLibrary';
 import type { Piece } from '@/features/asset-library/pieces/pieceDef';
 import type { StoredArtOf } from '@/features/asset-library/tiles/storage/storedFaceArt';
 import type { TileDef } from '@/features/asset-library/tiles/tileDef';
@@ -19,7 +19,7 @@ export type PersistedUiState = Record<PersistedUiKey, unknown>;
 export interface StoredDocumentContents {
   pipeline: PipelineState;
   tiles: StoredArtOf<TileDef>[];
-  templates: readonly NodeTemplate[];
+  templates: StoredTemplateLibrary;
   worldPresets: StoredWorldLibrary;
   pieces: readonly Piece[];
   cultures: readonly Culture[];
@@ -32,7 +32,7 @@ export interface StoredDocumentContents {
 export interface ParsedDocumentContents {
   pipeline: PipelineState;
   tiles: TileDef[];
-  templates: NodeTemplate[];
+  templates: StoredTemplateLibrary;
   worldPresets: StoredWorldLibrary;
   pieces: Piece[];
   cultures: Culture[];

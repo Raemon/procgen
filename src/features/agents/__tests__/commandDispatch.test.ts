@@ -44,7 +44,7 @@ function abilityWorld() {
     cultures,
     creatures: new CreatureAssets(),
     items: new ItemAssets(),
-    templates: new TemplateLibrary([]),
+    templates: new TemplateLibrary({ templates: [], hiddenBuiltIns: [] }),
     worldPresets: new WorldPresetLibrary({ presets: [], hiddenExamples: [] }),
     runningWorld: new RunningWorld(),
     randomizeHistory: new RandomizeHistory(),

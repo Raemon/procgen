@@ -3,8 +3,6 @@ import type { PersistedDocumentName } from '@/features/app-shell/persistence/per
 
 const COLLECTION_DOCUMENTS = new Set<PersistedDocumentName>([
   'tiles',
-  'templates',
-  'worldPresets',
   'pieces',
   'cultures',
   'creatures',
