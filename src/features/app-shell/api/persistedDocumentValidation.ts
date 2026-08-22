@@ -3,25 +3,23 @@ import type { PersistedDocumentName } from '@/features/app-shell/persistence/per
 
 const COLLECTION_DOCUMENTS = new Set<PersistedDocumentName>([
   'tiles',
-  'templates',
   'pieces',
   'cultures',
   'creatures',
   'items',
 ]);
 
-const WORLD_LIBRARY_DOCUMENT: PersistedDocumentName = 'worldPresets';
+const LIBRARIES_SHIPPED_AS_ARRAYS = new Set<PersistedDocumentName>(['worldPresets', 'templates']);
 
 export function persistedDocumentIsValid<Name extends PersistedDocumentName>(
   name: Name,
   data: unknown,
 ): data is UnparsedDocument<Name> {
   if (COLLECTION_DOCUMENTS.has(name)) return Array.isArray(data);
-  if (name === WORLD_LIBRARY_DOCUMENT) return Array.isArray(data) || isWorldLibraryEnvelope(data);
-  return typeof data === 'object' && data !== null && !Array.isArray(data);
+  if (LIBRARIES_SHIPPED_AS_ARRAYS.has(name)) return Array.isArray(data) || isPlainObject(data);
+  return isPlainObject(data);
 }
 
-function isWorldLibraryEnvelope(data: unknown): boolean {
-  if (typeof data !== 'object' || data === null || Array.isArray(data)) return false;
-  return Array.isArray((data as { presets?: unknown }).presets);
+function isPlainObject(data: unknown): boolean {
+  return typeof data === 'object' && data !== null && !Array.isArray(data);
 }

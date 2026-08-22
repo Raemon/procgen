@@ -103,7 +103,7 @@ function worldEditor() {
     hiddenExamples: [],
   });
   const worlds = new WorldShelf(worldPresets);
-  const templates = new TemplateLibrary([]);
+  const templates = new TemplateLibrary({ templates: [], hiddenBuiltIns: [] });
   const runningWorld = new RunningWorld();
   const contextAround = (edited: PipelineStore): CommandContext =>
     ({
