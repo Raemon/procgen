@@ -14,7 +14,6 @@ export interface ApiTypeSectionEntry extends ApiTypeEntry {
 export interface ApiTypeSection {
   id: string;
   title: string;
-  hint: string;
   entries: ApiTypeSectionEntry[];
 }
 

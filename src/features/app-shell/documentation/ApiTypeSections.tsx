@@ -22,7 +22,6 @@ function SectionRows({ section }: { section: ApiTypeSection }) {
           <TreeBranchLabel open={open} onToggle={() => setOpen((held) => !held)} depth={0} label={section.title}>
             <span className="text-[11px] text-ink">{section.title}</span>
             <span className="font-mono text-[10px] text-ink-dim">{section.entries.length}</span>
-            {section.hint !== '' ? <span className="text-[10px] text-ink-dim">{section.hint}</span> : null}
           </TreeBranchLabel>
         </th>
       </tr>

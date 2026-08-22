@@ -68,8 +68,8 @@ function AppRouteComponentRow({
             <TreeLeafLabel depth={depth} glyph="↳">{name}</TreeLeafLabel>
           )}
         </td>
-        <td className="h-7 whitespace-nowrap py-0 pl-3 pr-2 align-middle">
-          <div className="flex flex-wrap items-center gap-x-2">
+        <td className="h-7 py-0 pl-3 pr-2 align-middle">
+          <div className="flex max-w-[26rem] flex-wrap items-center gap-x-2">
             {component.calls.map((call) => <CallChip key={callKey(call)} call={call} />)}
           </div>
         </td>
@@ -85,7 +85,7 @@ function AppRouteComponentRow({
 
 function CallChip({ call }: { call: AppRouteApiCall }) {
   return (
-    <span className="font-mono text-[10px] leading-4 text-ink-dim">
+    <span className="whitespace-nowrap font-mono text-[10px] leading-4 text-ink-dim">
       <span className="text-accent opacity-70">{call.method}</span> {shortPath(call.path)}
     </span>
   );

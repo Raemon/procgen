@@ -28,7 +28,6 @@ export function buildApiTypeSections(root: string = process.cwd()): ApiTypeSecti
     {
       id: RETURNED_SECTION_ID,
       title: 'Returned by POST and PUT',
-      hint: 'what a mutation answers with, straight or through a serializer',
       entries: returned,
     },
     ...ownerSections(rest),
@@ -91,7 +90,7 @@ function splitLarge(title: string, entries: ApiTypeSectionEntry[], depth: number
 }
 
 function section(title: string, entries: ApiTypeSectionEntry[]): ApiTypeSection {
-  return { id: title.replace(/[^a-z0-9]+/gi, '-').toLowerCase(), title, hint: '', entries };
+  return { id: title.replace(/[^a-z0-9]+/gi, '-').toLowerCase(), title, entries };
 }
 
 function ownerOf(file: string): string {
