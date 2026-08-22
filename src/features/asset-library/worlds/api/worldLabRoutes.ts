@@ -7,8 +7,8 @@ import {
   startGradeRun,
   startRollRun,
   startTrainRun,
+  worldsAskedFor,
 } from '../lab/labOperations';
-import { installCountOf } from '../lab/labSettings';
 import type { LabRun } from '../lab/labRun';
 import { runDetailJson, runListJson } from './labRunJson';
 
@@ -96,7 +96,14 @@ registerRoute({
   path: '/asset-library/worlds/lab/{id}/install',
   summary:
     "save a run's best worlds into the library, each with the tiles, pieces and culture its palette needs",
-  body: { count: { kind: 'int', help: 'how many of the top worlds to save, 1-20', optional: true } },
+  body: {
+    count: { kind: 'int', help: 'how many of the top worlds to save, 1-20', optional: true },
+    names: {
+      kind: 'json',
+      help: 'the exact world names from the run to save, up to 20; overrides count when given',
+      optional: true,
+    },
+  },
   query: {},
   handle: (context) => withRun(context, (run) => install(context, run)),
 });
@@ -122,6 +129,10 @@ function install(context: RouteContext, run: LabRun): ApiResponse {
       `${run.id} has no rolled world to save — grade runs measure the world you are already in`,
     );
   }
+  const wanted = worldsAskedFor(run, bodyOf(context.req.body));
+  if (wanted.length === 0) {
+    return failure(409, 'nothing_to_install', `${run.id} holds no world under the names asked for`);
+  }
   const world = context.access.current();
   const installed = installRunWorlds(
     {
@@ -131,7 +142,7 @@ function install(context: RouteContext, run: LabRun): ApiResponse {
       worldPresets: world.worldPresets,
     },
     run,
-    installCountOf(bodyOf(context.req.body)),
+    wanted,
     takenWorldNames(world.worldPresets.savedPresets().map((preset) => preset.name)),
   );
   context.access.persistWorld(world);

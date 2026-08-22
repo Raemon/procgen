@@ -1,7 +1,7 @@
 import '@/features/asset-library/worlds/nodes';
+import type { FramedCamera } from '@/features/game/render/view3d/framedCamera';
 import type { WorldViewRequest } from '../worldViewRequest';
 import { characterCameraForRequest } from './characterCameraForRequest';
-import type { FramedCamera } from './framedCamera';
 import { godCameraForRequest } from './godCameraForRequest';
 import { headlessWorldForRequest } from './headlessWorldForName';
 import { HeadlessWorldView } from './headlessWorldView';

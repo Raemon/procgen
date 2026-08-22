@@ -4,7 +4,7 @@ import { scoredGenome, walkSeedOf, type ScoredWorld } from '../selfPlay/scoreGen
 import { rolledGenome } from '../selfPlay/worldGenome';
 import { touristLimits } from '../walkingSim/touristWalk';
 import { rankWorlds, type LabRun, type LabStepper } from './labRun';
-import { labWorldOf } from './scoredWorldGrade';
+import { labWorldsToldApart } from './scoredWorldGrade';
 import type { GradeLimits } from './worldGrade';
 
 export function rollStepper(count: number, seed: number, limits: GradeLimits): LabStepper {
@@ -21,7 +21,7 @@ export function rollStepper(count: number, seed: number, limits: GradeLimits): L
         return;
       }
       scored.push(world);
-      run.worlds.push(labWorldOf(world));
+      run.worlds = labWorldsToldApart(scored);
       rankWorlds(run);
     },
     finish: (run: LabRun) => {

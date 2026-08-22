@@ -1,5 +1,5 @@
+import { textureLoadingIdle } from '@/features/game/render/view3d/textureLoadingIdle';
 import type { HeadlessWorldView } from './headlessWorldView';
-import { textureLoadingIdle } from './textureLoadingIdle';
 
 const MAX_FRAMES = 3000;
 const PAINTED_FRAMES_AFTER_STREAMING = 3;

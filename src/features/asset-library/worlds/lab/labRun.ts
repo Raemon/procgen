@@ -27,6 +27,7 @@ export interface LabRun {
   settings: Record<string, number>;
   done: number;
   total: number;
+  generationsDone: number;
   worlds: LabWorld[];
   batch: BatchScore | null;
   trajectory: GenerationRecord[];
@@ -58,6 +59,7 @@ export function newLabRun(
     settings,
     done: 0,
     total,
+    generationsDone: 0,
     worlds: [],
     batch: null,
     trajectory: [],

@@ -31,6 +31,8 @@ import { checkTemplates } from '@/features/asset-library/worlds/__tests__/templa
 import { checkWorldsAreDocuments } from '@/features/asset-library/worlds/__tests__/worldsAreDocuments.test';
 import { checkNamedWorldPresets } from '@/features/asset-library/worlds/__tests__/namedWorldPresets.test';
 import { checkWorldLab } from '@/features/asset-library/worlds/__tests__/worldLab.test';
+import { checkGenerationLabCharts } from '@/features/asset-library/worlds/__tests__/generationLabCharts.test';
+import { checkWorldShotQueue } from '@/features/game/__tests__/worldShotQueue.test';
 import { checkPresetSync } from '@/features/asset-library/worlds/__tests__/presetSync.test';
 import { checkAgentObservation } from '@/features/agents/__tests__/agentObservation.test';
 import { checkOccludedObservation } from '@/features/agents/__tests__/occludedObservation.test';
@@ -103,6 +105,8 @@ describe('standing and broken water', () => checkStandingAndBrokenWater(check));
 describe('templates', () => checkTemplates(check));
 describe('the named world presets', () => checkNamedWorldPresets(check));
 describe('the world lab', () => checkWorldLab(check));
+describe('the generation lab charts', () => checkGenerationLabCharts(check));
+describe('the world shot queue', () => checkWorldShotQueue(check));
 describe('presets shipped in data files sync into the database', () => checkPresetSync(check));
 describe('worlds and node groups as documents', () => checkWorldsAreDocuments(check));
 describe('agent observation', () => checkAgentObservation(check));
