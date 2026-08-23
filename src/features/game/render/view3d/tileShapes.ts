@@ -13,6 +13,7 @@ export const BLOCK_LAYER_HEIGHT = 1;
 
 const MARKER_HEIGHT = 0.7;
 const MARKER_WIDTH = 0.48;
+const BLOCK_SIDE = 0.95;
 
 export interface TileShape {
   geometry(faces: number): THREE.BufferGeometry;
@@ -31,23 +32,14 @@ export function voxelShape(): TileShape {
 
 export function shapedShape(kind: TileShapeKind, facing: number): TileShape {
   if (shapeFillsCell(kind)) return cubeShape(1);
-  if (kind === 'wall') return wallShape(facing);
   return {
     geometry: (faces) => shapedTileGeometry(kind, facing, faces),
     positionOf: (p) => [p.x + 0.5, p.elevation + BLOCK_LAYER_HEIGHT / 2, p.y + 0.5],
   };
 }
 
-function wallShape(connections: number): TileShape {
-  return {
-    geometry: (faces) => shapedTileGeometry('wall', connections, faces),
-    positionOf: (p) => [p.x + 0.5, p.elevation + p.height / 2, p.y + 0.5],
-    scaleOf: (p) => [1, p.height, 1],
-  };
-}
-
 export function blockShape(): TileShape {
-  return cubeShape(1);
+  return cubeShape(BLOCK_SIDE);
 }
 
 export function floorShape(): TileShape {
