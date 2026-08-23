@@ -319,7 +319,13 @@ export class View3D {
   private updateActiveCamera(dtSeconds: number): void {
     const eased = this.easedPlayer;
     if (this.cameraStyle === 'god') {
-      this.followCamera.update(dtSeconds, eased.x, eased.y, facingYawRadians(this.deps.world.facing));
+      this.followCamera.update(
+        dtSeconds,
+        eased.x,
+        eased.y,
+        facingYawRadians(this.deps.world.facing),
+        this.focusGroundHeight(),
+      );
       this.aimAtFollowedCharacter();
       return;
     }

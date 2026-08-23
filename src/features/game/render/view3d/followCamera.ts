@@ -41,6 +41,7 @@ export class FollowCamera {
   private yawTarget = 0;
   private followX = 0;
   private followY = 0;
+  private groundElevation = 0;
   private viewportHeightPx = 1;
   private snapOnNextUpdate = true;
   private readonly unprojectedPoint = new THREE.Vector3();
@@ -108,10 +109,16 @@ export class FollowCamera {
     this.camera.updateProjectionMatrix();
   }
 
-  update(dtSeconds: number, targetX: number, targetY: number, targetYaw: number): void {
+  update(
+    dtSeconds: number,
+    targetX: number,
+    targetY: number,
+    targetYaw: number,
+    groundElevation = 0,
+  ): void {
     this.yawTarget = targetYaw;
-    if (this.snapOnNextUpdate) this.snapTo(targetX, targetY);
-    else this.easeToward(dtSeconds, targetX, targetY);
+    if (this.snapOnNextUpdate) this.snapTo(targetX, targetY, groundElevation);
+    else this.easeToward(dtSeconds, targetX, targetY, groundElevation);
     this.placeCameraBehindFocus();
   }
 
@@ -123,17 +130,24 @@ export class FollowCamera {
     return (2 * this.cameraDistance() * Math.tan(halfFieldOfViewRadians())) / this.viewportHeightPx;
   }
 
-  private snapTo(targetX: number, targetY: number): void {
+  private snapTo(targetX: number, targetY: number, groundElevation: number): void {
     this.followX = targetX;
     this.followY = targetY;
+    this.groundElevation = groundElevation;
     this.currentYaw = this.yawTarget;
     this.snapOnNextUpdate = false;
   }
 
-  private easeToward(dtSeconds: number, targetX: number, targetY: number): void {
+  private easeToward(
+    dtSeconds: number,
+    targetX: number,
+    targetY: number,
+    groundElevation: number,
+  ): void {
     const focusStep = easeFraction(FOCUS_SMOOTHING_RATE, dtSeconds);
     this.followX += (targetX - this.followX) * focusStep;
     this.followY += (targetY - this.followY) * focusStep;
+    this.groundElevation += (groundElevation - this.groundElevation) * focusStep;
     this.currentYaw += shortestArc(this.currentYaw, this.yawTarget) * easeFraction(TURN_SMOOTHING_RATE, dtSeconds);
   }
 
@@ -155,10 +169,10 @@ export class FollowCamera {
     const centerZ = focus.y + 0.5;
     this.camera.position.set(
       centerX - Math.sin(this.currentYaw) * distanceBehind,
-      distance * Math.sin(pitchRadians()),
+      this.groundElevation + distance * Math.sin(pitchRadians()),
       centerZ + Math.cos(this.currentYaw) * distanceBehind,
     );
-    this.camera.lookAt(centerX, 0, centerZ);
+    this.camera.lookAt(centerX, this.groundElevation, centerZ);
   }
 }
 
