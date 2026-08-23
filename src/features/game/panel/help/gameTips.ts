@@ -1,4 +1,5 @@
 import type { TooltipContent } from '@/features/app-shell/tooltips/tooltipContent';
+import { PLAYABLE_PACES } from '@/features/asset-library/worlds/randomize/playableRoll';
 import type { ViewMode } from '../viewMode';
 
 export const GAME_VIEW_TIP: TooltipContent = {
@@ -32,6 +33,12 @@ export const VIEW_MODE_TIPS: Readonly<Record<ViewMode, TooltipContent>> = {
     body: 'Every discrete thing the generators placed, on one annotated map — pan and zoom to survey it. Edges are drawn only where a generator truly derived one thing from another.',
     when: 'Auditing what a roll actually produced, and which node each placed thing came from.',
   },
+};
+
+export const RANDOMIZE_WORLD_TIP: TooltipContent = {
+  title: 'roll a world',
+  body: `Throws the running world's pipeline away and rolls fresh combinations of nodes, re-rolling until you would land somewhere with at least ${PLAYABLE_PACES} paces of walkable ground. The same roll the world detail panel offers; undo lives there too.`,
+  when: 'The current world is dull, or you want somewhere new to walk right away.',
 };
 
 export const CAPTURE_TIP: TooltipContent = {
