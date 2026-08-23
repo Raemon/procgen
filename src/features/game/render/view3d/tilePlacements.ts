@@ -10,7 +10,6 @@ import {
   shapeFillsCell,
   type TileShapeKind,
 } from '@/features/asset-library/tiles/tileShapeKind';
-import { wallConnectionMask } from './shaped/shapedTileBoxParts';
 
 export interface TilePlacement {
   x: number;
@@ -64,17 +63,7 @@ function addCellToShapes(
   if (tileId === EMPTY_TILE) return;
   const tile = tileAssets.byId(tileId);
   if (!tile) return;
-  const facing =
-    tile.shape === 'wall'
-      ? wallConnectionMask((direction) =>
-          sealsWallSeam(tileAssets.byId(sampler.tileAt(x + direction.dx, y + direction.dy))),
-        )
-      : sampler.groundFacingAt(x, y);
-  addTileToShapes(shapes, tile, x, y, sampler.elevationAt(x, y), facing);
-}
-
-export function sealsWallSeam(tile: TileDef | undefined): boolean {
-  return tile !== undefined && !tile.walkable && tile.role !== 'water';
+  addTileToShapes(shapes, tile, x, y, sampler.elevationAt(x, y), sampler.groundFacingAt(x, y));
 }
 
 function addTileToShapes(

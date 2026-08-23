@@ -1,7 +1,7 @@
 import type { TileId } from '@/features/asset-library/asset';
 import { DEFAULT_LIGHT_INK } from '@/features/game/light/lightEmission';
 import { newTileWithId, type TileDef, type TileRole } from './tileDef';
-import { defaultHeightForTile, MIN_BLOCKING_TILE_HEIGHT } from './tileHeight';
+import { defaultHeightForTile } from './tileHeight';
 import type { TileShapeKind } from './tileShapeKind';
 
 interface TileEntry {
@@ -17,8 +17,7 @@ interface TileEntry {
   lightInk?: string;
 }
 
-const POOL_HEIGHT = MIN_BLOCKING_TILE_HEIGHT;
-const WAIST_HEIGHT = MIN_BLOCKING_TILE_HEIGHT;
+const POOL_HEIGHT = 1;
 const OAK_HEIGHT = 2.6;
 const PINE_HEIGHT = 3.2;
 const BUSH_HEIGHT = 1.6;
@@ -53,33 +52,33 @@ const TILE_CATALOG = [
 
   { name: 'dressed granite wall', symbol: '▓', color: '#8d8f8c', walkable: false, role: null, texture: 'dressedGranite' },
   { name: 'granite footing', symbol: '▂', color: '#7b7d7a', walkable: true, role: null, shape: 'slabLower', texture: 'dressedGranite' },
-  { name: 'slate shingle roof', symbol: '∧', color: '#5f6a72', walkable: true, role: null, shape: 'stairs', texture: 'slateShingle' },
-  { name: 'slate roof ridge', symbol: '⌂', color: '#6c757c', walkable: true, role: null, shape: 'ramp', texture: 'slateShingle' },
+  { name: 'slate shingle roof', symbol: '∧', color: '#5f6a72', walkable: false, role: null, shape: 'stairs', texture: 'slateShingle' },
+  { name: 'slate roof ridge', symbol: '⌂', color: '#6c757c', walkable: false, role: null, shape: 'ramp', texture: 'slateShingle' },
   { name: 'granite stair', symbol: '≜', color: '#94968f', walkable: true, role: null, shape: 'stairs', texture: 'dressedGranite' },
   { name: 'oak plank floor', symbol: '≡', color: '#8c714e', walkable: true, role: null, shape: 'slabLower', texture: 'oakPlank' },
-  { name: 'oak beam', symbol: '│', color: '#6f5739', walkable: false, role: null, shape: 'wall', texture: 'oakBeam' },
-  { name: 'oak shutter window', symbol: '▤', color: '#7d6743', walkable: false, role: null, shape: 'wall', texture: 'oakBeam' },
-  { name: 'iron-strapped oak door', symbol: '▯', color: '#6a5537', walkable: false, role: null, shape: 'wall', texture: 'oakPlank' },
+  { name: 'oak beam', symbol: '│', color: '#6f5739', walkable: false, role: null, shape: 'panel', texture: 'oakBeam' },
+  { name: 'oak shutter window', symbol: '▤', color: '#7d6743', walkable: false, role: null, shape: 'panel', texture: 'oakBeam' },
+  { name: 'iron-strapped oak door', symbol: '▯', color: '#6a5537', walkable: false, role: null, shape: 'panel', texture: 'oakPlank' },
   { name: 'granite chimney', symbol: '╻', color: '#868880', walkable: false, role: null, texture: 'dressedGranite' },
 
   { name: 'limewashed wattle wall', symbol: '░', color: '#cbc0aa', walkable: false, role: null, texture: 'limewashWattle' },
-  { name: 'oak cruck frame', symbol: '┃', color: '#6b5439', walkable: false, role: null, shape: 'wall', texture: 'oakBeam' },
-  { name: 'thatch roof', symbol: '∩', color: '#b09a63', walkable: true, role: null, shape: 'stairs', texture: 'thatch' },
-  { name: 'thatch roof ridge', symbol: '⌒', color: '#bda86f', walkable: true, role: null, shape: 'ramp', texture: 'thatch' },
+  { name: 'oak cruck frame', symbol: '┃', color: '#6b5439', walkable: false, role: null, shape: 'panel', texture: 'oakBeam' },
+  { name: 'thatch roof', symbol: '∩', color: '#b09a63', walkable: false, role: null, shape: 'stairs', texture: 'thatch' },
+  { name: 'thatch roof ridge', symbol: '⌒', color: '#bda86f', walkable: false, role: null, shape: 'ramp', texture: 'thatch' },
   { name: 'rammed earth floor', symbol: '▫', color: '#9a8463', walkable: true, role: null, shape: 'slabLower', texture: 'rammedEarth' },
-  { name: 'oak plank door', symbol: '▮', color: '#7a613f', walkable: false, role: null, shape: 'wall', texture: 'oakPlank' },
-  { name: 'small-paned window', symbol: '▦', color: '#a5a99a', walkable: false, role: null, shape: 'wall', texture: 'oakBeam' },
+  { name: 'oak plank door', symbol: '▮', color: '#7a613f', walkable: false, role: null, shape: 'panel', texture: 'oakPlank' },
+  { name: 'small-paned window', symbol: '▦', color: '#a5a99a', walkable: false, role: null, shape: 'panel', texture: 'oakBeam' },
   { name: 'fieldstone footing', symbol: '▁', color: '#8a8779', walkable: true, role: null, shape: 'slabLower', texture: 'fieldstone' },
   { name: 'clay chimney', symbol: '╹', color: '#9f7a5c', walkable: false, role: null, texture: 'rammedEarth' },
 
-  { name: 'forge coals', symbol: '✱', color: '#b8582c', walkable: true, role: null, shape: 'slabLower', height: KNEE_HEIGHT, light: 5, lightInk: EMBER_INK, texture: 'forgeCoals' },
-  { name: 'anvil block', symbol: '⏥', color: '#56575b', walkable: false, role: null, height: WAIST_HEIGHT, texture: 'rivetedIron' },
-  { name: 'oak bench', symbol: '⌐', color: '#7d6746', walkable: true, role: null, shape: 'slabLower', height: KNEE_HEIGHT, texture: 'oakPlank' },
-  { name: 'lantern post', symbol: '⚲', color: '#c2a061', walkable: false, role: null, shape: 'wall', light: 7, lightInk: LANTERN_INK, texture: 'oakBeam' },
-  { name: 'well ring', symbol: '◎', color: '#8a8880', walkable: false, role: null, height: WAIST_HEIGHT, texture: 'fieldstone' },
+  { name: 'forge coals', symbol: '✱', color: '#b8582c', walkable: false, role: null, shape: 'slabLower', height: KNEE_HEIGHT, light: 5, lightInk: EMBER_INK, texture: 'forgeCoals' },
+  { name: 'anvil block', symbol: '⏥', color: '#56575b', walkable: false, role: null, height: 1, texture: 'rivetedIron' },
+  { name: 'oak bench', symbol: '⌐', color: '#7d6746', walkable: false, role: null, shape: 'slabLower', height: KNEE_HEIGHT, texture: 'oakPlank' },
+  { name: 'lantern post', symbol: '⚲', color: '#c2a061', walkable: false, role: null, shape: 'panel', light: 7, lightInk: LANTERN_INK, texture: 'oakBeam' },
+  { name: 'well ring', symbol: '◎', color: '#8a8880', walkable: false, role: null, height: 1, texture: 'fieldstone' },
   { name: 'garden loam', symbol: '⁖', color: '#6a5439', walkable: true, role: null, texture: 'forestLoam' },
-  { name: 'firewood stack', symbol: '≣', color: '#7a6142', walkable: false, role: null, height: WAIST_HEIGHT, texture: 'oakBeam' },
-  { name: 'market awning', symbol: '▬', color: '#a26c46', walkable: false, role: null, shape: 'wall', texture: 'oakPlank' },
+  { name: 'firewood stack', symbol: '≣', color: '#7a6142', walkable: false, role: null, height: 1, texture: 'oakBeam' },
+  { name: 'market awning', symbol: '▬', color: '#a26c46', walkable: false, role: null, shape: 'panel', texture: 'oakPlank' },
 
   { name: 'lake water', symbol: '≀', color: '#3d6a82', walkable: false, role: 'water', height: POOL_HEIGHT, texture: 'stillWater' },
   { name: 'whitewater', symbol: '⁓', color: '#a8c6cf', walkable: false, role: 'water', height: POOL_HEIGHT, texture: 'stillWater' },

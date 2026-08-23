@@ -1,6 +1,6 @@
 import { readPersistedFile, writePersistedFile } from '@/features/app-shell/persistence/repoFileStore';
 import { defWithCompactFaceArt, faceArtFromStoredShape, type StoredArtOf } from './storage/storedFaceArt';
-import { tileSealedWhenBlocking, tileWithSanitizedLight, type TileDef } from './tileDef';
+import { tileWithSanitizedLight, type TileDef } from './tileDef';
 import { storedTileHeight } from './tileHeight';
 import { DEFAULT_TILE_SHAPE, isTileShapeKind } from './tileShapeKind';
 
@@ -12,11 +12,7 @@ export function loadStoredTiles(): TileDef[] | null {
 
 export function tilesFromStoredJson(parsed: unknown): TileDef[] | null {
   if (!Array.isArray(parsed)) return null;
-  const tiles = parsed
-    .filter(isTileDef)
-    .map(withValidatedFields)
-    .map(tileWithSanitizedLight)
-    .map(tileSealedWhenBlocking);
+  const tiles = parsed.filter(isTileDef).map(withValidatedFields).map(tileWithSanitizedLight);
   return tiles.length > 0 ? tiles : null;
 }
 

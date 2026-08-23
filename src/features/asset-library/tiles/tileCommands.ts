@@ -2,12 +2,7 @@ import type { TileId } from '@/features/asset-library/asset';
 import { clampLightRadius, MAX_LIGHT_RADIUS } from '@/features/game/light/lightEmission';
 import { isCubeFaceArt } from '@/features/asset-library/tiles/tileFaceArt';
 import type { EditableTileFields } from '@/features/asset-library/tiles/tileAssets';
-import {
-  BLOCKING_TILE_SHAPES,
-  shapeSealsAgainstNeighbours,
-  TILE_SHAPE_KINDS,
-} from '@/features/asset-library/tiles/tileShapeKind';
-import { MIN_BLOCKING_TILE_HEIGHT } from '@/features/asset-library/tiles/tileHeight';
+import { TILE_SHAPE_KINDS } from '@/features/asset-library/tiles/tileShapeKind';
 import {
   commandFailed,
   commandSucceeded,
@@ -55,14 +50,10 @@ registerTileCommand({
     name: { kind: 'text', help: 'the tile name shown in menus and the observation legend', optional: true },
     symbol: { kind: 'text', help: 'the single character this tile draws as in an observation', optional: true },
     color: { kind: 'text', help: 'a #rrggbb color, or #rrggbbaa with aa=00 for transparent', optional: true },
-    walkable: {
-      kind: 'int',
-      help: `1 if anyone may stand on this tile, 0 if it blocks — a blocking tile is forced to draw as ${listOf(BLOCKING_TILE_SHAPES)} and stand at least ${MIN_BLOCKING_TILE_HEIGHT} tall`,
-      optional: true,
-    },
+    walkable: { kind: 'int', help: '1 if anyone may stand on this tile, 0 if it blocks', optional: true },
     height: {
       kind: 'number',
-      help: `how tall a blocking tile stands in the 3-D view, in tiles — blockers default to 2 and never drop below ${MIN_BLOCKING_TILE_HEIGHT}, walkable tiles are always drawn flat`,
+      help: 'how tall a blocking tile stands in the 3-D view, in tiles — blockers default to 2, walkable tiles are always drawn flat',
       optional: true,
     },
     light: {
@@ -112,7 +103,7 @@ registerTileCommand({
 registerTileCommand({
   action: 'set_tile_shape',
   humanControl: 'detail panel, tiles: the shape dropdown on a tile row',
-  description: `Choose the solid this tile draws as in the 3-D view. Shapes are: ${listOf(TILE_SHAPE_KINDS)}. Everything but cube and wall leaves part of the cell open and is turned by the per-voxel facing; wall joins up with neighbouring blockers on its own. A blocking tile only accepts ${listOf(BLOCKING_TILE_SHAPES)}, so it always reads as solid.`,
+  description: `Choose the solid this tile draws as in the 3-D view. Shapes are: ${listOf(TILE_SHAPE_KINDS)}. Everything but cube leaves part of the cell open and is turned by the per-voxel facing.`,
   params: {
     tile_id: { kind: 'int', help: TILE_ID_HELP },
     shape: { kind: 'int', help: `index into the shape list: ${TILE_SHAPE_KINDS.map((kind, index) => `${index}=${kind}`).join(', ')}` },
@@ -127,12 +118,6 @@ function setTileShape(context: CommandContext, params: CommandParams): CommandRe
     if (!read.ok) return read.failure;
     const shape = TILE_SHAPE_KINDS[read.value];
     if (!shape) return commandFailed('invalid_value', `shape must be one of: ${listOf(TILE_SHAPE_KINDS.map((_, index) => index))}`);
-    if (!context.tileAssets.byId(tileId)?.walkable && !shapeSealsAgainstNeighbours(shape)) {
-      return commandFailed(
-        'invalid_value',
-        `tile ${tileId} blocks movement, so its shape must be one of: ${listOf(BLOCKING_TILE_SHAPES)}`,
-      );
-    }
     context.tileAssets.update(tileId, { shape });
     return commandSucceeded(`tile ${tileId} draws as ${shape}`);
   });
