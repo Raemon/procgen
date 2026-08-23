@@ -33,6 +33,26 @@ export function checkCameraMovementAndZoom(check: CheckReporter): void {
     camera.camera.far / camera.camera.near <= 1600.0000001,
   );
 
+  const flatSpawn = new FollowCamera();
+  flatSpawn.setViewportSize(1600, 900);
+  flatSpawn.update(0, 0, 0, 0);
+  const flatHeight = flatSpawn.camera.position.y;
+  const flatRadius = flatSpawn.visibleGroundRadiusTiles();
+  const highSpawn = new FollowCamera();
+  highSpawn.setViewportSize(1600, 900);
+  highSpawn.update(0, 0, 0, 0, 9);
+  check('the god camera spawns above the ground it looks at', highSpawn.camera.position.y > 9);
+  check(
+    'high ground lifts the whole camera rig, keeping the flat-world framing',
+    Math.abs(highSpawn.camera.position.y - 9 - flatHeight) < 1e-9 &&
+      Math.abs(highSpawn.visibleGroundRadiusTiles(9) - flatRadius) < 1e-6,
+  );
+  highSpawn.update(0.05, 0, 0, 0, 0);
+  check(
+    'the god camera glides rather than pops when its focus drops off a cliff',
+    highSpawn.camera.position.y < 9 + flatHeight && highSpawn.camera.position.y > flatHeight,
+  );
+
   const zoom = new ZoomScale(1, 0.25, 4);
   zoom.applyWheelPixels(-420);
   check('one wheel notch out doubles the zoom scale', Math.abs(zoom.current() - 2) < 1e-9);
