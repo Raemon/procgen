@@ -1,8 +1,8 @@
 import type { TileId } from '../asset';
 import { clampLightRadius, DEFAULT_LIGHT_INK } from '@/features/game/light/lightEmission';
 import type { CubeFaceArt } from './tileFaceArt';
-import { DEFAULT_TILE_SHAPE, type TileShapeKind } from './tileShapeKind';
-import { WALKABLE_TILE_HEIGHT } from './tileHeight';
+import { DEFAULT_TILE_SHAPE, sealedShapeNearestTo, type TileShapeKind } from './tileShapeKind';
+import { storedTileHeight, WALKABLE_TILE_HEIGHT } from './tileHeight';
 
 export type TileRole = 'water' | 'sand' | 'grass' | 'tree' | 'rock';
 
@@ -36,6 +36,11 @@ export function newTileWithId(id: TileId): TileDef {
     light: 0,
     lightInk: DEFAULT_LIGHT_INK,
   };
+}
+
+export function tileSealedWhenBlocking(tile: TileDef): TileDef {
+  if (tile.walkable) return tile;
+  return { ...tile, shape: sealedShapeNearestTo(tile.shape), height: storedTileHeight(tile) };
 }
 
 export function tileWithSanitizedLight(tile: TileDef): TileDef {

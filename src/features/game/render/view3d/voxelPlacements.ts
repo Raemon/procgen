@@ -6,7 +6,8 @@ import { blockLayersOfTile, WALKABLE_TILE_HEIGHT } from '@/features/asset-librar
 import { shapeFillsCell } from '@/features/asset-library/tiles/tileShapeKind';
 import type { TileDef } from '@/features/asset-library/tiles/tileDef';
 import { glowOfEmitter } from './selfLitGlow';
-import { tileStandsAsSolidBlock, type TilePlacement } from './tilePlacements';
+import { wallConnectionMask } from './shaped/shapedTileBoxParts';
+import { sealsWallSeam, tileStandsAsSolidBlock, type TilePlacement } from './tilePlacements';
 
 export interface VoxelPlacementsByShape {
   voxels: TilePlacement[];
@@ -41,22 +42,46 @@ function collectColumn(
   if (!column || column.length < 2) return;
   const groundElevation = sampler.elevationAt(x, y) + standingHeightOfGround(sampler, tileAssets, x, y);
   for (let layer = 1; layer < column.length; layer++) {
-    collectVoxel(into, tileAssets, x, y, groundElevation + layer - 1, column[layer] ?? EMPTY_VOXEL);
+    collectVoxel(into, sampler, tileAssets, x, y, layer, groundElevation + layer - 1, column[layer] ?? EMPTY_VOXEL);
   }
 }
 
 function collectVoxel(
   into: VoxelPlacementsByShape,
+  sampler: WorldSampler,
   tileAssets: ReadOnlyTileAssets,
   x: number,
   y: number,
+  layer: number,
   elevation: number,
   packed: number,
 ): void {
   const tile = tileAssets.byId(tileIdOfVoxel(packed));
   if (!tile) return;
-  const placement = voxelPlacement(tile, x, y, elevation, facingOfVoxel(packed));
+  const facing =
+    tile.shape === 'wall'
+      ? wallConnectionMask((direction) =>
+          voxelSealsWallSeam(sampler, tileAssets, x + direction.dx, y + direction.dy, layer),
+        )
+      : facingOfVoxel(packed);
+  const placement = voxelPlacement(tile, x, y, elevation, facing);
   (shapeFillsCell(tile.shape) ? into.voxels : into.shaped).push(placement);
+}
+
+function voxelSealsWallSeam(
+  sampler: WorldSampler,
+  tileAssets: ReadOnlyTileAssets,
+  x: number,
+  y: number,
+  layer: number,
+): boolean {
+  const packed = sampler.packedVoxelColumnAt(x, y)?.[layer];
+  if (packed !== undefined && packed !== EMPTY_VOXEL) {
+    const tile = tileAssets.byId(tileIdOfVoxel(packed));
+    if (tile && !tile.walkable) return true;
+  }
+  const ground = tileAssets.byId(sampler.tileAt(x, y));
+  return ground !== undefined && sealsWallSeam(ground) && blockLayersOfTile(ground) >= layer;
 }
 
 function voxelPlacement(

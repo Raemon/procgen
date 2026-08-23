@@ -49,6 +49,7 @@ import { checkPieceInvariants } from '@/features/asset-library/__tests__/pieceIn
 import { checkVillageInvariants } from '@/features/asset-library/worlds/__tests__/villageInvariants.test';
 import { checkCultureEditing } from '@/features/asset-library/__tests__/cultureEditing.test';
 import { checkShapedTileInvariants } from '@/features/asset-library/__tests__/shapedTileInvariants.test';
+import { checkBlockingTileInvariants } from '@/features/asset-library/__tests__/blockingTileInvariants.test';
 import { checkMarkerBillboardInvariants } from '@/features/game/__tests__/markerBillboardInvariants.test';
 import { checkSourceArchitecture } from './sourceArchitecture.test';
 import { sourceCatalogTests } from './sourceCatalog.test';
@@ -120,6 +121,7 @@ describe('the mutation boundary', () => checkOnlyTheCommandLayerCanMutate(check)
 describe('tile art mips', () => checkTileArtMipInvariants(check));
 describe('tile art storage', () => checkTileArtStorageInvariants(check));
 describe('shaped tiles and per-voxel facing', () => checkShapedTileInvariants(check));
+describe('tiles that block movement', () => checkBlockingTileInvariants(check));
 describe('scattered prop billboards', () => checkMarkerBillboardInvariants(check));
 describe('pieces', () => checkPieceInvariants(check));
 describe('villages', () => checkVillageInvariants(check));
