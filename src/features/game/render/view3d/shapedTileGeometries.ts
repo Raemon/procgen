@@ -5,7 +5,7 @@ import { sharedTileBoxGeometry } from './sharedTileGeometries';
 import { addBoxToFaceBuckets } from './shaped/boxPartBuckets';
 import { emptyFaceBuckets, geometryOfFaceBuckets } from './shaped/faceBuckets';
 import { addRampWedgeToFaceBuckets } from './shaped/rampWedgeBuckets';
-import { boxPartsOfShape } from './shaped/shapedTileBoxParts';
+import { boxPartsOfShape, wallBoxParts } from './shaped/shapedTileBoxParts';
 
 const QUARTER_TURN = Math.PI / 2;
 
@@ -16,8 +16,16 @@ export function shapedTileGeometry(
 ): THREE.BufferGeometry {
   if (shapeFillsCell(shape)) return sharedTileBoxGeometry(1, 1, 1, faces);
   return rememberedSharedGeometry(`shaped:${shape}:${facing}:${faces}`, () =>
-    turnedToFacing(unturnedShapeGeometry(shape, faces), facing),
+    shape === 'wall'
+      ? wallGeometryOfConnections(facing, faces)
+      : turnedToFacing(unturnedShapeGeometry(shape, faces), facing),
   );
+}
+
+function wallGeometryOfConnections(connections: number, faces: number): THREE.BufferGeometry {
+  const buckets = emptyFaceBuckets();
+  for (const part of wallBoxParts(connections)) addBoxToFaceBuckets(buckets, part);
+  return geometryOfFaceBuckets(buckets, faces);
 }
 
 function unturnedShapeGeometry(shape: TileShapeKind, faces: number): THREE.BufferGeometry {

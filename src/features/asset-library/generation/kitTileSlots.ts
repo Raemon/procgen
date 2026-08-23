@@ -24,23 +24,23 @@ const MOST_ACCENTS = 2;
 export const BUILDING_TILE_SLOTS: readonly TileSlot[] = [
   slot('wall', 'wall', 'wall', 'cube', false, 0.55),
   slot('footing', 'footing', 'wall', 'slabLower', true, 0.45),
-  slot('roofSlope', 'roof', 'roof', 'stairs', false, 0.5),
-  slot('roofRidge', 'roof ridge', 'roof', 'ramp', false, 0.56),
+  slot('roofSlope', 'roof', 'roof', 'stairs', true, 0.5),
+  slot('roofRidge', 'roof ridge', 'roof', 'ramp', true, 0.56),
   slot('floor', 'floor', 'floor', 'slabLower', true, 0.5),
-  slot('beam', 'beam', 'trim', 'panel', false, 0.4),
-  slot('window', 'window', 'trim', 'panel', false, 0.62),
-  slot('door', 'door', 'trim', 'panel', false, 0.42),
+  slot('beam', 'beam', 'trim', 'wall', false, 0.4),
+  slot('window', 'window', 'trim', 'wall', false, 0.62),
+  slot('door', 'door', 'trim', 'wall', false, 0.42),
   slot('chimney', 'chimney', 'wall', 'cube', false, 0.52),
   slot('stair', 'stair', 'wall', 'stairs', true, 0.58),
   slot('path', 'path', 'ground', 'cube', true, 0.6),
 ];
 
 const ACCENT_TILE_SLOTS: readonly TileSlot[] = [
-  { ...slot('bench', 'bench', 'trim', 'slabLower', false, 0.48), height: KNEE_HEIGHT },
-  { ...slot('lanternPost', 'lantern post', 'trim', 'panel', false, 0.6), light: 7, lightInk: LANTERN_INK },
-  { ...slot('hearth', 'hearth', 'wall', 'slabLower', false, 0.45), height: KNEE_HEIGHT, light: 5, lightInk: EMBER_INK },
+  { ...slot('bench', 'bench', 'trim', 'slabLower', true, 0.48), height: KNEE_HEIGHT },
+  { ...slot('lanternPost', 'lantern post', 'trim', 'wall', false, 0.6), light: 7, lightInk: LANTERN_INK },
+  { ...slot('hearth', 'hearth', 'wall', 'slabLower', true, 0.45), height: KNEE_HEIGHT, light: 5, lightInk: EMBER_INK },
   slot('markerStone', 'marker stone', 'wall', 'cube', false, 0.5),
-  { ...slot('trough', 'water trough', 'trim', 'slabLower', false, 0.5), height: KNEE_HEIGHT },
+  { ...slot('trough', 'water trough', 'trim', 'slabLower', true, 0.5), height: KNEE_HEIGHT },
   slot('planter', 'planter box', 'ground', 'cube', false, 0.5),
 ];
 

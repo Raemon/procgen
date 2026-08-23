@@ -1,6 +1,7 @@
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
 import type { TileDef } from '../tileDef';
 import type { EditableTileFields } from '../tileAssets';
+import { MIN_BLOCKING_TILE_HEIGHT } from '../tileHeight';
 import { Button } from '@/features/app-shell/controls/Button';
 import { IconButton } from '@/features/app-shell/controls/IconButton';
 import { classes } from '@/features/app-shell/controls/classes';
@@ -85,7 +86,7 @@ function HeightInput({ height, onChange }: { height: number; onChange(height: nu
   return (
     <input
       type="number"
-      min={0.5}
+      min={MIN_BLOCKING_TILE_HEIGHT}
       max={8}
       step={0.5}
       className={classes(FIELD_CLASSES, 'w-14 shrink-0')}
