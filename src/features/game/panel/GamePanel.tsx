@@ -4,7 +4,7 @@ import { Select } from '@/features/app-shell/controls/Select';
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
 import { WorldIcon } from '@/features/app-shell/icons/panelIcons';
 import { tooltipHandlers } from '@/features/app-shell/tooltips/tooltipHandlers';
-import { GAME_VIEW_TIP, RANDOMIZE_WORLD_TIP, VIEW_MODE_TIPS } from './help/gameTips';
+import { GAME_VIEW_TIP, RANDOMIZE_WORLD_TIP, REROLL_SEED_TIP, VIEW_MODE_TIPS } from './help/gameTips';
 import { RunningWorldName } from './RunningWorldName';
 import { GameStage } from './GameStage';
 import { GameToolbar } from './GameToolbar';
@@ -34,10 +34,17 @@ export function GamePanel() {
         <RunningWorldName />
         <Button
           className="whitespace-nowrap"
+          tip={REROLL_SEED_TIP}
+          onClick={() => perform('randomize_seed')}
+        >
+          🎲 reroll
+        </Button>
+        <Button
+          className="whitespace-nowrap"
           tip={RANDOMIZE_WORLD_TIP}
           onClick={() => perform('randomize_world')}
         >
-          🎲 randomize
+          ✨ new world
         </Button>
         <Select
           options={VIEW_MODES.map((entry) => ({ value: entry.id, text: entry.label }))}

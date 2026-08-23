@@ -341,6 +341,23 @@ export function checkCommandDispatch(check: CheckReporter): void {
     const undone = act('god', 'undo_randomize');
     return rolled.ok && undone.ok && JSON.stringify(commands.store.snapshot()) === before;
   })());
+  check('rerolling the seed regenerates the world without touching a single node', (() => {
+    act('god', 'load_preset', { name: 'check preset' });
+    const before = commands.store.snapshot();
+    const beforeNodes = JSON.stringify(before.nodes);
+    const beforeSeed = before.seed;
+    const rolled = act('god', 'randomize_seed');
+    const after = commands.store.snapshot();
+    const undone = act('god', 'undo_randomize');
+    return (
+      rolled.ok &&
+      rolled.summary.includes('paces') &&
+      JSON.stringify(after.nodes) === beforeNodes &&
+      after.seed !== beforeSeed &&
+      undone.ok &&
+      commands.store.snapshot().seed === beforeSeed
+    );
+  })());
   check('an unseeded roll lands the player with room to walk and can be undone', (() => {
     const before = JSON.stringify(commands.store.snapshot());
     const rolled = act('god', 'randomize_world');

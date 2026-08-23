@@ -35,9 +35,15 @@ export const VIEW_MODE_TIPS: Readonly<Record<ViewMode, TooltipContent>> = {
   },
 };
 
+export const REROLL_SEED_TIP: TooltipContent = {
+  title: 'reroll this world',
+  body: `Keeps every node and knob of the running world and rolls a new seed — the same rules laying out a fresh landscape, re-rolled until you would land somewhere with at least ${PLAYABLE_PACES} paces of walkable ground.`,
+  when: 'You like this kind of world and want another take on it.',
+};
+
 export const RANDOMIZE_WORLD_TIP: TooltipContent = {
-  title: 'roll a world',
-  body: `Throws the running world's pipeline away and rolls fresh combinations of nodes, re-rolling until you would land somewhere with at least ${PLAYABLE_PACES} paces of walkable ground. The same roll the world detail panel offers; undo lives there too.`,
+  title: 'roll a new world',
+  body: `Throws the running world's pipeline away and rolls a fresh combination of nodes, re-rolling until you would land somewhere with at least ${PLAYABLE_PACES} paces of walkable ground. The same roll the world detail panel offers; undo lives there too.`,
   when: 'The current world is dull, or you want somewhere new to walk right away.',
 };
 

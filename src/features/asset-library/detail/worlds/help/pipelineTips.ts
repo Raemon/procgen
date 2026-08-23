@@ -17,7 +17,7 @@ export const TIME_TIP: TooltipContent = {
 
 export const ROLL_SEED_TIP: TooltipContent = {
   title: 'roll a new seed',
-  body: 'Rerolls the world without touching the pipeline — the fastest way to see whether a setup produces good worlds in general or just got lucky once.',
+  body: 'Rerolls the world without touching the pipeline, until the player would land with room to walk — the fastest way to see whether a setup produces good worlds in general or just got lucky once.',
 };
 
 export const CLEAR_PIPELINE_TIP: TooltipContent = {
