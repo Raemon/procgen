@@ -8,6 +8,10 @@ export const VIEW_MODES: readonly { id: ViewMode; label: string }[] = [
   { id: 'features', label: 'Features' },
 ];
 
+export function isViewMode(value: unknown): value is ViewMode {
+  return VIEW_MODES.some((entry) => entry.id === value);
+}
+
 export function isCharacterControlled(mode: ViewMode): boolean {
   return mode === 'character' || mode === 'agent-character';
 }

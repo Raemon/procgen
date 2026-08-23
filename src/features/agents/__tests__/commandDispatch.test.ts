@@ -32,7 +32,7 @@ import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 
 function abilityWorld() {
   const store = new PipelineStore(emptyPipeline());
-  const abilityTiles = new TileAssets();
+  const abilityTiles = new TileAssets([]);
   const pieces = new PieceAssets();
   const cultures = new CultureAssets();
   const pose = { x: 0, y: 0, facing: 0 as FacingIndex };
@@ -340,6 +340,17 @@ export function checkCommandDispatch(check: CheckReporter): void {
     const rolled = act('god', 'randomize_sliders', { seed: 42 });
     const undone = act('god', 'undo_randomize');
     return rolled.ok && undone.ok && JSON.stringify(commands.store.snapshot()) === before;
+  })());
+  check('an unseeded roll lands the player with room to walk and can be undone', (() => {
+    const before = JSON.stringify(commands.store.snapshot());
+    const rolled = act('god', 'randomize_world');
+    const undone = act('god', 'undo_randomize');
+    return (
+      rolled.ok &&
+      rolled.summary.includes('paces') &&
+      undone.ok &&
+      JSON.stringify(commands.store.snapshot()) === before
+    );
   })());
   check('capture_region lifts world tiles into a new piece', (() => {
     const before = commands.pieces.all().length;

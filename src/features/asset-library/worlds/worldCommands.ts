@@ -3,6 +3,12 @@ import { sanitizePipeline } from '@/features/asset-library/worlds/pipeline/sanit
 import { examplePipelines } from '@/features/asset-library/worlds/presets/examplePipelines';
 import { permutedNodeCombination } from '@/features/asset-library/worlds/randomize/permuteNodeCombination';
 import { permutedSliderParams } from '@/features/asset-library/worlds/randomize/permuteSliderParams';
+import {
+  PLAYABLE_PACES,
+  rolledUntilPlayable,
+  spawnPacesOf,
+  type PlayableRoll,
+} from '@/features/asset-library/worlds/randomize/playableRoll';
 import { randomWorldPipeline } from '@/features/asset-library/worlds/randomize/randomWorldPipeline';
 import { recipeTilesOf, type RecipeTiles } from '@/features/asset-library/worlds/randomize/recipeTiles';
 import { copyNameFor } from '@/features/asset-library/worlds/presets/copyName';
@@ -249,7 +255,7 @@ for (const entry of ROLLS) {
   registerWorldCommand({
     action: entry.action,
     humanControl: entry.humanControl,
-    description: `${entry.description} Pass a seed to make the roll reproducible; undo_randomize puts it back.`,
+    description: `${entry.description} Without a seed the roll repeats until the player would land with at least ${PLAYABLE_PACES} paces of walkable ground, keeping the roomiest attempt. Pass a seed to make a single reproducible roll; undo_randomize puts it back.`,
     params: {
       seed: { kind: 'int', help: 'seed for this roll; omitted means an arbitrary one', optional: true },
     },
@@ -282,10 +288,28 @@ function applyRoll(
   roll: (context: CommandContext, rng: RandomStream) => PipelineState,
 ): CommandResult {
   const seed = readInt(params, 'seed');
-  const used = seed.ok ? seed.value : arbitrarySeed();
   context.randomizeHistory.remember(context.store.snapshot());
-  context.store.replaceAll(sanitizePipeline(roll(context, mulberry32(used >>> 0))));
-  return commandSucceeded(`rolled a new pipeline with seed ${used >>> 0}`);
+  if (seed.ok) {
+    context.store.replaceAll(sanitizePipeline(roll(context, mulberry32(seed.value >>> 0))));
+    return commandSucceeded(`rolled a new pipeline with seed ${seed.value >>> 0}`);
+  }
+  const pose = context.actor.pose();
+  const rolled = rolledUntilPlayable(
+    (rollSeed) => sanitizePipeline(roll(context, mulberry32(rollSeed))),
+    (state) => spawnPacesOf(state, context, pose),
+    arbitrarySeed,
+  );
+  context.store.replaceAll(rolled.state);
+  return commandSucceeded(rollSummaryOf(rolled));
+}
+
+function rollSummaryOf(rolled: PlayableRoll): string {
+  const attempts = rolled.rolls === 1 ? '' : ` after ${rolled.rolls} rolls`;
+  const spawn =
+    rolled.paces >= PLAYABLE_PACES
+      ? `the player lands with at least ${PLAYABLE_PACES} paces to walk`
+      : `even the roomiest spawn found offers only ${rolled.paces} paces`;
+  return `rolled a new pipeline with seed ${rolled.seed}${attempts}; ${spawn}`;
 }
 
 function arbitrarySeed(): number {

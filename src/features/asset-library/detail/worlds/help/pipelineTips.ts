@@ -28,17 +28,17 @@ export const CLEAR_PIPELINE_TIP: TooltipContent = {
 export const RANDOMIZE_TIPS = {
   world: {
     title: 'roll a world',
-    body: 'Throws the pipeline away and rolls a fresh combination of nodes from scratch.',
+    body: 'Throws the pipeline away and rolls a fresh combination of nodes from scratch, re-rolling until the player would land with room to walk.',
     when: 'Looking for a starting point, or for ideas you would not have wired by hand.',
   },
   sliders: {
     title: 'roll the sliders',
-    body: 'Keeps the nodes and wiring exactly as they are and nudges every numeric knob.',
+    body: 'Keeps the nodes and wiring exactly as they are and nudges every numeric knob, re-rolling until the player would land with room to walk.',
     when: 'The structure is right but the world feels off.',
   },
   nodes: {
     title: 'roll the nodes',
-    body: 'Mutates the combination itself: swaps, adds, removes or rewires a node or two.',
+    body: 'Mutates the combination itself: swaps, adds, removes or rewires a node or two, re-rolling until the player would land with room to walk.',
     when: 'Exploring near something that already half works.',
   },
   undo: {

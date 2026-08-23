@@ -24,7 +24,7 @@ export function spawnsWithRoomToWalk(
   for (const candidate of spawnCandidates(isWalkableAt)) {
     if (Date.now() > notAfterMs) break;
     if (!standsWellApartFrom(candidate, roomy)) continue;
-    const reach = reachableFrom(candidate, canStep);
+    const reach = walkableCellsFrom(candidate, canStep, ROOM_TO_WALK_CELLS);
     if (reach >= ROOM_TO_WALK_CELLS) roomy.push(candidate);
     if (roomy.length >= wanted) return roomy;
     if (reach > roomiestReach) {
@@ -68,10 +68,10 @@ function standsApartFrom(cell: CellPoint, chosen: readonly CellPoint[]): boolean
   );
 }
 
-function reachableFrom(start: CellPoint, canStep: StepProbe): number {
+export function walkableCellsFrom(start: CellPoint, canStep: StepProbe, atMost: number): number {
   const visited = new Set([cellKey(start.x, start.y)]);
   const queue: CellPoint[] = [start];
-  for (let head = 0; head < queue.length && queue.length < ROOM_TO_WALK_CELLS; head++) {
+  for (let head = 0; head < queue.length && queue.length < atMost; head++) {
     enqueueWalkableNeighbors(queue[head]!, canStep, visited, queue);
   }
   return queue.length;
