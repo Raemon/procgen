@@ -13,6 +13,7 @@
     "start": "NODE_ENV=production tsx --env-file-if-exists=.env server.ts",
     "start:prod": "sh -c 'if [ -n \"$DATABASE_URL\" ]; then npx prisma db push --skip-generate --accept-data-loss; fi; exec npm start'",
     "typecheck": "tsc --noEmit",
+    "deploy:wait": "bash scripts/waitForProductionCommit.sh",
     "test": "node --import tsx --test --test-reporter=spec src/features/app-shell/__tests__/app.test.ts",
     "roll": "esbuild scripts/rollAndRankWorlds.ts --bundle --format=esm --platform=node --log-level=error --outfile=dist/rollAndRankWorlds.mjs && node dist/rollAndRankWorlds.mjs",
     "selfplay": "esbuild scripts/trainWalkingSimWorlds.ts --bundle --format=esm --platform=node --log-level=error --outfile=dist/trainWalkingSimWorlds.mjs && node dist/trainWalkingSimWorlds.mjs",

@@ -8,5 +8,6 @@ export function GET() {
   return Response.json({
     ...healthOf(services.loop, services.registry),
     persistence: services.store.enabled,
+    commit: process.env.RENDER_GIT_COMMIT ?? null,
   });
 }

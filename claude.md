@@ -30,3 +30,5 @@ Node fields are numeric knobs, tile links, or node links. Do not add text, boole
 Prefer scripts and API probes for behavior verification. Finish UI changes with one rendered browser check after the scripted checks pass.
 
 Whenever you report back to a user, end with a direct link to the running server.
+
+Production at https://procgen.onrender.com auto-deploys from `origin/main` and takes about three minutes to build; a merge is not live until `GET /api/health` reports the merged commit. Run `npm run deploy:wait` after merging before telling anyone the change is in production.
