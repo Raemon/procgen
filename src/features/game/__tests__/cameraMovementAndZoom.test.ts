@@ -12,6 +12,9 @@ import {
 import { FollowCamera } from '../render/view3d/followCamera';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { TerrainOverview } from '../render/view3d/terrainOverview';
+import { ChunkMeshStreamer } from '../render/view3d/chunkMeshStreamer';
+import { NO_EXTRA_MARKERS } from '../render/markerSource';
+import { EMPTY_TILE } from '@/features/asset-library/worlds/values/chunkValues';
 import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import type { ReadOnlyTileAssets } from '@/features/app-shell/runtime/readOnlyAssets';
 
@@ -104,6 +107,8 @@ export function checkCameraMovementAndZoom(check: CheckReporter): void {
     detailedContentRadiusTiles(10_000_000) === 160,
   );
   checkTerrainOverviewDrawsImmediately(check);
+  checkOverviewReseedsFromNearbyTerrainOnZoom(check);
+  checkStreamerKeepsBuiltChunksAcrossZoom(check);
 }
 
 function checkTerrainOverviewDrawsImmediately(check: CheckReporter): void {
@@ -128,4 +133,88 @@ function checkTerrainOverviewDrawsImmediately(check: CheckReporter): void {
     !Array.isArray(mesh.material) && !mesh.material.vertexColors,
   );
   overview.dispose();
+}
+
+function checkOverviewReseedsFromNearbyTerrainOnZoom(check: CheckReporter): void {
+  const westColor = new THREE.Color('#d8cfa8').getHex();
+  const eastColor = new THREE.Color('#4a6a3a').getHex();
+  let slowSampling = false;
+  const sampler = {
+    tileAt: (x: number) => {
+      if (slowSampling) {
+        const end = performance.now() + 5;
+        while (performance.now() < end);
+      }
+      return x < 0 ? 1 : 2;
+    },
+    elevationAt: () => 0,
+  } as unknown as WorldSampler;
+  const tileAssets = {
+    byId: (id: number) => ({
+      color: id === 1 ? '#d8cfa8' : '#4a6a3a',
+      role: 'grass',
+      faceArt: null,
+      textureId: null,
+    }),
+  } as unknown as ReadOnlyTileAssets;
+  const root = new THREE.Group();
+  const overview = new TerrainOverview(root, sampler, tileAssets);
+  for (let i = 0; i < 20; i++) overview.syncAround(0, 0, 20);
+  const mesh = (root.children[0] as THREE.Group).children[0] as THREE.InstancedMesh;
+  const color = new THREE.Color();
+  const westInstance = 6 * 12;
+  const eastInstance = 6 * 12 + 11;
+  mesh.getColorAt(westInstance, color);
+  const westBefore = color.getHex();
+  mesh.getColorAt(eastInstance, color);
+  const eastBefore = color.getHex();
+  check(
+    'the overview paints each side of the world with its own tile color',
+    westBefore === westColor && eastBefore === eastColor,
+  );
+  slowSampling = true;
+  overview.syncAround(0, 0, 40);
+  mesh.getColorAt(westInstance, color);
+  const westAfter = color.getHex();
+  mesh.getColorAt(eastInstance, color);
+  const eastAfter = color.getHex();
+  check(
+    'zooming to a coarser overview reseeds unsampled cells from nearby terrain, not the screen center',
+    westAfter === westColor && eastAfter === eastColor,
+  );
+  overview.dispose();
+}
+
+function checkStreamerKeepsBuiltChunksAcrossZoom(check: CheckReporter): void {
+  const sampler = {
+    tileAt: () => EMPTY_TILE,
+    topVoxelTileIdAt: () => EMPTY_TILE,
+    packedVoxelColumnAt: () => null,
+    groundFacingAt: () => 0,
+    ceilingTileAt: () => EMPTY_TILE,
+    ceilingHeightAt: () => 0,
+    elevationAt: () => 0,
+    markersIn: () => [],
+  } as unknown as WorldSampler;
+  const tileAssets = { byId: () => undefined } as unknown as ReadOnlyTileAssets;
+  const root = new THREE.Group();
+  const streamer = new ChunkMeshStreamer(root, sampler, tileAssets, NO_EXTRA_MARKERS);
+  for (let i = 0; i < 200 && root.children.length < 81; i++) streamer.streamAround(0, 0, 4);
+  const builtCount = root.children.length;
+  streamer.streamAround(0, 0, 2);
+  check(
+    'zooming in hides far chunks instead of discarding their meshes',
+    root.children.length === builtCount && root.children.some((group) => !group.visible),
+  );
+  streamer.streamAround(0, 0, 4);
+  check(
+    'zooming back out reveals the kept chunks without rebuilding',
+    root.children.length === builtCount && root.children.every((group) => group.visible),
+  );
+  streamer.streamAround(10_000, 10_000, 2);
+  check(
+    'chunks left far behind the focus are still dropped',
+    root.children.length < builtCount,
+  );
+  streamer.dispose();
 }
