@@ -5,13 +5,17 @@ import { sanitizePipeline } from '../pipeline/sanitizePipeline';
 import { mulberry32 } from '../random/mulberry32';
 import { permutedNodeCombination } from '../randomize/permuteNodeCombination';
 import { permutedSliderParams } from '../randomize/permuteSliderParams';
+import { PLAYABLE_PACES, rolledUntilPlayable, spawnPacesOf } from '../randomize/playableRoll';
 import { RandomizeHistory } from '../randomize/randomizeHistory';
 import { randomWorldPipeline } from '../randomize/randomWorldPipeline';
+import { NO_CULTURES, NO_PIECES } from '../structureOverlay/structureOverlay';
 import { EMPTY_TILE } from '../values/chunkValues';
+import { walkableCellsFrom } from '../walkingSim/spawnCell';
+import { flatStepProbe } from '../walkingSim/worldProbes';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { islandsState, tileIdsInRegion, worldFromState } from './pipelineWorldFixtures';
 import { recipeTilesOf } from '../randomize/recipeTiles';
-import { fixtureTileAssets } from './walkingSimFixtures';
+import { fixtureTileAssets, openPlainState, WALL_TILE } from './walkingSimFixtures';
 
 const randomizeTileIds = recipeTilesOf(fixtureTileAssets.all());
 
@@ -29,6 +33,30 @@ function allParamsWithinSpecs(state: PipelineState): boolean {
   return state.nodes.every((node) =>
     Object.entries(node.params).every(([name, value]) => paramWithinSpec(node.type, name, value)),
   );
+}
+
+function walledState(): PipelineState {
+  return sanitizePipeline({
+    seed: 9,
+    nodes: [
+      {
+        id: 'n1',
+        type: 'constantField',
+        label: 'flat',
+        enabled: true,
+        params: { value: 1 },
+        inputs: {},
+      },
+      {
+        id: 'n2',
+        type: 'thresholdTiles',
+        label: 'walls everywhere',
+        enabled: true,
+        params: { threshold: 0.5, belowTile: WALL_TILE, aboveTile: WALL_TILE },
+        inputs: { source: 'n1' },
+      },
+    ],
+  });
 }
 
 function sameStructure(a: PipelineState, b: PipelineState): boolean {
@@ -128,6 +156,50 @@ export function checkRandomizeAndPermutation(check: CheckReporter): void {
     worldFromState(mutated).sampler.tileAt(5, 5);
   }
   check('repeated node permutations stay valid and generate without crashing', comboWorks);
+
+  const spawnAssets = { tileAssets: fixtureTileAssets, pieces: NO_PIECES, cultures: NO_CULTURES };
+  const corridor = flatStepProbe((x, y) => y === 0 && x >= 0 && x < 30);
+  check(
+    'walkable cells are counted out to the room there is',
+    walkableCellsFrom({ x: 0, y: 0 }, corridor, 300) === 30,
+  );
+  const capped = walkableCellsFrom({ x: 0, y: 0 }, corridor, 10);
+  check('counting walkable cells stops near the asked-for cap', capped >= 10 && capped < 30);
+  check(
+    'an open plain spawns the player with the playable paces',
+    spawnPacesOf(openPlainState(), spawnAssets, { x: 0, y: 0 }) >= PLAYABLE_PACES,
+  );
+  check(
+    'a sealed world spawns the player with nowhere to walk',
+    spawnPacesOf(walledState(), spawnAssets, { x: 0, y: 0 }) === 0,
+  );
+
+  const paceBySeed = new Map([
+    [1, 4],
+    [2, 40],
+    [3, PLAYABLE_PACES],
+    [4, 999],
+  ]);
+  let dealt = 0;
+  const playable = rolledUntilPlayable(
+    (seed) => ({ ...emptyPipeline(), seed }),
+    (state) => paceBySeed.get(state.seed) ?? 0,
+    () => ++dealt,
+  );
+  check(
+    'rolling stops at the first world with paces enough to play',
+    playable.seed === 3 && playable.rolls === 3 && playable.paces === PLAYABLE_PACES,
+  );
+  let dealtShort = 0;
+  const roomiest = rolledUntilPlayable(
+    (seed) => ({ ...emptyPipeline(), seed }),
+    (state) => (state.seed === 5 ? 60 : 10),
+    () => ++dealtShort,
+  );
+  check(
+    'when no roll is playable the roomiest attempt is kept',
+    roomiest.seed === 5 && roomiest.paces === 60 && roomiest.rolls > 5,
+  );
 
   const historyStates = new RandomizeHistory();
   check('randomize history starts empty', !historyStates.canUndo() && historyStates.undo() === null);

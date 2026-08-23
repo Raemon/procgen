@@ -1,6 +1,6 @@
 import { ANY_CLIMB_ALLOWED, standableProbeFrom, type ClimbGate } from './climbing';
 import { turnedFacing, type FacingIndex } from './facing';
-import { nearestWalkable } from './nearestWalkable';
+import { nearestWalkable, type CellPoint } from './nearestWalkable';
 import {
   DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
   clampSightRadiusTiles,
@@ -11,6 +11,20 @@ import { WorldEvents, type WorldEvent } from './worldEvents';
 const SNAP_SEARCH_RADIUS = 64;
 
 export type WalkabilityProbe = (x: number, y: number) => boolean;
+
+export function walkableLandingSpot(
+  x: number,
+  y: number,
+  isWalkableAt: WalkabilityProbe,
+  climbGateAt: ClimbGate,
+): CellPoint | null {
+  const standable = standableProbeFrom(isWalkableAt, climbGateAt);
+  if (standable(x, y)) return { x, y };
+  return (
+    nearestWalkable(x, y, SNAP_SEARCH_RADIUS, standable) ??
+    nearestWalkable(x, y, SNAP_SEARCH_RADIUS, isWalkableAt)
+  );
+}
 
 export type ObstacleResolver = (
   x: number,
@@ -71,12 +85,8 @@ export class World {
   }
 
   ensurePlayerOnWalkableGround(): void {
-    const standable = standableProbeFrom(this.isWalkableAt, this.climbGateAt);
-    if (standable(this.playerX, this.playerY)) return;
-    const spot =
-      nearestWalkable(this.playerX, this.playerY, SNAP_SEARCH_RADIUS, standable) ??
-      nearestWalkable(this.playerX, this.playerY, SNAP_SEARCH_RADIUS, this.isWalkableAt);
-    if (!spot) return;
+    const spot = walkableLandingSpot(this.playerX, this.playerY, this.isWalkableAt, this.climbGateAt);
+    if (!spot || (spot.x === this.playerX && spot.y === this.playerY)) return;
     this.playerX = spot.x;
     this.playerY = spot.y;
     this.events.emit('player-moved');
