@@ -6,6 +6,7 @@ import { measureWork } from '../../performance/workTimers';
 import type { MarkerSource } from '../markerSource';
 import { applyTileSideBudget } from './chunkDetail';
 import { disposeMeshChildren } from './disposeMeshResources';
+import { MAX_RADIUS_CHUNKS } from './streamingRadius';
 import { tileSideBudget } from './tileDetailBudget';
 import { MAX_FACE_ART_SIZE } from '@/features/asset-library/tiles/tileFaceArt';
 import { buildChunkMeshGroup, CEILING_GROUP_NAME } from './worldMeshes';
@@ -57,7 +58,7 @@ export class ChunkMeshStreamer {
   streamAround(centerX: number, centerY: number, radiusChunks: number): void {
     const centerChunkX = chunkCoordOfCell(centerX);
     const centerChunkY = chunkCoordOfCell(centerY);
-    this.dropChunksOutsideRadius(centerChunkX, centerChunkY, radiusChunks);
+    this.retireChunksAround(centerChunkX, centerChunkY, radiusChunks);
     this.buildNearestStaleChunks(centerChunkX, centerChunkY, radiusChunks);
   }
 
@@ -69,15 +70,18 @@ export class ChunkMeshStreamer {
     this.clear();
   }
 
-  private dropChunksOutsideRadius(
+  private retireChunksAround(
     centerChunkX: number,
     centerChunkY: number,
     radiusChunks: number,
   ): void {
+    const keptRadius = Math.max(radiusChunks, MAX_RADIUS_CHUNKS);
     for (const key of [...this.builtChunks.keys()]) {
+      const built = this.builtChunks.get(key)!;
       const [chunkX, chunkY] = key.split(',').map(Number);
       const distance = Math.max(Math.abs(chunkX! - centerChunkX), Math.abs(chunkY! - centerChunkY));
-      if (distance > radiusChunks) this.dropChunk(key);
+      if (distance > keptRadius) this.dropChunk(key);
+      else built.group.visible = distance <= radiusChunks;
     }
   }
 

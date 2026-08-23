@@ -36,6 +36,7 @@ export class TerrainOverview {
   });
   private readonly mesh = new THREE.InstancedMesh(this.geometry, this.material, MAX_INSTANCES);
   private readonly samples = new Map<string, OverviewSample | null>();
+  private readonly displayed: (OverviewSample | null)[] = new Array(MAX_INSTANCES).fill(null);
   private readonly matrix = new THREE.Matrix4();
   private readonly color = new THREE.Color();
   private pending: OverviewCell[] = [];
@@ -85,6 +86,7 @@ export class TerrainOverview {
 
   invalidate(): void {
     this.samples.clear();
+    this.displayed.fill(null);
     this.pending = [];
     this.pendingIndex = 0;
     this.gridKey = '';
@@ -110,17 +112,7 @@ export class TerrainOverview {
     this.cellSpan = cellSpan;
     const wanted = new Set<string>();
     const pending: OverviewCell[] = [];
-    const fallback = this.sampleAt(
-      Math.floor(centerX),
-      Math.floor(centerY),
-      centerCellX * cellSpan + cellSpan / 2,
-      centerCellY * cellSpan + cellSpan / 2,
-    ) ?? {
-      centerX: 0,
-      centerY: 0,
-      elevation: -GROUND_DROP,
-      color: 0x20252b,
-    };
+    const seeds = this.seedsAround(centerX, centerY);
     let instance = 0;
     for (let dy = 0; dy < GRID_SIDE_CELLS; dy++) {
       for (let dx = 0; dx < GRID_SIDE_CELLS; dx++) {
@@ -132,10 +124,12 @@ export class TerrainOverview {
           this.writeSample(instance, sample);
         } else {
           pending.push(cell);
+          const cellCenterX = cell.x * cellSpan + cellSpan / 2;
+          const cellCenterY = cell.y * cellSpan + cellSpan / 2;
           this.writeSample(instance, {
-            ...fallback,
-            centerX: cell.x * cellSpan + cellSpan / 2,
-            centerY: cell.y * cellSpan + cellSpan / 2,
+            ...nearestSample(seeds, cellCenterX, cellCenterY),
+            centerX: cellCenterX,
+            centerY: cellCenterY,
           });
         }
         instance++;
@@ -151,6 +145,18 @@ export class TerrainOverview {
     this.pending = pending;
     this.pendingIndex = 0;
     this.markInstancesChanged();
+  }
+
+  private seedsAround(centerX: number, centerY: number): OverviewSample[] {
+    const seeds = this.displayed.filter(
+      (sample): sample is OverviewSample => sample !== null,
+    );
+    const center = this.sampleAt(Math.floor(centerX), Math.floor(centerY), centerX, centerY);
+    if (center) seeds.push(center);
+    if (seeds.length === 0) {
+      seeds.push({ centerX, centerY, elevation: -GROUND_DROP, color: 0x20252b });
+    }
+    return seeds;
   }
 
   private buildUntilDeadline(): void {
@@ -207,6 +213,7 @@ export class TerrainOverview {
   }
 
   private writeSample(index: number, sample: OverviewSample | null): void {
+    this.displayed[index] = sample;
     if (!sample) {
       this.matrix.makeScale(0, 0, 0);
       this.mesh.setMatrixAt(index, this.matrix);
@@ -234,6 +241,19 @@ export class TerrainOverview {
 
 function cellKey(cell: OverviewCell): string {
   return `${cell.x},${cell.y}`;
+}
+
+function nearestSample(seeds: OverviewSample[], x: number, y: number): OverviewSample {
+  let best = seeds[0]!;
+  let bestDistance = Infinity;
+  for (const seed of seeds) {
+    const distance = (seed.centerX - x) ** 2 + (seed.centerY - y) ** 2;
+    if (distance < bestDistance) {
+      best = seed;
+      bestDistance = distance;
+    }
+  }
+  return best;
 }
 
 function cellDistance(cell: OverviewCell, centerX: number, centerY: number): number {
