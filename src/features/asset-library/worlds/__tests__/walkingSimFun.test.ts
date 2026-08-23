@@ -95,7 +95,7 @@ function highGroundSeesOverTrees(): boolean {
 }
 
 function graderUsesTheCharacterStepHeight(): boolean {
-  const elevationAt = (x: number) => (x === 0 ? 0 : x === 1 ? 1 : 2.01);
+  const elevationAt = (x: number) => (x === 0 ? 0 : x === 1 ? 1 : 2.6);
   const canStep = stepProbeFrom(() => true, elevationAt);
   return canStep(0, 0, 1, 0) && !canStep(1, 0, 2, 0) && canStep(2, 0, 1, 0);
 }
