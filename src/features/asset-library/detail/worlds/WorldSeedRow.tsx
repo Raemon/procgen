@@ -6,8 +6,6 @@ import { FIELD_CLASSES } from '@/features/app-shell/controls/fieldClasses';
 import { KnobRow } from '@/features/app-shell/controls/KnobRow';
 import { ROLL_SEED_TIP, SEED_TIP } from './help/pipelineTips';
 
-const MAX_RANDOM_SEED = 1_000_000;
-
 export function WorldSeedRow() {
   const { store, perform } = useEditedPipeline();
   const [draft, setDraft] = useState<string | null>(null);
@@ -19,7 +17,7 @@ export function WorldSeedRow() {
 
   function rollSeed(): void {
     setDraft(null);
-    perform('set_seed', { seed: Math.floor(Math.random() * MAX_RANDOM_SEED) });
+    perform('randomize_seed');
   }
 
   return (

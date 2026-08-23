@@ -1,8 +1,10 @@
 import { emptyPipeline, type PipelineState } from '@/features/asset-library/worlds/pipeline/pipelineState';
 import { sanitizePipeline } from '@/features/asset-library/worlds/pipeline/sanitizePipeline';
 import { examplePipelines } from '@/features/asset-library/worlds/presets/examplePipelines';
+import { clonedState } from '@/features/asset-library/worlds/randomize/clonedState';
 import { permutedNodeCombination } from '@/features/asset-library/worlds/randomize/permuteNodeCombination';
 import { permutedSliderParams } from '@/features/asset-library/worlds/randomize/permuteSliderParams';
+import { rollInt } from '@/features/asset-library/worlds/randomize/randomRolls';
 import {
   PLAYABLE_PACES,
   rolledUntilPlayable,
@@ -232,8 +234,14 @@ const ROLLS: readonly {
   roll(context: CommandContext, rng: RandomStream): PipelineState;
 }[] = [
   {
+    action: 'randomize_seed',
+    humanControl: 'game panel: 🎲 reroll — and detail panel, world: 🎲 on the seed row',
+    description: 'Reroll the world seed, keeping every node and knob exactly as they are.',
+    roll: (context, rng) => ({ ...clonedState(context.store.snapshot()), seed: rollInt(rng, 1, 999_999) }),
+  },
+  {
     action: 'randomize_world',
-    humanControl: 'detail panel, world: 🎲 world',
+    humanControl: 'game panel: ✨ new world — and detail panel, world: 🎲 world',
     description: 'Replace the pipeline with a freshly rolled node combination.',
     roll: (context, rng) => randomWorldPipeline(rng, recipeTilesFor(context)),
   },
@@ -291,7 +299,7 @@ function applyRoll(
   context.randomizeHistory.remember(context.store.snapshot());
   if (seed.ok) {
     context.store.replaceAll(sanitizePipeline(roll(context, mulberry32(seed.value >>> 0))));
-    return commandSucceeded(`rolled a new pipeline with seed ${seed.value >>> 0}`);
+    return commandSucceeded(`rolled with seed ${seed.value >>> 0}`);
   }
   const pose = context.actor.pose();
   const rolled = rolledUntilPlayable(
@@ -309,7 +317,7 @@ function rollSummaryOf(rolled: PlayableRoll): string {
     rolled.paces >= PLAYABLE_PACES
       ? `the player lands with at least ${PLAYABLE_PACES} paces to walk`
       : `even the roomiest spawn found offers only ${rolled.paces} paces`;
-  return `rolled a new pipeline with seed ${rolled.seed}${attempts}; ${spawn}`;
+  return `rolled with seed ${rolled.seed}${attempts}; ${spawn}`;
 }
 
 function arbitrarySeed(): number {
