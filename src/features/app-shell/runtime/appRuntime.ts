@@ -27,9 +27,10 @@ import { runningWorldEdits } from '@/features/asset-library/worlds/running/runni
 import { RunningWorld } from '@/features/asset-library/worlds/running/runningWorld';
 import {
   attachRunningWorldPersistence,
-  loadRunningWorldName,
+  loadRunningWorld,
 } from '@/features/asset-library/worlds/running/runningWorldStorage';
 import { WorldSeedLibrary } from '@/features/asset-library/worlds/seeds/worldSeedLibrary';
+import { SavedWorldLibrary } from '@/features/asset-library/worlds/saved/savedWorldLibrary';
 import { WorldSeedShelf } from '@/features/asset-library/worlds/seeds/worldSeedShelf';
 import { RandomizeHistory } from '@/features/asset-library/worlds/randomize/randomizeHistory';
 import { TemplateLibrary } from '@/features/asset-library/node-groups/templateLibrary';
@@ -59,6 +60,7 @@ import type {
   ReadOnlyRunningWorld,
   ReadOnlyWorld,
   ReadOnlyWorldSeedLibrary,
+  ReadOnlySavedWorldLibrary,
   ReadOnlyWorldSeedShelf,
 } from './readOnlyAssets';
 import { WorldRenderers } from './worldRenderers';
@@ -76,7 +78,8 @@ export interface AppRuntime {
   templates: ReadOnlyTemplateLibrary;
   assetFolders: ReadOnlyAssetFolders;
   worldSeeds: ReadOnlyWorldSeedLibrary;
-  worlds: ReadOnlyWorldSeedShelf;
+  savedWorlds: ReadOnlySavedWorldLibrary;
+  worldSeedShelf: ReadOnlyWorldSeedShelf;
   runningWorld: ReadOnlyRunningWorld;
   editing: EditablePipelines;
   runningPipeline: EditedPipeline;
@@ -107,8 +110,9 @@ export function createAppRuntime(): AppRuntime {
   const templates = new TemplateLibrary();
   const assetFolders = new AssetFolders();
   const worldSeeds = new WorldSeedLibrary();
-  const worlds = new WorldSeedShelf(worldSeeds);
-  const runningWorld = new RunningWorld(loadRunningWorldName());
+  const savedWorlds = new SavedWorldLibrary();
+  const worldSeedShelf = new WorldSeedShelf(worldSeeds);
+  const runningWorld = new RunningWorld(loadRunningWorld());
   attachRunningWorldPersistence(runningWorld);
   const pieces = new PieceAssets();
   const cultures = new CultureAssets();
@@ -147,6 +151,7 @@ export function createAppRuntime(): AppRuntime {
   const playerInventoryPanel = new PlayerInventoryPanelState();
   const pickupFeed = new PickupFeed();
   const walkOverPickup = new WalkOverPickup({ creatures, items, groundItems }, pickupFeed);
+  pickupFeed.subscribe(() => keepPlayingAfterTheAction.schedule());
   const sim = new CreatureSim({ sampler, creatureAssets: creatures, world, isWalkableAt });
   const clock = new CreatureClock(sim);
   const renderers = new WorldRenderers();
@@ -198,7 +203,12 @@ export function createAppRuntime(): AppRuntime {
   function redrawIfPuzzlesChanged(): void {
     if (puzzles.state.revision() === lastPuzzleRevision) return;
     lastPuzzleRevision = puzzles.state.revision();
+    keepPlayingAfterTheAction.schedule();
     renderers.redrawAll();
+  }
+
+  function keepWhatThePlayerHasDone(): void {
+    if (runningWorld.savedWorldName()) perform('save_world');
   }
 
   function performCommandOnce(
@@ -217,6 +227,8 @@ export function createAppRuntime(): AppRuntime {
         templates,
         assetFolders,
         worldSeeds,
+        savedWorlds,
+        takenItems,
         runningWorld,
         randomizeHistory,
         regionSampler: sampler,
@@ -226,6 +238,7 @@ export function createAppRuntime(): AppRuntime {
         puzzles,
         actor: {
           pose: () => ({ x: world.playerX, y: world.playerY, facing: world.facing }),
+          snapTo: (x, y, facing) => world.snapTo(x, y, facing),
           tryStep: (dx, dy, mayPush) => world.tryStep(dx, dy, mayPush),
           turn: (eighthTurns) => world.turn(eighthTurns),
           sightRadiusTiles: () => world.sightRadiusTiles,
@@ -268,14 +281,21 @@ export function createAppRuntime(): AppRuntime {
     performOn,
     runningPipeline,
     runningWorld,
-    worldSeedNamed: (name) => worlds.byName(name),
+    worldSeedNamed: (name) => worldSeedShelf.byName(name),
     groupNamed: (name) => templates.byName(name),
   });
 
-  const worldEdits = runningWorldEdits({ store, worlds, runningWorld, perform });
+  const worldEdits = runningWorldEdits({
+    store,
+    worldSeeds: worldSeedShelf,
+    savedWorlds,
+    runningWorld,
+    perform,
+  });
 
   const applyAfterTweaks = debounce(applyWorldChange, VALUE_TWEAK_DEBOUNCE_MS);
   const saveEditsAfterTweaks = debounce(worldEdits.saveWhatIsOpen, WORLD_WRITE_BACK_MS);
+  const keepPlayingAfterTheAction = debounce(keepWhatThePlayerHasDone, WORLD_WRITE_BACK_MS);
   store.onChange((change) => {
     if (!net.isApplyingARemotePipeline()) saveEditsAfterTweaks.schedule();
     return change === 'structure' ? applyWorldChange() : applyAfterTweaks.schedule();
@@ -287,16 +307,18 @@ export function createAppRuntime(): AppRuntime {
   items.onChange(applyWorldChange);
   world.on('player-moved', () => walkOverPickup.onSteppedOnto(world.playerX, world.playerY));
   world.on('player-moved', () => announceKeysTakenByWalkingOver());
+  world.on('player-moved', () => keepPlayingAfterTheAction.schedule());
   world.on('player-moved', () => renderers.recenterAll());
   world.on('player-turned', () => renderers.recenterAll());
-  worldEdits.runAWorldIfNoneIsRunning();
+  worldEdits.runSomethingIfNothingIsRunning();
 
   return {
     tileAssets,
     templates,
     assetFolders,
     worldSeeds,
-    worlds,
+    worldSeedShelf,
+    savedWorlds,
     runningWorld,
     editing,
     runningPipeline,

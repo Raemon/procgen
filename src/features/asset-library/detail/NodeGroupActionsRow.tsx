@@ -4,12 +4,12 @@ import { Button } from '@/features/app-shell/controls/Button';
 import { scrollNodeCardIntoView } from '@/features/asset-library/detail/worldSeeds/scrollNodeCardIntoView';
 import { forgetGroupTip, stampGroupTip } from '../help/libraryTips';
 import { useLibrarySelection } from '../panel/useLibrarySelection';
-import { useRunningWorld } from '../panel/useRunningWorld';
+import { useRunningWorldName } from '../panel/useRunningWorld';
 
 export function NodeGroupActionsRow({ name }: { name: string }) {
   const { templates, store, perform } = useAppRuntime();
   const { select } = useLibrarySelection();
-  const running = useRunningWorld();
+  const running = useRunningWorldName();
   const saved = useSyncExternalStore(
     (listener) => templates.onChange(listener),
     () => templates.savedTemplates(),
@@ -18,7 +18,7 @@ export function NodeGroupActionsRow({ name }: { name: string }) {
   function stampIntoTheRunningWorld(): void {
     const before = store.nodes().map((node) => node.id);
     perform('stamp_template', { name });
-    select('worlds', running);
+    select('worldSeeds', running);
     const added = store.nodes().find((node) => !before.includes(node.id));
     if (added) scrollNodeCardIntoView(added.id);
   }

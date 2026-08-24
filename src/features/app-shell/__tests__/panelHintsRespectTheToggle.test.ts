@@ -21,6 +21,7 @@ const ALWAYS_VISIBLE_DIM_TEXT_SITES = [
   'src/features/asset-library/detail/NodeGroupDetail.tsx',
   'src/features/asset-library/detail/NothingHere.tsx',
   'src/features/asset-library/detail/NothingSelected.tsx',
+  'src/features/asset-library/detail/SavedWorldDetail.tsx',
   'src/features/asset-library/detail/WorldSeedActionsRow.tsx',
   'src/features/game/panel/PlayerInventoryOverlay.tsx',
 ];

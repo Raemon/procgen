@@ -13,6 +13,7 @@ import { PieceAssets } from '@/features/asset-library/pieces/pieceAssets';
 import { PipelineEvaluator } from '@/features/asset-library/worlds/eval/evaluator';
 import { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
 import { WorldSeedLibrary } from '@/features/asset-library/worlds/seeds/worldSeedLibrary';
+import { SavedWorldLibrary } from '@/features/asset-library/worlds/saved/savedWorldLibrary';
 import { RandomizeHistory } from '@/features/asset-library/worlds/randomize/randomizeHistory';
 import { TemplateLibrary } from '@/features/asset-library/node-groups/templateLibrary';
 import { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
@@ -38,7 +39,7 @@ import type {
 } from '@/features/app-shell/persistence/persistedDocuments';
 import type { LibraryStamp } from '@/infrastructure/server/persistence/docsRepo';
 import { RunningWorld } from '@/features/asset-library/worlds/running/runningWorld';
-import { runningWorldNameIn } from '@/features/asset-library/worlds/running/runningWorldStorage';
+import { runningWorldIn } from '@/features/asset-library/worlds/running/runningWorldStorage';
 
 const SPAWN_SEARCH_RADIUS = 128;
 
@@ -54,6 +55,7 @@ export interface ServerWorld {
   templates: TemplateLibrary;
   assetFolders: AssetFolders;
   worldSeeds: WorldSeedLibrary;
+  savedWorlds: SavedWorldLibrary;
   runningWorld: RunningWorld;
   randomizeHistory: RandomizeHistory;
   takenItems: TakenItemSpawns;
@@ -123,7 +125,8 @@ function buildServerWorld(
   const templates = new TemplateLibrary(defaulted('templates'));
   const assetFolders = new AssetFolders(defaulted('assetFolders'));
   const worldSeeds = new WorldSeedLibrary(defaulted('worldSeeds'));
-  const runningWorld = new RunningWorld(runningWorldNameIn(defaulted('uiState')));
+  const savedWorlds = new SavedWorldLibrary(defaulted('savedWorlds'));
+  const runningWorld = new RunningWorld(runningWorldIn(defaulted('uiState')));
   const store = new PipelineStore(defaulted('pipeline'));
   const evaluator = new PipelineEvaluator(store);
   const sampler = new WorldSampler(
@@ -154,6 +157,7 @@ function buildServerWorld(
     templates,
     assetFolders,
     worldSeeds,
+    savedWorlds,
     runningWorld,
     randomizeHistory,
     takenItems,

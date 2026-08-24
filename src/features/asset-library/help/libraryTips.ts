@@ -1,10 +1,15 @@
 import type { TooltipContent } from '@/features/app-shell/tooltips/tooltipContent';
 import type { LibraryFolder } from '../librarySelection';
+import type { SavedWorld } from '../worlds/saved/savedWorld';
 
 export const FOLDER_TIPS: Readonly<Record<LibraryFolder, TooltipContent>> = {
-  worlds: {
-    title: 'worlds',
-    body: 'Whole worlds: the examples that ship with the editor and the ones you have made. A world is the pipeline of nodes that generates it, seed and daylight included. Selecting one opens it for editing; ▶ run puts it in the game panel.',
+  worldSeeds: {
+    title: 'world seeds',
+    body: 'The recipes worlds grow from: the examples that ship with the editor and the ones you have made. A world seed is the pipeline of nodes that generates a world, seed number and daylight included, and the same seed always grows the same world. Selecting one opens it for editing; ▶ run grows it in the game panel.',
+  },
+  savedWorlds: {
+    title: 'saved worlds',
+    body: 'Worlds you have been in and kept: the seed frozen as it was, plus everything you did there — what you picked up, which fixtures you worked, where the crates ended up, where you were standing. ▶ run drops you back exactly where you left off.',
   },
   tiles: {
     title: 'tiles',
@@ -32,9 +37,21 @@ export const FOLDER_TIPS: Readonly<Record<LibraryFolder, TooltipContent>> = {
   },
   groups: {
     title: 'node groups',
-    body: 'Bookmarked groups of procgen nodes that function together, with the wiring between them already made. Edit one here like a world, stamp it into the running world, or send a folder band from a world back here to reuse it.',
+    body: 'Bookmarked groups of procgen nodes that function together, with the wiring between them already made. Edit one here like a world seed, stamp it into the running world, or send a folder band from a world seed back here to reuse it.',
   },
 };
+
+export function savedWorldTip(saved: SavedWorld, running: boolean): TooltipContent {
+  const doneHere = [
+    `${saved.takenItems.length} items taken`,
+    `${saved.puzzles.on.length} fixtures worked`,
+    `${saved.puzzles.crates.length} crates moved`,
+  ].join(', ');
+  return {
+    title: running ? `${saved.name} — running` : saved.name,
+    body: `${saved.description || `Grown from the world seed '${saved.seededBy}'.`} ${doneHere}; the player stands at (${saved.player.x},${saved.player.y}).`,
+  };
+}
 
 export function worldSeedTip(name: string, description: string, running: boolean): TooltipContent {
   return { title: running ? `${name} — running` : name, body: description };
@@ -44,18 +61,18 @@ export function runWorldSeedTip(name: string, running: boolean): TooltipContent 
   return running
     ? {
         title: `${name} is running`,
-        body: 'The game panel is showing this world, so every edit here lands on screen as you make it.',
+        body: 'The game panel is showing the world this seed grew, so every edit here lands on screen as you make it.',
       }
     : {
         title: `run ${name}`,
-        body: 'Puts this world in the game panel. Whatever was running keeps every edit you made to it — worlds are saved as you work.',
+        body: 'Grows this seed into the game panel. Whatever was running keeps every edit you made to it — world seeds are saved as you work.',
       };
 }
 
 export function copyWorldSeedTip(name: string): TooltipContent {
   return {
     title: `duplicate ${name}`,
-    body: 'Files a copy of this world under a free name, so you can take it somewhere else without losing this one.',
+    body: 'Files a copy of this world seed under a free name, so you can take it somewhere else without losing this one.',
   };
 }
 

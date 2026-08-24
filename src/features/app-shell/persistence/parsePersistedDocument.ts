@@ -6,6 +6,7 @@ import { templateLibraryFromStoredJson } from '@/features/asset-library/node-gro
 import { piecesFromStoredJson } from '@/features/asset-library/pieces/pieceStorage';
 import { tilesFromStoredJson } from '@/features/asset-library/tiles/tileStorage';
 import { sanitizePipeline } from '@/features/asset-library/worlds/pipeline/sanitizePipeline';
+import { savedWorldsFromStoredJson } from '@/features/asset-library/worlds/saved/storedSavedWorlds';
 import { worldSeedLibraryFromStoredJson } from '@/features/asset-library/worlds/seeds/storedWorldSeedLibrary';
 import { worldSeedThumbnailIndexFrom } from '@/features/asset-library/worldSeedThumbnailIndex';
 import { persistedUiStateFrom } from '../state/persistedUiState';
@@ -27,6 +28,7 @@ const PARSERS: DocumentParsers = {
   tiles: tilesFromStoredJson,
   templates: templateLibraryFromStoredJson,
   worldSeeds: worldSeedLibraryFromStoredJson,
+  savedWorlds: savedWorldsFromStoredJson,
   pieces: piecesFromStoredJson,
   cultures: culturesFromStoredJson,
   creatures: creaturesFromStoredJson,

@@ -11,6 +11,8 @@ import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler'
 import type { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
 import type { RunningWorld } from '@/features/asset-library/worlds/running/runningWorld';
 import type { WorldSeedLibrary } from '@/features/asset-library/worlds/seeds/worldSeedLibrary';
+import type { SavedWorldLibrary } from '@/features/asset-library/worlds/saved/savedWorldLibrary';
+import type { TakenItemSpawns } from '@/features/asset-library/items/pickups/takenItemSpawns';
 import type { RandomizeHistory } from '@/features/asset-library/worlds/randomize/randomizeHistory';
 import type { TemplateLibrary } from '@/features/asset-library/node-groups/templateLibrary';
 import type { TileAssets } from '@/features/asset-library/tiles/tileAssets';
@@ -21,6 +23,7 @@ export type CommandGroup = 'movement' | 'senses' | 'pipeline' | 'assets' | 'worl
 
 export interface CommandActor {
   pose(): { x: number; y: number; facing: FacingIndex };
+  snapTo(x: number, y: number, facing: FacingIndex): void;
   tryStep(dx: number, dy: number, mayPush?: boolean): boolean;
   turn(eighthTurns: number): void;
   sightRadiusTiles(): number;
@@ -37,6 +40,8 @@ export interface CommandContext {
   templates: TemplateLibrary;
   assetFolders: AssetFolders;
   worldSeeds: WorldSeedLibrary;
+  savedWorlds: SavedWorldLibrary;
+  takenItems: TakenItemSpawns;
   runningWorld: RunningWorld;
   randomizeHistory: RandomizeHistory;
   regionSampler: RegionSampler;

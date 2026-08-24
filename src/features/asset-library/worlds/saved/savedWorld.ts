@@ -1,0 +1,88 @@
+import type { TakenSpawnKey } from '@/features/asset-library/items/pickups/takenItemSpawns';
+import type { PuzzleStateSnapshot } from '@/features/game/puzzles/state/puzzleState';
+import { sanitizePipeline } from '../pipeline/sanitizePipeline';
+import type { PipelineState } from '../pipeline/pipelineState';
+
+export interface SavedPlayerPose {
+  x: number;
+  y: number;
+  facing: number;
+}
+
+export interface SavedWorld {
+  name: string;
+  description: string;
+  seededBy: string;
+  state: PipelineState;
+  player: SavedPlayerPose;
+  takenItems: TakenSpawnKey[];
+  puzzles: PuzzleStateSnapshot;
+}
+
+export function sanitizeSavedWorld(raw: unknown): SavedWorld | null {
+  if (typeof raw !== 'object' || raw === null) return null;
+  const held = raw as Record<string, unknown>;
+  if (typeof held.name !== 'string' || held.name.trim() === '') return null;
+  const state = sanitizePipeline(held.state);
+  if (state.nodes.length === 0) return null;
+  return {
+    name: held.name.trim(),
+    description: typeof held.description === 'string' ? held.description : '',
+    seededBy: typeof held.seededBy === 'string' ? held.seededBy : '',
+    state,
+    player: sanitizePose(held.player),
+    takenItems: sanitizeTakenItems(held.takenItems),
+    puzzles: sanitizePuzzles(held.puzzles),
+  };
+}
+
+export function sanitizeSavedWorlds(raw: unknown): SavedWorld[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.map(sanitizeSavedWorld).filter((saved): saved is SavedWorld => saved !== null);
+}
+
+function sanitizePose(raw: unknown): SavedPlayerPose {
+  const held = (raw ?? {}) as { x?: unknown; y?: unknown; facing?: unknown };
+  return {
+    x: wholeNumber(held.x),
+    y: wholeNumber(held.y),
+    facing: wholeNumber(held.facing),
+  };
+}
+
+function sanitizeTakenItems(raw: unknown): TakenSpawnKey[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((entry): entry is Record<string, unknown> => typeof entry === 'object' && entry !== null)
+    .filter((entry) => [entry.x, entry.y, entry.itemId].every(isFiniteNumber))
+    .map((entry) => ({
+      x: entry.x as number,
+      y: entry.y as number,
+      itemId: entry.itemId as TakenSpawnKey['itemId'],
+    }));
+}
+
+function sanitizePuzzles(raw: unknown): PuzzleStateSnapshot {
+  const held = (raw ?? {}) as { on?: unknown; crates?: unknown };
+  return {
+    on: Array.isArray(held.on) ? held.on.filter((id): id is string => typeof id === 'string') : [],
+    crates: Array.isArray(held.crates)
+      ? held.crates.filter(
+          (crate): crate is [string, number, number] =>
+            Array.isArray(crate) &&
+            crate.length === 3 &&
+            typeof crate[0] === 'string' &&
+            isFiniteNumber(crate[1]) &&
+            isFiniteNumber(crate[2]),
+        )
+      : [],
+  };
+}
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
+function wholeNumber(value: unknown): number {
+  return isFiniteNumber(value) ? Math.round(value) : 0;
+}

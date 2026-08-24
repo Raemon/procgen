@@ -38,6 +38,8 @@ export function performVerb(
       templates: world.templates,
       assetFolders: world.assetFolders,
       worldSeeds: world.worldSeeds,
+      savedWorlds: world.savedWorlds,
+      takenItems: world.takenItems,
       runningWorld: world.runningWorld,
       randomizeHistory: world.randomizeHistory,
       regionSampler: world.sampler,

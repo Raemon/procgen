@@ -5,19 +5,19 @@ import type { WorldSeed } from '@/features/asset-library/worlds/seeds/worldSeed'
 import { worldSeedTip } from '../../help/libraryTips';
 import { WorldSeedThumbnailIcon } from '../icons/WorldSeedThumbnailIcon';
 import { useThumbnailOfTheRunningWorld } from '../icons/useWorldSeedThumbnail';
-import { useRunningWorld } from '../useRunningWorld';
+import { useRunningWorldSeed } from '../useRunningWorld';
 import { worldSeedThumbnails } from '../../worldSeedThumbnails';
 import { useFollowRenamedRow, type FollowRenamedRow } from './useFollowRenamedRow';
 import type { LibraryEntry } from './libraryEntry';
 
 export function useWorldSeedEntries(): LibraryEntry[] {
-  const { perform, worlds } = useAppRuntime();
-  const followRenamed = useFollowRenamedRow('worlds');
-  const running = useRunningWorld();
+  const { perform, worldSeedShelf } = useAppRuntime();
+  const followRenamed = useFollowRenamedRow('worldSeeds');
+  const running = useRunningWorldSeed();
   useThumbnailOfTheRunningWorld();
   const shelf = useSyncExternalStore(
-    (listener) => worlds.onChange(listener),
-    () => worlds.all(),
+    (listener) => worldSeedShelf.onChange(listener),
+    () => worldSeedShelf.all(),
   );
   return shelf.map((world) => worldEntry(world, running, perform, followRenamed));
 }

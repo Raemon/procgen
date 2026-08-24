@@ -8,6 +8,8 @@ import { WorldSeedLab } from '@/features/asset-library/worlds/lab/worldSeedLab';
 import { RandomizeHistory } from '@/features/asset-library/worlds/randomize/randomizeHistory';
 import { TemplateLibrary } from '@/features/asset-library/node-groups/templateLibrary';
 import { RunningWorld } from '@/features/asset-library/worlds/running/runningWorld';
+import { SavedWorldLibrary } from '@/features/asset-library/worlds/saved/savedWorldLibrary';
+import { TakenItemSpawns } from '@/features/asset-library/items/pickups/takenItemSpawns';
 import { WorldSeedLibrary } from '@/features/asset-library/worlds/seeds/worldSeedLibrary';
 import { AssetFolders } from '@/features/asset-library/folders/assetFolders';
 import { CreatureAssets } from '@/features/asset-library/creatures/creatureAssets';
@@ -48,6 +50,8 @@ function abilityWorld() {
     templates: new TemplateLibrary({ templates: [], hiddenBuiltIns: [] }),
     assetFolders: new AssetFolders({ folders: [], placements: {} }),
     worldSeeds: new WorldSeedLibrary({ seeds: [], hiddenExamples: [] }),
+    savedWorlds: new SavedWorldLibrary({ worlds: [] }),
+    takenItems: new TakenItemSpawns(),
     runningWorld: new RunningWorld(),
     randomizeHistory: new RandomizeHistory(),
     groundItems: NO_GROUND_ITEMS,
@@ -61,6 +65,11 @@ function abilityWorld() {
     lab: new WorldSeedLab(),
     actor: {
       pose: () => pose,
+      snapTo: (x: number, y: number, facing: FacingIndex) => {
+        pose.x = x;
+        pose.y = y;
+        pose.facing = facing;
+      },
       tryStep: (dx: number, dy: number) => ((pose.x += dx), (pose.y += dy), true),
       turn: (turns: number) => (pose.facing = turnedFacing(pose.facing, turns)),
       sightRadiusTiles: () => sight.radius,

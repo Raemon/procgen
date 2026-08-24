@@ -1,11 +1,11 @@
 import { classes } from '@/features/app-shell/controls/classes';
 import { tooltipHandlers } from '@/features/app-shell/tooltips/tooltipHandlers';
 import { useLibrarySelection } from '@/features/asset-library/panel/useLibrarySelection';
-import { useRunningWorld } from '@/features/asset-library/panel/useRunningWorld';
+import { useRunningWorldName } from '@/features/asset-library/panel/useRunningWorld';
 import { runningWorldTip } from './help/gameTips';
 
 export function RunningWorldName() {
-  const running = useRunningWorld();
+  const running = useRunningWorldName();
   const { select } = useLibrarySelection();
   return (
     <button
@@ -15,7 +15,7 @@ export function RunningWorldName() {
         running ? 'text-ink' : 'text-ink-dim italic',
         'hover:border-panel-edge hover:bg-field',
       )}
-      onClick={() => running && select('worlds', running)}
+      onClick={() => running && select('worldSeeds', running)}
       {...tooltipHandlers(runningWorldTip(running))}
     >
       {running || 'no world running'}

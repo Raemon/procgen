@@ -6,9 +6,10 @@ import { folderCommands } from './folders/folderCommands';
 import { itemCommands } from './items/itemCommands';
 import { pieceCommands } from './pieces/pieceCommands';
 import { tileCommands } from './tiles/tileCommands';
-import { labCommands } from './worlds/worldSeedLabCommands';
+import { worldSeedLabCommands } from './worlds/worldSeedLabCommands';
 import { nodeCommands } from './worlds/nodeCommands';
-import { worldCommands } from './worlds/worldSeedCommands';
+import { worldSeedCommands } from './worlds/worldSeedCommands';
+import { savedWorldCommands } from './worlds/saved/savedWorldCommands';
 
 export const assetLibraryCommands = [
   ...tileCommands,
@@ -20,6 +21,7 @@ export const assetLibraryCommands = [
   ...cultureCommands,
   ...folderCommands,
   ...nodeCommands,
-  ...worldCommands,
-  ...labCommands,
+  ...worldSeedCommands,
+  ...savedWorldCommands,
+  ...worldSeedLabCommands,
 ];

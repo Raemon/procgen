@@ -127,7 +127,7 @@ function checkGuardsAcceptOnlyTheShapesTheUiPersists(): void {
   assert(isNumberOrNull(null) && isNumberOrNull(3) && !isNumberOrNull('3'), 'a width may be unset');
   assert(isStringArray(['a']) && !isStringArray(['a', 2]), 'a string array holds only strings');
   assert(
-    isLibrarySelection({ folder: 'worlds', key: 'saved:my archipelago' }) && !isLibrarySelection({ folder: 'nope', key: '' }),
+    isLibrarySelection({ folder: 'worldSeeds', key: 'saved:my archipelago' }) && !isLibrarySelection({ folder: 'nope', key: '' }),
     'a selection names a folder the library actually has',
   );
 }

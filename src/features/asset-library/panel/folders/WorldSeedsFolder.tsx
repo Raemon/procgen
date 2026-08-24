@@ -6,8 +6,8 @@ import { AssetFolderSection } from './AssetFolderSection';
 export function WorldSeedsFolder() {
   const entries = useWorldSeedEntries();
   return (
-    <LibraryFolder folder="worlds" label="worlds" tip={FOLDER_TIPS.worlds} count={entries.length}>
-      <AssetFolderSection section="worlds" entries={entries} />
+    <LibraryFolder folder="worldSeeds" label="world seeds" tip={FOLDER_TIPS.worldSeeds} count={entries.length}>
+      <AssetFolderSection section="worldSeeds" entries={entries} />
     </LibraryFolder>
   );
 }

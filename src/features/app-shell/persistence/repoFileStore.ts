@@ -14,6 +14,7 @@ const RESOURCE_PATHS: Readonly<Record<string, string>> = {
   tiles: '/api/v1/asset-library/tiles',
   templates: '/api/v1/asset-library/node-groups',
   worldSeeds: '/api/v1/asset-library/world-seeds',
+  savedWorlds: '/api/v1/asset-library/saved-worlds',
   pieces: '/api/v1/asset-library/pieces',
   cultures: '/api/v1/asset-library/cultures',
   creatures: '/api/v1/asset-library/creatures',

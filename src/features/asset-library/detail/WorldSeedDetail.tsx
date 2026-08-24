@@ -16,16 +16,16 @@ import { DaylightRow } from '@/features/asset-library/detail/worldSeeds/Daylight
 import { SeedNumberRow } from '@/features/asset-library/detail/worldSeeds/SeedNumberRow';
 import { TimeRow } from '@/features/asset-library/detail/worldSeeds/TimeRow';
 import type { WorldSeed } from '@/features/asset-library/worlds/seeds/worldSeed';
-import { useRunningWorld } from '../panel/useRunningWorld';
+import { useRunningWorldSeed } from '../panel/useRunningWorld';
 import { NothingHere } from './NothingHere';
 import { WorldSeedActionsRow } from './WorldSeedActionsRow';
 
 export function WorldSeedDetail({ name }: { name: string }) {
-  const { editing, worlds } = useAppRuntime();
-  const running = useRunningWorld();
+  const { editing, worldSeedShelf } = useAppRuntime();
+  const running = useRunningWorldSeed();
   const shelf = useSyncExternalStore(
-    (listener) => worlds.onChange(listener),
-    () => worlds.all(),
+    (listener) => worldSeedShelf.onChange(listener),
+    () => worldSeedShelf.all(),
   );
   const world = shelf.find((each) => each.name === name);
   const pipeline = editing.world(name);

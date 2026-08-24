@@ -7,6 +7,7 @@ import type { PipelineStore } from '@/features/asset-library/worlds/pipeline/pip
 import type { RunningWorld } from '@/features/asset-library/worlds/running/runningWorld';
 import type { WorldSeedLibrary } from '@/features/asset-library/worlds/seeds/worldSeedLibrary';
 import type { WorldSeedShelf } from '@/features/asset-library/worlds/seeds/worldSeedShelf';
+import type { SavedWorldLibrary } from '@/features/asset-library/worlds/saved/savedWorldLibrary';
 import type { TemplateLibrary } from '@/features/asset-library/node-groups/templateLibrary';
 import type { TileAssets } from '@/features/asset-library/tiles/tileAssets';
 import type { World } from '@/features/game/world';
@@ -36,7 +37,11 @@ export type ReadOnlyWorldSeedLibrary = Pick<
   'savedWorldSeeds' | 'byName' | 'onChange'
 >;
 export type ReadOnlyWorldSeedShelf = Pick<WorldSeedShelf, 'all' | 'byName' | 'onChange'>;
-export type ReadOnlyRunningWorld = Pick<RunningWorld, 'name' | 'onChange'>;
+export type ReadOnlyRunningWorld = Pick<
+  RunningWorld,
+  'ref' | 'name' | 'seedName' | 'savedWorldName' | 'onChange'
+>;
+export type ReadOnlySavedWorldLibrary = Pick<SavedWorldLibrary, 'all' | 'byName' | 'onChange'>;
 export type ReadOnlyWorld = Pick<
   World,
   'playerX' | 'playerY' | 'facing' | 'sightRadiusTiles' | 'on'

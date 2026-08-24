@@ -1,7 +1,7 @@
 import { useEffect, useReducer, useSyncExternalStore } from 'react';
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
 import { worldSeedThumbnails } from '../../worldSeedThumbnails';
-import { useRunningWorld } from '../useRunningWorld';
+import { useRunningWorldSeed } from '../useRunningWorld';
 
 const LONG_ENOUGH_FOR_THE_VIEW_TO_CATCH_UP_MS = 900;
 
@@ -13,7 +13,7 @@ export function useWorldSeedThumbnail(worldName: string): string | null {
 }
 
 export function useThumbnailOfTheRunningWorld(): void {
-  const running = useRunningWorld();
+  const running = useRunningWorldSeed();
   const changes = useWorldChangeCount();
   useEffect(() => {
     if (!running) return;

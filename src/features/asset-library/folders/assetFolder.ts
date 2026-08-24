@@ -1,5 +1,16 @@
 import { isLibraryFolder, type LibraryFolder } from '../librarySelection';
 
+const SECTION_NAMES_BEFORE_THE_WORLD_SEED_RENAME: Record<string, LibraryFolder> = {
+  worlds: 'worldSeeds',
+};
+
+function sectionFromStoredJson(raw: unknown): LibraryFolder | null {
+  if (typeof raw === 'string' && raw in SECTION_NAMES_BEFORE_THE_WORLD_SEED_RENAME) {
+    return SECTION_NAMES_BEFORE_THE_WORLD_SEED_RENAME[raw] ?? null;
+  }
+  return isLibraryFolder(raw) ? raw : null;
+}
+
 export interface AssetFolder {
   id: string;
   name: string;
@@ -51,11 +62,12 @@ function folderFromStoredJson(raw: unknown): AssetFolder | null {
   const held = raw as { id?: unknown; name?: unknown; section?: unknown; parentId?: unknown };
   if (typeof held.id !== 'string' || held.id === '') return null;
   if (typeof held.name !== 'string' || held.name.trim() === '') return null;
-  if (!isLibraryFolder(held.section)) return null;
+  const section = sectionFromStoredJson(held.section);
+  if (!section) return null;
   return {
     id: held.id,
     name: held.name,
-    section: held.section,
+    section,
     parentId: typeof held.parentId === 'string' ? held.parentId : null,
   };
 }
@@ -102,8 +114,9 @@ function placementsWithAKnownFolder(
   if (typeof raw !== 'object' || raw === null) return {};
   const byId = foldersById(folders);
   const placements: AssetPlacements = {};
-  for (const [section, filed] of Object.entries(raw as Record<string, unknown>)) {
-    if (!isLibraryFolder(section)) continue;
+  for (const [storedSection, filed] of Object.entries(raw as Record<string, unknown>)) {
+    const section = sectionFromStoredJson(storedSection);
+    if (!section) continue;
     if (typeof filed !== 'object' || filed === null) continue;
     const kept: Record<string, string> = {};
     for (const [key, folderId] of Object.entries(filed as Record<string, unknown>)) {

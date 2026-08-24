@@ -46,8 +46,8 @@ function renamer() {
     items: new ItemAssets(),
     templates: new TemplateLibrary({ templates: [], hiddenBuiltIns: [] }),
     assetFolders: new AssetFolders({
-      folders: [{ id: 'f1', name: 'Round 1', section: 'worlds', parentId: null }],
-      placements: { worlds: { 'my delve': 'f1' } },
+      folders: [{ id: 'f1', name: 'Round 1', section: 'worldSeeds', parentId: null }],
+      placements: { worldSeeds: { 'my delve': 'f1' } },
     }),
     worldSeeds,
     runningWorld: new RunningWorld(),
@@ -65,7 +65,7 @@ function renamer() {
   } as unknown as CommandContext;
   return {
     context,
-    worlds: new WorldSeedShelf(worldSeeds),
+    worldSeedShelf: new WorldSeedShelf(worldSeeds),
     act: (action: string, params: CommandParams = {}) =>
       performCommand(context, 'god', action, params),
   };
@@ -78,8 +78,8 @@ function checkRenamingAWorld(check: CheckReporter): void {
   check(
     'renaming a saved world files it under the new name and leaves nothing behind under the old one',
     renamed.ok &&
-      saved.worlds.byName('the deep delve') !== undefined &&
-      saved.worlds.byName('my delve') === undefined,
+      saved.worldSeedShelf.byName('the deep delve') !== undefined &&
+      saved.worldSeedShelf.byName('my delve') === undefined,
   );
   check(
     'a world that was running keeps running under the name you gave it',
@@ -87,8 +87,8 @@ function checkRenamingAWorld(check: CheckReporter): void {
   );
   check(
     'a renamed world stays in the folder it was filed under',
-    saved.context.assetFolders.folderOf('worlds', 'the deep delve') === 'f1' &&
-      saved.context.assetFolders.folderOf('worlds', 'my delve') === null,
+    saved.context.assetFolders.folderOf('worldSeeds', 'the deep delve') === 'f1' &&
+      saved.context.assetFolders.folderOf('worldSeeds', 'my delve') === null,
   );
 
   const taken = renamer();
@@ -108,8 +108,8 @@ function checkRenamingAWorld(check: CheckReporter): void {
   check(
     'renaming a world that ships with the editor saves your copy and takes the example off the shelf',
     tookOver.ok &&
-      example.worlds.byName('my own islands') !== undefined &&
-      example.worlds.byName(shipped) === undefined &&
+      example.worldSeedShelf.byName('my own islands') !== undefined &&
+      example.worldSeedShelf.byName(shipped) === undefined &&
       example.context.worldSeeds.hiddenExamples().includes(shipped),
   );
 
@@ -196,10 +196,10 @@ function checkOpeningARowFromTheLibrary(check: CheckReporter): void {
     'opening the row already selected clears the selection and closes the detail column',
     closed.selection === null && !closed.detailIsOpen,
   );
-  const moved = nextSelectionOnOpen({ folder: 'tiles', key: '3' }, 'worlds', 'islands');
+  const moved = nextSelectionOnOpen({ folder: 'tiles', key: '3' }, 'worldSeeds', 'islands');
   check(
     'opening another row moves the selection to it rather than closing the column',
-    moved.selection?.folder === 'worlds' && moved.selection.key === 'islands' && moved.detailIsOpen,
+    moved.selection?.folder === 'worldSeeds' && moved.selection.key === 'islands' && moved.detailIsOpen,
   );
 }
 
@@ -215,7 +215,7 @@ function checkTheLibrariesSurviveTheirOwnStorage(check: CheckReporter): void {
     templateLibraryFromStoredJson([]).templates.length === 0,
   );
   check(
-    'the worlds and node groups a rename writes are shapes their own resource accepts',
+    'the worldSeedShelf and node groups a rename writes are shapes their own resource accepts',
     persistedDocumentIsValid('worldSeeds', { seeds: [], hiddenExamples: [] }) &&
       persistedDocumentIsValid('templates', templates.stored()),
   );

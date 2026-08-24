@@ -27,20 +27,21 @@ import {
 } from '@/features/app-shell/runtime/commands/command';
 import { listOf, readInt, readNumber, readOptionalText, readText } from '@/features/app-shell/runtime/commands/commandParams';
 import { createCommandCollection } from '@/features/app-shell/runtime/commands/commandCollection';
+import { runningSeed } from '@/features/asset-library/worlds/running/runningWorld';
 
-const { define: registerCommand, commands: worldCommands } = createCommandCollection();
-export { worldCommands };
+const { define: registerCommand, commands: worldSeedCommands } = createCommandCollection();
+export { worldSeedCommands };
 
 
-function registerWorldCommand(
+function registerWorldSeedCommand(
   spec: Omit<CommandSpec, 'mode' | 'group' | 'changesWorld'>,
 ): CommandSpec {
   return registerCommand({ ...spec, mode: 'god', group: 'world', changesWorld: true });
 }
 
-registerWorldCommand({
+registerWorldSeedCommand({
   action: 'set_seed',
-  humanControl: 'detail panel, world: world seed row',
+  humanControl: 'detail panel, world seed: seed number row',
   description: 'Reseed the world. The same pipeline and the same seed always regenerate the same world.',
   params: { seed: { kind: 'int', help: 'any integer' } },
   example: { action: 'set_seed', seed: 20260806 },
@@ -52,9 +53,9 @@ registerWorldCommand({
   },
 });
 
-registerWorldCommand({
+registerWorldSeedCommand({
   action: 'set_daylight',
-  humanControl: 'detail panel, world: daylight row',
+  humanControl: 'detail panel, world seed: daylight row',
   description:
     'Set how much light the sky gives this world, 0 to 1. At 0 nothing is lit until a tile, an item or a character carrying a light emits some — the setting for caves and underground worlds.',
   params: { daylight: { kind: 'number', help: '0 for pitch dark, 1 for full daylight' } },
@@ -67,7 +68,7 @@ registerWorldCommand({
   },
 });
 
-registerWorldCommand({
+registerWorldSeedCommand({
   action: 'set_time',
   humanControl: 'detail panel, world: time row',
   description:
@@ -84,7 +85,7 @@ registerWorldCommand({
   },
 });
 
-registerWorldCommand({
+registerWorldSeedCommand({
   action: 'clear_pipeline',
   humanControl: 'detail panel, world: clear',
   description: 'Remove every node, leaving an empty world to build from zero.',
@@ -96,52 +97,52 @@ registerWorldCommand({
   },
 });
 
-registerWorldCommand({
+registerWorldSeedCommand({
   action: 'load_world_seed',
   humanControl: 'no button of its own — run_world_seed is what the ▶ run button calls',
   description:
-    'Replace the whole pipeline with a named preset — one of the built-in examples or one you saved — without changing which world the game panel says is running.',
+    'Replace the whole pipeline with a named world seed — one of the built-in examples or one you saved — without changing which world the game panel says is running.',
   params: { name: { kind: 'text', help: 'a world seed name — see GET /api/v1/asset-library/world-seeds' } },
   example: { action: 'load_world_seed', name: 'islands' },
-  apply: (context, params) => loadPreset(context, params),
+  apply: (context, params) => loadWorldSeed(context, params),
 });
 
-registerWorldCommand({
+registerWorldSeedCommand({
   action: 'run_world_seed',
-  humanControl: 'asset library, worlds folder: ▶ run on a world',
+  humanControl: 'asset library, world seeds folder: ▶ run on a world',
   description:
     'Run a world: its nodes become the pipeline the game panel renders, and the world panel names it as the running world. Editing that world from then on edits what you are looking at.',
   params: { name: { kind: 'text', help: 'a world seed name — see GET /api/v1/asset-library/world-seeds' } },
   example: { action: 'run_world_seed', name: 'islands' },
-  apply: (context, params) => runWorld(context, params),
+  apply: (context, params) => runWorldSeed(context, params),
 });
 
-registerWorldCommand({
+registerWorldSeedCommand({
   action: 'save_world_seed',
   humanControl: 'detail panel, world: every edit writes itself back under the world you are editing',
   description:
     'Save the whole current pipeline as a named world. An existing name is overwritten; saving under the name of a built-in example takes that name over, and the example stays behind as what deleting yours falls back to.',
   params: {
-    name: { kind: 'text', help: 'the preset name' },
-    description: { kind: 'text', help: 'what this world is', optional: true },
+    name: { kind: 'text', help: 'the world seed name' },
+    description: { kind: 'text', help: 'what this world seed grows', optional: true },
   },
   example: { action: 'save_world_seed', name: 'my archipelago' },
-  apply: (context, params) => savePreset(context, params),
+  apply: (context, params) => saveWorldSeed(context, params),
 });
 
-registerWorldCommand({
+registerWorldSeedCommand({
   action: 'duplicate_world_seed',
-  humanControl: 'asset library, worlds folder: ⧉ on a world',
+  humanControl: 'asset library, world seeds folder: ⧉ on a world',
   description:
     'Copy a world — a built-in example or one you saved — into your saved worlds under a free name. The world you are editing is untouched.',
   params: { name: { kind: 'text', help: 'the world seed to copy — see GET /api/v1/asset-library/world-seeds' } },
   example: { action: 'duplicate_world_seed', name: 'islands' },
-  apply: (context, params) => duplicatePreset(context, params),
+  apply: (context, params) => duplicateWorldSeed(context, params),
 });
 
-registerWorldCommand({
+registerWorldSeedCommand({
   action: 'rename_world_seed',
-  humanControl: 'asset library, worlds folder: click the name on a world row',
+  humanControl: 'asset library, world seeds folder: click the name on a world row',
   description:
     'Rename a world. One of yours is filed under the new name; a built-in example is saved under the new name and taken off the shelf under the old one. A world that is running keeps running under its new name.',
   params: {
@@ -149,20 +150,20 @@ registerWorldCommand({
     new_name: { kind: 'text', help: 'the name to file it under; a name already in use is refused' },
   },
   example: { action: 'rename_world_seed', name: 'islands', new_name: 'my archipelago' },
-  apply: (context, params) => renamePreset(context, params),
+  apply: (context, params) => renameWorldSeed(context, params),
 });
 
-registerWorldCommand({
+registerWorldSeedCommand({
   action: 'delete_world_seed',
-  humanControl: 'asset library, worlds folder: ✕ on a world',
+  humanControl: 'asset library, world seeds folder: ✕ on a world',
   description:
     'Delete a world. Yours is dropped; a built-in example is taken off the library shelf, and load_world_seed can still name it.',
   params: { name: { kind: 'text', help: 'the world name' } },
   example: { action: 'delete_world_seed', name: 'my archipelago' },
-  apply: (context, params) => deletePreset(context, params),
+  apply: (context, params) => deleteWorldSeed(context, params),
 });
 
-registerWorldCommand({
+registerWorldSeedCommand({
   action: 'stamp_template',
   humanControl: 'asset library, node groups folder: stamp into the running world',
   description:
@@ -179,7 +180,7 @@ registerWorldCommand({
   apply: (context, params) => stampTemplate(context, params),
 });
 
-registerWorldCommand({
+registerWorldSeedCommand({
   action: 'save_template',
   humanControl:
     'detail panel, world: ⤓ library on a folder band — and every edit to a node group writes itself back this way',
@@ -194,7 +195,7 @@ registerWorldCommand({
   apply: (context, params) => saveTemplate(context, params),
 });
 
-registerWorldCommand({
+registerWorldSeedCommand({
   action: 'duplicate_template',
   humanControl: 'asset library, node groups folder: ⧉ on a group',
   description: 'Copy a node group — built-in or saved — into your saved groups under a free name.',
@@ -203,7 +204,7 @@ registerWorldCommand({
   apply: (context, params) => duplicateTemplate(context, params),
 });
 
-registerWorldCommand({
+registerWorldSeedCommand({
   action: 'rename_template',
   humanControl: 'asset library, node groups folder: click the name on a group row',
   description:
@@ -216,7 +217,7 @@ registerWorldCommand({
   apply: (context, params) => renameTemplate(context, params),
 });
 
-registerWorldCommand({
+registerWorldSeedCommand({
   action: 'delete_template',
   humanControl: 'detail panel, node group: ✕',
   description:
@@ -260,7 +261,7 @@ const ROLLS: readonly {
 ];
 
 for (const entry of ROLLS) {
-  registerWorldCommand({
+  registerWorldSeedCommand({
     action: entry.action,
     humanControl: entry.humanControl,
     description: `${entry.description} Without a seed the roll repeats until the player would land with at least ${PLAYABLE_PACES} paces of walkable ground, keeping the roomiest attempt. Pass a seed to make a single reproducible roll; undo_randomize puts it back.`,
@@ -272,7 +273,7 @@ for (const entry of ROLLS) {
   });
 }
 
-registerWorldCommand({
+registerWorldSeedCommand({
   action: 'undo_randomize',
   humanControl: 'detail panel, world: undo',
   description: 'Restore the pipeline from before the last roll.',
@@ -324,30 +325,30 @@ function arbitrarySeed(): number {
   return (Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0;
 }
 
-function loadPreset(context: CommandContext, params: CommandParams): CommandResult {
+function loadWorldSeed(context: CommandContext, params: CommandParams): CommandResult {
   const name = readText(params, 'name');
   if (!name.ok) return name.failure;
-  const state = presetStateOf(context, name.value);
+  const state = worldSeedStateOf(context, name.value);
   if (!state) {
     return commandFailed('unknown_world_seed', `name must be one of: ${listOf(worldSeedNames(context))}`);
   }
   context.store.replaceAll(sanitizePipeline(state));
-  return commandSucceeded(`loaded preset '${name.value}'`);
+  return commandSucceeded(`loaded world seed '${name.value}'`);
 }
 
-function runWorld(context: CommandContext, params: CommandParams): CommandResult {
+function runWorldSeed(context: CommandContext, params: CommandParams): CommandResult {
   const name = readText(params, 'name');
   if (!name.ok) return name.failure;
-  if (context.runningWorld.name() === name.value) {
+  if (context.runningWorld.seedName() === name.value) {
     return commandSucceeded(`'${name.value}' is already the world running`);
   }
-  const loaded = loadPreset(context, params);
+  const loaded = loadWorldSeed(context, params);
   if (!loaded.ok) return loaded;
-  context.runningWorld.setName(name.value);
+  context.runningWorld.run(runningSeed(name.value));
   return commandSucceeded(`'${name.value}' is the world now running`);
 }
 
-function presetStateOf(context: CommandContext, name: string): unknown {
+function worldSeedStateOf(context: CommandContext, name: string): unknown {
   return worldSeedNamed(context, name)?.state;
 }
 
@@ -360,7 +361,7 @@ function worldSeedNames(context: CommandContext): string[] {
   ];
 }
 
-function savePreset(context: CommandContext, params: CommandParams): CommandResult {
+function saveWorldSeed(context: CommandContext, params: CommandParams): CommandResult {
   const name = readText(params, 'name');
   if (!name.ok) return name.failure;
   if (context.store.nodes().length === 0) {
@@ -378,7 +379,7 @@ function describedElsewhere(context: CommandContext, name: string): string {
   return worldSeedNamed(context, name)?.description ?? '';
 }
 
-function duplicatePreset(context: CommandContext, params: CommandParams): CommandResult {
+function duplicateWorldSeed(context: CommandContext, params: CommandParams): CommandResult {
   const name = readText(params, 'name');
   if (!name.ok) return name.failure;
   const original = worldSeedNamed(context, name.value);
@@ -415,7 +416,7 @@ function duplicateTemplate(context: CommandContext, params: CommandParams): Comm
   return commandSucceeded(`copied group '${original.name}' as '${copy}'`);
 }
 
-function deletePreset(context: CommandContext, params: CommandParams): CommandResult {
+function deleteWorldSeed(context: CommandContext, params: CommandParams): CommandResult {
   const name = readText(params, 'name');
   if (!name.ok) return name.failure;
   if (!worldSeedNamed(context, name.value)) {
@@ -435,7 +436,7 @@ function takeWorldSeedOffTheShelf(context: CommandContext, name: string): void {
   }
 }
 
-function renamePreset(context: CommandContext, params: CommandParams): CommandResult {
+function renameWorldSeed(context: CommandContext, params: CommandParams): CommandResult {
   const named = renaming(params);
   if (!named.ok) return named.failure;
   const { from, to } = named.value;
@@ -449,8 +450,8 @@ function renamePreset(context: CommandContext, params: CommandParams): CommandRe
   }
   context.worldSeeds.save({ ...world, name: to, state: sanitizePipeline(world.state) });
   takeWorldSeedOffTheShelf(context, from);
-  if (context.runningWorld.name() === from) context.runningWorld.setName(to);
-  context.assetFolders.renameKey('worlds', from, to);
+  if (context.runningWorld.seedName() === from) context.runningWorld.renameTo(to);
+  context.assetFolders.renameKey('worldSeeds', from, to);
   return commandSucceeded(`world '${from}' is now '${to}'`);
 }
 

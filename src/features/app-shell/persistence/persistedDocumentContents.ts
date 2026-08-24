@@ -9,6 +9,7 @@ import type { StoredArtOf } from '@/features/asset-library/tiles/storage/storedF
 import type { TileDef } from '@/features/asset-library/tiles/tileDef';
 import type { PipelineState } from '@/features/asset-library/worlds/pipeline/pipelineState';
 import type { StoredWorldSeedLibrary } from '@/features/asset-library/worlds/seeds/storedWorldSeedLibrary';
+import type { StoredSavedWorlds } from '@/features/asset-library/worlds/saved/storedSavedWorlds';
 
 export type WorldSeedKey = string;
 export type ThumbnailDataUrl = string;
@@ -22,6 +23,7 @@ export interface StoredDocumentContents {
   tiles: StoredArtOf<TileDef>[];
   templates: StoredTemplateLibrary;
   worldSeeds: StoredWorldSeedLibrary;
+  savedWorlds: StoredSavedWorlds;
   pieces: readonly Piece[];
   cultures: readonly Culture[];
   creatures: StoredArtOf<CreatureDef>[];
@@ -36,6 +38,7 @@ export interface ParsedDocumentContents {
   tiles: TileDef[];
   templates: StoredTemplateLibrary;
   worldSeeds: StoredWorldSeedLibrary;
+  savedWorlds: StoredSavedWorlds;
   pieces: Piece[];
   cultures: Culture[];
   creatures: CreatureDef[];

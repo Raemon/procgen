@@ -21,8 +21,8 @@ import { gradeSummaryLine, weakestReadingsOf } from './lab/worldGrade';
 import type { WorldSeedLab } from './lab/worldSeedLab';
 import { examplePipelines } from './seeds/examplePipelines';
 
-const { define: registerCommand, commands: labCommands } = createCommandCollection();
-export { labCommands };
+const { define: registerCommand, commands: worldSeedLabCommands } = createCommandCollection();
+export { worldSeedLabCommands };
 
 const LAB_CONTROL = 'no button of its own — the world lab runs on the server, under /api/v1/asset-library/world-seeds';
 
