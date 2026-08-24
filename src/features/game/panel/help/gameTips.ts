@@ -60,7 +60,7 @@ export const SIGHT_RANGE_TIP: TooltipContent = {
 
 export const ASCII_COLOR_TIP: TooltipContent = {
   title: 'color',
-  body: 'Paints each ASCII glyph with the color of the tile or marker it stands for. A reading aid for this panel only — agents always receive plain text.',
+  body: 'Colored mode paints each glyph with the average color of its tile and draws walkable tiles at 35% opacity. White text is exactly the characters an agent reads. This panel only — agents always receive plain text.',
 };
 
 export const LIFE_TIP: TooltipContent = {

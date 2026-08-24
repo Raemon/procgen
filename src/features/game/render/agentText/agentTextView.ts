@@ -24,7 +24,12 @@ import {
 import type { RemotePlayers } from '../../multiplayer/client/remotePlayers';
 import { SELF_INK, characterInkLookup, withCharactersPainted } from './characterGlyphs';
 import { asciiColorOn, onAsciiColorChange } from './asciiColorPreference';
-import { asciiTileInk } from './asciiTileInk';
+import {
+  ASCII_GLYPH_GRID_CLASSES,
+  asciiGlyphPaint,
+  type AsciiGlyphPaint,
+} from './asciiGlyphPaint';
+import { sizeSquareGlyphGrid, squareGlyphGrid } from './squareGlyphGrid';
 import { monospaceCellSize, type MonospaceCellSize } from './monospaceCellSize';
 import { worldCellOfObservationGridCell } from './observationGridCell';
 import { textGridCellUnderPointer } from './textGridCellUnderPointer';
@@ -33,15 +38,14 @@ const ROOT_CLASSES =
   'absolute inset-0 flex flex-col gap-3 overflow-auto p-4 font-mono text-[13px] leading-[1.15] text-emerald-100/90';
 const HEADER_CLASSES = 'whitespace-pre-wrap text-emerald-200/70';
 const COLUMNS_CLASSES = 'flex flex-wrap items-start gap-x-8 gap-y-3';
-const GRID_CLASSES = 'm-0 whitespace-pre';
 const COLUMN_TITLE_CLASSES = 'mb-1 text-[11px] uppercase tracking-wider text-emerald-200/50';
-const ELEVATION_CLASSES = 'm-0 whitespace-pre text-emerald-100/60';
+const ELEVATION_CLASSES = `${ASCII_GLYPH_GRID_CLASSES} text-emerald-100/60`;
 const LEGEND_CLASSES = 'max-w-[30rem] space-y-0.5';
 const LEGEND_LINE_CLASSES = 'whitespace-pre-wrap';
 const INTERACTION_CLASSES = 'mt-2 whitespace-pre-wrap text-amber-200/90';
 const CHARACTER_POLL_MS = 250;
 
-type CellInk = (glyph: string, row: number, column: number) => string | null;
+type CellInk = (glyph: string, row: number, column: number) => AsciiGlyphPaint | null;
 
 export class AgentTextView {
   private readonly root = document.createElement('div');
@@ -71,7 +75,7 @@ export class AgentTextView {
   ) {
     this.root.className = ROOT_CLASSES;
     this.header.className = HEADER_CLASSES;
-    this.gridPre.className = GRID_CLASSES;
+    this.gridPre.className = ASCII_GLYPH_GRID_CLASSES;
     this.elevationPre.className = ELEVATION_CLASSES;
     this.legendList.className = LEGEND_CLASSES;
     this.interaction.className = INTERACTION_CLASSES;
@@ -119,12 +123,18 @@ export class AgentTextView {
       characters,
     ));
     const ink = asciiColorOn() ? this.cellInk(obs, characters) : null;
-    const glyphInks = new Map<string, string>();
+    const glyphPaints = new Map<string, AsciiGlyphPaint>();
     this.header.textContent = headerText(obs, this.followedName(characters));
-    this.gridPre.replaceChildren(...gridNodes(obs, ink, glyphInks));
+    sizeSquareGlyphGrid(this.gridPre, obs.viewSize);
+    this.gridPre.replaceChildren(...squareGlyphGrid(obs.view, ink, glyphPaints));
     this.elevationColumn.classList.toggle('hidden', obs.elevation === null);
-    this.elevationPre.textContent = obs.elevation?.join('\n') ?? '';
-    this.legendList.replaceChildren(...obs.legend.map((entry) => legendLine(entry, glyphInks)));
+    if (obs.elevation) {
+      sizeSquareGlyphGrid(this.elevationPre, obs.viewSize);
+      this.elevationPre.replaceChildren(...squareGlyphGrid(obs.elevation, null));
+    } else {
+      this.elevationPre.replaceChildren();
+    }
+    this.legendList.replaceChildren(...obs.legend.map((entry) => legendLine(entry, glyphPaints)));
     this.interaction.classList.toggle('hidden', obs.interaction === null);
     this.interaction.textContent = obs.interaction ?? '';
   }
@@ -138,11 +148,13 @@ export class AgentTextView {
       const x = viewport.originX + column;
       const y = viewport.originY + row;
       const characterInk = characterInks.get(`${x},${y}`);
-      if (characterInk) return characterInk;
-      if (glyph === SELF_GLYPH) return SELF_INK;
-      const color =
-        markers.get(`${x},${y}`)?.color ?? this.tileAssets.byId(this.sampler.tileAt(x, y))?.color;
-      return color ? asciiTileInk(color) : null;
+      if (characterInk) return asciiGlyphPaint(characterInk, null);
+      if (glyph === SELF_GLYPH) return asciiGlyphPaint(SELF_INK, null);
+      const markerColor = markers.get(`${x},${y}`)?.color;
+      if (markerColor) return asciiGlyphPaint(markerColor, null);
+      const tile = this.tileAssets.byId(this.sampler.tileAt(x, y));
+      if (!tile?.color) return null;
+      return asciiGlyphPaint(tile.color, tile.walkable);
     };
   }
 
@@ -219,59 +231,16 @@ function headerText(obs: AgentObservation, followedName: string | null): string 
   return `${pose}\norigin (${originX},${originY}) top-left · north is up, y grows south`;
 }
 
-function gridNodes(obs: AgentObservation, ink: CellInk | null, glyphInks: Map<string, string>): Node[] {
-  if (!ink) return [document.createTextNode(obs.view.join('\n'))];
-  const nodes: Node[] = [];
-  obs.view.forEach((line, row) => {
-    if (row > 0) nodes.push(document.createTextNode('\n'));
-    nodes.push(...coloredLineNodes(line, row, ink, glyphInks));
-  });
-  return nodes;
-}
-
-function coloredLineNodes(
-  line: string,
-  row: number,
-  ink: CellInk,
-  glyphInks: Map<string, string>,
-): Node[] {
-  const glyphs = [...line];
-  const nodes: Node[] = [];
-  let run = '';
-  let runInk: string | null = null;
-  const flush = (): void => {
-    if (run === '') return;
-    nodes.push(runInk === null ? document.createTextNode(run) : coloredSpan(run, runInk));
-    run = '';
-  };
-  glyphs.forEach((glyph, column) => {
-    const color = ink(glyph, row, column);
-    if (color !== null && !glyphInks.has(glyph)) glyphInks.set(glyph, color);
-    if (color !== runInk) {
-      flush();
-      runInk = color;
-    }
-    run += glyph;
-  });
-  flush();
-  return nodes;
-}
-
-function coloredSpan(text: string, color: string): HTMLElement {
-  const span = document.createElement('span');
-  span.className = 'pointer-events-none';
-  span.style.color = color;
-  span.textContent = text;
-  return span;
-}
-
-function legendLine(entry: LegendEntry, glyphInks: Map<string, string>): HTMLElement {
+function legendLine(entry: LegendEntry, glyphPaints: Map<string, AsciiGlyphPaint>): HTMLElement {
   const line = document.createElement('div');
   line.className = LEGEND_LINE_CLASSES;
   const glyph = document.createElement('span');
   glyph.textContent = `'${entry.glyph}'`;
-  const ink = glyphInks.get(entry.glyph);
-  if (ink) glyph.style.color = ink;
+  const paint = glyphPaints.get(entry.glyph);
+  if (paint) {
+    glyph.style.color = paint.color;
+    if (paint.opacity !== 1) glyph.style.opacity = String(paint.opacity);
+  }
   const phrase = walkabilityPhrase(entry.walkable);
   const suffix = phrase === null ? '' : ` (${phrase})`;
   line.append(glyph, document.createTextNode(` ${entry.meaning}${suffix}`));
