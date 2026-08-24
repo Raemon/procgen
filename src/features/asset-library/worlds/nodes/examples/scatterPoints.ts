@@ -7,7 +7,7 @@ registerNodeType({
   title: 'scatter points',
   category: 'examples',
   description:
-    'Drops points using a per-cell world-position hash, optionally masked by a field band. Points carry this node\'s id as their tag.',
+    'Drops points using a per-cell world-position hash, optionally masked by a field band. The observation legend names them by this node\'s label.',
   whenToUse:
     'Placing things rather than painting terrain: trees, monsters, loot. Wire a terrain field into the mask and set the band so points only land where the terrain suits them.',
   inputs: {

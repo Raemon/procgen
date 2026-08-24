@@ -8,6 +8,8 @@ import type { TileAssets } from '@/features/asset-library/tiles/tileAssets';
 import { cellIndexInChunk, chunkCoordOfCell } from './chunk';
 import { markerAppearance } from './display/markerAppearance';
 import type { PipelineEvaluator } from './eval/evaluator';
+import { featureLabelOfTag } from './features/featureLabelOfTag';
+import { nodeTypeOf } from './nodeRegistry';
 import type { NodeInstance } from './pipeline/pipelineState';
 import type { PipelineStore } from './pipeline/pipelineStore';
 import { topPackedVoxelOf, type VoxelColumn } from './structureOverlay/chunkVoxelColumns';
@@ -265,8 +267,9 @@ export class WorldSampler {
   ): void {
     if (node.display.mode !== 'markers') return;
     const look = markerAppearance(this.tileAssets, node.display);
+    const def = nodeTypeOf(node.type);
     for (const point of this.pointsInRect(node, minX, minY, maxX, maxY)) {
-      into.push({ x: point.x, y: point.y, ...look, tag: point.tag });
+      into.push({ x: point.x, y: point.y, ...look, tag: def ? featureLabelOfTag(point, node, def) : point.tag });
     }
   }
 }
