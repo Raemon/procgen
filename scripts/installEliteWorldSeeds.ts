@@ -2,7 +2,7 @@ import '@/features/asset-library/worlds/nodes';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { genomeFromJson } from '@/features/asset-library/worlds/selfPlay/worldSeedGenome';
-import { installGenomeAsPreset } from './worldShots/installWorldSeed';
+import { installGenomeAsWorldSeed } from './worldShots/installWorldSeed';
 import type { WorldShotRecord } from './worldShots/galleryReport';
 
 const SHOTS_DIR = flagValue('shots') ?? 'artifacts/worldShots';
@@ -28,12 +28,12 @@ for (const record of chosen) {
     JSON.parse(readFileSync(join(SHOTS_DIR, record.slug, 'genome.json'), 'utf8')),
   );
   const name = freeName(`${record.name} (evolved)`, taken);
-  const installed = installGenomeAsPreset(genome, name, descriptionOf(record));
+  const installed = installGenomeAsWorldSeed(genome, name, descriptionOf(record));
   console.log(
     `installed ${installed.name}: +${installed.tilesAdded} tiles, +${installed.piecesAdded} pieces`,
   );
 }
-console.log('run `npm run docs:seed` (or open a fresh database) to load the new presets');
+console.log('run `npm run docs:seed` (or open a fresh database) to load the new world seeds');
 
 function namedRecords(
   records: readonly WorldShotRecord[],

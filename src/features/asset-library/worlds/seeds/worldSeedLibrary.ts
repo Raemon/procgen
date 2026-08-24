@@ -25,16 +25,16 @@ export class WorldSeedLibrary {
   }
 
   byName(name: string): WorldSeed | undefined {
-    return this.saved.find((preset) => preset.name === name);
+    return this.saved.find((seed) => seed.name === name);
   }
 
-  save(preset: WorldSeed): void {
-    this.saved = [...this.saved.filter((existing) => existing.name !== preset.name), preset];
+  save(seed: WorldSeed): void {
+    this.saved = [...this.saved.filter((existing) => existing.name !== seed.name), seed];
     this.persistAndNotify();
   }
 
   remove(name: string): void {
-    this.saved = this.saved.filter((preset) => preset.name !== name);
+    this.saved = this.saved.filter((seed) => seed.name !== name);
     this.persistAndNotify();
   }
 

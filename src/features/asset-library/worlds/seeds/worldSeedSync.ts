@@ -51,18 +51,18 @@ export interface AssetIdMaps {
 }
 
 export function syncMissingWorldSeeds(library: LibraryDocs, shipped: LibraryDocs): number {
-  const have = new Set(library.worldSeeds.map((preset) => preset.name));
-  const missing = shipped.worldSeeds.filter((preset) => !have.has(preset.name));
-  for (const preset of missing) installShippedWorldSeed(library, shipped, preset);
+  const have = new Set(library.worldSeeds.map((seed) => seed.name));
+  const missing = shipped.worldSeeds.filter((seed) => !have.has(seed.name));
+  for (const seed of missing) installShippedWorldSeed(library, shipped, seed);
   return missing.length;
 }
 
 function installShippedWorldSeed(
   library: LibraryDocs,
   shipped: LibraryDocs,
-  preset: WorldSeed,
+  seed: WorldSeed,
 ): void {
-  const wanted = assetsReferencedBy(preset.state, shipped);
+  const wanted = assetsReferencedBy(seed.state, shipped);
   const maps: AssetIdMaps = {
     tileMap: idMapOnto(library.tiles, wanted.tiles),
     pieceMap: idMapOnto(library.pieces, wanted.pieces),
@@ -83,7 +83,7 @@ function installShippedWorldSeed(
       id: maps.cultureMap.get(culture.id)!,
     })),
   );
-  library.worldSeeds.push({ ...preset, state: remappedPipeline(preset.state, maps) });
+  library.worldSeeds.push({ ...seed, state: remappedPipeline(seed.state, maps) });
 }
 
 function assetsReferencedBy(

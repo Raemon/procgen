@@ -143,14 +143,14 @@ function install(context: RouteContext, run: LabRun): ApiResponse {
     },
     run,
     wanted,
-    takenWorldSeedNames(world.worldSeeds.savedWorldSeeds().map((preset) => preset.name)),
+    takenWorldSeedNames(world.worldSeeds.savedWorldSeeds().map((seed) => seed.name)),
   );
   context.access.persistWorld(world);
   return json(200, { installed, run: runListJson(run) });
 }
 
 function takenWorldSeedNames(saved: readonly string[]): Set<string> {
-  return new Set([...saved, ...examplePipelines().map((preset) => preset.name)]);
+  return new Set([...saved, ...examplePipelines().map((seed) => seed.name)]);
 }
 
 function withRun(context: RouteContext, use: (run: LabRun) => ApiResponse): ApiResponse {

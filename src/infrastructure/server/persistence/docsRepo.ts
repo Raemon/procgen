@@ -19,7 +19,7 @@ import { syncMissingAssetFolders } from '@/features/asset-library/folders/folder
 
 export const PERSISTED_DOC_NAMES = PERSISTED_DOCUMENT_NAMES;
 
-const DOCS_WRITTEN_ONLY_BY_THE_APP = ['uiState', 'worldSeedThumbnails'];
+const DOCS_WRITTEN_ONLY_BY_THE_APP = ['uiState', 'worldSeedThumbnails', 'savedWorlds'];
 const PERSISTED_DOCUMENT_NAME_SET = new Set<string>(PERSISTED_DOCUMENT_NAMES);
 
 const DOC_NAMES_BEFORE_THE_ASSETS_RENAME: Record<string, string> = {

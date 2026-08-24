@@ -306,16 +306,16 @@ export function checkCommandDispatch(check: CheckReporter): void {
     const after = commands.context.cultures.byId(culture.id)!;
     return bound.ok && removed.ok && piecesBoundToRole(after, 'door').length === 0;
   })());
-  check('presets and templates round-trip through commands', (() => {
-    const saved = act('god', 'save_world_seed', { name: 'check preset' });
+  check('world seeds and node groups round-trip through commands', (() => {
+    const saved = act('god', 'save_world_seed', { name: 'check seed' });
     const nodeIds = commands.store.nodes().map((node) => node.id);
     const template = act('god', 'save_template', { name: 'check template', node_ids: nodeIds });
     const stamped = act('god', 'stamp_template', { name: 'check template' });
-    const loaded = act('god', 'load_world_seed', { name: 'check preset' });
+    const loaded = act('god', 'load_world_seed', { name: 'check seed' });
     const unknown = act('god', 'load_world_seed', { name: 'no such world' });
     return (
       saved.ok && template.ok && stamped.ok && loaded.ok &&
-      !unknown.ok && unknown.code === 'unknown_world_seed' && unknown.hint.includes('check preset')
+      !unknown.ok && unknown.code === 'unknown_world_seed' && unknown.hint.includes('check seed')
     );
   })());
   check('editing a built-in world or node group takes its name over, and deleting yours gives it back', (() => {
@@ -341,8 +341,8 @@ export function checkCommandDispatch(check: CheckReporter): void {
     );
   })());
   check('run_world_seed puts a world on screen and names it as the one running', (() => {
-    const ran = act('god', 'run_world_seed', { name: 'check preset' });
-    return ran.ok && commands.context.runningWorld.name() === 'check preset';
+    const ran = act('god', 'run_world_seed', { name: 'check seed' });
+    return ran.ok && commands.context.runningWorld.name() === 'check seed';
   })());
   check('a roll can be seeded and undone', (() => {
     const before = JSON.stringify(commands.store.snapshot());
@@ -351,7 +351,7 @@ export function checkCommandDispatch(check: CheckReporter): void {
     return rolled.ok && undone.ok && JSON.stringify(commands.store.snapshot()) === before;
   })());
   check('rerolling the seed regenerates the world without touching a single node', (() => {
-    act('god', 'load_world_seed', { name: 'check preset' });
+    act('god', 'load_world_seed', { name: 'check seed' });
     const before = commands.store.snapshot();
     const beforeNodes = JSON.stringify(before.nodes);
     const beforeSeed = before.seed;

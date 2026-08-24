@@ -218,8 +218,8 @@ function installWorlds(context: CommandContext, params: CommandParams): CommandR
 
 function takenWorldSeedNames(context: CommandContext): Set<string> {
   return new Set([
-    ...context.worldSeeds.savedWorldSeeds().map((preset) => preset.name),
-    ...examplePipelines().map((preset) => preset.name),
+    ...context.worldSeeds.savedWorldSeeds().map((seed) => seed.name),
+    ...examplePipelines().map((seed) => seed.name),
   ]);
 }
 

@@ -15,23 +15,23 @@ import { earthlikeState, fieldBytes, tileBytes, worldFromState } from './pipelin
 const SHIPPED_WORLDS = ['volcanic islands', 'infinite labyrinth'];
 
 function worldSeedStateNamed(name: string): PipelineState {
-  return sanitizePipeline(examplePipelines().find((preset) => preset.name === name)!.state);
+  return sanitizePipeline(examplePipelines().find((seed) => seed.name === name)!.state);
 }
 
 function shippedStates(): PipelineState[] {
-  return examplePipelines().map((preset) => sanitizePipeline(preset.state));
+  return examplePipelines().map((seed) => sanitizePipeline(seed.state));
 }
 
 export function checkNamedWorldSeeds(check: CheckReporter): void {
   check(
     'the editor ships exactly the two worlds it means to, named as the library lists them',
-    examplePipelines().map((preset) => preset.name).join() === SHIPPED_WORLDS.join(),
+    examplePipelines().map((seed) => seed.name).join() === SHIPPED_WORLDS.join(),
   );
   check(
     'every shipped world describes itself and survives sanitize with all of its nodes',
-    examplePipelines().every((preset) => preset.description.length > 0) &&
+    examplePipelines().every((seed) => seed.description.length > 0) &&
       examplePipelines().every(
-        (preset) => sanitizePipeline(preset.state).nodes.length === nodeCountOf(preset.state),
+        (seed) => sanitizePipeline(seed.state).nodes.length === nodeCountOf(seed.state),
       ),
   );
   check(
@@ -177,7 +177,7 @@ function checkSavedWorldSeedsRoundTrip(check: CheckReporter): void {
     restored.length === 1 && restored[0]!.state.nodes.length === saved[0]!.state.nodes.length,
   );
   check(
-    'junk in stored presets is dropped rather than trusted',
+    'junk in stored world seeds is dropped rather than trusted',
     sanitizeWorldSeeds([{ name: '', state: {} }, 'nope', { name: 'x' }]).length === 0,
   );
 }

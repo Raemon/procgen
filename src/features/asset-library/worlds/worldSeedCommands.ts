@@ -355,8 +355,8 @@ function worldSeedStateOf(context: CommandContext, name: string): unknown {
 function worldSeedNames(context: CommandContext): string[] {
   return [
     ...new Set([
-      ...context.worldSeeds.savedWorldSeeds().map((preset) => preset.name),
-      ...examplePipelines().map((preset) => preset.name),
+      ...context.worldSeeds.savedWorldSeeds().map((seed) => seed.name),
+      ...examplePipelines().map((seed) => seed.name),
     ]),
   ];
 }
@@ -372,7 +372,7 @@ function saveWorldSeed(context: CommandContext, params: CommandParams): CommandR
     description: readOptionalText(params, 'description') || describedElsewhere(context, name.value),
     state: sanitizePipeline(context.store.snapshot()),
   });
-  return commandSucceeded(`saved preset '${name.value}'`);
+  return commandSucceeded(`saved world seed '${name.value}'`);
 }
 
 function describedElsewhere(context: CommandContext, name: string): string {
@@ -397,7 +397,7 @@ function duplicateWorldSeed(context: CommandContext, params: CommandParams): Com
 
 function worldSeedNamed(context: CommandContext, name: string) {
   return (
-    context.worldSeeds.byName(name) ?? examplePipelines().find((preset) => preset.name === name)
+    context.worldSeeds.byName(name) ?? examplePipelines().find((seed) => seed.name === name)
   );
 }
 

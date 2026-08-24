@@ -22,5 +22,5 @@ export function sanitizeWorldSeed(raw: unknown): WorldSeed | null {
 
 export function sanitizeWorldSeeds(raw: unknown): WorldSeed[] {
   if (!Array.isArray(raw)) return [];
-  return raw.map(sanitizeWorldSeed).filter((preset): preset is WorldSeed => preset !== null);
+  return raw.map(sanitizeWorldSeed).filter((seed): seed is WorldSeed => seed !== null);
 }

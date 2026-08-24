@@ -17,19 +17,19 @@ const SURVEY_RECT: WorldRect = {
 };
 const ROWS_SHOWN = 10;
 
-for (const preset of examplePipelines()) reportPreset(preset);
+for (const seed of examplePipelines()) reportWorldSeed(seed);
 
-function reportPreset(preset: ExamplePipeline): void {
-  const features = featuresOfPreset(preset);
-  console.log(`\n== ${preset.name}: ${features.length} features in the ${HALF_SPAN * 2}-tile survey ==`);
+function reportWorldSeed(seed: ExamplePipeline): void {
+  const features = featuresOfWorldSeed(seed);
+  console.log(`\n== ${seed.name}: ${features.length} features in the ${HALF_SPAN * 2}-tile survey ==`);
   console.log(headerRow());
   for (const feature of features.slice(0, ROWS_SHOWN)) console.log(rowOf(feature));
   if (features.length > ROWS_SHOWN) console.log(`  … ${features.length - ROWS_SHOWN} more`);
   reportNodeCounts(features);
 }
 
-function featuresOfPreset(preset: ExamplePipeline): Feature[] {
-  const store = new PipelineStore(sanitizePipeline(preset.state));
+function featuresOfWorldSeed(seed: ExamplePipeline): Feature[] {
+  const store = new PipelineStore(sanitizePipeline(seed.state));
   return featuresInRect(store, new PipelineEvaluator(store), SURVEY_RECT);
 }
 

@@ -15,14 +15,14 @@ export function headlessWorldForRequest(request: WorldViewRequest): HeadlessWorl
 
 export function headlessWorldForName(worldName: string): HeadlessWorld {
   if (worldName === REPO_PIPELINE_WORLD_NAME) return worldFromRepoData();
-  return worldFromPipelineState(presetStateNamed(worldName));
+  return worldFromPipelineState(worldSeedStateNamed(worldName));
 }
 
-function presetStateNamed(worldName: string): PipelineState {
+function worldSeedStateNamed(worldName: string): PipelineState {
   const wanted = comparableName(worldName);
-  const preset = examplePipelines().find((entry) => comparableName(entry.name) === wanted);
-  if (!preset) throw new Error(`no world preset named ${worldName}`);
-  return preset.state as PipelineState;
+  const seed = examplePipelines().find((entry) => comparableName(entry.name) === wanted);
+  if (!seed) throw new Error(`no world seed named ${worldName}`);
+  return seed.state as PipelineState;
 }
 
 function comparableName(name: string): string {

@@ -27,7 +27,7 @@ function checkBootSyncReadsTheShapeTheAppWrites(check: CheckReporter): void {
   const held = libraryDocsFrom((name) => docs.get(name));
   const added = syncMissingWorldSeeds(held.library, shipped);
   check('boot sync installs into a world library the app saved as an envelope', added === 1);
-  check('the installed preset lands in the envelope the app reads back', held.worldSeedLibrary.seeds.length === 1);
+  check('the installed world seed lands in the envelope the app reads back', held.worldSeedLibrary.seeds.length === 1);
   check('boot sync keeps the hidden examples the app recorded', held.worldSeedLibrary.hiddenExamples.length === 1);
 
   const bare = libraryDocsFrom((name) => (name === 'worldSeeds' ? shipped.worldSeeds : []));
@@ -38,9 +38,9 @@ function checkSyntheticSync(check: CheckReporter): void {
   const shipped = shippedFixture();
   const empty = emptyLibrary();
   const addedToEmpty = syncMissingWorldSeeds(empty, shipped);
-  check('a fresh library receives every shipped preset', addedToEmpty === 1 && empty.worldSeeds.length === 1);
-  check('a synced preset arrives with its tiles, pieces, and culture', empty.tiles.length === 2 && empty.pieces.length === 1 && empty.cultures.length === 1);
-  check('every reference in a synced preset resolves inside the library it landed in', danglingRefsOf(empty) === 0);
+  check('a fresh library receives every shipped world seed', addedToEmpty === 1 && empty.worldSeeds.length === 1);
+  check('a synced world seed arrives with its tiles, pieces, and culture', empty.tiles.length === 2 && empty.pieces.length === 1 && empty.cultures.length === 1);
+  check('every reference in a synced world seed resolves inside the library it landed in', danglingRefsOf(empty) === 0);
 
   const crowded = crowdedLibrary();
   const strangerTile = crowded.tiles[0]!;
@@ -48,19 +48,19 @@ function checkSyntheticSync(check: CheckReporter): void {
   const synced = crowded.worldSeeds[crowded.worldSeeds.length - 1]!;
   const bridgeTileId = tileParamOf(synced.state, 'straitBridges', 'bridgeTile');
   check('syncing never rebinds ids a library already gave away', crowded.tiles[0] === strangerTile && bridgeTileId !== strangerTile.id);
-  check('a synced preset points at the copies it brought, not at the stranger holding its old id', crowded.tiles.some((tile) => tile.id === bridgeTileId && tile.name === 'shipped stone'));
+  check('a synced world seed points at the copies it brought, not at the stranger holding its old id', crowded.tiles.some((tile) => tile.id === bridgeTileId && tile.name === 'shipped stone'));
   check('every reference still resolves after landing in a crowded library', danglingRefsOf(crowded) === 0);
 
   const again = syncMissingWorldSeeds(crowded, shipped);
-  check('a second sync of the same presets installs nothing', again === 0);
+  check('a second sync of the same world seeds installs nothing', again === 0);
 }
 
 function checkShippedDataFilesSync(check: CheckReporter): void {
   const library = emptyLibrary();
   const shipped = shippedDataFiles();
   const added = syncMissingWorldSeeds(library, shipped);
-  check('every preset shipped in the repo data files installs into a fresh database', added === shipped.worldSeeds.length && added >= 2);
-  check('every repo preset resolves all of its asset references after install', danglingRefsOf(library) === 0);
+  check('every world seed shipped in the repo data files installs into a fresh database', added === shipped.worldSeeds.length && added >= 2);
+  check('every repo world seed resolves all of its asset references after install', danglingRefsOf(library) === 0);
   check('repeating the boot sync against a seeded database installs nothing', syncMissingWorldSeeds(library, shipped) === 0);
 }
 
@@ -130,8 +130,8 @@ function danglingRefsOf(library: LibraryDocs): number {
   const pieceIds = new Set(library.pieces.map((piece) => piece.id));
   const cultureIds = new Set(library.cultures.map((culture) => culture.id));
   let dangling = 0;
-  for (const preset of library.worldSeeds) {
-    for (const node of preset.state.nodes) {
+  for (const seed of library.worldSeeds) {
+    for (const node of seed.state.nodes) {
       for (const [name, spec] of Object.entries(nodeTypeOf(node.type)?.params ?? {})) {
         if (spec.kind !== 'tile') continue;
         const value = node.params[name];

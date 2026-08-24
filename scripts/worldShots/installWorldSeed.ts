@@ -14,17 +14,17 @@ import {
 import { worldPaletteOfKit } from '@/features/asset-library/worlds/selfPlay/worldPalette';
 import type { WorldSeedGenome } from '@/features/asset-library/worlds/selfPlay/worldSeedGenome';
 
-export interface InstalledPreset {
+export interface InstalledWorldSeed {
   name: string;
   tilesAdded: number;
   piecesAdded: number;
 }
 
-export function installGenomeAsPreset(
+export function installGenomeAsWorldSeed(
   genome: WorldSeedGenome,
-  presetName: string,
+  seedName: string,
   description: string,
-): InstalledPreset {
+): InstalledWorldSeed {
   const palette = worldPaletteOfKit(genome.kitSeed, genome.accentKitSeed, genome.paletteSize);
   const tiles = readData<TileDef[]>('tiles', []);
   const pieces = readData<Piece[]>('pieces', []);
@@ -40,41 +40,41 @@ export function installGenomeAsPreset(
     ...palette.tiles.map((tile) => ({
       ...tile,
       id: maps.tileMap.get(tile.id)!,
-      name: `${tile.name} (${presetName})`,
+      name: `${tile.name} (${seedName})`,
     })),
   );
   pieces.push(
     ...palette.pieces.map((piece) => ({
       ...remappedPieceTiles(piece, maps.tileMap),
       id: maps.pieceMap.get(piece.id)!,
-      name: `${piece.name} (${presetName})`,
+      name: `${piece.name} (${seedName})`,
     })),
   );
   cultures.push({
     ...remappedCultureRefs(palette.culture, maps),
     id: maps.cultureMap.get(palette.culture.id)!,
-    name: `${palette.culture.name} (${presetName})`,
+    name: `${palette.culture.name} (${seedName})`,
   });
 
   const state = remappedPipeline(sanitizePipeline(structuredClone(genome.pipeline)), maps);
-  const presets = readData<unknown[]>('worldSeeds', []);
-  appendPreset(presets, presetName, description, state);
+  const seeds = readData<unknown[]>('worldSeeds', []);
+  appendWorldSeed(seeds, seedName, description, state);
 
   writeData('tiles', tiles);
   writeData('pieces', pieces);
   writeData('cultures', cultures);
-  writeData('worldSeeds', presets);
-  return { name: presetName, tilesAdded: maps.tileMap.size, piecesAdded: maps.pieceMap.size };
+  writeData('worldSeeds', seeds);
+  return { name: seedName, tilesAdded: maps.tileMap.size, piecesAdded: maps.pieceMap.size };
 }
 
-function appendPreset(
-  presets: unknown[],
+function appendWorldSeed(
+  seeds: unknown[],
   name: string,
   description: string,
   state: PipelineState,
 ): void {
-  const held = presets as Array<{ name?: unknown }>;
-  const already = held.findIndex((preset) => preset.name === name);
+  const held = seeds as Array<{ name?: unknown }>;
+  const already = held.findIndex((seed) => seed.name === name);
   const entry = { name, description, state };
   if (already >= 0) held[already] = entry;
   else held.push(entry);
