@@ -22,14 +22,14 @@ export class EditablePipelines {
 
   constructor(private readonly sources: PipelineSources) {}
 
-  world(name: string): EditedPipeline | null {
-    if (this.sources.runningWorld.name() === name) {
+  worldSeed(name: string): EditedPipeline | null {
+    if (this.sources.runningWorld.seedName() === name) {
       this.documents.delete(worldSeedDocumentKey(name));
       return this.sources.runningPipeline;
     }
-    const world = this.sources.worldSeedNamed(name);
-    if (!world) return this.forget(worldSeedDocumentKey(name));
-    return this.documentOf(worldSeedDocumentKey(name), sanitizePipeline(structuredClone(world.state)), (store) =>
+    const seed = this.sources.worldSeedNamed(name);
+    if (!seed) return this.forget(worldSeedDocumentKey(name));
+    return this.documentOf(worldSeedDocumentKey(name), sanitizePipeline(structuredClone(seed.state)), (store) =>
       this.sources.performOn(store, 'save_world_seed', { name }),
     );
   }
@@ -82,7 +82,7 @@ function editedDocument(
 }
 
 function worldSeedDocumentKey(name: string): string {
-  return `world:${name}`;
+  return `worldSeed:${name}`;
 }
 
 function groupDocumentKey(name: string): string {

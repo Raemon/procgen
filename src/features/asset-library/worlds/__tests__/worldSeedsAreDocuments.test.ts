@@ -35,7 +35,7 @@ async function checkEditingAWorldThatIsNotRunningSavesItself(check: CheckReporte
   const shelved = editor.worlds.all()[0]!;
   editor.act('run_world_seed', { name: shelved.name });
   const other = editor.worlds.all()[1]!;
-  const opened = editor.editing.world(other.name)!;
+  const opened = editor.editing.worldSeed(other.name)!;
   opened.perform('set_seed', { seed: 4321 });
   await settle();
   check(
@@ -49,7 +49,7 @@ async function checkEditingAWorldThatIsNotRunningSavesItself(check: CheckReporte
   );
   check(
     'opening the running world hands back the pipeline on screen, so edits land live',
-    editor.editing.world(shelved.name) === editor.runningPipeline,
+    editor.editing.worldSeed(shelved.name) === editor.runningPipeline,
   );
 }
 

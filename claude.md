@@ -8,7 +8,7 @@ Keep the source tree aligned with the rendered home-page tree:
 
 - `src/app` contains only Next.js pages, layouts, and `route.ts` adapters.
 - `src/features/app-shell` owns shared controls, layout, tooltips, client state, persistence, and composition.
-- `src/features/asset-library` owns editable definitions. Detail is its React child and folder. Worlds and node groups are editable library assets.
+- `src/features/asset-library` owns editable definitions. Detail is its React child and folder. World seeds, saved worlds, and node groups are editable library assets.
 - `src/features/agents` owns Agents. Agent Log is its React child and folder.
 - `src/features/game` owns the running world: input, inventory, lighting, simulation, rendering, capture, puzzles, performance, and multiplayer.
 - `src/infrastructure` owns database, process startup, HTTP adapters, and WebSocket attachment.
@@ -24,6 +24,8 @@ Do not write explanatory comments or extra docs. Prefer names and small files th
 Put tests beside their feature under `__tests__` with `*.test.ts` or `*.test.tsx` names. Run `npm test`, `npm run typecheck`, and `npm run build` before handing work back.
 
 When adding or changing procgen node types, preserve determinism, add coverage under `src/features/asset-library/worlds/__tests__`, and register it in `src/features/app-shell/__tests__/app.test.ts`.
+
+A world seed is the recipe — a named pipeline of nodes with a seed number — and lives under `worlds/seeds`. A world is what a seed grows plus what the player has done in it; a saved world is that kept, and lives under `worlds/saved`. Name things for which of the two they are: the sampler, renderers, coordinates and the game `World` are worlds, the library rows and the lab's candidates are world seeds.
 
 Node fields are numeric knobs, tile links, or node links. Do not add text, booleans, or string-enum parameters; sizes are numeric knobs. `registerNodeType` enforces this at compile time and runtime. `registerScriptNodeType` is the sole escape hatch.
 

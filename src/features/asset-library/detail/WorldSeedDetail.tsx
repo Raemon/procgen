@@ -27,17 +27,17 @@ export function WorldSeedDetail({ name }: { name: string }) {
     (listener) => worldSeedShelf.onChange(listener),
     () => worldSeedShelf.all(),
   );
-  const world = shelf.find((each) => each.name === name);
-  const pipeline = editing.world(name);
-  if (!world || !pipeline) return <NothingHere what="world" />;
+  const seed = shelf.find((each) => each.name === name);
+  const pipeline = editing.worldSeed(name);
+  if (!seed || !pipeline) return <NothingHere what="world seed" />;
   return (
     <EditedPipelineProvider pipeline={pipeline}>
-      <WorldEditor world={world} running={running === name} />
+      <WorldSeedEditor seed={seed} running={running === name} />
     </EditedPipelineProvider>
   );
 }
 
-function WorldEditor({ world, running }: { world: WorldSeed; running: boolean }) {
+function WorldSeedEditor({ seed, running }: { seed: WorldSeed; running: boolean }) {
   const { store, perform } = useEditedPipeline();
   useRerenderOnEditedPipelineChange();
   useRerenderOnTileAssetChange();
@@ -50,8 +50,8 @@ function WorldEditor({ world, running }: { world: WorldSeed; running: boolean })
 
   return (
     <>
-      <h3 className="mb-1 text-sm text-ink">{world.name}</h3>
-      <WorldSeedActionsRow world={world} running={running} />
+      <h3 className="mb-1 text-sm text-ink">{seed.name}</h3>
+      <WorldSeedActionsRow seed={seed} running={running} />
       <SeedNumberRow />
       <DaylightRow />
       <TimeRow />
@@ -60,9 +60,10 @@ function WorldEditor({ world, running }: { world: WorldSeed; running: boolean })
       <NodeList />
       <AddNodeMenu onPick={addNodeAndReveal} />
       <PanelHint className="mt-2">
-        Every edit here is an edit to this world, saved as you make it — the ▶ run button is what
-        puts a world in the game panel, so you can open one to work on it without disturbing what you
-        are looking at. Nodes run top to bottom: drag ⠿ to reorder, give adjacent nodes the same
+        Every edit here is an edit to this world seed, saved as you make it — the ▶ run button is
+        what grows it in the game panel, so you can open one to work on it without disturbing what
+        you are looking at. Editing a seed never touches a saved world grown from it; each save
+        keeps its own copy. Nodes run top to bottom: drag ⠿ to reorder, give adjacent nodes the same
         folder name to fold them into one band, and send that band to the library as a node group.
       </PanelHint>
     </>

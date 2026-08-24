@@ -10,36 +10,36 @@ import { copyWorldSeedTip, deleteWorldSeedTip, runWorldSeedTip } from '../help/l
 import { worldSeedThumbnails } from '../worldSeedThumbnails';
 import { useLibrarySelection } from '../panel/useLibrarySelection';
 
-export function WorldSeedActionsRow({ world, running }: { world: WorldSeed; running: boolean }) {
+export function WorldSeedActionsRow({ seed, running }: { seed: WorldSeed; running: boolean }) {
   const { perform } = useAppRuntime();
   const { clear } = useLibrarySelection();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
 
-  function deleteThisWorld(): void {
+  function deleteThisWorldSeed(): void {
     setConfirmingDelete(false);
-    perform('delete_world_seed', { name: world.name });
-    worldSeedThumbnails.forget(world.name);
+    perform('delete_world_seed', { name: seed.name });
+    worldSeedThumbnails.forget(seed.name);
     clear();
   }
 
   return (
     <>
-      <p className={classes(HINT_CLASSES, 'mb-2')}>{world.description}</p>
+      <p className={classes(HINT_CLASSES, 'mb-2')}>{seed.description}</p>
       <div className="mb-2 flex gap-1.5">
         <Button
           className="flex-1"
           active={running}
-          tip={runWorldSeedTip(world.name, running)}
-          onClick={() => perform('run_world_seed', { name: world.name })}
+          tip={runWorldSeedTip(seed.name, running)}
+          onClick={() => perform('run_world_seed', { name: seed.name })}
         >
           {running ? '▶ running' : '▶ run'}
         </Button>
-        <Button tip={copyWorldSeedTip(world.name)} onClick={() => perform('duplicate_world_seed', { name: world.name })}>
+        <Button tip={copyWorldSeedTip(seed.name)} onClick={() => perform('duplicate_world_seed', { name: seed.name })}>
           ⧉
         </Button>
         <Button
           className="hover:border-danger-edge hover:text-danger-ink"
-          tip={deleteWorldSeedTip(world.name)}
+          tip={deleteWorldSeedTip(seed.name)}
           onClick={() => setConfirmingDelete(true)}
         >
           ✕
@@ -47,8 +47,8 @@ export function WorldSeedActionsRow({ world, running }: { world: WorldSeed; runn
       </div>
       {confirmingDelete && (
         <ConfirmModal
-          {...deleteRowConfirmation(world.name)}
-          onConfirm={deleteThisWorld}
+          {...deleteRowConfirmation(seed.name)}
+          onConfirm={deleteThisWorldSeed}
           onCancel={() => setConfirmingDelete(false)}
         />
       )}

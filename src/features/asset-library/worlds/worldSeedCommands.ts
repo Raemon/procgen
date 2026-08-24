@@ -109,9 +109,9 @@ registerWorldSeedCommand({
 
 registerWorldSeedCommand({
   action: 'run_world_seed',
-  humanControl: 'asset library, world seeds folder: ▶ run on a world',
+  humanControl: 'asset library, world seeds folder: ▶ run on a world seed',
   description:
-    'Run a world: its nodes become the pipeline the game panel renders, and the world panel names it as the running world. Editing that world from then on edits what you are looking at.',
+    'Grow a world seed: its nodes become the pipeline the game panel renders, and the game panel names it as the running world. Editing that seed from then on edits what you are looking at. To pick up a run you already saved, use run_saved_world instead.',
   params: { name: { kind: 'text', help: 'a world seed name — see GET /api/v1/asset-library/world-seeds' } },
   example: { action: 'run_world_seed', name: 'islands' },
   apply: (context, params) => runWorldSeed(context, params),
@@ -119,9 +119,9 @@ registerWorldSeedCommand({
 
 registerWorldSeedCommand({
   action: 'save_world_seed',
-  humanControl: 'detail panel, world: every edit writes itself back under the world you are editing',
+  humanControl: 'detail panel, world seed: every edit writes itself back under the seed you are editing',
   description:
-    'Save the whole current pipeline as a named world. An existing name is overwritten; saving under the name of a built-in example takes that name over, and the example stays behind as what deleting yours falls back to.',
+    'Save the whole current pipeline as a named world seed. An existing name is overwritten; saving under the name of a built-in example takes that name over, and the example stays behind as what deleting yours falls back to. This keeps the recipe, not the run — save_world is what keeps a run.',
   params: {
     name: { kind: 'text', help: 'the world seed name' },
     description: { kind: 'text', help: 'what this world seed grows', optional: true },
@@ -132,9 +132,9 @@ registerWorldSeedCommand({
 
 registerWorldSeedCommand({
   action: 'duplicate_world_seed',
-  humanControl: 'asset library, world seeds folder: ⧉ on a world',
+  humanControl: 'asset library, world seeds folder: ⧉ on a world seed',
   description:
-    'Copy a world — a built-in example or one you saved — into your saved worlds under a free name. The world you are editing is untouched.',
+    'Copy a world seed — a built-in example or one you saved — into your own seeds under a free name. The seed you are editing is untouched.',
   params: { name: { kind: 'text', help: 'the world seed to copy — see GET /api/v1/asset-library/world-seeds' } },
   example: { action: 'duplicate_world_seed', name: 'islands' },
   apply: (context, params) => duplicateWorldSeed(context, params),
@@ -142,9 +142,9 @@ registerWorldSeedCommand({
 
 registerWorldSeedCommand({
   action: 'rename_world_seed',
-  humanControl: 'asset library, world seeds folder: click the name on a world row',
+  humanControl: 'asset library, world seeds folder: click the name on a world seed row',
   description:
-    'Rename a world. One of yours is filed under the new name; a built-in example is saved under the new name and taken off the shelf under the old one. A world that is running keeps running under its new name.',
+    'Rename a world seed. One of yours is filed under the new name; a built-in example is saved under the new name and taken off the shelf under the old one. A seed that is running keeps running under its new name.',
   params: {
     name: { kind: 'text', help: 'the world to rename — see GET /api/v1/asset-library/world-seeds' },
     new_name: { kind: 'text', help: 'the name to file it under; a name already in use is refused' },
@@ -155,9 +155,9 @@ registerWorldSeedCommand({
 
 registerWorldSeedCommand({
   action: 'delete_world_seed',
-  humanControl: 'asset library, world seeds folder: ✕ on a world',
+  humanControl: 'asset library, world seeds folder: ✕ on a world seed',
   description:
-    'Delete a world. Yours is dropped; a built-in example is taken off the library shelf, and load_world_seed can still name it.',
+    'Delete a world seed. Yours is dropped; a built-in example is taken off the library shelf, and load_world_seed can still name it. Saved worlds grown from it are untouched — each keeps its own copy.',
   params: { name: { kind: 'text', help: 'the world name' } },
   example: { action: 'delete_world_seed', name: 'my archipelago' },
   apply: (context, params) => deleteWorldSeed(context, params),
@@ -340,12 +340,12 @@ function runWorldSeed(context: CommandContext, params: CommandParams): CommandRe
   const name = readText(params, 'name');
   if (!name.ok) return name.failure;
   if (context.runningWorld.seedName() === name.value) {
-    return commandSucceeded(`'${name.value}' is already the world running`);
+    return commandSucceeded(`'${name.value}' is already the seed running`);
   }
   const loaded = loadWorldSeed(context, params);
   if (!loaded.ok) return loaded;
   context.runningWorld.run(runningSeed(name.value));
-  return commandSucceeded(`'${name.value}' is the world now running`);
+  return commandSucceeded(`'${name.value}' grew the world now running`);
 }
 
 function worldSeedStateOf(context: CommandContext, name: string): unknown {
@@ -422,11 +422,11 @@ function deleteWorldSeed(context: CommandContext, params: CommandParams): Comman
   if (!worldSeedNamed(context, name.value)) {
     return commandFailed(
       'unknown_world_seed',
-      `no world '${name.value}' — the library holds: ${listOf(worldSeedNames(context))}`,
+      `no world seed '${name.value}' — the library holds: ${listOf(worldSeedNames(context))}`,
     );
   }
   takeWorldSeedOffTheShelf(context, name.value);
-  return commandSucceeded(`deleted world '${name.value}'`);
+  return commandSucceeded(`deleted world seed '${name.value}'`);
 }
 
 function takeWorldSeedOffTheShelf(context: CommandContext, name: string): void {
@@ -444,15 +444,15 @@ function renameWorldSeed(context: CommandContext, params: CommandParams): Comman
   if (!world) {
     return commandFailed('unknown_world_seed', `name must be one of: ${listOf(worldSeedNames(context))}`);
   }
-  if (from === to) return commandSucceeded(`world '${from}' keeps the name it had`);
+  if (from === to) return commandSucceeded(`world seed '${from}' keeps the name it had`);
   if (worldSeedNames(context).includes(to)) {
-    return commandFailed('name_taken', `the library already holds a world called '${to}'`);
+    return commandFailed('name_taken', `the library already holds a world seed called '${to}'`);
   }
   context.worldSeeds.save({ ...world, name: to, state: sanitizePipeline(world.state) });
   takeWorldSeedOffTheShelf(context, from);
   if (context.runningWorld.seedName() === from) context.runningWorld.renameTo(to);
   context.assetFolders.renameKey('worldSeeds', from, to);
-  return commandSucceeded(`world '${from}' is now '${to}'`);
+  return commandSucceeded(`world seed '${from}' is now '${to}'`);
 }
 
 function renameTemplate(context: CommandContext, params: CommandParams): CommandResult {
