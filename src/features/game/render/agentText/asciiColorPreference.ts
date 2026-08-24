@@ -6,8 +6,10 @@ import {
 
 const ASCII_COLOR_KEY = 'worldView.asciiColor';
 
+export const ASCII_COLOR_DEFAULT = true;
+
 export function asciiColorOn(): boolean {
-  return persistedUiValue(ASCII_COLOR_KEY, false, isBoolean);
+  return persistedUiValue(ASCII_COLOR_KEY, ASCII_COLOR_DEFAULT, isBoolean);
 }
 
 export function setAsciiColorOn(on: boolean): void {

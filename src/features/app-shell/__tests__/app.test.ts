@@ -63,6 +63,7 @@ import { checkClaudeMdPointsAtThingsThatExist } from './claudeMdPointsAtThingsTh
 import { checkDocumentationHasNotRegrown } from './documentationHasNotRegrown.test';
 import { checkPerformanceReadouts } from '@/features/game/__tests__/performanceReadouts.test';
 import { checkTileHoverReadout } from '@/features/game/__tests__/tileHoverReadout.test';
+import { checkAsciiAgentView } from '@/features/game/__tests__/asciiAgentView.test';
 import { checkApiArchitecture } from './apiArchitecture.test';
 import { checkPanelHintsRespectTheToggle } from './panelHintsRespectTheToggle.test';
 import { checkWalkingSimFun } from '@/features/asset-library/worlds/__tests__/walkingSimFun.test';
@@ -142,6 +143,7 @@ describe('landmarks and ceilings', () => checkLandmarkAndCeilingInvariants(check
 describe('inserting assets ahead of the player', () => checkInsertAhead(check));
 describe('performance readouts', () => checkPerformanceReadouts(check));
 describe('the hovered tile readout', () => checkTileHoverReadout(check));
+describe('the agent text view', () => checkAsciiAgentView(check));
 describe('the API architecture', () => checkApiArchitecture(check));
 describe('panel hints', () => checkPanelHintsRespectTheToggle(check));
 describe('the walking simulator benchmark', () => checkWalkingSimFun(check));
