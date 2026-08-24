@@ -61,6 +61,7 @@ function inputSchema(entries: [string, CommandParamSpec][]): object {
 }
 
 function resourcePath(action: string): string {
+  if (action === 'save_world' || action.includes('saved_world')) return '/asset-library/saved-worlds';
   if (action.includes('asset_folder') || action === 'file_asset') return '/asset-library/folders';
   if (action.includes('tile')) return '/asset-library/tiles';
   if (action.includes('item') || action.includes('inventory')) return '/asset-library/items';

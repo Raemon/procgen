@@ -29,6 +29,7 @@ import { checkBiomeBands } from '@/features/asset-library/worlds/__tests__/biome
 import { checkNodeFolders } from '@/features/asset-library/worlds/__tests__/nodeFolders.test';
 import { checkTemplates } from '@/features/asset-library/worlds/__tests__/templates.test';
 import { checkWorldSeedsAreDocuments } from '@/features/asset-library/worlds/__tests__/worldSeedsAreDocuments.test';
+import { checkSavedWorlds } from '@/features/asset-library/worlds/__tests__/savedWorlds.test';
 import { checkNamedWorldSeeds } from '@/features/asset-library/worlds/__tests__/namedWorldSeeds.test';
 import { checkWorldSeedLab } from '@/features/asset-library/worlds/__tests__/worldSeedLab.test';
 import { checkGenerationLabCharts } from '@/features/asset-library/worlds/__tests__/generationLabCharts.test';
@@ -112,6 +113,7 @@ describe('the generation lab charts', () => checkGenerationLabCharts(check));
 describe('the world shot queue', () => checkWorldShotQueue(check));
 describe('presets shipped in data files sync into the database', () => checkWorldSeedSync(check));
 describe('worlds and node groups as documents', () => checkWorldSeedsAreDocuments(check));
+describe('saved worlds', () => checkSavedWorlds(check));
 describe('agent observation', () => checkAgentObservation(check));
 describe('what a character cannot see past', () => checkOccludedObservation(check));
 describe('what an agent reads of the ground height', () => checkElevationObservation(check));
