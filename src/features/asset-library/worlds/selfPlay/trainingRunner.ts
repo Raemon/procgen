@@ -12,9 +12,9 @@ import {
 import { EliteArchive } from './eliteArchive';
 import { diagnosisOf, treatedGenome, worthTreating } from './worldDoctor';
 import { mutatedGenome } from './mutateGenome';
-import { funOf, scoredGenome, walkSeedOf, type ScoredWorld } from './scoreGenome';
+import { funOf, scoredGenome, walkSeedOf, type ScoredWorldSeed } from './scoreGenome';
 import { SaturationWatch } from './saturationWatch';
-import { rolledGenome } from './worldGenome';
+import { rolledGenome } from './worldSeedGenome';
 
 export interface TrainingSettings {
   generations: number;
@@ -32,7 +32,7 @@ export interface GenerationRecord {
   coverage: number;
   admissions: number;
   patientsTreated: number;
-  worldsWithNowhereToWalk: number;
+  worldSeedsWithNowhereToWalk: number;
   generationsSinceGain: number;
   candidates: CandidateRecord[];
 }
@@ -49,10 +49,10 @@ export class TrainingRunner {
   private readonly rng: RandomStream;
   private readonly watch: SaturationWatch;
   private readonly limits: TouristLimits;
-  private readonly clinic: ScoredWorld[] = [];
+  private readonly clinic: ScoredWorldSeed[] = [];
   private treatedThisGeneration = 0;
   private waiting: Candidate[] = [];
-  private walked: ScoredWorld[] = [];
+  private walked: ScoredWorldSeed[] = [];
   private inProgress: GenerationRecord | null = null;
 
   constructor(readonly settings: TrainingSettings) {
@@ -113,7 +113,7 @@ export class TrainingRunner {
       archiveBestFun,
       coverage: this.archive.coverage(),
       patientsTreated: this.treatedThisGeneration,
-      worldsWithNowhereToWalk: opened.candidates.filter((each) => !each.walkable).length,
+      worldSeedsWithNowhereToWalk: opened.candidates.filter((each) => !each.walkable).length,
       generationsSinceGain: this.watch.generationsSinceGain(),
     };
     this.treatedThisGeneration = 0;
@@ -130,7 +130,7 @@ export class TrainingRunner {
       coverage: this.archive.coverage(),
       admissions: 0,
       patientsTreated: this.treatedThisGeneration,
-      worldsWithNowhereToWalk: 0,
+      worldSeedsWithNowhereToWalk: 0,
       generationsSinceGain: this.watch.generationsSinceGain(),
       candidates: [],
     };
@@ -138,7 +138,7 @@ export class TrainingRunner {
 
   private keptOrRejected(
     candidate: Candidate,
-    world: ScoredWorld,
+    world: ScoredWorldSeed,
     generation: GenerationRecord,
   ): CandidateRecord {
     const admitted = this.archive.admit(world);
@@ -177,7 +177,7 @@ export class TrainingRunner {
     };
   }
 
-  private bredCandidate(elites: readonly ScoredWorld[]): Candidate {
+  private bredCandidate(elites: readonly ScoredWorldSeed[]): Candidate {
     const one = pick(this.rng, elites);
     const other = pick(
       this.rng,
@@ -191,7 +191,7 @@ export class TrainingRunner {
     };
   }
 
-  private admitToClinic(world: ScoredWorld): void {
+  private admitToClinic(world: ScoredWorldSeed): void {
     if (!worthTreating(world)) return;
     this.clinic.push(world);
     this.clinic.sort((one, other) => funOf(other) - funOf(one));

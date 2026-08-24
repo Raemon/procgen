@@ -4,7 +4,7 @@ import { builtInTemplates } from '@/features/asset-library/node-groups/builtInTe
 import { stampTemplateInto } from '@/features/asset-library/node-groups/stampTemplate';
 import { templateFromNodes } from '@/features/asset-library/node-groups/templateFromNodes';
 import { sanitizeTemplates } from '@/features/asset-library/node-groups/nodeTemplate';
-import { nodeFolderRuns } from '@/features/asset-library/detail/worlds/nodeFolderRuns';
+import { nodeFolderRuns } from '@/features/asset-library/detail/worldSeeds/nodeFolderRuns';
 import { asField } from '../values/valueAccess';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { earthlikeState, worldFromState } from './pipelineWorldFixtures';

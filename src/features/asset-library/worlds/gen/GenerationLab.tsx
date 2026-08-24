@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import '../nodes';
 import { EliteGrid } from './EliteGrid';
 import { GenerationStrip } from './GenerationStrip';
-import { installLabWorlds, startTrainingRun, stopLabRun, type LabRunSummary } from './labClient';
+import { installLabWorldSeeds, startTrainingRun, stopLabRun, type LabRunSummary } from './labClient';
 import { LabRunBar, trainRequestOf, type TrainForm } from './LabRunBar';
 import { TrajectoryChart } from './TrajectoryChart';
 import { useLabRun, useLabRuns } from './useLabRun';
@@ -42,7 +42,7 @@ export function GenerationLab() {
 
   const install = async (name: string) => {
     if (!run) return;
-    const installed = await installLabWorlds(run.id, [name]);
+    const installed = await installLabWorldSeeds(run.id, [name]);
     const saved = installed[0];
     if (saved) setInstalledNames(new Map(installedNames).set(name, saved.name));
   };

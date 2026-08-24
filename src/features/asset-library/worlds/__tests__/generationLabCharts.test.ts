@@ -77,7 +77,7 @@ function generationRecord(generation: number, best: number): GenerationRecord {
     coverage: generation / 8,
     admissions: generation,
     patientsTreated: 0,
-    worldsWithNowhereToWalk: 0,
+    worldSeedsWithNowhereToWalk: 0,
     generationsSinceGain: 0,
     candidates: [],
   };

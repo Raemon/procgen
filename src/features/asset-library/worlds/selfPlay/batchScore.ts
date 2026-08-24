@@ -1,6 +1,6 @@
 import { meanOf } from '../walkingSim/metrics/meanOf';
 import { fingerprintDistance } from './worldFingerprint';
-import { funOf, type ScoredWorld } from './scoreGenome';
+import { funOf, type ScoredWorldSeed } from './scoreGenome';
 
 export interface BatchScore {
   meanFun: number;
@@ -13,7 +13,7 @@ export interface BatchScore {
 export const DIVERSITY_THAT_IS_PLENTY = 0.25;
 export const NEAR_DUPLICATE_DISTANCE = 0.05;
 
-export function batchScore(batch: readonly ScoredWorld[]): BatchScore {
+export function batchScore(batch: readonly ScoredWorldSeed[]): BatchScore {
   const funs = batch.map(funOf);
   const diversity = meanOf(nearestNeighbourDistancesOf(batch));
   return {
@@ -25,14 +25,14 @@ export function batchScore(batch: readonly ScoredWorld[]): BatchScore {
   };
 }
 
-export function nearestNeighbourDistancesOf(batch: readonly ScoredWorld[]): number[] {
+export function nearestNeighbourDistancesOf(batch: readonly ScoredWorldSeed[]): number[] {
   if (batch.length < 2) return [];
   return batch.map((world, at) => nearestDistanceTo(world, batch, at));
 }
 
 function nearestDistanceTo(
-  world: ScoredWorld,
-  batch: readonly ScoredWorld[],
+  world: ScoredWorldSeed,
+  batch: readonly ScoredWorldSeed[],
   at: number,
 ): number {
   const others = batch.filter((_other, index) => index !== at);
@@ -41,7 +41,7 @@ function nearestDistanceTo(
   );
 }
 
-function nearDuplicatePairsOf(batch: readonly ScoredWorld[]): number {
+function nearDuplicatePairsOf(batch: readonly ScoredWorldSeed[]): number {
   let pairs = 0;
   for (let first = 0; first < batch.length; first++) {
     for (let second = first + 1; second < batch.length; second++) {

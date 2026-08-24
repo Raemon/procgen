@@ -1,7 +1,7 @@
-import type { InstalledWorld, LabRunKind, LabRunStatus } from '../lab/labRun';
+import type { InstalledWorldSeed, LabRunKind, LabRunStatus } from '../lab/labRun';
 import type { BatchScore } from '../selfPlay/batchScore';
 import type { GenerationRecord } from '../selfPlay/trainingRunner';
-import type { WorldGenome } from '../selfPlay/worldGenome';
+import type { WorldSeedGenome } from '../selfPlay/worldSeedGenome';
 import type { MetricReading } from '../walkingSim/bandScore';
 
 export interface LabRunSummary {
@@ -22,21 +22,21 @@ export interface LabRunSummary {
   error: string | null;
 }
 
-export interface LabRunWorld {
+export interface LabRunWorldSeed {
   rank: number;
   name: string;
   fun: number;
   walks_taken: number;
   weakest_readings: MetricReading[];
   readings: MetricReading[];
-  genome: WorldGenome | null;
+  genome: WorldSeedGenome | null;
 }
 
 export interface LabRunDetail extends LabRunSummary {
   batch: BatchScore | null;
-  worlds: LabRunWorld[];
+  worlds: LabRunWorldSeed[];
   generations: GenerationRecord[];
-  installed: InstalledWorld[];
+  installed: InstalledWorldSeed[];
 }
 
 export interface TrainRequest {
@@ -49,19 +49,19 @@ export interface TrainRequest {
 }
 
 export async function fetchLabRuns(): Promise<LabRunSummary[]> {
-  const response = await fetch('/api/v1/asset-library/worlds/lab');
+  const response = await fetch('/api/v1/asset-library/world-seeds/lab');
   if (!response.ok) return [];
   return ((await response.json()) as { runs: LabRunSummary[] }).runs;
 }
 
 export async function fetchLabRun(id: string): Promise<LabRunDetail | null> {
-  const response = await fetch(`/api/v1/asset-library/worlds/lab/${id}`);
+  const response = await fetch(`/api/v1/asset-library/world-seeds/lab/${id}`);
   if (!response.ok) return null;
   return ((await response.json()) as { run: LabRunDetail }).run;
 }
 
 export async function startTrainingRun(request: TrainRequest): Promise<LabRunSummary | null> {
-  const response = await fetch('/api/v1/asset-library/worlds/train', {
+  const response = await fetch('/api/v1/asset-library/world-seeds/train', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(request),
@@ -71,18 +71,18 @@ export async function startTrainingRun(request: TrainRequest): Promise<LabRunSum
 }
 
 export async function stopLabRun(id: string): Promise<void> {
-  await fetch(`/api/v1/asset-library/worlds/lab/${id}/stop`, { method: 'POST' });
+  await fetch(`/api/v1/asset-library/world-seeds/lab/${id}/stop`, { method: 'POST' });
 }
 
-export async function installLabWorlds(
+export async function installLabWorldSeeds(
   id: string,
   names: readonly string[],
-): Promise<InstalledWorld[]> {
-  const response = await fetch(`/api/v1/asset-library/worlds/lab/${id}/install`, {
+): Promise<InstalledWorldSeed[]> {
+  const response = await fetch(`/api/v1/asset-library/world-seeds/lab/${id}/install`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ names }),
   });
   if (!response.ok) return [];
-  return ((await response.json()) as { installed: InstalledWorld[] }).installed;
+  return ((await response.json()) as { installed: InstalledWorldSeed[] }).installed;
 }

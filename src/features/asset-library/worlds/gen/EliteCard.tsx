@@ -1,8 +1,8 @@
 'use client';
 
 import { Button } from '@/features/app-shell/controls/Button';
-import { genomeFromJson } from '../selfPlay/worldGenome';
-import type { LabRunWorld } from './labClient';
+import { genomeFromJson } from '../selfPlay/worldSeedGenome';
+import type { LabRunWorldSeed } from './labClient';
 import { reshootWorld, useWorldShot } from './useWorldShot';
 
 export function EliteCard({
@@ -11,7 +11,7 @@ export function EliteCard({
   onInstall,
   onOpenShot,
 }: {
-  world: LabRunWorld;
+  world: LabRunWorldSeed;
   installedAs: string | null;
   onInstall: () => void;
   onOpenShot: (url: string) => void;

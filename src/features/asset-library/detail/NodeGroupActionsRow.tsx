@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
 import { Button } from '@/features/app-shell/controls/Button';
-import { scrollNodeCardIntoView } from '@/features/asset-library/detail/worlds/scrollNodeCardIntoView';
+import { scrollNodeCardIntoView } from '@/features/asset-library/detail/worldSeeds/scrollNodeCardIntoView';
 import { forgetGroupTip, stampGroupTip } from '../help/libraryTips';
 import { useLibrarySelection } from '../panel/useLibrarySelection';
 import { useRunningWorld } from '../panel/useRunningWorld';

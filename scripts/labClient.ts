@@ -2,7 +2,7 @@ import type { WalkingSimMeasurements } from '@/features/asset-library/worlds/wal
 import type { MetricReading } from '@/features/asset-library/worlds/walkingSim/bandScore';
 import type { BatchScore } from '@/features/asset-library/worlds/selfPlay/batchScore';
 import type { GenerationRecord } from '@/features/asset-library/worlds/selfPlay/trainingRunner';
-import { genomeFromJson, type WorldGenome } from '@/features/asset-library/worlds/selfPlay/worldGenome';
+import { genomeFromJson, type WorldSeedGenome } from '@/features/asset-library/worlds/selfPlay/worldSeedGenome';
 import type { ReportWorld } from './selfPlay/writeTrainingReport';
 
 const DEFAULT_SERVER = `http://localhost:${process.env.PORT ?? 1111}`;
@@ -24,7 +24,7 @@ export interface LabRunJson {
     fun: number;
     readings: MetricReading[];
     measurements: WalkingSimMeasurements;
-    genome: WorldGenome | null;
+    genome: WorldSeedGenome | null;
   }[];
 }
 
@@ -38,12 +38,12 @@ export async function startLabRun(path: string, body: Record<string, number>): P
 }
 
 export async function readLabRun(id: string): Promise<LabRunJson> {
-  const answer = await askServer(`/asset-library/worlds/lab/${id}`, { method: 'GET' });
+  const answer = await askServer(`/asset-library/world-seeds/lab/${id}`, { method: 'GET' });
   return (answer as { run: LabRunJson }).run;
 }
 
 export async function stopLabRun(id: string): Promise<void> {
-  await askServer(`/asset-library/worlds/lab/${id}/stop`, { method: 'POST' });
+  await askServer(`/asset-library/world-seeds/lab/${id}/stop`, { method: 'POST' });
 }
 
 export async function followLabRun(

@@ -1,14 +1,15 @@
 import type { CommandParams } from '@/features/app-shell/runtime/commands/command';
 import { gradeStepper, type GradeTarget } from './gradeStepper';
-import { freeWorldName, installLabWorld, type WorldLibrary } from './installLabWorld';
+import { installLabWorldSeed, type LabInstallTargets } from './installLabWorldSeed';
+import { freeWorldSeedName } from '../seeds/freeWorldSeedName';
 import { gradeLimitsOf, installCountOf, installNamesOf, rollRequestOf, trainingSettingsOf } from './labSettings';
-import type { InstalledWorld, LabRun, LabWorld } from './labRun';
+import type { InstalledWorldSeed, LabRun, LabWorldSeed } from './labRun';
 import { rollStepper } from './rollStepper';
 import { trainStepper } from './trainStepper';
-import type { WorldLab } from './worldLab';
+import type { WorldSeedLab } from './worldSeedLab';
 
 export function startGradeRun(
-  lab: WorldLab,
+  lab: WorldSeedLab,
   target: GradeTarget,
   params: CommandParams,
 ): LabRun {
@@ -20,7 +21,7 @@ export function startGradeRun(
   );
 }
 
-export function startRollRun(lab: WorldLab, params: CommandParams): LabRun {
+export function startRollRun(lab: WorldSeedLab, params: CommandParams): LabRun {
   const request = rollRequestOf(params);
   return lab.start(
     'roll',
@@ -34,7 +35,7 @@ export function startRollRun(lab: WorldLab, params: CommandParams): LabRun {
   );
 }
 
-export function startTrainRun(lab: WorldLab, params: CommandParams): LabRun {
+export function startTrainRun(lab: WorldSeedLab, params: CommandParams): LabRun {
   const settings = trainingSettingsOf(params);
   return lab.start(
     'train',
@@ -50,36 +51,36 @@ export function startTrainRun(lab: WorldLab, params: CommandParams): LabRun {
   );
 }
 
-export function installableWorldsOf(run: LabRun): LabWorld[] {
+export function installableWorldSeedsOf(run: LabRun): LabWorldSeed[] {
   return run.worlds.filter((world) => world.genome !== null);
 }
 
-export function worldsAskedFor(run: LabRun, params: CommandParams): LabWorld[] {
-  const installable = installableWorldsOf(run);
+export function worldSeedsAskedFor(run: LabRun, params: CommandParams): LabWorldSeed[] {
+  const installable = installableWorldSeedsOf(run);
   const names = installNamesOf(params);
   if (names.length === 0) return installable.slice(0, installCountOf(params));
   return names
     .map((name) => installable.find((world) => world.name === name))
-    .filter((world): world is LabWorld => world !== undefined);
+    .filter((world): world is LabWorldSeed => world !== undefined);
 }
 
 export function installRunWorlds(
-  library: WorldLibrary,
+  library: LabInstallTargets,
   run: LabRun,
-  wanted: readonly LabWorld[],
+  wanted: readonly LabWorldSeed[],
   takenNames: ReadonlySet<string>,
-): InstalledWorld[] {
+): InstalledWorldSeed[] {
   const taken = new Set(takenNames);
   const installed = wanted.map((world) => {
-    const name = freeWorldName(`${world.name} (${run.kind}ed)`, taken);
+    const name = freeWorldSeedName(`${world.name} (${run.kind}ed)`, taken);
     taken.add(name);
-    return installLabWorld(library, world.genome!, name, describeGrade(world));
+    return installLabWorldSeed(library, world.genome!, name, describeGrade(world));
   });
   run.installed.push(...installed);
   return installed;
 }
 
-function describeGrade(world: LabWorld): string {
+function describeGrade(world: LabWorldSeed): string {
   const strongest = [...world.grade.readings]
     .sort((one, other) => other.score - one.score)
     .slice(0, 3)

@@ -24,10 +24,10 @@ export function bootstrapPersistenceTests(): void {
     }
   });
   test('the world library is accepted as the envelope the browser writes and as the array the data file ships', () => {
-    assert.ok(persistedDocumentIsValid('worldPresets', { presets: [], hiddenExamples: [] }));
-    assert.ok(persistedDocumentIsValid('worldPresets', []));
+    assert.ok(persistedDocumentIsValid('worldSeeds', { presets: [], hiddenExamples: [] }));
+    assert.ok(persistedDocumentIsValid('worldSeeds', []));
     assert.ok(persistedDocumentIsValid('templates', { templates: [], hiddenBuiltIns: [] }));
-    assert.ok(!persistedDocumentIsValid('worldPresets', 'islands'));
+    assert.ok(!persistedDocumentIsValid('worldSeeds', 'islands'));
     assert.ok(!persistedDocumentIsValid('tiles', { presets: [] }));
   });
 }

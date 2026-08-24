@@ -9,16 +9,16 @@ import {
   type WorldAccess,
 } from './serverWorld';
 import type { SessionStore } from './sessions';
-import { WorldLab } from '@/features/asset-library/worlds/lab/worldLab';
+import { WorldSeedLab } from '@/features/asset-library/worlds/lab/worldSeedLab';
 
 export interface AgentApiState {
   sessions: SessionStore;
   world: ServerWorld | null;
-  lab: WorldLab;
+  lab: WorldSeedLab;
 }
 
 export function newAgentApiState(): AgentApiState {
-  return { sessions: new Map(), world: null, lab: new WorldLab() };
+  return { sessions: new Map(), world: null, lab: new WorldSeedLab() };
 }
 
 export async function serveAgentApi(

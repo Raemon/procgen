@@ -1,6 +1,6 @@
 import { TrainingRunner, type TrainingSettings } from '../selfPlay/trainingRunner';
-import { rankWorlds, type LabRun, type LabStepper } from './labRun';
-import { labWorldsToldApart } from './scoredWorldGrade';
+import { rankWorldSeeds, type LabRun, type LabStepper } from './labRun';
+import { labWorldSeedsToldApart } from './scoredWorldSeedGrade';
 
 export function trainStepper(settings: TrainingSettings): LabStepper {
   const runner = new TrainingRunner(settings);
@@ -20,8 +20,8 @@ function closeGeneration(run: LabRun, runner: TrainingRunner): void {
   run.trajectory[run.trajectory.length - 1] = record;
   run.generationsDone = record.generation;
   run.batch = record.batch;
-  run.unwalkable += record.worldsWithNowhereToWalk;
-  run.worlds = labWorldsToldApart(runner.archive.rankedByFun());
-  rankWorlds(run);
+  run.unwalkable += record.worldSeedsWithNowhereToWalk;
+  run.worlds = labWorldSeedsToldApart(runner.archive.rankedByFun());
+  rankWorldSeeds(run);
   if (runner.hasFinished()) run.total = run.done + 1;
 }

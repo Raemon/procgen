@@ -36,11 +36,11 @@ export const FOLDER_TIPS: Readonly<Record<LibraryFolder, TooltipContent>> = {
   },
 };
 
-export function worldTip(name: string, description: string, running: boolean): TooltipContent {
+export function worldSeedTip(name: string, description: string, running: boolean): TooltipContent {
   return { title: running ? `${name} — running` : name, body: description };
 }
 
-export function runWorldTip(name: string, running: boolean): TooltipContent {
+export function runWorldSeedTip(name: string, running: boolean): TooltipContent {
   return running
     ? {
         title: `${name} is running`,
@@ -52,14 +52,14 @@ export function runWorldTip(name: string, running: boolean): TooltipContent {
       };
 }
 
-export function copyWorldTip(name: string): TooltipContent {
+export function copyWorldSeedTip(name: string): TooltipContent {
   return {
     title: `duplicate ${name}`,
     body: 'Files a copy of this world under a free name, so you can take it somewhere else without losing this one.',
   };
 }
 
-export function deleteWorldTip(name: string): TooltipContent {
+export function deleteWorldSeedTip(name: string): TooltipContent {
   return {
     title: `delete ${name}`,
     body: 'Takes this world off the library shelf. Assets it used are left alone.',

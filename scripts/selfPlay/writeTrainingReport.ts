@@ -6,7 +6,7 @@ import { worldOfGenome } from '@/features/asset-library/worlds/selfPlay/genomeWo
 import type { WalkingSimMeasurements } from '@/features/asset-library/worlds/walkingSim/walkingSimMeasurements';
 import type { WalkingSimScore } from '@/features/asset-library/worlds/walkingSim/walkingSimFunScore';
 import type { GenerationRecord } from '@/features/asset-library/worlds/selfPlay/trainingLoop';
-import { genomeAsJson, type WorldGenome } from '@/features/asset-library/worlds/selfPlay/worldGenome';
+import { genomeAsJson, type WorldSeedGenome } from '@/features/asset-library/worlds/selfPlay/worldSeedGenome';
 import { spawnWithRoomToWalk } from '@/features/asset-library/worlds/walkingSim/spawnCell';
 import {
   cachedTileIdProbe,
@@ -16,7 +16,7 @@ import { thumbnailHtml } from '../explore/report/asciiThumbnail';
 import { trainingReportHtml, type ReportElite } from './trainingReportHtml';
 
 export interface ReportWorld {
-  genome: WorldGenome;
+  genome: WorldSeedGenome;
   paletteName: string;
   measurements: WalkingSimMeasurements;
   score: WalkingSimScore;

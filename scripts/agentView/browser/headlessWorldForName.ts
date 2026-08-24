@@ -1,4 +1,4 @@
-import { examplePipelines } from '@/features/asset-library/worlds/presets/examplePipelines';
+import { examplePipelines } from '@/features/asset-library/worlds/seeds/examplePipelines';
 import type { PipelineState } from '@/features/asset-library/worlds/pipeline/pipelineState';
 import {
   worldFromDocument,

@@ -7,10 +7,10 @@ import { readingBandOf } from '../walkingSim/readingBands';
 import { worldOfGenome } from '../selfPlay/genomeWorld';
 import { mutatedGenome } from '../selfPlay/mutateGenome';
 import { SaturationWatch } from '../selfPlay/saturationWatch';
-import { scoredGenome, type ScoredWorld } from '../selfPlay/scoreGenome';
+import { scoredGenome, type ScoredWorldSeed } from '../selfPlay/scoreGenome';
 import { runTraining, type GenerationRecord } from '../selfPlay/trainingLoop';
 import { fingerprintDistance, fingerprintOf } from '../selfPlay/worldFingerprint';
-import { genomeAsJson, genomeFromJson, rolledGenome } from '../selfPlay/worldGenome';
+import { genomeAsJson, genomeFromJson, rolledGenome } from '../selfPlay/worldSeedGenome';
 import { measureWalkingSimFun } from '../walkingSim/measureWalkingSimFun';
 import { touristLimits } from '../walkingSim/touristWalk';
 import {
@@ -48,7 +48,7 @@ function checkTheWorldDoctor(check: (name: string, condition: boolean) => void):
   check('a gate-starved world with an elevation display gains cliff terraces with pass corridors', !hasElevationDisplay(patient.genome.pipeline) || cured.pipeline.nodes.some((node) => node.type === 'terraceField'));
 }
 
-function withReading(world: ScoredWorld, name: string, value: number): ScoredWorld {
+function withReading(world: ScoredWorldSeed, name: string, value: number): ScoredWorldSeed {
   const band = readingBandOf(name)!;
   const readings = world.score.readings.map((each) =>
     each.name === name
@@ -59,7 +59,7 @@ function withReading(world: ScoredWorld, name: string, value: number): ScoredWor
   return { ...world, measurements, score: { ...world.score, readings } };
 }
 
-function withAllReadingsAt(world: ScoredWorld, score: number): ScoredWorld {
+function withAllReadingsAt(world: ScoredWorldSeed, score: number): ScoredWorldSeed {
   return {
     ...world,
     score: { ...world.score, readings: world.score.readings.map((each) => ({ ...each, score })) },
@@ -152,7 +152,7 @@ function twinBatchOf(seed: number) {
   const genome = rolledGenome(mulberry32(seed));
   const scored = scoredGenome(genome, SMOKE_LIMITS, SMOKE_WALK_SEED);
   const twins = [scored, scoredGenome(genome, SMOKE_LIMITS, SMOKE_WALK_SEED)].filter(
-    (world): world is ScoredWorld => world !== null,
+    (world): world is ScoredWorldSeed => world !== null,
   );
   return batchScore(twins);
 }

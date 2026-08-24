@@ -10,16 +10,16 @@ const unreachable = new Set<string>();
 const writeTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
 const RESOURCE_PATHS: Readonly<Record<string, string>> = {
-  pipeline: '/api/v1/asset-library/worlds/current',
+  pipeline: '/api/v1/asset-library/world-seeds/current',
   tiles: '/api/v1/asset-library/tiles',
   templates: '/api/v1/asset-library/node-groups',
-  worldPresets: '/api/v1/asset-library/worlds',
+  worldSeeds: '/api/v1/asset-library/world-seeds',
   pieces: '/api/v1/asset-library/pieces',
   cultures: '/api/v1/asset-library/cultures',
   creatures: '/api/v1/asset-library/creatures',
   items: '/api/v1/asset-library/items',
   uiState: '/api/v1/app-shell/state',
-  worldThumbnails: '/api/v1/asset-library/worlds/thumbnails',
+  worldSeedThumbnails: '/api/v1/asset-library/world-seeds/thumbnails',
   assetFolders: '/api/v1/asset-library/folders',
 };
 

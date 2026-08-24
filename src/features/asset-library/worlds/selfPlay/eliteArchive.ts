@@ -1,7 +1,7 @@
 import type { WalkingSimMeasurements } from '../walkingSim/walkingSimMeasurements';
 import { NEAR_DUPLICATE_DISTANCE } from './batchScore';
 import { fingerprintDistance } from './worldFingerprint';
-import { funOf, type ScoredWorld } from './scoreGenome';
+import { funOf, type ScoredWorldSeed } from './scoreGenome';
 
 const OPENNESS_EDGES = [0.05, 0.25, 0.6];
 const GRAMMAR_EDGES = [0.5, 1.2, 2];
@@ -11,9 +11,9 @@ const GATE_EDGES = [0.01, 0.08];
 export const ARCHIVE_CELLS = (OPENNESS_EDGES.length + 1) ** 3 * (GATE_EDGES.length + 1);
 
 export class EliteArchive {
-  private readonly elites = new Map<string, ScoredWorld>();
+  private readonly elites = new Map<string, ScoredWorldSeed>();
 
-  admit(world: ScoredWorld): boolean {
+  admit(world: ScoredWorldSeed): boolean {
     const cell = cellOf(world.measurements);
     const sitting = this.elites.get(cell);
     if (sitting && funOf(sitting) >= funOf(world)) return false;
@@ -22,7 +22,7 @@ export class EliteArchive {
     return true;
   }
 
-  private isAWeakerTwinOfAnElite(world: ScoredWorld, cell: string): boolean {
+  private isAWeakerTwinOfAnElite(world: ScoredWorldSeed, cell: string): boolean {
     for (const [sittingCell, sitting] of this.elites) {
       if (sittingCell === cell) continue;
       if (fingerprintDistance(world.fingerprint, sitting.fingerprint) >= NEAR_DUPLICATE_DISTANCE) continue;
@@ -45,11 +45,11 @@ export class EliteArchive {
     return elites.reduce((sum, elite) => sum + funOf(elite), 0) / elites.length;
   }
 
-  all(): ScoredWorld[] {
+  all(): ScoredWorldSeed[] {
     return [...this.elites.values()];
   }
 
-  rankedByFun(): ScoredWorld[] {
+  rankedByFun(): ScoredWorldSeed[] {
     return this.all().sort((one, other) => funOf(other) - funOf(one));
   }
 }

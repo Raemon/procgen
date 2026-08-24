@@ -3,14 +3,14 @@ import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
 import { PanelHint } from '@/features/app-shell/help/PanelHint';
 import { classes } from '@/features/app-shell/controls/classes';
 import { HINT_CLASSES } from '@/features/app-shell/controls/fieldClasses';
-import { AddNodeMenu } from '@/features/asset-library/detail/worlds/AddNodeMenu';
+import { AddNodeMenu } from '@/features/asset-library/detail/worldSeeds/AddNodeMenu';
 import {
   EditedPipelineProvider,
   useEditedPipeline,
   useRerenderOnEditedPipelineChange,
-} from '@/features/asset-library/detail/worlds/editing/editedPipelineContext';
-import { NodeList } from '@/features/asset-library/detail/worlds/NodeList';
-import { scrollNodeCardIntoView } from '@/features/asset-library/detail/worlds/scrollNodeCardIntoView';
+} from '@/features/asset-library/detail/worldSeeds/editing/editedPipelineContext';
+import { NodeList } from '@/features/asset-library/detail/worldSeeds/NodeList';
+import { scrollNodeCardIntoView } from '@/features/asset-library/detail/worldSeeds/scrollNodeCardIntoView';
 import type { NodeTemplate } from '@/features/asset-library/node-groups/nodeTemplate';
 import { NothingHere } from './NothingHere';
 import { NodeGroupActionsRow } from './NodeGroupActionsRow';

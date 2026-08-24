@@ -6,9 +6,9 @@ import { folderCommands } from './folders/folderCommands';
 import { itemCommands } from './items/itemCommands';
 import { pieceCommands } from './pieces/pieceCommands';
 import { tileCommands } from './tiles/tileCommands';
-import { labCommands } from './worlds/labCommands';
+import { labCommands } from './worlds/worldSeedLabCommands';
 import { nodeCommands } from './worlds/nodeCommands';
-import { worldCommands } from './worlds/worldCommands';
+import { worldCommands } from './worlds/worldSeedCommands';
 
 export const assetLibraryCommands = [
   ...tileCommands,

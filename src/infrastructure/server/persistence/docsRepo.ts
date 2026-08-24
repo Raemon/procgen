@@ -11,18 +11,22 @@ import {
 } from '@/features/app-shell/persistence/persistedDocumentContents';
 import {
   libraryDocsFrom,
-  syncMissingPresets,
-} from '@/features/asset-library/worlds/presets/presetSync';
-import { sanitizeWorldPresets } from '@/features/asset-library/worlds/presets/worldPreset';
+  syncMissingWorldSeeds,
+} from '@/features/asset-library/worlds/seeds/worldSeedSync';
+import { sanitizeWorldSeeds } from '@/features/asset-library/worlds/seeds/worldSeed';
 import { assetFoldersFromStoredJson } from '@/features/asset-library/folders/assetFolder';
 import { syncMissingAssetFolders } from '@/features/asset-library/folders/folderSync';
 
 export const PERSISTED_DOC_NAMES = PERSISTED_DOCUMENT_NAMES;
 
-const DOCS_WRITTEN_ONLY_BY_THE_APP = ['uiState', 'worldThumbnails'];
+const DOCS_WRITTEN_ONLY_BY_THE_APP = ['uiState', 'worldSeedThumbnails'];
 const PERSISTED_DOCUMENT_NAME_SET = new Set<string>(PERSISTED_DOCUMENT_NAMES);
 
-const DOC_NAMES_BEFORE_THE_ASSETS_RENAME: Record<string, string> = { tiles: 'tileset' };
+const DOC_NAMES_BEFORE_THE_ASSETS_RENAME: Record<string, string> = {
+  tiles: 'tileset',
+  worldSeeds: 'worldPresets',
+  worldSeedThumbnails: 'worldThumbnails',
+};
 
 export function isPersistedDocName(name: string): name is PersistedDocumentName {
   return PERSISTED_DOCUMENT_NAME_SET.has(name);
@@ -77,7 +81,7 @@ async function loadDocs(store: Store): Promise<Map<string, unknown>> {
     if (stored !== undefined) docs.set(name, stored);
   }
   reportDocsTheDatabaseIsMissing(docs);
-  installPresetsShippedInDataFiles(docs, store);
+  installWorldSeedsShippedInDataFiles(docs, store);
   installAssetFoldersShippedInDataFiles(docs, store);
   return docs;
 }
@@ -101,9 +105,9 @@ function installAssetFoldersShippedInDataFiles(docs: Map<string, unknown>, store
   );
 }
 
-const LIBRARY_DOC_NAMES = ['tiles', 'pieces', 'cultures', 'worldPresets'] as const;
+const LIBRARY_DOC_NAMES = ['tiles', 'pieces', 'cultures', 'worldSeeds'] as const;
 
-function installPresetsShippedInDataFiles(docs: Map<string, unknown>, store: Store): void {
+function installWorldSeedsShippedInDataFiles(docs: Map<string, unknown>, store: Store): void {
   const touched = new Set<string>();
   for (const name of LIBRARY_DOC_NAMES) {
     if (docs.has(name)) continue;
@@ -112,12 +116,12 @@ function installPresetsShippedInDataFiles(docs: Map<string, unknown>, store: Sto
   }
   const held = libraryDocsFrom((name) => docs.get(name));
   const shipped = libraryDocsFrom(dataFileJson).library;
-  shipped.worldPresets = sanitizeWorldPresets(shipped.worldPresets);
-  const added = syncMissingPresets(held.library, shipped);
+  shipped.worldSeeds = sanitizeWorldSeeds(shipped.worldSeeds);
+  const added = syncMissingWorldSeeds(held.library, shipped);
   if (added > 0) {
-    docs.set('worldPresets', held.worldLibrary);
+    docs.set('worldSeeds', held.worldSeedLibrary);
     for (const name of LIBRARY_DOC_NAMES) touched.add(name);
-    console.log(`[db] installed ${added} world presets shipped in the repo data files`);
+    console.log(`[db] installed ${added} world seeds shipped in the repo data files`);
   }
   for (const name of touched) void saveDoc(store, name, docs.get(name));
 }

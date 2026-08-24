@@ -11,9 +11,9 @@ import { randomMarkerDisplay, randomMarkerTag } from '../randomize/markerPalette
 import { chance, pick, rollBetween, rollInt, snappedToStep } from '../randomize/randomRolls';
 import { recipeNode } from '../randomize/recipeNode';
 import { readingBandOf } from '../walkingSim/readingBands';
-import { funOf, type ScoredWorld } from './scoreGenome';
+import { funOf, type ScoredWorldSeed } from './scoreGenome';
 import { worldPaletteOfKit, type WorldPalette } from './worldPalette';
-import type { WorldGenome } from './worldGenome';
+import type { WorldSeedGenome } from './worldSeedGenome';
 
 const REMEDIABLE_BELOW = 0.35;
 const OTHERWISE_HEALTHY_ABOVE = 0.45;
@@ -23,7 +23,7 @@ export interface Diagnosis {
   ailment: 'starved' | 'flooded';
 }
 
-export function diagnosisOf(world: ScoredWorld): Diagnosis | null {
+export function diagnosisOf(world: ScoredWorldSeed): Diagnosis | null {
   const readings = world.score.readings.filter((each) => each.weight > 0);
   const weakest = readings.reduce((worst, each) => (each.score < worst.score ? each : worst));
   if (weakest.score >= REMEDIABLE_BELOW) return null;
@@ -37,10 +37,10 @@ export function diagnosisOf(world: ScoredWorld): Diagnosis | null {
 }
 
 export function treatedGenome(
-  world: ScoredWorld,
+  world: ScoredWorldSeed,
   diagnosis: Diagnosis,
   rng: RandomStream,
-): WorldGenome {
+): WorldSeedGenome {
   const genome = world.genome;
   const pipeline = clonedState(genome.pipeline);
   const palette = worldPaletteOfKit(genome.kitSeed, genome.accentKitSeed, genome.paletteSize);
@@ -50,7 +50,7 @@ export function treatedGenome(
   return { ...genome, pipeline: sanitizePipeline(pipeline) };
 }
 
-function walkIsBarren(world: ScoredWorld): boolean {
+function walkIsBarren(world: ScoredWorldSeed): boolean {
   return world.measurements.encountersPer100Steps === 0;
 }
 
@@ -435,6 +435,6 @@ function walkableTileIdsOf(palette: WorldPalette): number[] {
     .filter((id) => palette.paletteIds.includes(id));
 }
 
-export function worthTreating(world: ScoredWorld): boolean {
+export function worthTreating(world: ScoredWorldSeed): boolean {
   return diagnosisOf(world) !== null && funOf(world) > 0.25;
 }

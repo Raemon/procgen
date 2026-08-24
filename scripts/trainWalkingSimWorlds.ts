@@ -17,7 +17,7 @@ const startedAt = Date.now();
 let runId: string | null = null;
 stopOnInterrupt(() => runId);
 
-runId = await startLabRun('/asset-library/worlds/train', {
+runId = await startLabRun('/asset-library/world-seeds/train', {
   generations: settings.generations,
   batch_size: settings.batchSize,
   step_budget: settings.stepBudget,
@@ -46,7 +46,7 @@ function generationLine(record: GenerationRecord): string {
     `coverage ${record.coverage.toFixed(2)}`,
     `admitted ${record.admissions}`,
     `dupes ${record.batch.nearDuplicatePairs}`,
-    `noSpawn ${record.worldsWithNowhereToWalk}`,
+    `noSpawn ${record.worldSeedsWithNowhereToWalk}`,
     `${secondsSinceStart()}s`,
   ].join('  ');
 }
@@ -55,7 +55,7 @@ function reportRun(run: LabRunJson): void {
   writeTrainingReport(TRAINING_REPORT_DIR, reportWorldsOf(run), run.generations, headlineOf(run), false);
   console.log(finishedLine(run));
   console.log(`report: ${join(TRAINING_REPORT_DIR, 'index.html')}`);
-  console.log(`run: ${labServerUrl()}/api/v1/asset-library/worlds/lab/${run.id}`);
+  console.log(`run: ${labServerUrl()}/api/v1/asset-library/world-seeds/lab/${run.id}`);
 }
 
 function headlineOf(run: LabRunJson): string {

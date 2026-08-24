@@ -6,14 +6,14 @@ import { chance, clamped, rollInt } from '../randomize/randomRolls';
 import {
   LARGEST_PALETTE,
   SMALLEST_PALETTE,
-  type WorldGenome,
-} from './worldGenome';
+  type WorldSeedGenome,
+} from './worldSeedGenome';
 
 export function bredGenome(
-  one: WorldGenome,
-  other: WorldGenome,
+  one: WorldSeedGenome,
+  other: WorldSeedGenome,
   rng: RandomStream,
-): WorldGenome {
+): WorldSeedGenome {
   const paletteParent = chance(rng, 0.5) ? one : other;
   return {
     kitSeed: paletteParent.kitSeed,
@@ -23,7 +23,7 @@ export function bredGenome(
   };
 }
 
-function inheritedPaletteSize(one: WorldGenome, other: WorldGenome, rng: RandomStream): number {
+function inheritedPaletteSize(one: WorldSeedGenome, other: WorldSeedGenome, rng: RandomStream): number {
   const blended = chance(rng, 0.5)
     ? Math.round((one.paletteSize + other.paletteSize) / 2)
     : (chance(rng, 0.5) ? one : other).paletteSize;

@@ -1,8 +1,8 @@
-import type { WorldGenome } from '@/features/asset-library/worlds/selfPlay/worldGenome';
+import type { WorldSeedGenome } from '@/features/asset-library/worlds/selfPlay/worldSeedGenome';
 import { worldPaletteOfKit } from '@/features/asset-library/worlds/selfPlay/worldPalette';
 import type { WorldDocument } from '../headlessWorld';
 
-export function documentOfGenome(genome: WorldGenome): WorldDocument {
+export function documentOfGenome(genome: WorldSeedGenome): WorldDocument {
   const palette = worldPaletteOfKit(genome.kitSeed, genome.accentKitSeed, genome.paletteSize);
   return {
     name: palette.name,

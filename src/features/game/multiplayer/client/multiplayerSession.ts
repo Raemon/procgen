@@ -141,7 +141,7 @@ export class MultiplayerSession {
 
   private reloadChangedDoc(name: string, revision: string): void {
     if (name !== 'pipeline') return;
-    void fetch('/api/v1/asset-library/worlds/current')
+    void fetch('/api/v1/asset-library/world-seeds/current')
       .then((response) => (response.ok ? response.json() : null))
       .then((raw) => {
         const document = raw as { data?: unknown; revision?: unknown } | null;

@@ -8,26 +8,26 @@ import type { Piece } from '@/features/asset-library/pieces/pieceDef';
 import type { StoredArtOf } from '@/features/asset-library/tiles/storage/storedFaceArt';
 import type { TileDef } from '@/features/asset-library/tiles/tileDef';
 import type { PipelineState } from '@/features/asset-library/worlds/pipeline/pipelineState';
-import type { StoredWorldLibrary } from '@/features/asset-library/worlds/presets/storedWorldLibrary';
+import type { StoredWorldSeedLibrary } from '@/features/asset-library/worlds/seeds/storedWorldSeedLibrary';
 
-export type WorldKey = string;
+export type WorldSeedKey = string;
 export type ThumbnailDataUrl = string;
 export type PersistedUiKey = string;
 
-export type WorldThumbnailIndex = Record<WorldKey, ThumbnailDataUrl>;
+export type WorldSeedThumbnailIndex = Record<WorldSeedKey, ThumbnailDataUrl>;
 export type PersistedUiState = Record<PersistedUiKey, unknown>;
 
 export interface StoredDocumentContents {
   pipeline: PipelineState;
   tiles: StoredArtOf<TileDef>[];
   templates: StoredTemplateLibrary;
-  worldPresets: StoredWorldLibrary;
+  worldSeeds: StoredWorldSeedLibrary;
   pieces: readonly Piece[];
   cultures: readonly Culture[];
   creatures: StoredArtOf<CreatureDef>[];
   items: StoredArtOf<ItemDef>[];
   uiState: PersistedUiState;
-  worldThumbnails: WorldThumbnailIndex;
+  worldSeedThumbnails: WorldSeedThumbnailIndex;
   assetFolders: StoredAssetFolders;
 }
 
@@ -35,13 +35,13 @@ export interface ParsedDocumentContents {
   pipeline: PipelineState;
   tiles: TileDef[];
   templates: StoredTemplateLibrary;
-  worldPresets: StoredWorldLibrary;
+  worldSeeds: StoredWorldSeedLibrary;
   pieces: Piece[];
   cultures: Culture[];
   creatures: CreatureDef[];
   items: ItemDef[];
   uiState: PersistedUiState;
-  worldThumbnails: WorldThumbnailIndex;
+  worldSeedThumbnails: WorldSeedThumbnailIndex;
   assetFolders: StoredAssetFolders;
 }
 

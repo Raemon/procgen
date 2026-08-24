@@ -1,4 +1,4 @@
-import type { LabRun, LabWorld } from '../lab/labRun';
+import type { LabRun, LabWorldSeed } from '../lab/labRun';
 import { weakestReadingsOf } from '../lab/worldGrade';
 
 export function runListJson(run: LabRun) {
@@ -35,7 +35,7 @@ function latestCoverageOf(run: LabRun): number {
   return run.trajectory[run.trajectory.length - 1]?.coverage ?? 0;
 }
 
-function worldJson(world: LabWorld, at: number) {
+function worldJson(world: LabWorldSeed, at: number) {
   return {
     rank: at + 1,
     name: world.name,

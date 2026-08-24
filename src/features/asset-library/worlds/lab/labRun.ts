@@ -1,18 +1,18 @@
 import type { BatchScore } from '../selfPlay/batchScore';
 import type { GenerationRecord } from '../selfPlay/trainingRunner';
-import type { WorldGenome } from '../selfPlay/worldGenome';
+import type { WorldSeedGenome } from '../selfPlay/worldSeedGenome';
 import type { WorldGrade } from './worldGrade';
 
 export type LabRunKind = 'grade' | 'roll' | 'train';
 export type LabRunStatus = 'running' | 'done' | 'stopped' | 'failed';
 
-export interface LabWorld {
+export interface LabWorldSeed {
   name: string;
   grade: WorldGrade;
-  genome: WorldGenome | null;
+  genome: WorldSeedGenome | null;
 }
 
-export interface InstalledWorld {
+export interface InstalledWorldSeed {
   name: string;
   tilesAdded: number;
   piecesAdded: number;
@@ -28,10 +28,10 @@ export interface LabRun {
   done: number;
   total: number;
   generationsDone: number;
-  worlds: LabWorld[];
+  worlds: LabWorldSeed[];
   batch: BatchScore | null;
   trajectory: GenerationRecord[];
-  installed: InstalledWorld[];
+  installed: InstalledWorldSeed[];
   unwalkable: number;
   error: string | null;
   stopRequested: boolean;
@@ -70,7 +70,7 @@ export function newLabRun(
   };
 }
 
-export function rankWorlds(run: LabRun): void {
+export function rankWorldSeeds(run: LabRun): void {
   run.worlds.sort((one, other) => other.grade.fun - one.grade.fun);
 }
 

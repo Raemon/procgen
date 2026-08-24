@@ -3,8 +3,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import type { AppRuntime } from '@/features/app-shell/runtime/appRuntime';
 import { AppRuntimeProvider } from '@/features/app-shell/runtime/appRuntimeContext';
 import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
-import { EditedPipelineProvider } from '@/features/asset-library/detail/worlds/editing/editedPipelineContext';
-import { NodeList } from '@/features/asset-library/detail/worlds/NodeList';
+import { EditedPipelineProvider } from '@/features/asset-library/detail/worldSeeds/editing/editedPipelineContext';
+import { NodeList } from '@/features/asset-library/detail/worldSeeds/NodeList';
 import { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
 import { sanitizePipeline } from '@/features/asset-library/worlds/pipeline/sanitizePipeline';
 

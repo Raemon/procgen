@@ -163,7 +163,7 @@ function createAgent(sessions: SessionStore, world: ServerWorld, body: unknown):
     urls: {
       docs: '/api/v1/openapi.json',
       observe: `/api/v1/agents/${id}/observe`,
-      pipeline: '/api/v1/asset-library/worlds/current',
+      pipeline: '/api/v1/asset-library/world-seeds/current',
       node_types: '/api/v1/asset-library/node-types',
     },
   });

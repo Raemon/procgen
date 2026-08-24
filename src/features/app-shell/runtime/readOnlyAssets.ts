@@ -4,9 +4,9 @@ import type { ItemAssets } from '@/features/asset-library/items/itemAssets';
 import type { CultureAssets } from '@/features/asset-library/cultures/cultureAssets';
 import type { PieceAssets } from '@/features/asset-library/pieces/pieceAssets';
 import type { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
-import type { RunningWorld } from '@/features/asset-library/worlds/presets/runningWorld';
-import type { WorldPresetLibrary } from '@/features/asset-library/worlds/presets/worldPresetLibrary';
-import type { WorldShelf } from '@/features/asset-library/worlds/presets/worldShelf';
+import type { RunningWorld } from '@/features/asset-library/worlds/running/runningWorld';
+import type { WorldSeedLibrary } from '@/features/asset-library/worlds/seeds/worldSeedLibrary';
+import type { WorldSeedShelf } from '@/features/asset-library/worlds/seeds/worldSeedShelf';
 import type { TemplateLibrary } from '@/features/asset-library/node-groups/templateLibrary';
 import type { TileAssets } from '@/features/asset-library/tiles/tileAssets';
 import type { World } from '@/features/game/world';
@@ -31,11 +31,11 @@ export type ReadOnlyTemplateLibrary = Pick<
   TemplateLibrary,
   'builtIn' | 'savedTemplates' | 'all' | 'byName' | 'onChange'
 >;
-export type ReadOnlyWorldPresetLibrary = Pick<
-  WorldPresetLibrary,
-  'savedPresets' | 'byName' | 'onChange'
+export type ReadOnlyWorldSeedLibrary = Pick<
+  WorldSeedLibrary,
+  'savedWorldSeeds' | 'byName' | 'onChange'
 >;
-export type ReadOnlyWorldShelf = Pick<WorldShelf, 'all' | 'byName' | 'onChange'>;
+export type ReadOnlyWorldSeedShelf = Pick<WorldSeedShelf, 'all' | 'byName' | 'onChange'>;
 export type ReadOnlyRunningWorld = Pick<RunningWorld, 'name' | 'onChange'>;
 export type ReadOnlyWorld = Pick<
   World,

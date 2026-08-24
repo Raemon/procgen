@@ -2,14 +2,14 @@
 
 import { useState } from 'react';
 import { EliteCard } from './EliteCard';
-import type { LabRunWorld } from './labClient';
+import type { LabRunWorldSeed } from './labClient';
 
 export function EliteGrid({
   worlds,
   installedNames,
   onInstall,
 }: {
-  worlds: LabRunWorld[];
+  worlds: LabRunWorldSeed[];
   installedNames: Map<string, string>;
   onInstall: (name: string) => void;
 }) {

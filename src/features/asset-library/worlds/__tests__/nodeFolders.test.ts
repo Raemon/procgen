@@ -3,7 +3,7 @@ import { computeNodeSignatures } from '../pipeline/nodeSignatures';
 import { nodeTypeOf } from '../nodeRegistry';
 import type { PipelineState } from '../pipeline/pipelineState';
 import { sanitizePipeline } from '../pipeline/sanitizePipeline';
-import { nodeFolderRuns } from '@/features/asset-library/detail/worlds/nodeFolderRuns';
+import { nodeFolderRuns } from '@/features/asset-library/detail/worldSeeds/nodeFolderRuns';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 
 export function checkNodeFolders(check: CheckReporter): void {

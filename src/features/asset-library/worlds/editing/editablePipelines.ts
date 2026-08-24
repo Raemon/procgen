@@ -2,8 +2,8 @@ import { debounce } from '@/features/app-shell/runtime/debounce';
 import type { PipelineState } from '../pipeline/pipelineState';
 import { PipelineStore } from '../pipeline/pipelineStore';
 import { sanitizePipeline } from '../pipeline/sanitizePipeline';
-import type { RunningWorld } from '../presets/runningWorld';
-import type { WorldPreset } from '../presets/worldPreset';
+import type { RunningWorld } from '../running/runningWorld';
+import type { WorldSeed } from '../seeds/worldSeed';
 import type { NodeTemplate } from '@/features/asset-library/node-groups/nodeTemplate';
 import type { EditedPipeline, PerformOnStore } from './editedPipeline';
 
@@ -13,7 +13,7 @@ export interface PipelineSources {
   performOn: PerformOnStore;
   runningPipeline: EditedPipeline;
   runningWorld: RunningWorld;
-  worldNamed(name: string): WorldPreset | undefined;
+  worldSeedNamed(name: string): WorldSeed | undefined;
   groupNamed(name: string): NodeTemplate | undefined;
 }
 
@@ -24,13 +24,13 @@ export class EditablePipelines {
 
   world(name: string): EditedPipeline | null {
     if (this.sources.runningWorld.name() === name) {
-      this.documents.delete(worldDocumentKey(name));
+      this.documents.delete(worldSeedDocumentKey(name));
       return this.sources.runningPipeline;
     }
-    const world = this.sources.worldNamed(name);
-    if (!world) return this.forget(worldDocumentKey(name));
-    return this.documentOf(worldDocumentKey(name), sanitizePipeline(structuredClone(world.state)), (store) =>
-      this.sources.performOn(store, 'save_preset', { name }),
+    const world = this.sources.worldSeedNamed(name);
+    if (!world) return this.forget(worldSeedDocumentKey(name));
+    return this.documentOf(worldSeedDocumentKey(name), sanitizePipeline(structuredClone(world.state)), (store) =>
+      this.sources.performOn(store, 'save_world_seed', { name }),
     );
   }
 
@@ -81,7 +81,7 @@ function editedDocument(
   };
 }
 
-function worldDocumentKey(name: string): string {
+function worldSeedDocumentKey(name: string): string {
   return `world:${name}`;
 }
 

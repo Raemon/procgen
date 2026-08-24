@@ -5,7 +5,7 @@ import { ItemsFolder } from './folders/ItemsFolder';
 import { NodeGroupsFolder } from './folders/NodeGroupsFolder';
 import { PiecesFolder } from './folders/PiecesFolder';
 import { TilesFolder } from './folders/TilesFolder';
-import { WorldsFolder } from './folders/WorldsFolder';
+import { WorldSeedsFolder } from './folders/WorldSeedsFolder';
 import { LibraryViewModeProvider, type LibraryViewMode } from './libraryViewMode';
 import { useLibrarySelection } from './useLibrarySelection';
 
@@ -14,7 +14,7 @@ export function LibraryPanel({ viewMode }: { viewMode: LibraryViewMode }) {
   return (
     <LibraryViewModeProvider mode={viewMode}>
       <div onKeyDown={(event) => event.key === 'Escape' && clear()}>
-        <WorldsFolder />
+        <WorldSeedsFolder />
         <TilesFolder />
         <ItemsFolder />
         <PiecesFolder />

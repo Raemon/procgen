@@ -5,7 +5,7 @@ import type { Feature } from '@/features/asset-library/worlds/features/feature';
 import { featuresInRect } from '@/features/asset-library/worlds/features/featuresInRect';
 import { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
 import { sanitizePipeline } from '@/features/asset-library/worlds/pipeline/sanitizePipeline';
-import { examplePipelines, type ExamplePipeline } from '@/features/asset-library/worlds/presets/examplePipelines';
+import { examplePipelines, type ExamplePipeline } from '@/features/asset-library/worlds/seeds/examplePipelines';
 import type { WorldRect } from '@/features/asset-library/worlds/values/pointsInRect';
 
 const HALF_SPAN = 128;

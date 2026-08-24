@@ -16,7 +16,7 @@ const STEP_BUDGET = Number(process.argv[4] ?? 350);
 let runId: string | null = null;
 stopOnInterrupt(() => runId);
 
-runId = await startLabRun('/asset-library/worlds/roll', {
+runId = await startLabRun('/asset-library/world-seeds/roll', {
   count: ROLL_COUNT,
   seed: ROLL_SEED,
   step_budget: STEP_BUDGET,
@@ -48,5 +48,5 @@ function printRanking(run: LabRunJson): void {
   });
   console.log(`\nbatch: ${headline(run)}`);
   console.log(`report: ${join(RANKING_REPORT_DIR, 'index.html')}`);
-  console.log(`run: ${labServerUrl()}/api/v1/asset-library/worlds/lab/${run.id}`);
+  console.log(`run: ${labServerUrl()}/api/v1/asset-library/world-seeds/lab/${run.id}`);
 }

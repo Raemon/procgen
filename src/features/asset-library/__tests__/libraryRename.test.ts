@@ -15,10 +15,10 @@ import { builtInTemplates } from '@/features/asset-library/node-groups/builtInTe
 import { templateLibraryFromStoredJson } from '@/features/asset-library/node-groups/storedTemplateLibrary';
 import { emptyPipeline } from '@/features/asset-library/worlds/pipeline/pipelineState';
 import { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
-import { exampleWorlds } from '@/features/asset-library/worlds/presets/exampleWorlds';
-import { RunningWorld } from '@/features/asset-library/worlds/presets/runningWorld';
-import { WorldPresetLibrary } from '@/features/asset-library/worlds/presets/worldPresetLibrary';
-import { WorldShelf } from '@/features/asset-library/worlds/presets/worldShelf';
+import { exampleWorldSeeds } from '@/features/asset-library/worlds/seeds/exampleWorldSeeds';
+import { RunningWorld } from '@/features/asset-library/worlds/running/runningWorld';
+import { WorldSeedLibrary } from '@/features/asset-library/worlds/seeds/worldSeedLibrary';
+import { WorldSeedShelf } from '@/features/asset-library/worlds/seeds/worldSeedShelf';
 import { RandomizeHistory } from '@/features/asset-library/worlds/randomize/randomizeHistory';
 import { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
 import { nextSelectionOnOpen } from '../librarySelection';
@@ -33,8 +33,8 @@ export function checkLibraryRename(check: CheckReporter): void {
 
 function renamer() {
   const store = new PipelineStore(emptyPipeline());
-  const worldPresets = new WorldPresetLibrary({
-    presets: [{ name: 'my delve', description: 'mine', state: emptyPipeline() }],
+  const worldSeeds = new WorldSeedLibrary({
+    seeds: [{ name: 'my delve', description: 'mine', state: emptyPipeline() }],
     hiddenExamples: [],
   });
   const context = {
@@ -49,7 +49,7 @@ function renamer() {
       folders: [{ id: 'f1', name: 'Round 1', section: 'worlds', parentId: null }],
       placements: { worlds: { 'my delve': 'f1' } },
     }),
-    worldPresets,
+    worldSeeds,
     runningWorld: new RunningWorld(),
     randomizeHistory: new RandomizeHistory(),
     groundItems: NO_GROUND_ITEMS,
@@ -65,7 +65,7 @@ function renamer() {
   } as unknown as CommandContext;
   return {
     context,
-    worlds: new WorldShelf(worldPresets),
+    worlds: new WorldSeedShelf(worldSeeds),
     act: (action: string, params: CommandParams = {}) =>
       performCommand(context, 'god', action, params),
   };
@@ -73,8 +73,8 @@ function renamer() {
 
 function checkRenamingAWorld(check: CheckReporter): void {
   const saved = renamer();
-  saved.act('run_world', { name: 'my delve' });
-  const renamed = saved.act('rename_preset', { name: 'my delve', new_name: 'the deep delve' });
+  saved.act('run_world_seed', { name: 'my delve' });
+  const renamed = saved.act('rename_world_seed', { name: 'my delve', new_name: 'the deep delve' });
   check(
     'renaming a saved world files it under the new name and leaves nothing behind under the old one',
     renamed.ok &&
@@ -92,10 +92,10 @@ function checkRenamingAWorld(check: CheckReporter): void {
   );
 
   const taken = renamer();
-  taken.act('save_preset', { name: 'my delve' });
-  const refused = taken.act('rename_preset', {
+  taken.act('save_world_seed', { name: 'my delve' });
+  const refused = taken.act('rename_world_seed', {
     name: 'my delve',
-    new_name: exampleWorlds()[0]!.name,
+    new_name: exampleWorldSeeds()[0]!.name,
   });
   check(
     'a world rename onto a name the library already holds is refused rather than overwriting it',
@@ -103,20 +103,20 @@ function checkRenamingAWorld(check: CheckReporter): void {
   );
 
   const example = renamer();
-  const shipped = exampleWorlds()[0]!.name;
-  const tookOver = example.act('rename_preset', { name: shipped, new_name: 'my own islands' });
+  const shipped = exampleWorldSeeds()[0]!.name;
+  const tookOver = example.act('rename_world_seed', { name: shipped, new_name: 'my own islands' });
   check(
     'renaming a world that ships with the editor saves your copy and takes the example off the shelf',
     tookOver.ok &&
       example.worlds.byName('my own islands') !== undefined &&
       example.worlds.byName(shipped) === undefined &&
-      example.context.worldPresets.hiddenExamples().includes(shipped),
+      example.context.worldSeeds.hiddenExamples().includes(shipped),
   );
 
-  const missing = renamer().act('rename_preset', { name: 'no such world', new_name: 'x' });
+  const missing = renamer().act('rename_world_seed', { name: 'no such world', new_name: 'x' });
   check(
     'renaming a world the library has never held names the ones it does hold',
-    !missing.ok && missing.code === 'unknown_preset',
+    !missing.ok && missing.code === 'unknown_world_seed',
   );
 }
 
@@ -216,7 +216,7 @@ function checkTheLibrariesSurviveTheirOwnStorage(check: CheckReporter): void {
   );
   check(
     'the worlds and node groups a rename writes are shapes their own resource accepts',
-    persistedDocumentIsValid('worldPresets', { presets: [], hiddenExamples: [] }) &&
+    persistedDocumentIsValid('worldSeeds', { seeds: [], hiddenExamples: [] }) &&
       persistedDocumentIsValid('templates', templates.stored()),
   );
 }

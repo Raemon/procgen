@@ -23,14 +23,14 @@ import { EditablePipelines } from '@/features/asset-library/worlds/editing/edita
 import type { EditedPipeline } from '@/features/asset-library/worlds/editing/editedPipeline';
 import { attachPipelinePersistence, loadStoredPipeline } from '@/features/asset-library/worlds/pipeline/pipelineStorage';
 import { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
-import { runningWorldEdits } from '@/features/asset-library/worlds/presets/runningWorldEdits';
-import { RunningWorld } from '@/features/asset-library/worlds/presets/runningWorld';
+import { runningWorldEdits } from '@/features/asset-library/worlds/running/runningWorldEdits';
+import { RunningWorld } from '@/features/asset-library/worlds/running/runningWorld';
 import {
   attachRunningWorldPersistence,
   loadRunningWorldName,
-} from '@/features/asset-library/worlds/presets/runningWorldStorage';
-import { WorldPresetLibrary } from '@/features/asset-library/worlds/presets/worldPresetLibrary';
-import { WorldShelf } from '@/features/asset-library/worlds/presets/worldShelf';
+} from '@/features/asset-library/worlds/running/runningWorldStorage';
+import { WorldSeedLibrary } from '@/features/asset-library/worlds/seeds/worldSeedLibrary';
+import { WorldSeedShelf } from '@/features/asset-library/worlds/seeds/worldSeedShelf';
 import { RandomizeHistory } from '@/features/asset-library/worlds/randomize/randomizeHistory';
 import { TemplateLibrary } from '@/features/asset-library/node-groups/templateLibrary';
 import { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
@@ -58,8 +58,8 @@ import type {
   ReadOnlyTileAssets,
   ReadOnlyRunningWorld,
   ReadOnlyWorld,
-  ReadOnlyWorldPresetLibrary,
-  ReadOnlyWorldShelf,
+  ReadOnlyWorldSeedLibrary,
+  ReadOnlyWorldSeedShelf,
 } from './readOnlyAssets';
 import { WorldRenderers } from './worldRenderers';
 
@@ -75,8 +75,8 @@ export interface AppRuntime {
   store: ReadOnlyPipelineStore;
   templates: ReadOnlyTemplateLibrary;
   assetFolders: ReadOnlyAssetFolders;
-  worldPresets: ReadOnlyWorldPresetLibrary;
-  worlds: ReadOnlyWorldShelf;
+  worldSeeds: ReadOnlyWorldSeedLibrary;
+  worlds: ReadOnlyWorldSeedShelf;
   runningWorld: ReadOnlyRunningWorld;
   editing: EditablePipelines;
   runningPipeline: EditedPipeline;
@@ -106,8 +106,8 @@ export function createAppRuntime(): AppRuntime {
   const tileAssets = new TileAssets();
   const templates = new TemplateLibrary();
   const assetFolders = new AssetFolders();
-  const worldPresets = new WorldPresetLibrary();
-  const worlds = new WorldShelf(worldPresets);
+  const worldSeeds = new WorldSeedLibrary();
+  const worlds = new WorldSeedShelf(worldSeeds);
   const runningWorld = new RunningWorld(loadRunningWorldName());
   attachRunningWorldPersistence(runningWorld);
   const pieces = new PieceAssets();
@@ -216,7 +216,7 @@ export function createAppRuntime(): AppRuntime {
         items,
         templates,
         assetFolders,
-        worldPresets,
+        worldSeeds,
         runningWorld,
         randomizeHistory,
         regionSampler: sampler,
@@ -268,7 +268,7 @@ export function createAppRuntime(): AppRuntime {
     performOn,
     runningPipeline,
     runningWorld,
-    worldNamed: (name) => worlds.byName(name),
+    worldSeedNamed: (name) => worlds.byName(name),
     groupNamed: (name) => templates.byName(name),
   });
 
@@ -295,7 +295,7 @@ export function createAppRuntime(): AppRuntime {
     tileAssets,
     templates,
     assetFolders,
-    worldPresets,
+    worldSeeds,
     worlds,
     runningWorld,
     editing,

@@ -42,7 +42,7 @@ export function GamePanel() {
         <Button
           className="whitespace-nowrap"
           tip={RANDOMIZE_WORLD_TIP}
-          onClick={() => perform('randomize_world')}
+          onClick={() => perform('randomize_world_seed')}
         >
           ✨ new world
         </Button>
