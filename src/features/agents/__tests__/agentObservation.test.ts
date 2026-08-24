@@ -144,6 +144,18 @@ export function checkAgentObservation(check: CheckReporter): void {
     return views.size === 8;
   })());
   check('character legend appears only for visible glyphs plus the fixed entries', charObs.legend.every((entry) => entry.glyph === '@' || entry.glyph === ' ' || charObs.view.some((row) => row.includes(entry.glyph))));
+  const treeMarkers = agentWorld.sampler.markersIn(-64, -64, 63, 63);
+  const tree = treeMarkers[0];
+  const marked = tree
+    ? buildObservation(agentWorld.sampler, tileAssets, { x: tree.x + 1, y: tree.y, facing: 0 }, 'god')
+    : godObs;
+  check(
+    'the observation legend names a scatter marker by its node label, not its node id',
+    treeMarkers.length > 0 &&
+      treeMarkers.every((marker) => marker.tag === 'trees') &&
+      marked.legend.some((entry) => entry.meaning.split(' / ').includes('trees')) &&
+      marked.legend.every((entry) => !entry.meaning.split(' / ').includes('n5')),
+  );
 
   const WIDE_SIGHT_RADIUS = 24;
   const wideObs = buildObservation(agentWorld.sampler, tileAssets, { x: 0, y: 0, facing: 0 }, 'character', WIDE_SIGHT_RADIUS);

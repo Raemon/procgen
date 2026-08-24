@@ -59,8 +59,8 @@ export function checkChunkDeterminismAndSignatures(check: CheckReporter): void {
   check('elevation binding shapes the world', sampled.sampler.elevationAt(0, 0) !== 0 || sampled.sampler.elevationAt(17, -23) !== 0);
   const treeMarkers = sampled.sampler.markersIn(-64, -64, 63, 63);
   check(
-    'scatter markers carry their node id as tag',
-    treeMarkers.length > 0 && treeMarkers.every((m) => m.tag === 'n5'),
+    'scatter markers are labelled by their node, never by the node id they write as their tag',
+    treeMarkers.length > 0 && treeMarkers.every((m) => m.tag === 'trees'),
   );
 
   sampled.store.setEnabled('n3', false);
