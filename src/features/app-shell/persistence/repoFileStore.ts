@@ -74,6 +74,7 @@ export function readPersistedFile<T>(name: string): T | null {
 
 export function writePersistedFile(name: string, value: unknown): void {
   preloaded.set(name, value);
+  if (typeof window === 'undefined') return;
   clearTimeout(writeTimers.get(name));
   writeTimers.set(name, setTimeout(() => pushToServer(name, value), WRITE_DEBOUNCE_MS));
 }

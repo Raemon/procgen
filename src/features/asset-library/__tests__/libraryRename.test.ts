@@ -21,6 +21,7 @@ import { WorldSeedLibrary } from '@/features/asset-library/worlds/seeds/worldSee
 import { WorldSeedShelf } from '@/features/asset-library/worlds/seeds/worldSeedShelf';
 import { RandomizeHistory } from '@/features/asset-library/worlds/randomize/randomizeHistory';
 import { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
+import { TakenItemSpawns } from '@/features/asset-library/items/pickups/takenItemSpawns';
 import { nextSelectionOnOpen } from '../librarySelection';
 
 export function checkLibraryRename(check: CheckReporter): void {
@@ -53,8 +54,10 @@ function renamer() {
     runningWorld: new RunningWorld(),
     randomizeHistory: new RandomizeHistory(),
     groundItems: NO_GROUND_ITEMS,
+    takenItems: new TakenItemSpawns(),
     puzzles: new PuzzleWorld(store, () => true),
     regionSampler: { tileAt: () => 0, elevationAt: () => 0, packedVoxelColumnAt: () => null },
+    settleTheWorld: (change: () => void) => change(),
     actor: {
       pose: () => ({ x: 0, y: 0, facing: 0 }),
       tryStep: () => true,

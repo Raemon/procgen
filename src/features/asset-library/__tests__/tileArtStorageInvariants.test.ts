@@ -102,6 +102,7 @@ function worldSavingOnlyTiles(): ServerWorld {
     items: nothing,
     templates: nothing,
     worldSeeds: nothing,
+    savedWorlds: { stored: () => ({ worlds: [] }) },
     assetFolders: nothing,
   } as unknown as ServerWorld;
 }

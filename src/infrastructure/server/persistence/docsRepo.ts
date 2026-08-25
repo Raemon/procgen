@@ -19,7 +19,7 @@ import { syncMissingAssetFolders } from '@/features/asset-library/folders/folder
 
 export const PERSISTED_DOC_NAMES = PERSISTED_DOCUMENT_NAMES;
 
-const DOCS_WRITTEN_ONLY_BY_THE_APP = ['uiState', 'worldSeedThumbnails', 'savedWorlds'];
+const DOCS_WITH_NO_SHIPPED_DATA_FILE = ['uiState', 'worldSeedThumbnails', 'savedWorlds'];
 const PERSISTED_DOCUMENT_NAME_SET = new Set<string>(PERSISTED_DOCUMENT_NAMES);
 
 const DOC_NAMES_BEFORE_THE_ASSETS_RENAME: Record<string, string> = {
@@ -138,7 +138,7 @@ function dataFileJson(name: string): unknown {
 
 function reportDocsTheDatabaseIsMissing(docs: Map<string, unknown>): void {
   const missing = PERSISTED_DOC_NAMES.filter(
-    (name) => !docs.has(name) && !DOCS_WRITTEN_ONLY_BY_THE_APP.includes(name),
+    (name) => !docs.has(name) && !DOCS_WITH_NO_SHIPPED_DATA_FILE.includes(name),
   );
   if (missing.length === 0) return;
   console.warn(

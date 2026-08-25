@@ -78,8 +78,11 @@ registerSavedWorldCommand({
 });
 
 function saveRunningWorld(context: CommandContext, params: CommandParams): CommandResult {
-  const asked = readOptionalText(params, 'name');
+  const asked = readOptionalText(params, 'name').trim();
   const name = asked === '' ? nameForTheRunningWorld(context) : asked;
+  if (name === '') {
+    return commandFailed('bad_request', 'a saved world needs a name with something in it');
+  }
   const told = readOptionalText(params, 'description');
   const held = context.savedWorlds.byName(name);
   const saved = capturedWorld(

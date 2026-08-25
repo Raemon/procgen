@@ -134,7 +134,7 @@ function startGrade(context: CommandContext, params: CommandParams): CommandResu
   const run = startGradeRun(
     lab,
     {
-      name: context.runningWorld.name() || 'the running world',
+      name: context.runningWorld.seedName() || 'the running world',
       sampler: context.worldSampler,
       tileAssets: context.tileAssets,
     },

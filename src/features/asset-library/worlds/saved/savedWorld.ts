@@ -1,4 +1,5 @@
 import type { TakenSpawnKey } from '@/features/asset-library/items/pickups/takenItemSpawns';
+import type { InventoryPlacement } from '@/features/asset-library/items/inventory/inventoryDef';
 import type { PuzzleStateSnapshot } from '@/features/game/puzzles/state/puzzleState';
 import { sanitizePipeline } from '../pipeline/sanitizePipeline';
 import type { PipelineState } from '../pipeline/pipelineState';
@@ -16,6 +17,7 @@ export interface SavedWorld {
   state: PipelineState;
   player: SavedPlayerPose;
   takenItems: TakenSpawnKey[];
+  carried: InventoryPlacement[];
   puzzles: PuzzleStateSnapshot;
 }
 
@@ -32,6 +34,7 @@ export function sanitizeSavedWorld(raw: unknown): SavedWorld | null {
     state,
     player: sanitizePose(held.player),
     takenItems: sanitizeTakenItems(held.takenItems),
+    carried: sanitizeCarried(held.carried),
     puzzles: sanitizePuzzles(held.puzzles),
   };
 }
@@ -59,6 +62,18 @@ function sanitizeTakenItems(raw: unknown): TakenSpawnKey[] {
       x: entry.x as number,
       y: entry.y as number,
       itemId: entry.itemId as TakenSpawnKey['itemId'],
+    }));
+}
+
+function sanitizeCarried(raw: unknown): InventoryPlacement[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((entry): entry is Record<string, unknown> => typeof entry === 'object' && entry !== null)
+    .filter((entry) => [entry.itemId, entry.x, entry.y].every(isFiniteNumber))
+    .map((entry) => ({
+      itemId: entry.itemId as InventoryPlacement['itemId'],
+      x: entry.x as number,
+      y: entry.y as number,
     }));
 }
 

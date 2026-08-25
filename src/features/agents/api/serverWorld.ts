@@ -91,6 +91,7 @@ export function persistWorld(docs: DocSink, world: ServerWorld): void {
   docs.write('items', itemsAsStoredJson(world.items.all()));
   docs.write('templates', world.templates.stored());
   docs.write('worldSeeds', world.worldSeeds.stored());
+  docs.write('savedWorlds', world.savedWorlds.stored());
   docs.write('assetFolders', world.assetFolders.stored());
 }
 

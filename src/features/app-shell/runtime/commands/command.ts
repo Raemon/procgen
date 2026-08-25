@@ -50,6 +50,7 @@ export interface CommandContext {
   groundItems: GroundItems;
   puzzles: PuzzleWorld;
   actor: CommandActor;
+  settleTheWorld(change: () => void): void;
 }
 
 export type CommandParamKind = 'int' | 'number' | 'text' | 'nodeId' | 'json';

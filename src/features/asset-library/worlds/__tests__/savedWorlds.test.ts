@@ -2,8 +2,10 @@ import '../nodes';
 import { performCommand } from '@/features/app-shell/runtime/commands/performCommand';
 import type { CommandContext } from '@/features/app-shell/runtime/commands/command';
 import { CreatureAssets } from '@/features/asset-library/creatures/creatureAssets';
+import { playerCharacterDef } from '@/features/asset-library/characters/playerCharacter';
 import { ItemAssets } from '@/features/asset-library/items/itemAssets';
-import { NO_GROUND_ITEMS } from '@/features/asset-library/items/pickups/groundItems';
+import { stowEverythingOnTile } from '@/features/asset-library/items/pickups/stowItems';
+import type { ItemSpawn } from '@/features/asset-library/worlds/worldSampler';
 import { TakenItemSpawns } from '@/features/asset-library/items/pickups/takenItemSpawns';
 import { CultureAssets } from '@/features/asset-library/cultures/cultureAssets';
 import { PieceAssets } from '@/features/asset-library/pieces/pieceAssets';
@@ -13,6 +15,7 @@ import { TemplateLibrary } from '@/features/asset-library/node-groups/templateLi
 import { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
 import { assetId, type ItemId } from '@/features/asset-library/asset';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
+import { persistWorld, type ServerWorld } from '@/features/agents/api/serverWorld';
 import { emptyPipeline } from '../pipeline/pipelineState';
 import { PipelineStore } from '../pipeline/pipelineStore';
 import { RandomizeHistory } from '../randomize/randomizeHistory';
@@ -26,9 +29,12 @@ import { worldSeedLibraryFromStoredJson } from '../seeds/storedWorldSeedLibrary'
 
 export function checkSavedWorlds(check: CheckReporter): void {
   checkASaveRemembersWhatThePlayerDid(check);
+  checkAnItemPickedUpIsNeitherDuplicatedNorLostByASave(check);
+  checkRestoreIsOneSettledChange(check);
   checkASaveOutlivesTheSeedItGrewFrom(check);
   checkSavedWorldRowsAreEditedLikeAnyOtherAsset(check);
   checkDocumentsWrittenBeforeTheRenameStillLoad(check);
+  checkTheServerWritesSavesBackToTheDatabase(check);
 }
 
 function checkASaveRemembersWhatThePlayerDid(check: CheckReporter): void {
@@ -60,6 +66,52 @@ function checkASaveRemembersWhatThePlayerDid(check: CheckReporter): void {
   check(
     'running a save puts back the puzzle fixtures that had been worked',
     game.puzzles.state.isOn('cell/lever'),
+  );
+}
+
+function checkAnItemPickedUpIsNeitherDuplicatedNorLostByASave(check: CheckReporter): void {
+  const game = playableWorld();
+  game.act('run_world_seed', { name: game.aSeedName() });
+  const torch = game.layAnItemOnTheGround(4, 4);
+
+  game.walkTo(4, 4, 0);
+  game.walkOverWhateverIsUnderfoot();
+  check(
+    'walking over an item puts it in the bag and takes it off the ground',
+    game.carriedItemIds().length === 1 && game.takenItems.isTaken({ x: 4, y: 4, itemId: torch }),
+  );
+
+  game.act('save_world', { name: 'after the torch' });
+  game.walkTo(0, 0, 0);
+  game.emptyTheBag();
+  game.takenItems.forgetAll();
+  game.act('run_saved_world', { name: 'after the torch' });
+
+  check(
+    'a restored save puts back what the player was carrying',
+    game.carriedItemIds().join() === String(torch),
+  );
+  check(
+    'a restored save leaves a carried item off the ground, so running it twice cannot duplicate it',
+    game.takenItems.isTaken({ x: 4, y: 4, itemId: torch }),
+  );
+
+  game.act('run_saved_world', { name: 'after the torch' });
+  check(
+    'resuming the same save again still leaves exactly one of the item',
+    game.carriedItemIds().length === 1,
+  );
+}
+
+function checkRestoreIsOneSettledChange(check: CheckReporter): void {
+  const game = playableWorld();
+  game.act('run_world_seed', { name: game.aSeedName() });
+  game.act('save_world', { name: 'a camp' });
+  game.forgetSettling();
+  game.act('run_saved_world', { name: 'a camp' });
+  check(
+    'a restore swaps the pipeline, the deltas and the pose inside one settled change',
+    game.settledChanges() === 1 && game.escapedTheSettle() === false,
   );
 }
 
@@ -143,8 +195,33 @@ function checkDocumentsWrittenBeforeTheRenameStillLoad(check: CheckReporter): vo
   );
 }
 
+function checkTheServerWritesSavesBackToTheDatabase(check: CheckReporter): void {
+  const written = new Map<string, unknown>();
+  persistWorld({ write: (name, json) => void written.set(name, json) }, {
+    store: { snapshot: () => emptyPipeline() },
+    tileAssets: { all: () => [] },
+    pieces: { all: () => [] },
+    cultures: { all: () => [] },
+    creatures: { all: () => [] },
+    items: { all: () => [] },
+    templates: { stored: () => ({ templates: [], hiddenBuiltIns: [] }) },
+    worldSeeds: { stored: () => ({ seeds: [], hiddenExamples: [] }) },
+    savedWorlds: { stored: () => ({ worlds: [{ name: 'camp' }] }) },
+    assetFolders: { stored: () => ({ folders: [], placements: {} }) },
+  } as unknown as ServerWorld);
+  check(
+    'a save an agent made reaches the database, not just the memory it was made in',
+    JSON.stringify(written.get('savedWorlds')) === JSON.stringify({ worlds: [{ name: 'camp' }] }),
+  );
+}
+
 function playableWorld() {
   const store = new PipelineStore(emptyPipeline());
+  const creatures = new CreatureAssets();
+  const items = new ItemAssets();
+  if (!playerCharacterDef(creatures)) creatures.addCharacter();
+  const theBag = () => playerCharacterDef(creatures)?.inventory ?? null;
+  const onTheGround: ItemSpawn[] = [];
   const worldSeeds = new WorldSeedLibrary({
     seeds: exampleWorldSeeds().map((example) => structuredClone(example)),
     hiddenExamples: [],
@@ -154,13 +231,19 @@ function playableWorld() {
   const runningWorld = new RunningWorld();
   const puzzles = new PuzzleWorld(store, () => true);
   const pose = { x: 0, y: 0, facing: 0 };
+  let settled = 0;
+  let inASettle = false;
+  let escaped = false;
+  store.onChange(() => {
+    if (!inASettle) escaped = true;
+  });
   const context = {
     store,
     tileAssets: new TileAssets(),
     pieces: new PieceAssets(),
     cultures: new CultureAssets(),
-    creatures: new CreatureAssets(),
-    items: new ItemAssets(),
+    creatures,
+    items,
     templates: new TemplateLibrary({ templates: [], hiddenBuiltIns: [] }),
     assetFolders: new AssetFolders({ folders: [], placements: {} }),
     worldSeeds,
@@ -168,9 +251,25 @@ function playableWorld() {
     takenItems,
     runningWorld,
     randomizeHistory: new RandomizeHistory(),
-    groundItems: NO_GROUND_ITEMS,
+    groundItems: {
+      at: (x: number, y: number) =>
+        onTheGround.filter(
+          (spawn) =>
+            spawn.x === x && spawn.y === y && !takenItems.isTaken(spawn),
+        ),
+      take: (spawn: ItemSpawn) => takenItems.take(spawn),
+    },
     puzzles,
     regionSampler: { tileAt: () => 0, elevationAt: () => 0, packedVoxelColumnAt: () => null },
+    settleTheWorld: (change: () => void) => {
+      settled++;
+      inASettle = true;
+      try {
+        change();
+      } finally {
+        inASettle = false;
+      }
+    },
     actor: {
       pose: () => pose,
       snapTo: (x: number, y: number, facing: number) => {
@@ -198,5 +297,25 @@ function playableWorld() {
     pickUp: (x: number, y: number, itemId: number) =>
       takenItems.take({ x, y, itemId: itemId as ItemId }),
     workFixture: (id: string) => puzzles.state.setOn(id, true),
+    layAnItemOnTheGround: (x: number, y: number) => {
+      const item = items.add();
+      onTheGround.push({ x, y, itemId: item.id, name: item.name, glyph: '', color: '', tag: 'test' });
+      return item.id;
+    },
+    walkOverWhateverIsUnderfoot: () =>
+      stowEverythingOnTile({ creatures, items, groundItems: context.groundItems }, pose.x, pose.y),
+    carriedItemIds: () => (theBag()?.placements ?? []).map((placed) => placed.itemId),
+    emptyTheBag: () => {
+      const carrier = playerCharacterDef(creatures);
+      if (carrier?.inventory) {
+        creatures.update(carrier.id, { inventory: { ...carrier.inventory, placements: [] } });
+      }
+    },
+    forgetSettling: () => {
+      settled = 0;
+      escaped = false;
+    },
+    settledChanges: () => settled,
+    escapedTheSettle: () => escaped,
   };
 }

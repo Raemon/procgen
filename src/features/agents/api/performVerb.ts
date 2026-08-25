@@ -40,6 +40,7 @@ export function performVerb(
       worldSeeds: world.worldSeeds,
       savedWorlds: world.savedWorlds,
       takenItems: world.takenItems,
+      settleTheWorld: (change: () => void) => change(),
       runningWorld: world.runningWorld,
       randomizeHistory: world.randomizeHistory,
       regionSampler: world.sampler,

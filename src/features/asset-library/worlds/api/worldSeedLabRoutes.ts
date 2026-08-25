@@ -113,7 +113,7 @@ function gradeTheRunningWorld(context: RouteContext): LabRun {
   return startGradeRun(
     context.access.lab,
     {
-      name: world.runningWorld.name() || 'the running world',
+      name: world.runningWorld.seedName() || 'the running world',
       sampler: world.sampler,
       tileAssets: world.tileAssets,
     },

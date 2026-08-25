@@ -52,6 +52,7 @@ function abilityWorld() {
     worldSeeds: new WorldSeedLibrary({ seeds: [], hiddenExamples: [] }),
     savedWorlds: new SavedWorldLibrary({ worlds: [] }),
     takenItems: new TakenItemSpawns(),
+    settleTheWorld: (change: () => void) => change(),
     runningWorld: new RunningWorld(),
     randomizeHistory: new RandomizeHistory(),
     groundItems: NO_GROUND_ITEMS,

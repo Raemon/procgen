@@ -5,9 +5,14 @@ import { NOTHING_RUNNING, runningSeed, type RunningWorld, type RunningWorldRef }
 
 const KEY_BEFORE_THE_WORLD_SEED_RENAME = 'library.runningWorld';
 
+const NEVER_WRITTEN = Symbol('never written');
+
 export function loadRunningWorld(): RunningWorldRef | null {
-  const stored = persistedUiValue<unknown>(PERSISTED_UI_KEYS.runningWorld, null, anything);
-  return runningWorldRefFrom(stored) ?? runningWorldRefFrom(legacyName());
+  const held = persistedUiValue<unknown>(PERSISTED_UI_KEYS.runningWorld, NEVER_WRITTEN, anything);
+  if (held !== NEVER_WRITTEN) return runningWorldRefFrom(held);
+  return runningWorldRefFrom(
+    persistedUiValue<unknown>(KEY_BEFORE_THE_WORLD_SEED_RENAME, NEVER_WRITTEN, anything),
+  );
 }
 
 export function attachRunningWorldPersistence(runningWorld: RunningWorld): void {
@@ -17,18 +22,10 @@ export function attachRunningWorldPersistence(runningWorld: RunningWorld): void 
 }
 
 export function runningWorldIn(uiState: PersistedUiState): RunningWorldRef | null {
-  return (
-    runningWorldRefFrom(uiState[PERSISTED_UI_KEYS.runningWorld]) ??
-    runningWorldRefFrom(uiState[KEY_BEFORE_THE_WORLD_SEED_RENAME])
-  );
-}
-
-function anything(value: unknown): value is unknown {
-  return value !== undefined;
-}
-
-function legacyName(): unknown {
-  return persistedUiValue<unknown>(KEY_BEFORE_THE_WORLD_SEED_RENAME, null, anything);
+  if (PERSISTED_UI_KEYS.runningWorld in uiState) {
+    return runningWorldRefFrom(uiState[PERSISTED_UI_KEYS.runningWorld]);
+  }
+  return runningWorldRefFrom(uiState[KEY_BEFORE_THE_WORLD_SEED_RENAME]);
 }
 
 export function runningWorldRefFrom(raw: unknown): RunningWorldRef | null {
@@ -38,4 +35,8 @@ export function runningWorldRefFrom(raw: unknown): RunningWorldRef | null {
   if (typeof held.name !== 'string' || held.name === '') return NOTHING_RUNNING;
   if (held.kind !== 'seed' && held.kind !== 'saved') return NOTHING_RUNNING;
   return { kind: held.kind, name: held.name };
+}
+
+function anything(value: unknown): value is unknown {
+  return value !== undefined;
 }

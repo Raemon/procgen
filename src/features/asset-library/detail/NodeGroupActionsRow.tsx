@@ -7,7 +7,7 @@ import { useLibrarySelection } from '../panel/useLibrarySelection';
 import { useRunningWorldName } from '../panel/useRunningWorld';
 
 export function NodeGroupActionsRow({ name }: { name: string }) {
-  const { templates, store, perform } = useAppRuntime();
+  const { templates, store, perform, runningWorld } = useAppRuntime();
   const { select } = useLibrarySelection();
   const running = useRunningWorldName();
   const saved = useSyncExternalStore(
@@ -18,7 +18,8 @@ export function NodeGroupActionsRow({ name }: { name: string }) {
   function stampIntoTheRunningWorld(): void {
     const before = store.nodes().map((node) => node.id);
     perform('stamp_template', { name });
-    select('worldSeeds', running);
+    const ref = runningWorld.ref();
+    if (ref) select(ref.kind === 'saved' ? 'savedWorlds' : 'worldSeeds', ref.name);
     const added = store.nodes().find((node) => !before.includes(node.id));
     if (added) scrollNodeCardIntoView(added.id);
   }

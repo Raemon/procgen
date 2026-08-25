@@ -67,6 +67,7 @@ import { WorldRenderers } from './worldRenderers';
 
 const VALUE_TWEAK_DEBOUNCE_MS = 150;
 const WORLD_WRITE_BACK_MS = 400;
+const SAVE_WORLD = 'save_world';
 
 export interface AppRuntime {
   tileAssets: ReadOnlyTileAssets;
@@ -151,7 +152,6 @@ export function createAppRuntime(): AppRuntime {
   const playerInventoryPanel = new PlayerInventoryPanelState();
   const pickupFeed = new PickupFeed();
   const walkOverPickup = new WalkOverPickup({ creatures, items, groundItems }, pickupFeed);
-  pickupFeed.subscribe(() => keepPlayingAfterTheAction.schedule());
   const sim = new CreatureSim({ sampler, creatureAssets: creatures, world, isWalkableAt });
   const clock = new CreatureClock(sim);
   const renderers = new WorldRenderers();
@@ -161,6 +161,7 @@ export function createAppRuntime(): AppRuntime {
   const randomizeHistory = new RandomizeHistory();
   let playerMode: CommandMode = 'god';
   let lastPuzzleRevision = puzzles.state.revision();
+  let settlingTheWorld = false;
 
   const capture = new CaptureTool((region) =>
     perform('capture_region', {
@@ -176,6 +177,7 @@ export function createAppRuntime(): AppRuntime {
     if (remote) return remote;
     const result = performCommandOnce(store, action, params);
     redrawIfPuzzlesChanged();
+    if (result.ok && action !== SAVE_WORLD) keepPlayingAfterTheAction.schedule();
     return result;
   }
 
@@ -203,12 +205,24 @@ export function createAppRuntime(): AppRuntime {
   function redrawIfPuzzlesChanged(): void {
     if (puzzles.state.revision() === lastPuzzleRevision) return;
     lastPuzzleRevision = puzzles.state.revision();
-    keepPlayingAfterTheAction.schedule();
+    renderers.redrawAll();
+  }
+
+  function settleTheWorld(change: () => void): void {
+    saveEditsAfterTweaks.flushIfPending();
+    settlingTheWorld = true;
+    try {
+      change();
+    } finally {
+      settlingTheWorld = false;
+    }
+    lastPuzzleRevision = puzzles.state.revision();
+    applyWorldChange();
     renderers.redrawAll();
   }
 
   function keepWhatThePlayerHasDone(): void {
-    if (runningWorld.savedWorldName()) perform('save_world');
+    if (runningWorld.savedWorldName()) perform(SAVE_WORLD);
   }
 
   function performCommandOnce(
@@ -230,6 +244,7 @@ export function createAppRuntime(): AppRuntime {
         savedWorlds,
         takenItems,
         runningWorld,
+        settleTheWorld,
         randomizeHistory,
         regionSampler: sampler,
         worldSampler: sampler,
@@ -305,9 +320,12 @@ export function createAppRuntime(): AppRuntime {
   cultures.onChange(applyWorldChange);
   creatures.onChange(applyWorldChange);
   items.onChange(applyWorldChange);
-  world.on('player-moved', () => walkOverPickup.onSteppedOnto(world.playerX, world.playerY));
-  world.on('player-moved', () => announceKeysTakenByWalkingOver());
-  world.on('player-moved', () => keepPlayingAfterTheAction.schedule());
+  world.on('player-moved', () => {
+    if (settlingTheWorld) return;
+    walkOverPickup.onSteppedOnto(world.playerX, world.playerY);
+    announceKeysTakenByWalkingOver();
+    keepPlayingAfterTheAction.schedule();
+  });
   world.on('player-moved', () => renderers.recenterAll());
   world.on('player-turned', () => renderers.recenterAll());
   worldEdits.runSomethingIfNothingIsRunning();

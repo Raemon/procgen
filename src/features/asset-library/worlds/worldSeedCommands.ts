@@ -28,6 +28,7 @@ import {
 import { listOf, readInt, readNumber, readOptionalText, readText } from '@/features/app-shell/runtime/commands/commandParams';
 import { createCommandCollection } from '@/features/app-shell/runtime/commands/commandCollection';
 import { runningSeed } from '@/features/asset-library/worlds/running/runningWorld';
+import { forgetWhatWasDoneInTheLastWorld } from '@/features/asset-library/worlds/saved/capturedWorld';
 
 const { define: registerCommand, commands: worldSeedCommands } = createCommandCollection();
 export { worldSeedCommands };
@@ -342,8 +343,14 @@ function runWorldSeed(context: CommandContext, params: CommandParams): CommandRe
   if (context.runningWorld.seedName() === name.value) {
     return commandSucceeded(`'${name.value}' is already the seed running`);
   }
-  const loaded = loadWorldSeed(context, params);
-  if (!loaded.ok) return loaded;
+  const state = worldSeedStateOf(context, name.value);
+  if (!state) {
+    return commandFailed('unknown_world_seed', `name must be one of: ${listOf(worldSeedNames(context))}`);
+  }
+  context.settleTheWorld(() => {
+    context.store.replaceAll(sanitizePipeline(state));
+    forgetWhatWasDoneInTheLastWorld(context);
+  });
   context.runningWorld.run(runningSeed(name.value));
   return commandSucceeded(`'${name.value}' grew the world now running`);
 }
