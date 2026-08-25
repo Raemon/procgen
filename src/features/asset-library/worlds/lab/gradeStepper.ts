@@ -18,7 +18,7 @@ export function gradeStepper(target: GradeTarget, limits: GradeLimits): LabStepp
         run.unwalkable++;
         return;
       }
-      run.worlds.push({ name: target.name, grade, genome: null });
+      run.worldSeeds.push({ name: target.name, grade, genome: null });
     },
     finish: () => undefined,
   };

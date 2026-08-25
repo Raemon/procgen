@@ -25,14 +25,14 @@ import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 const LONGER_THAN_THE_WRITE_BACK_WAIT_MS = 500;
 
 export async function checkWorldSeedsAreDocuments(check: CheckReporter): Promise<void> {
-  await checkEditingAWorldThatIsNotRunningSavesItself(check);
+  await checkEditingAWorldSeedThatIsNotRunningSavesItself(check);
   await checkEditingANodeGroupSavesItself(check);
-  checkRunningAWorldPutsItOnScreen(check);
+  checkRunningAWorldSeedPutsItOnScreen(check);
   checkDeletingAnExampleTakesItOffTheShelf(check);
 }
 
-async function checkEditingAWorldThatIsNotRunningSavesItself(check: CheckReporter): Promise<void> {
-  const editor = worldEditor();
+async function checkEditingAWorldSeedThatIsNotRunningSavesItself(check: CheckReporter): Promise<void> {
+  const editor = worldSeedEditor();
   const shelved = editor.worlds.all()[0]!;
   editor.act('run_world_seed', { name: shelved.name });
   const other = editor.worlds.all()[1]!;
@@ -40,22 +40,22 @@ async function checkEditingAWorldThatIsNotRunningSavesItself(check: CheckReporte
   opened.perform('set_seed', { seed: 4321 });
   await settle();
   check(
-    'a world you edit without running it is the one that changes, and the running world is left alone',
+    'a world seed you edit without running it is the one that changes, and the running world is left alone',
     editor.worlds.byName(other.name)!.state.seed === 4321 &&
       editor.store.seed() === shelved.state.seed,
   );
   check(
-    'the world being edited is a document of its own, not the pipeline on screen',
+    'the world seed being edited is a document of its own, not the pipeline on screen',
     opened !== editor.runningPipeline && opened.rendered === false,
   );
   check(
-    'opening the running world hands back the pipeline on screen, so edits land live',
+    'opening the running world seed hands back the pipeline on screen, so edits land live',
     editor.editing.worldSeed(shelved.name) === editor.runningPipeline,
   );
 }
 
 async function checkEditingANodeGroupSavesItself(check: CheckReporter): Promise<void> {
-  const editor = worldEditor();
+  const editor = worldSeedEditor();
   const group = editor.templates.all()[0]!;
   const opened = editor.editing.group(group.name)!;
   const nodeCount = opened.store.nodes().length;
@@ -71,12 +71,12 @@ async function checkEditingANodeGroupSavesItself(check: CheckReporter): Promise<
   );
 }
 
-function checkRunningAWorldPutsItOnScreen(check: CheckReporter): void {
-  const editor = worldEditor();
+function checkRunningAWorldSeedPutsItOnScreen(check: CheckReporter): void {
+  const editor = worldSeedEditor();
   const world = editor.worlds.all()[0]!;
   const ran = editor.act('run_world_seed', { name: world.name });
   check(
-    'running a world loads its nodes and names it as the world running',
+    'running a world seed loads its nodes and names it as the world running',
     ran.ok &&
       editor.runningWorld.name() === world.name &&
       editor.store.nodes().length === world.state.nodes.length,
@@ -84,7 +84,7 @@ function checkRunningAWorldPutsItOnScreen(check: CheckReporter): void {
 }
 
 function checkDeletingAnExampleTakesItOffTheShelf(check: CheckReporter): void {
-  const editor = worldEditor();
+  const editor = worldSeedEditor();
   const example = exampleWorldSeeds()[0]!;
   editor.act('delete_world_seed', { name: example.name });
   check(
@@ -97,7 +97,7 @@ function settle(): Promise<void> {
   return new Promise((done) => setTimeout(done, LONGER_THAN_THE_WRITE_BACK_WAIT_MS));
 }
 
-function worldEditor() {
+function worldSeedEditor() {
   const store = new PipelineStore(emptyPipeline());
   const worldSeeds = new WorldSeedLibrary({
     seeds: exampleWorldSeeds().map((example) => structuredClone(example)),

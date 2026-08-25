@@ -313,13 +313,13 @@ export function checkCommandDispatch(check: CheckReporter): void {
     const template = act('god', 'save_template', { name: 'check template', node_ids: nodeIds });
     const stamped = act('god', 'stamp_template', { name: 'check template' });
     const loaded = act('god', 'load_world_seed', { name: 'check seed' });
-    const unknown = act('god', 'load_world_seed', { name: 'no such world' });
+    const unknown = act('god', 'load_world_seed', { name: 'no such world seed' });
     return (
       saved.ok && template.ok && stamped.ok && loaded.ok &&
       !unknown.ok && unknown.code === 'unknown_world_seed' && unknown.hint.includes('check seed')
     );
   })());
-  check('editing a built-in world or node group takes its name over, and deleting yours gives it back', (() => {
+  check('editing a built-in world seed or node group takes its name over, and deleting yours gives it back', (() => {
     const nodeIds = commands.store.nodes().map((node) => node.id);
     const overExample = act('god', 'save_world_seed', { name: 'volcanic islands' });
     const overBuiltIn = act('god', 'save_template', { name: 'tectonic plates', node_ids: nodeIds });
@@ -332,7 +332,7 @@ export function checkCommandDispatch(check: CheckReporter): void {
       shipped !== undefined && shipped.nodes.length !== nodeIds.length
     );
   })());
-  check('deleting a built-in world takes it off the shelf without making its name unloadable', (() => {
+  check('deleting a built-in world seed takes it off the shelf without making its name unloadable', (() => {
     const deleted = act('god', 'delete_world_seed', { name: 'volcanic islands' });
     const stillLoadable = act('god', 'load_world_seed', { name: 'volcanic islands' });
     return (

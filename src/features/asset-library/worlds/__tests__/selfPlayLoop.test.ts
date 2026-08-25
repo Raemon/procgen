@@ -36,7 +36,7 @@ function checkTheWorldDoctor(check: (name: string, condition: boolean) => void):
   if (!patient) throw new Error('doctor fixture world has nowhere to spawn');
   const starving = withReading(patient, 'encounters /100 steps', 0);
   const diagnosis = diagnosisOf(starving);
-  check('a world that is healthy but for one cratered reading gets that reading as its diagnosis', diagnosis !== null && diagnosis.reading === 'encounters /100 steps' && diagnosis.ailment === 'starved');
+  check('a world seed that is healthy but for one cratered reading gets that reading as its diagnosis', diagnosis !== null && diagnosis.reading === 'encounters /100 steps' && diagnosis.ailment === 'starved');
   check('a world weak across the board is beyond one treatment, so the doctor declines it', diagnosisOf(withAllReadingsAt(patient, 0.2)) === null);
 
   const treated = treatedGenome(starving, diagnosis!, mulberry32(9));
@@ -105,7 +105,7 @@ function checkWorldsAreToldApart(check: (name: string, condition: boolean) => vo
   check('an open plain and a varied world are told apart by their fingerprints', fingerprintDistance(plain, varied) > 0.2);
 
   const twins = twinBatchOf(1234);
-  check('a batch of one world twice reads as no diversity at all, and names the duplicate pair', twins.diversity === 0 && twins.nearDuplicatePairs === 1);
+  check('a batch of one world seed twice reads as no diversity at all, and names the duplicate pair', twins.diversity === 0 && twins.nearDuplicatePairs === 1);
   check('duplicated worlds drag the batch score below their own fun, so sameness costs something', twins.overall < twins.meanFun);
 }
 
@@ -116,7 +116,7 @@ function checkTrainingClimbsAndStops(check: (name: string, condition: boolean) =
     (record) => trajectory.push(record),
   );
   check('a smoke run walks every generation it was asked for', trajectory.length === 3);
-  check('the archive only ever gets better, since an elite is replaced only by a better world', neverFallsBack(trajectory.map((each) => each.archiveBestFun)));
+  check('the archive only ever gets better, since an elite is replaced only by a better world seed', neverFallsBack(trajectory.map((each) => each.archiveBestFun)));
   check('archive coverage only ever grows, since a filled cell is never emptied', neverFallsBack(trajectory.map((each) => each.coverage)));
   check('a smoke run finds at least one world worth keeping', run.archive.all().length > 0);
   check('a run that stops improving is called saturated rather than left to spin', watchThatSawNoGains().hasSaturated());

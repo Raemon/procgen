@@ -2,7 +2,7 @@ import { failure, json, type ApiResponse } from '@/features/agents/api/apiMessag
 import { registerRoute, type RouteContext } from '@/features/agents/api/routeRegistry';
 import { examplePipelines } from '../seeds/examplePipelines';
 import {
-  installRunWorlds,
+  installRunWorldSeeds,
   installableWorldSeedsOf,
   startGradeRun,
   startRollRun,
@@ -34,11 +34,11 @@ registerRoute({
   method: 'POST',
   path: '/asset-library/world-seeds/roll',
   summary:
-    'roll fresh worlds and grade every one of them, ranked by fun. Neither touches nor replaces the running world',
+    'roll fresh world seeds and grade every one of them, ranked by fun. Neither touches nor replaces the running world',
   body: {
     ...WALK_PARAMS,
-    count: { kind: 'int', help: 'how many worlds to roll, 1-64', optional: true },
-    seed: { kind: 'int', help: 'seed for the roll; the same seed rolls the same worlds', optional: true },
+    count: { kind: 'int', help: 'how many world seeds to roll, 1-64', optional: true },
+    seed: { kind: 'int', help: 'seed for the roll; the same seed rolls the same world seeds', optional: true },
   },
   query: {},
   handle: ({ access, req }) => startedRun(startRollRun(access.lab, bodyOf(req.body))),
@@ -48,12 +48,12 @@ registerRoute({
   method: 'POST',
   path: '/asset-library/world-seeds/train',
   summary:
-    'breed worlds instead of rolling them: every generation rolls, mutates, breeds and treats candidates, grades them, and keeps the fun and distinct ones. Stops early once it saturates',
+    'breed world seeds instead of rolling them: every generation rolls, mutates, breeds and treats candidates, grades them, and keeps the fun and distinct ones. Stops early once it saturates',
   body: {
     ...WALK_PARAMS,
     generations: { kind: 'int', help: 'how many generations to live through, 1-200', optional: true },
-    batch_size: { kind: 'int', help: 'how many worlds per generation, 2-32', optional: true },
-    seed: { kind: 'int', help: 'seed for the run; the same seed breeds the same worlds', optional: true },
+    batch_size: { kind: 'int', help: 'how many world seeds per generation, 2-32', optional: true },
+    seed: { kind: 'int', help: 'seed for the run; the same seed breeds the same world seeds', optional: true },
     patience: { kind: 'int', help: 'generations without a gain before the run gives up, 1-100', optional: true },
   },
   query: {},
@@ -72,7 +72,7 @@ registerRoute({
 registerRoute({
   method: 'GET',
   path: '/asset-library/world-seeds/lab/{id}',
-  summary: "one run in full: its ranked worlds, their readings and measurements, and each generation's batch",
+  summary: "one run in full: its ranked world seeds, their readings and measurements, and each generation's batch",
   body: {},
   query: {},
   handle: (context) => withRun(context, (run) => json(200, { run: runDetailJson(run) })),
@@ -95,12 +95,12 @@ registerRoute({
   method: 'POST',
   path: '/asset-library/world-seeds/lab/{id}/install',
   summary:
-    "save a run's best worlds into the library, each with the tiles, pieces and culture its palette needs",
+    "save a run's best world seeds into the library, each with the tiles, pieces and culture its palette needs",
   body: {
-    count: { kind: 'int', help: 'how many of the top worlds to save, 1-20', optional: true },
+    count: { kind: 'int', help: 'how many of the top world seeds to save, 1-20', optional: true },
     names: {
       kind: 'json',
-      help: 'the exact world names from the run to save, up to 20; overrides count when given',
+      help: 'the exact world seed names from the run to save, up to 20; overrides count when given',
       optional: true,
     },
   },
@@ -126,15 +126,15 @@ function install(context: RouteContext, run: LabRun): ApiResponse {
     return failure(
       409,
       'nothing_to_install',
-      `${run.id} has no rolled world to save — grade runs measure the world you are already in`,
+      `${run.id} has no rolled world seed to save — grade runs measure the world you are already in`,
     );
   }
   const wanted = worldSeedsAskedFor(run, bodyOf(context.req.body));
   if (wanted.length === 0) {
-    return failure(409, 'nothing_to_install', `${run.id} holds no world under the names asked for`);
+    return failure(409, 'nothing_to_install', `${run.id} holds no world seed under the names asked for`);
   }
   const world = context.access.current();
-  const installed = installRunWorlds(
+  const installed = installRunWorldSeeds(
     {
       tileAssets: world.tileAssets,
       pieces: world.pieces,

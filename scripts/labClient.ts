@@ -13,13 +13,13 @@ export interface LabRunJson {
   status: 'running' | 'done' | 'stopped' | 'failed';
   settings: Record<string, number>;
   progress: { done: number; total: number };
-  worlds_graded: number;
-  worlds_with_nowhere_to_walk: number;
+  world_seeds_graded: number;
+  world_seeds_with_nowhere_to_walk: number;
   best_fun: number | null;
   error: string | null;
   batch: BatchScore | null;
   generations: GenerationRecord[];
-  worlds: {
+  world_seeds: {
     name: string;
     fun: number;
     readings: MetricReading[];
@@ -64,7 +64,7 @@ export async function followLabRun(
 }
 
 export function reportWorldsOf(run: LabRunJson): ReportWorld[] {
-  return run.worlds
+  return run.world_seeds
     .filter((world) => world.genome !== null)
     .map((world) => ({
       genome: genomeFromJson(world.genome),

@@ -71,7 +71,7 @@ registerWorldSeedCommand({
 
 registerWorldSeedCommand({
   action: 'set_time',
-  humanControl: 'detail panel, world: time row',
+  humanControl: 'detail panel, world seed: time row',
   description:
     'Set the moment the world is shown at, 0 for the present and negative for years before it. Only nodes that declare they read time answer to it, so a world built from nodes that ignore time looks the same at every moment.',
   params: {
@@ -88,7 +88,7 @@ registerWorldSeedCommand({
 
 registerWorldSeedCommand({
   action: 'clear_pipeline',
-  humanControl: 'detail panel, world: clear',
+  humanControl: 'detail panel, world seed: clear',
   description: 'Remove every node, leaving an empty world to build from zero.',
   params: {},
   example: { action: 'clear_pipeline' },
@@ -147,7 +147,7 @@ registerWorldSeedCommand({
   description:
     'Rename a world seed. One of yours is filed under the new name; a built-in example is saved under the new name and taken off the shelf under the old one. A seed that is running keeps running under its new name.',
   params: {
-    name: { kind: 'text', help: 'the world to rename — see GET /api/v1/asset-library/world-seeds' },
+    name: { kind: 'text', help: 'the world seed to rename — see GET /api/v1/asset-library/world-seeds' },
     new_name: { kind: 'text', help: 'the name to file it under; a name already in use is refused' },
   },
   example: { action: 'rename_world_seed', name: 'islands', new_name: 'my archipelago' },
@@ -159,7 +159,7 @@ registerWorldSeedCommand({
   humanControl: 'asset library, world seeds folder: ✕ on a world seed',
   description:
     'Delete a world seed. Yours is dropped; a built-in example is taken off the library shelf, and load_world_seed can still name it. Saved worlds grown from it are untouched — each keeps its own copy.',
-  params: { name: { kind: 'text', help: 'the world name' } },
+  params: { name: { kind: 'text', help: 'the world seed name' } },
   example: { action: 'delete_world_seed', name: 'my archipelago' },
   apply: (context, params) => deleteWorldSeed(context, params),
 });
@@ -184,7 +184,7 @@ registerWorldSeedCommand({
 registerWorldSeedCommand({
   action: 'save_template',
   humanControl:
-    'detail panel, world: ⤓ library on a folder band — and every edit to a node group writes itself back this way',
+    'detail panel, world seed: ⤓ library on a folder band — and every edit to a node group writes itself back this way',
   description:
     'Save a run of nodes as a reusable node group. Wires that point outside the group are dropped; saving under the name of a built-in group takes that name over.',
   params: {
@@ -237,25 +237,25 @@ const ROLLS: readonly {
 }[] = [
   {
     action: 'randomize_seed',
-    humanControl: 'game panel: 🎲 reroll — and detail panel, world: 🎲 on the seed row',
-    description: 'Reroll the world seed, keeping every node and knob exactly as they are.',
+    humanControl: 'game panel: 🎲 reroll — and detail panel, world seed: 🎲 on the seed number row',
+    description: 'Reroll the seed number, keeping every node and knob of the world seed exactly as they are.',
     roll: (context, rng) => ({ ...clonedState(context.store.snapshot()), seed: rollInt(rng, 1, 999_999) }),
   },
   {
     action: 'randomize_world_seed',
-    humanControl: 'game panel: ✨ new world — and detail panel, world: 🎲 world',
+    humanControl: 'game panel: ✨ new world — and detail panel, world seed: 🎲 world',
     description: 'Replace the pipeline with a freshly rolled node combination.',
     roll: (context, rng) => randomWorldPipeline(rng, recipeTilesFor(context)),
   },
   {
     action: 'randomize_sliders',
-    humanControl: 'detail panel, world: ~ sliders',
+    humanControl: 'detail panel, world seed: ~ sliders',
     description: 'Nudge every numeric parameter of the current nodes.',
     roll: (context, rng) => permutedSliderParams(context.store.snapshot(), rng),
   },
   {
     action: 'randomize_nodes',
-    humanControl: 'detail panel, world: ⇄ nodes',
+    humanControl: 'detail panel, world seed: ⇄ nodes',
     description: 'Mutate the node combination: swap, add, remove or rewire a node or two.',
     roll: (context, rng) => permutedNodeCombination(context.store.snapshot(), rng, recipeTilesFor(context)),
   },
@@ -276,7 +276,7 @@ for (const entry of ROLLS) {
 
 registerWorldSeedCommand({
   action: 'undo_randomize',
-  humanControl: 'detail panel, world: undo',
+  humanControl: 'detail panel, world seed: undo',
   description: 'Restore the pipeline from before the last roll.',
   params: {},
   example: { action: 'undo_randomize' },
@@ -399,7 +399,7 @@ function duplicateWorldSeed(context: CommandContext, params: CommandParams): Com
     description: original.description,
     state: sanitizePipeline(original.state),
   });
-  return commandSucceeded(`copied world '${original.name}' as '${copy}'`);
+  return commandSucceeded(`copied world seed '${original.name}' as '${copy}'`);
 }
 
 function worldSeedNamed(context: CommandContext, name: string) {

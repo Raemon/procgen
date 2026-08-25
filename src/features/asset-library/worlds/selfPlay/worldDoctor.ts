@@ -23,8 +23,8 @@ export interface Diagnosis {
   ailment: 'starved' | 'flooded';
 }
 
-export function diagnosisOf(world: ScoredWorldSeed): Diagnosis | null {
-  const readings = world.score.readings.filter((each) => each.weight > 0);
+export function diagnosisOf(seed: ScoredWorldSeed): Diagnosis | null {
+  const readings = seed.score.readings.filter((each) => each.weight > 0);
   const weakest = readings.reduce((worst, each) => (each.score < worst.score ? each : worst));
   if (weakest.score >= REMEDIABLE_BELOW) return null;
   const others = readings.filter((each) => each !== weakest);
@@ -37,21 +37,21 @@ export function diagnosisOf(world: ScoredWorldSeed): Diagnosis | null {
 }
 
 export function treatedGenome(
-  world: ScoredWorldSeed,
+  seed: ScoredWorldSeed,
   diagnosis: Diagnosis,
   rng: RandomStream,
 ): WorldSeedGenome {
-  const genome = world.genome;
+  const genome = seed.genome;
   const pipeline = clonedState(genome.pipeline);
   const palette = worldPaletteOfKit(genome.kitSeed, genome.accentKitSeed, genome.paletteSize);
-  if (walkIsBarren(world)) treatBarrenWalk(pipeline, rng, palette);
-  else if (world.measurements.landmarkStepShare === 0) appendCragsOverRelief(pipeline, rng, palette);
+  if (walkIsBarren(seed)) treatBarrenWalk(pipeline, rng, palette);
+  else if (seed.measurements.landmarkStepShare === 0) appendCragsOverRelief(pipeline, rng, palette);
   else applyTreatment(pipeline, diagnosis, rng, palette);
   return { ...genome, pipeline: sanitizePipeline(pipeline) };
 }
 
-function walkIsBarren(world: ScoredWorldSeed): boolean {
-  return world.measurements.encountersPer100Steps === 0;
+function walkIsBarren(seed: ScoredWorldSeed): boolean {
+  return seed.measurements.encountersPer100Steps === 0;
 }
 
 function treatBarrenWalk(
@@ -435,6 +435,6 @@ function walkableTileIdsOf(palette: WorldPalette): number[] {
     .filter((id) => palette.paletteIds.includes(id));
 }
 
-export function worthTreating(world: ScoredWorldSeed): boolean {
-  return diagnosisOf(world) !== null && funOf(world) > 0.25;
+export function worthTreating(seed: ScoredWorldSeed): boolean {
+  return diagnosisOf(seed) !== null && funOf(seed) > 0.25;
 }

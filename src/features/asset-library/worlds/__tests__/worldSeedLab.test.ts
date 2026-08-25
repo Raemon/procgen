@@ -3,7 +3,7 @@ import { PieceAssets } from '@/features/asset-library/pieces/pieceAssets';
 import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import {
-  installRunWorlds,
+  installRunWorldSeeds,
   startGradeRun,
   startRollRun,
   startTrainRun,
@@ -58,8 +58,8 @@ function checkGradingTheWorldYouAreIn(check: CheckReporter): void {
     { name: 'fixture', sampler: samplerOfState(variedStructuredState()), tileAssets: fixtureTileAssets },
     WALK,
   );
-  check('a grade run finishes and reports the world it walked', run.status === 'done' && run.worlds.length === 1);
-  const graded = run.worlds[0]!;
+  check('a grade run finishes and reports the world it walked', run.status === 'done' && run.worldSeeds.length === 1);
+  const graded = run.worldSeeds[0]!;
   check('grading scores one fun number between zero and one', graded.grade.fun > 0 && graded.grade.fun <= 1);
   const reported = new Set(graded.grade.readings.map((reading) => reading.name));
   check('grading reports a reading for every band the grader declares', READING_BANDS.every((band) => reported.has(band.name)));
@@ -70,18 +70,18 @@ function checkGradingTheWorldYouAreIn(check: CheckReporter): void {
 function checkRollingRanksByFun(check: CheckReporter): void {
   const lab = immediateLab();
   const run = startRollRun(lab, { ...WALK, count: 3, seed: 4242 });
-  check('a roll run walks every world it rolled', run.status === 'done' && run.done === 3);
-  check('rolled worlds come back ranked by fun, best first', isDescending(run.worlds.map((world) => world.grade.fun)));
-  check('a roll run scores the batch as a batch, not only world by world', run.batch !== null);
-  check('every rolled world keeps the genome that made it, so it can be installed', run.worlds.every((world) => world.genome !== null));
+  check('a roll run walks every world seed it rolled', run.status === 'done' && run.done === 3);
+  check('rolled world seeds come back ranked by fun, best first', isDescending(run.worldSeeds.map((seed) => seed.grade.fun)));
+  check('a roll run scores the batch as a batch, not only seed by seed', run.batch !== null);
+  check('every rolled world seed keeps the genome that made it, so it can be installed', run.worldSeeds.every((seed) => seed.genome !== null));
   const replay = startRollRun(immediateLab(), { ...WALK, count: 3, seed: 4242 });
-  check('the same seed rolls and grades the same worlds', sameFun(run, replay));
+  check('the same seed rolls and grades the same world seeds', sameFun(run, replay));
 }
 
 function checkStoppingAndTraining(check: CheckReporter): void {
   const run = startTrainRun(immediateLab(), { ...WALK, generations: 2, batch_size: 2, seed: 11, patience: 5 });
   check('a training run records a generation at a time', run.trajectory.length >= 1 && run.status === 'done');
-  check('training keeps the elites it found as ranked worlds', run.worlds.every((world) => world.genome !== null));
+  check('training keeps the elites it found as ranked world seeds', run.worldSeeds.every((seed) => seed.genome !== null));
 
   const queue: (() => void)[] = [];
   const paused = new WorldSeedLab((task) => queue.push(task));
@@ -92,7 +92,7 @@ function checkStoppingAndTraining(check: CheckReporter): void {
   paused.stop(stopping.id);
   queue.shift()!();
   check('a run asked to stop settles as stopped instead of running on', stopping.status === 'stopped' && stopping.finishedAt !== null);
-  check('a stopped run keeps what it had already graded', stopping.worlds.length === 2);
+  check('a stopped run keeps what it had already graded', stopping.worldSeeds.length === 2);
   check('a stopped run asks for no more time', queue.length === 0);
 }
 
@@ -160,29 +160,29 @@ function checkInstallingWinners(check: CheckReporter): void {
     cultures: new CultureAssets([]),
     worldSeeds: new WorldSeedLibrary({ seeds: [], hiddenExamples: [] }),
   };
-  const installed = installRunWorlds(library, run, worldSeedsAskedFor(run, { count: 2 }), new Set());
-  check('installing saves one library world per winner', installed.length === run.worlds.length);
-  check('an installed world brings the tiles its palette needs', library.tileAssets.all().length > 0);
+  const installed = installRunWorldSeeds(library, run, worldSeedsAskedFor(run, { count: 2 }), new Set());
+  check('installing saves one library world seed per winner', installed.length === run.worldSeeds.length);
+  check('an installed world seed brings the tiles its palette needs', library.tileAssets.all().length > 0);
   check('an installed world brings its own culture, so its buildings still stand', library.cultures.all().length === installed.length);
-  check('installed worlds are saved under the names they report', installed.every((each) => library.worldSeeds.byName(each.name) !== undefined));
+  check('installed world seeds are saved under the names they report', installed.every((each) => library.worldSeeds.byName(each.name) !== undefined));
 
-  const clashing = installRunWorlds(library, run, worldSeedsAskedFor(run, { count: 1 }), new Set([installed[0]!.name]));
+  const clashing = installRunWorldSeeds(library, run, worldSeedsAskedFor(run, { count: 1 }), new Set([installed[0]!.name]));
   check('a name already taken is stepped around instead of overwritten', clashing[0]!.name !== installed[0]!.name);
   check('the run remembers everything installed from it', run.installed.length === installed.length + clashing.length);
 
-  const wanted = run.worlds[1]!.name;
+  const wanted = run.worldSeeds[1]!.name;
   const byName = worldSeedsAskedFor(run, { count: 5, names: [wanted] });
-  check('naming a world installs that one instead of the top of the ranking', byName.length === 1 && byName[0]!.name === wanted);
+  check('naming a world seed installs that one instead of the top of the ranking', byName.length === 1 && byName[0]!.name === wanted);
   check('a name the run never graded is skipped rather than guessed at', worldSeedsAskedFor(run, { names: ['no such world'] }).length === 0);
 }
 
 function checkTwinPalettesAreStillToldApart(check: CheckReporter): void {
   const trained = startTrainRun(immediateLab(), { ...WALK, generations: 3, batch_size: 4, seed: 4242, patience: 9 });
-  const names = trained.worlds.map((world) => world.name);
+  const names = trained.worldSeeds.map((seed) => seed.name);
   const palettes = names.map((name) => name.split(' ')[0]!);
   check('this run really does grow more than one elite from a single palette, so the check has something to tell apart', new Set(palettes).size < names.length);
   check('a run names every world it holds exactly once, so a card and an install can point at one of them', names.length > 1 && new Set(names).size === names.length);
-  check('worlds grown from one palette keep that palette at the front of their names', names.every((name, at) => name.startsWith(palettes[at]!)));
+  check('world seeds grown from one palette keep that palette at the front of their names', names.every((name, at) => name.startsWith(palettes[at]!)));
 }
 
 function isDescending(values: readonly number[]): boolean {
@@ -190,6 +190,6 @@ function isDescending(values: readonly number[]): boolean {
 }
 
 function sameFun(one: LabRun, other: LabRun): boolean {
-  const funs = (run: LabRun) => run.worlds.map((world) => world.grade.fun.toFixed(6)).join(' ');
+  const funs = (run: LabRun) => run.worldSeeds.map((seed) => seed.grade.fun.toFixed(6)).join(' ');
   return funs(one) === funs(other) && funs(one) !== '';
 }

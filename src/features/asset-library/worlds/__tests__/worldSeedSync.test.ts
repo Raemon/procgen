@@ -26,12 +26,12 @@ function checkBootSyncReadsTheShapeTheAppWrites(check: CheckReporter): void {
   ]);
   const held = libraryDocsFrom((name) => docs.get(name));
   const added = syncMissingWorldSeeds(held.library, shipped);
-  check('boot sync installs into a world library the app saved as an envelope', added === 1);
+  check('boot sync installs into a world seed library the app saved as an envelope', added === 1);
   check('the installed world seed lands in the envelope the app reads back', held.worldSeedLibrary.seeds.length === 1);
   check('boot sync keeps the hidden examples the app recorded', held.worldSeedLibrary.hiddenExamples.length === 1);
 
   const bare = libraryDocsFrom((name) => (name === 'worldSeeds' ? shipped.worldSeeds : []));
-  check('boot sync still reads a world library saved as a bare array', bare.library.worldSeeds.length === 1);
+  check('boot sync still reads a world seed library saved as a bare array', bare.library.worldSeeds.length === 1);
 }
 
 function checkSyntheticSync(check: CheckReporter): void {

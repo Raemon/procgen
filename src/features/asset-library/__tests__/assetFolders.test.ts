@@ -158,7 +158,7 @@ function checkShippedFolderSync(check: CheckReporter): void {
     placements: { worldSeeds: { islands: 'mine', dunes: 'round-1' } },
   };
   const again = syncMissingAssetFolders(moved, shipped);
-  check('a world the user filed somewhere else stays where they put it', again.stored.placements.worldSeeds?.islands === 'mine');
+  check('a world seed the user filed somewhere else stays where they put it', again.stored.placements.worldSeeds?.islands === 'mine');
   check('syncing a database that already holds everything shipped changes nothing', again.addedFolders === 0 && again.addedPlacements === 0);
 }
 

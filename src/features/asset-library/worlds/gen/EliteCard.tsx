@@ -6,17 +6,17 @@ import type { LabRunWorldSeed } from './labClient';
 import { reshootWorld, useWorldShot } from './useWorldShot';
 
 export function EliteCard({
-  world,
+  seed,
   installedAs,
   onInstall,
   onOpenShot,
 }: {
-  world: LabRunWorldSeed;
+  seed: LabRunWorldSeed;
   installedAs: string | null;
   onInstall: () => void;
   onOpenShot: (url: string) => void;
 }) {
-  const genome = world.genome === null ? null : genomeFromJson(world.genome);
+  const genome = seed.genome === null ? null : genomeFromJson(seed.genome);
   const shot = useWorldShot(genome);
   return (
     <div className="flex flex-col gap-1 rounded border border-panel-edge bg-panel p-2">
@@ -26,7 +26,7 @@ export function EliteCard({
         onClick={() => shot?.url && onOpenShot(shot.url)}
       >
         {shot?.url ? (
-          <img alt={world.name} src={shot.url} className="h-full w-full object-cover" />
+          <img alt={seed.name} src={shot.url} className="h-full w-full object-cover" />
         ) : (
           <span className="absolute inset-0 flex items-center justify-center text-[11px] text-ink-dim">
             {shotWord(shot?.status ?? 'waiting', shot?.failure ?? null)}
@@ -35,12 +35,12 @@ export function EliteCard({
       </button>
       <div className="flex items-baseline justify-between gap-2">
         <span className="truncate text-xs text-ink">
-          {world.rank}. {world.name}
+          {seed.rank}. {seed.name}
         </span>
-        <span className="text-xs text-accent">{world.fun.toFixed(3)}</span>
+        <span className="text-xs text-accent">{seed.fun.toFixed(3)}</span>
       </div>
       <ul className="text-[10px] leading-relaxed text-ink-dim">
-        {world.weakest_readings.slice(0, 3).map((reading) => (
+        {seed.weakest_readings.slice(0, 3).map((reading) => (
           <li key={reading.name}>
             {reading.name} {reading.value.toFixed(2)} ({reading.score.toFixed(2)})
           </li>

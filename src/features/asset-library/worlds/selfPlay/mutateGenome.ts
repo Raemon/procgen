@@ -22,7 +22,7 @@ const GENOME_MUTATIONS: readonly GenomeMutation[] = [
   nudgedKnobs,
   permutedNodes,
   repaintedTiles,
-  rerolledWorldSeed,
+  rerolledSeedNumber,
   swappedAssetKit,
   swappedAccentKit,
   resizedPalette,
@@ -51,7 +51,7 @@ function permutedNodes(genome: WorldSeedGenome, rng: RandomStream): WorldSeedGen
   };
 }
 
-function rerolledWorldSeed(genome: WorldSeedGenome, rng: RandomStream): WorldSeedGenome {
+function rerolledSeedNumber(genome: WorldSeedGenome, rng: RandomStream): WorldSeedGenome {
   return { ...genome, pipeline: { ...genome.pipeline, seed: rollInt(rng, 1, 999_999) } };
 }
 

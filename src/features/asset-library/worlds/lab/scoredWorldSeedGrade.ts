@@ -19,19 +19,19 @@ export function labWorldSeedOf(scored: ScoredWorldSeed): LabWorldSeed {
 
 export function labWorldSeedsToldApart(scored: readonly ScoredWorldSeed[]): LabWorldSeed[] {
   const shared = namesUsedTwice(scored);
-  return scored.map((world) => {
-    const world0 = labWorldSeedOf(world);
-    if (!shared.has(world.paletteName)) return world0;
-    return { ...world0, name: `${world.paletteName} ${genomeTagOf(world)}` };
+  return scored.map((seed) => {
+    const seed0 = labWorldSeedOf(seed);
+    if (!shared.has(seed.paletteName)) return seed0;
+    return { ...seed0, name: `${seed.paletteName} ${genomeTagOf(seed)}` };
   });
 }
 
 function namesUsedTwice(scored: readonly ScoredWorldSeed[]): Set<string> {
   const seen = new Set<string>();
   const twice = new Set<string>();
-  for (const world of scored) {
-    if (seen.has(world.paletteName)) twice.add(world.paletteName);
-    seen.add(world.paletteName);
+  for (const seed of scored) {
+    if (seen.has(seed.paletteName)) twice.add(seed.paletteName);
+    seen.add(seed.paletteName);
   }
   return twice;
 }

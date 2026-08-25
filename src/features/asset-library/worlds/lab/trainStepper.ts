@@ -21,7 +21,7 @@ function closeGeneration(run: LabRun, runner: TrainingRunner): void {
   run.generationsDone = record.generation;
   run.batch = record.batch;
   run.unwalkable += record.worldSeedsWithNowhereToWalk;
-  run.worlds = labWorldSeedsToldApart(runner.archive.rankedByFun());
+  run.worldSeeds = labWorldSeedsToldApart(runner.archive.rankedByFun());
   rankWorldSeeds(run);
   if (runner.hasFinished()) run.total = run.done + 1;
 }

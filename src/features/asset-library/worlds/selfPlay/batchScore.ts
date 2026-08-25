@@ -27,17 +27,17 @@ export function batchScore(batch: readonly ScoredWorldSeed[]): BatchScore {
 
 export function nearestNeighbourDistancesOf(batch: readonly ScoredWorldSeed[]): number[] {
   if (batch.length < 2) return [];
-  return batch.map((world, at) => nearestDistanceTo(world, batch, at));
+  return batch.map((seed, at) => nearestDistanceTo(seed, batch, at));
 }
 
 function nearestDistanceTo(
-  world: ScoredWorldSeed,
+  seed: ScoredWorldSeed,
   batch: readonly ScoredWorldSeed[],
   at: number,
 ): number {
   const others = batch.filter((_other, index) => index !== at);
   return Math.min(
-    ...others.map((other) => fingerprintDistance(world.fingerprint, other.fingerprint)),
+    ...others.map((other) => fingerprintDistance(seed.fingerprint, other.fingerprint)),
   );
 }
 

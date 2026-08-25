@@ -24,10 +24,10 @@ export function deleteRowTip(name: string): TooltipContent {
 
 export function runRowTip(name: string, running: boolean): TooltipContent {
   return running
-    ? { title: `${name} is running`, body: 'This is the world the game panel is showing. Editing it changes what you are looking at.' }
+    ? { title: `${name} is running`, body: 'The game panel is showing this. Editing it changes what you are looking at.' }
     : {
         title: `run ${name}`,
-        body: 'Makes this the world the game panel shows. Selecting a world only opens it for editing; running one is what puts it on screen.',
+        body: 'Puts this in the game panel. Selecting a row only opens it for editing; running one is what puts it on screen.',
       };
 }
 

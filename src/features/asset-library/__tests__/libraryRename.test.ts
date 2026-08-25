@@ -25,7 +25,7 @@ import { TakenItemSpawns } from '@/features/asset-library/items/pickups/takenIte
 import { nextSelectionOnOpen } from '../librarySelection';
 
 export function checkLibraryRename(check: CheckReporter): void {
-  checkRenamingAWorld(check);
+  checkRenamingAWorldSeed(check);
   checkRenamingANodeGroup(check);
   checkEveryAssetKindRenamesThroughItsCommand(check);
   checkOpeningARowFromTheLibrary(check);
@@ -74,22 +74,22 @@ function renamer() {
   };
 }
 
-function checkRenamingAWorld(check: CheckReporter): void {
+function checkRenamingAWorldSeed(check: CheckReporter): void {
   const saved = renamer();
   saved.act('run_world_seed', { name: 'my delve' });
   const renamed = saved.act('rename_world_seed', { name: 'my delve', new_name: 'the deep delve' });
   check(
-    'renaming a saved world files it under the new name and leaves nothing behind under the old one',
+    'renaming a world seed files it under the new name and leaves nothing behind under the old one',
     renamed.ok &&
       saved.worldSeedShelf.byName('the deep delve') !== undefined &&
       saved.worldSeedShelf.byName('my delve') === undefined,
   );
   check(
-    'a world that was running keeps running under the name you gave it',
+    'a world seed that was running keeps running under the name you gave it',
     saved.context.runningWorld.name() === 'the deep delve',
   );
   check(
-    'a renamed world stays in the folder it was filed under',
+    'a renamed world seed stays in the folder it was filed under',
     saved.context.assetFolders.folderOf('worldSeeds', 'the deep delve') === 'f1' &&
       saved.context.assetFolders.folderOf('worldSeeds', 'my delve') === null,
   );
@@ -101,7 +101,7 @@ function checkRenamingAWorld(check: CheckReporter): void {
     new_name: exampleWorldSeeds()[0]!.name,
   });
   check(
-    'a world rename onto a name the library already holds is refused rather than overwriting it',
+    'a world seed rename onto a name the library already holds is refused rather than overwriting it',
     !refused.ok && refused.code === 'name_taken',
   );
 
@@ -109,7 +109,7 @@ function checkRenamingAWorld(check: CheckReporter): void {
   const shipped = exampleWorldSeeds()[0]!.name;
   const tookOver = example.act('rename_world_seed', { name: shipped, new_name: 'my own islands' });
   check(
-    'renaming a world that ships with the editor saves your copy and takes the example off the shelf',
+    'renaming a world seed that ships with the editor saves your copy and takes the example off the shelf',
     tookOver.ok &&
       example.worldSeedShelf.byName('my own islands') !== undefined &&
       example.worldSeedShelf.byName(shipped) === undefined &&
@@ -118,7 +118,7 @@ function checkRenamingAWorld(check: CheckReporter): void {
 
   const missing = renamer().act('rename_world_seed', { name: 'no such world', new_name: 'x' });
   check(
-    'renaming a world the library has never held names the ones it does hold',
+    'renaming a world seed the library has never held names the ones it does hold',
     !missing.ok && missing.code === 'unknown_world_seed',
   );
 }

@@ -79,7 +79,7 @@ export function copyWorldSeedTip(name: string): TooltipContent {
 export function deleteWorldSeedTip(name: string): TooltipContent {
   return {
     title: `delete ${name}`,
-    body: 'Takes this world off the library shelf. Assets it used are left alone.',
+    body: 'Takes this world seed off the library shelf. Assets it used are left alone.',
   };
 }
 
@@ -96,7 +96,7 @@ export function stampGroupTip(name: string, runningWorld: string): TooltipConten
   if (!runningWorld) {
     return {
       title: `stamp ${name}`,
-      body: 'Stamping copies a group into the running world — press ▶ run on a world first.',
+      body: 'Stamping copies a group into the running world — press ▶ run on a world seed first.',
     };
   }
   return {

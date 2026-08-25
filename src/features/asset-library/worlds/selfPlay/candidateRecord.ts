@@ -24,17 +24,17 @@ export const WEAKEST_READINGS_NAMED = 3;
 
 export function walkedCandidateRecord(
   candidate: Candidate,
-  world: ScoredWorldSeed,
+  seed: ScoredWorldSeed,
   admitted: boolean,
 ): CandidateRecord {
   return {
-    name: world.paletteName,
+    name: seed.paletteName,
     origin: candidate.origin,
     parents: candidate.parents,
-    fun: funOf(world),
+    fun: funOf(seed),
     admitted,
     walkable: true,
-    weakest: weakestReadingNamesOf(world),
+    weakest: weakestReadingNamesOf(seed),
   };
 }
 
@@ -50,8 +50,8 @@ export function unwalkableCandidateRecord(candidate: Candidate): CandidateRecord
   };
 }
 
-function weakestReadingNamesOf(world: ScoredWorldSeed): string[] {
-  return [...world.score.readings]
+function weakestReadingNamesOf(seed: ScoredWorldSeed): string[] {
+  return [...seed.score.readings]
     .sort((one, other) => one.score - other.score)
     .slice(0, WEAKEST_READINGS_NAMED)
     .map((reading) => reading.name);

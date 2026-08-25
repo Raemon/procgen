@@ -33,7 +33,7 @@ function checkEveryLibraryFolderCanCopyItsRows(check: CheckReporter): void {
 }
 
 function checkACopyNeverTakesANameAlreadyInUse(check: CheckReporter): void {
-  check('the first copy of a world is named after it', copyNameFor('islands', []) === 'islands copy');
+  check('the first copy of a world seed is named after it', copyNameFor('islands', []) === 'islands copy');
   check(
     'a second copy counts up instead of overwriting the first',
     copyNameFor('islands', ['islands copy']) === 'islands copy 2' &&

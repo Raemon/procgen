@@ -19,34 +19,34 @@ export function useWorldSeedEntries(): LibraryEntry[] {
     (listener) => worldSeedShelf.onChange(listener),
     () => worldSeedShelf.all(),
   );
-  return shelf.map((world) => worldEntry(world, running, perform, followRenamed));
+  return shelf.map((seed) => worldSeedEntry(seed, running, perform, followRenamed));
 }
 
 type Perform = (action: string, params?: CommandParams) => CommandResult;
 
-function worldEntry(
-  world: WorldSeed,
+function worldSeedEntry(
+  seed: WorldSeed,
   running: string,
   perform: Perform,
   followRenamed: FollowRenamedRow,
 ): LibraryEntry {
   return {
-    key: world.name,
-    name: world.name,
-    icon: <WorldSeedThumbnailIcon worldName={world.name} />,
-    tip: worldSeedTip(world.name, world.description, world.name === running),
-    running: world.name === running,
-    rename: (name) => renameWorld(world.name, name, perform, followRenamed),
-    run: () => perform('run_world_seed', { name: world.name }),
-    duplicate: () => perform('duplicate_world_seed', { name: world.name }),
+    key: seed.name,
+    name: seed.name,
+    icon: <WorldSeedThumbnailIcon seedName={seed.name} />,
+    tip: worldSeedTip(seed.name, seed.description, seed.name === running),
+    running: seed.name === running,
+    rename: (name) => renameWorldSeed(seed.name, name, perform, followRenamed),
+    run: () => perform('run_world_seed', { name: seed.name }),
+    duplicate: () => perform('duplicate_world_seed', { name: seed.name }),
     remove: () => {
-      perform('delete_world_seed', { name: world.name });
-      worldSeedThumbnails.forget(world.name);
+      perform('delete_world_seed', { name: seed.name });
+      worldSeedThumbnails.forget(seed.name);
     },
   };
 }
 
-function renameWorld(
+function renameWorldSeed(
   from: string,
   to: string,
   perform: Perform,

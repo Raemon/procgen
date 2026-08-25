@@ -30,7 +30,7 @@ function savedWorldEntry(
   return {
     key: saved.name,
     name: saved.name,
-    icon: <WorldSeedThumbnailIcon worldName={saved.seededBy} />,
+    icon: <WorldSeedThumbnailIcon seedName={saved.seededBy} />,
     tip: savedWorldTip(saved, saved.name === running),
     running: saved.name === running,
     rename: (name) => {

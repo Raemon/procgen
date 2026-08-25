@@ -32,8 +32,8 @@ export function scoredGenome(
   };
 }
 
-export function funOf(world: ScoredWorldSeed): number {
-  return world.score.overall;
+export function funOf(seed: ScoredWorldSeed): number {
+  return seed.score.overall;
 }
 
 export function walkSeedOf(genome: WorldSeedGenome): number {

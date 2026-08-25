@@ -1,8 +1,8 @@
 import type { TooltipContent } from '@/features/app-shell/tooltips/tooltipContent';
 
 export const SEED_TIP: TooltipContent = {
-  title: 'world seed',
-  body: 'The one number every node draws its randomness from. Same seed and same nodes always generate the same world; change it and the shape of everything changes while the rules stay put.',
+  title: 'seed number',
+  body: 'The one number every node in this world seed draws its randomness from. The same number and the same nodes always grow the same world; change it and the shape of everything changes while the rules stay put.',
 };
 
 export const DAYLIGHT_TIP: TooltipContent = {

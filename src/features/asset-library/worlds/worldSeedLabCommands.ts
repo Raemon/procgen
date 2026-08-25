@@ -9,7 +9,7 @@ import {
 import { readText } from '@/features/app-shell/runtime/commands/commandParams';
 import { createCommandCollection } from '@/features/app-shell/runtime/commands/commandCollection';
 import {
-  installRunWorlds,
+  installRunWorldSeeds,
   installableWorldSeedsOf,
   startGradeRun,
   startRollRun,
@@ -24,7 +24,7 @@ import { examplePipelines } from './seeds/examplePipelines';
 const { define: registerCommand, commands: worldSeedLabCommands } = createCommandCollection();
 export { worldSeedLabCommands };
 
-const LAB_CONTROL = 'no button of its own — the world lab runs on the server, under /api/v1/asset-library/world-seeds';
+const LAB_CONTROL = 'no button of its own — the world seed lab runs on the server, under /api/v1/asset-library/world-seeds';
 
 function registerLabCommand(
   spec: Omit<CommandSpec, 'mode' | 'group' | 'humanControl'>,
@@ -50,10 +50,10 @@ registerLabCommand({
   action: 'roll_world_seeds',
   changesWorld: false,
   description:
-    'Roll fresh worlds and grade every one of them, ranked by fun. This is the world generator and the grader in one pass: it neither touches nor replaces the world you are in. install_lab_world_seeds saves the winners into the library.',
+    'Roll fresh world seeds and grade every one of them, ranked by fun. This is the world generator and the grader in one pass: it neither touches nor replaces the world you are in. install_lab_world_seeds saves the winners into the library.',
   params: {
-    count: { kind: 'int', help: 'how many worlds to roll, 1-64', optional: true },
-    seed: { kind: 'int', help: 'seed for the roll; the same seed rolls the same worlds', optional: true },
+    count: { kind: 'int', help: 'how many world seeds to roll, 1-64', optional: true },
+    seed: { kind: 'int', help: 'seed for the roll; the same seed rolls the same world seeds', optional: true },
     step_budget: { kind: 'int', help: 'how many steps each walk may take, 50-5000', optional: true },
     radius_cap: { kind: 'int', help: 'how far from the spawn a walk may wander, 20-400', optional: true },
   },
@@ -65,13 +65,13 @@ registerLabCommand({
   action: 'train_world_seeds',
   changesWorld: false,
   description:
-    'Breed worlds instead of rolling them: each generation rolls, mutates, breeds and treats candidates, grades them, and keeps the fun and distinct ones in an elite archive. Long-running — it reports a generation at a time and stops early once it saturates.',
+    'Breed world seeds instead of rolling them: each generation rolls, mutates, breeds and treats candidates, grades them, and keeps the fun and distinct ones in an elite archive. Long-running — it reports a generation at a time and stops early once it saturates.',
   params: {
     generations: { kind: 'int', help: 'how many generations to live through, 1-200', optional: true },
-    batch_size: { kind: 'int', help: 'how many worlds per generation, 2-32', optional: true },
+    batch_size: { kind: 'int', help: 'how many world seeds per generation, 2-32', optional: true },
     step_budget: { kind: 'int', help: 'how many steps each walk may take, 50-5000', optional: true },
     radius_cap: { kind: 'int', help: 'how far from the spawn a walk may wander, 20-400', optional: true },
-    seed: { kind: 'int', help: 'seed for the run; the same seed breeds the same worlds', optional: true },
+    seed: { kind: 'int', help: 'seed for the run; the same seed breeds the same world seeds', optional: true },
     patience: { kind: 'int', help: 'generations without a gain before the run gives up, 1-100', optional: true },
   },
   example: { action: 'train_world_seeds', generations: 20 },
@@ -82,7 +82,7 @@ registerLabCommand({
   action: 'read_world_seed_lab',
   changesWorld: false,
   description:
-    'Read what the lab is doing: every run with its progress, and for one named run its ranked worlds and their weakest readings. Runs keep working while you read them.',
+    'Read what the lab is doing: every run with its progress, and for one named run its ranked world seeds and their weakest readings. Runs keep working while you read them.',
   params: {
     run_id: { kind: 'text', help: 'the run to read in full; omitted lists them all', optional: true },
   },
@@ -103,18 +103,18 @@ registerLabCommand({
   action: 'install_lab_world_seeds',
   changesWorld: true,
   description:
-    "Save a run's best worlds into the library, each with the tiles, pieces and culture its palette needs, so run_world_seed can run them by name.",
+    "Save a run's best world seeds into the library, each with the tiles, pieces and culture its palette needs, so run_world_seed can run them by name.",
   params: {
     run_id: { kind: 'text', help: 'the run whose winners to save — see read_world_seed_lab' },
-    count: { kind: 'int', help: 'how many of the top worlds to save, 1-20', optional: true },
+    count: { kind: 'int', help: 'how many of the top world seeds to save, 1-20', optional: true },
     names: {
       kind: 'json',
-      help: 'the exact world names from the run to save, up to 20; overrides count when given',
+      help: 'the exact world seed names from the run to save, up to 20; overrides count when given',
       optional: true,
     },
   },
   example: { action: 'install_lab_world_seeds', run_id: 'lab_1', count: 3 },
-  apply: (context, params) => installWorlds(context, params),
+  apply: (context, params) => installWorldSeeds(context, params),
 });
 
 function labOf(context: CommandContext): WorldSeedLab | null {
@@ -123,8 +123,8 @@ function labOf(context: CommandContext): WorldSeedLab | null {
 
 function noLab(): CommandResult {
   return commandFailed(
-    'no_world_lab',
-    'this client has no world lab — the lab runs on the server, so call it from an agent or POST /api/v1/asset-library/world-seeds/grade, /roll or /train',
+    'no_world_seed_lab',
+    'this client has no world seed lab — the lab runs on the server, so call it from an agent or POST /api/v1/asset-library/world-seeds/grade, /roll or /train',
   );
 }
 
@@ -148,7 +148,7 @@ function startRoll(context: CommandContext, params: CommandParams): CommandResul
   if (!lab) return noLab();
   const run = startRollRun(lab, params);
   return commandSucceeded(
-    `${run.id} is rolling and grading ${run.total} worlds from seed ${run.settings.seed}; read_world_seed_lab run_id=${run.id}`,
+    `${run.id} is rolling and grading ${run.total} world seeds from seed ${run.settings.seed}; read_world_seed_lab run_id=${run.id}`,
   );
 }
 
@@ -157,7 +157,7 @@ function startTraining(context: CommandContext, params: CommandParams): CommandR
   if (!lab) return noLab();
   const run = startTrainRun(lab, params);
   return commandSucceeded(
-    `${run.id} is breeding ${run.settings.batch_size} worlds a generation for up to ${run.settings.generations} generations; read_world_seed_lab run_id=${run.id}`,
+    `${run.id} is breeding ${run.settings.batch_size} world seeds a generation for up to ${run.settings.generations} generations; read_world_seed_lab run_id=${run.id}`,
   );
 }
 
@@ -187,7 +187,7 @@ function stopRun(context: CommandContext, params: CommandParams): CommandResult 
   return commandSucceeded(`${run.id} is ${run.status === 'running' ? 'stopping' : run.status}`);
 }
 
-function installWorlds(context: CommandContext, params: CommandParams): CommandResult {
+function installWorldSeeds(context: CommandContext, params: CommandParams): CommandResult {
   const lab = labOf(context);
   if (!lab) return noLab();
   const id = readText(params, 'run_id');
@@ -197,10 +197,10 @@ function installWorlds(context: CommandContext, params: CommandParams): CommandR
   if (installableWorldSeedsOf(run).length === 0) {
     return commandFailed(
       'nothing_to_install',
-      `${run.id} has no rolled world to save — grade runs measure the world you are already in`,
+      `${run.id} has no rolled world seed to save — grade runs measure the world you are already in`,
     );
   }
-  const installed = installRunWorlds(
+  const installed = installRunWorldSeeds(
     {
       tileAssets: context.tileAssets,
       pieces: context.pieces,
@@ -241,10 +241,10 @@ function runReport(run: LabRun): string {
       `batch: mean fun ${run.batch.meanFun.toFixed(3)}, diversity ${run.batch.diversity.toFixed(3)}, near duplicates ${run.batch.nearDuplicatePairs}`,
     );
   }
-  for (const [at, world] of run.worlds.slice(0, 10).entries()) {
-    lines.push(`${at + 1}. ${world.name} — ${gradeSummaryLine(world.grade)}`);
+  for (const [at, seed] of run.worldSeeds.slice(0, 10).entries()) {
+    lines.push(`${at + 1}. ${seed.name} — ${gradeSummaryLine(seed.grade)}`);
   }
-  const best = run.worlds[0];
+  const best = run.worldSeeds[0];
   if (best) {
     lines.push(
       `weakest readings of the leader: ${weakestReadingsOf(best.grade, 5)

@@ -52,7 +52,7 @@ export function startTrainRun(lab: WorldSeedLab, params: CommandParams): LabRun 
 }
 
 export function installableWorldSeedsOf(run: LabRun): LabWorldSeed[] {
-  return run.worlds.filter((world) => world.genome !== null);
+  return run.worldSeeds.filter((seed) => seed.genome !== null);
 }
 
 export function worldSeedsAskedFor(run: LabRun, params: CommandParams): LabWorldSeed[] {
@@ -60,30 +60,30 @@ export function worldSeedsAskedFor(run: LabRun, params: CommandParams): LabWorld
   const names = installNamesOf(params);
   if (names.length === 0) return installable.slice(0, installCountOf(params));
   return names
-    .map((name) => installable.find((world) => world.name === name))
-    .filter((world): world is LabWorldSeed => world !== undefined);
+    .map((name) => installable.find((seed) => seed.name === name))
+    .filter((seed): seed is LabWorldSeed => seed !== undefined);
 }
 
-export function installRunWorlds(
+export function installRunWorldSeeds(
   library: LabInstallTargets,
   run: LabRun,
   wanted: readonly LabWorldSeed[],
   takenNames: ReadonlySet<string>,
 ): InstalledWorldSeed[] {
   const taken = new Set(takenNames);
-  const installed = wanted.map((world) => {
-    const name = freeWorldSeedName(`${world.name} (${run.kind}ed)`, taken);
+  const installed = wanted.map((seed) => {
+    const name = freeWorldSeedName(`${seed.name} (${run.kind}ed)`, taken);
     taken.add(name);
-    return installLabWorldSeed(library, world.genome!, name, describeGrade(world));
+    return installLabWorldSeed(library, seed.genome!, name, describeGrade(seed));
   });
   run.installed.push(...installed);
   return installed;
 }
 
-function describeGrade(world: LabWorldSeed): string {
-  const strongest = [...world.grade.readings]
+function describeGrade(seed: LabWorldSeed): string {
+  const strongest = [...seed.grade.readings]
     .sort((one, other) => other.score - one.score)
     .slice(0, 3)
     .map((reading) => reading.name);
-  return `Fun ${world.grade.fun.toFixed(3)}. Strongest: ${strongest.join(', ')}.`;
+  return `Fun ${seed.grade.fun.toFixed(3)}. Strongest: ${strongest.join(', ')}.`;
 }

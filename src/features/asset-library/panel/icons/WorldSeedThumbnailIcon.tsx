@@ -4,8 +4,8 @@ import { useWorldSeedThumbnail } from './useWorldSeedThumbnail';
 
 const GLYPH_SIZE = 20;
 
-export function WorldSeedThumbnailIcon({ worldName }: { worldName: string }) {
-  const thumbnail = useWorldSeedThumbnail(worldName);
+export function WorldSeedThumbnailIcon({ seedName }: { seedName: string }) {
+  const thumbnail = useWorldSeedThumbnail(seedName);
   return (
     <AssetIconFrame>
       {thumbnail ? (

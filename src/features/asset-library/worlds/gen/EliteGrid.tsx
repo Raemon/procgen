@@ -5,27 +5,27 @@ import { EliteCard } from './EliteCard';
 import type { LabRunWorldSeed } from './labClient';
 
 export function EliteGrid({
-  worlds,
+  worldSeeds,
   installedNames,
   onInstall,
 }: {
-  worlds: LabRunWorldSeed[];
+  worldSeeds: LabRunWorldSeed[];
   installedNames: Map<string, string>;
   onInstall: (name: string) => void;
 }) {
   const [opened, setOpened] = useState<string | null>(null);
-  if (worlds.length === 0) {
+  if (worldSeeds.length === 0) {
     return <p className="text-[11px] text-ink-dim">no elite has been admitted yet</p>;
   }
   return (
     <div className="flex flex-col gap-2">
       <div className="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-2">
-        {worlds.map((world) => (
+        {worldSeeds.map((seed) => (
           <EliteCard
-            key={world.name}
-            world={world}
-            installedAs={installedNames.get(world.name) ?? null}
-            onInstall={() => onInstall(world.name)}
+            key={seed.name}
+            seed={seed}
+            installedAs={installedNames.get(seed.name) ?? null}
+            onInstall={() => onInstall(seed.name)}
             onOpenShot={setOpened}
           />
         ))}

@@ -13,20 +13,20 @@ export const ARCHIVE_CELLS = (OPENNESS_EDGES.length + 1) ** 3 * (GATE_EDGES.leng
 export class EliteArchive {
   private readonly elites = new Map<string, ScoredWorldSeed>();
 
-  admit(world: ScoredWorldSeed): boolean {
-    const cell = cellOf(world.measurements);
+  admit(seed: ScoredWorldSeed): boolean {
+    const cell = cellOf(seed.measurements);
     const sitting = this.elites.get(cell);
-    if (sitting && funOf(sitting) >= funOf(world)) return false;
-    if (this.isAWeakerTwinOfAnElite(world, cell)) return false;
-    this.elites.set(cell, world);
+    if (sitting && funOf(sitting) >= funOf(seed)) return false;
+    if (this.isAWeakerTwinOfAnElite(seed, cell)) return false;
+    this.elites.set(cell, seed);
     return true;
   }
 
-  private isAWeakerTwinOfAnElite(world: ScoredWorldSeed, cell: string): boolean {
+  private isAWeakerTwinOfAnElite(seed: ScoredWorldSeed, cell: string): boolean {
     for (const [sittingCell, sitting] of this.elites) {
       if (sittingCell === cell) continue;
-      if (fingerprintDistance(world.fingerprint, sitting.fingerprint) >= NEAR_DUPLICATE_DISTANCE) continue;
-      if (funOf(sitting) >= funOf(world)) return true;
+      if (fingerprintDistance(seed.fingerprint, sitting.fingerprint) >= NEAR_DUPLICATE_DISTANCE) continue;
+      if (funOf(sitting) >= funOf(seed)) return true;
     }
     return false;
   }

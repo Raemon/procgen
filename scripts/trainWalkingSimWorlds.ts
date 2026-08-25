@@ -75,7 +75,7 @@ function finishedLine(run: LabRunJson): string {
       : run.generations.length < settings.generations
         ? `saturated after ${settings.patience} generations without a gain`
         : 'ran out of generations';
-  const found = `best fun ${(run.best_fun ?? 0).toFixed(3)}, elites ${run.worlds.length}`;
+  const found = `best fun ${(run.best_fun ?? 0).toFixed(3)}, elites ${run.world_seeds.length}`;
   return `\n${why}: ${found}, ${secondsSinceStart()}s`;
 }
 

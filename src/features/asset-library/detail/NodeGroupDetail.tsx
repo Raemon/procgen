@@ -49,8 +49,8 @@ function NodeGroupEditor({ group }: { group: NodeTemplate }) {
       <NodeList />
       <AddNodeMenu onPick={addNodeAndReveal} />
       <PanelHint className="mt-2">
-        A node group is a run of wired nodes kept for reuse, and it edits exactly like a world does —
-        every knob you turn here is saved into the group, not into any world. Stamping copies these
+        A node group is a run of wired nodes kept for reuse, and it edits exactly like a world seed does —
+        every knob you turn here is saved into the group, not into any world seed. Stamping copies these
         nodes into the running world under a folder band of their own; wires that pointed outside the
         group are left open for you to fill.
       </PanelHint>

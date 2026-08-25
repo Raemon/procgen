@@ -15,13 +15,13 @@ export function rollStepper(count: number, seed: number, limits: GradeLimits): L
     total: count,
     step: (run: LabRun) => {
       const genome = rolledGenome(rng);
-      const world = scoredGenome(genome, walkLimits, walkSeedOf(genome));
-      if (!world) {
+      const seed = scoredGenome(genome, walkLimits, walkSeedOf(genome));
+      if (!seed) {
         run.unwalkable++;
         return;
       }
-      scored.push(world);
-      run.worlds = labWorldSeedsToldApart(scored);
+      scored.push(seed);
+      run.worldSeeds = labWorldSeedsToldApart(scored);
       rankWorldSeeds(run);
     },
     finish: (run: LabRun) => {

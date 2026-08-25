@@ -89,10 +89,10 @@ export function GenerationLab() {
         </section>
         <section className="rounded border border-panel-edge bg-panel p-2">
           <h2 className="mb-2 text-[11px] text-ink-dim">
-            elite archive, ranked by fun ({run?.worlds.length ?? 0} worlds)
+            elite archive, ranked by fun ({run?.world_seeds.length ?? 0} world seeds)
           </h2>
           <EliteGrid
-            worlds={run?.worlds ?? []}
+            worldSeeds={run?.world_seeds ?? []}
             installedNames={installedNames}
             onInstall={(name) => void install(name)}
           />

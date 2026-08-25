@@ -5,10 +5,10 @@ import { useRunningWorldSeed } from '../useRunningWorld';
 
 const LONG_ENOUGH_FOR_THE_VIEW_TO_CATCH_UP_MS = 900;
 
-export function useWorldSeedThumbnail(worldName: string): string | null {
+export function useWorldSeedThumbnail(seedName: string): string | null {
   return useSyncExternalStore(
     (listener) => worldSeedThumbnails.onChange(listener),
-    () => worldSeedThumbnails.of(worldName),
+    () => worldSeedThumbnails.of(seedName),
   );
 }
 

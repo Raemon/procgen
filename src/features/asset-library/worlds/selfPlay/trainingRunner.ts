@@ -95,9 +95,9 @@ export class TrainingRunner {
     if (!generation || !candidate) {
       throw new Error('scoring a candidate needs a generation begun and a candidate still waiting');
     }
-    const world = scoredGenome(candidate.genome, this.limits, walkSeedOf(candidate.genome));
-    const record = world
-      ? this.keptOrRejected(candidate, world, generation)
+    const scored = scoredGenome(candidate.genome, this.limits, walkSeedOf(candidate.genome));
+    const record = scored
+      ? this.keptOrRejected(candidate, scored, generation)
       : unwalkableCandidateRecord(candidate);
     generation.candidates.push(record);
     return record;
@@ -138,14 +138,14 @@ export class TrainingRunner {
 
   private keptOrRejected(
     candidate: Candidate,
-    world: ScoredWorldSeed,
+    scored: ScoredWorldSeed,
     generation: GenerationRecord,
   ): CandidateRecord {
-    const admitted = this.archive.admit(world);
+    const admitted = this.archive.admit(scored);
     if (admitted) generation.admissions++;
-    this.admitToClinic(world);
-    this.walked.push(world);
-    return walkedCandidateRecord(candidate, world, admitted);
+    this.admitToClinic(scored);
+    this.walked.push(scored);
+    return walkedCandidateRecord(candidate, scored, admitted);
   }
 
   private nextCandidate(): Candidate {
@@ -191,9 +191,9 @@ export class TrainingRunner {
     };
   }
 
-  private admitToClinic(world: ScoredWorldSeed): void {
-    if (!worthTreating(world)) return;
-    this.clinic.push(world);
+  private admitToClinic(scored: ScoredWorldSeed): void {
+    if (!worthTreating(scored)) return;
+    this.clinic.push(scored);
     this.clinic.sort((one, other) => funOf(other) - funOf(one));
     if (this.clinic.length > CLINIC_BEDS) this.clinic.length = CLINIC_BEDS;
   }

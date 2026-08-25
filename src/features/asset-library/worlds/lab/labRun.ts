@@ -28,7 +28,7 @@ export interface LabRun {
   done: number;
   total: number;
   generationsDone: number;
-  worlds: LabWorldSeed[];
+  worldSeeds: LabWorldSeed[];
   batch: BatchScore | null;
   trajectory: GenerationRecord[];
   installed: InstalledWorldSeed[];
@@ -60,7 +60,7 @@ export function newLabRun(
     done: 0,
     total,
     generationsDone: 0,
-    worlds: [],
+    worldSeeds: [],
     batch: null,
     trajectory: [],
     installed: [],
@@ -71,12 +71,12 @@ export function newLabRun(
 }
 
 export function rankWorldSeeds(run: LabRun): void {
-  run.worlds.sort((one, other) => other.grade.fun - one.grade.fun);
+  run.worldSeeds.sort((one, other) => other.grade.fun - one.grade.fun);
 }
 
 export function runSummaryLine(run: LabRun): string {
   const progress = `${run.done}/${run.total}`;
-  const best = run.worlds[0];
+  const best = run.worldSeeds[0];
   const found = best ? `best ${best.name} at fun ${best.grade.fun.toFixed(3)}` : 'nothing walkable yet';
   return `${run.id} (${run.kind}) ${run.status}, ${progress} done, ${found}`;
 }

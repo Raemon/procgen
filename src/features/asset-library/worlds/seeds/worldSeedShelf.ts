@@ -3,19 +3,19 @@ import type { WorldSeed } from './worldSeed';
 import type { WorldSeedLibrary } from './worldSeedLibrary';
 
 export class WorldSeedShelf {
-  private everyWorld: WorldSeed[] | null = null;
+  private everyWorldSeed: WorldSeed[] | null = null;
 
   constructor(private readonly seeds: WorldSeedLibrary) {
-    seeds.onChange(() => (this.everyWorld = null));
+    seeds.onChange(() => (this.everyWorldSeed = null));
   }
 
   all(): WorldSeed[] {
-    this.everyWorld ??= [...this.seeds.savedWorldSeeds(), ...this.examplesStillOnTheShelf()].sort(byName);
-    return this.everyWorld;
+    this.everyWorldSeed ??= [...this.seeds.savedWorldSeeds(), ...this.examplesStillOnTheShelf()].sort(byName);
+    return this.everyWorldSeed;
   }
 
   byName(name: string): WorldSeed | undefined {
-    return this.all().find((world) => world.name === name);
+    return this.all().find((seed) => seed.name === name);
   }
 
   onChange(listener: () => void): () => void {

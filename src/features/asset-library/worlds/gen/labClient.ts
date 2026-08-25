@@ -16,8 +16,8 @@ export interface LabRunSummary {
   candidates_done: number;
   elites: number;
   coverage: number;
-  worlds_graded: number;
-  worlds_with_nowhere_to_walk: number;
+  world_seeds_graded: number;
+  world_seeds_with_nowhere_to_walk: number;
   best_fun: number | null;
   error: string | null;
 }
@@ -34,7 +34,7 @@ export interface LabRunWorldSeed {
 
 export interface LabRunDetail extends LabRunSummary {
   batch: BatchScore | null;
-  worlds: LabRunWorldSeed[];
+  world_seeds: LabRunWorldSeed[];
   generations: GenerationRecord[];
   installed: InstalledWorldSeed[];
 }

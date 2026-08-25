@@ -23,7 +23,7 @@ export function bootstrapPersistenceTests(): void {
       globalThis.fetch = originalFetch;
     }
   });
-  test('the world library is accepted as the envelope the browser writes and as the array the data file ships', () => {
+  test('the world seed library is accepted as the envelope the browser writes and as the array the data file ships', () => {
     assert.ok(persistedDocumentIsValid('worldSeeds', { presets: [], hiddenExamples: [] }));
     assert.ok(persistedDocumentIsValid('worldSeeds', []));
     assert.ok(persistedDocumentIsValid('templates', { templates: [], hiddenBuiltIns: [] }));
