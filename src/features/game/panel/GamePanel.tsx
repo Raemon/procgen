@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/features/app-shell/controls/Button';
+import { classes } from '@/features/app-shell/controls/classes';
 import { Select } from '@/features/app-shell/controls/Select';
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
 import { WorldIcon } from '@/features/app-shell/icons/panelIcons';
@@ -8,7 +9,7 @@ import { GAME_VIEW_TIP, RANDOMIZE_WORLD_TIP, REROLL_SEED_TIP, VIEW_MODE_TIPS } f
 import { RunningWorldName } from './RunningWorldName';
 import { GameStage } from './GameStage';
 import { GameToolbar } from './GameToolbar';
-import { isGodView, isViewMode, VIEW_MODES, type ViewMode } from './viewMode';
+import { isFullscreenView, isGodView, isViewMode, VIEW_MODES, type ViewMode } from './viewMode';
 import { lastUsedViewMode, rememberViewMode } from './viewModePreference';
 
 export function GamePanel() {
@@ -26,7 +27,12 @@ export function GamePanel() {
     [cameraFocus],
   );
   return (
-    <div className="flex min-w-0 flex-col">
+    <div
+      className={classes(
+        'flex min-w-0 flex-col',
+        isFullscreenView(mode) && 'fixed inset-0 z-40 bg-bg',
+      )}
+    >
       <div className="flex items-center gap-1.5 px-3 py-2">
         <span className="text-ink-dim" {...tooltipHandlers(GAME_VIEW_TIP)}>
           <WorldIcon />

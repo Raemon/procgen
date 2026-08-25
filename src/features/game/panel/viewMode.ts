@@ -16,6 +16,10 @@ export function isCharacterControlled(mode: ViewMode): boolean {
   return mode === 'character' || mode === 'agent-character';
 }
 
+export function isFullscreenView(mode: ViewMode): boolean {
+  return mode === 'features';
+}
+
 export function isGodView(mode: ViewMode): boolean {
   return mode === '3d-god' || mode === 'agent-god';
 }
