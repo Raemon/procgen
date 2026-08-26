@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/features/app-shell/controls/Button';
-import { Select } from '@/features/app-shell/controls/Select';
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
 import { WorldIcon } from '@/features/app-shell/icons/panelIcons';
 import { tooltipHandlers } from '@/features/app-shell/tooltips/tooltipHandlers';
-import { GAME_VIEW_TIP, RANDOMIZE_WORLD_TIP, REROLL_SEED_TIP, VIEW_MODE_TIPS } from './help/gameTips';
+import { GAME_VIEW_TIP, RANDOMIZE_WORLD_TIP, REROLL_SEED_TIP } from './help/gameTips';
 import { RunningWorldName } from './RunningWorldName';
 import { GameStage } from './GameStage';
 import { GameToolbar } from './GameToolbar';
-import { isGodView, isViewMode, VIEW_MODES, type ViewMode } from './viewMode';
+import { ViewModePicker } from './ViewModePicker';
+import { isGodView, type ViewMode } from './viewMode';
 import { lastUsedViewMode, rememberViewMode } from './viewModePreference';
 
 export function GamePanel() {
@@ -46,13 +46,7 @@ export function GamePanel() {
         >
           ✨ new world
         </Button>
-        <Select
-          options={VIEW_MODES.map((entry) => ({ value: entry.id, text: entry.label }))}
-          value={mode}
-          onChange={(value) => isViewMode(value) && chooseMode(value)}
-          tip={VIEW_MODE_TIPS[mode]}
-          fullWidth={false}
-        />
+        <ViewModePicker mode={mode} onChoose={chooseMode} />
         <GameToolbar mode={mode} />
       </div>
       <GameStage mode={mode} />
