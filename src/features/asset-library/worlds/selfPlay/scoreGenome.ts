@@ -5,10 +5,10 @@ import type { WalkingSimScore } from '../walkingSim/walkingSimFunScore';
 import type { WalkingSimMeasurements } from '../walkingSim/walkingSimMeasurements';
 import { worldOfGenome } from './genomeWorld';
 import { fingerprintOf, type WorldFingerprint } from './worldFingerprint';
-import { genomeAsJson, type WorldGenome } from './worldGenome';
+import { genomeAsJson, type WorldSeedGenome } from './worldSeedGenome';
 
-export interface ScoredWorld {
-  genome: WorldGenome;
+export interface ScoredWorldSeed {
+  genome: WorldSeedGenome;
   paletteName: string;
   measurements: WalkingSimMeasurements;
   score: WalkingSimScore;
@@ -16,10 +16,10 @@ export interface ScoredWorld {
 }
 
 export function scoredGenome(
-  genome: WorldGenome,
+  genome: WorldSeedGenome,
   limits: TouristLimits,
   walkSeed: number,
-): ScoredWorld | null {
+): ScoredWorldSeed | null {
   const world = worldOfGenome(genome);
   const walked = measureWalkingSimFun(world.sampler, world.tileAssets, limits, walkSeed);
   if (!walked) return null;
@@ -32,10 +32,10 @@ export function scoredGenome(
   };
 }
 
-export function funOf(world: ScoredWorld): number {
-  return world.score.overall;
+export function funOf(seed: ScoredWorldSeed): number {
+  return seed.score.overall;
 }
 
-export function walkSeedOf(genome: WorldGenome): number {
+export function walkSeedOf(genome: WorldSeedGenome): number {
   return hashString(genomeAsJson(genome));
 }

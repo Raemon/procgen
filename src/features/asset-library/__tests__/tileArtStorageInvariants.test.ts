@@ -90,7 +90,7 @@ function worldSavingOnlyTiles(): ServerWorld {
     all: () => [],
     snapshot: () => null,
     savedTemplates: () => [],
-    stored: () => ({ presets: [], hiddenExamples: [] }),
+    stored: () => ({ seeds: [], hiddenExamples: [] }),
   };
   return {
     ...nothing,
@@ -101,7 +101,8 @@ function worldSavingOnlyTiles(): ServerWorld {
     creatures: nothing,
     items: nothing,
     templates: nothing,
-    worldPresets: nothing,
+    worldSeeds: nothing,
+    savedWorlds: { stored: () => ({ worlds: [] }) },
     assetFolders: nothing,
   } as unknown as ServerWorld;
 }

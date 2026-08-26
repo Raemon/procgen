@@ -1,5 +1,13 @@
-import type { PersistedDocumentName } from '@/features/app-shell/persistence/persistedDocuments';
-import type { UnparsedDocument } from '@/features/app-shell/persistence/persistedDocumentContents';
+import {
+  DEFAULTED_DOCUMENT_NAMES,
+  type DefaultedDocumentName,
+  type PersistedDocumentName,
+} from '@/features/app-shell/persistence/persistedDocuments';
+import { parseDefaultedDocument } from '@/features/app-shell/persistence/parsePersistedDocument';
+import {
+  unparsedDocument,
+  type UnparsedDocument,
+} from '@/features/app-shell/persistence/persistedDocumentContents';
 import {
   type ApiErrorBody,
   type ApiErrorCode,
@@ -23,9 +31,20 @@ export function persistedDocumentRoute(name: PersistedDocumentName): PersistedDo
 
 function readDocument<Name extends PersistedDocumentName>(name: Name): Response {
   const { docs } = processServices();
-  const data = docs.read(name);
+  const data = docs.read(name) ?? emptyDocument(name);
   if (data === null) return apiError(404, 'not_found', `${name} has not been seeded`);
   return documentResponse(data, docs.revision(name));
+}
+
+function emptyDocument<Name extends PersistedDocumentName>(
+  name: Name,
+): UnparsedDocument<Name> | null {
+  if (!isDefaultedDocument(name)) return null;
+  return unparsedDocument(parseDefaultedDocument(name, null));
+}
+
+function isDefaultedDocument(name: PersistedDocumentName): name is DefaultedDocumentName {
+  return (DEFAULTED_DOCUMENT_NAMES as readonly string[]).includes(name);
 }
 
 async function writeDocument<Name extends PersistedDocumentName>(

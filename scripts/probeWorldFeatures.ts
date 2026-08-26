@@ -5,7 +5,7 @@ import type { Feature } from '@/features/asset-library/worlds/features/feature';
 import { featuresInRect } from '@/features/asset-library/worlds/features/featuresInRect';
 import { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
 import { sanitizePipeline } from '@/features/asset-library/worlds/pipeline/sanitizePipeline';
-import { examplePipelines, type ExamplePipeline } from '@/features/asset-library/worlds/presets/examplePipelines';
+import { examplePipelines, type ExamplePipeline } from '@/features/asset-library/worlds/seeds/examplePipelines';
 import type { WorldRect } from '@/features/asset-library/worlds/values/pointsInRect';
 
 const HALF_SPAN = 128;
@@ -17,19 +17,19 @@ const SURVEY_RECT: WorldRect = {
 };
 const ROWS_SHOWN = 10;
 
-for (const preset of examplePipelines()) reportPreset(preset);
+for (const seed of examplePipelines()) reportWorldSeed(seed);
 
-function reportPreset(preset: ExamplePipeline): void {
-  const features = featuresOfPreset(preset);
-  console.log(`\n== ${preset.name}: ${features.length} features in the ${HALF_SPAN * 2}-tile survey ==`);
+function reportWorldSeed(seed: ExamplePipeline): void {
+  const features = featuresOfWorldSeed(seed);
+  console.log(`\n== ${seed.name}: ${features.length} features in the ${HALF_SPAN * 2}-tile survey ==`);
   console.log(headerRow());
   for (const feature of features.slice(0, ROWS_SHOWN)) console.log(rowOf(feature));
   if (features.length > ROWS_SHOWN) console.log(`  … ${features.length - ROWS_SHOWN} more`);
   reportNodeCounts(features);
 }
 
-function featuresOfPreset(preset: ExamplePipeline): Feature[] {
-  const store = new PipelineStore(sanitizePipeline(preset.state));
+function featuresOfWorldSeed(seed: ExamplePipeline): Feature[] {
+  const store = new PipelineStore(sanitizePipeline(seed.state));
   return featuresInRect(store, new PipelineEvaluator(store), SURVEY_RECT);
 }
 

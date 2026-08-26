@@ -1,6 +1,6 @@
 import '@/features/asset-library/worlds/nodes';
 import { climbGateFrom, standableProbeFrom } from '@/features/game/climbing';
-import type { WorldLab } from '@/features/asset-library/worlds/lab/worldLab';
+import type { WorldSeedLab } from '@/features/asset-library/worlds/lab/worldSeedLab';
 import { AssetFolders } from '@/features/asset-library/folders/assetFolders';
 import { CreatureAssets } from '@/features/asset-library/creatures/creatureAssets';
 import { creaturesAsStoredJson } from '@/features/asset-library/creatures/creatureStorage';
@@ -12,7 +12,8 @@ import { CultureAssets } from '@/features/asset-library/cultures/cultureAssets';
 import { PieceAssets } from '@/features/asset-library/pieces/pieceAssets';
 import { PipelineEvaluator } from '@/features/asset-library/worlds/eval/evaluator';
 import { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
-import { WorldPresetLibrary } from '@/features/asset-library/worlds/presets/worldPresetLibrary';
+import { WorldSeedLibrary } from '@/features/asset-library/worlds/seeds/worldSeedLibrary';
+import { SavedWorldLibrary } from '@/features/asset-library/worlds/saved/savedWorldLibrary';
 import { RandomizeHistory } from '@/features/asset-library/worlds/randomize/randomizeHistory';
 import { TemplateLibrary } from '@/features/asset-library/node-groups/templateLibrary';
 import { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
@@ -37,8 +38,8 @@ import type {
   PersistedDocumentName,
 } from '@/features/app-shell/persistence/persistedDocuments';
 import type { LibraryStamp } from '@/infrastructure/server/persistence/docsRepo';
-import { RunningWorld } from '@/features/asset-library/worlds/presets/runningWorld';
-import { runningWorldNameIn } from '@/features/asset-library/worlds/presets/runningWorldStorage';
+import { RunningWorld } from '@/features/asset-library/worlds/running/runningWorld';
+import { runningWorldIn } from '@/features/asset-library/worlds/running/runningWorldStorage';
 
 const SPAWN_SEARCH_RADIUS = 128;
 
@@ -53,7 +54,8 @@ export interface ServerWorld {
   items: ItemAssets;
   templates: TemplateLibrary;
   assetFolders: AssetFolders;
-  worldPresets: WorldPresetLibrary;
+  worldSeeds: WorldSeedLibrary;
+  savedWorlds: SavedWorldLibrary;
   runningWorld: RunningWorld;
   randomizeHistory: RandomizeHistory;
   takenItems: TakenItemSpawns;
@@ -68,7 +70,7 @@ export interface ServerWorld {
 export interface WorldAccess {
   current(): ServerWorld;
   persistWorld(world: ServerWorld): void;
-  lab: WorldLab;
+  lab: WorldSeedLab;
 }
 
 export interface DocSource {
@@ -88,7 +90,8 @@ export function persistWorld(docs: DocSink, world: ServerWorld): void {
   docs.write('creatures', creaturesAsStoredJson(world.creatures.all()));
   docs.write('items', itemsAsStoredJson(world.items.all()));
   docs.write('templates', world.templates.stored());
-  docs.write('worldPresets', world.worldPresets.stored());
+  docs.write('worldSeeds', world.worldSeeds.stored());
+  docs.write('savedWorlds', world.savedWorlds.stored());
   docs.write('assetFolders', world.assetFolders.stored());
 }
 
@@ -122,8 +125,9 @@ function buildServerWorld(
   const items = new ItemAssets(collection('items'));
   const templates = new TemplateLibrary(defaulted('templates'));
   const assetFolders = new AssetFolders(defaulted('assetFolders'));
-  const worldPresets = new WorldPresetLibrary(defaulted('worldPresets'));
-  const runningWorld = new RunningWorld(runningWorldNameIn(defaulted('uiState')));
+  const worldSeeds = new WorldSeedLibrary(defaulted('worldSeeds'));
+  const savedWorlds = new SavedWorldLibrary(defaulted('savedWorlds'));
+  const runningWorld = new RunningWorld(runningWorldIn(defaulted('uiState')));
   const store = new PipelineStore(defaulted('pipeline'));
   const evaluator = new PipelineEvaluator(store);
   const sampler = new WorldSampler(
@@ -153,7 +157,8 @@ function buildServerWorld(
     items,
     templates,
     assetFolders,
-    worldPresets,
+    worldSeeds,
+    savedWorlds,
     runningWorld,
     randomizeHistory,
     takenItems,

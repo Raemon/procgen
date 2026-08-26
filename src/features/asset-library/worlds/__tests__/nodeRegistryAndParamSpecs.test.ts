@@ -2,7 +2,7 @@ import '../nodes';
 import { allNodeTypes } from '../nodeRegistry';
 import { defaultParams, isKnobParamSpec, outputKindOf } from '../nodeType';
 import { sanitizePipeline } from '../pipeline/sanitizePipeline';
-import { examplePipelines } from '../presets/examplePipelines';
+import { examplePipelines } from '../seeds/examplePipelines';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 
 export function checkNodeRegistryAndParamSpecs(check: CheckReporter): void {

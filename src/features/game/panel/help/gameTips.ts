@@ -1,3 +1,4 @@
+import type { RunningWorldRef } from '@/features/asset-library/worlds/running/runningWorld';
 import type { TooltipContent } from '@/features/app-shell/tooltips/tooltipContent';
 import { PLAYABLE_PACES } from '@/features/asset-library/worlds/randomize/playableRoll';
 import type { ViewMode } from '../viewMode';
@@ -68,15 +69,27 @@ export const LIFE_TIP: TooltipContent = {
   body: 'Runs the creature simulation. Paused, creatures hold their positions; the world itself is unaffected either way.',
 };
 
-export function runningWorldTip(running: string): TooltipContent {
+export const SAVE_WORLD_TIP: TooltipContent = {
+  title: 'save this world',
+  body: 'Keeps the world on screen as a saved world: the seed frozen as it stands, plus where you are, what you have picked up off the ground, and which fixtures and crates you have moved. From then on playing writes itself back to that save.',
+  when: 'You have got somewhere worth coming back to.',
+};
+
+export function runningWorldTip(running: RunningWorldRef | null): TooltipContent {
   if (!running) {
     return {
       title: 'no world running',
-      body: 'Nothing from the worlds folder is on screen. Press ▶ run on a world in the asset library to put it here.',
+      body: 'Nothing is on screen. Press ▶ run on a world seed to grow one, or on a saved world to pick a run back up.',
+    };
+  }
+  if (running.kind === 'saved') {
+    return {
+      title: `running: ${running.name}`,
+      body: 'A saved world — everything you had done in it is applied, and playing on keeps writing back here. Click to open the save in the detail column.',
     };
   }
   return {
-    title: `running: ${running}`,
-    body: 'The world this panel is generating. Click to open it in the detail column, where its nodes are edited.',
+    title: `running: ${running.name}`,
+    body: 'The world seed this panel is growing. Click to open it in the detail column, where its nodes are edited.',
   };
 }

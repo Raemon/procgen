@@ -1,6 +1,6 @@
 import '@/features/asset-library/worlds/nodes';
-import { infiniteLabyrinth } from '@/features/asset-library/worlds/presets/infiniteLabyrinth';
-import { volcanicIslands } from '@/features/asset-library/worlds/presets/volcanicIslands';
+import { infiniteLabyrinth } from '@/features/asset-library/worlds/seeds/infiniteLabyrinth';
+import { volcanicIslands } from '@/features/asset-library/worlds/seeds/volcanicIslands';
 import { buildChunkMeshGroup } from '@/features/game/render/view3d/worldMeshes';
 import { drawLoadLine, drawLoadOf } from './chunkDrawLoad';
 import { worldFromPipelineState, type HeadlessWorld } from './headlessWorld';

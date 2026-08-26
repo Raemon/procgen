@@ -1,6 +1,6 @@
 import { ASSET_KINDS } from '@/features/asset-library/asset';
 
-export const LIBRARY_FOLDERS = ['worlds', ...ASSET_KINDS, 'groups'] as const;
+export const LIBRARY_FOLDERS = ['worldSeeds', 'savedWorlds', ...ASSET_KINDS, 'groups'] as const;
 
 export type LibraryFolder = (typeof LIBRARY_FOLDERS)[number];
 

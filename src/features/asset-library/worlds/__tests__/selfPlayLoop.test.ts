@@ -7,10 +7,10 @@ import { readingBandOf } from '../walkingSim/readingBands';
 import { worldOfGenome } from '../selfPlay/genomeWorld';
 import { mutatedGenome } from '../selfPlay/mutateGenome';
 import { SaturationWatch } from '../selfPlay/saturationWatch';
-import { scoredGenome, type ScoredWorld } from '../selfPlay/scoreGenome';
+import { scoredGenome, type ScoredWorldSeed } from '../selfPlay/scoreGenome';
 import { runTraining, type GenerationRecord } from '../selfPlay/trainingLoop';
 import { fingerprintDistance, fingerprintOf } from '../selfPlay/worldFingerprint';
-import { genomeAsJson, genomeFromJson, rolledGenome } from '../selfPlay/worldGenome';
+import { genomeAsJson, genomeFromJson, rolledGenome } from '../selfPlay/worldSeedGenome';
 import { measureWalkingSimFun } from '../walkingSim/measureWalkingSimFun';
 import { touristLimits } from '../walkingSim/touristWalk';
 import {
@@ -36,7 +36,7 @@ function checkTheWorldDoctor(check: (name: string, condition: boolean) => void):
   if (!patient) throw new Error('doctor fixture world has nowhere to spawn');
   const starving = withReading(patient, 'encounters /100 steps', 0);
   const diagnosis = diagnosisOf(starving);
-  check('a world that is healthy but for one cratered reading gets that reading as its diagnosis', diagnosis !== null && diagnosis.reading === 'encounters /100 steps' && diagnosis.ailment === 'starved');
+  check('a world seed that is healthy but for one cratered reading gets that reading as its diagnosis', diagnosis !== null && diagnosis.reading === 'encounters /100 steps' && diagnosis.ailment === 'starved');
   check('a world weak across the board is beyond one treatment, so the doctor declines it', diagnosisOf(withAllReadingsAt(patient, 0.2)) === null);
 
   const treated = treatedGenome(starving, diagnosis!, mulberry32(9));
@@ -48,7 +48,7 @@ function checkTheWorldDoctor(check: (name: string, condition: boolean) => void):
   check('a gate-starved world with an elevation display gains cliff terraces with pass corridors', !hasElevationDisplay(patient.genome.pipeline) || cured.pipeline.nodes.some((node) => node.type === 'terraceField'));
 }
 
-function withReading(world: ScoredWorld, name: string, value: number): ScoredWorld {
+function withReading(world: ScoredWorldSeed, name: string, value: number): ScoredWorldSeed {
   const band = readingBandOf(name)!;
   const readings = world.score.readings.map((each) =>
     each.name === name
@@ -59,7 +59,7 @@ function withReading(world: ScoredWorld, name: string, value: number): ScoredWor
   return { ...world, measurements, score: { ...world.score, readings } };
 }
 
-function withAllReadingsAt(world: ScoredWorld, score: number): ScoredWorld {
+function withAllReadingsAt(world: ScoredWorldSeed, score: number): ScoredWorldSeed {
   return {
     ...world,
     score: { ...world.score, readings: world.score.readings.map((each) => ({ ...each, score })) },
@@ -105,7 +105,7 @@ function checkWorldsAreToldApart(check: (name: string, condition: boolean) => vo
   check('an open plain and a varied world are told apart by their fingerprints', fingerprintDistance(plain, varied) > 0.2);
 
   const twins = twinBatchOf(1234);
-  check('a batch of one world twice reads as no diversity at all, and names the duplicate pair', twins.diversity === 0 && twins.nearDuplicatePairs === 1);
+  check('a batch of one world seed twice reads as no diversity at all, and names the duplicate pair', twins.diversity === 0 && twins.nearDuplicatePairs === 1);
   check('duplicated worlds drag the batch score below their own fun, so sameness costs something', twins.overall < twins.meanFun);
 }
 
@@ -116,7 +116,7 @@ function checkTrainingClimbsAndStops(check: (name: string, condition: boolean) =
     (record) => trajectory.push(record),
   );
   check('a smoke run walks every generation it was asked for', trajectory.length === 3);
-  check('the archive only ever gets better, since an elite is replaced only by a better world', neverFallsBack(trajectory.map((each) => each.archiveBestFun)));
+  check('the archive only ever gets better, since an elite is replaced only by a better world seed', neverFallsBack(trajectory.map((each) => each.archiveBestFun)));
   check('archive coverage only ever grows, since a filled cell is never emptied', neverFallsBack(trajectory.map((each) => each.coverage)));
   check('a smoke run finds at least one world worth keeping', run.archive.all().length > 0);
   check('a run that stops improving is called saturated rather than left to spin', watchThatSawNoGains().hasSaturated());
@@ -152,7 +152,7 @@ function twinBatchOf(seed: number) {
   const genome = rolledGenome(mulberry32(seed));
   const scored = scoredGenome(genome, SMOKE_LIMITS, SMOKE_WALK_SEED);
   const twins = [scored, scoredGenome(genome, SMOKE_LIMITS, SMOKE_WALK_SEED)].filter(
-    (world): world is ScoredWorld => world !== null,
+    (world): world is ScoredWorldSeed => world !== null,
   );
   return batchScore(twins);
 }

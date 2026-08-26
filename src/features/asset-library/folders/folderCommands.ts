@@ -36,7 +36,7 @@ registerFolderCommand({
     name: { kind: 'text', help: 'what the folder is called' },
     parent_id: { kind: 'text', help: `${FOLDER_ID_HELP}; omit for a folder at the top of the section`, optional: true },
   },
-  example: { action: 'add_asset_folder', section: 'worlds', name: 'Round 1' },
+  example: { action: 'add_asset_folder', section: 'worldSeeds', name: 'Round 1' },
   apply: (context, params) => {
     const section = readSection(params);
     if (!section.ok) return section.failure;
@@ -116,7 +116,7 @@ registerFolderCommand({
     key: { kind: 'text', help: 'the asset key: the name for a world or node group, the id for everything else' },
     folder_id: { kind: 'text', help: `${FOLDER_ID_HELP}; omit to unfile the asset`, optional: true },
   },
-  example: { action: 'file_asset', section: 'worlds', key: '61 morburmere (evolved)', folder_id: 'round-1' },
+  example: { action: 'file_asset', section: 'worldSeeds', key: '61 morburmere (evolved)', folder_id: 'round-1' },
   apply: (context, params) => {
     const section = readSection(params);
     if (!section.ok) return section.failure;

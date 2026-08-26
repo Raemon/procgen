@@ -1,6 +1,6 @@
 import type { CommandParams } from '@/features/app-shell/runtime/commands/command';
 import { performCommand } from '@/features/app-shell/runtime/commands/performCommand';
-import type { WorldLab } from '@/features/asset-library/worlds/lab/worldLab';
+import type { WorldSeedLab } from '@/features/asset-library/worlds/lab/worldSeedLab';
 import { commandFor } from '@/features/app-shell/runtime/commands/commandCatalog';
 import { failureByCode } from '../failures';
 import type { ServerWorld } from './serverWorld';
@@ -25,7 +25,7 @@ export function performVerb(
   world: ServerWorld,
   action: string,
   params: CommandParams,
-  lab: WorldLab | null = null,
+  lab: WorldSeedLab | null = null,
 ): VerbResult {
   const result = performCommand(
     {
@@ -37,7 +37,10 @@ export function performVerb(
       items: world.items,
       templates: world.templates,
       assetFolders: world.assetFolders,
-      worldPresets: world.worldPresets,
+      worldSeeds: world.worldSeeds,
+      savedWorlds: world.savedWorlds,
+      takenItems: world.takenItems,
+      settleTheWorld: (change: () => void) => change(),
       runningWorld: world.runningWorld,
       randomizeHistory: world.randomizeHistory,
       regionSampler: world.sampler,

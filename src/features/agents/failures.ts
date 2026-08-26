@@ -29,7 +29,7 @@ export const FAILURES: readonly FailureSpec[] = [
   {
     code: 'unknown_node',
     meaning: 'No node with that id exists in the pipeline.',
-    recovery: 'GET /api/v1/asset-library/worlds/current lists every node with its id.',
+    recovery: 'GET /api/v1/asset-library/world-seeds/current lists every node with its id.',
   },
   {
     code: 'unknown_node_type',
@@ -82,7 +82,7 @@ export const FAILURES: readonly FailureSpec[] = [
     code: 'name_taken',
     meaning: 'Something in the library already answers to that name.',
     recovery:
-      'Worlds and node groups are named uniquely: GET /api/v1/asset-library/worlds and /api/v1/asset-library/node-groups list the names in use.',
+      'Worlds and node groups are named uniquely: GET /api/v1/asset-library/world-seeds and /api/v1/asset-library/node-groups list the names in use.',
   },
   {
     code: 'bad_request',

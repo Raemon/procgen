@@ -3,7 +3,7 @@ import { allCommands } from '@/features/app-shell/runtime/commands/commandCatalo
 import { newPieceWithId } from '@/features/asset-library/pieces/pieceDef';
 import { paintVoxel } from '@/features/asset-library/pieces/piecePainting';
 import { pieceThumbnailKey } from '@/features/asset-library/panel/icons/PieceIcon';
-import { copyNameFor } from '@/features/asset-library/worlds/presets/copyName';
+import { copyNameFor } from '@/features/asset-library/worlds/seeds/copyName';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 
 const DUPLICATING_ABILITIES = [
@@ -12,7 +12,7 @@ const DUPLICATING_ABILITIES = [
   'duplicate_piece',
   'duplicate_culture',
   'duplicate_creature',
-  'duplicate_preset',
+  'duplicate_world_seed',
   'duplicate_template',
 ];
 
@@ -33,7 +33,7 @@ function checkEveryLibraryFolderCanCopyItsRows(check: CheckReporter): void {
 }
 
 function checkACopyNeverTakesANameAlreadyInUse(check: CheckReporter): void {
-  check('the first copy of a world is named after it', copyNameFor('islands', []) === 'islands copy');
+  check('the first copy of a world seed is named after it', copyNameFor('islands', []) === 'islands copy');
   check(
     'a second copy counts up instead of overwriting the first',
     copyNameFor('islands', ['islands copy']) === 'islands copy 2' &&

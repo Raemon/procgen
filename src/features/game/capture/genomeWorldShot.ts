@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { worldOfGenome, type GenomeWorld } from '@/features/asset-library/worlds/selfPlay/genomeWorld';
-import type { WorldGenome } from '@/features/asset-library/worlds/selfPlay/worldGenome';
+import type { WorldSeedGenome } from '@/features/asset-library/worlds/selfPlay/worldSeedGenome';
 import { spawnWithRoomToWalk } from '@/features/asset-library/worlds/walkingSim/spawnCell';
 import { NO_EXTRA_MARKERS } from '../render/markerSource';
 import { ChunkMeshStreamer } from '../render/view3d/chunkMeshStreamer';
@@ -32,7 +32,7 @@ interface WorldShotStage {
   heightPixels: number;
 }
 
-export async function shootGenomeWorld(genome: WorldGenome, size: ShotSize): Promise<string> {
+export async function shootGenomeWorld(genome: WorldSeedGenome, size: ShotSize): Promise<string> {
   const renderer = shotRenderer(size);
   const stage = stagedGenomeWorld(genome, size);
   try {
@@ -44,7 +44,7 @@ export async function shootGenomeWorld(genome: WorldGenome, size: ShotSize): Pro
   }
 }
 
-function stagedGenomeWorld(genome: WorldGenome, size: ShotSize): WorldShotStage {
+function stagedGenomeWorld(genome: WorldSeedGenome, size: ShotSize): WorldShotStage {
   const world = worldOfGenome(genome);
   const focus = focusCellOf(world);
   const scene = createWorldScene();

@@ -53,7 +53,7 @@ export function checkApiArchitecture(check: (name: string, condition: boolean) =
   check('a registered route publishes the shapes it answers with', outputText(agentCreate) === '201 { agent, urls: object }, 400 { error: string, meaning: string, recovery: string, hint: string }');
   check('a document write publishes its revision header and the document envelope', inputText(documentWrite) === 'If-Match:string:header, body:json:body' && outputText(documentRead).startsWith('200 { data, revision }'));
   check('summaries reach the endpoint signature so a reader knows what an operation is for', agentCreate.signature.summary.startsWith('create an agent'));
-  check('a mutation names the types its answer is serialized from', outputTypeText(agentCreate, 201).includes('AgentSession via agentJson') && outputTypeText(endpointAt(endpoints, 'POST', '/api/v1/asset-library/worlds/roll'), 202).includes('LabRun via runListJson'));
+  check('a mutation names the types its answer is serialized from', outputTypeText(agentCreate, 201).includes('AgentSession via agentJson') && outputTypeText(endpointAt(endpoints, 'POST', '/api/v1/asset-library/world-seeds/roll'), 202).includes('LabRun via runListJson'));
   check('a document write names the envelope it answers with straight from its satisfies clause', outputTypeText(documentWrite, 200) === 'PersistedDocumentBody, UnparsedDocument, DocumentRevision');
   check('an error answer names its body type through the helper that builds it', outputTypeText(documentWrite, 412).includes('ApiErrorBody via apiError'));
 

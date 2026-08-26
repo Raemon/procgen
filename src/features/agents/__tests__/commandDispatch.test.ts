@@ -4,11 +4,13 @@ import { emptyPipeline } from '@/features/asset-library/worlds/pipeline/pipeline
 import { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
 import { PipelineEvaluator } from '@/features/asset-library/worlds/eval/evaluator';
 import { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
-import { WorldLab } from '@/features/asset-library/worlds/lab/worldLab';
+import { WorldSeedLab } from '@/features/asset-library/worlds/lab/worldSeedLab';
 import { RandomizeHistory } from '@/features/asset-library/worlds/randomize/randomizeHistory';
 import { TemplateLibrary } from '@/features/asset-library/node-groups/templateLibrary';
-import { RunningWorld } from '@/features/asset-library/worlds/presets/runningWorld';
-import { WorldPresetLibrary } from '@/features/asset-library/worlds/presets/worldPresetLibrary';
+import { RunningWorld } from '@/features/asset-library/worlds/running/runningWorld';
+import { SavedWorldLibrary } from '@/features/asset-library/worlds/saved/savedWorldLibrary';
+import { TakenItemSpawns } from '@/features/asset-library/items/pickups/takenItemSpawns';
+import { WorldSeedLibrary } from '@/features/asset-library/worlds/seeds/worldSeedLibrary';
 import { AssetFolders } from '@/features/asset-library/folders/assetFolders';
 import { CreatureAssets } from '@/features/asset-library/creatures/creatureAssets';
 import { ItemAssets } from '@/features/asset-library/items/itemAssets';
@@ -47,7 +49,10 @@ function abilityWorld() {
     items: new ItemAssets(),
     templates: new TemplateLibrary({ templates: [], hiddenBuiltIns: [] }),
     assetFolders: new AssetFolders({ folders: [], placements: {} }),
-    worldPresets: new WorldPresetLibrary({ presets: [], hiddenExamples: [] }),
+    worldSeeds: new WorldSeedLibrary({ seeds: [], hiddenExamples: [] }),
+    savedWorlds: new SavedWorldLibrary({ worlds: [] }),
+    takenItems: new TakenItemSpawns(),
+    settleTheWorld: (change: () => void) => change(),
     runningWorld: new RunningWorld(),
     randomizeHistory: new RandomizeHistory(),
     groundItems: NO_GROUND_ITEMS,
@@ -58,9 +63,14 @@ function abilityWorld() {
       packedVoxelColumnAt: () => null,
     },
     worldSampler: sampler,
-    lab: new WorldLab(),
+    lab: new WorldSeedLab(),
     actor: {
       pose: () => pose,
+      snapTo: (x: number, y: number, facing: FacingIndex) => {
+        pose.x = x;
+        pose.y = y;
+        pose.facing = facing;
+      },
       tryStep: (dx: number, dy: number) => ((pose.x += dx), (pose.y += dy), true),
       turn: (turns: number) => (pose.facing = turnedFacing(pose.facing, turns)),
       sightRadiusTiles: () => sight.radius,
@@ -297,21 +307,21 @@ export function checkCommandDispatch(check: CheckReporter): void {
     const after = commands.context.cultures.byId(culture.id)!;
     return bound.ok && removed.ok && piecesBoundToRole(after, 'door').length === 0;
   })());
-  check('presets and templates round-trip through commands', (() => {
-    const saved = act('god', 'save_preset', { name: 'check preset' });
+  check('world seeds and node groups round-trip through commands', (() => {
+    const saved = act('god', 'save_world_seed', { name: 'check seed' });
     const nodeIds = commands.store.nodes().map((node) => node.id);
     const template = act('god', 'save_template', { name: 'check template', node_ids: nodeIds });
     const stamped = act('god', 'stamp_template', { name: 'check template' });
-    const loaded = act('god', 'load_preset', { name: 'check preset' });
-    const unknown = act('god', 'load_preset', { name: 'no such world' });
+    const loaded = act('god', 'load_world_seed', { name: 'check seed' });
+    const unknown = act('god', 'load_world_seed', { name: 'no such world seed' });
     return (
       saved.ok && template.ok && stamped.ok && loaded.ok &&
-      !unknown.ok && unknown.code === 'unknown_preset' && unknown.hint.includes('check preset')
+      !unknown.ok && unknown.code === 'unknown_world_seed' && unknown.hint.includes('check seed')
     );
   })());
-  check('editing a built-in world or node group takes its name over, and deleting yours gives it back', (() => {
+  check('editing a built-in world seed or node group takes its name over, and deleting yours gives it back', (() => {
     const nodeIds = commands.store.nodes().map((node) => node.id);
-    const overExample = act('god', 'save_preset', { name: 'volcanic islands' });
+    const overExample = act('god', 'save_world_seed', { name: 'volcanic islands' });
     const overBuiltIn = act('god', 'save_template', { name: 'tectonic plates', node_ids: nodeIds });
     const edited = commands.context.templates.byName('tectonic plates');
     const dropped = act('god', 'delete_template', { name: 'tectonic plates' });
@@ -322,18 +332,18 @@ export function checkCommandDispatch(check: CheckReporter): void {
       shipped !== undefined && shipped.nodes.length !== nodeIds.length
     );
   })());
-  check('deleting a built-in world takes it off the shelf without making its name unloadable', (() => {
-    const deleted = act('god', 'delete_preset', { name: 'volcanic islands' });
-    const stillLoadable = act('god', 'load_preset', { name: 'volcanic islands' });
+  check('deleting a built-in world seed takes it off the shelf without making its name unloadable', (() => {
+    const deleted = act('god', 'delete_world_seed', { name: 'volcanic islands' });
+    const stillLoadable = act('god', 'load_world_seed', { name: 'volcanic islands' });
     return (
       deleted.ok &&
       stillLoadable.ok &&
-      commands.context.worldPresets.hiddenExamples().includes('volcanic islands')
+      commands.context.worldSeeds.hiddenExamples().includes('volcanic islands')
     );
   })());
-  check('run_world puts a world on screen and names it as the one running', (() => {
-    const ran = act('god', 'run_world', { name: 'check preset' });
-    return ran.ok && commands.context.runningWorld.name() === 'check preset';
+  check('run_world_seed puts a world on screen and names it as the one running', (() => {
+    const ran = act('god', 'run_world_seed', { name: 'check seed' });
+    return ran.ok && commands.context.runningWorld.name() === 'check seed';
   })());
   check('a roll can be seeded and undone', (() => {
     const before = JSON.stringify(commands.store.snapshot());
@@ -342,7 +352,7 @@ export function checkCommandDispatch(check: CheckReporter): void {
     return rolled.ok && undone.ok && JSON.stringify(commands.store.snapshot()) === before;
   })());
   check('rerolling the seed regenerates the world without touching a single node', (() => {
-    act('god', 'load_preset', { name: 'check preset' });
+    act('god', 'load_world_seed', { name: 'check seed' });
     const before = commands.store.snapshot();
     const beforeNodes = JSON.stringify(before.nodes);
     const beforeSeed = before.seed;
@@ -360,7 +370,7 @@ export function checkCommandDispatch(check: CheckReporter): void {
   })());
   check('an unseeded roll lands the player with room to walk and can be undone', (() => {
     const before = JSON.stringify(commands.store.snapshot());
-    const rolled = act('god', 'randomize_world');
+    const rolled = act('god', 'randomize_world_seed');
     const undone = act('god', 'undo_randomize');
     return (
       rolled.ok &&

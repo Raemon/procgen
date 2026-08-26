@@ -6,8 +6,9 @@ import { templateLibraryFromStoredJson } from '@/features/asset-library/node-gro
 import { piecesFromStoredJson } from '@/features/asset-library/pieces/pieceStorage';
 import { tilesFromStoredJson } from '@/features/asset-library/tiles/tileStorage';
 import { sanitizePipeline } from '@/features/asset-library/worlds/pipeline/sanitizePipeline';
-import { worldLibraryFromStoredJson } from '@/features/asset-library/worlds/presets/storedWorldLibrary';
-import { worldThumbnailIndexFrom } from '@/features/asset-library/worldThumbnailIndex';
+import { savedWorldsFromStoredJson } from '@/features/asset-library/worlds/saved/storedSavedWorlds';
+import { worldSeedLibraryFromStoredJson } from '@/features/asset-library/worlds/seeds/storedWorldSeedLibrary';
+import { worldSeedThumbnailIndexFrom } from '@/features/asset-library/worldSeedThumbnailIndex';
 import { persistedUiStateFrom } from '../state/persistedUiState';
 import { jsonOf, type ParsedDocument, type UnparsedDocument } from './persistedDocumentContents';
 import type {
@@ -26,13 +27,14 @@ const PARSERS: DocumentParsers = {
   pipeline: sanitizePipeline,
   tiles: tilesFromStoredJson,
   templates: templateLibraryFromStoredJson,
-  worldPresets: worldLibraryFromStoredJson,
+  worldSeeds: worldSeedLibraryFromStoredJson,
+  savedWorlds: savedWorldsFromStoredJson,
   pieces: piecesFromStoredJson,
   cultures: culturesFromStoredJson,
   creatures: creaturesFromStoredJson,
   items: itemsFromStoredJson,
   uiState: persistedUiStateFrom,
-  worldThumbnails: worldThumbnailIndexFrom,
+  worldSeedThumbnails: worldSeedThumbnailIndexFrom,
   assetFolders: assetFoldersFromStoredJson,
 };
 

@@ -12,9 +12,9 @@ import {
 import { EliteArchive } from './eliteArchive';
 import { diagnosisOf, treatedGenome, worthTreating } from './worldDoctor';
 import { mutatedGenome } from './mutateGenome';
-import { funOf, scoredGenome, walkSeedOf, type ScoredWorld } from './scoreGenome';
+import { funOf, scoredGenome, walkSeedOf, type ScoredWorldSeed } from './scoreGenome';
 import { SaturationWatch } from './saturationWatch';
-import { rolledGenome } from './worldGenome';
+import { rolledGenome } from './worldSeedGenome';
 
 export interface TrainingSettings {
   generations: number;
@@ -32,7 +32,7 @@ export interface GenerationRecord {
   coverage: number;
   admissions: number;
   patientsTreated: number;
-  worldsWithNowhereToWalk: number;
+  worldSeedsWithNowhereToWalk: number;
   generationsSinceGain: number;
   candidates: CandidateRecord[];
 }
@@ -49,10 +49,10 @@ export class TrainingRunner {
   private readonly rng: RandomStream;
   private readonly watch: SaturationWatch;
   private readonly limits: TouristLimits;
-  private readonly clinic: ScoredWorld[] = [];
+  private readonly clinic: ScoredWorldSeed[] = [];
   private treatedThisGeneration = 0;
   private waiting: Candidate[] = [];
-  private walked: ScoredWorld[] = [];
+  private walked: ScoredWorldSeed[] = [];
   private inProgress: GenerationRecord | null = null;
 
   constructor(readonly settings: TrainingSettings) {
@@ -95,9 +95,9 @@ export class TrainingRunner {
     if (!generation || !candidate) {
       throw new Error('scoring a candidate needs a generation begun and a candidate still waiting');
     }
-    const world = scoredGenome(candidate.genome, this.limits, walkSeedOf(candidate.genome));
-    const record = world
-      ? this.keptOrRejected(candidate, world, generation)
+    const scored = scoredGenome(candidate.genome, this.limits, walkSeedOf(candidate.genome));
+    const record = scored
+      ? this.keptOrRejected(candidate, scored, generation)
       : unwalkableCandidateRecord(candidate);
     generation.candidates.push(record);
     return record;
@@ -113,7 +113,7 @@ export class TrainingRunner {
       archiveBestFun,
       coverage: this.archive.coverage(),
       patientsTreated: this.treatedThisGeneration,
-      worldsWithNowhereToWalk: opened.candidates.filter((each) => !each.walkable).length,
+      worldSeedsWithNowhereToWalk: opened.candidates.filter((each) => !each.walkable).length,
       generationsSinceGain: this.watch.generationsSinceGain(),
     };
     this.treatedThisGeneration = 0;
@@ -130,7 +130,7 @@ export class TrainingRunner {
       coverage: this.archive.coverage(),
       admissions: 0,
       patientsTreated: this.treatedThisGeneration,
-      worldsWithNowhereToWalk: 0,
+      worldSeedsWithNowhereToWalk: 0,
       generationsSinceGain: this.watch.generationsSinceGain(),
       candidates: [],
     };
@@ -138,14 +138,14 @@ export class TrainingRunner {
 
   private keptOrRejected(
     candidate: Candidate,
-    world: ScoredWorld,
+    scored: ScoredWorldSeed,
     generation: GenerationRecord,
   ): CandidateRecord {
-    const admitted = this.archive.admit(world);
+    const admitted = this.archive.admit(scored);
     if (admitted) generation.admissions++;
-    this.admitToClinic(world);
-    this.walked.push(world);
-    return walkedCandidateRecord(candidate, world, admitted);
+    this.admitToClinic(scored);
+    this.walked.push(scored);
+    return walkedCandidateRecord(candidate, scored, admitted);
   }
 
   private nextCandidate(): Candidate {
@@ -177,7 +177,7 @@ export class TrainingRunner {
     };
   }
 
-  private bredCandidate(elites: readonly ScoredWorld[]): Candidate {
+  private bredCandidate(elites: readonly ScoredWorldSeed[]): Candidate {
     const one = pick(this.rng, elites);
     const other = pick(
       this.rng,
@@ -191,9 +191,9 @@ export class TrainingRunner {
     };
   }
 
-  private admitToClinic(world: ScoredWorld): void {
-    if (!worthTreating(world)) return;
-    this.clinic.push(world);
+  private admitToClinic(scored: ScoredWorldSeed): void {
+    if (!worthTreating(scored)) return;
+    this.clinic.push(scored);
     this.clinic.sort((one, other) => funOf(other) - funOf(one));
     if (this.clinic.length > CLINIC_BEDS) this.clinic.length = CLINIC_BEDS;
   }

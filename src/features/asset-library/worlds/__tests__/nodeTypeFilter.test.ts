@@ -1,6 +1,6 @@
 import '../nodes';
 import { nodeTypesByCategory } from '../nodeRegistry';
-import { firstNodeTypeIn, nodeTypesMatching } from '@/features/asset-library/detail/worlds/nodeTypeSearch';
+import { firstNodeTypeIn, nodeTypesMatching } from '@/features/asset-library/detail/worldSeeds/nodeTypeSearch';
 
 checkAnEmptyFilterShowsTheWholeCatalogue();
 checkFilteringByTitleKeepsOnlyMatches();

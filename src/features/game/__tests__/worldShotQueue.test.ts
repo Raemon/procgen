@@ -1,11 +1,11 @@
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { mulberry32 } from '@/features/asset-library/worlds/random/mulberry32';
-import { rolledGenome, type WorldGenome } from '@/features/asset-library/worlds/selfPlay/worldGenome';
+import { rolledGenome, type WorldSeedGenome } from '@/features/asset-library/worlds/selfPlay/worldSeedGenome';
 import { shotKeyOf, WorldShotQueue } from '@/features/game/capture/worldShotQueue';
 
 interface StagedShooter {
   queue: WorldShotQueue;
-  shotsAsked: WorldGenome[];
+  shotsAsked: WorldSeedGenome[];
   land(url: string): Promise<void>;
   fail(reason: string): Promise<void>;
 }
@@ -56,7 +56,7 @@ async function checkAFailedShotIsRemembered(check: CheckReporter): Promise<void>
 }
 
 function stagedShooter(): StagedShooter {
-  const shotsAsked: WorldGenome[] = [];
+  const shotsAsked: WorldSeedGenome[] = [];
   const pending: { resolve: (url: string) => void; reject: (error: Error) => void }[] = [];
   const queue = new WorldShotQueue(
     (genome) =>

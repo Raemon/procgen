@@ -3,7 +3,7 @@ import { PipelineEvaluator } from '../eval/evaluator';
 import { PipelineStore } from '../pipeline/pipelineStore';
 import { WorldSampler } from '../worldSampler';
 import { cultureOfPalette, piecesOfPalette } from './paletteAssetSources';
-import type { WorldGenome } from './worldGenome';
+import type { WorldSeedGenome } from './worldSeedGenome';
 import { worldPaletteOfKit, type WorldPalette } from './worldPalette';
 
 export interface GenomeWorld {
@@ -12,7 +12,7 @@ export interface GenomeWorld {
   sampler: WorldSampler;
 }
 
-export function worldOfGenome(genome: WorldGenome): GenomeWorld {
+export function worldOfGenome(genome: WorldSeedGenome): GenomeWorld {
   const palette = worldPaletteOfKit(genome.kitSeed, genome.accentKitSeed, genome.paletteSize);
   const tileAssets = new TileAssets(palette.tiles.map((tile) => ({ ...tile })));
   const store = new PipelineStore(structuredClone(genome.pipeline));

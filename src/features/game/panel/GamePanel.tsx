@@ -3,7 +3,7 @@ import { Button } from '@/features/app-shell/controls/Button';
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
 import { WorldIcon } from '@/features/app-shell/icons/panelIcons';
 import { tooltipHandlers } from '@/features/app-shell/tooltips/tooltipHandlers';
-import { GAME_VIEW_TIP, RANDOMIZE_WORLD_TIP, REROLL_SEED_TIP } from './help/gameTips';
+import { GAME_VIEW_TIP, RANDOMIZE_WORLD_TIP, REROLL_SEED_TIP, SAVE_WORLD_TIP } from './help/gameTips';
 import { RunningWorldName } from './RunningWorldName';
 import { GameStage } from './GameStage';
 import { GameToolbar } from './GameToolbar';
@@ -42,9 +42,16 @@ export function GamePanel() {
         <Button
           className="whitespace-nowrap"
           tip={RANDOMIZE_WORLD_TIP}
-          onClick={() => perform('randomize_world')}
+          onClick={() => perform('randomize_world_seed')}
         >
           ✨ new world
+        </Button>
+        <Button
+          className="whitespace-nowrap"
+          tip={SAVE_WORLD_TIP}
+          onClick={() => perform('save_world')}
+        >
+          💾 save
         </Button>
         <ViewModePicker mode={mode} onChoose={chooseMode} />
         <GameToolbar mode={mode} />

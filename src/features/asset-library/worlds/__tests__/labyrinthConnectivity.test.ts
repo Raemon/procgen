@@ -10,7 +10,7 @@ import { LABYRINTH_CELL_SIZE, labyrinthCellOrigin } from '../labyrinth/labyrinth
 import { labelSeed } from '../random/labelSeed';
 import type { PipelineState } from '../pipeline/pipelineState';
 import { sanitizePipeline } from '../pipeline/sanitizePipeline';
-import { infiniteLabyrinth } from '../presets/infiniteLabyrinth';
+import { infiniteLabyrinth } from '../seeds/infiniteLabyrinth';
 import type { WorldSampler } from '../worldSampler';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { tileBytes, worldFromState } from './pipelineWorldFixtures';

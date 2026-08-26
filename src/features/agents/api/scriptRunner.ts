@@ -1,4 +1,4 @@
-import type { WorldLab } from '@/features/asset-library/worlds/lab/worldLab';
+import type { WorldSeedLab } from '@/features/asset-library/worlds/lab/worldSeedLab';
 import { performVerb, type VerbResult } from './performVerb';
 import { parseScriptForMode, scriptFaultText, type ScriptFault, type ScriptLine } from './scriptSyntax';
 import type { ServerWorld } from './serverWorld';
@@ -18,7 +18,7 @@ export function runScript(
   session: AgentSession,
   world: ServerWorld,
   script: SavedScript,
-  lab: WorldLab | null = null,
+  lab: WorldSeedLab | null = null,
 ): ScriptRun {
   const parsed = parseScriptForMode(session.mode, script.body);
   if (!parsed.ok) {
@@ -36,7 +36,7 @@ function performLines(
   world: ServerWorld,
   script: SavedScript,
   lines: readonly ScriptLine[],
-  lab: WorldLab | null,
+  lab: WorldSeedLab | null,
 ): ScriptRun {
   let actionsRun = 0;
   let changedPipeline = false;
