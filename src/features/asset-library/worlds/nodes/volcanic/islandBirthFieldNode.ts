@@ -4,6 +4,7 @@ import { fieldValue, type ChunkValue } from '../../values/chunkValues';
 import { coneProfileAt } from '../../volcanic/coneProfile';
 import { MAX_CONE_RADIUS, type VolcanoCone } from '../../volcanic/hotspotChains';
 import { coneOfPoint, nearbyVolcanoes } from './nearbyVolcanoes';
+import { CONE_SHAPE_KEYS } from '../../values/pointData';
 
 export const NEVER_LAND = 0;
 
@@ -18,6 +19,7 @@ registerNodeType({
   inputs: {
     volcanoes: {
       kind: 'points',
+      requiresPointAttributes: CONE_SHAPE_KEYS,
       label: 'volcanoes',
       help: 'Volcano points carrying born dates, radii and heights. Only their un-eroded shape matters here.',
     },

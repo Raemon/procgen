@@ -3,7 +3,7 @@ import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { PRESENT } from '../../time/worldTime';
 import { pointsValue, type ChunkValue, type PointsChunk } from '../../values/chunkValues';
-import { BORN } from '../../values/pointData';
+import { BORN, BORN_ATTR } from '../../values/pointData';
 import { worldFieldReader, type WorldFieldReader } from '../../values/worldInputReaders';
 import { landfallCellsOverlapping, type Landfall } from '../../volcanic/landfallLattice';
 import {
@@ -86,6 +86,7 @@ registerNodeType({
     },
   },
   output: 'points',
+  pointAttributes: [BORN_ATTR],
   generateChunk: settlementSpreadChunk,
 });
 

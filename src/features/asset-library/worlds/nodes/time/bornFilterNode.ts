@@ -17,6 +17,7 @@ registerNodeType({
   inputs: {
     source: {
       kind: 'points',
+      requiresPointAttributes: [BORN],
       label: 'source',
       help: 'Points carrying a birth date. Points without one are treated as having always been here.',
     },

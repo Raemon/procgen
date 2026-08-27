@@ -1,7 +1,7 @@
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { pointsValue, type ChunkValue, type PointsChunk } from '../../values/chunkValues';
-import { BORN, CHAIN_ID, DEPOSIT_KIND, HOST_X, HOST_Y, RICHNESS } from '../../values/pointData';
+import { BORN, BORN_ATTR, CHAIN_ID, CHAIN_ID_ATTR, CONE_SHAPE_KEYS, DEPOSIT_KIND, DEPOSIT_KIND_ATTR, HOST_ATTRS, HOST_X, HOST_Y, RICHNESS, RICHNESS_ATTR } from '../../values/pointData';
 import { worldFieldReader, type WorldFieldReader } from '../../values/worldInputReaders';
 import { depositKindAt } from '../../volcanic/depositBands';
 import { SEA_LEVEL } from '../../volcanic/seaLevel';
@@ -24,6 +24,7 @@ registerNodeType({
   inputs: {
     volcanoes: {
       kind: 'points',
+      requiresPointAttributes: CONE_SHAPE_KEYS,
       label: 'volcanoes',
       help: 'Volcano points whose ages and footprints decide which islands may carry minerals.',
     },
@@ -70,6 +71,7 @@ registerNodeType({
     },
   },
   output: 'points',
+  pointAttributes: [DEPOSIT_KIND_ATTR, RICHNESS_ATTR, BORN_ATTR, CHAIN_ID_ATTR, ...HOST_ATTRS],
   generateChunk: mineralDepositsChunk,
 });
 

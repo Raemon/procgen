@@ -1,7 +1,7 @@
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { pointsValue, type ChunkValue, type WorldPoint } from '../../values/chunkValues';
-import { BORN, CHAIN_ID, CONE_HEIGHT, CONE_RADIUS } from '../../values/pointData';
+import { BORN, CHAIN_ID, CONE_HEIGHT, CONE_RADIUS, VOLCANO_ATTRS } from '../../values/pointData';
 import {
   conesOverlapping,
   type HotspotChainSpec,
@@ -75,6 +75,7 @@ registerNodeType({
     },
   },
   output: 'points',
+  pointAttributes: VOLCANO_ATTRS,
   generateChunk: hotspotChainChunk,
 });
 

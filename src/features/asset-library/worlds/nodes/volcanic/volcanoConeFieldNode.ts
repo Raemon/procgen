@@ -10,6 +10,7 @@ import {
 import { MAX_CONE_RADIUS } from '../../volcanic/hotspotChains';
 import { VOLCANIC_ERA_SPAN } from '../../time/worldTime';
 import { coneOfPoint, nearbyVolcanoes } from './nearbyVolcanoes';
+import { CONE_SHAPE_KEYS } from '../../values/pointData';
 
 const BASE_BELOW_SEA = 0.55;
 const YEARS_PER_SHOULDER_STEP = 1_000_000;
@@ -26,6 +27,7 @@ registerNodeType({
   inputs: {
     volcanoes: {
       kind: 'points',
+      requiresPointAttributes: CONE_SHAPE_KEYS,
       label: 'volcanoes',
       help: 'Volcano points carrying born dates, radii and heights, gathered from every chunk a cone could reach into.',
     },

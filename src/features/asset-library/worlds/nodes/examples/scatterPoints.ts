@@ -49,6 +49,7 @@ registerNodeType({
     },
   },
   output: 'points',
+  pointAttributes: [],
   generateChunk: scatterChunk,
 });
 

@@ -2,7 +2,7 @@ import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { PRESENT } from '../../time/worldTime';
 import { pointsValue, type ChunkValue, type PointsChunk, type WorldPoint } from '../../values/chunkValues';
-import { BORN, RICHNESS, SENT_FROM_X, SENT_FROM_Y, pointNumber } from '../../values/pointData';
+import { BORN, BORN_ATTR, RICHNESS, RICHNESS_ATTR, SENT_FROM_ATTRS, SENT_FROM_X, SENT_FROM_Y, pointNumber } from '../../values/pointData';
 import { nearbyPointsOf } from './nearbyPoints';
 
 export const CAMP_TAG = 'camp';
@@ -18,11 +18,13 @@ registerNodeType({
   inputs: {
     deposits: {
       kind: 'points',
+      requiresPointAttributes: [RICHNESS],
       label: 'deposits',
       help: 'Mineral deposits. Each may raise at most one camp.',
     },
     villages: {
       kind: 'points',
+      requiresPointAttributes: [BORN],
       label: 'villages',
       help: 'The settlements that would send miners out. A deposit beyond every village stays untouched.',
     },
@@ -47,6 +49,7 @@ registerNodeType({
     },
   },
   output: 'points',
+  pointAttributes: [BORN_ATTR, RICHNESS_ATTR, ...SENT_FROM_ATTRS],
   generateChunk: miningCampsChunk,
 });
 

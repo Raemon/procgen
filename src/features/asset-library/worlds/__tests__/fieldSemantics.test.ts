@@ -76,3 +76,47 @@ function checkEveryFieldNodeSaysWhatItsNumbersMean(check: CheckReporter): void {
     unannotated.length === 0,
   );
 }
+
+export function checkPointAttributes(check: CheckReporter): void {
+  check(
+    'a points node that never writes a birth date is called out when a time filter reads it',
+    wiringMismatch(instanceOf('scatterPoints', 'a'), inputSpec('bornFilter', 'source')) !== null,
+  );
+  check(
+    'the node that founds villages over time satisfies the same filter',
+    wiringMismatch(instanceOf('settlementSpread', 'a'), inputSpec('bornFilter', 'source')) === null,
+  );
+  check(
+    'scattered points fed to the volcano cone field, which invents a radius for them, are called out',
+    wiringMismatch(instanceOf('scatterPoints', 'a'), inputSpec('volcanoConeField', 'volcanoes')) !== null,
+  );
+  check(
+    'hotspot volcanoes carry everything the cone field reads',
+    wiringMismatch(instanceOf('hotspotChain', 'a'), inputSpec('volcanoConeField', 'volcanoes')) === null,
+  );
+  check(
+    'a custom script, which cannot declare what its points carry, is never called out',
+    wiringMismatch(instanceOf('customScript', 'a'), inputSpec('bornFilter', 'source')) === null,
+  );
+  check(
+    'a missing attribute is a warning, never an invalid wire',
+    isWireValid(
+      { ...emptyPipeline(), nodes: [instanceOf('scatterPoints', 'a'), instanceOf('bornFilter', 'b')] },
+      1,
+      inputSpec('bornFilter', 'source'),
+      'a',
+    ),
+  );
+  const declaredKeys = new Set(
+    allNodeTypes().flatMap((def) => (def.pointAttributes ?? []).map((attr) => attr.key)),
+  );
+  const unknownRequirements = allNodeTypes().flatMap((def) =>
+    Object.values(def.inputs).flatMap((spec) =>
+      (spec.requiresPointAttributes ?? []).filter((key) => !declaredKeys.has(key)),
+    ),
+  );
+  check(
+    'every point attribute an input asks for is one some node actually declares',
+    declaredKeys.size > 0 && unknownRequirements.length === 0,
+  );
+}

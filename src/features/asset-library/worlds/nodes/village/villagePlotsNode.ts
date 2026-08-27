@@ -3,7 +3,7 @@ import { PROGRAM_CATALOG } from '../../assembly/programCatalog';
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { pointsValue, type ChunkValue, type PointsChunk, type WorldPoint } from '../../values/chunkValues';
-import { BORN, pointNumber } from '../../values/pointData';
+import { BORN, BORN_ATTR, FACING_ATTR, PROGRAM_ATTR, pointNumber } from '../../values/pointData';
 import { worldFieldReader } from '../../values/worldInputReaders';
 import { PLOT_STAGGER_LABEL, plotBuiltYear } from './plotBuiltYear';
 import { plotStandsOnGround } from './plotStandsOnGround';
@@ -24,6 +24,7 @@ registerNodeType({
   inputs: {
     centers: {
       kind: 'points',
+      requiresPointAttributes: [BORN],
       label: 'centers',
       help: 'A village centers node. Every center within the layout radius plans its own streets and plots.',
     },
@@ -48,6 +49,7 @@ registerNodeType({
     ...programWeightKnobs(),
   },
   output: 'points',
+  pointAttributes: [PROGRAM_ATTR, FACING_ATTR, BORN_ATTR],
   readsTime: true,
   generateChunk: villagePlotsChunk,
 });

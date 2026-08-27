@@ -32,6 +32,7 @@ registerNodeType({
     },
   },
   output: 'points',
+  pointAttributes: [],
   generateChunk: landmarkChunk,
 });
 

@@ -38,6 +38,7 @@ registerNodeType({
     },
   },
   output: 'points',
+  pointAttributes: [],
   generateChunk: denizenChunk,
 });
 

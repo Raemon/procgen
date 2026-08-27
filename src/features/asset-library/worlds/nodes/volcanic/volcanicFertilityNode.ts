@@ -5,6 +5,7 @@ import { type VolcanoCone } from '../../volcanic/hotspotChains';
 import { SEA_LEVEL } from '../../volcanic/seaLevel';
 import { ashFalloff, soilMaturity } from '../../volcanic/soilMaturity';
 import { coneOfPoint, nearbyVolcanoes } from './nearbyVolcanoes';
+import { CONE_SHAPE_KEYS } from '../../values/pointData';
 
 const ALTITUDE_WEIGHT = 3;
 
@@ -20,6 +21,7 @@ registerNodeType({
   inputs: {
     volcanoes: {
       kind: 'points',
+      requiresPointAttributes: CONE_SHAPE_KEYS,
       label: 'volcanoes',
       help: 'Volcano points whose ash builds the soil. Cones not yet born at the current time drop nothing.',
     },

@@ -14,6 +14,7 @@ import { NodeNotesRows } from './NodeNotesRows';
 import { DROP_INDEX_ATTRIBUTE } from './nodeInsertionIndex';
 import { ErrorNote, NodeError } from './NodeError';
 import { ParamRow } from './ParamRow';
+import { PointAttributesRow } from './PointAttributesRow';
 import { highlightedWireSource, subscribeToWireHighlight } from './wireHighlight';
 import { WiringRow } from './WiringRow';
 
@@ -78,6 +79,7 @@ export function NodeCard({
                   onChange={(value) => perform('set_param', { node_id: node.id, param: name, value })}
                 />
               ))}
+              {def.pointAttributes && <PointAttributesRow attributes={def.pointAttributes} />}
               <DisplaySection node={node} kind={outputKindOf(def, node.params)} />
             </>
           )}

@@ -53,12 +53,20 @@ export const FIELD_SEMANTIC_MEANINGS: Readonly<Record<FieldSemantic, string>> = 
   raw: 'whatever the source put there — no range is promised',
 };
 
+export interface PointAttrSpec {
+  key: string;
+  label: string;
+  help: string;
+  units?: 'years' | 'tiles' | 'unit' | 'id';
+}
+
 export interface InputSpec {
   kind: ValueKind | 'any';
   label: string;
   help: string;
   optional?: boolean;
   expects?: FieldSemantic;
+  requiresPointAttributes?: readonly string[];
 }
 
 export interface ChunkGenCtx {
@@ -95,6 +103,7 @@ export interface NodeTypeDef {
   params: Record<string, ParamSpec>;
   output: ValueKind | ((params: Record<string, ParamValue>) => ValueKind);
   outputSemantic?: FieldSemantic | ((params: Record<string, ParamValue>) => FieldSemantic);
+  pointAttributes?: readonly PointAttrSpec[];
   generateChunk(ctx: ChunkGenCtx): ChunkValue;
 }
 

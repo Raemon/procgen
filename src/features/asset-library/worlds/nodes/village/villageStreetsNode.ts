@@ -10,6 +10,7 @@ import {
   type VillagePlan,
 } from './villageLayout';
 import { villageLayoutKnobsOf, VILLAGE_LAYOUT_PARAMS } from './villageLayoutParams';
+import { BORN } from '../../values/pointData';
 
 registerNodeType({
   type: 'villageStreets',
@@ -22,6 +23,7 @@ registerNodeType({
   inputs: {
     centers: {
       kind: 'points',
+      requiresPointAttributes: [BORN],
       label: 'centers',
       help: 'A village centers node. Every center within the layout radius paves its own streets into this chunk.',
     },

@@ -1,5 +1,11 @@
 import { nodeTypeOf } from '../nodeRegistry';
-import { outputKindOf, outputSemanticOf, type FieldSemantic, type InputSpec } from '../nodeType';
+import {
+  outputKindOf,
+  outputSemanticOf,
+  type FieldSemantic,
+  type InputSpec,
+  type NodeTypeDef,
+} from '../nodeType';
 import { nodeIndexById, type NodeInstance, type PipelineState } from './pipelineState';
 
 export function wiringCandidates(
@@ -38,10 +44,22 @@ const INTERCHANGEABLE_SEMANTICS: readonly FieldSemantic[] = ['unit', 'elevation'
 
 export function wiringMismatch(source: NodeInstance, spec: InputSpec): string | null {
   const def = nodeTypeOf(source.type);
-  if (!def || !spec.expects) return null;
+  if (!def) return null;
+  return semanticMismatch(def, source, spec) ?? undeclaredAttributes(def, source, spec);
+}
+
+function semanticMismatch(def: NodeTypeDef, source: NodeInstance, spec: InputSpec): string | null {
+  if (!spec.expects) return null;
   const produced = outputSemanticOf(def, source.params);
   if (!produced || !semanticsClash(produced, spec.expects)) return null;
   return `${source.label} reads as ${produced}; this input is written for ${spec.expects}`;
+}
+
+function undeclaredAttributes(def: NodeTypeDef, source: NodeInstance, spec: InputSpec): string | null {
+  if (!spec.requiresPointAttributes || !def.pointAttributes) return null;
+  const declared = new Set(def.pointAttributes.map((attr) => attr.key));
+  const missing = spec.requiresPointAttributes.filter((key) => !declared.has(key));
+  return missing.length === 0 ? null : `${source.label} carries no ${missing.join(' or ')}`;
 }
 
 function semanticsClash(produced: FieldSemantic, expects: FieldSemantic): boolean {

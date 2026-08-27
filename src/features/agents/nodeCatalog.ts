@@ -38,6 +38,8 @@ export function nodeTypesJson() {
     knob_note: 'every param value is a number except custom-script select/code params',
     semantic_note:
       'output_semantic and an input\'s expects say what the numbers in a field MEAN — unit, elevation, mask, cost, years, distance or raw. They never make a wire invalid; they only tell you when a field is being read as something it is not.',
+    point_note:
+      'point_attributes lists the named numbers a points node writes into every point it emits, and an input\'s requires_point_attributes lists the ones that input reads. A node listing neither promises nothing either way, so nothing is warned about.',
     types: allNodeTypes().map(nodeTypeJson),
   };
 }
@@ -51,6 +53,7 @@ function nodeTypeJson(def: NodeTypeDef) {
     when_to_use: def.whenToUse,
     output: typeof def.output === 'function' ? 'depends on params' : def.output,
     output_semantic: outputSemanticOf(def, defaultParams(def)) ?? null,
+    point_attributes: def.pointAttributes ?? null,
     params: Object.fromEntries(
       Object.entries(def.params).map(([name, spec]) => [name, paramSpecJson(spec)]),
     ),
@@ -63,6 +66,7 @@ function nodeTypeJson(def: NodeTypeDef) {
           help: spec.help,
           optional: spec.optional ?? false,
           expects: spec.expects ?? null,
+          requires_point_attributes: spec.requiresPointAttributes ?? null,
         },
       ]),
     ),
