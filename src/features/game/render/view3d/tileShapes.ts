@@ -20,6 +20,7 @@ export interface TileShape {
   positionOf: PlacementPosition;
   scaleOf?: PlacementScale;
   occluderBoxOf?: (placement: TilePlacement) => OccluderBox;
+  drawnFromBothSides?: boolean;
 }
 
 export function ceilingShape(): TileShape {
@@ -70,6 +71,7 @@ export function billboardShape(): TileShape {
     geometry: () => sharedCrossedQuadGeometry(),
     positionOf: (p) => [p.x + 0.5, p.elevation + p.height / 2, p.y + 0.5],
     scaleOf: (p) => [p.height, p.height, p.height],
+    drawnFromBothSides: true,
   };
 }
 

@@ -167,7 +167,7 @@ function groupMesh(
   buildDetail: MeshBuildDetail,
 ): THREE.InstancedMesh | null {
   if (group.placements.length === 0) return null;
-  const detail = materialDetailOf(group);
+  const detail = materialDetailOf(group, shape);
   const mesh = instancedTileMesh(
     shape.geometry(group.faces),
     detail ? tileMaterialsAtDetail(detail, buildDetail.sideBudget) : untexturedMaterial(group),
@@ -179,11 +179,16 @@ function groupMesh(
   return mesh;
 }
 
-function materialDetailOf(group: PlacementGroup): TileMaterialDetail | null {
+function materialDetailOf(group: PlacementGroup, shape: TileShape): TileMaterialDetail | null {
   if (group.art) {
     return {
       kind: 'faceArt',
-      surface: { art: group.art, baseColor: group.baseColor, glow: group.glow },
+      surface: {
+        art: group.art,
+        baseColor: group.baseColor,
+        glow: group.glow,
+        drawnFromBothSides: shape.drawnFromBothSides === true,
+      },
     };
   }
   if (group.textureId !== null) {

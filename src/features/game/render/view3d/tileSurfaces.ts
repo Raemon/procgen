@@ -10,6 +10,7 @@ export interface TileSurface {
   art: CubeFaceArt;
   baseColor: string;
   glow: number;
+  drawnFromBothSides: boolean;
 }
 
 type SurfaceMaterials = THREE.Material | THREE.Material[];
@@ -23,7 +24,7 @@ export function tileSurfaceMaterials(
 ): SurfaceMaterials {
   const byVariant = materialsByArt.get(surface.art) ?? new Map<string, SurfaceMaterials>();
   materialsByArt.set(surface.art, byVariant);
-  const key = `${surface.baseColor}|${surface.glow}|${sideBudget}`;
+  const key = `${surface.baseColor}|${surface.glow}|${sideBudget}|${surface.drawnFromBothSides}`;
   const cached = byVariant.get(key);
   if (cached) return cached;
   const materials = builtSurface(surface, sideBudget);
@@ -42,7 +43,12 @@ export function disposeSharedTileSurfaces(): void {
 }
 
 function builtSurface(surface: TileSurface, sideBudget: number): SurfaceMaterials {
-  const materials = cubeFaceMaterials(surface.art, surface.baseColor, sideBudget);
+  const materials = cubeFaceMaterials(
+    surface.art,
+    surface.baseColor,
+    sideBudget,
+    surface.drawnFromBothSides,
+  );
   glowSelfLit(materials, surface.glow, opaqueInk(surface.baseColor));
   for (const single of Array.isArray(materials) ? materials : [materials])
     builtMaterials.add(single);

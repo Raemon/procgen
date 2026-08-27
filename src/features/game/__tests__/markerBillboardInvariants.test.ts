@@ -13,13 +13,22 @@ import { markerAppearance } from '@/features/asset-library/worlds/display/marker
 import type { Marker, WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import { EVERY_FACE } from '../render/view3d/culling/visibleFaceMask';
 import { markerPlacementsForRect } from '../render/view3d/markerPlacements';
-import { billboardShape, standingFixtureShape } from '../render/view3d/tileShapes';
+import {
+  billboardShape,
+  blockShape,
+  ceilingShape,
+  floorShape,
+  markerShape,
+  standingFixtureShape,
+  voxelShape,
+} from '../render/view3d/tileShapes';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 
 const SIDE_MATERIALS = [0, 1, 4, 5];
 
 export function checkMarkerBillboardInvariants(check: CheckReporter): void {
   checkScatteredPropsDrawCrossedQuadsRatherThanACube(check);
+  checkOnlyFlatQuadsAreDrawnFromBothSides(check);
   checkBillboardsKeepTheirSpriteUndistorted(check);
   checkEveryPropTilePaintsAStandingSilhouette(check);
   checkEveryBillboardIsLitFromOneSide(check);
@@ -45,6 +54,19 @@ function checkScatteredPropsDrawCrossedQuadsRatherThanACube(check: CheckReporter
   check(
     'a billboard quad is a unit square, so a placement height scales it exactly',
     extentAlong(geometry, 1) === 1,
+  );
+}
+
+function checkOnlyFlatQuadsAreDrawnFromBothSides(check: CheckReporter): void {
+  check(
+    'a billboard quad is drawn from both sides, so a prop is there from every approach',
+    billboardShape().drawnFromBothSides === true,
+  );
+  check(
+    'shapes that close around themselves are drawn from one side, so see-through art never doubles',
+    [markerShape(), standingFixtureShape(), floorShape(), blockShape(), ceilingShape(), voxelShape()].every(
+      (shape) => shape.drawnFromBothSides !== true,
+    ),
   );
 }
 

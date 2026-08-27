@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { NO_EXTRA_MARKERS } from '@/features/game/render/markerSource';
+import '@/features/game/puzzles/kinds';
+import { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
 import { ChunkMeshStreamer } from '@/features/game/render/view3d/chunkMeshStreamer';
 import {
   LAMPLIT_AMBIENT,
@@ -33,7 +34,7 @@ export class HeadlessWorldView {
       this.chunkGroups,
       world.sampler,
       world.tileAssets,
-      NO_EXTRA_MARKERS,
+      new PuzzleWorld(world.store, () => true),
     );
     this.lights = new WorldLights(this.scene, tileLightsOnlyDeps(world));
     this.applyCharacterSightline();
