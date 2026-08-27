@@ -13,7 +13,6 @@ export const BLOCK_LAYER_HEIGHT = 1;
 
 const MARKER_HEIGHT = 0.7;
 const MARKER_WIDTH = 0.48;
-const BLOCK_SIDE = 0.95;
 
 export interface TileShape {
   geometry(faces: number): THREE.BufferGeometry;
@@ -24,15 +23,15 @@ export interface TileShape {
 }
 
 export function ceilingShape(): TileShape {
-  return cubeShape(1);
+  return cubeShape();
 }
 
 export function voxelShape(): TileShape {
-  return cubeShape(1);
+  return cubeShape();
 }
 
 export function shapedShape(kind: TileShapeKind, facing: number): TileShape {
-  if (shapeFillsCell(kind)) return cubeShape(1);
+  if (shapeFillsCell(kind)) return cubeShape();
   return {
     geometry: (faces) => shapedTileGeometry(kind, facing, faces),
     positionOf: (p) => [p.x + 0.5, p.elevation + BLOCK_LAYER_HEIGHT / 2, p.y + 0.5],
@@ -40,7 +39,7 @@ export function shapedShape(kind: TileShapeKind, facing: number): TileShape {
 }
 
 export function blockShape(): TileShape {
-  return cubeShape(BLOCK_SIDE);
+  return cubeShape();
 }
 
 export function floorShape(): TileShape {
@@ -75,11 +74,11 @@ export function billboardShape(): TileShape {
   };
 }
 
-function cubeShape(side: number): TileShape {
+function cubeShape(): TileShape {
   return {
-    geometry: (faces) => sharedTileBoxGeometry(side, BLOCK_LAYER_HEIGHT, side, faces),
+    geometry: (faces) => sharedTileBoxGeometry(1, BLOCK_LAYER_HEIGHT, 1, faces),
     positionOf: (p) => [p.x + 0.5, p.elevation + BLOCK_LAYER_HEIGHT / 2, p.y + 0.5],
-    occluderBoxOf: (p) => ({ bottom: p.elevation, top: p.elevation + BLOCK_LAYER_HEIGHT, width: side }),
+    occluderBoxOf: (p) => ({ bottom: p.elevation, top: p.elevation + BLOCK_LAYER_HEIGHT, width: 1 }),
   };
 }
 
