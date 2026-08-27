@@ -11,7 +11,7 @@ import './composition/regionPlanNode';
 import './terrain/hypsometricCurveNode';
 import './terrain/blendFieldsNode';
 import './terrain/slopeFieldNode';
-import './coast/coastDistanceNode';
+import './shape/distanceToThresholdNode';
 import './biome/biomeBandsNode';
 import './hydrology/fillDepressionsNode';
 import './hydrology/flowAccumulationNode';

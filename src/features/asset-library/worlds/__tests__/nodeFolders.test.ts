@@ -12,7 +12,7 @@ export function checkNodeFolders(check: CheckReporter): void {
     nodes: [
       { id: 'a', type: 'terrainNoise', folder: 'terrain', params: {}, inputs: {} },
       { id: 'b', type: 'slopeField', folder: 'terrain', params: {}, inputs: { source: 'a' } },
-      { id: 'c', type: 'coastDistance', folder: '', params: {}, inputs: { elevation: 'a' } },
+      { id: 'c', type: 'distanceToThreshold', folder: '', params: {}, inputs: { elevation: 'a' } },
       { id: 'd', type: 'terrainNoise', folder: 'terrain', params: {}, inputs: {} },
     ],
   });

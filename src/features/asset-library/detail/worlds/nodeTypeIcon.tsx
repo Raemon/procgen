@@ -77,7 +77,7 @@ const NODE_TYPE_ICONS: Readonly<Record<string, ReactNode>> = {
     </>
   ),
 
-  coastDistance: (
+  distanceToThreshold: (
     <>
       <path d="M3 5c4 3 4 11 0 14" />
       <path d="M8.5 6c3.5 3 3.5 9 0 12" />

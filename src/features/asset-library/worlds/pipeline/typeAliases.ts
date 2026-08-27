@@ -4,8 +4,8 @@ export interface PipelineAliases {
 }
 
 export const SHIPPED_ALIASES: PipelineAliases = {
-  nodeTypes: {},
-  params: {},
+  nodeTypes: { coastDistance: 'distanceToThreshold' },
+  params: { distanceToThreshold: { seaLevel: 'level' } },
 };
 
 export function currentNodeType(aliases: PipelineAliases, storedType: string): string {

@@ -33,6 +33,27 @@ function loadedWires(state: PipelineState): number {
 export function checkStoredWorldsSurviveLoading(check: CheckReporter): void {
   checkEveryStoredWorldLoadsWhole(check);
   checkAliasesCarryRenamesForward(check);
+  checkShippedAliasesCarryTheCoastRename(check);
+}
+
+function checkShippedAliasesCarryTheCoastRename(check: CheckReporter): void {
+  const loaded = sanitizePipeline({
+    seed: 3,
+    nodes: [
+      { id: 'n1', type: 'terrainNoise', params: {}, inputs: {} },
+      { id: 'n2', type: 'coastDistance', params: { seaLevel: 0.42, range: 24 }, inputs: { elevation: 'n1' } },
+    ],
+  });
+  check(
+    'a world stored as coastDistance loads as distanceToThreshold with its wire intact',
+    loaded.nodes.length === 2 &&
+      loaded.nodes[1]!.type === 'distanceToThreshold' &&
+      loaded.nodes[1]!.inputs.elevation === 'n1',
+  );
+  check(
+    'the sea level it was saved with lands on the level knob it was renamed to',
+    loaded.nodes[1]!.params.level === 0.42 && loaded.nodes[1]!.params.range === 24,
+  );
 }
 
 function checkEveryStoredWorldLoadsWhole(check: CheckReporter): void {

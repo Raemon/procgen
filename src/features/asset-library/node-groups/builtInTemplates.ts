@@ -126,10 +126,10 @@ const BUILT_IN_TEMPLATES = [
     nodes: [
       {
         id: 't1',
-        type: 'coastDistance',
+        type: 'distanceToThreshold',
         label: 'coast distance',
         comment: '0 far offshore, 0.5 on the shoreline, 1 deep inland.',
-        params: { seaLevel: 0.5, range: 32 },
+        params: { level: 0.5, range: 32 },
         inputs: { elevation: null },
         display: { mode: 'hidden' },
       },

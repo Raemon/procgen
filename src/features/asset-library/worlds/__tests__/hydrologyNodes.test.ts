@@ -18,7 +18,7 @@ function hydrologyState(): PipelineState {
     { id: 'terrain', type: 'blendFields', params: { weight: 0.3 }, inputs: { a: 'plates', b: 'detail' } },
     { id: 'filled', type: 'fillDepressions', params: { seaLevel: 0.5, maxFill: 0.2, windowRadius: 96 }, inputs: { elevation: 'terrain' } },
     { id: 'flow', type: 'flowAccumulation', params: { seaLevel: 0.5, catchmentScale: 3000, fillPits: 1, windowRadius: 40 }, inputs: { elevation: 'terrain' } },
-    { id: 'coast', type: 'coastDistance', params: { seaLevel: 0.5, range: 32 }, inputs: { elevation: 'terrain' } },
+    { id: 'coast', type: 'distanceToThreshold', params: { level: 0.5, range: 32 }, inputs: { elevation: 'terrain' } },
     { id: 'eroded', type: 'carveValleys', params: { depth: 0.08, minFlow: 0.4, valleyWidth: 6 }, inputs: { elevation: 'terrain', flow: 'flow' } },
     { id: 'rivers', type: 'riverFromFlow', params: { minFlow: 0.5, maxWidth: 1, seaLevel: 0.5, riverTile: 0 }, inputs: { flow: 'flow', elevation: 'terrain' } },
     { id: 'wideRivers', type: 'riverFromFlow', params: { minFlow: 0.5, maxWidth: 5, seaLevel: 0.5, riverTile: 0 }, inputs: { flow: 'flow', elevation: 'terrain' } },

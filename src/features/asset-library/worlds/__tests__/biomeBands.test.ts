@@ -15,7 +15,7 @@ function biomeState(): PipelineState {
   return stateOfNodes([
     { id: 'terrain', type: 'terrainNoise', params: { scale: 0.02, style: 0, octaves: 5, lacunarity: 2, gain: 0.5 }, inputs: {} },
     { id: 'steep', type: 'slopeField', params: { radius: 3, gain: 40 }, inputs: { source: 'terrain' } },
-    { id: 'shore', type: 'coastDistance', params: { seaLevel: 0.5, range: 32 }, inputs: { elevation: 'terrain' } },
+    { id: 'shore', type: 'distanceToThreshold', params: { level: 0.5, range: 32 }, inputs: { elevation: 'terrain' } },
     { id: 'half', type: 'constantField', params: { value: 1 }, inputs: {} },
     {
       id: 'biome',
