@@ -31,15 +31,16 @@ import {
 } from './pipelineState';
 import { clampTime } from '../time/worldTime';
 import { dropInvalidWires } from './wiringRules';
+import { currentNodeType, SHIPPED_ALIASES, storedParamValue, type PipelineAliases } from './typeAliases';
 
-export function sanitizePipeline(raw: unknown): PipelineState {
+export function sanitizePipeline(raw: unknown, aliases: PipelineAliases = SHIPPED_ALIASES): PipelineState {
   if (typeof raw !== 'object' || raw === null) return emptyPipeline();
   const candidate = raw as { seed?: unknown; daylight?: unknown; time?: unknown; nodes?: unknown };
   const state: PipelineState = {
     seed: sanitizeSeed(candidate.seed),
     daylight: clampDaylight(candidate.daylight),
     time: clampTime(candidate.time),
-    nodes: sanitizeNodes(candidate.nodes),
+    nodes: sanitizeNodes(candidate.nodes, aliases),
   };
   dropInvalidWires(state);
   return state;
@@ -49,12 +50,12 @@ function sanitizeSeed(seed: unknown): number {
   return typeof seed === 'number' && Number.isFinite(seed) ? Math.round(seed) : DEFAULT_SEED;
 }
 
-function sanitizeNodes(rawNodes: unknown): NodeInstance[] {
+function sanitizeNodes(rawNodes: unknown, aliases: PipelineAliases): NodeInstance[] {
   if (!Array.isArray(rawNodes)) return [];
   const nodes: NodeInstance[] = [];
   const usedIds = new Set<string>();
   for (const rawNode of rawNodes) {
-    const node = sanitizeNode(rawNode, usedIds);
+    const node = sanitizeNode(rawNode, usedIds, aliases);
     if (node) {
       usedIds.add(node.id);
       nodes.push(node);
@@ -63,28 +64,37 @@ function sanitizeNodes(rawNodes: unknown): NodeInstance[] {
   return nodes;
 }
 
-function sanitizeNode(rawNode: unknown, usedIds: Set<string>): NodeInstance | null {
+function sanitizeNode(
+  rawNode: unknown,
+  usedIds: Set<string>,
+  aliases: PipelineAliases,
+): NodeInstance | null {
   if (typeof rawNode !== 'object' || rawNode === null) return null;
   const raw = rawNode as Partial<NodeInstance> & { type?: unknown; id?: unknown };
   if (typeof raw.type !== 'string' || typeof raw.id !== 'string' || usedIds.has(raw.id)) return null;
-  const def = nodeTypeOf(raw.type);
+  const def = nodeTypeOf(currentNodeType(aliases, raw.type));
   if (!def) return null;
   const node = createNodeInstance(def, raw.id);
   if (typeof raw.label === 'string' && raw.label.length > 0) node.label = raw.label;
   if (typeof raw.comment === 'string') node.comment = raw.comment;
   if (typeof raw.folder === 'string') node.folder = raw.folder;
   if (typeof raw.enabled === 'boolean') node.enabled = raw.enabled;
-  applyStoredParams(node, def, raw.params);
+  applyStoredParams(node, def, raw.params, aliases);
   applyStoredInputs(node, raw.inputs);
   applyStoredDisplay(node, def, raw.display);
   return node;
 }
 
-function applyStoredParams(node: NodeInstance, def: NodeTypeDef, rawParams: unknown): void {
+function applyStoredParams(
+  node: NodeInstance,
+  def: NodeTypeDef,
+  rawParams: unknown,
+  aliases: PipelineAliases,
+): void {
   if (typeof rawParams !== 'object' || rawParams === null) return;
   const stored = rawParams as Record<string, unknown>;
   for (const [name, spec] of Object.entries(def.params)) {
-    node.params[name] = sanitizeParamValue(spec, stored[name]);
+    node.params[name] = sanitizeParamValue(spec, storedParamValue(aliases, def.type, name, stored));
   }
 }
 

@@ -9,6 +9,7 @@ import { checkLabyrinthConnectivity } from '@/features/asset-library/worlds/__te
 import { checkLabyrinthChunkTopology } from '@/features/asset-library/worlds/__tests__/labyrinthChunkTopology.test';
 import { checkCustomScriptNodes } from '@/features/asset-library/worlds/__tests__/customScriptNodes.test';
 import { checkPipelineSanitizeAndEditing } from '@/features/asset-library/worlds/__tests__/pipelineSanitizeAndEditing.test';
+import { checkStoredWorldsSurviveLoading } from '@/features/asset-library/worlds/__tests__/storedWorldsSurviveLoading.test';
 import { checkAsciiSnapshotAndPlayerFooting } from '@/features/game/__tests__/asciiSnapshotAndPlayerFooting.test';
 import { checkFaceArtEditingOps } from '@/features/asset-library/__tests__/faceArtEditingOps.test';
 import { checkTileSurfaceRendering } from '@/features/asset-library/__tests__/tileSurfaceRendering.test';
@@ -87,6 +88,7 @@ describe('labyrinths', () => checkLabyrinthConnectivity(check));
 describe('the labyrinth chunk topology', () => checkLabyrinthChunkTopology(check));
 describe('custom script nodes', () => checkCustomScriptNodes(check));
 describe('pipeline sanitize and editing', () => checkPipelineSanitizeAndEditing(check));
+describe('stored worlds survive loading', () => checkStoredWorldsSurviveLoading(check));
 describe('the ascii snapshot', () => checkAsciiSnapshotAndPlayerFooting(check));
 describe('face art editing', () => checkFaceArtEditingOps(check));
 describe('tile surfaces', () => checkTileSurfaceRendering(check));
