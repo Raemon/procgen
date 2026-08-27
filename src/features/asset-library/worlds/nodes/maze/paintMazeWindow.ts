@@ -1,4 +1,4 @@
-import type { TilesChunk } from '../../values/chunkValues';
+import { EMPTY_TILE, type TilesChunk } from '../../values/chunkValues';
 import { isOpenBetween, type CellMaze } from './cellMaze';
 import type { RegionBorderDoors } from './mazeRegionDoors';
 import type { MazeRegionLayout } from './mazeRegionLayout';
@@ -22,10 +22,28 @@ export function paintMazeWindow(
 ): TilesChunk {
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
-      tiles[y * size + x] = isMazeFloor(offsetX + x, offsetY + y, window) ? floorTile : wallTile;
+      tiles[y * size + x] = paintedTile(offsetX + x, offsetY + y, window, wallTile, floorTile);
     }
   }
   return tiles;
+}
+
+function paintedTile(
+  regionX: number,
+  regionY: number,
+  window: MazeWindow,
+  wallTile: number,
+  floorTile: number,
+): number {
+  if (isOutsideTheMask(regionX, regionY, window)) return EMPTY_TILE;
+  return isMazeFloor(regionX, regionY, window) ? floorTile : wallTile;
+}
+
+function isOutsideTheMask(regionX: number, regionY: number, window: MazeWindow): boolean {
+  const { layout, maze } = window;
+  const cellX = Math.min(layout.cells - 1, Math.floor(regionX / layout.pitch));
+  const cellY = Math.min(layout.cells - 1, Math.floor(regionY / layout.pitch));
+  return maze.blocked[cellY * maze.cells + cellX] === 1;
 }
 
 function isMazeFloor(regionX: number, regionY: number, window: MazeWindow): boolean {

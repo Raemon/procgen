@@ -3,10 +3,16 @@ import type { ChunkGenCtx } from '../../nodeType';
 import { tilesValue, type ChunkValue } from '../../values/chunkValues';
 import { braidCellMaze } from './braidCellMaze';
 import { CARVER_CHOICES, CARVER_DFS, carveCellMaze } from './mazeCarvers';
-import { regionBorderDoors } from './mazeRegionDoors';
-import { chunkOffsetInRegion, mazeRegionLayout, regionIndexOfChunk } from './mazeRegionLayout';
+import { regionBorderDoors, type CellGate } from './mazeRegionDoors';
+import {
+  chunkOffsetInRegion,
+  mazeRegionLayout,
+  regionIndexOfChunk,
+  type MazeRegionLayout,
+} from './mazeRegionLayout';
 import { carveMazeRooms } from './mazeRooms';
 import { paintMazeWindow } from './paintMazeWindow';
+import { worldFieldReader } from '../../values/worldInputReaders';
 
 registerNodeType({
   type: 'mazeChunk',
@@ -15,8 +21,16 @@ registerNodeType({
   description:
     'Carves an endless labyrinth from numeric knobs: corridor width, wall thickness, how many chunks each self-contained maze spans, and how much of it opens into rooms. Mazes join to every neighbor through border doors so the whole world stays connected.',
   whenToUse:
-    'Dungeon-like structure instead of organic noise terrain. Turn the rooms knob up for a dungeon of chambers linked by passages instead of pure corridor. Layer two of these at different maze sizes for nested labyrinths (give the big one an empty floor so the small one shows through), or scatter monsters and loot on top with points nodes.',
-  inputs: {},
+    'Dungeon-like structure instead of organic noise terrain. Turn the rooms knob up for a dungeon of chambers linked by passages instead of pure corridor. Layer two of these at different maze sizes for nested labyrinths (give the big one an empty floor so the small one shows through), or scatter monsters and loot on top with points nodes. Wire a mask and the labyrinth stops tiling the world: it fills a continent, a cave system, the inside of a wall, and the terrain underneath shows through everywhere else — and because the passages are carved as a spanning tree over the masked cells, anywhere the mask reaches is reachable from anywhere else it reaches.',
+  inputs: {
+    mask: {
+      kind: 'field',
+      expects: 'mask',
+      label: 'mask',
+      help: 'Optional field saying where the labyrinth exists at all. Cells below the mask cut point are left empty for a lower layer to fill, and no passage or border door is carved into them. Unwired means the labyrinth covers the world.',
+      optional: true,
+    },
+  },
   params: {
     corridor: {
       kind: 'int',
@@ -83,6 +97,15 @@ registerNodeType({
       max: 8,
       default: 3,
     },
+    maskAtLeast: {
+      kind: 'number',
+      label: 'mask ≥',
+      help: 'How high the mask has to read at the middle of a maze cell for that cell to be carved at all.',
+      min: 0,
+      max: 1,
+      step: 0.01,
+      default: 0.5,
+    },
     wallTile: { kind: 'tile', label: 'wall', help: 'Tile painted on maze walls. Pick (empty) to let lower layers show through the walls.' },
     floorTile: { kind: 'tile', label: 'floor', help: 'Tile painted on corridors and doors. Pick (empty) to let lower layers show through the corridors — the trick behind nesting a small labyrinth inside a big one.' },
   },
@@ -100,9 +123,15 @@ function mazeChunk(ctx: ChunkGenCtx): ChunkValue {
   );
   const regionX = regionIndexOfChunk(ctx.chunkX, regionChunks);
   const regionY = regionIndexOfChunk(ctx.chunkY, regionChunks);
-  const maze = carveCellMaze(layout.cells, ctx.params.carver as number, ctx.rngAt(regionX, regionY, 'carve'));
+  const gate = maskGate(ctx, layout, regionChunks);
+  const maze = carveCellMaze(
+    layout.cells,
+    ctx.params.carver as number,
+    ctx.rngAt(regionX, regionY, 'carve'),
+    blockedCells(gate, layout, regionX, regionY),
+  );
   braidCellMaze(maze, ctx.params.braid as number, ctx.rngAt(regionX, regionY, 'braid'));
-  const doors = regionBorderDoors(ctx, regionX, regionY, layout.cells, ctx.params.doorsPerEdge as number);
+  const doors = regionBorderDoors(ctx, regionX, regionY, layout.cells, ctx.params.doorsPerEdge as number, gate);
   const rooms = carveMazeRooms(
     layout.cells,
     ctx.params.rooms as number,
@@ -119,4 +148,37 @@ function mazeChunk(ctx: ChunkGenCtx): ChunkValue {
     ctx.params.floorTile as number,
   );
   return tilesValue(tiles);
+}
+
+function maskGate(
+  ctx: ChunkGenCtx,
+  layout: MazeRegionLayout,
+  regionChunks: number,
+): CellGate | null {
+  if (!ctx.fieldInput('mask')) return null;
+  const maskAt = worldFieldReader(ctx, 'mask');
+  const atLeast = ctx.params.maskAtLeast as number;
+  const span = regionChunks * ctx.size;
+  const middle = layout.wall + Math.floor(layout.corridor / 2);
+  return (regionX, regionY, cellX, cellY) => {
+    const worldX = regionX * span + cellX * layout.pitch + middle;
+    const worldY = regionY * span + cellY * layout.pitch + middle;
+    return (maskAt(worldX, worldY) ?? 0) >= atLeast;
+  };
+}
+
+function blockedCells(
+  gate: CellGate | null,
+  layout: MazeRegionLayout,
+  regionX: number,
+  regionY: number,
+): Uint8Array | undefined {
+  if (!gate) return undefined;
+  const blocked = new Uint8Array(layout.cells * layout.cells);
+  for (let cellY = 0; cellY < layout.cells; cellY++) {
+    for (let cellX = 0; cellX < layout.cells; cellX++) {
+      blocked[cellY * layout.cells + cellX] = gate(regionX, regionY, cellX, cellY) ? 0 : 1;
+    }
+  }
+  return blocked;
 }

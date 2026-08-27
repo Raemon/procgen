@@ -7,7 +7,7 @@ import { BORN, BORN_ATTR, FACING_ATTR, PROGRAM_ATTR, pointNumber } from '../../v
 import { worldFieldReader } from '../../values/worldInputReaders';
 import { PLOT_STAGGER_LABEL, plotBuiltYear } from './plotBuiltYear';
 import { plotStandsOnGround } from './plotStandsOnGround';
-import { nearbyVillageCenters } from './nearbyVillageCenters';
+import { nearbyPoints } from '../../values/nearbyPoints';
 import { villageHashSeedAt } from './villageHashSeed';
 import { layoutForCenter, type VillagePlot } from './villageLayout';
 import { villageLayoutKnobsOf, VILLAGE_LAYOUT_PARAMS } from './villageLayoutParams';
@@ -58,7 +58,7 @@ function villagePlotsChunk(ctx: ChunkGenCtx): ChunkValue {
   const points: PointsChunk = [];
   if (!ctx.pointsInput('centers')) return pointsValue(points);
   const knobs = villageLayoutKnobsOf(ctx, programWeightsOf(ctx));
-  for (const center of nearbyVillageCenters(ctx, 'centers', knobs.radius)) {
+  for (const center of nearbyPoints(ctx, 'centers', knobs.radius)) {
     const plan = layoutForCenter(villageHashSeedAt(center.x, center.y), center, knobs);
     for (const plot of plan.plots) collectPlotInChunk(ctx, center, plot, points);
   }

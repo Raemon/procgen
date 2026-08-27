@@ -4,15 +4,20 @@ export interface CellMaze {
   cells: number;
   eastOpen: Uint8Array;
   southOpen: Uint8Array;
+  blocked: Uint8Array;
 }
 
-
-export function newCellMaze(cells: number): CellMaze {
+export function newCellMaze(cells: number, blocked?: Uint8Array): CellMaze {
   return {
     cells,
     eastOpen: new Uint8Array(cells * cells),
     southOpen: new Uint8Array(cells * cells),
+    blocked: blocked ?? new Uint8Array(cells * cells),
   };
+}
+
+export function isBlocked(maze: CellMaze, cell: Cell): boolean {
+  return maze.blocked[cellId(maze, cell)] === 1;
 }
 
 export function cellId(maze: CellMaze, cell: Cell): number {
@@ -34,12 +39,13 @@ export function isOpenBetween(maze: CellMaze, a: Cell, b: Cell): boolean {
 }
 
 export function neighborsOf(maze: CellMaze, cell: Cell): Cell[] {
+  if (isBlocked(maze, cell)) return [];
   const found: Cell[] = [];
   if (cell.x > 0) found.push({ x: cell.x - 1, y: cell.y });
   if (cell.x < maze.cells - 1) found.push({ x: cell.x + 1, y: cell.y });
   if (cell.y > 0) found.push({ x: cell.x, y: cell.y - 1 });
   if (cell.y < maze.cells - 1) found.push({ x: cell.x, y: cell.y + 1 });
-  return found;
+  return found.filter((neighbor) => !isBlocked(maze, neighbor));
 }
 
 export function passageCount(maze: CellMaze, cell: Cell): number {

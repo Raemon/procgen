@@ -5,7 +5,7 @@ import { fieldValue, type ChunkValue } from '../../values/chunkValues';
 registerNodeType({
   type: 'travelCostField',
   title: 'travel cost',
-  category: 'volcanic',
+  category: 'settlement',
   description:
     'Turns elevation into what it costs to cross a tile: cheap along the shore, dearer inland and uphill, and dearest over deep water, so a spreading people hugs the coast and hops the narrows.',
   whenToUse:

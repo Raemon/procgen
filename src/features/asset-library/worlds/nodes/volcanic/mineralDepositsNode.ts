@@ -6,7 +6,8 @@ import { worldFieldReader, type WorldFieldReader } from '../../values/worldInput
 import { depositKindAt } from '../../volcanic/depositBands';
 import { SEA_LEVEL } from '../../volcanic/seaLevel';
 import { MAX_CONE_RADIUS, type VolcanoCone } from '../../volcanic/hotspotChains';
-import { coneOfPoint, nearbyVolcanoes } from './nearbyVolcanoes';
+import { nearbyPoints } from '../../values/nearbyPoints';
+import { coneOfPoint } from '../../volcanic/coneProfile';
 
 export const DEPOSIT_TAG = 'deposit';
 
@@ -89,7 +90,7 @@ function mineralDepositsChunk(ctx: ChunkGenCtx): ChunkValue {
 }
 
 function hostsNear(ctx: ChunkGenCtx): VolcanoCone[] {
-  return nearbyVolcanoes(ctx, 'volcanoes', HOST_REACH * MAX_CONE_RADIUS + DEPOSIT_SPACING).map(
+  return nearbyPoints(ctx, 'volcanoes', HOST_REACH * MAX_CONE_RADIUS + DEPOSIT_SPACING).map(
     coneOfPoint,
   );
 }

@@ -1,7 +1,10 @@
+import { coneProfileAt, craterDipAt } from '../shape/pointStamp';
+import type { WorldPoint } from '../values/chunkValues';
+import { BORN, CHAIN_ID, CONE_HEIGHT, CONE_RADIUS, pointNumber } from '../values/pointData';
 import { CONE_GROWTH_SPAN, type VolcanoCone } from './hotspotChains';
 
-const PROFILE_EXPONENT = 1.6;
-const CRATER_BOWL = 0.18;
+export { coneProfileAt, craterDipAt };
+
 const YEARS_PER_SHOULDER_STEP = 1_000_000;
 
 export interface AgingSpec {
@@ -18,6 +21,17 @@ export interface AgedCone {
   young: boolean;
 }
 
+export function coneOfPoint(point: WorldPoint): VolcanoCone {
+  return {
+    x: point.x,
+    y: point.y,
+    born: pointNumber(point, BORN, 0),
+    chainId: pointNumber(point, CHAIN_ID, 0),
+    radius: pointNumber(point, CONE_RADIUS, 32),
+    height: pointNumber(point, CONE_HEIGHT, 0.5),
+  };
+}
+
 export function agedCone(cone: VolcanoCone, aging: AgingSpec): AgedCone | null {
   if (cone.born > aging.time) return null;
   const age = aging.time - cone.born;
@@ -28,17 +42,6 @@ export function agedCone(cone: VolcanoCone, aging: AgingSpec): AgedCone | null {
     height: cone.height * Math.pow(0.5, age / aging.erosionHalfLife),
     young: age < CONE_GROWTH_SPAN,
   };
-}
-
-export function coneProfileAt(distance: number, radius: number, height: number): number {
-  if (distance >= radius) return 0;
-  return (1 - Math.pow(distance / radius, PROFILE_EXPONENT)) * height;
-}
-
-export function craterDipAt(distance: number, radius: number, craterDepth: number): number {
-  const bowl = radius * CRATER_BOWL;
-  if (distance >= bowl) return 0;
-  return craterDepth * (1 - distance / bowl);
 }
 
 export function agedConeHeightAt(

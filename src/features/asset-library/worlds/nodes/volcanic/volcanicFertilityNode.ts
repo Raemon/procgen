@@ -4,7 +4,8 @@ import { fieldValue, type ChunkValue, type FieldChunk } from '../../values/chunk
 import { type VolcanoCone } from '../../volcanic/hotspotChains';
 import { SEA_LEVEL } from '../../volcanic/seaLevel';
 import { ashFalloff, soilMaturity } from '../../volcanic/soilMaturity';
-import { coneOfPoint, nearbyVolcanoes } from './nearbyVolcanoes';
+import { nearbyPoints } from '../../values/nearbyPoints';
+import { coneOfPoint } from '../../volcanic/coneProfile';
 import { CONE_SHAPE_KEYS } from '../../values/pointData';
 
 const ALTITUDE_WEIGHT = 3;
@@ -79,7 +80,7 @@ function volcanicFertilityChunk(ctx: ChunkGenCtx): ChunkValue {
 }
 
 function existingConesNear(ctx: ChunkGenCtx, ashRadius: number): VolcanoCone[] {
-  return nearbyVolcanoes(ctx, 'volcanoes', ashRadius)
+  return nearbyPoints(ctx, 'volcanoes', ashRadius)
     .map(coneOfPoint)
     .filter((cone) => cone.born <= ctx.time);
 }

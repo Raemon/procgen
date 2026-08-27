@@ -13,6 +13,12 @@ export const HOST_X = 'hostX';
 export const HOST_Y = 'hostY';
 export const SENT_FROM_X = 'sentFromX';
 export const SENT_FROM_Y = 'sentFromY';
+export const ANCHOR_X = 'anchorX';
+export const ANCHOR_Y = 'anchorY';
+export const STAMP_RADIUS = 'radius';
+export const STAMP_WEIGHT = 'weight';
+export const ANGLE = 'angle';
+export const RIM_DEPTH = 'rimDepth';
 
 export interface PointWithData {
   data?: Readonly<Record<string, number>>;
@@ -77,6 +83,38 @@ export const HOST_ATTRS: readonly PointAttrSpec[] = [
 export const SENT_FROM_ATTRS: readonly PointAttrSpec[] = [
   { key: SENT_FROM_X, label: 'sent from x', help: 'World x of the village that sent the miners.', units: 'tiles' },
   { key: SENT_FROM_Y, label: 'sent from y', help: 'World y of the village that sent the miners.', units: 'tiles' },
+];
+
+export const ANCHOR_ATTRS: readonly PointAttrSpec[] = [
+  { key: ANCHOR_X, label: 'anchor x', help: 'World x of the point this one was attached to.', units: 'tiles' },
+  { key: ANCHOR_Y, label: 'anchor y', help: 'World y of the point this one was attached to.', units: 'tiles' },
+];
+
+export const STAMP_RADIUS_ATTR: PointAttrSpec = {
+  key: STAMP_RADIUS,
+  label: 'radius',
+  help: 'How far this point\u2019s influence reaches, for anything that stamps a shape around it.',
+  units: 'tiles',
+};
+
+export const STAMP_WEIGHT_ATTR: PointAttrSpec = {
+  key: STAMP_WEIGHT,
+  label: 'weight',
+  help: 'How strong this point is, 0 to 1 \u2014 the value a stamp writes at its centre.',
+  units: 'unit',
+};
+
+export const ANGLE_ATTR: PointAttrSpec = {
+  key: ANGLE,
+  label: 'angle',
+  help: 'Which way this point is turned, in radians. A stamp stretched by an aspect ratio lies along it.',
+  units: 'unit',
+};
+
+export const SCATTER_ATTRS: readonly PointAttrSpec[] = [
+  STAMP_RADIUS_ATTR,
+  STAMP_WEIGHT_ATTR,
+  ANGLE_ATTR,
 ];
 
 export const PROGRAM_ATTR: PointAttrSpec = {

@@ -11,6 +11,8 @@ import {
 } from '../lab/labOperations';
 import { gradeLimitsOf, trainingSettingsOf } from '../lab/labSettings';
 import type { LabRun } from '../lab/labRun';
+import { labWorldsToldApart } from '../lab/scoredWorldGrade';
+import type { ScoredWorld } from '../selfPlay/scoreGenome';
 import { WorldLab } from '../lab/worldLab';
 import { READING_BANDS } from '../walkingSim/readingBands';
 import { WorldPresetLibrary } from '../presets/worldPresetLibrary';
@@ -182,10 +184,22 @@ function checkInstallingWinners(check: CheckReporter): void {
 function checkTwinPalettesAreStillToldApart(check: CheckReporter): void {
   const trained = startTrainRun(immediateLab(), { ...WALK, generations: 3, batch_size: 4, seed: 4242, patience: 9 });
   const names = trained.worlds.map((world) => world.name);
-  const palettes = names.map((name) => name.split(' ')[0]!);
-  check('this run really does grow more than one elite from a single palette, so the check has something to tell apart', new Set(palettes).size < names.length);
   check('a run names every world it holds exactly once, so a card and an install can point at one of them', names.length > 1 && new Set(names).size === names.length);
-  check('worlds grown from one palette keep that palette at the front of their names', names.every((name, at) => name.startsWith(palettes[at]!)));
+  const twins = labWorldsToldApart(scoredTwinsOf(trained));
+  check('two elites grown from one palette are told apart rather than sharing a name', new Set(twins.map((world) => world.name)).size === twins.length);
+  check('worlds grown from one palette keep that palette at the front of their names', twins.every((world) => world.name.startsWith(TWIN_PALETTE)));
+}
+
+const TWIN_PALETTE = 'twin palette';
+
+function scoredTwinsOf(run: LabRun): ScoredWorld[] {
+  return run.worlds.slice(0, 2).map((world) => ({
+    genome: world.genome!,
+    paletteName: TWIN_PALETTE,
+    measurements: world.grade.measurements,
+    score: { overall: world.grade.fun, readings: world.grade.readings },
+    fingerprint: { readings: [], sceneryShares: new Map() },
+  }));
 }
 
 function isDescending(values: readonly number[]): boolean {

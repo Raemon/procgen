@@ -1,9 +1,9 @@
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { fieldValue, type ChunkValue } from '../../values/chunkValues';
-import { coneProfileAt } from '../../volcanic/coneProfile';
+import { coneOfPoint, coneProfileAt } from '../../volcanic/coneProfile';
 import { MAX_CONE_RADIUS, type VolcanoCone } from '../../volcanic/hotspotChains';
-import { coneOfPoint, nearbyVolcanoes } from './nearbyVolcanoes';
+import { nearbyPoints } from '../../values/nearbyPoints';
 import { CONE_SHAPE_KEYS } from '../../values/pointData';
 
 export const NEVER_LAND = 0;
@@ -42,7 +42,7 @@ registerNodeType({
 
 function islandBirthChunk(ctx: ChunkGenCtx): ChunkValue {
   const field = ctx.newField();
-  const cones = nearbyVolcanoes(ctx, 'volcanoes', MAX_CONE_RADIUS).map(coneOfPoint);
+  const cones = nearbyPoints(ctx, 'volcanoes', MAX_CONE_RADIUS).map(coneOfPoint);
   const seaLevel = ctx.params.seaLevel as number;
   for (let y = 0; y < ctx.size; y++) {
     const worldY = ctx.originY + y;

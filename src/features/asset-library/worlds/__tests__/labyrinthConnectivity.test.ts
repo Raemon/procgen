@@ -13,7 +13,8 @@ import { sanitizePipeline } from '../pipeline/sanitizePipeline';
 import { infiniteLabyrinth } from '../presets/infiniteLabyrinth';
 import type { WorldSampler } from '../worldSampler';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
-import { tileBytes, worldFromState } from './pipelineWorldFixtures';
+import { stateOfNodes, tileAtNode, tileBytes, worldFromState } from './pipelineWorldFixtures';
+import { EMPTY_TILE } from '../values/chunkValues';
 
 const SEAM_RINGS = 4;
 const FLOOD_RINGS = 2;
@@ -104,7 +105,75 @@ function gridNeighbors(i: number, size: number): number[] {
   return found;
 }
 
+const MASK_SCRIPT = `const field = ctx.newField();
+for (let y = 0; y < ctx.size; y++) {
+  for (let x = 0; x < ctx.size; x++) {
+    const worldX = ctx.originX + x;
+    const worldY = ctx.originY + y;
+    const westRoom = worldX >= 0 && worldX <= 64 && worldY >= 0 && worldY <= 64;
+    const eastRoom = worldX >= 192 && worldX <= 256 && worldY >= 0 && worldY <= 64;
+    const corridor = worldX >= 64 && worldX <= 192 && worldY >= 24 && worldY <= 40;
+    field[y * ctx.size + x] = westRoom || eastRoom || corridor ? 1 : 0;
+  }
+}
+return field;`;
+
+const MASK_FLOOR = 1;
+const MASK_WALL = 2;
+const MASKED_WINDOW = { minX: -32, minY: -32, maxX: 288, maxY: 96 };
+
+function maskedMazeState(): PipelineState {
+  return stateOfNodes([
+    { id: 'mask', type: 'customScript', params: { outputKind: 'field', code: MASK_SCRIPT }, inputs: {} },
+    {
+      id: 'maze',
+      type: 'mazeChunk',
+      params: {
+        corridor: 3,
+        wall: 1,
+        mazeChunks: 1,
+        braid: 0.15,
+        doorsPerEdge: 1,
+        maskAtLeast: 0.5,
+        wallTile: MASK_WALL,
+        floorTile: MASK_FLOOR,
+      },
+      inputs: { mask: 'mask' },
+    },
+  ]);
+}
+
+function maskedTiles(): number[] {
+  const world = worldFromState(maskedMazeState());
+  const tiles: number[] = [];
+  for (let y = MASKED_WINDOW.minY; y < MASKED_WINDOW.maxY; y++) {
+    for (let x = MASKED_WINDOW.minX; x < MASKED_WINDOW.maxX; x++) {
+      tiles.push(tileAtNode(world.evaluator, 'maze', x, y));
+    }
+  }
+  return tiles;
+}
+
+function checkAMaskedLabyrinthStaysOnePlace(check: CheckReporter): void {
+  const tiles = maskedTiles();
+  const width = MASKED_WINDOW.maxX - MASKED_WINDOW.minX;
+  const floors = tiles.map((tile, at) => (tile === MASK_FLOOR ? at : -1)).filter((at) => at >= 0);
+  check(
+    'the masked labyrinth carves floor inside the mask and leaves the world outside it empty',
+    floors.length > 0 && tiles.some((tile) => tile === EMPTY_TILE) && tiles.some((tile) => tile === MASK_WALL),
+  );
+  check(
+    'nothing is carved where the mask says the labyrinth is not',
+    tileAtNode(worldFromState(maskedMazeState()).evaluator, 'maze', 128, 80) === EMPTY_TILE,
+  );
+  check(
+    'the floor of a masked labyrinth is one flood-fill component, so the two rooms its corridor joins really are joined',
+    floodedFloorCount(floors, width) === floors.length,
+  );
+}
+
 export function checkLabyrinthConnectivity(check: CheckReporter): void {
+  checkAMaskedLabyrinthStaysOnePlace(check);
   const state = labyrinthState();
   const knobs = knobsOf(state);
   const world = worldFromState(state);

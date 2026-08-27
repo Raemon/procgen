@@ -3,7 +3,7 @@ import type { ChunkGenCtx } from '../../nodeType';
 import { PRESENT } from '../../time/worldTime';
 import { pointsValue, type ChunkValue, type PointsChunk, type WorldPoint } from '../../values/chunkValues';
 import { BORN, BORN_ATTR, RICHNESS, RICHNESS_ATTR, SENT_FROM_ATTRS, SENT_FROM_X, SENT_FROM_Y, pointNumber } from '../../values/pointData';
-import { nearbyPointsOf } from './nearbyPoints';
+import { nearbyPoints } from '../../values/nearbyPoints';
 
 export const CAMP_TAG = 'camp';
 
@@ -56,7 +56,7 @@ registerNodeType({
 function miningCampsChunk(ctx: ChunkGenCtx): ChunkValue {
   const deposits = ctx.pointsInput('deposits');
   if (!deposits || deposits.length === 0 || !ctx.pointsInput('villages')) return pointsValue([]);
-  const villages = nearbyPointsOf(ctx, 'villages', ctx.params.maxHaul as number);
+  const villages = nearbyPoints(ctx, 'villages', ctx.params.maxHaul as number);
   const camps: PointsChunk = [];
   for (const deposit of deposits) collectCampFor(ctx, deposit, villages, camps);
   return pointsValue(camps);

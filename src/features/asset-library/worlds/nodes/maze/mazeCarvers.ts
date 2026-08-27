@@ -1,6 +1,7 @@
 import type { RandomStream } from '../../random/mulberry32';
 import {
   cellId,
+  isBlocked,
   neighborsOf,
   newCellMaze,
   openBetween,
@@ -15,13 +16,22 @@ export const CARVER_SIDEWINDER = 2;
 export const CARVER_CHOICES = [
   { value: CARVER_DFS, label: 'dfs', help: 'Depth-first backtracker: long winding corridors with few branches.' },
   { value: CARVER_PRIM, label: 'prim', help: 'Random frontier growth: short branchy passages with many dead ends.' },
-  { value: CARVER_SIDEWINDER, label: 'sidewinder', help: 'Row-by-row runs: a horizontal bias with long straight stretches.' },
+  {
+    value: CARVER_SIDEWINDER,
+    label: 'sidewinder',
+    help: 'Row-by-row runs: a horizontal bias with long straight stretches. It carves rows rather than a spanning tree, so it cannot honour a mask — wire one and the depth-first carver is used instead.',
+  },
 ] as const;
 
-export function carveCellMaze(cells: number, carver: number, rng: RandomStream): CellMaze {
-  const maze = newCellMaze(cells);
+export function carveCellMaze(
+  cells: number,
+  carver: number,
+  rng: RandomStream,
+  blocked?: Uint8Array,
+): CellMaze {
+  const maze = newCellMaze(cells, blocked);
   if (carver === CARVER_PRIM) carvePrim(maze, rng);
-  else if (carver === CARVER_SIDEWINDER) carveSidewinder(maze, rng);
+  else if (carver === CARVER_SIDEWINDER && !blocked) carveSidewinder(maze, rng);
   else carveDfs(maze, rng);
   return maze;
 }
@@ -30,9 +40,23 @@ function randomCell(maze: CellMaze, rng: RandomStream): Cell {
   return { x: Math.floor(rng() * maze.cells), y: Math.floor(rng() * maze.cells) };
 }
 
+function startCell(maze: CellMaze, rng: RandomStream): Cell | null {
+  const drawn = randomCell(maze, rng);
+  if (!isBlocked(maze, drawn)) return drawn;
+  const total = maze.cells * maze.cells;
+  for (let step = 1; step < total; step++) {
+    const at = (cellId(maze, drawn) + step) % total;
+    const cell = { x: at % maze.cells, y: Math.floor(at / maze.cells) };
+    if (!isBlocked(maze, cell)) return cell;
+  }
+  return null;
+}
+
 function carveDfs(maze: CellMaze, rng: RandomStream): void {
+  const start = startCell(maze, rng);
+  if (!start) return;
   const visited = new Uint8Array(maze.cells * maze.cells);
-  const stack = [randomCell(maze, rng)];
+  const stack = [start];
   visited[cellId(maze, stack[0]!)] = 1;
   while (stack.length > 0) {
     const next = unvisitedNeighbor(maze, stack[stack.length - 1]!, visited, rng);
@@ -58,8 +82,9 @@ function unvisitedNeighbor(
 }
 
 function carvePrim(maze: CellMaze, rng: RandomStream): void {
+  const start = startCell(maze, rng);
+  if (!start) return;
   const visited = new Uint8Array(maze.cells * maze.cells);
-  const start = randomCell(maze, rng);
   visited[cellId(maze, start)] = 1;
   const frontier: Array<[Cell, Cell]> = neighborsOf(maze, start).map((n) => [start, n]);
   while (frontier.length > 0) {

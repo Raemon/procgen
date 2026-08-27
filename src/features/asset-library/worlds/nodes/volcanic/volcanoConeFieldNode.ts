@@ -4,12 +4,13 @@ import { fieldValue, type ChunkValue } from '../../values/chunkValues';
 import {
   agedCone,
   agedConeHeightAt,
+  coneOfPoint,
   type AgedCone,
   type AgingSpec,
 } from '../../volcanic/coneProfile';
 import { MAX_CONE_RADIUS } from '../../volcanic/hotspotChains';
 import { VOLCANIC_ERA_SPAN } from '../../time/worldTime';
-import { coneOfPoint, nearbyVolcanoes } from './nearbyVolcanoes';
+import { nearbyPoints } from '../../values/nearbyPoints';
 import { CONE_SHAPE_KEYS } from '../../values/pointData';
 
 const BASE_BELOW_SEA = 0.55;
@@ -93,7 +94,7 @@ function volcanoConeFieldChunk(ctx: ChunkGenCtx): ChunkValue {
 function activeConesNear(ctx: ChunkGenCtx): AgedCone[] {
   const aging = agingSpecOf(ctx);
   const cones: AgedCone[] = [];
-  for (const point of nearbyVolcanoes(ctx, 'volcanoes', gatherTiles(ctx))) {
+  for (const point of nearbyPoints(ctx, 'volcanoes', gatherTiles(ctx))) {
     const aged = agedCone(coneOfPoint(point), aging);
     if (aged) cones.push(aged);
   }

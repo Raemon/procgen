@@ -1,7 +1,7 @@
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { tilesValue, type ChunkValue, type TilesChunk } from '../../values/chunkValues';
-import { nearbyVillageCenters } from './nearbyVillageCenters';
+import { nearbyPoints } from '../../values/nearbyPoints';
 import { villageHashSeedAt } from './villageHashSeed';
 import {
   layoutForCenter,
@@ -41,7 +41,7 @@ function villageStreetsChunk(ctx: ChunkGenCtx): ChunkValue {
   const tiles = ctx.newTiles();
   if (!ctx.pointsInput('centers')) return tilesValue(tiles);
   const knobs = villageLayoutKnobsOf(ctx);
-  for (const center of nearbyVillageCenters(ctx, 'centers', knobs.radius)) {
+  for (const center of nearbyPoints(ctx, 'centers', knobs.radius)) {
     paveVillage(ctx, layoutForCenter(villageHashSeedAt(center.x, center.y), center, knobs), tiles);
   }
   return tilesValue(tiles);
