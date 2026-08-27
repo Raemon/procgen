@@ -92,7 +92,10 @@ function checkStoppingAndTraining(check: CheckReporter): void {
   paused.stop(stopping.id);
   queue.shift()!();
   check('a run asked to stop settles as stopped instead of running on', stopping.status === 'stopped' && stopping.finishedAt !== null);
-  check('a stopped run keeps what it had already graded', stopping.worlds.length === 2);
+  check(
+    'a stopped run keeps what it had already graded',
+    stopping.worlds.length + stopping.unwalkable === stopping.done,
+  );
   check('a stopped run asks for no more time', queue.length === 0);
 }
 
