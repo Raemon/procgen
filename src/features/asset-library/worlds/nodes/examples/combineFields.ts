@@ -26,8 +26,8 @@ registerNodeType({
   whenToUse:
     'Shaping terrain out of ingredients: multiply a noise by a mask to confine it, add bumps onto a base, or max two shapes together into one landmass.',
   inputs: {
-    a: { kind: 'field', label: 'a', help: 'First operand — the field being shaped.' },
-    b: { kind: 'field', label: 'b', help: 'Second operand — the field doing the shaping (mask, bumps, bias).' },
+    a: { kind: 'field', expects: 'unit', label: 'a', help: 'First operand — the field being shaped.' },
+    b: { kind: 'field', expects: 'unit', label: 'b', help: 'Second operand — the field doing the shaping (mask, bumps, bias).' },
   },
   params: {
     operation: {
@@ -45,6 +45,7 @@ registerNodeType({
     },
   },
   output: 'field',
+  outputSemantic: 'unit',
   generateChunk: combineChunk,
 });
 

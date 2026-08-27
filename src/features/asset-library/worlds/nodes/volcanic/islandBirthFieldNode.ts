@@ -34,6 +34,7 @@ registerNodeType({
     },
   },
   output: 'field',
+  outputSemantic: 'years',
   generateChunk: islandBirthChunk,
 });
 

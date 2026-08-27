@@ -21,5 +21,6 @@ registerNodeType({
     },
   },
   output: 'field',
+  outputSemantic: 'unit',
   generateChunk: (ctx) => fieldValue(ctx.newField().fill(ctx.params.value as number)),
 });

@@ -15,6 +15,7 @@ registerNodeType({
     b: { kind: 'field', label: 'b', help: 'The field you get at weight 1 — usually the detail being mixed in.' },
     mask: {
       kind: 'field',
+      expects: 'mask',
       label: 'mask',
       help: 'Optional per-cell multiplier on the weight, so b only shows where the mask is high. Unwired means blend evenly everywhere.',
       optional: true,
@@ -32,6 +33,7 @@ registerNodeType({
     },
   },
   output: 'field',
+  outputSemantic: 'raw',
   generateChunk: blendChunk,
 });
 

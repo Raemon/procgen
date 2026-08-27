@@ -29,11 +29,13 @@ registerNodeType({
   inputs: {
     habitability: {
       kind: 'field',
+      expects: 'unit',
       label: 'habitability',
       help: 'How worth settling the ground is, usually fertility. Only cells inside the band below are considered.',
     },
     travelCost: {
       kind: 'field',
+      expects: 'cost',
       label: 'travel cost',
       help: 'What each tile costs to cross. A travel cost node built from the same elevation.',
     },

@@ -13,6 +13,7 @@ registerNodeType({
   inputs: {
     mask: {
       kind: 'field',
+      expects: 'mask',
       label: 'mask',
       help: 'Optional field that gates where points may land via the mask ≥/≤ band. Leave unwired to scatter everywhere.',
       optional: true,

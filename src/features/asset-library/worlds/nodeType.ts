@@ -41,11 +41,24 @@ export function isKnobParamSpec(spec: ParamSpec): spec is KnobParamSpec {
   return (KNOB_PARAM_KINDS as readonly string[]).includes(spec.kind);
 }
 
+export type FieldSemantic = 'unit' | 'elevation' | 'mask' | 'cost' | 'years' | 'distance' | 'raw';
+
+export const FIELD_SEMANTIC_MEANINGS: Readonly<Record<FieldSemantic, string>> = {
+  unit: 'a 0..1 reading where 0 is none and 1 is all of it',
+  elevation: 'a 0..1 ground height, the field an elevation display expects',
+  mask: 'a 0..1 weight meant to gate or blend something else',
+  cost: 'what crossing a tile costs, 1 and upward, with no ceiling',
+  years: 'a world-time date, where 0 usually means never',
+  distance: 'how far away something is',
+  raw: 'whatever the source put there — no range is promised',
+};
+
 export interface InputSpec {
   kind: ValueKind | 'any';
   label: string;
   help: string;
   optional?: boolean;
+  expects?: FieldSemantic;
 }
 
 export interface ChunkGenCtx {
@@ -81,6 +94,7 @@ export interface NodeTypeDef {
   inputs: Record<string, InputSpec>;
   params: Record<string, ParamSpec>;
   output: ValueKind | ((params: Record<string, ParamValue>) => ValueKind);
+  outputSemantic?: FieldSemantic | ((params: Record<string, ParamValue>) => FieldSemantic);
   generateChunk(ctx: ChunkGenCtx): ChunkValue;
 }
 
@@ -90,6 +104,13 @@ export interface StandardNodeTypeDef extends Omit<NodeTypeDef, 'params'> {
 
 export function outputKindOf(def: NodeTypeDef, params: Record<string, ParamValue>): ValueKind {
   return typeof def.output === 'function' ? def.output(params) : def.output;
+}
+
+export function outputSemanticOf(
+  def: NodeTypeDef,
+  params: Record<string, ParamValue>,
+): FieldSemantic | undefined {
+  return typeof def.outputSemantic === 'function' ? def.outputSemantic(params) : def.outputSemantic;
 }
 
 export function defaultParamValue(spec: ParamSpec): ParamValue {

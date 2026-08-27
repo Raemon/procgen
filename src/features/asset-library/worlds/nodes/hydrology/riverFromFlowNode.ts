@@ -12,9 +12,10 @@ registerNodeType({
   whenToUse:
     'Rivers drawn the way real drainage looks: dendritic, always merging downstream, never crossing a ridge, and wider near the mouth. Wire a flow accumulation node into it; the result feeds a river towns node unchanged.',
   inputs: {
-    flow: { kind: 'field', label: 'flow', help: 'A flow accumulation field. Its value decides both whether a cell is a river and how wide the channel is.' },
+    flow: { kind: 'field', expects: 'unit', label: 'flow', help: 'A flow accumulation field. Its value decides both whether a cell is a river and how wide the channel is.' },
     elevation: {
       kind: 'field',
+      expects: 'elevation',
       label: 'elevation',
       help: 'Optional terrain used to keep channels out of the sea. Unwired means every high-flow cell is painted.',
       optional: true,

@@ -1,5 +1,11 @@
 import { allNodeTypes, nodeTypeOf } from '@/features/asset-library/worlds/nodeRegistry';
-import { outputKindOf, type NodeTypeDef, type ParamSpec } from '@/features/asset-library/worlds/nodeType';
+import {
+  defaultParams,
+  outputKindOf,
+  outputSemanticOf,
+  type NodeTypeDef,
+  type ParamSpec,
+} from '@/features/asset-library/worlds/nodeType';
 import type { NodeInstance } from '@/features/asset-library/worlds/pipeline/pipelineState';
 import type { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
 
@@ -30,6 +36,8 @@ function pipelineNodeJson(node: NodeInstance, position: number) {
 export function nodeTypesJson() {
   return {
     knob_note: 'every param value is a number except custom-script select/code params',
+    semantic_note:
+      'output_semantic and an input\'s expects say what the numbers in a field MEAN — unit, elevation, mask, cost, years, distance or raw. They never make a wire invalid; they only tell you when a field is being read as something it is not.',
     types: allNodeTypes().map(nodeTypeJson),
   };
 }
@@ -42,13 +50,20 @@ function nodeTypeJson(def: NodeTypeDef) {
     description: def.description,
     when_to_use: def.whenToUse,
     output: typeof def.output === 'function' ? 'depends on params' : def.output,
+    output_semantic: outputSemanticOf(def, defaultParams(def)) ?? null,
     params: Object.fromEntries(
       Object.entries(def.params).map(([name, spec]) => [name, paramSpecJson(spec)]),
     ),
     inputs: Object.fromEntries(
       Object.entries(def.inputs).map(([name, spec]) => [
         name,
-        { kind: spec.kind, label: spec.label, help: spec.help, optional: spec.optional ?? false },
+        {
+          kind: spec.kind,
+          label: spec.label,
+          help: spec.help,
+          optional: spec.optional ?? false,
+          expects: spec.expects ?? null,
+        },
       ]),
     ),
   };

@@ -13,8 +13,8 @@ registerNodeType({
   whenToUse:
     'After flow accumulation, to get the shape erosion leaves behind: V-shaped headwater notches, broad floodplains along the trunks, and ridges that read as ridges because the ground between rivers is what stayed high.',
   inputs: {
-    elevation: { kind: 'field', label: 'elevation', help: 'The terrain to erode.' },
-    flow: { kind: 'field', label: 'flow', help: 'A flow accumulation field over the same terrain. Where it is high, the cut is deep and wide.' },
+    elevation: { kind: 'field', expects: 'elevation', label: 'elevation', help: 'The terrain to erode.' },
+    flow: { kind: 'field', expects: 'unit', label: 'flow', help: 'A flow accumulation field over the same terrain. Where it is high, the cut is deep and wide.' },
   },
   params: {
     depth: {
@@ -45,6 +45,7 @@ registerNodeType({
     },
   },
   output: 'field',
+  outputSemantic: 'elevation',
   generateChunk: carveValleysChunk,
 });
 

@@ -12,7 +12,7 @@ registerNodeType({
   whenToUse:
     'Anywhere the answer depends on steepness rather than height: bare rock and cliffs on the flanks of ranges, scree and snow that only cling to slopes, beaches only where the shore is flat, or as a mask that keeps detail noise off the plains.',
   inputs: {
-    source: { kind: 'field', label: 'source', help: 'The elevation field to measure. Reads across chunk edges, so slopes stay continuous.' },
+    source: { kind: 'field', expects: 'elevation', label: 'source', help: 'The elevation field to measure. Reads across chunk edges, so slopes stay continuous.' },
   },
   params: {
     radius: {
@@ -34,6 +34,7 @@ registerNodeType({
     },
   },
   output: 'field',
+  outputSemantic: 'unit',
   generateChunk: slopeChunk,
 });
 

@@ -81,6 +81,7 @@ registerNodeType({
     },
   },
   output: 'field',
+  outputSemantic: 'elevation',
   generateChunk: terrainNoiseChunk,
 });
 

@@ -12,21 +12,24 @@ registerNodeType({
   whenToUse:
     'Instead of stacking five threshold nodes per biome. Wire a region mask and give each biome its own node, and the whole biome is then one card with the handful of knobs you actually retune — where its snow starts, how wide its beaches are, how steep the ground has to be before soil gives way to rock.',
   inputs: {
-    elevation: { kind: 'field', label: 'elevation', help: 'The terrain being classified. Every cut point below is read in this field\'s units.' },
+    elevation: { kind: 'field', expects: 'elevation', label: 'elevation', help: 'The terrain being classified. Every cut point below is read in this field\'s units.' },
     steepness: {
       kind: 'field',
+      expects: 'unit',
       label: 'steepness',
       help: 'Optional slope field. Where it reaches the rock cut point, ground becomes bare rock. Unwired means no rock is painted.',
       optional: true,
     },
     shoreDistance: {
       kind: 'field',
+      expects: 'distance',
       label: 'shore distance',
       help: 'Optional distance-to-coast field, where 0.5 is the shoreline. Beaches are cut from it so they keep an even width. Unwired means the shore band is measured in height above sea level instead.',
       optional: true,
     },
     region: {
       kind: 'field',
+      expects: 'unit',
       label: 'region',
       help: 'Optional mask saying where this biome exists at all. Cells below the region cut point are left empty for another biome to paint. Unwired means this biome covers the world.',
       optional: true,

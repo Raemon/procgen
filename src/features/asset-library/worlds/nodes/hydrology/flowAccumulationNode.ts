@@ -22,7 +22,7 @@ registerNodeType({
   whenToUse:
     'The realistic way to make rivers. Instead of tracing a handful of springs, every cell drains, so watercourses appear where the terrain actually collects water, merge into trunks, and grow downstream. Threshold it into tiles, or subtract it from the terrain to carve valleys.',
   inputs: {
-    elevation: { kind: 'field', label: 'elevation', help: 'The terrain water runs down. Read across chunk edges out to the window radius.' },
+    elevation: { kind: 'field', expects: 'elevation', label: 'elevation', help: 'The terrain water runs down. Read across chunk edges out to the window radius.' },
   },
   params: {
     seaLevel: {
@@ -75,6 +75,7 @@ registerNodeType({
     },
   },
   output: 'field',
+  outputSemantic: 'unit',
   generateChunk: flowAccumulationChunk,
 });
 

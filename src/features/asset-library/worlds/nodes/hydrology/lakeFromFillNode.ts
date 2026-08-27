@@ -11,9 +11,10 @@ registerNodeType({
   whenToUse:
     'Wire the terrain in as ground and the matching fill depressions node in as flooded. Because the flooded surface is flat inside a basin, using that same node as the elevation display puts the water at one level across the whole lake instead of draping it over the lake bed.',
   inputs: {
-    ground: { kind: 'field', label: 'ground', help: 'The terrain before flooding — the lake bed.' },
+    ground: { kind: 'field', expects: 'elevation', label: 'ground', help: 'The terrain before flooding — the lake bed.' },
     flooded: {
       kind: 'field',
+      expects: 'elevation',
       label: 'flooded',
       help: 'The same terrain after fill depressions. Where this stands above the ground, the difference is how deep the water is.',
     },

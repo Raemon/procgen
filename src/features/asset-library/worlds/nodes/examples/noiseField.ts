@@ -31,6 +31,7 @@ registerNodeType({
     },
   },
   output: 'field',
+  outputSemantic: 'unit',
   generateChunk: noiseChunk,
 });
 

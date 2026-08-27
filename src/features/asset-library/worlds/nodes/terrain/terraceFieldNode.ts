@@ -11,9 +11,10 @@ registerNodeType({
   whenToUse:
     'The way to make elevation gate movement. Bind the result to an elevation display and every riser taller than a step becomes a wall; wire a coarse noise into passes and the walls break into ridges with a few ways up, which is what turns terrain into a route choice.',
   inputs: {
-    source: { kind: 'field', label: 'source', help: 'The field to terrace, usually terrain.' },
+    source: { kind: 'field', expects: 'elevation', label: 'source', help: 'The field to terrace, usually terrain.' },
     passes: {
       kind: 'field',
+      expects: 'unit',
       label: 'passes',
       help: 'Optional field marking where ramps cut through. Where it exceeds the pass threshold, the source is kept smooth instead of stepped.',
       optional: true,
@@ -39,6 +40,7 @@ registerNodeType({
     },
   },
   output: 'field',
+  outputSemantic: 'elevation',
   generateChunk: terraceChunk,
 });
 

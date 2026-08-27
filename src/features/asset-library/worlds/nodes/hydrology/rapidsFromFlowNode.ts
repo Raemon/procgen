@@ -11,14 +11,16 @@ registerNodeType({
   whenToUse:
     'After rivers are painted, layered over them. Rapids are what tells you a river is descending: they cluster where a channel leaves the mountains and thin out as the grade eases toward the coast, so the same river reads as fast at the top and slow at the mouth.',
   inputs: {
-    flow: { kind: 'field', label: 'flow', help: 'A flow accumulation field. Only cells carrying at least the threshold flow can break white.' },
+    flow: { kind: 'field', expects: 'unit', label: 'flow', help: 'A flow accumulation field. Only cells carrying at least the threshold flow can break white.' },
     steepness: {
       kind: 'field',
+      expects: 'unit',
       label: 'steepness',
       help: 'A slope field measured over the same terrain. This is what separates a rapid from a calm reach.',
     },
     elevation: {
       kind: 'field',
+      expects: 'elevation',
       label: 'elevation',
       help: 'Optional terrain used to keep broken water out of the sea, where the shelf can be steep and the river layer has already stopped painting. Wire the same field the rivers read.',
       optional: true,

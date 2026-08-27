@@ -29,6 +29,7 @@ registerNodeType({
     },
     ground: {
       kind: 'field',
+      expects: 'elevation',
       label: 'ground',
       help: 'Optional elevation. Wire it in and a plot whose ground lies below the building line is left unbuilt, so no house stands in water.',
     },

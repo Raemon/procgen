@@ -1,5 +1,5 @@
 import { nodeTypesByCategory } from '@/features/asset-library/worlds/nodeRegistry';
-import type { NodeTypeDef } from '@/features/asset-library/worlds/nodeType';
+import { defaultParams, outputSemanticOf, type NodeTypeDef } from '@/features/asset-library/worlds/nodeType';
 
 export function nodeTypesMatching(query: string): Map<string, NodeTypeDef[]> {
   const needle = query.trim().toLowerCase();
@@ -18,5 +18,6 @@ export function firstNodeTypeIn(byCategory: Map<string, NodeTypeDef[]>): NodeTyp
 }
 
 function describesNodeType(def: NodeTypeDef, category: string): string {
-  return `${def.title} ${def.type} ${category}`.toLowerCase();
+  const semantic = outputSemanticOf(def, defaultParams(def)) ?? '';
+  return `${def.title} ${def.type} ${category} ${semantic}`.toLowerCase();
 }

@@ -76,6 +76,7 @@ registerNodeType({
     },
   },
   output: 'field',
+  outputSemantic: 'elevation',
   generateChunk: tectonicUpliftChunk,
 });
 

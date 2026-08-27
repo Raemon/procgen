@@ -25,6 +25,7 @@ registerNodeType({
     },
     elevation: {
       kind: 'field',
+      expects: 'elevation',
       label: 'elevation',
       help: 'The final eroded elevation, used to thin the soil above the shoreline shelf.',
     },
@@ -58,6 +59,7 @@ registerNodeType({
     },
   },
   output: 'field',
+  outputSemantic: 'unit',
   generateChunk: volcanicFertilityChunk,
 });
 

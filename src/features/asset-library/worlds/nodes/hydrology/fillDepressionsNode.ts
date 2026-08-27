@@ -13,7 +13,7 @@ registerNodeType({
   whenToUse:
     'Before flow accumulation. Raw noise is full of closed hollows, so downhill tracing dies a few tiles from its spring; filling them first is what turns disconnected trickles into a branching river network. Subtract this from the original terrain to find the lakes it implies.',
   inputs: {
-    elevation: { kind: 'field', label: 'elevation', help: 'The terrain to make drainable. Read across chunk edges within the window radius.' },
+    elevation: { kind: 'field', expects: 'elevation', label: 'elevation', help: 'The terrain to make drainable. Read across chunk edges within the window radius.' },
   },
   params: {
     seaLevel: {
@@ -44,6 +44,7 @@ registerNodeType({
     },
   },
   output: 'field',
+  outputSemantic: 'elevation',
   generateChunk: fillDepressionsChunk,
 });
 

@@ -13,6 +13,7 @@ registerNodeType({
   inputs: {
     elevation: {
       kind: 'field',
+      expects: 'elevation',
       label: 'elevation',
       help: 'The final eroded elevation. Anything below sea level is crossed by boat and priced accordingly.',
     },
@@ -47,6 +48,7 @@ registerNodeType({
     },
   },
   output: 'field',
+  outputSemantic: 'cost',
   generateChunk: travelCostChunk,
 });
 

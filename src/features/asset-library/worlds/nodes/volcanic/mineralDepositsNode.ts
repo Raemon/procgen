@@ -29,11 +29,13 @@ registerNodeType({
     },
     elevation: {
       kind: 'field',
+      expects: 'elevation',
       label: 'elevation',
       help: 'The final eroded elevation, read across chunk edges so deposits never land in the sea.',
     },
     islandBirth: {
       kind: 'field',
+      expects: 'years',
       label: 'island birth',
       help: 'When land first broke water here. A deposit is datable from this plus the ripening age below; without it the host cone\u2019s own eruption date is used instead.',
     },

@@ -11,7 +11,7 @@ registerNodeType({
   whenToUse:
     'Right before you threshold terrain into tiles. Raw noise is single-humped, so most of the world sits near the sea line and every coast is fringed with shallows; this pushes it apart into real basins and real land.',
   inputs: {
-    source: { kind: 'field', label: 'source', help: 'The elevation field to reshape.' },
+    source: { kind: 'field', expects: 'elevation', label: 'source', help: 'The elevation field to reshape.' },
   },
   params: {
     seaLevel: {
@@ -34,6 +34,7 @@ registerNodeType({
     },
   },
   output: 'field',
+  outputSemantic: 'elevation',
   generateChunk: hypsometricChunk,
 });
 

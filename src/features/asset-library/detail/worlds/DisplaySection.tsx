@@ -13,6 +13,8 @@ import {
   type DisplayBinding,
 } from '@/features/asset-library/worlds/display/displayBinding';
 import type { MarkerBinding } from '@/features/asset-library/worlds/display/markerAppearance';
+import { nodeTypeOf } from '@/features/asset-library/worlds/nodeRegistry';
+import { outputSemanticOf, type FieldSemantic } from '@/features/asset-library/worlds/nodeType';
 import type { NodeInstance } from '@/features/asset-library/worlds/pipeline/pipelineState';
 import type { ValueKind } from '@/features/asset-library/worlds/values/chunkValues';
 import { classes } from '@/features/app-shell/controls/classes';
@@ -47,6 +49,7 @@ export function DisplaySection({ node, kind }: { node: NodeInstance; kind: Value
     <div className="mt-2 border-t border-dashed border-panel-edge pt-2">
       <KnobRow label="display" tip={displayModeTooltip(kind)}>
         <Select
+          warn={elevationMisreadsTheField(node)}
           value={node.display.mode}
           options={displayModesForKind(kind).map((mode) => ({
             value: mode,
@@ -68,6 +71,15 @@ export function DisplaySection({ node, kind }: { node: NodeInstance; kind: Value
       {node.display.mode === 'items' && <ItemRows node={node} binding={node.display} />}
     </div>
   );
+}
+
+const NOT_A_HEIGHT: readonly FieldSemantic[] = ['years', 'cost'];
+
+function elevationMisreadsTheField(node: NodeInstance): boolean {
+  const def = nodeTypeOf(node.type);
+  if (node.display.mode !== 'elevation' || !def) return false;
+  const semantic = outputSemanticOf(def, node.params);
+  return semantic !== undefined && NOT_A_HEIGHT.includes(semantic);
 }
 
 function PieceRows({

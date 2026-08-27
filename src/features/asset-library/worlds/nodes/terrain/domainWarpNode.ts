@@ -19,11 +19,13 @@ registerNodeType({
     },
     offsetX: {
       kind: 'field',
+      expects: 'unit',
       label: 'offset x',
       help: 'Drives horizontal displacement: 0.5 means no shift, 0 and 1 shift by the full strength each way. Use a low-frequency noise field.',
     },
     offsetY: {
       kind: 'field',
+      expects: 'unit',
       label: 'offset y',
       help: 'Same for vertical displacement. Leave unwired to warp along one axis only.',
       optional: true,
@@ -41,6 +43,7 @@ registerNodeType({
     },
   },
   output: 'field',
+  outputSemantic: 'raw',
   generateChunk: domainWarpChunk,
 });
 

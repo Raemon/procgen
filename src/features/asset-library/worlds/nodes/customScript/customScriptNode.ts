@@ -51,6 +51,7 @@ registerScriptNodeType({
     },
   },
   output: (params) => params.outputKind as ValueKind,
+  outputSemantic: 'raw',
   generateChunk: runScriptChunk,
 });
 

@@ -10,7 +10,7 @@ registerNodeType({
   whenToUse:
     'The main way fields become visible terrain. Stack several of these on one noise field, each with a higher threshold and "(empty)" below, to get biome bands like ocean → sand → grass → peaks.',
   inputs: {
-    source: { kind: 'field', label: 'source', help: 'The field to split — usually a noise field, or a combine of several.' },
+    source: { kind: 'field', expects: 'unit', label: 'source', help: 'The field to split — usually a noise field, or a combine of several.' },
   },
   params: {
     threshold: {

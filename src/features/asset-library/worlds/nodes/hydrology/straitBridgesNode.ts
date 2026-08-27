@@ -16,6 +16,7 @@ registerNodeType({
   inputs: {
     water: {
       kind: 'field',
+      expects: 'elevation',
       label: 'water',
       help: 'The field that decides where water is — usually the same terrain your sea layer reads. Cells at or below sea level count as water.',
     },

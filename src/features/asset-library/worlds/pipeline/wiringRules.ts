@@ -1,5 +1,5 @@
 import { nodeTypeOf } from '../nodeRegistry';
-import { outputKindOf, type InputSpec } from '../nodeType';
+import { outputKindOf, outputSemanticOf, type FieldSemantic, type InputSpec } from '../nodeType';
 import { nodeIndexById, type NodeInstance, type PipelineState } from './pipelineState';
 
 export function wiringCandidates(
@@ -32,6 +32,21 @@ export function dropInvalidWires(state: PipelineState): void {
       if (sourceId && !isWireValid(state, nodeIndex, spec, sourceId)) node.inputs[name] = null;
     }
   });
+}
+
+const INTERCHANGEABLE_SEMANTICS: readonly FieldSemantic[] = ['unit', 'elevation', 'mask'];
+
+export function wiringMismatch(source: NodeInstance, spec: InputSpec): string | null {
+  const def = nodeTypeOf(source.type);
+  if (!def || !spec.expects) return null;
+  const produced = outputSemanticOf(def, source.params);
+  if (!produced || !semanticsClash(produced, spec.expects)) return null;
+  return `${source.label} reads as ${produced}; this input is written for ${spec.expects}`;
+}
+
+function semanticsClash(produced: FieldSemantic, expects: FieldSemantic): boolean {
+  if (produced === expects || produced === 'raw' || expects === 'raw') return false;
+  return !INTERCHANGEABLE_SEMANTICS.includes(produced) || !INTERCHANGEABLE_SEMANTICS.includes(expects);
 }
 
 function sourceMatchesSpec(source: NodeInstance, spec: InputSpec): boolean {

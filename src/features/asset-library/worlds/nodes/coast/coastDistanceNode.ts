@@ -21,7 +21,7 @@ registerNodeType({
   whenToUse:
     'Whenever a band should follow the shape of the coast rather than a height contour: beaches of an even width, a continental shelf that shallows toward land, sea ice or reefs, or drier interiors far from any ocean.',
   inputs: {
-    elevation: { kind: 'field', label: 'elevation', help: 'The terrain whose shoreline is measured, read across chunk edges out to the range.' },
+    elevation: { kind: 'field', expects: 'elevation', label: 'elevation', help: 'The terrain whose shoreline is measured, read across chunk edges out to the range.' },
   },
   params: {
     seaLevel: {
@@ -43,6 +43,7 @@ registerNodeType({
     },
   },
   output: 'field',
+  outputSemantic: 'distance',
   generateChunk: coastDistanceChunk,
 });
 

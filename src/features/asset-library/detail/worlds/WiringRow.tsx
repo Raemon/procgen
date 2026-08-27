@@ -1,7 +1,7 @@
 import { useEditedPipeline } from './editing/editedPipelineContext';
 import type { InputSpec } from '@/features/asset-library/worlds/nodeType';
 import type { NodeInstance } from '@/features/asset-library/worlds/pipeline/pipelineState';
-import { wiringCandidates } from '@/features/asset-library/worlds/pipeline/wiringRules';
+import { wiringCandidates, wiringMismatch } from '@/features/asset-library/worlds/pipeline/wiringRules';
 import { KnobRow } from '@/features/app-shell/controls/KnobRow';
 import { Select } from '@/features/app-shell/controls/Select';
 import { wiringTooltip } from './help/wiringTooltip';
@@ -20,14 +20,15 @@ export function WiringRow({
 }) {
   const { store, perform } = useEditedPipeline();
   const wiredTo = node.inputs[inputName] ?? UNWIRED;
+  const mismatch = mismatchOfWiredSource(store.nodes(), wiredTo, spec);
   return (
     <div
       onMouseEnter={() => highlightWireSource(wiredTo || null)}
       onMouseLeave={() => highlightWireSource(null)}
     >
-      <KnobRow label={`← ${spec.label}`} tip={wiringTooltip(spec)}>
+      <KnobRow label={`← ${spec.label}`} tip={wiringTooltip(spec, mismatch)}>
         <Select
-          warn={missingWire(node, inputName, spec)}
+          warn={missingWire(node, inputName, spec) || mismatch !== null}
           value={wiredTo}
           options={wiringOptions(store.nodes(), node, spec)}
           onChange={(value) =>
@@ -37,6 +38,15 @@ export function WiringRow({
       </KnobRow>
     </div>
   );
+}
+
+function mismatchOfWiredSource(
+  nodes: readonly NodeInstance[],
+  wiredTo: string,
+  spec: InputSpec,
+): string | null {
+  const source = nodes.find((candidate) => candidate.id === wiredTo);
+  return source ? wiringMismatch(source, spec) : null;
 }
 
 function missingWire(node: NodeInstance, inputName: string, spec: InputSpec): boolean {

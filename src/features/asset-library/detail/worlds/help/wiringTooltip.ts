@@ -1,10 +1,10 @@
-import type { InputSpec } from '@/features/asset-library/worlds/nodeType';
+import { FIELD_SEMANTIC_MEANINGS, type InputSpec } from '@/features/asset-library/worlds/nodeType';
 import type { TooltipContent, TooltipOption } from '@/features/app-shell/tooltips/tooltipContent';
 
-export function wiringTooltip(spec: InputSpec): TooltipContent {
+export function wiringTooltip(spec: InputSpec, mismatch: string | null = null): TooltipContent {
   return {
     title: `input: ${spec.label}`,
-    body: spec.help,
+    body: mismatch ? `${spec.help}\n\n${mismatch}.` : spec.help,
     options: [placeholderOption(spec), candidateOption(spec)],
     when: 'Only nodes above this one are listed — reorder with ↑/↓ to make a source available.',
   };
@@ -19,6 +19,8 @@ function candidateOption(spec: InputSpec): TooltipOption {
   const kindWord = spec.kind === 'any' ? 'any value' : spec.kind;
   return {
     name: `listed nodes`,
-    meaning: `Earlier nodes producing ${kindWord}; the chosen node's output feeds this input, even if that node displays as hidden.`,
+    meaning:
+      `Earlier nodes producing ${kindWord}; the chosen node's output feeds this input, even if that node displays as hidden.` +
+      (spec.expects ? ` This input is written for ${spec.expects}: ${FIELD_SEMANTIC_MEANINGS[spec.expects]}.` : ''),
   };
 }
