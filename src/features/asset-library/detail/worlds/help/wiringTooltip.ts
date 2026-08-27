@@ -21,6 +21,9 @@ function candidateOption(spec: InputSpec): TooltipOption {
     name: `listed nodes`,
     meaning:
       `Earlier nodes producing ${kindWord}; the chosen node's output feeds this input, even if that node displays as hidden.` +
-      (spec.expects ? ` This input is written for ${spec.expects}: ${FIELD_SEMANTIC_MEANINGS[spec.expects]}.` : ''),
+      (spec.expects ? ` This input is written for ${spec.expects}: ${FIELD_SEMANTIC_MEANINGS[spec.expects]}.` : '') +
+      (spec.requiresPointAttributes
+        ? ` It reads ${spec.requiresPointAttributes.join(', ')} off each point; a source carrying none of that is guessed at.`
+        : ''),
   };
 }
