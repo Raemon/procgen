@@ -9,7 +9,7 @@ export function mesaBadlands(): ExamplePipeline {
   return {
     name: 'mesa badlands',
     description:
-      'A dry country of flat-topped buttes standing over a sand floor. Every mesa is the same stack of beds — red mudstone, grey conglomerate, pale sandstone, buff silt under a hard grey cap — sliced into level benches, so the same stripes line up from one butte to the next across miles of empty air. Most cliffs are sealed walls; a third of the upward steps are unstepped ramps, and finding them is how you get anywhere. Scree collects along every riser and dry washes thread the floor between them.',
+      'A dry country of flat-topped buttes standing over a sand floor. Every mesa is the same stack of beds — pale sandstone banded with thin grey conglomerate under a dark hard cap — sliced into level benches, so the same stripes line up from one butte to the next across miles of empty air. Most cliffs are sealed walls; a third of the upward steps are unstepped ramps, and finding them is how you get anywhere. Scree collects along every riser and dry washes thread the floor between them.',
     state: {
       seed: 811,
       daylight: 1,
