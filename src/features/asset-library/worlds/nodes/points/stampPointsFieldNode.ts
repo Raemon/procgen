@@ -171,7 +171,7 @@ registerNodeType({
       label: 'gather radius',
       help: 'How far, in tiles, this node looks for points to stamp — the one knob that decides what it costs. It cannot be worked out for you: once a radius comes from a point attribute, knowing how far to look would mean already having gathered the points. Set it to the largest radius any point can have, or stamps will be cut off at chunk borders; set it far higher than that and every chunk pays for points it never uses.',
       min: 1,
-      max: 512,
+      max: 256,
       default: 48,
     },
   },

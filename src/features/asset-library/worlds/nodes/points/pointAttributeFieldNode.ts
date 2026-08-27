@@ -151,7 +151,7 @@ registerNodeType({
       label: 'gather radius',
       help: 'How far, in tiles, this node looks for points — the one knob that decides what it costs. Set it to the largest reach any point can have; anything less clips the answer at chunk borders, anything more is paid for on every chunk.',
       min: 1,
-      max: 512,
+      max: 256,
       default: 96,
     },
   },
