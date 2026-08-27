@@ -11,6 +11,7 @@ import { checkCustomScriptNodes } from '@/features/asset-library/worlds/__tests_
 import { checkPipelineSanitizeAndEditing } from '@/features/asset-library/worlds/__tests__/pipelineSanitizeAndEditing.test';
 import { checkStoredWorldsSurviveLoading } from '@/features/asset-library/worlds/__tests__/storedWorldsSurviveLoading.test';
 import { checkFieldSemantics, checkPointAttributes } from '@/features/asset-library/worlds/__tests__/fieldSemantics.test';
+import { checkParamKindsAndGating } from '@/features/asset-library/worlds/__tests__/paramKindsAndGating.test';
 import { checkAsciiSnapshotAndPlayerFooting } from '@/features/game/__tests__/asciiSnapshotAndPlayerFooting.test';
 import { checkFaceArtEditingOps } from '@/features/asset-library/__tests__/faceArtEditingOps.test';
 import { checkTileSurfaceRendering } from '@/features/asset-library/__tests__/tileSurfaceRendering.test';
@@ -92,6 +93,7 @@ describe('pipeline sanitize and editing', () => checkPipelineSanitizeAndEditing(
 describe('stored worlds survive loading', () => checkStoredWorldsSurviveLoading(check));
 describe('what a field value means', () => checkFieldSemantics(check));
 describe('what a point carries', () => checkPointAttributes(check));
+describe('param kinds and gating', () => checkParamKindsAndGating(check));
 describe('the ascii snapshot', () => checkAsciiSnapshotAndPlayerFooting(check));
 describe('face art editing', () => checkFaceArtEditingOps(check));
 describe('tile surfaces', () => checkTileSurfaceRendering(check));

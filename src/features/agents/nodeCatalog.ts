@@ -35,7 +35,8 @@ function pipelineNodeJson(node: NodeInstance, position: number) {
 
 export function nodeTypesJson() {
   return {
-    knob_note: 'every param value is a number except custom-script select/code params',
+    knob_note:
+      'every param value is a number except pointKey knobs and custom-script select/code params, which are strings',
     semantic_note:
       'output_semantic and an input\'s expects say what the numbers in a field MEAN — unit, elevation, mask, cost, years, distance or raw. They never make a wire invalid; they only tell you when a field is being read as something it is not.',
     point_note:
@@ -88,6 +89,9 @@ function paramSpecJson(spec: ParamSpec) {
   }
   if (spec.kind === 'toggle') return { kind: spec.kind, label: spec.label, help: spec.help, default: spec.default };
   if (spec.kind === 'tile') return { kind: spec.kind, label: spec.label, help: spec.help };
+  if (spec.kind === 'pointKey') {
+    return { kind: spec.kind, label: spec.label, help: spec.help, default: spec.default, from: spec.from };
+  }
   if (spec.kind === 'select') {
     return { kind: spec.kind, label: spec.label, help: spec.help, default: spec.default, options: spec.options, option_help: spec.optionHelp };
   }

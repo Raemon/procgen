@@ -15,27 +15,36 @@ export interface ChoiceOption {
   help: string;
 }
 
-export type KnobParamSpec =
-  | { kind: 'number'; label: string; help: string; min: number; max: number; step: number; default: number }
-  | { kind: 'int'; label: string; help: string; min: number; max: number; default: number }
-  | { kind: 'choice'; label: string; help: string; options: readonly ChoiceOption[]; default: number }
-  | { kind: 'toggle'; label: string; help: string; default: 0 | 1 }
-  | { kind: 'tile'; label: string; help: string };
+export interface ParamGate {
+  visibleWhen?: { param: string; equals: ParamValue };
+}
 
-export type ScriptOnlyParamSpec =
-  | {
-      kind: 'select';
-      label: string;
-      help: string;
-      options: readonly string[];
-      optionHelp: Record<string, string>;
-      default: string;
-    }
-  | { kind: 'code'; label: string; help: string; default: string };
+export type KnobParamSpec = ParamGate &
+  (
+    | { kind: 'number'; label: string; help: string; min: number; max: number; step: number; default: number }
+    | { kind: 'int'; label: string; help: string; min: number; max: number; default: number }
+    | { kind: 'choice'; label: string; help: string; options: readonly ChoiceOption[]; default: number }
+    | { kind: 'toggle'; label: string; help: string; default: 0 | 1 }
+    | { kind: 'tile'; label: string; help: string }
+    | { kind: 'pointKey'; label: string; help: string; from: string; default: string }
+  );
+
+export type ScriptOnlyParamSpec = ParamGate &
+  (
+    | {
+        kind: 'select';
+        label: string;
+        help: string;
+        options: readonly string[];
+        optionHelp: Record<string, string>;
+        default: string;
+      }
+    | { kind: 'code'; label: string; help: string; default: string }
+  );
 
 export type ParamSpec = KnobParamSpec | ScriptOnlyParamSpec;
 
-export const KNOB_PARAM_KINDS = ['number', 'int', 'choice', 'toggle', 'tile'] as const;
+export const KNOB_PARAM_KINDS = ['number', 'int', 'choice', 'toggle', 'tile', 'pointKey'] as const;
 
 export function isKnobParamSpec(spec: ParamSpec): spec is KnobParamSpec {
   return (KNOB_PARAM_KINDS as readonly string[]).includes(spec.kind);
@@ -120,6 +129,10 @@ export function outputSemanticOf(
   params: Record<string, ParamValue>,
 ): FieldSemantic | undefined {
   return typeof def.outputSemantic === 'function' ? def.outputSemantic(params) : def.outputSemantic;
+}
+
+export function paramIsVisible(spec: ParamSpec, params: Record<string, ParamValue>): boolean {
+  return !spec.visibleWhen || params[spec.visibleWhen.param] === spec.visibleWhen.equals;
 }
 
 export function defaultParamValue(spec: ParamSpec): ParamValue {

@@ -175,7 +175,7 @@ registerNodeCommand({
     param: { kind: 'text', help: "one of the node type's param names" },
     value: {
       kind: 'number',
-      help: 'a number for knobs and tile links; a string only for custom-script params',
+      help: 'a number for knobs and tile links; a string for point-attribute knobs and custom-script params',
     },
   },
   example: { action: 'set_param', node_id: 'n1', param: 'scale', value: 0.5 },
@@ -363,14 +363,26 @@ function acceptParamValue(
   raw: unknown,
 ): AcceptedParam {
   if (spec.kind === 'code' || spec.kind === 'select') return acceptScriptValue(spec, raw);
+  if (spec.kind === 'pointKey') return acceptPointKey(spec, raw);
   const read = readNumber({ value: raw }, 'value');
   if (!read.ok) return { ok: false, failure: commandFailed('invalid_value', `'${spec.label}' takes a number`) };
   return acceptKnobValue(context, spec, read.value);
 }
 
+function acceptPointKey(spec: ParamSpec & { kind: 'pointKey' }, raw: unknown): AcceptedParam {
+  if (typeof raw === 'string' && raw.length > 0) return { ok: true, value: raw };
+  return {
+    ok: false,
+    failure: commandFailed(
+      'invalid_value',
+      `'${spec.label}' takes the name of a point attribute carried by whatever is wired into '${spec.from}'`,
+    ),
+  };
+}
+
 function acceptKnobValue(
   context: CommandContext,
-  spec: Exclude<ParamSpec, { kind: 'code' } | { kind: 'select' }>,
+  spec: Exclude<ParamSpec, { kind: 'code' } | { kind: 'select' } | { kind: 'pointKey' }>,
   value: number,
 ): AcceptedParam {
   if (spec.kind === 'number') return { ok: true, value: clamp(value, spec.min, spec.max) };

@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react';
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
 import { useEditedPipeline } from './editing/editedPipelineContext';
 import { nodeTypeOf } from '@/features/asset-library/worlds/nodeRegistry';
-import { outputKindOf } from '@/features/asset-library/worlds/nodeType';
+import { outputKindOf, paramIsVisible } from '@/features/asset-library/worlds/nodeType';
 import type { NodeInstance } from '@/features/asset-library/worlds/pipeline/pipelineState';
 import { classes } from '@/features/app-shell/controls/classes';
 import { ROW_HOVER_GROUP } from '@/features/app-shell/controls/revealOnRowHover';
@@ -70,15 +70,18 @@ export function NodeCard({
               {Object.entries(def.inputs).map(([name, spec]) => (
                 <WiringRow key={name} node={node} inputName={name} spec={spec} />
               ))}
-              {Object.entries(def.params).map(([name, spec]) => (
-                <ParamRow
-                  key={name}
-                  spec={spec}
-                  tileAssets={tileAssets}
-                  value={node.params[name]!}
-                  onChange={(value) => perform('set_param', { node_id: node.id, param: name, value })}
-                />
-              ))}
+              {Object.entries(def.params)
+                .filter(([, spec]) => paramIsVisible(spec, node.params))
+                .map(([name, spec]) => (
+                  <ParamRow
+                    key={name}
+                    node={node}
+                    spec={spec}
+                    tileAssets={tileAssets}
+                    value={node.params[name]!}
+                    onChange={(value) => perform('set_param', { node_id: node.id, param: name, value })}
+                  />
+                ))}
               {def.pointAttributes && <PointAttributesRow attributes={def.pointAttributes} />}
               <DisplaySection node={node} kind={outputKindOf(def, node.params)} />
             </>
