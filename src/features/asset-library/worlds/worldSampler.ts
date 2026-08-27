@@ -39,6 +39,7 @@ export interface Marker {
   faceArt: CubeFaceArt | null;
   tag: string;
   standingHeight?: number;
+  standingFootprint?: readonly [number, number];
   billboardHeight?: number;
   seeThroughUnpaintedArt?: boolean;
 }

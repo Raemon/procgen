@@ -57,5 +57,6 @@ function placementForMarker(marker: Marker, elevation: number): TilePlacement {
     sunkenAsWater: false,
     shape: DEFAULT_TILE_SHAPE,
     facing: 0,
+    footprint: marker.standingFootprint,
   };
 }

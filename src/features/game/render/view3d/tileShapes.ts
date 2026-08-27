@@ -62,7 +62,7 @@ export function standingFixtureShape(): TileShape {
   return {
     geometry: (faces) => sharedTileBoxGeometry(1, 1, 1, faces),
     positionOf: (p) => [p.x + 0.5, p.elevation + p.height / 2, p.y + 0.5],
-    scaleOf: (p) => [1, p.height, 1],
+    scaleOf: (p) => [p.footprint?.[0] ?? 1, p.height, p.footprint?.[1] ?? 1],
   };
 }
 

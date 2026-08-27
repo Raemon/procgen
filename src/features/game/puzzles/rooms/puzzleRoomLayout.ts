@@ -44,6 +44,10 @@ export function roomAcrossTheGate(
   return { roomX: layout.roomX + step[0], roomY: layout.roomY + step[1] };
 }
 
+export function gateRunsEastWest(layout: PuzzleRoomLayout, gate: PuzzleFixture): boolean {
+  return gateStep(layout, gate)[0] !== 0;
+}
+
 function gateStep(layout: PuzzleRoomLayout, gate: PuzzleFixture): [number, number] {
   if (layout.gates.east.includes(gate)) return [1, 0];
   if (layout.gates.west.includes(gate)) return [-1, 0];

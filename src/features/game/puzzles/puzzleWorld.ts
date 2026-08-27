@@ -4,6 +4,7 @@ import type { Marker } from '@/features/asset-library/worlds/worldSampler';
 import type { ReadOnlyPipelineStore } from '@/features/app-shell/runtime/readOnlyAssets';
 import { fixtureLook } from './fixtures/fixtureAppearance';
 import type { PuzzleFixture } from './fixtures/puzzleFixture';
+import { standingFootprintOf } from './fixtures/standingFootprint';
 import { fixtureAction } from './interaction/fixtureAction';
 import { crateCanBePushed, pushCrate, type WalkableProbe } from './interaction/pushCrate';
 import { reportDoor, useFixture, type UseOutcome } from './interaction/useFixture';
@@ -168,7 +169,7 @@ export class PuzzleWorld {
       const at = livePosition(layout, this.state, fixture);
       if (at.x < minX || at.x > maxX || at.y < minY || at.y > maxY) continue;
       const look = fixtureLook(fixture.kind, this.fixtureReadsAsDone(layout, fixture));
-      into.push({ x: at.x, y: at.y, ...look });
+      into.push({ x: at.x, y: at.y, ...look, ...standingFootprintOf(layout, fixture, look) });
     }
   }
 

@@ -1,6 +1,7 @@
 import type { CubeFaceArt } from '@/features/asset-library/tiles/tileFaceArt';
 import {
   DOOR_FACE_ART,
+  DOOR_OPENS_TO_A_LEAF,
   DOOR_STANDS_TALL,
   LEVER_FACE_ART,
   LEVER_STANDS_LOW,
@@ -13,6 +14,7 @@ export interface FixtureLook {
   tag: string;
   faceArt: CubeFaceArt | null;
   standingHeight?: number;
+  standingThickness?: number;
   seeThroughUnpaintedArt?: boolean;
 }
 
@@ -65,6 +67,7 @@ const LOOKS: Record<PuzzleFixtureKind, { off: FixtureLook; on: FixtureLook }> = 
       tag: 'unlocked door, standing open',
       faceArt: DOOR_FACE_ART.on,
       standingHeight: DOOR_STANDS_TALL,
+      standingThickness: DOOR_OPENS_TO_A_LEAF,
       seeThroughUnpaintedArt: true,
     },
   },
