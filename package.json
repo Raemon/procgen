@@ -36,6 +36,7 @@
     "cultures:write": "bash scripts/runTool.sh writeCulturesDataFile",
     "assets:generate": "esbuild scripts/generateRandomAssets.ts --bundle --format=esm --platform=node --log-level=error --outfile=dist/generateRandomAssets.mjs && node dist/generateRandomAssets.mjs",
     "features:probe": "bash scripts/runTool.sh probeWorldFeatures",
+    "terrain:probe": "bash scripts/runTool.sh probeTerrainProfile",
     "labyrinth:probe": "bash scripts/runTool.sh probeLabyrinthChunks",
     "village:probe": "bash scripts/runTool.sh probeVillageSnapshot",
     "volcanic:probe": "bash scripts/runTool.sh probeVolcanicWorld",

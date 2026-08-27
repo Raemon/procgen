@@ -92,7 +92,7 @@ export function mesaBadlands(): ExamplePipeline {
           label: 'stacked benches',
           folder: 'the rock',
           comment:
-            'The node that makes this world what it is: the platform is snapped to seven levels, so every hillside becomes a flat bench ending in a vertical riser, and the same seven levels recur on every butte for miles. Where the pass noise runs high the original smooth slope is kept instead, leaving ramps through the cliffs. The threshold is tuned rather than guessed: at 0.65 roughly two out of every three upward steps in the country are still sealed walls, and the remaining third links up into enough continuous routes that a walker starting on the floor can reach the caprock of most buttes within a mile.',
+            'The node that makes this world what it is: the platform is snapped to seven levels, so every hillside becomes a flat bench ending in a vertical riser, and the same seven levels recur on every butte for miles. Where the pass noise runs high the original smooth slope is kept instead, leaving ramps through the cliffs. Every riser is two navigation levels and so is a sealed wall on its own; the passes are the only way up, and the threshold decides whether they link into routes or strand each bench. Run `bash scripts/runTool.sh probeTerrainProfile --world "mesa badlands"` after changing it: at 0.65 a walker starting on the basin floor reaches every one of the seven levels and 85% of the surrounding country.',
           enabled: true,
           params: { levels: TERRACE_LEVELS, passesAbove: 0.65 },
           inputs: { source: 'platform', passes: 'passes' },
