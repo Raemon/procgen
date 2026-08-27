@@ -24,7 +24,6 @@ export interface TilePlacement {
   sunkenAsWater: boolean;
   shape: TileShapeKind;
   facing: number;
-  footprint?: readonly [number, number];
 }
 
 export interface TilePlacementsByShape {

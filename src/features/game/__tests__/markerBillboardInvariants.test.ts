@@ -22,12 +22,6 @@ import {
   standingFixtureShape,
   voxelShape,
 } from '../render/view3d/tileShapes';
-import { fixtureLook } from '../puzzles/fixtures/fixtureAppearance';
-import { DOOR_OPENS_TO_A_LEAF } from '../puzzles/fixtures/fixtureFaceArt';
-import { fixture } from '../puzzles/fixtures/puzzleFixture';
-import { standingFootprintOf } from '../puzzles/fixtures/standingFootprint';
-import type { PuzzleFixture } from '../puzzles/fixtures/puzzleFixture';
-import type { PuzzleRoomLayout } from '../puzzles/rooms/puzzleRoomLayout';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 
 const SIDE_MATERIALS = [0, 1, 4, 5];
@@ -41,7 +35,6 @@ export function checkMarkerBillboardInvariants(check: CheckReporter): void {
   checkPropArtIsSharedSoItsTexturesAreBuiltOnce(check);
   checkMarkersWithoutATileStayPins(check);
   checkMarkersReachTheShapeTheirLookAsksFor(check);
-  checkAnOpenedDoorStandsThinnerThanTheCellItSwungOutOf(check);
 }
 
 function checkScatteredPropsDrawCrossedQuadsRatherThanACube(check: CheckReporter): void {
@@ -170,57 +163,6 @@ function checkMarkersReachTheShapeTheirLookAsksFor(check: CheckReporter): void {
     placements.billboards[0]?.baseColor.endsWith('00') === true,
   );
   check('a billboard marker carries the height its tile asked for', placements.billboards[0]?.height === 2.6);
-}
-
-function checkAnOpenedDoorStandsThinnerThanTheCellItSwungOutOf(check: CheckReporter): void {
-  const opened = fixtureLook('gate', true);
-  check('a locked door still fills the doorway it blocks', fixtureLook('gate', false).standingThickness === undefined);
-  check(
-    'an opened door is as thick as the band its top face paints across the doorway',
-    opened.standingThickness === DOOR_OPENS_TO_A_LEAF && DOOR_OPENS_TO_A_LEAF < 1,
-  );
-  const eastGate = fixture('gate/east', 'gate', { x: 8, y: 3 });
-  const northGate = fixture('gate/north', 'gate', { x: 3, y: 0 });
-  const layout = roomWithGates(eastGate, northGate);
-  check(
-    'a door across an east-west passage thins along x and still spans the opening',
-    footprintOf(layout, eastGate)?.join() === [DOOR_OPENS_TO_A_LEAF, 1].join(),
-  );
-  check(
-    'a door across a north-south passage thins along y instead',
-    footprintOf(layout, northGate)?.join() === [1, DOOR_OPENS_TO_A_LEAF].join(),
-  );
-  check(
-    'a lever asks for no footprint, so it still fills its cell',
-    standingFootprintOf(layout, fixture('lever', 'lever', { x: 2, y: 2 }), fixtureLook('lever', false))
-      .standingFootprint === undefined,
-  );
-  check(
-    'a thin footprint reaches the shape as a scale across the passage only',
-    standingFixtureShape()
-      .scaleOf?.({ ...placementStandingAt(2), footprint: [DOOR_OPENS_TO_A_LEAF, 1] })
-      .join() === [DOOR_OPENS_TO_A_LEAF, 2, 1].join(),
-  );
-}
-
-function footprintOf(layout: PuzzleRoomLayout, gate: PuzzleFixture): readonly number[] | undefined {
-  return standingFootprintOf(layout, gate, fixtureLook('gate', true)).standingFootprint;
-}
-
-function roomWithGates(eastGate: PuzzleFixture, northGate: PuzzleFixture): PuzzleRoomLayout {
-  return {
-    roomX: 0,
-    roomY: 0,
-    key: '0,0',
-    interior: { x: 1, y: 1, width: 6, height: 6 },
-    kindName: 'lever',
-    level: 1,
-    entrance: { x: 4, y: 7 },
-    fixtures: [],
-    gates: { east: [eastGate], south: [], west: [], north: [northGate] },
-    opensWhen: [],
-    solution: [],
-  };
 }
 
 function propTiles(): TileDef[] {
