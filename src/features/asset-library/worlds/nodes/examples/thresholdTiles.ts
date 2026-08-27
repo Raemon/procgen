@@ -5,7 +5,7 @@ import { tilesValue, type ChunkValue } from '../../values/chunkValues';
 registerNodeType({
   type: 'thresholdTiles',
   title: 'threshold → tiles',
-  category: 'examples',
+  category: 'basics',
   description: 'Splits a field at a threshold and paints a tile on each side. Pick "empty" to leave cells for lower layers.',
   whenToUse:
     'The main way fields become visible terrain. Stack several of these on one noise field, each with a higher threshold and "(empty)" below, to get biome bands like ocean → sand → grass → peaks.',

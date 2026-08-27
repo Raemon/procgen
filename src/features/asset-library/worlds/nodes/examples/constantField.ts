@@ -4,7 +4,7 @@ import { fieldValue } from '../../values/chunkValues';
 registerNodeType({
   type: 'constantField',
   title: 'constant field',
-  category: 'examples',
+  category: 'basics',
   description: 'Fills every cell with one value. The smallest node — copy it to start your own.',
   whenToUse:
     'A flat baseline: combine it with noise to bias terrain up or down, or use it as a stand-in input while debugging a pipeline.',

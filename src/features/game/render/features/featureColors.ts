@@ -10,7 +10,7 @@ const FALLBACK_PALETTE: readonly string[] = [
 const CATEGORY_COLORS: Readonly<Record<string, string>> = {
   landmark: '#f2c14e',
   settlement: '#e08a5e',
-  examples: '#7bc86f',
+  basics: '#7bc86f',
   water: '#5aa7e0',
   terrain: '#b0977a',
   biome: '#8cbf5f',

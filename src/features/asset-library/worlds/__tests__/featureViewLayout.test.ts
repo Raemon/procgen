@@ -149,7 +149,7 @@ function featureAt(key: string, x: number, y: number, extent: FeatureExtent | nu
     key,
     nodeId: 'n1',
     nodeLabel: 'things',
-    category: 'examples',
+    category: 'basics',
     x,
     y,
     extent,

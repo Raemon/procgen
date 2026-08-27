@@ -6,7 +6,7 @@ import { fieldValue, type ChunkValue } from '../../values/chunkValues';
 registerNodeType({
   type: 'noiseField',
   title: 'noise field',
-  category: 'examples',
+  category: 'basics',
   description: 'Seeded fractal value noise sampled at world position, so chunks always line up.',
   whenToUse:
     'The usual starting point for organic terrain. Wire it into thresholds for biome bands, into scatter masks to tie placement to terrain, or into combines to mix several noises.',

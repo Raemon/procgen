@@ -5,7 +5,7 @@ import { pointsValue, type ChunkValue, type PointsChunk } from '../../values/chu
 registerNodeType({
   type: 'scatterPoints',
   title: 'scatter points',
-  category: 'examples',
+  category: 'basics',
   description:
     'Drops points using a per-cell world-position hash, optionally masked by a field band. The observation legend names them by this node\'s label.',
   whenToUse:

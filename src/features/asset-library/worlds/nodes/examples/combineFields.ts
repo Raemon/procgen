@@ -21,7 +21,7 @@ const OPERATION_CHOICES = [
 registerNodeType({
   type: 'combineFields',
   title: 'combine fields',
-  category: 'examples',
+  category: 'basics',
   description: 'Cell-by-cell math on two upstream fields.',
   whenToUse:
     'Shaping terrain out of ingredients: multiply a noise by a mask to confine it, add bumps onto a base, or max two shapes together into one landmass.',
