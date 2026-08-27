@@ -22,6 +22,7 @@ import { checkCharactersOnStage } from '@/features/game/__tests__/charactersOnSt
 import { checkViewRecentering } from '@/features/game/__tests__/viewRecentering.test';
 import { checkRandomizeAndPermutation } from '@/features/asset-library/worlds/__tests__/randomizeAndPermutation.test';
 import { checkTerrainFieldNodes } from '@/features/asset-library/worlds/__tests__/terrainFieldNodes.test';
+import { checkShapeAndGrainNodes } from '@/features/asset-library/worlds/__tests__/shapeAndGrainNodes.test';
 import { checkHydrologyNodes } from '@/features/asset-library/worlds/__tests__/hydrologyNodes.test';
 import { checkVolcanicWorldInvariants } from '@/features/asset-library/worlds/__tests__/volcanicWorldInvariants.test';
 import { checkSettlementSpread } from '@/features/asset-library/worlds/__tests__/settlementSpread.test';
@@ -104,6 +105,7 @@ describe('characters on stage', () => checkCharactersOnStage(check));
 describe('view recentering', () => checkViewRecentering(check));
 describe('randomize and permutation', () => checkRandomizeAndPermutation(check));
 describe('terrain field nodes', () => checkTerrainFieldNodes(check));
+describe('shaping fields and giving them a grain', () => checkShapeAndGrainNodes(check));
 describe('hydrology nodes', () => checkHydrologyNodes(check));
 describe('the volcanic world', () => checkVolcanicWorldInvariants(check));
 describe('settlement spread', () => checkSettlementSpread(check));

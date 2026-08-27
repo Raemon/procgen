@@ -1,7 +1,8 @@
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
 import { fieldValue, type ChunkValue } from '../../values/chunkValues';
-import { gatherFieldWindow, windowValueAt, type FieldWindow } from '../../values/fieldWindow';
+import { gradientAcross } from '../../values/fieldGradient';
+import { gatherFieldWindow, type FieldWindow } from '../../values/fieldWindow';
 
 registerNodeType({
   type: 'slopeField',
@@ -61,9 +62,6 @@ function steepnessAt(
   spanInTiles: number,
   gain: number,
 ): number {
-  const acrossX =
-    windowValueAt(window, cellX + radiusCells, cellY) - windowValueAt(window, cellX - radiusCells, cellY);
-  const acrossY =
-    windowValueAt(window, cellX, cellY + radiusCells) - windowValueAt(window, cellX, cellY - radiusCells);
+  const { acrossX, acrossY } = gradientAcross(window, cellX, cellY, radiusCells);
   return Math.min(1, (Math.hypot(acrossX, acrossY) / spanInTiles) * gain);
 }

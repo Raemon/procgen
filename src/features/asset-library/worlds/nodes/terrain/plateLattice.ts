@@ -3,17 +3,20 @@ import { hashLatticePoint } from '../../noise/hashLatticePoint';
 const TAU = Math.PI * 2;
 const CELLS_BEYOND_EDGE = 2;
 const OCEAN_SALT = 0x1f83d9ab;
+const ID_SALT = 0x9b05688c;
 const DRIFT_SALT = 0x5be0cd19;
 
 export interface PlateLatticeSpec {
   plateSize: number;
   oceanFraction: number;
   seed: number;
+  jitter?: number;
 }
 
 export interface Plate {
   siteX: number;
   siteY: number;
+  hash: number;
   oceanic: boolean;
   driftX: number;
   driftY: number;
@@ -22,6 +25,7 @@ export interface Plate {
 export interface PlateContact {
   plate: Plate;
   neighbor: Plate;
+  siteDistance: number;
   boundaryDistance: number;
   convergence: number;
 }
@@ -66,6 +70,7 @@ export function plateContactAt(plates: readonly Plate[], worldX: number, worldY:
   return {
     plate: nearest,
     neighbor: second,
+    siteDistance: Math.sqrt(nearestSquared),
     boundaryDistance: (Math.sqrt(secondSquared) - Math.sqrt(nearestSquared)) / 2,
     convergence: convergenceOf(nearest, second),
   };
@@ -75,6 +80,7 @@ function plateOfCell(cellX: number, cellY: number, spec: PlateLatticeSpec): Plat
   const driftAngle = hashLatticePoint(cellX, cellY, spec.seed ^ DRIFT_SALT) * TAU;
   return {
     ...jitteredSite(cellX, cellY, spec),
+    hash: hashLatticePoint(cellX, cellY, spec.seed ^ ID_SALT),
     oceanic: hashLatticePoint(cellX, cellY, spec.seed ^ OCEAN_SALT) < spec.oceanFraction,
     driftX: Math.cos(driftAngle),
     driftY: Math.sin(driftAngle),
@@ -86,10 +92,15 @@ function jitteredSite(
   cellY: number,
   spec: PlateLatticeSpec,
 ): { siteX: number; siteY: number } {
+  const jitter = spec.jitter ?? 1;
   return {
-    siteX: (cellX + hashLatticePoint(cellX, cellY, spec.seed)) * spec.plateSize,
-    siteY: (cellY + hashLatticePoint(cellX, cellY, spec.seed + 1)) * spec.plateSize,
+    siteX: (cellX + jittered(hashLatticePoint(cellX, cellY, spec.seed), jitter)) * spec.plateSize,
+    siteY: (cellY + jittered(hashLatticePoint(cellX, cellY, spec.seed + 1), jitter)) * spec.plateSize,
   };
+}
+
+function jittered(hash: number, jitter: number): number {
+  return hash * jitter + (1 - jitter) * 0.5;
 }
 
 function convergenceOf(plate: Plate, neighbor: Plate): number {

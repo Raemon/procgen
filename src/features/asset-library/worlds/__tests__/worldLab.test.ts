@@ -85,7 +85,7 @@ function checkStoppingAndTraining(check: CheckReporter): void {
 
   const queue: (() => void)[] = [];
   const paused = new WorldLab((task) => queue.push(task));
-  const stopping = startRollRun(paused, { ...WALK, count: 4, seed: 7 });
+  const stopping = startRollRun(paused, { ...WALK, count: 4, seed: 11 });
   queue.shift()!();
   queue.shift()!();
   check('a run only walks the worlds it has been given time for', stopping.status === 'running' && stopping.done === 2);

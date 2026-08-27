@@ -32,9 +32,9 @@ registerNodeType({
   title: 'terrain noise',
   category: 'terrain',
   description:
-    'Gradient-noise terrain with a choice of crest shape, plus direct control of how fast detail shrinks and how fast it fades.',
+    'Gradient-noise terrain with a choice of crest shape, direct control of how fast detail shrinks and how fast it fades, and a grain that can be stretched out along one direction.',
   whenToUse:
-    'The realistic replacement for a plain noise field. Use "ridged" for mountain ranges and "rolling" for lowlands, then blend the two with a blend fields node.',
+    'The realistic replacement for a plain noise field. Use "ridged" for mountain ranges and "rolling" for lowlands, then blend the two with a blend fields node. Raise stretch when the ground should have a direction rather than blobs: dune trains combed by one wind, silt bars along a channel, drumlins, or the dip of tilted strata.',
   inputs: {},
   params: {
     scale: {
@@ -79,6 +79,24 @@ registerNodeType({
       step: 0.01,
       default: 0.5,
     },
+    angle: {
+      kind: 'number',
+      label: 'grain angle',
+      help: 'Which way the pattern repeats, in degrees anticlockwise from +x — for dunes, the wind. The stretched crests run at right angles to it. Nothing changes until stretch leaves 1.',
+      min: 0,
+      max: 360,
+      step: 5,
+      default: 0,
+    },
+    stretch: {
+      kind: 'number',
+      label: 'stretch',
+      help: 'How far features are drawn out across the angle. 1 is the shapeless noise everything else in this world makes; 6 or more gives dune trains, silt bars, strata and drumlins their length.',
+      min: 1,
+      max: 12,
+      step: 0.5,
+      default: 1,
+    },
   },
   output: 'field',
   outputSemantic: 'elevation',
@@ -90,14 +108,32 @@ function terrainNoiseChunk(ctx: ChunkGenCtx): ChunkValue {
   const seed = ctx.hashSeed('terrain noise');
   const scale = ctx.params.scale as number;
   const spec = octaveSpecOf(ctx);
+  const grain = grainOf(ctx);
   for (let y = 0; y < ctx.size; y++) {
     const worldY = ctx.originY + y;
     for (let x = 0; x < ctx.size; x++) {
       const worldX = ctx.originX + x;
-      field[y * ctx.size + x] = terrainOctaves(worldX * scale, worldY * scale, seed, spec);
+      const acrossGrain = worldX * grain.cos + worldY * grain.sin;
+      const alongGrain = (worldY * grain.cos - worldX * grain.sin) / grain.stretch;
+      field[y * ctx.size + x] = terrainOctaves(acrossGrain * scale, alongGrain * scale, seed, spec);
     }
   }
   return fieldValue(field);
+}
+
+interface Grain {
+  cos: number;
+  sin: number;
+  stretch: number;
+}
+
+function grainOf(ctx: ChunkGenCtx): Grain {
+  const radians = ((ctx.params.angle as number) * Math.PI) / 180;
+  return {
+    cos: Math.cos(radians),
+    sin: Math.sin(radians),
+    stretch: Math.max(1e-6, ctx.params.stretch as number),
+  };
 }
 
 function octaveSpecOf(ctx: ChunkGenCtx): OctaveSpec {
