@@ -18,8 +18,11 @@ export function cubeFaceMaterials(
   art: CubeFaceArt,
   baseColor: string,
   sideBudget: number = MAX_FACE_ART_SIZE,
+  drawnFromBothSides = false,
 ): THREE.Material[] {
-  return BOX_FACE_ORDER.map((face) => faceMaterial(art, face, baseColor, sideBudget));
+  return BOX_FACE_ORDER.map((face) =>
+    faceMaterial(art, face, baseColor, sideBudget, drawnFromBothSides),
+  );
 }
 
 function faceMaterial(
@@ -27,6 +30,7 @@ function faceMaterial(
   face: CubeFace,
   baseColor: string,
   sideBudget: number,
+  drawnFromBothSides: boolean,
 ): THREE.MeshLambertMaterial {
   const seeThrough = isTransparentInk(baseColor);
   const frames = faceFrameTextures(art, face, unpaintedInk(baseColor), sideBudget, faceArtPlan(art, face));
@@ -36,7 +40,7 @@ function faceMaterial(
     normalScale: new THREE.Vector2(NORMAL_RELIEF, NORMAL_RELIEF),
     transparent: seeThrough,
     alphaTest: seeThrough ? 0.5 : 0,
-    side: seeThrough ? THREE.DoubleSide : THREE.FrontSide,
+    side: drawnFromBothSides ? THREE.DoubleSide : THREE.FrontSide,
   });
   playFaceArtFrames(material, frames, frameMsOf(art));
   return material;
