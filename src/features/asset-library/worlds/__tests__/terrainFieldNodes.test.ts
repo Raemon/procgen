@@ -19,6 +19,9 @@ function terrainNodesState(): PipelineState {
     { id: 'terracedWithPasses', type: 'terraceField', params: { levels: 4, passesAbove: 0.55 }, inputs: { source: 'rolling', passes: 'ridged' } },
     { id: 'places', type: 'regionPlan', params: { pitch: 192, focusShare: 0.3, falloff: 0.6, role: 0 }, inputs: {} },
     { id: 'wilds', type: 'regionPlan', params: { pitch: 192, focusShare: 0.3, falloff: 0.6, role: 1 }, inputs: {} },
+    { id: 'bowl', type: 'basinField', params: { centerX: 0, centerY: 0, radius: 128, floor: 0.1 }, inputs: {} },
+    { id: 'edge', type: 'contourLine', params: { level: 0.5, width: 1 }, inputs: { source: 'rolling' } },
+    { id: 'flatEdge', type: 'contourLine', params: { level: 0.5, width: 1 }, inputs: { source: 'flat' } },
   ]);
 }
 
@@ -95,5 +98,46 @@ export function checkTerrainFieldNodes(check: CheckReporter): void {
     'a region plan makes a few strong places amid genuine wilderness rather than sameness everywhere',
     places.some((value) => value > 0.7) &&
       places.filter((value) => value === 0).length > places.length / 4,
+  );
+
+  const bowlAlongX = [0, 32, 64, 96, 120].map((x) => fieldAt(terrainNodes.evaluator, 'bowl', x, 0));
+  check(
+    'a basin holds its floor at the center, rises toward the rim, and stays flat at full height beyond it',
+    Math.abs(bowlAlongX[0]! - 0.1) < 1e-6 &&
+      bowlAlongX.every((value, i) => i === 0 || value > bowlAlongX[i - 1]!) &&
+      fieldAt(terrainNodes.evaluator, 'bowl', 200, 0) === 1 &&
+      fieldAt(terrainNodes.evaluator, 'bowl', 0, -200) === 1,
+  );
+
+  const NEIGHBORS = [
+    [1, 0],
+    [-1, 0],
+    [0, 1],
+    [0, -1],
+  ] as const;
+  let contourCells = 0;
+  let contourAgreesWithSource = true;
+  let contourSeen = 0;
+  for (let y = -48; y < 48; y++) {
+    for (let x = -48; x < 48; x++) {
+      const marked = fieldAt(terrainNodes.evaluator, 'edge', x, y);
+      contourSeen++;
+      if (marked !== 0 && marked !== 1) contourAgreesWithSource = false;
+      const below = fieldAt(terrainNodes.evaluator, 'rolling', x, y) < 0.5;
+      const touches = NEIGHBORS.some(
+        ([dx, dy]) => fieldAt(terrainNodes.evaluator, 'rolling', x + dx, y + dy) >= 0.5,
+      );
+      if (marked === 1) contourCells++;
+      if ((marked === 1) !== (below && touches)) contourAgreesWithSource = false;
+    }
+  }
+  check(
+    'a contour line marks exactly the cells below its level that touch a cell at it, including across chunk seams',
+    contourAgreesWithSource && contourCells > 0,
+  );
+  check('a contour line is a thin line rather than a region', contourCells < contourSeen / 5);
+  check(
+    'a field that never crosses the level has no contour',
+    samplesOf('flatEdge', 48).every((value) => value === 0),
   );
 }

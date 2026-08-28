@@ -32,6 +32,7 @@ import { checkTemplates } from '@/features/asset-library/worlds/__tests__/templa
 import { checkWorldSeedsAreDocuments } from '@/features/asset-library/worlds/__tests__/worldSeedsAreDocuments.test';
 import { checkSavedWorlds } from '@/features/asset-library/worlds/__tests__/savedWorlds.test';
 import { checkNamedWorldSeeds } from '@/features/asset-library/worlds/__tests__/namedWorldSeeds.test';
+import { checkSunkenLabyrinthInvariants } from '@/features/asset-library/worlds/__tests__/sunkenLabyrinthInvariants.test';
 import { checkWorldSeedLab } from '@/features/asset-library/worlds/__tests__/worldSeedLab.test';
 import { checkGenerationLabCharts } from '@/features/asset-library/worlds/__tests__/generationLabCharts.test';
 import { checkWorldShotQueue } from '@/features/game/__tests__/worldShotQueue.test';
@@ -111,6 +112,7 @@ describe('node folders', () => checkNodeFolders(check));
 describe('standing and broken water', () => checkStandingAndBrokenWater(check));
 describe('templates', () => checkTemplates(check));
 describe('the named world seeds', () => checkNamedWorldSeeds(check));
+describe('the sunken labyrinth', () => checkSunkenLabyrinthInvariants(check));
 describe('the world lab', () => checkWorldSeedLab(check));
 describe('the generation lab charts', () => checkGenerationLabCharts(check));
 describe('the world shot queue', () => checkWorldShotQueue(check));
