@@ -54,6 +54,7 @@ import { checkVillageInvariants } from '@/features/asset-library/worlds/__tests_
 import { checkCultureEditing } from '@/features/asset-library/__tests__/cultureEditing.test';
 import { checkShapedTileInvariants } from '@/features/asset-library/__tests__/shapedTileInvariants.test';
 import { checkMarkerBillboardInvariants } from '@/features/game/__tests__/markerBillboardInvariants.test';
+import { checkGauntOneBillboard } from '@/features/asset-library/creatures/__tests__/gauntOneBillboard.test';
 import { checkSourceArchitecture } from './sourceArchitecture.test';
 import { sourceCatalogTests } from './sourceCatalog.test';
 import { sourceExplorerStateTests } from './sourceExplorerState.test';
@@ -130,6 +131,7 @@ describe('tile art mips', () => checkTileArtMipInvariants(check));
 describe('tile art storage', () => checkTileArtStorageInvariants(check));
 describe('shaped tiles and per-voxel facing', () => checkShapedTileInvariants(check));
 describe('scattered prop billboards', () => checkMarkerBillboardInvariants(check));
+describe('the gaunt one billboard', () => checkGauntOneBillboard(check));
 describe('pieces', () => checkPieceInvariants(check));
 describe('villages', () => checkVillageInvariants(check));
 describe('the cultures editor', () => checkCultureEditing(check));
