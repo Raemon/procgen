@@ -259,5 +259,23 @@
     "bodyWidth": 1,
     "bodyHeight": 2,
     "billboardArt": "moonlit-dwarf"
+  },
+  {
+    "id": 8,
+    "name": "gaunt one",
+    "symbol": "G",
+    "color": "#9db98a",
+    "faceArt": null,
+    "behavior": 3,
+    "phasing": 0,
+    "speed": 2.2,
+    "sight": 14,
+    "roam": 9,
+    "kind": 0,
+    "inventory": null,
+    "billboard": null,
+    "bodyWidth": 0.9,
+    "bodyHeight": 2,
+    "billboardArt": "gaunt-one"
   }
 ]
