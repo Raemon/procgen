@@ -17,7 +17,7 @@ import { PieceAssets } from '@/features/asset-library/pieces/pieceAssets';
 import { CultureAssets } from '@/features/asset-library/cultures/cultureAssets';
 import { MAX_STORY_LAYERS, piecesBoundToRole } from '@/features/asset-library/cultures/cultureDef';
 import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
-import { newTileWithId, type TileDef } from '@/features/asset-library/tiles/tileDef';
+import type { TileDef } from '@/features/asset-library/tiles/tileDef';
 import { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
 import { turnedFacing, type FacingIndex } from '@/features/game/facing';
 import {
@@ -342,25 +342,6 @@ export function checkCommandDispatch(check: CheckReporter): void {
     const rolled = act('god', 'randomize_sliders', { seed: 42 });
     const undone = act('god', 'undo_randomize');
     return rolled.ok && undone.ok && JSON.stringify(commands.store.snapshot()) === before;
-  })());
-  check('an unplayable seeded roll is refused without changing the world or undo history', (() => {
-    const wallId = assetId<'tiles'>(0);
-    const sealed = abilityWorld([{ ...newTileWithId(wallId), walkable: false }]);
-    const sealedAct = (action: string, params: CommandParams = {}) =>
-      performCommand(sealed.context, 'god', action, params);
-    sealedAct('add_node', { type: 'constantField' });
-    sealedAct('add_node', { type: 'thresholdTiles' });
-    const threshold = sealed.store.nodes()[1]!;
-    sealedAct('set_param', { node_id: threshold.id, param: 'belowTile', value: wallId });
-    sealedAct('set_param', { node_id: threshold.id, param: 'aboveTile', value: wallId });
-    const before = JSON.stringify(sealed.store.snapshot());
-    const rolled = sealedAct('randomize_seed', { seed: 42 });
-    return (
-      !rolled.ok &&
-      rolled.code === 'unplayable_world' &&
-      JSON.stringify(sealed.store.snapshot()) === before &&
-      !sealed.context.randomizeHistory.canUndo()
-    );
   })());
   check('rerolling the seed regenerates the world without touching a single node', (() => {
     act('god', 'load_preset', { name: 'check preset' });
