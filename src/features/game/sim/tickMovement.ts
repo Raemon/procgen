@@ -60,10 +60,11 @@ function beginJump(
 ): StepDelta | null {
   body.cooldown = JUMP_COOLDOWN_TICKS;
   body.moveDir = -1;
-  if (jump === 'up' || !rules.jumpRules) return null;
+  const hopInPlace = { dx: 0, dy: 0, jumped: true };
+  if (jump === 'up' || !rules.jumpRules) return hopInPlace;
   const heading = facingVector(jump);
   const delta = jumpLandingDelta(rules.jumpRules, x, y, heading.dx, heading.dy);
-  if (!delta) return null;
+  if (!delta) return hopInPlace;
   body.moveDir = jump;
   return delta;
 }

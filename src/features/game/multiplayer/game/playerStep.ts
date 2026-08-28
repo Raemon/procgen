@@ -21,6 +21,7 @@ export function stepPlayerEntity(
     jumpRules: world.stepRules,
   });
   if (!delta) return;
+  if (delta.dx === 0 && delta.dy === 0) return;
   const nextX = entity.x + delta.dx;
   const nextY = entity.y + delta.dy;
   if (!delta.jumped && !stepIsAllowed(world.stepRules, nextX, nextY, delta.dx, delta.dy)) return;

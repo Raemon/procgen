@@ -86,8 +86,8 @@ export class World {
   }
 
   landAfterJump(dx: number, dy: number): void {
-    if (dx === 0 && dy === 0) return;
     this.events.emit('player-jumped');
+    if (dx === 0 && dy === 0) return;
     this.playerX += dx;
     this.playerY += dy;
     this.events.emit('player-moved');

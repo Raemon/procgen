@@ -77,8 +77,12 @@ export class MultiplayerSession {
 
   jump(): void {
     const dir = this.intentDir;
-    if (this.online) this.client.sendJump(dir ?? JUMP_IN_PLACE);
-    else this.localSim.jump(dir);
+    if (this.online) {
+      this.client.sendJump(dir ?? JUMP_IN_PLACE);
+      this.world.announceJump();
+    } else {
+      this.localSim.jump(dir);
+    }
   }
 
   isOnline(): boolean {
