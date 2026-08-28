@@ -81,13 +81,13 @@ export class World {
   tryJump(dx: number, dy: number): boolean {
     const delta = jumpLandingDelta(this.rules, this.playerX, this.playerY, dx, dy);
     if (!delta) return false;
-    this.events.emit('player-jumped');
     this.landAfterJump(delta.dx, delta.dy);
     return true;
   }
 
   landAfterJump(dx: number, dy: number): void {
     if (dx === 0 && dy === 0) return;
+    this.events.emit('player-jumped');
     this.playerX += dx;
     this.playerY += dy;
     this.events.emit('player-moved');
