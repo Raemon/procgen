@@ -2,14 +2,14 @@ import { sanitizeChatText } from '../../chat/sanitizeChatText';
 import { SpeechBubbles } from '../../chat/speechBubbles';
 import type { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
 import { sanitizePipeline } from '@/features/asset-library/worlds/pipeline/sanitizePipeline';
-import { JUMP_IN_PLACE, ORDER_DIR, ORDER_NONE } from '../../sim/movementOrder';
+import { ORDER_DIR, ORDER_NONE } from '../../sim/movementOrder';
 import { stepDirIndex, type WalkabilityProbe } from '../../sim/tickMovement';
 import type { FacingIndex } from '../../facing';
 import type { PuzzleWorld } from '../../puzzles/puzzleWorld';
 import type { World } from '../../world';
 import { LocalMovementSim } from './localMovementSim';
 import { NetClient, type NetStatus } from './netClient';
-import type { PuzzlesMsg, SnapshotRow, WelcomeMsg } from './protocol';
+import { JUMP_IN_PLACE, type PuzzlesMsg, type SnapshotRow, type WelcomeMsg } from './protocol';
 import { RemotePlayers } from './remotePlayers';
 
 const TURN_ECHO_QUIET_MS = 400;

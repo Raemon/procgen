@@ -3,6 +3,7 @@ import type { Duplex } from 'node:stream';
 import { WebSocketServer, type RawData, type WebSocket } from 'ws';
 import { decodeClient } from '../client/codec';
 import {
+  JUMP_IN_PLACE,
   Op,
   PROTOCOL_VERSION,
   type ClientMsg,
@@ -12,7 +13,6 @@ import {
 import { sanitizeChatText } from '../../chat/sanitizeChatText';
 import { useHereOrAhead } from '../../puzzles/interaction/useAtPose';
 import {
-  JUMP_IN_PLACE,
   ORDER_DIR,
   ORDER_NONE,
   holdDirection,

@@ -44,7 +44,7 @@ import { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
 import { playerCanEnter } from '@/features/game/puzzles/playerCanEnter';
 import { isWalkableTile } from '@/features/game/tileWalkability';
 import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
-import { JUMP_CLIMB_LIMIT, climbGateFrom } from '@/features/game/climbing';
+import { climbGatesFrom } from '@/features/game/climbing';
 import { World } from '@/features/game/world';
 import { ChangeNotifier } from './changeNotifier';
 import type {
@@ -131,11 +131,12 @@ export function createAppRuntime(): AppRuntime {
   const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileAssets, sampler.tileAt(x, y));
   const puzzles = new PuzzleWorld(store, tileIsWalkable);
   const isWalkableAt = (x: number, y: number) => tileIsWalkable(x, y) && !puzzles.blocksAt(x, y);
+  const characterGates = climbGatesFrom((x, y) => sampler.elevationAt(x, y));
   const world = new World(
     isWalkableAt,
     (x, y, dx, dy, mayPush) => puzzles.clearTheWay(x, y, dx, dy, mayPush),
-    climbGateFrom((x, y) => sampler.elevationAt(x, y)),
-    climbGateFrom((x, y) => sampler.elevationAt(x, y), JUMP_CLIMB_LIMIT),
+    characterGates.climbGateAt,
+    characterGates.jumpGateAt,
   );
   const walkIntoCratesToPushThem = playerCanEnter(isWalkableAt, puzzles, () => ({
     x: world.playerX,

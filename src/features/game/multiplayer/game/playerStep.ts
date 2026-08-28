@@ -1,5 +1,4 @@
 import { playerCanEnter, type PushablePlaces } from '../../puzzles/playerCanEnter';
-import { jumpLandingDelta } from '../../sim/jumpLanding';
 import { stepIsAllowed, type StepRules } from '../../sim/stepIsAllowed';
 import { tickMovement } from '../../sim/tickMovement';
 import type { Entity, EntityRegistry } from './entities';
@@ -19,7 +18,7 @@ export function stepPlayerEntity(
   const delta = tickMovement(entity, entity.x, entity.y, {
     isWalkable: canEnter,
     climbGateAt: world.stepRules.climbGateAt,
-    jumpTo: (fromX, fromY, dx, dy) => jumpLandingDelta(world.stepRules, fromX, fromY, dx, dy),
+    jumpRules: world.stepRules,
   });
   if (!delta) return;
   const nextX = entity.x + delta.dx;

@@ -9,9 +9,9 @@ export const ORDER_NONE = 0;
 export const ORDER_DIR = 1;
 export const ORDER_STEP = 2;
 
-export const JUMP_IN_PLACE = -1;
-
 export type OrderKind = typeof ORDER_NONE | typeof ORDER_DIR | typeof ORDER_STEP;
+
+export type JumpRequest = FacingIndex | 'up';
 
 export interface MovementOrder {
   kind: OrderKind;
@@ -23,7 +23,7 @@ export interface MovingBody {
   cooldown: number;
   moveDir: number;
   order: MovementOrder;
-  jump: number | null;
+  jump: JumpRequest | null;
 }
 
 export function idleOrder(): MovementOrder {
@@ -47,10 +47,10 @@ export function releaseOrder(body: MovingBody): void {
 }
 
 export function requestJump(body: MovingBody, dir: FacingIndex | null): void {
-  body.jump = dir ?? JUMP_IN_PLACE;
+  body.jump = dir ?? 'up';
 }
 
-export function takeJumpRequest(body: MovingBody): number | null {
+export function takeJumpRequest(body: MovingBody): JumpRequest | null {
   const jump = body.jump;
   body.jump = null;
   return jump;

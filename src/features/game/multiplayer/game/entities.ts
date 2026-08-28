@@ -1,5 +1,5 @@
 import type { EntityKind } from '../client/protocol';
-import { restingBody, type MovementOrder } from '../../sim/movementOrder';
+import { restingBody, type JumpRequest, type MovementOrder } from '../../sim/movementOrder';
 import type { FacingIndex } from '../../facing';
 
 export interface Entity {
@@ -13,7 +13,7 @@ export interface Entity {
   cooldown: number;
   moveDir: number;
   order: MovementOrder;
-  jump: number | null;
+  jump: JumpRequest | null;
   persistDirty: boolean;
 }
 

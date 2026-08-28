@@ -7,7 +7,6 @@ import {
 } from './vision/characterSight';
 import { jumpLandingDelta } from './sim/jumpLanding';
 import { NOTHING_IN_THE_WAY, stepIsAllowed, type StepRules } from './sim/stepIsAllowed';
-import type { StepDelta } from './sim/tickMovement';
 import { WorldEvents, type WorldEvent } from './worldEvents';
 
 const SNAP_SEARCH_RADIUS = 64;
@@ -42,13 +41,16 @@ export class World {
   facing: FacingIndex = 0;
   sightRadiusTiles = DEFAULT_CHARACTER_SIGHT_RADIUS_TILES;
   private readonly events = new WorldEvents();
+  private readonly rules: StepRules;
 
   constructor(
     private readonly isWalkableAt: WalkabilityProbe,
-    private readonly clearTheWay: ObstacleResolver = NOTHING_IN_THE_WAY,
+    clearTheWay: ObstacleResolver = NOTHING_IN_THE_WAY,
     private readonly climbGateAt: ClimbGate = ANY_CLIMB_ALLOWED,
-    private readonly jumpGateAt: ClimbGate = climbGateAt,
-  ) {}
+    jumpGateAt: ClimbGate = climbGateAt,
+  ) {
+    this.rules = { isWalkableAt, clearTheWay, climbGateAt, jumpGateAt };
+  }
 
   setSightRadiusTiles(radius: number): void {
     const clamped = clampSightRadiusTiles(radius);
@@ -63,37 +65,29 @@ export class World {
   }
 
   stepRules(): StepRules {
-    return {
-      isWalkableAt: this.isWalkableAt,
-      clearTheWay: this.clearTheWay,
-      climbGateAt: this.climbGateAt,
-      jumpGateAt: this.jumpGateAt,
-    };
+    return this.rules;
   }
 
   tryStep(dx: number, dy: number, mayPush = true): boolean {
     const nextX = this.playerX + dx;
     const nextY = this.playerY + dy;
-    if (!stepIsAllowed(this.stepRules(), nextX, nextY, dx, dy, mayPush)) return false;
+    if (!stepIsAllowed(this.rules, nextX, nextY, dx, dy, mayPush)) return false;
     this.playerX = nextX;
     this.playerY = nextY;
     this.events.emit('player-moved');
     return true;
   }
 
-  jumpLandingFrom(fromX: number, fromY: number, dx: number, dy: number): StepDelta | null {
-    return jumpLandingDelta(this.stepRules(), fromX, fromY, dx, dy);
-  }
-
   tryJump(dx: number, dy: number): boolean {
-    const delta = this.jumpLandingFrom(this.playerX, this.playerY, dx, dy);
+    const delta = jumpLandingDelta(this.rules, this.playerX, this.playerY, dx, dy);
     if (!delta) return false;
-    this.landAfterJump(delta.dx, delta.dy);
     this.events.emit('player-jumped');
+    this.landAfterJump(delta.dx, delta.dy);
     return true;
   }
 
   landAfterJump(dx: number, dy: number): void {
+    if (dx === 0 && dy === 0) return;
     this.playerX += dx;
     this.playerY += dy;
     this.events.emit('player-moved');

@@ -9,6 +9,8 @@ export const Op = {
   Snapshot: 10,
 } as const;
 
+export const JUMP_IN_PLACE = -1;
+
 export type OrderMsg = [typeof Op.Order, number, number];
 export type TurnMsg = [typeof Op.Turn, number];
 export type JumpMsg = [typeof Op.Jump, number];

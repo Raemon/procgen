@@ -32,6 +32,18 @@ export function climbGateFrom(
     navigationRiseBetween(elevationAt(fromX, fromY), elevationAt(toX, toY)) <= limit;
 }
 
+export interface ClimbGates {
+  climbGateAt: ClimbGate;
+  jumpGateAt: ClimbGate;
+}
+
+export function climbGatesFrom(elevationAt: ElevationProbe): ClimbGates {
+  return {
+    climbGateAt: climbGateFrom(elevationAt),
+    jumpGateAt: climbGateFrom(elevationAt, JUMP_CLIMB_LIMIT),
+  };
+}
+
 export function climbEffortOfRise(rise: number): number {
   return 1 + CLIMB_EFFORT_WEIGHT * Math.max(0, rise);
 }

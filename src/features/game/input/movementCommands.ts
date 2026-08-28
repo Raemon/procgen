@@ -7,7 +7,7 @@ import {
   climbGateFrom,
   navigationLevelOf,
 } from '@/features/game/climbing';
-import { JUMP_REACH_TILES } from '@/features/game/sim/jumpLanding';
+import { JUMP_REACH_TILES, LANDING_DISTANCES } from '@/features/game/sim/jumpLanding';
 import { isWalkableTile } from '@/features/game/tileWalkability';
 import {
   commandFailed,
@@ -109,7 +109,10 @@ registerCommand({
   params: {},
   example: { action: 'jump' },
   changesWorld: false,
-  apply: () => commandSucceeded('jumped straight up and landed where you stood'),
+  apply: (context) => {
+    context.actor.tryJump(0, 0);
+    return commandSucceeded('jumped straight up and landed where you stood');
+  },
 });
 
 for (const jump of CHARACTER_JUMPS) {
@@ -204,7 +207,7 @@ function jumpBy(context: CommandContext, step: Step): CommandResult {
 
 function jumpRefusal(context: CommandContext, dx: number, dy: number): string {
   const pose = context.actor.pose();
-  const reasons = [JUMP_REACH_TILES, 1].map((distance) =>
+  const reasons = LANDING_DISTANCES.map((distance) =>
     refusalAt(
       context,
       pose.x,

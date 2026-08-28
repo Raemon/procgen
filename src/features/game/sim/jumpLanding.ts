@@ -4,7 +4,7 @@ import type { StepDelta } from './tickMovement';
 
 export const JUMP_REACH_TILES = 2;
 
-const LANDING_DISTANCES = [JUMP_REACH_TILES, 1] as const;
+export const LANDING_DISTANCES = [JUMP_REACH_TILES, 1] as const;
 
 function jumpGateOf(rules: StepRules): ClimbGate {
   return rules.jumpGateAt ?? rules.climbGateAt ?? ANY_CLIMB_ALLOWED;
