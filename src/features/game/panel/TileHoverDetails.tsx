@@ -31,7 +31,7 @@ function whatTheAgentWouldSee(runtime: AppRuntime): AgentEyes {
   return {
     sampler: runtime.sampler,
     tileAssets: runtime.tileAssets,
-    overlay: runtime.puzzles,
+    overlay: runtime.agentOverlay,
     pose: { x: world.playerX, y: world.playerY, facing: world.facing },
     mode: runtime.playerMode(),
     sightRadiusTiles: world.sightRadiusTiles,

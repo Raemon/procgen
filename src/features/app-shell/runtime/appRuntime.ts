@@ -18,6 +18,8 @@ import { WalkOverPickup } from '@/features/asset-library/items/pickups/walkOverP
 import { MultiplayerSession } from '@/features/game/multiplayer/client/multiplayerSession';
 import { CreatureClock } from '@/features/game/creatureSim/creatureClock';
 import { CreatureSim } from '@/features/game/creatureSim/creatureSim';
+import { creatureAwareOverlay } from '@/features/agents/creatureMarkers';
+import type { ObservedOverlay } from '@/features/agents/observation';
 import { PipelineEvaluator } from '@/features/asset-library/worlds/eval/evaluator';
 import { EditablePipelines } from '@/features/asset-library/worlds/editing/editablePipelines';
 import type { EditedPipeline } from '@/features/asset-library/worlds/editing/editedPipeline';
@@ -97,6 +99,7 @@ export interface AppRuntime {
   cameraFocus: CameraFocus;
   hoveredTile: HoveredTile;
   puzzles: PuzzleWorld;
+  agentOverlay: ObservedOverlay;
   renderers: WorldRenderers;
   perform(action: string, params?: CommandParams): CommandResult;
   playerMode(): CommandMode;
@@ -154,6 +157,7 @@ export function createAppRuntime(): AppRuntime {
   const walkOverPickup = new WalkOverPickup({ creatures, items, groundItems }, pickupFeed);
   const sim = new CreatureSim({ sampler, creatureAssets: creatures, world, isWalkableAt });
   const clock = new CreatureClock(sim);
+  const agentOverlay = creatureAwareOverlay({ puzzles, sampler, creatures }, sim);
   const renderers = new WorldRenderers();
   const hoveredTile = new HoveredTile();
   const cameraFocus = new CameraFocus();
@@ -358,6 +362,7 @@ export function createAppRuntime(): AppRuntime {
     cameraFocus,
     hoveredTile,
     puzzles,
+    agentOverlay,
     renderers,
     perform,
     playerMode: () => playerMode,

@@ -1,6 +1,7 @@
 import type { AgentMode } from '../../../agents/agentMode';
 import {
   buildObservation,
+  viewSizeFor,
   type AgentObservation,
   type LegendEntry,
   type ObservedOverlay,
@@ -60,7 +61,7 @@ export class AgentTextView {
   private readonly characterPoll: ReturnType<typeof setInterval>;
   private drawnObservation: AgentObservation | null = null;
   private cellSize: MonospaceCellSize | null = null;
-  private drawnCharacters = '';
+  private drawnScene = '';
 
   constructor(
     container: HTMLElement,
@@ -68,7 +69,7 @@ export class AgentTextView {
     private readonly sampler: WorldSampler,
     private readonly tileAssets: ReadOnlyTileAssets,
     private readonly mode: AgentMode,
-    private readonly puzzles: ObservedOverlay,
+    private readonly overlay: ObservedOverlay,
     hoveredTile: HoveredTile,
     private readonly remotePlayers: RemotePlayers,
     private readonly cameraFocus: CameraFocus,
@@ -106,8 +107,8 @@ export class AgentTextView {
   }
 
   private drawIfCharactersMoved(): void {
-    const signature = charactersSignature(this.characters());
-    if (signature === this.drawnCharacters) return;
+    const characters = this.characters();
+    if (this.sceneSignature(characters) === this.drawnScene) return;
     this.draw();
   }
 
@@ -115,9 +116,28 @@ export class AgentTextView {
     return charactersInPlay(this.world, this.remotePlayers);
   }
 
+  private sceneSignature(characters: CharacterListing[]): string {
+    return `${charactersSignature(characters)}#${this.markersSignature()}`;
+  }
+
+  private markersSignature(): string {
+    const center = this.viewCenter();
+    const size = viewSizeFor(this.mode, this.world.sightRadiusTiles);
+    const viewport = viewportCenteredOn(center.x, center.y, size, size);
+    return this.overlay
+      .markersIn(
+        viewport.originX,
+        viewport.originY,
+        viewport.originX + size - 1,
+        viewport.originY + size - 1,
+      )
+      .map((marker) => `${marker.glyph}${marker.color}${marker.x},${marker.y}`)
+      .join('|');
+  }
+
   private render(): void {
     const characters = this.characters();
-    this.drawnCharacters = charactersSignature(characters);
+    this.drawnScene = this.sceneSignature(characters);
     const obs = (this.drawnObservation = withCharactersPainted(
       this.currentObservation(),
       characters,
@@ -141,7 +161,7 @@ export class AgentTextView {
 
   private cellInk(obs: AgentObservation, characters: CharacterListing[]): CellInk {
     const viewport = viewportCenteredOn(obs.position.x, obs.position.y, obs.viewSize, obs.viewSize);
-    const markers = pointOverlayLookup(this.sampler, viewport, this.puzzles);
+    const markers = pointOverlayLookup(this.sampler, viewport, this.overlay);
     const characterInks = characterInkLookup(characters);
     return (glyph, row, column) => {
       if (glyph === BLANK_GLYPH) return null;
@@ -181,7 +201,7 @@ export class AgentTextView {
       pose,
       this.mode,
       this.world.sightRadiusTiles,
-      this.puzzles,
+      this.overlay,
     );
   }
 
