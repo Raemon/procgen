@@ -40,15 +40,8 @@ function chaseTargetsPlayer(
   if (!chases || !playerInSight(creature, def, world)) return false;
   const towardPlayerX = world.playerX - creature.x;
   const towardPlayerY = world.playerY - creature.y;
-  const distance = Math.hypot(towardPlayerX, towardPlayerY);
-  if (distance <= CHASE_STANDOFF_TILES) {
-    creature.targetX = creature.x;
-    creature.targetY = creature.y;
-    return true;
-  }
-  const approach = distance - CHASE_STANDOFF_TILES;
-  creature.targetX = creature.x + (towardPlayerX / distance) * approach;
-  creature.targetY = creature.y + (towardPlayerY / distance) * approach;
+  const approach = Math.hypot(towardPlayerX, towardPlayerY) - CHASE_STANDOFF_TILES;
+  aimAlong(creature, towardPlayerX, towardPlayerY, Math.max(0, approach));
   return true;
 }
 
@@ -58,12 +51,14 @@ function fleeTargetsAwayFromPlayer(
   world: SimWorldView,
 ): boolean {
   if (def.behavior !== FLEE || !playerInSight(creature, def, world)) return false;
-  const awayX = creature.x - world.playerX;
-  const awayY = creature.y - world.playerY;
-  const length = Math.max(0.001, Math.hypot(awayX, awayY));
-  creature.targetX = creature.x + (awayX / length) * def.sight;
-  creature.targetY = creature.y + (awayY / length) * def.sight;
+  aimAlong(creature, creature.x - world.playerX, creature.y - world.playerY, def.sight);
   return true;
+}
+
+function aimAlong(creature: CreatureInstance, dirX: number, dirY: number, reach: number): void {
+  const length = Math.max(0.001, Math.hypot(dirX, dirY));
+  creature.targetX = creature.x + (dirX / length) * reach;
+  creature.targetY = creature.y + (dirY / length) * reach;
 }
 
 function nearHome(creature: CreatureInstance, def: CreatureDef): boolean {
