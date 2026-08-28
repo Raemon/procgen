@@ -40,8 +40,6 @@ import type {
 import type { LibraryStamp } from '@/infrastructure/server/persistence/docsRepo';
 import { RunningWorld } from '@/features/asset-library/worlds/running/runningWorld';
 import { runningWorldIn } from '@/features/asset-library/worlds/running/runningWorldStorage';
-import { overlayWithCreatures, spawnedCreatureMarkers } from '../creatureMarkers';
-import type { ObservedOverlay } from '../observation';
 
 const SPAWN_SEARCH_RADIUS = 128;
 
@@ -95,13 +93,6 @@ export function persistWorld(docs: DocSink, world: ServerWorld): void {
   docs.write('worldSeeds', world.worldSeeds.stored());
   docs.write('savedWorlds', world.savedWorlds.stored());
   docs.write('assetFolders', world.assetFolders.stored());
-}
-
-export function agentViewOverlay(world: ServerWorld): ObservedOverlay {
-  return overlayWithCreatures(
-    world.puzzles,
-    spawnedCreatureMarkers(world.sampler, world.creatures),
-  );
 }
 
 export function currentServerWorld(docs: DocSource, previous: ServerWorld | null): ServerWorld {

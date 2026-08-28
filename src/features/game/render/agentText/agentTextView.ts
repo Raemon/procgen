@@ -131,7 +131,7 @@ export class AgentTextView {
         viewport.originX + size - 1,
         viewport.originY + size - 1,
       )
-      .map((marker) => `${marker.glyph}${marker.x},${marker.y}`)
+      .map((marker) => `${marker.glyph}${marker.color}${marker.x},${marker.y}`)
       .join('|');
   }
 

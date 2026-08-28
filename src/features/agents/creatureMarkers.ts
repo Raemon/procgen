@@ -1,54 +1,39 @@
+import type { ReadOnlyCreatureAssets } from '@/features/app-shell/runtime/readOnlyAssets';
 import type { CreatureId } from '@/features/asset-library/asset';
-import type { CreatureDef } from '@/features/asset-library/creatures/creatureDef';
 import type { Marker, WorldSampler } from '@/features/asset-library/worlds/worldSampler';
-import { spawnKeyOf, type CreatureInstance } from '@/features/game/creatureSim/creatureInstance';
+import { spawnKeyOf } from '@/features/game/creatureSim/creatureInstance';
+import type { CreatureSim } from '@/features/game/creatureSim/creatureSim';
 import type { MarkerSource } from '@/features/game/render/markerSource';
 import type { ObservedOverlay } from './observation';
 
-export interface CreatureSpawnSource {
-  creatureSpawnsIn: WorldSampler['creatureSpawnsIn'];
+export type LiveCreatures = Pick<CreatureSim, 'active'>;
+
+const NOTHING_LIVE: LiveCreatures = { active: () => [] };
+
+export interface CreatureHabitat {
+  puzzles: ObservedOverlay;
+  sampler: WorldSampler;
+  creatures: ReadOnlyCreatureAssets;
 }
 
-export interface LiveCreatures {
-  active(): readonly CreatureInstance[];
-}
-
-export interface CreatureLookup {
-  byId(id: CreatureId): CreatureDef | undefined;
-}
-
-export function overlayWithCreatures(
-  base: ObservedOverlay,
-  creatures: MarkerSource,
+export function creatureAwareOverlay(
+  world: CreatureHabitat,
+  sim: LiveCreatures = NOTHING_LIVE,
 ): ObservedOverlay {
+  const creatures = creatureMarkers(world.sampler, world.creatures, sim);
   return {
     markersIn: (minX, minY, maxX, maxY) => [
-      ...base.markersIn(minX, minY, maxX, maxY),
+      ...world.puzzles.markersIn(minX, minY, maxX, maxY),
       ...creatures.markersIn(minX, minY, maxX, maxY),
     ],
-    actionAt: (x, y) => base.actionAt(x, y),
+    actionAt: (x, y) => world.puzzles.actionAt(x, y),
   };
 }
 
-export function spawnedCreatureMarkers(
-  sampler: CreatureSpawnSource,
-  creatures: CreatureLookup,
-): MarkerSource {
-  return {
-    markersIn: (minX, minY, maxX, maxY) => {
-      const markers: Marker[] = [];
-      for (const spawn of sampler.creatureSpawnsIn(minX, minY, maxX, maxY)) {
-        appendCreatureMarker(markers, creatures, spawn.creatureId, spawn.x, spawn.y);
-      }
-      return markers;
-    },
-  };
-}
-
-export function liveCreatureMarkers(
-  sim: LiveCreatures,
-  sampler: CreatureSpawnSource,
-  creatures: CreatureLookup,
+export function creatureMarkers(
+  sampler: WorldSampler,
+  creatures: ReadOnlyCreatureAssets,
+  sim: LiveCreatures = NOTHING_LIVE,
 ): MarkerSource {
   return {
     markersIn: (minX, minY, maxX, maxY) => {
@@ -72,7 +57,7 @@ export function liveCreatureMarkers(
 
 function appendCreatureMarker(
   markers: Marker[],
-  creatures: CreatureLookup,
+  creatures: ReadOnlyCreatureAssets,
   creatureId: CreatureId,
   x: number,
   y: number,

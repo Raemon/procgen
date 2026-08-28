@@ -10,14 +10,14 @@ import {
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { buildObservation, type AgentObservation } from '../observation';
 import { DEFAULT_CHARACTER_SIGHT_RADIUS_TILES } from '@/features/game/vision/characterSight';
+import { glyphAt, meadowTileDef, MEADOW_TILE, stubSampler } from './observationTestKit';
 
-const MEADOW_TILE = assetId<'tiles'>(0);
 const WALL_TILE = assetId<'tiles'>(1);
 const HEDGE_TILE = assetId<'tiles'>(2);
 const BENCH_TILE = assetId<'tiles'>(3);
 
 const occlusionTiles = new TileAssets([
-  { ...newTileWithId(MEADOW_TILE), name: 'meadow', symbol: '"', walkable: true, height: 1 },
+  meadowTileDef(),
   { ...newTileWithId(WALL_TILE), name: 'wall', symbol: '#', walkable: false, height: 2 },
   { ...newTileWithId(HEDGE_TILE), name: 'hedge', symbol: 'h', walkable: false, height: 1.9 },
   { ...newTileWithId(BENCH_TILE), name: 'bench', symbol: 'b', walkable: false, height: 0.5 },
@@ -96,21 +96,8 @@ function wallToTheNorthOf(blockerTile: number): WorldSampler {
 }
 
 function markerBehindTheWall(): WorldSampler {
-  const ground = wallToTheNorthOf(WALL_TILE);
   const marker = { x: 0, y: -WALL_STEPS_NORTH - 2, glyph: 'M', color: '#ff4444', faceArt: null, tag: 'monster' };
-  return { ...ground, markersIn: () => [marker] } as unknown as WorldSampler;
-}
-
-function stubSampler(
-  tileAt: (x: number, y: number) => number,
-  elevationAt: (x: number, y: number) => number = () => 0,
-): WorldSampler {
-  return { tileAt, elevationAt, markersIn: () => [], itemSpawnsIn: () => [] } as unknown as WorldSampler;
-}
-
-function glyphAt(observation: AgentObservation, dx: number, dy: number): string {
-  const center = Math.floor(observation.viewSize / 2);
-  return observation.view[center + dy]![center + dx]!;
+  return { ...wallToTheNorthOf(WALL_TILE), markersIn: () => [marker] } as unknown as WorldSampler;
 }
 
 function pastTheWall(observation: AgentObservation): string[] {

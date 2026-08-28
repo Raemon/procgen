@@ -9,7 +9,8 @@ import { commandsForMode } from '@/features/app-shell/runtime/commands/commandCa
 import { buildObservation, type AgentObservation } from '../observation';
 import { observationText } from '../observationText';
 import { startAutopilot } from './autopilot';
-import { agentViewOverlay, type ServerWorld, type WorldAccess } from './serverWorld';
+import { creatureAwareOverlay } from '../creatureMarkers';
+import type { ServerWorld, WorldAccess } from './serverWorld';
 import { newSession, sessionPose, type AgentSession, type SessionStore } from './sessions';
 import { failure, json, type ApiRequest, type ApiResponse } from './apiMessages';
 import { registerRoute, type RouteContext } from './routeRegistry';
@@ -197,7 +198,7 @@ function observe(session: AgentSession, world: ServerWorld, req: ApiRequest): Ap
     sessionPose(session),
     session.mode,
     session.sightRadiusTiles,
-    agentViewOverlay(world),
+    creatureAwareOverlay(world),
   );
   if (req.query.get('format') === 'text') {
     return { status: 200, contentType: 'text/plain; charset=utf-8', body: observationText(observation) };

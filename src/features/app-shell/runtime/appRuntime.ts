@@ -18,7 +18,7 @@ import { WalkOverPickup } from '@/features/asset-library/items/pickups/walkOverP
 import { MultiplayerSession } from '@/features/game/multiplayer/client/multiplayerSession';
 import { CreatureClock } from '@/features/game/creatureSim/creatureClock';
 import { CreatureSim } from '@/features/game/creatureSim/creatureSim';
-import { liveCreatureMarkers, overlayWithCreatures } from '@/features/agents/creatureMarkers';
+import { creatureAwareOverlay } from '@/features/agents/creatureMarkers';
 import type { ObservedOverlay } from '@/features/agents/observation';
 import { PipelineEvaluator } from '@/features/asset-library/worlds/eval/evaluator';
 import { EditablePipelines } from '@/features/asset-library/worlds/editing/editablePipelines';
@@ -157,7 +157,7 @@ export function createAppRuntime(): AppRuntime {
   const walkOverPickup = new WalkOverPickup({ creatures, items, groundItems }, pickupFeed);
   const sim = new CreatureSim({ sampler, creatureAssets: creatures, world, isWalkableAt });
   const clock = new CreatureClock(sim);
-  const agentOverlay = overlayWithCreatures(puzzles, liveCreatureMarkers(sim, sampler, creatures));
+  const agentOverlay = creatureAwareOverlay({ puzzles, sampler, creatures }, sim);
   const renderers = new WorldRenderers();
   const hoveredTile = new HoveredTile();
   const cameraFocus = new CameraFocus();
