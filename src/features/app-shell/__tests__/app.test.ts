@@ -37,6 +37,7 @@ import { checkWorldShotQueue } from '@/features/game/__tests__/worldShotQueue.te
 import { checkWorldSeedSync } from '@/features/asset-library/worlds/__tests__/worldSeedSync.test';
 import { checkAgentObservation } from '@/features/agents/__tests__/agentObservation.test';
 import { checkOccludedObservation } from '@/features/agents/__tests__/occludedObservation.test';
+import { checkCreatureObservation } from '@/features/agents/__tests__/creatureObservation.test';
 import { checkElevationObservation } from '@/features/agents/__tests__/elevationObservation.test';
 import { checkAgentApiDocs } from '@/features/agents/__tests__/agentApiDocs.test';
 import { checkCommandDispatch } from '@/features/agents/__tests__/commandDispatch.test';
@@ -116,6 +117,7 @@ describe('worlds and node groups as documents', () => checkWorldSeedsAreDocument
 describe('saved worlds', () => checkSavedWorlds(check));
 describe('agent observation', () => checkAgentObservation(check));
 describe('what a character cannot see past', () => checkOccludedObservation(check));
+describe('creatures in agent views', () => checkCreatureObservation(check));
 describe('what an agent reads of the ground height', () => checkElevationObservation(check));
 describe('the agent api docs', () => checkAgentApiDocs(check));
 describe('command dispatch', () => checkCommandDispatch(check));

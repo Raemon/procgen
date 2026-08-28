@@ -20,7 +20,7 @@ import {
 import { isMetaTool, META_TOOLS, toolDefinitions } from './agentTools';
 import { performVerb } from './performVerb';
 import { runScript, scriptRunText } from './scriptRunner';
-import type { WorldAccess } from './serverWorld';
+import { agentViewOverlay, type WorldAccess } from './serverWorld';
 import { appendTranscript, sessionPose, type AgentSession, type AutopilotRun } from './sessions';
 
 export type ToolInput = Record<string, unknown>;
@@ -184,7 +184,7 @@ function observe(session: AgentSession, access: WorldAccess): string {
       sessionPose(session),
       session.mode,
       session.sightRadiusTiles,
-      world.puzzles,
+      agentViewOverlay(world),
     ),
   );
 }
