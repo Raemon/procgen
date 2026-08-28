@@ -1,8 +1,9 @@
 import type { AppRuntime } from '@/features/app-shell/runtime/appRuntime';
 import { facingRelativeStep } from '../input/facingRelativeStep';
+import { listenForJumpKey } from '../input/jumpInput';
 import { MovementInput } from '../input/movementInput';
-import { PickUpInput } from '../input/pickUpInput';
-import { UseFixtureInput } from '../input/useFixtureInput';
+import { listenForPickUpKey } from '../input/pickUpInput';
+import { listenForFixtureKeys } from '../input/useFixtureInput';
 import { AgentTextView } from '../render/agentText/agentTextView';
 import { FeaturesView } from '../render/features/featuresView';
 import { View3D } from '../render/view3d/view3d';
@@ -90,14 +91,19 @@ export function mountWorldViews(
     isSuspended: () => inputIsSuspended(runtime, currentMode()),
   });
 
-  const useFixture = new UseFixtureInput({
+  const stopJumpKey = listenForJumpKey({
+    jump: () => runtime.net.jump(),
+    isSuspended: () => inputIsSuspended(runtime, currentMode()),
+  });
+
+  const stopFixtureKeys = listenForFixtureKeys({
     use: () => perform(isCharacterControlled(currentMode()) ? 'use' : 'use_fixture'),
     resetRoom: () =>
       perform(isCharacterControlled(currentMode()) ? 'reset_room' : 'reset_puzzle_room'),
     isSuspended: () => inputIsSuspended(runtime, currentMode()),
   });
 
-  const pickUp = new PickUpInput({
+  const stopPickUpKey = listenForPickUpKey({
     pickUp: () => perform(isCharacterControlled(currentMode()) ? 'pick_up' : 'pick_up_item'),
     isSuspended: () => inputIsSuspended(runtime, currentMode()),
   });
@@ -124,8 +130,9 @@ export function mountWorldViews(
       stopWalkingWhileTyping();
       stopWalkingWhileBagIsOpen();
       movement.dispose();
-      pickUp.dispose();
-      useFixture.dispose();
+      stopJumpKey();
+      stopPickUpKey();
+      stopFixtureKeys();
       for (const remove of unregister) remove();
       featuresView.dispose();
       view3d.dispose();

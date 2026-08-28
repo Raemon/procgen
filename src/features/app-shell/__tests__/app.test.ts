@@ -10,6 +10,7 @@ import { checkLabyrinthChunkTopology } from '@/features/asset-library/worlds/__t
 import { checkCustomScriptNodes } from '@/features/asset-library/worlds/__tests__/customScriptNodes.test';
 import { checkPipelineSanitizeAndEditing } from '@/features/asset-library/worlds/__tests__/pipelineSanitizeAndEditing.test';
 import { checkAsciiSnapshotAndPlayerFooting } from '@/features/game/__tests__/asciiSnapshotAndPlayerFooting.test';
+import { checkJumping } from '@/features/game/__tests__/jumping.test';
 import { checkFaceArtEditingOps } from '@/features/asset-library/__tests__/faceArtEditingOps.test';
 import { checkTileSurfaceRendering } from '@/features/asset-library/__tests__/tileSurfaceRendering.test';
 import { checkGroundHidesWhatIsUnderIt } from '@/features/game/__tests__/groundHidesWhatIsUnderIt.test';
@@ -90,6 +91,7 @@ describe('the labyrinth chunk topology', () => checkLabyrinthChunkTopology(check
 describe('custom script nodes', () => checkCustomScriptNodes(check));
 describe('pipeline sanitize and editing', () => checkPipelineSanitizeAndEditing(check));
 describe('the ascii snapshot', () => checkAsciiSnapshotAndPlayerFooting(check));
+describe('jumping', () => checkJumping(check));
 describe('face art editing', () => checkFaceArtEditingOps(check));
 describe('tile surfaces', () => checkTileSurfaceRendering(check));
 describe('the depth of ground', () => checkGroundHidesWhatIsUnderIt(check));

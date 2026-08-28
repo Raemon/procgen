@@ -47,7 +47,7 @@ import { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
 import { playerCanEnter } from '@/features/game/puzzles/playerCanEnter';
 import { isWalkableTile } from '@/features/game/tileWalkability';
 import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
-import { climbGateFrom } from '@/features/game/climbing';
+import { climbGatesFrom } from '@/features/game/climbing';
 import { World } from '@/features/game/world';
 import { ChangeNotifier } from './changeNotifier';
 import type {
@@ -139,10 +139,12 @@ export function createAppRuntime(): AppRuntime {
   const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileAssets, sampler.tileAt(x, y));
   const puzzles = new PuzzleWorld(store, tileIsWalkable);
   const isWalkableAt = (x: number, y: number) => tileIsWalkable(x, y) && !puzzles.blocksAt(x, y);
+  const characterGates = climbGatesFrom((x, y) => sampler.elevationAt(x, y));
   const world = new World(
     isWalkableAt,
     (x, y, dx, dy, mayPush) => puzzles.clearTheWay(x, y, dx, dy, mayPush),
-    climbGateFrom((x, y) => sampler.elevationAt(x, y)),
+    characterGates.climbGateAt,
+    characterGates.jumpGateAt,
   );
   const walkIntoCratesToPushThem = playerCanEnter(isWalkableAt, puzzles, () => ({
     x: world.playerX,
@@ -259,6 +261,7 @@ export function createAppRuntime(): AppRuntime {
           pose: () => ({ x: world.playerX, y: world.playerY, facing: world.facing }),
           snapTo: (x, y, facing) => world.snapTo(x, y, facing),
           tryStep: (dx, dy, mayPush) => world.tryStep(dx, dy, mayPush),
+          tryJump: (dx, dy) => world.tryJump(dx, dy),
           turn: (eighthTurns) => world.turn(eighthTurns),
           sightRadiusTiles: () => world.sightRadiusTiles,
           setSightRadiusTiles: (radius) => world.setSightRadiusTiles(radius),

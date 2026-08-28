@@ -1,5 +1,5 @@
 import '@/features/asset-library/worlds/nodes';
-import { climbGateFrom, standableProbeFrom } from '@/features/game/climbing';
+import { climbGatesFrom, standableProbeFrom } from '@/features/game/climbing';
 import type { WorldSeedLab } from '@/features/asset-library/worlds/lab/worldSeedLab';
 import { AssetFolders } from '@/features/asset-library/folders/assetFolders';
 import { CreatureAssets } from '@/features/asset-library/creatures/creatureAssets';
@@ -142,8 +142,8 @@ function buildServerWorld(
   const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileAssets, sampler.tileAt(x, y));
   const puzzles = new PuzzleWorld(store, tileIsWalkable, puzzleState);
   const isWalkable = (x: number, y: number) => tileIsWalkable(x, y) && !puzzles.blocksAt(x, y);
-  const climbGate = climbGateFrom((x, y) => sampler.elevationAt(x, y));
-  const isStandable = standableProbeFrom(isWalkable, climbGate);
+  const gates = climbGatesFrom((x, y) => sampler.elevationAt(x, y));
+  const isStandable = standableProbeFrom(isWalkable, gates.climbGateAt);
   return {
     stamp,
     sampler,
@@ -167,7 +167,7 @@ function buildServerWorld(
     stepRules: {
       isWalkableAt: tileIsWalkable,
       clearTheWay: (x, y, dx, dy, mayPush) => puzzles.clearTheWay(x, y, dx, dy, mayPush),
-      climbGateAt: climbGate,
+      ...gates,
     },
     spawn: () =>
       nearestWalkable(0, 0, SPAWN_SEARCH_RADIUS, isStandable) ??

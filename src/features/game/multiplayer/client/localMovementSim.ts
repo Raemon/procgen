@@ -2,21 +2,25 @@ import {
   TICK_MS,
   holdDirection,
   releaseOrder,
+  requestJump,
   restingBody,
   type MovingBody,
 } from '../../sim/movementOrder';
-import { tickMovement, type WalkabilityProbe } from '../../sim/tickMovement';
+import { tickMovement, type TickRules, type WalkabilityProbe } from '../../sim/tickMovement';
 import type { FacingIndex } from '../../facing';
 import type { World } from '../../world';
 
 export class LocalMovementSim {
   private readonly body: MovingBody = restingBody();
+  private readonly rules: TickRules;
   private timer = 0;
 
   constructor(
     private readonly world: World,
-    private readonly isWalkableAt: WalkabilityProbe,
-  ) {}
+    isWalkableAt: WalkabilityProbe,
+  ) {
+    this.rules = { isWalkable: isWalkableAt, jumpRules: world.stepRules() };
+  }
 
   start(): void {
     if (this.timer) return;
@@ -37,8 +41,14 @@ export class LocalMovementSim {
     releaseOrder(this.body);
   }
 
+  jump(dir: FacingIndex | null): void {
+    requestJump(this.body, dir);
+  }
+
   private tickOnce(): void {
-    const delta = tickMovement(this.body, this.world.playerX, this.world.playerY, this.isWalkableAt);
-    if (delta) this.world.tryStep(delta.dx, delta.dy);
+    const delta = tickMovement(this.body, this.world.playerX, this.world.playerY, this.rules);
+    if (!delta) return;
+    if (delta.jumped) this.world.landAfterJump(delta.dx, delta.dy);
+    else this.world.tryStep(delta.dx, delta.dy);
   }
 }

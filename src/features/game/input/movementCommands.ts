@@ -1,7 +1,13 @@
 import { slideAlongEachAxis, type Step } from '@/features/game/input/cameraRelativeStep';
 import { facingRelativeStep } from '@/features/game/input/facingRelativeStep';
 import { FACING_NAMES, facingVector, type FacingIndex } from '@/features/game/facing';
-import { CLIMB_LIMIT, climbGateFrom, navigationLevelOf } from '@/features/game/climbing';
+import {
+  JUMP_CLIMB_LIMIT,
+  WALK_CLIMB_LIMIT,
+  climbGateFrom,
+  navigationLevelOf,
+} from '@/features/game/climbing';
+import { JUMP_REACH_TILES, LANDING_DISTANCES } from '@/features/game/sim/jumpLanding';
 import { isWalkableTile } from '@/features/game/tileWalkability';
 import {
   commandFailed,
@@ -82,6 +88,48 @@ for (const step of CHARACTER_STEPS) {
   });
 }
 
+const CHARACTER_JUMPS: readonly {
+  action: string;
+  humanControl: string;
+  forward: number;
+  strafe: number;
+}[] = [
+  { action: 'jump_forward', humanControl: 'Space while holding W / ↑', forward: 1, strafe: 0 },
+  { action: 'jump_back', humanControl: 'Space while holding S / ↓', forward: -1, strafe: 0 },
+  { action: 'jump_left', humanControl: 'Space while holding Q', forward: 0, strafe: -1 },
+  { action: 'jump_right', humanControl: 'Space while holding E', forward: 0, strafe: 1 },
+];
+
+registerCommand({
+  action: 'jump',
+  mode: 'character',
+  group: 'movement',
+  humanControl: 'Space',
+  description: `Jump straight up and land where you stood. A jump climbs ${JUMP_CLIMB_LIMIT} level where a step climbs ${WALK_CLIMB_LIMIT}, so jump in a direction to reach higher ground.`,
+  params: {},
+  example: { action: 'jump' },
+  changesWorld: false,
+  apply: (context) => {
+    context.actor.tryJump(0, 0);
+    return commandSucceeded('jumped straight up and landed where you stood');
+  },
+});
+
+for (const jump of CHARACTER_JUMPS) {
+  registerCommand({
+    action: jump.action,
+    mode: 'character',
+    group: 'movement',
+    humanControl: jump.humanControl,
+    description: `Jump ${JUMP_REACH_TILES} tiles ${jump.action.slice('jump_'.length)}, clearing whatever lies between, and land ${JUMP_REACH_TILES} tiles out or on the tile next to you if the far one is no good. A jump climbs ${JUMP_CLIMB_LIMIT} level.`,
+    params: {},
+    example: { action: jump.action },
+    changesWorld: false,
+    apply: (context) =>
+      jumpBy(context, facingRelativeStep(context.actor.pose().facing, jump.forward, jump.strafe)),
+  });
+}
+
 const TURNS: readonly { action: string; humanControl: string; eighths: -1 | 1 }[] = [
   { action: 'turn_left', humanControl: 'A / ←', eighths: -1 },
   { action: 'turn_right', humanControl: 'D / →', eighths: 1 },
@@ -121,13 +169,23 @@ function stepBy(context: CommandContext, step: Step): CommandResult {
 
 function refusalAhead(context: CommandContext, dx: number, dy: number): string {
   const pose = context.actor.pose();
-  const x = pose.x + dx;
-  const y = pose.y + dy;
+  return refusalAt(context, pose.x, pose.y, pose.x + dx, pose.y + dy, WALK_CLIMB_LIMIT, 'a step');
+}
+
+function refusalAt(
+  context: CommandContext,
+  fromX: number,
+  fromY: number,
+  x: number,
+  y: number,
+  limit: number,
+  effort: string,
+): string {
   const elevationAt = (px: number, py: number) => context.worldSampler.elevationAt(px, py);
-  if (!climbGateFrom(elevationAt)(pose.x, pose.y, x, y)) {
-    const from = navigationLevelOf(elevationAt(pose.x, pose.y));
+  if (!climbGateFrom(elevationAt, limit)(fromX, fromY, x, y)) {
+    const from = navigationLevelOf(elevationAt(fromX, fromY));
     const to = navigationLevelOf(elevationAt(x, y));
-    return `the ground at (${x},${y}) is level ${to}, ${to - from} above your level ${from}; a step climbs at most ${CLIMB_LIMIT} level`;
+    return `the ground at (${x},${y}) is level ${to}, ${to - from} above your level ${from}; ${effort} climbs at most ${limit} level`;
   }
   if (!isWalkableTile(context.tileAssets, context.worldSampler.tileAt(x, y))) {
     const tile = context.tileAssets.byId(context.worldSampler.tileAt(x, y));
@@ -136,6 +194,31 @@ function refusalAhead(context: CommandContext, dx: number, dy: number): string {
       : `the ground at (${x},${y}) blocks you`;
   }
   return `something solid at (${x},${y}) is in the way`;
+}
+
+function jumpBy(context: CommandContext, step: Step): CommandResult {
+  const [dx, dy] = step;
+  if (context.actor.tryJump(dx, dy)) {
+    const pose = context.actor.pose();
+    return commandSucceeded(`jumped to (${pose.x},${pose.y})${keysPickedUp(context, pose)}`);
+  }
+  return commandFailed('blocked', jumpRefusal(context, dx, dy));
+}
+
+function jumpRefusal(context: CommandContext, dx: number, dy: number): string {
+  const pose = context.actor.pose();
+  const reasons = LANDING_DISTANCES.map((distance) =>
+    refusalAt(
+      context,
+      pose.x,
+      pose.y,
+      pose.x + dx * distance,
+      pose.y + dy * distance,
+      JUMP_CLIMB_LIMIT,
+      'a jump',
+    ),
+  );
+  return `nowhere to land: ${reasons.join('; ')}`;
 }
 
 function keysPickedUp(context: CommandContext, pose: { x: number; y: number }): string {

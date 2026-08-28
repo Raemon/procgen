@@ -25,6 +25,7 @@ export interface CommandActor {
   pose(): { x: number; y: number; facing: FacingIndex };
   snapTo(x: number, y: number, facing: FacingIndex): void;
   tryStep(dx: number, dy: number, mayPush?: boolean): boolean;
+  tryJump(dx: number, dy: number): boolean;
   turn(eighthTurns: number): void;
   sightRadiusTiles(): number;
   setSightRadiusTiles(radius: number): void;

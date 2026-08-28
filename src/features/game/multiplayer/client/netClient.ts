@@ -57,6 +57,10 @@ export class NetClient {
     this.send([Op.Turn, eighthTurns]);
   }
 
+  sendJump(dir: number): void {
+    this.send([Op.Jump, dir]);
+  }
+
   sendSay(text: string): void {
     this.send({ t: 'say', text });
   }
