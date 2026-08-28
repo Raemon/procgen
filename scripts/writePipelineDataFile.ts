@@ -1,6 +1,6 @@
 import { writeFileSync } from 'node:fs';
 import '@/features/asset-library/worlds/nodes';
-import { volcanicIslands } from '@/features/asset-library/worlds/presets/volcanicIslands';
+import { volcanicIslands } from '@/features/asset-library/worlds/seeds/volcanicIslands';
 import { sanitizePipeline } from '@/features/asset-library/worlds/pipeline/sanitizePipeline';
 
 const OUTPUT_PATH = 'data/pipeline.json';

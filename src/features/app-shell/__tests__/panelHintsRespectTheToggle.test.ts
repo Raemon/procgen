@@ -17,11 +17,12 @@ const ALWAYS_VISIBLE_DIM_TEXT_SITES = [
   'src/features/asset-library/characters/editor/CharacterSpritesEditor.tsx',
   'src/features/asset-library/cultures/editor/CultureRow.tsx',
   'src/features/asset-library/items/inventoryEditor/InventoryEditor.tsx',
-  'src/features/asset-library/detail/worlds/NodeList.tsx',
+  'src/features/asset-library/detail/worldSeeds/NodeList.tsx',
   'src/features/asset-library/detail/NodeGroupDetail.tsx',
   'src/features/asset-library/detail/NothingHere.tsx',
   'src/features/asset-library/detail/NothingSelected.tsx',
-  'src/features/asset-library/detail/WorldActionsRow.tsx',
+  'src/features/asset-library/detail/SavedWorldDetail.tsx',
+  'src/features/asset-library/detail/WorldSeedActionsRow.tsx',
   'src/features/game/panel/PlayerInventoryOverlay.tsx',
 ];
 

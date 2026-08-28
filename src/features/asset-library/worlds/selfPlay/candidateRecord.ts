@@ -1,10 +1,10 @@
-import { funOf, type ScoredWorld } from './scoreGenome';
-import type { WorldGenome } from './worldGenome';
+import { funOf, type ScoredWorldSeed } from './scoreGenome';
+import type { WorldSeedGenome } from './worldSeedGenome';
 
 export type CandidateOrigin = 'rolled' | 'mutated' | 'bred' | 'treated';
 
 export interface Candidate {
-  genome: WorldGenome;
+  genome: WorldSeedGenome;
   origin: CandidateOrigin;
   parents: string[];
 }
@@ -24,17 +24,17 @@ export const WEAKEST_READINGS_NAMED = 3;
 
 export function walkedCandidateRecord(
   candidate: Candidate,
-  world: ScoredWorld,
+  seed: ScoredWorldSeed,
   admitted: boolean,
 ): CandidateRecord {
   return {
-    name: world.paletteName,
+    name: seed.paletteName,
     origin: candidate.origin,
     parents: candidate.parents,
-    fun: funOf(world),
+    fun: funOf(seed),
     admitted,
     walkable: true,
-    weakest: weakestReadingNamesOf(world),
+    weakest: weakestReadingNamesOf(seed),
   };
 }
 
@@ -50,8 +50,8 @@ export function unwalkableCandidateRecord(candidate: Candidate): CandidateRecord
   };
 }
 
-function weakestReadingNamesOf(world: ScoredWorld): string[] {
-  return [...world.score.readings]
+function weakestReadingNamesOf(seed: ScoredWorldSeed): string[] {
+  return [...seed.score.readings]
     .sort((one, other) => one.score - other.score)
     .slice(0, WEAKEST_READINGS_NAMED)
     .map((reading) => reading.name);

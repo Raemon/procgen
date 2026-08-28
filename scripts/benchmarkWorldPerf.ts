@@ -9,7 +9,7 @@ import type { ChunkGenCtx } from '@/features/asset-library/worlds/nodeType';
 import type { NodeInstance, PipelineState } from '@/features/asset-library/worlds/pipeline/pipelineState';
 import { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
 import { sanitizePipeline } from '@/features/asset-library/worlds/pipeline/sanitizePipeline';
-import { volcanicIslands } from '@/features/asset-library/worlds/presets/volcanicIslands';
+import { volcanicIslands } from '@/features/asset-library/worlds/seeds/volcanicIslands';
 import { asField, asTiles } from '@/features/asset-library/worlds/values/valueAccess';
 import { EMPTY_TILE } from '@/features/asset-library/worlds/values/chunkValues';
 import { WorldSampler } from '@/features/asset-library/worlds/worldSampler';

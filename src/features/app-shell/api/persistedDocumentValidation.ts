@@ -9,7 +9,7 @@ const COLLECTION_DOCUMENTS = new Set<PersistedDocumentName>([
   'items',
 ]);
 
-const LIBRARIES_SHIPPED_AS_ARRAYS = new Set<PersistedDocumentName>(['worldPresets', 'templates']);
+const LIBRARIES_SHIPPED_AS_ARRAYS = new Set<PersistedDocumentName>(['worldSeeds', 'templates']);
 
 export function persistedDocumentIsValid<Name extends PersistedDocumentName>(
   name: Name,

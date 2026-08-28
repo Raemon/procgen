@@ -11,18 +11,18 @@ import {
   LARGEST_PALETTE,
   rolledPipeline,
   SMALLEST_PALETTE,
-  type WorldGenome,
-} from './worldGenome';
+  type WorldSeedGenome,
+} from './worldSeedGenome';
 import { settledPipeline } from './settleTheWorld';
 import { worldPaletteOfKit, type WorldPalette } from './worldPalette';
 
-type GenomeMutation = (genome: WorldGenome, rng: RandomStream) => WorldGenome;
+type GenomeMutation = (genome: WorldSeedGenome, rng: RandomStream) => WorldSeedGenome;
 
 const GENOME_MUTATIONS: readonly GenomeMutation[] = [
   nudgedKnobs,
   permutedNodes,
   repaintedTiles,
-  rerolledWorldSeed,
+  rerolledSeedNumber,
   swappedAssetKit,
   swappedAccentKit,
   resizedPalette,
@@ -32,7 +32,7 @@ const GENOME_MUTATIONS: readonly GenomeMutation[] = [
 
 const MOST_MUTATIONS_AT_ONCE = 2;
 
-export function mutatedGenome(genome: WorldGenome, rng: RandomStream): WorldGenome {
+export function mutatedGenome(genome: WorldSeedGenome, rng: RandomStream): WorldSeedGenome {
   let mutated = genome;
   for (let applied = 0; applied < rollInt(rng, 1, MOST_MUTATIONS_AT_ONCE); applied++) {
     mutated = pick(rng, GENOME_MUTATIONS)(mutated, rng);
@@ -40,22 +40,22 @@ export function mutatedGenome(genome: WorldGenome, rng: RandomStream): WorldGeno
   return { ...mutated, pipeline: sanitizePipeline(mutated.pipeline) };
 }
 
-function nudgedKnobs(genome: WorldGenome, rng: RandomStream): WorldGenome {
+function nudgedKnobs(genome: WorldSeedGenome, rng: RandomStream): WorldSeedGenome {
   return { ...genome, pipeline: permutedSliderParams(genome.pipeline, rng) };
 }
 
-function permutedNodes(genome: WorldGenome, rng: RandomStream): WorldGenome {
+function permutedNodes(genome: WorldSeedGenome, rng: RandomStream): WorldSeedGenome {
   return {
     ...genome,
     pipeline: permutedNodeCombination(genome.pipeline, rng, recipeTilesFor(genome)),
   };
 }
 
-function rerolledWorldSeed(genome: WorldGenome, rng: RandomStream): WorldGenome {
+function rerolledSeedNumber(genome: WorldSeedGenome, rng: RandomStream): WorldSeedGenome {
   return { ...genome, pipeline: { ...genome.pipeline, seed: rollInt(rng, 1, 999_999) } };
 }
 
-function repaintedTiles(genome: WorldGenome, rng: RandomStream): WorldGenome {
+function repaintedTiles(genome: WorldSeedGenome, rng: RandomStream): WorldSeedGenome {
   const pipeline = clonedState(genome.pipeline);
   const painted = pipeline.nodes.filter(nodeLinksTiles);
   if (painted.length === 0) return { ...genome, pipeline };
@@ -63,13 +63,13 @@ function repaintedTiles(genome: WorldGenome, rng: RandomStream): WorldGenome {
   return { ...genome, pipeline };
 }
 
-function nodeLinksTiles(node: WorldGenome['pipeline']['nodes'][number]): boolean {
+function nodeLinksTiles(node: WorldSeedGenome['pipeline']['nodes'][number]): boolean {
   const def = nodeTypeOf(node.type);
   return Object.values(def?.params ?? {}).some((spec) => spec.kind === 'tile');
 }
 
 function repaintNode(
-  node: WorldGenome['pipeline']['nodes'][number],
+  node: WorldSeedGenome['pipeline']['nodes'][number],
   rng: RandomStream,
   tileIds: readonly TileId[],
 ): void {
@@ -84,20 +84,20 @@ function repaintedTileId(rng: RandomStream, tileIds: readonly TileId[]): number 
   return pick(rng, tileIds);
 }
 
-function swappedAssetKit(genome: WorldGenome, rng: RandomStream): WorldGenome {
+function swappedAssetKit(genome: WorldSeedGenome, rng: RandomStream): WorldSeedGenome {
   return { ...genome, kitSeed: rollInt(rng, 1, 999_999) };
 }
 
-function swappedAccentKit(genome: WorldGenome, rng: RandomStream): WorldGenome {
+function swappedAccentKit(genome: WorldSeedGenome, rng: RandomStream): WorldSeedGenome {
   return { ...genome, accentKitSeed: rollInt(rng, 1, 999_999) };
 }
 
-function resizedPalette(genome: WorldGenome, rng: RandomStream): WorldGenome {
+function resizedPalette(genome: WorldSeedGenome, rng: RandomStream): WorldSeedGenome {
   const resized = genome.paletteSize + pick(rng, [-2, -1, 1, 2]);
   return { ...genome, paletteSize: clamped(resized, SMALLEST_PALETTE, LARGEST_PALETTE) };
 }
 
-function regrownPipeline(genome: WorldGenome, rng: RandomStream): WorldGenome {
+function regrownPipeline(genome: WorldSeedGenome, rng: RandomStream): WorldSeedGenome {
   const palette = paletteOf(genome);
   return {
     ...genome,
@@ -105,20 +105,20 @@ function regrownPipeline(genome: WorldGenome, rng: RandomStream): WorldGenome {
   };
 }
 
-function settledBuildings(genome: WorldGenome, rng: RandomStream): WorldGenome {
+function settledBuildings(genome: WorldSeedGenome, rng: RandomStream): WorldSeedGenome {
   const pipeline = settledPipeline(clonedState(genome.pipeline), rng, paletteOf(genome).culture.id);
   return { ...genome, pipeline };
 }
 
-function paletteIdsOf(genome: WorldGenome): TileId[] {
+function paletteIdsOf(genome: WorldSeedGenome): TileId[] {
   return paletteOf(genome).paletteIds;
 }
 
-function recipeTilesFor(genome: WorldGenome): RecipeTiles {
+function recipeTilesFor(genome: WorldSeedGenome): RecipeTiles {
   const palette = paletteOf(genome);
   return recipeTilesOf(palette.tiles, palette.paletteIds);
 }
 
-function paletteOf(genome: WorldGenome): WorldPalette {
+function paletteOf(genome: WorldSeedGenome): WorldPalette {
   return worldPaletteOfKit(genome.kitSeed, genome.accentKitSeed, genome.paletteSize);
 }

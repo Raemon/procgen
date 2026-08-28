@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import '../nodes';
 import { EliteGrid } from './EliteGrid';
 import { GenerationStrip } from './GenerationStrip';
-import { installLabWorlds, startTrainingRun, stopLabRun, type LabRunSummary } from './labClient';
+import { installLabWorldSeeds, startTrainingRun, stopLabRun, type LabRunSummary } from './labClient';
 import { LabRunBar, trainRequestOf, type TrainForm } from './LabRunBar';
 import { TrajectoryChart } from './TrajectoryChart';
 import { useLabRun, useLabRuns } from './useLabRun';
@@ -42,7 +42,7 @@ export function GenerationLab() {
 
   const install = async (name: string) => {
     if (!run) return;
-    const installed = await installLabWorlds(run.id, [name]);
+    const installed = await installLabWorldSeeds(run.id, [name]);
     const saved = installed[0];
     if (saved) setInstalledNames(new Map(installedNames).set(name, saved.name));
   };
@@ -89,10 +89,10 @@ export function GenerationLab() {
         </section>
         <section className="rounded border border-panel-edge bg-panel p-2">
           <h2 className="mb-2 text-[11px] text-ink-dim">
-            elite archive, ranked by fun ({run?.worlds.length ?? 0} worlds)
+            elite archive, ranked by fun ({run?.world_seeds.length ?? 0} world seeds)
           </h2>
           <EliteGrid
-            worlds={run?.worlds ?? []}
+            worldSeeds={run?.world_seeds ?? []}
             installedNames={installedNames}
             onInstall={(name) => void install(name)}
           />

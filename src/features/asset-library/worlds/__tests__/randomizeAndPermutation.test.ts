@@ -85,14 +85,14 @@ export function checkRandomizeAndPermutation(check: CheckReporter): void {
   );
   check('random worlds keep every param inside its declared range', allParamsWithinSpecs(rolledOnce));
 
-  let paintedWorlds = 0;
+  let paintedWorldSeeds = 0;
   const recipeSignatures = new Set<string>();
   const RANDOM_WORLD_ROLLS = 40;
   for (let roll = 1; roll <= RANDOM_WORLD_ROLLS; roll++) {
     const rolled = sanitizePipeline(randomWorldPipeline(mulberry32(roll * 37), randomizeTileIds));
     const kinds = tileIdsInRegion(worldFromState(rolled).sampler, 48);
     kinds.delete(EMPTY_TILE);
-    if (kinds.size >= 2) paintedWorlds++;
+    if (kinds.size >= 2) paintedWorldSeeds++;
     for (const node of rolled.nodes) recipeSignatures.add(node.type);
   }
   check(
@@ -107,7 +107,7 @@ export function checkRandomizeAndPermutation(check: CheckReporter): void {
       recipeSignatures.has(signature),
     ),
   );
-  check('most random rolls paint a world rather than an empty void', paintedWorlds > RANDOM_WORLD_ROLLS / 2);
+  check('most random rolls paint a world rather than an empty void', paintedWorldSeeds > RANDOM_WORLD_ROLLS / 2);
 
   const sliderBase = islandsState();
   const sliderShuffled = permutedSliderParams(sliderBase, mulberry32(5));

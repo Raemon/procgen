@@ -6,11 +6,13 @@ import { useItemEntries } from './useItemEntries';
 import { useNodeGroupEntries } from './useNodeGroupEntries';
 import { usePieceEntries } from './usePieceEntries';
 import { useTileEntries } from './useTileEntries';
-import { useWorldEntries } from './useWorldEntries';
+import { useSavedWorldEntries } from './useSavedWorldEntries';
+import { useWorldSeedEntries } from './useWorldSeedEntries';
 
 export function useLibraryEntries(): Record<LibraryFolder, LibraryEntry[]> {
   return {
-    worlds: useWorldEntries(),
+    worldSeeds: useWorldSeedEntries(),
+    savedWorlds: useSavedWorldEntries(),
     tiles: useTileEntries(),
     items: useItemEntries(),
     pieces: usePieceEntries(),

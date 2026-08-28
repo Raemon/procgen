@@ -19,12 +19,12 @@ export function agentToolContracts(mode: CommandMode): AgentToolContract[] {
 }
 
 const LAB_PATHS: Readonly<Record<string, string>> = {
-  grade_world: '/asset-library/worlds/grade',
-  roll_worlds: '/asset-library/worlds/roll',
-  train_worlds: '/asset-library/worlds/train',
-  read_world_lab: '/asset-library/worlds/lab',
-  stop_lab_run: '/asset-library/worlds/lab/{id}/stop',
-  install_lab_worlds: '/asset-library/worlds/lab/{id}/install',
+  grade_world_seed: '/asset-library/world-seeds/grade',
+  roll_world_seeds: '/asset-library/world-seeds/roll',
+  train_world_seeds: '/asset-library/world-seeds/train',
+  read_world_seed_lab: '/asset-library/world-seeds/lab',
+  stop_lab_run: '/asset-library/world-seeds/lab/{id}/stop',
+  install_lab_world_seeds: '/asset-library/world-seeds/lab/{id}/install',
 };
 
 function toolContract(spec: CommandSpec): AgentToolContract {
@@ -37,7 +37,7 @@ function toolContract(spec: CommandSpec): AgentToolContract {
       description: `${spec.description} (the human does this with: ${spec.humanControl})`,
       input_schema: inputSchema(entries),
       transport: 'http',
-      method: spec.action === 'read_world_lab' ? 'GET' : 'POST',
+      method: spec.action === 'read_world_seed_lab' ? 'GET' : 'POST',
       path: labPath,
     };
   }
@@ -61,6 +61,7 @@ function inputSchema(entries: [string, CommandParamSpec][]): object {
 }
 
 function resourcePath(action: string): string {
+  if (action === 'save_world' || action.includes('saved_world')) return '/asset-library/saved-worlds';
   if (action.includes('asset_folder') || action === 'file_asset') return '/asset-library/folders';
   if (action.includes('tile')) return '/asset-library/tiles';
   if (action.includes('item') || action.includes('inventory')) return '/asset-library/items';
@@ -68,7 +69,7 @@ function resourcePath(action: string): string {
   if (action.includes('culture')) return '/asset-library/cultures';
   if (action.includes('creature') || action.includes('character')) return '/asset-library/creatures';
   if (action.includes('template')) return '/asset-library/node-groups';
-  return '/asset-library/worlds/current';
+  return '/asset-library/world-seeds/current';
 }
 
 function paramSchema(param: CommandParamSpec): object {

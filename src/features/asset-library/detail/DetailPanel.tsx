@@ -9,7 +9,8 @@ import { NothingHere } from './NothingHere';
 import { NothingSelected } from './NothingSelected';
 import { PieceDetail } from './PieceDetail';
 import { TileDetail } from './TileDetail';
-import { WorldDetail } from './WorldDetail';
+import { SavedWorldDetail } from './SavedWorldDetail';
+import { WorldSeedDetail } from './WorldSeedDetail';
 
 export function DetailPanel() {
   const { selection } = useLibrarySelection();
@@ -17,7 +18,8 @@ export function DetailPanel() {
 }
 
 function detailFor(selection: LibrarySelection) {
-  if (selection.folder === 'worlds') return <WorldDetail name={selection.key} />;
+  if (selection.folder === 'worldSeeds') return <WorldSeedDetail name={selection.key} />;
+  if (selection.folder === 'savedWorlds') return <SavedWorldDetail name={selection.key} />;
   if (selection.folder === 'groups') return <NodeGroupDetail name={selection.key} />;
   const id = assetIdOf(selection.key);
   if (id === null) return <NothingHere what={selection.folder} />;

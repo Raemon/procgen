@@ -11,9 +11,9 @@ import { randomMarkerDisplay, randomMarkerTag } from '../randomize/markerPalette
 import { chance, pick, rollBetween, rollInt, snappedToStep } from '../randomize/randomRolls';
 import { recipeNode } from '../randomize/recipeNode';
 import { readingBandOf } from '../walkingSim/readingBands';
-import { funOf, type ScoredWorld } from './scoreGenome';
+import { funOf, type ScoredWorldSeed } from './scoreGenome';
 import { worldPaletteOfKit, type WorldPalette } from './worldPalette';
-import type { WorldGenome } from './worldGenome';
+import type { WorldSeedGenome } from './worldSeedGenome';
 
 const REMEDIABLE_BELOW = 0.35;
 const OTHERWISE_HEALTHY_ABOVE = 0.45;
@@ -23,8 +23,8 @@ export interface Diagnosis {
   ailment: 'starved' | 'flooded';
 }
 
-export function diagnosisOf(world: ScoredWorld): Diagnosis | null {
-  const readings = world.score.readings.filter((each) => each.weight > 0);
+export function diagnosisOf(seed: ScoredWorldSeed): Diagnosis | null {
+  const readings = seed.score.readings.filter((each) => each.weight > 0);
   const weakest = readings.reduce((worst, each) => (each.score < worst.score ? each : worst));
   if (weakest.score >= REMEDIABLE_BELOW) return null;
   const others = readings.filter((each) => each !== weakest);
@@ -37,21 +37,21 @@ export function diagnosisOf(world: ScoredWorld): Diagnosis | null {
 }
 
 export function treatedGenome(
-  world: ScoredWorld,
+  seed: ScoredWorldSeed,
   diagnosis: Diagnosis,
   rng: RandomStream,
-): WorldGenome {
-  const genome = world.genome;
+): WorldSeedGenome {
+  const genome = seed.genome;
   const pipeline = clonedState(genome.pipeline);
   const palette = worldPaletteOfKit(genome.kitSeed, genome.accentKitSeed, genome.paletteSize);
-  if (walkIsBarren(world)) treatBarrenWalk(pipeline, rng, palette);
-  else if (world.measurements.landmarkStepShare === 0) appendCragsOverRelief(pipeline, rng, palette);
+  if (walkIsBarren(seed)) treatBarrenWalk(pipeline, rng, palette);
+  else if (seed.measurements.landmarkStepShare === 0) appendCragsOverRelief(pipeline, rng, palette);
   else applyTreatment(pipeline, diagnosis, rng, palette);
   return { ...genome, pipeline: sanitizePipeline(pipeline) };
 }
 
-function walkIsBarren(world: ScoredWorld): boolean {
-  return world.measurements.encountersPer100Steps === 0;
+function walkIsBarren(seed: ScoredWorldSeed): boolean {
+  return seed.measurements.encountersPer100Steps === 0;
 }
 
 function treatBarrenWalk(
@@ -435,6 +435,6 @@ function walkableTileIdsOf(palette: WorldPalette): number[] {
     .filter((id) => palette.paletteIds.includes(id));
 }
 
-export function worthTreating(world: ScoredWorld): boolean {
-  return diagnosisOf(world) !== null && funOf(world) > 0.25;
+export function worthTreating(seed: ScoredWorldSeed): boolean {
+  return diagnosisOf(seed) !== null && funOf(seed) > 0.25;
 }

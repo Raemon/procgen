@@ -1,7 +1,7 @@
 import '@/features/asset-library/worlds/nodes';
 import { CHUNK_SIZE } from '@/features/asset-library/worlds/chunk';
 import type { PipelineState } from '@/features/asset-library/worlds/pipeline/pipelineState';
-import { volcanicIslands } from '@/features/asset-library/worlds/presets/volcanicIslands';
+import { volcanicIslands } from '@/features/asset-library/worlds/seeds/volcanicIslands';
 import { PRESENT } from '@/features/asset-library/worlds/time/worldTime';
 import type { WorldPoint } from '@/features/asset-library/worlds/values/chunkValues';
 import { BORN, CHAIN_ID, CONE_HEIGHT, CONE_RADIUS, pointNumber } from '@/features/asset-library/worlds/values/pointData';

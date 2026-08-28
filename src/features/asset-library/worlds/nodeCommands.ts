@@ -27,7 +27,7 @@ export { nodeCommands };
 
 
 
-const NODE_ID_HELP = 'id of an existing node — see GET /api/v1/asset-library/worlds/current';
+const NODE_ID_HELP = 'id of an existing node — see GET /api/v1/asset-library/world-seeds/current';
 
 function registerNodeCommand(
   spec: Omit<CommandSpec, 'mode' | 'group' | 'changesWorld'>,

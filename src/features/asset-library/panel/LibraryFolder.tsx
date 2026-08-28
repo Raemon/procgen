@@ -15,7 +15,7 @@ import {
 } from './folders/assetDragTransfer';
 import { useLibraryViewMode } from './libraryViewMode';
 
-const OPEN_UNTIL_A_FOLDER_IS_TOGGLED: FolderName[] = ['worlds'];
+const OPEN_UNTIL_A_FOLDER_IS_TOGGLED: FolderName[] = ['worldSeeds'];
 
 export function LibraryFolder({
   folder,

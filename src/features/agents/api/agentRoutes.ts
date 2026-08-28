@@ -9,6 +9,7 @@ import { commandsForMode } from '@/features/app-shell/runtime/commands/commandCa
 import { buildObservation, type AgentObservation } from '../observation';
 import { observationText } from '../observationText';
 import { startAutopilot } from './autopilot';
+import { creatureAwareOverlay } from '../creatureMarkers';
 import type { ServerWorld, WorldAccess } from './serverWorld';
 import { newSession, sessionPose, type AgentSession, type SessionStore } from './sessions';
 import { failure, json, type ApiRequest, type ApiResponse } from './apiMessages';
@@ -163,7 +164,7 @@ function createAgent(sessions: SessionStore, world: ServerWorld, body: unknown):
     urls: {
       docs: '/api/v1/openapi.json',
       observe: `/api/v1/agents/${id}/observe`,
-      pipeline: '/api/v1/asset-library/worlds/current',
+      pipeline: '/api/v1/asset-library/world-seeds/current',
       node_types: '/api/v1/asset-library/node-types',
     },
   });
@@ -197,7 +198,7 @@ function observe(session: AgentSession, world: ServerWorld, req: ApiRequest): Ap
     sessionPose(session),
     session.mode,
     session.sightRadiusTiles,
-    world.puzzles,
+    creatureAwareOverlay(world),
   );
   if (req.query.get('format') === 'text') {
     return { status: 200, contentType: 'text/plain; charset=utf-8', body: observationText(observation) };

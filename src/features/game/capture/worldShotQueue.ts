@@ -1,7 +1,7 @@
 import { hashString } from '@/features/asset-library/worlds/random/hashString';
-import { genomeAsJson, type WorldGenome } from '@/features/asset-library/worlds/selfPlay/worldGenome';
+import { genomeAsJson, type WorldSeedGenome } from '@/features/asset-library/worlds/selfPlay/worldSeedGenome';
 
-export type GenomeShooter = (genome: WorldGenome) => Promise<string>;
+export type GenomeShooter = (genome: WorldSeedGenome) => Promise<string>;
 
 export type WorldShotStatus = 'waiting' | 'shooting' | 'ready' | 'failed';
 
@@ -11,23 +11,23 @@ export interface WorldShot {
   failure: string | null;
 }
 
-export function shotKeyOf(genome: WorldGenome): string {
+export function shotKeyOf(genome: WorldSeedGenome): string {
   return hashString(genomeAsJson(genome)).toString(36);
 }
 
 export class WorldShotQueue {
   private readonly shots = new Map<string, WorldShot>();
-  private readonly waiting: { key: string; genome: WorldGenome }[] = [];
+  private readonly waiting: { key: string; genome: WorldSeedGenome }[] = [];
   private readonly listeners = new Set<() => void>();
   private shooting = false;
 
   constructor(private readonly shoot: GenomeShooter) {}
 
-  shotOf(genome: WorldGenome): WorldShot | null {
+  shotOf(genome: WorldSeedGenome): WorldShot | null {
     return this.shots.get(shotKeyOf(genome)) ?? null;
   }
 
-  request(genome: WorldGenome): WorldShot {
+  request(genome: WorldSeedGenome): WorldShot {
     const key = shotKeyOf(genome);
     const held = this.shots.get(key);
     if (held) return held;
@@ -38,7 +38,7 @@ export class WorldShotQueue {
     return waiting;
   }
 
-  reshoot(genome: WorldGenome): void {
+  reshoot(genome: WorldSeedGenome): void {
     const held = this.shots.get(shotKeyOf(genome));
     if (held?.status === 'shooting' || held?.status === 'waiting') return;
     this.shots.delete(shotKeyOf(genome));

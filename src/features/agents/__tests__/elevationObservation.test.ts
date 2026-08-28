@@ -1,16 +1,8 @@
-import { assetId } from '@/features/asset-library/asset';
-import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
-import { newTileWithId } from '@/features/asset-library/tiles/tileDef';
 import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { buildObservation, type AgentObservation } from '../observation';
 import { observationText } from '../observationText';
-
-const MEADOW_TILE = assetId<'tiles'>(0);
-
-const meadowTiles = new TileAssets([
-  { ...newTileWithId(MEADOW_TILE), name: 'meadow', symbol: '"', walkable: true, height: 1 },
-]);
+import { meadowTiles, MEADOW_TILE, stubSampler } from './observationTestKit';
 
 export function checkElevationObservation(check: CheckReporter): void {
   const facingNorth = { x: 0, y: 0, facing: 0 as const };
@@ -32,12 +24,7 @@ export function checkElevationObservation(check: CheckReporter): void {
 }
 
 function meadowAt(elevationAt: (x: number, y: number) => number): WorldSampler {
-  return {
-    tileAt: () => MEADOW_TILE,
-    elevationAt,
-    markersIn: () => [],
-    itemSpawnsIn: () => [],
-  } as unknown as WorldSampler;
+  return stubSampler(() => MEADOW_TILE, elevationAt);
 }
 
 function digitAt(observation: AgentObservation, dx: number, dy: number): string {

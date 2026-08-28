@@ -1,18 +1,18 @@
 import type { BatchScore } from '../selfPlay/batchScore';
 import type { GenerationRecord } from '../selfPlay/trainingRunner';
-import type { WorldGenome } from '../selfPlay/worldGenome';
+import type { WorldSeedGenome } from '../selfPlay/worldSeedGenome';
 import type { WorldGrade } from './worldGrade';
 
 export type LabRunKind = 'grade' | 'roll' | 'train';
 export type LabRunStatus = 'running' | 'done' | 'stopped' | 'failed';
 
-export interface LabWorld {
+export interface LabWorldSeed {
   name: string;
   grade: WorldGrade;
-  genome: WorldGenome | null;
+  genome: WorldSeedGenome | null;
 }
 
-export interface InstalledWorld {
+export interface InstalledWorldSeed {
   name: string;
   tilesAdded: number;
   piecesAdded: number;
@@ -28,10 +28,10 @@ export interface LabRun {
   done: number;
   total: number;
   generationsDone: number;
-  worlds: LabWorld[];
+  worldSeeds: LabWorldSeed[];
   batch: BatchScore | null;
   trajectory: GenerationRecord[];
-  installed: InstalledWorld[];
+  installed: InstalledWorldSeed[];
   unwalkable: number;
   error: string | null;
   stopRequested: boolean;
@@ -60,7 +60,7 @@ export function newLabRun(
     done: 0,
     total,
     generationsDone: 0,
-    worlds: [],
+    worldSeeds: [],
     batch: null,
     trajectory: [],
     installed: [],
@@ -70,13 +70,13 @@ export function newLabRun(
   };
 }
 
-export function rankWorlds(run: LabRun): void {
-  run.worlds.sort((one, other) => other.grade.fun - one.grade.fun);
+export function rankWorldSeeds(run: LabRun): void {
+  run.worldSeeds.sort((one, other) => other.grade.fun - one.grade.fun);
 }
 
 export function runSummaryLine(run: LabRun): string {
   const progress = `${run.done}/${run.total}`;
-  const best = run.worlds[0];
+  const best = run.worldSeeds[0];
   const found = best ? `best ${best.name} at fun ${best.grade.fun.toFixed(3)}` : 'nothing walkable yet';
   return `${run.id} (${run.kind}) ${run.status}, ${progress} done, ${found}`;
 }

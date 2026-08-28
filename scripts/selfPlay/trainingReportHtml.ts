@@ -81,7 +81,7 @@ function trajectoryRowHtml(record: GenerationRecord): string {
     record.batch.nearDuplicatePairs,
     record.coverage.toFixed(2),
     record.admissions,
-    record.worldsWithNowhereToWalk,
+    record.worldSeedsWithNowhereToWalk,
   ];
   return `<tr>${cells.map((cell) => `<td>${cell}</td>`).join('')}</tr>`;
 }

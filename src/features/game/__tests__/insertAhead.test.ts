@@ -68,6 +68,7 @@ function insertionWorld(): {
     store,
     items: new ItemAssets(),
     creatures,
+    settleTheWorld: (change: () => void) => change(),
     actor: {
       pose: () => ({ x: 3, y: -2, facing: 2 }),
       tryStep: () => true,

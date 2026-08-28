@@ -73,6 +73,11 @@ export function sessionPose(session: AgentSession): AgentPose {
 export function sessionActor(session: AgentSession, rules: StepRules): CommandActor {
   return {
     pose: () => sessionPose(session),
+    snapTo: (x, y, facing) => {
+      session.x = x;
+      session.y = y;
+      session.facing = facing;
+    },
     tryStep: (dx, dy, mayPush = true) => {
       const nextX = session.x + dx;
       const nextY = session.y + dy;

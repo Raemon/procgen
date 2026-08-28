@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { shootGenomeWorld } from '@/features/game/capture/genomeWorldShot';
 import { shotKeyOf, WorldShotQueue, type WorldShot } from '@/features/game/capture/worldShotQueue';
-import type { WorldGenome } from '../selfPlay/worldGenome';
+import type { WorldSeedGenome } from '../selfPlay/worldSeedGenome';
 
 export const SHOT_SIZE = { width: 480, height: 320 };
 
@@ -12,7 +12,7 @@ export function worldShotQueue(): WorldShotQueue {
   return queue;
 }
 
-export function useWorldShot(genome: WorldGenome | null): WorldShot | null {
+export function useWorldShot(genome: WorldSeedGenome | null): WorldShot | null {
   const [shot, setShot] = useState<WorldShot | null>(null);
   const latest = useRef(genome);
   latest.current = genome;
@@ -27,6 +27,6 @@ export function useWorldShot(genome: WorldGenome | null): WorldShot | null {
   return shot;
 }
 
-export function reshootWorld(genome: WorldGenome): void {
+export function reshootWorld(genome: WorldSeedGenome): void {
   worldShotQueue().reshoot(genome);
 }
