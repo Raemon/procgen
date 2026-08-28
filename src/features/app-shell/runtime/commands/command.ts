@@ -22,6 +22,7 @@ export type CommandGroup = 'movement' | 'senses' | 'pipeline' | 'assets' | 'worl
 export interface CommandActor {
   pose(): { x: number; y: number; facing: FacingIndex };
   tryStep(dx: number, dy: number, mayPush?: boolean): boolean;
+  tryJump(dx: number, dy: number): boolean;
   turn(eighthTurns: number): void;
   sightRadiusTiles(): number;
   setSightRadiusTiles(radius: number): void;

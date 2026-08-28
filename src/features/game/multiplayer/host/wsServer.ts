@@ -12,11 +12,13 @@ import {
 import { sanitizeChatText } from '../../chat/sanitizeChatText';
 import { useHereOrAhead } from '../../puzzles/interaction/useAtPose';
 import {
+  JUMP_IN_PLACE,
   ORDER_DIR,
   ORDER_NONE,
   holdDirection,
   isDirIndex,
   releaseOrder,
+  requestJump,
 } from '../../sim/movementOrder';
 import { turnedFacing } from '../../facing';
 import { joinConnection, leaveConnection } from '../game/joins';
@@ -116,7 +118,13 @@ function handleSay(conn: Connection, msg: SayMsg, deps: WsDeps): void {
 
 function handleAction(conn: Connection, msg: number[], deps: WsDeps): void {
   const accepted =
-    msg[0] === Op.Order ? applyOrder(conn, msg[1], msg[2]) : msg[0] === Op.Turn ? applyTurn(conn, msg[1], deps) : false;
+    msg[0] === Op.Order
+      ? applyOrder(conn, msg[1], msg[2])
+      : msg[0] === Op.Turn
+        ? applyTurn(conn, msg[1], deps)
+        : msg[0] === Op.Jump
+          ? applyJump(conn, msg[1])
+          : false;
   if (accepted) {
     conn.inputViolations = 0;
     return;
@@ -135,6 +143,16 @@ function applyOrder(conn: Connection, kind: unknown, dir: unknown): boolean {
     return true;
   }
   return false;
+}
+
+function applyJump(conn: Connection, dir: unknown): boolean {
+  if (dir === JUMP_IN_PLACE) {
+    requestJump(conn.entity!, null);
+    return true;
+  }
+  if (!isDirIndex(dir)) return false;
+  requestJump(conn.entity!, dir);
+  return true;
 }
 
 function applyTurn(conn: Connection, eighthTurns: unknown, deps: WsDeps): boolean {

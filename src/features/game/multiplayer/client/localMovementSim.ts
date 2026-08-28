@@ -2,6 +2,7 @@ import {
   TICK_MS,
   holdDirection,
   releaseOrder,
+  requestJump,
   restingBody,
   type MovingBody,
 } from '../../sim/movementOrder';
@@ -37,8 +38,17 @@ export class LocalMovementSim {
     releaseOrder(this.body);
   }
 
+  jump(dir: FacingIndex | null): void {
+    requestJump(this.body, dir);
+  }
+
   private tickOnce(): void {
-    const delta = tickMovement(this.body, this.world.playerX, this.world.playerY, this.isWalkableAt);
-    if (delta) this.world.tryStep(delta.dx, delta.dy);
+    const delta = tickMovement(this.body, this.world.playerX, this.world.playerY, {
+      isWalkable: this.isWalkableAt,
+      jumpTo: (fromX, fromY, dx, dy) => this.world.jumpLandingFrom(fromX, fromY, dx, dy),
+    });
+    if (!delta) return;
+    if (delta.jumped) this.world.landAfterJump(delta.dx, delta.dy);
+    else this.world.tryStep(delta.dx, delta.dy);
   }
 }

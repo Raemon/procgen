@@ -19,6 +19,7 @@ import { CreatureMeshes } from './creatureMeshes';
 import { EasedPoint } from './easedPoint';
 import { advanceFaceArtAnimations } from './faceArtAnimations';
 import { ItemMeshes } from './itemMeshes';
+import { JumpArc } from './jumpArc';
 import { RemotePlayerMeshes } from './remotePlayerMeshes';
 import { createCharacterFog, createWorldScene, setFogRange } from './worldScene';
 import { LAMPLIT_AMBIENT, OVERHEAD_AMBIENT, SceneDaylight } from './sceneDaylight';
@@ -64,6 +65,8 @@ export class View3D {
   private readonly characterSprites = new CharacterSpriteAssets();
   private readonly player: PlayerCharacterMesh;
   private readonly easedPlayer: EasedPoint;
+  private readonly jumpArc = new JumpArc();
+  private readonly stopWatchingJumps: () => void;
   private readonly streamer: ChunkMeshStreamer;
   private readonly terrainOverview: TerrainOverview;
   private readonly creatureMeshes: CreatureMeshes;
@@ -115,6 +118,7 @@ export class View3D {
     this.listenForCameraGestures();
     listenForCaptureDrag(this.canvas, deps.capture, (x, y) => this.cellAtPixel(x, y));
     listenForTileHover(this.canvas, deps.hoveredTile, (x, y) => this.cellAtPixel(x, y));
+    this.stopWatchingJumps = deps.world.on('player-jumped', () => this.jumpArc.launch(this.groundUnderPlayer()));
     this.resizeObserver.observe(container);
     this.resize();
     this.animationFrame = requestAnimationFrame(this.onFrame);
@@ -122,6 +126,7 @@ export class View3D {
 
   dispose(): void {
     cancelAnimationFrame(this.animationFrame);
+    this.stopWatchingJumps();
     this.stopReportingGpuLoad();
     this.resizeObserver.disconnect();
     this.creatureMeshes.dispose();
@@ -247,6 +252,7 @@ export class View3D {
   private renderFrame(dtSeconds: number): void {
     if (isCollapsed(containerSize(this.container))) return;
     this.easedPlayer.approach(this.deps.world.playerX, this.deps.world.playerY, dtSeconds);
+    this.jumpArc.advance(dtSeconds);
     this.applySightRadius();
     this.elapsedSeconds += dtSeconds;
     advanceFaceArtAnimations(this.elapsedSeconds);
@@ -333,7 +339,7 @@ export class View3D {
       dtSeconds,
       eased.x,
       eased.y,
-      this.deps.sampler.elevationAt(Math.round(eased.x), Math.round(eased.y)),
+      this.playerElevation(),
       facingYawRadians(this.deps.world.facing),
     );
   }
@@ -391,11 +397,21 @@ export class View3D {
       {
         x: eased.x + 0.5,
         y: eased.y + 0.5,
-        elevation: this.deps.sampler.elevationAt(Math.round(eased.x), Math.round(eased.y)),
+        elevation: this.playerElevation(),
         motion: this.playerMotion(),
       },
       view,
     );
+  }
+
+  private playerElevation(): number {
+    if (this.jumpArc.airborne()) return this.jumpArc.elevationOver(this.groundUnderPlayer());
+    const eased = this.easedPlayer;
+    return this.deps.sampler.elevationAt(Math.round(eased.x), Math.round(eased.y));
+  }
+
+  private groundUnderPlayer(): number {
+    return this.deps.sampler.elevationAt(this.deps.world.playerX, this.deps.world.playerY);
   }
 
   private playerMotion(): CharacterMotion {

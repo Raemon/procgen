@@ -1,5 +1,6 @@
 import type { AppRuntime } from '@/features/app-shell/runtime/appRuntime';
 import { facingRelativeStep } from '../input/facingRelativeStep';
+import { JumpInput } from '../input/jumpInput';
 import { MovementInput } from '../input/movementInput';
 import { PickUpInput } from '../input/pickUpInput';
 import { UseFixtureInput } from '../input/useFixtureInput';
@@ -90,6 +91,11 @@ export function mountWorldViews(
     isSuspended: () => inputIsSuspended(runtime, currentMode()),
   });
 
+  const jump = new JumpInput({
+    jump: () => runtime.net.jump(),
+    isSuspended: () => inputIsSuspended(runtime, currentMode()),
+  });
+
   const useFixture = new UseFixtureInput({
     use: () => perform(isCharacterControlled(currentMode()) ? 'use' : 'use_fixture'),
     resetRoom: () =>
@@ -124,6 +130,7 @@ export function mountWorldViews(
       stopWalkingWhileTyping();
       stopWalkingWhileBagIsOpen();
       movement.dispose();
+      jump.dispose();
       pickUp.dispose();
       useFixture.dispose();
       for (const remove of unregister) remove();

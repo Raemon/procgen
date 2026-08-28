@@ -5,6 +5,7 @@ import {
   clampSightRadiusTiles,
 } from '@/features/game/vision/characterSight';
 import type { AgentMode, AgentPose } from '../agentMode';
+import { jumpLandingDelta } from '@/features/game/sim/jumpLanding';
 import { stepIsAllowed, type StepRules } from '@/features/game/sim/stepIsAllowed';
 import { newNotebook, type AgentNotebook } from './agentNotebook';
 
@@ -78,6 +79,13 @@ export function sessionActor(session: AgentSession, rules: StepRules): CommandAc
       if (!stepIsAllowed(rules, nextX, nextY, dx, dy, mayPush)) return false;
       session.x = nextX;
       session.y = nextY;
+      return true;
+    },
+    tryJump: (dx, dy) => {
+      const delta = jumpLandingDelta(rules, session.x, session.y, dx, dy);
+      if (!delta) return false;
+      session.x += delta.dx;
+      session.y += delta.dy;
       return true;
     },
     turn: (eighthTurns) => {

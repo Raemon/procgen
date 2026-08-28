@@ -3,10 +3,13 @@ import type { FacingIndex } from '../facing';
 export const TICK_MS = 50;
 export const MOVE_COOLDOWN_TICKS = 3;
 export const DIAGONAL_MOVE_COOLDOWN_TICKS = 4;
+export const JUMP_COOLDOWN_TICKS = 6;
 
 export const ORDER_NONE = 0;
 export const ORDER_DIR = 1;
 export const ORDER_STEP = 2;
+
+export const JUMP_IN_PLACE = -1;
 
 export type OrderKind = typeof ORDER_NONE | typeof ORDER_DIR | typeof ORDER_STEP;
 
@@ -20,6 +23,7 @@ export interface MovingBody {
   cooldown: number;
   moveDir: number;
   order: MovementOrder;
+  jump: number | null;
 }
 
 export function idleOrder(): MovementOrder {
@@ -27,7 +31,7 @@ export function idleOrder(): MovementOrder {
 }
 
 export function restingBody(): MovingBody {
-  return { cooldown: 0, moveDir: -1, order: idleOrder() };
+  return { cooldown: 0, moveDir: -1, order: idleOrder(), jump: null };
 }
 
 export function holdDirection(body: MovingBody, dir: FacingIndex): void {
@@ -40,6 +44,16 @@ export function releaseOrder(body: MovingBody): void {
     body.order.kind === ORDER_DIR && !body.order.stepped
       ? { kind: ORDER_STEP, dir: body.order.dir, stepped: false }
       : idleOrder();
+}
+
+export function requestJump(body: MovingBody, dir: FacingIndex | null): void {
+  body.jump = dir ?? JUMP_IN_PLACE;
+}
+
+export function takeJumpRequest(body: MovingBody): number | null {
+  const jump = body.jump;
+  body.jump = null;
+  return jump;
 }
 
 export function isDirIndex(dir: unknown): dir is FacingIndex {

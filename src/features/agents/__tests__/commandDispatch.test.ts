@@ -17,6 +17,7 @@ import { PieceAssets } from '@/features/asset-library/pieces/pieceAssets';
 import { CultureAssets } from '@/features/asset-library/cultures/cultureAssets';
 import { MAX_STORY_LAYERS, piecesBoundToRole } from '@/features/asset-library/cultures/cultureDef';
 import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
+import { newTileWithId, type TileDef } from '@/features/asset-library/tiles/tileDef';
 import { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
 import { turnedFacing, type FacingIndex } from '@/features/game/facing';
 import {
@@ -30,9 +31,9 @@ import { performCommand } from '@/features/app-shell/runtime/commands/performCom
 import { everyCommand } from '../api/docs/apiDocs';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 
-function abilityWorld() {
+function abilityWorld(initialTiles: TileDef[] = []) {
   const store = new PipelineStore(emptyPipeline());
-  const abilityTiles = new TileAssets([]);
+  const abilityTiles = new TileAssets(initialTiles);
   const pieces = new PieceAssets();
   const cultures = new CultureAssets();
   const pose = { x: 0, y: 0, facing: 0 as FacingIndex };
@@ -62,6 +63,7 @@ function abilityWorld() {
     actor: {
       pose: () => pose,
       tryStep: (dx: number, dy: number) => ((pose.x += dx), (pose.y += dy), true),
+      tryJump: (dx: number, dy: number) => ((pose.x += dx * 2), (pose.y += dy * 2), true),
       turn: (turns: number) => (pose.facing = turnedFacing(pose.facing, turns)),
       sightRadiusTiles: () => sight.radius,
       setSightRadiusTiles: (radius: number) => (sight.radius = clampSightRadiusTiles(radius)),
@@ -80,7 +82,7 @@ function steppingWorld(elevationAt: (x: number, y: number) => number) {
       markersIn: () => [],
       itemSpawnsIn: () => [],
     } as unknown as WorldSampler,
-    actor: { ...ground.context.actor, tryStep: () => false },
+    actor: { ...ground.context.actor, tryStep: () => false, tryJump: () => false },
   };
 }
 
@@ -128,9 +130,9 @@ export function checkCommandDispatch(check: CheckReporter): void {
     return (
       !result.ok &&
       result.code === 'blocked' &&
-      result.hint.includes('level 3') &&
-      result.hint.includes('your level 0') &&
-      result.hint.includes('climbs at most 1')
+      result.hint.includes('level 2.5') &&
+      result.hint.includes('your level 0.5') &&
+      result.hint.includes('climbs at most 0.5')
     );
   })());
   check('a step refused on flat walkable ground blames an obstacle instead', (() => {
@@ -341,6 +343,25 @@ export function checkCommandDispatch(check: CheckReporter): void {
     const undone = act('god', 'undo_randomize');
     return rolled.ok && undone.ok && JSON.stringify(commands.store.snapshot()) === before;
   })());
+  check('an unplayable seeded roll is refused without changing the world or undo history', (() => {
+    const wallId = assetId<'tiles'>(0);
+    const sealed = abilityWorld([{ ...newTileWithId(wallId), walkable: false }]);
+    const sealedAct = (action: string, params: CommandParams = {}) =>
+      performCommand(sealed.context, 'god', action, params);
+    sealedAct('add_node', { type: 'constantField' });
+    sealedAct('add_node', { type: 'thresholdTiles' });
+    const threshold = sealed.store.nodes()[1]!;
+    sealedAct('set_param', { node_id: threshold.id, param: 'belowTile', value: wallId });
+    sealedAct('set_param', { node_id: threshold.id, param: 'aboveTile', value: wallId });
+    const before = JSON.stringify(sealed.store.snapshot());
+    const rolled = sealedAct('randomize_seed', { seed: 42 });
+    return (
+      !rolled.ok &&
+      rolled.code === 'unplayable_world' &&
+      JSON.stringify(sealed.store.snapshot()) === before &&
+      !sealed.context.randomizeHistory.canUndo()
+    );
+  })());
   check('rerolling the seed regenerates the world without touching a single node', (() => {
     act('god', 'load_preset', { name: 'check preset' });
     const before = commands.store.snapshot();
@@ -373,6 +394,16 @@ export function checkCommandDispatch(check: CheckReporter): void {
     const before = commands.pieces.all().length;
     const captured = act('god', 'capture_region', { min_x: 0, min_y: 0, max_x: 3, max_y: 3 });
     return captured.ok && commands.pieces.all().length === before + 1;
+  })());
+  check('a jump refused at both landings says what stood in the way of each', (() => {
+    const walled = steppingWorld(() => 0);
+    const result = performCommand(walled, 'character', 'jump_forward', {});
+    return (
+      !result.ok &&
+      result.code === 'blocked' &&
+      result.hint.includes('(0,-2)') &&
+      result.hint.includes('(0,-1)')
+    );
   })());
   check('every command is reachable through the API dispatcher', everyCommand().every((spec) => commandFor(spec.mode, spec.action) === spec));
   check('character mode owns nothing but its own movement and senses, never the world editor', commandsForMode('character').every((spec) => spec.group === 'movement' || spec.group === 'senses'));

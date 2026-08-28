@@ -1,38 +1,69 @@
 import { facingVector, type FacingIndex } from '../facing';
 import {
   DIAGONAL_MOVE_COOLDOWN_TICKS,
+  JUMP_COOLDOWN_TICKS,
+  JUMP_IN_PLACE,
   MOVE_COOLDOWN_TICKS,
   ORDER_NONE,
   ORDER_STEP,
   idleOrder,
+  takeJumpRequest,
   type MovingBody,
 } from './movementOrder';
 
 export interface StepDelta {
   dx: number;
   dy: number;
+  jumped?: boolean;
 }
 
 export type WalkabilityProbe = (x: number, y: number) => boolean;
 export type StepGate = (fromX: number, fromY: number, toX: number, toY: number) => boolean;
+export type JumpLanding = (fromX: number, fromY: number, dx: number, dy: number) => StepDelta | null;
+
+export interface TickRules {
+  isWalkable: WalkabilityProbe;
+  climbGateAt?: StepGate;
+  jumpTo?: JumpLanding;
+}
 
 export function tickMovement(
   body: MovingBody,
   x: number,
   y: number,
-  isWalkable: WalkabilityProbe,
-  climbGateAt: StepGate = () => true,
+  rules: TickRules,
 ): StepDelta | null {
   if (body.cooldown > 0) body.cooldown -= 1;
   if (body.cooldown > 0) return null;
+  const jump = takeJumpRequest(body);
+  if (jump !== null) return beginJump(body, jump, x, y, rules);
   const order = body.order;
   if (order.kind === ORDER_NONE) return null;
-  const canEnter = (nx: number, ny: number) => isWalkable(nx, ny) && climbGateAt(x, y, nx, ny);
+  const climbGateAt = rules.climbGateAt;
+  const canEnter = (nx: number, ny: number) =>
+    rules.isWalkable(nx, ny) && (climbGateAt ? climbGateAt(x, y, nx, ny) : true);
   const delta = walkableStepToward(order.dir, x, y, canEnter);
   if (order.kind === ORDER_STEP) body.order = idleOrder();
   if (!delta) return null;
   order.stepped = true;
   beginHop(body, delta);
+  return delta;
+}
+
+function beginJump(
+  body: MovingBody,
+  jump: number,
+  x: number,
+  y: number,
+  rules: TickRules,
+): StepDelta | null {
+  body.cooldown = JUMP_COOLDOWN_TICKS;
+  body.moveDir = -1;
+  if (jump === JUMP_IN_PLACE || !rules.jumpTo) return null;
+  const heading = facingVector(jump as FacingIndex);
+  const delta = rules.jumpTo(x, y, heading.dx, heading.dy);
+  if (!delta) return null;
+  body.moveDir = jump;
   return delta;
 }
 

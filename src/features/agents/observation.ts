@@ -3,7 +3,6 @@ import { pointOverlayLookup } from '@/features/game/render/ascii/asciiCells';
 import { viewportCenteredOn } from '@/features/game/render/ascii/asciiViewport';
 import type { ReadOnlyTileAssets } from '@/features/app-shell/runtime/readOnlyAssets';
 import { FACING_NAMES } from '@/features/game/facing';
-import { navigationLevelOf } from '@/features/game/climbing';
 import {
   DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
   characterViewSize,
@@ -115,7 +114,7 @@ function cellIsSeen(
 const TALLEST_ELEVATION_DIGIT = 35;
 
 function elevationDigit(elevation: number): string {
-  return Math.min(TALLEST_ELEVATION_DIGIT, Math.max(0, navigationLevelOf(elevation))).toString(36);
+  return Math.min(TALLEST_ELEVATION_DIGIT, Math.max(0, Math.round(elevation))).toString(36);
 }
 
 function observedGlyph(

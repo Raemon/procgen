@@ -5,7 +5,9 @@ import {
   DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
   clampSightRadiusTiles,
 } from './vision/characterSight';
-import { NOTHING_IN_THE_WAY, stepIsAllowed } from './sim/stepIsAllowed';
+import { jumpLandingDelta } from './sim/jumpLanding';
+import { NOTHING_IN_THE_WAY, stepIsAllowed, type StepRules } from './sim/stepIsAllowed';
+import type { StepDelta } from './sim/tickMovement';
 import { WorldEvents, type WorldEvent } from './worldEvents';
 
 const SNAP_SEARCH_RADIUS = 64;
@@ -45,6 +47,7 @@ export class World {
     private readonly isWalkableAt: WalkabilityProbe,
     private readonly clearTheWay: ObstacleResolver = NOTHING_IN_THE_WAY,
     private readonly climbGateAt: ClimbGate = ANY_CLIMB_ALLOWED,
+    private readonly jumpGateAt: ClimbGate = climbGateAt,
   ) {}
 
   setSightRadiusTiles(radius: number): void {
@@ -59,19 +62,45 @@ export class World {
     this.events.emit('player-turned');
   }
 
-  tryStep(dx: number, dy: number, mayPush = true): boolean {
-    const nextX = this.playerX + dx;
-    const nextY = this.playerY + dy;
-    const rules = {
+  stepRules(): StepRules {
+    return {
       isWalkableAt: this.isWalkableAt,
       clearTheWay: this.clearTheWay,
       climbGateAt: this.climbGateAt,
+      jumpGateAt: this.jumpGateAt,
     };
-    if (!stepIsAllowed(rules, nextX, nextY, dx, dy, mayPush)) return false;
+  }
+
+  tryStep(dx: number, dy: number, mayPush = true): boolean {
+    const nextX = this.playerX + dx;
+    const nextY = this.playerY + dy;
+    if (!stepIsAllowed(this.stepRules(), nextX, nextY, dx, dy, mayPush)) return false;
     this.playerX = nextX;
     this.playerY = nextY;
     this.events.emit('player-moved');
     return true;
+  }
+
+  jumpLandingFrom(fromX: number, fromY: number, dx: number, dy: number): StepDelta | null {
+    return jumpLandingDelta(this.stepRules(), fromX, fromY, dx, dy);
+  }
+
+  tryJump(dx: number, dy: number): boolean {
+    const delta = this.jumpLandingFrom(this.playerX, this.playerY, dx, dy);
+    if (!delta) return false;
+    this.landAfterJump(delta.dx, delta.dy);
+    this.events.emit('player-jumped');
+    return true;
+  }
+
+  landAfterJump(dx: number, dy: number): void {
+    this.playerX += dx;
+    this.playerY += dy;
+    this.events.emit('player-moved');
+  }
+
+  announceJump(): void {
+    this.events.emit('player-jumped');
   }
 
   snapTo(x: number, y: number, facing: FacingIndex): void {

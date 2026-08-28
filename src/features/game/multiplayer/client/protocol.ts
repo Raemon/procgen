@@ -1,15 +1,17 @@
 import type { FacingIndex } from '../../facing';
 
-export const PROTOCOL_VERSION = 4;
+export const PROTOCOL_VERSION = 5;
 
 export const Op = {
   Order: 1,
   Turn: 2,
+  Jump: 3,
   Snapshot: 10,
 } as const;
 
 export type OrderMsg = [typeof Op.Order, number, number];
 export type TurnMsg = [typeof Op.Turn, number];
+export type JumpMsg = [typeof Op.Jump, number];
 
 export type SnapshotRow = [number, number, number, number, number, number];
 export type SnapshotMsg = [typeof Op.Snapshot, number, SnapshotRow[]];
@@ -74,7 +76,7 @@ export interface PuzzlesMsg {
   crates: Array<[string, number, number]>;
 }
 
-export type ClientMsg = HelloMsg | SayMsg | OrderMsg | TurnMsg | UseMsg | ResetRoomMsg;
+export type ClientMsg = HelloMsg | SayMsg | OrderMsg | TurnMsg | JumpMsg | UseMsg | ResetRoomMsg;
 export type ServerMsg =
   | WelcomeMsg
   | EntityMetaMsg

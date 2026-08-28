@@ -1,5 +1,5 @@
 import '@/features/asset-library/worlds/nodes';
-import { climbGateFrom, standableProbeFrom } from '@/features/game/climbing';
+import { JUMP_CLIMB_LIMIT, climbGateFrom, standableProbeFrom } from '@/features/game/climbing';
 import type { WorldLab } from '@/features/asset-library/worlds/lab/worldLab';
 import { AssetFolders } from '@/features/asset-library/folders/assetFolders';
 import { CreatureAssets } from '@/features/asset-library/creatures/creatureAssets';
@@ -139,6 +139,7 @@ function buildServerWorld(
   const puzzles = new PuzzleWorld(store, tileIsWalkable, puzzleState);
   const isWalkable = (x: number, y: number) => tileIsWalkable(x, y) && !puzzles.blocksAt(x, y);
   const climbGate = climbGateFrom((x, y) => sampler.elevationAt(x, y));
+  const jumpGate = climbGateFrom((x, y) => sampler.elevationAt(x, y), JUMP_CLIMB_LIMIT);
   const isStandable = standableProbeFrom(isWalkable, climbGate);
   return {
     stamp,
@@ -163,6 +164,7 @@ function buildServerWorld(
       isWalkableAt: tileIsWalkable,
       clearTheWay: (x, y, dx, dy, mayPush) => puzzles.clearTheWay(x, y, dx, dy, mayPush),
       climbGateAt: climbGate,
+      jumpGateAt: jumpGate,
     },
     spawn: () =>
       nearestWalkable(0, 0, SPAWN_SEARCH_RADIUS, isStandable) ??

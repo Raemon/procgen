@@ -44,7 +44,7 @@ import { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
 import { playerCanEnter } from '@/features/game/puzzles/playerCanEnter';
 import { isWalkableTile } from '@/features/game/tileWalkability';
 import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
-import { climbGateFrom } from '@/features/game/climbing';
+import { JUMP_CLIMB_LIMIT, climbGateFrom } from '@/features/game/climbing';
 import { World } from '@/features/game/world';
 import { ChangeNotifier } from './changeNotifier';
 import type {
@@ -135,6 +135,7 @@ export function createAppRuntime(): AppRuntime {
     isWalkableAt,
     (x, y, dx, dy, mayPush) => puzzles.clearTheWay(x, y, dx, dy, mayPush),
     climbGateFrom((x, y) => sampler.elevationAt(x, y)),
+    climbGateFrom((x, y) => sampler.elevationAt(x, y), JUMP_CLIMB_LIMIT),
   );
   const walkIntoCratesToPushThem = playerCanEnter(isWalkableAt, puzzles, () => ({
     x: world.playerX,
@@ -227,6 +228,7 @@ export function createAppRuntime(): AppRuntime {
         actor: {
           pose: () => ({ x: world.playerX, y: world.playerY, facing: world.facing }),
           tryStep: (dx, dy, mayPush) => world.tryStep(dx, dy, mayPush),
+          tryJump: (dx, dy) => world.tryJump(dx, dy),
           turn: (eighthTurns) => world.turn(eighthTurns),
           sightRadiusTiles: () => world.sightRadiusTiles,
           setSightRadiusTiles: (radius) => world.setSightRadiusTiles(radius),

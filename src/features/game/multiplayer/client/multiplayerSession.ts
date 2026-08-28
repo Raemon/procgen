@@ -2,7 +2,7 @@ import { sanitizeChatText } from '../../chat/sanitizeChatText';
 import { SpeechBubbles } from '../../chat/speechBubbles';
 import type { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
 import { sanitizePipeline } from '@/features/asset-library/worlds/pipeline/sanitizePipeline';
-import { ORDER_DIR, ORDER_NONE } from '../../sim/movementOrder';
+import { JUMP_IN_PLACE, ORDER_DIR, ORDER_NONE } from '../../sim/movementOrder';
 import { stepDirIndex, type WalkabilityProbe } from '../../sim/tickMovement';
 import type { FacingIndex } from '../../facing';
 import type { PuzzleWorld } from '../../puzzles/puzzleWorld';
@@ -24,6 +24,7 @@ export class MultiplayerSession {
   private applyingRemotePipeline = false;
   private lastLocalTurnAt = 0;
   private lastFacing: FacingIndex = 0;
+  private intentDir: FacingIndex | null = null;
 
   constructor(
     private readonly world: World,
@@ -63,13 +64,22 @@ export class MultiplayerSession {
       this.clearMoveIntent();
       return;
     }
+    this.intentDir = dir;
     if (this.online) this.client.sendOrder(ORDER_DIR, dir);
     else this.localSim.hold(dir);
   }
 
   clearMoveIntent(): void {
+    this.intentDir = null;
     if (this.online) this.client.sendOrder(ORDER_NONE, 0);
     else this.localSim.release();
+  }
+
+  jump(): void {
+    const dir = this.intentDir;
+    if (this.online) this.client.sendJump(dir ?? JUMP_IN_PLACE);
+    else this.localSim.jump(dir);
+    this.world.announceJump();
   }
 
   isOnline(): boolean {

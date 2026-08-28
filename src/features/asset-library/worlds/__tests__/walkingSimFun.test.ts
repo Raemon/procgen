@@ -45,7 +45,7 @@ export function checkWalkingSimFun(check: (name: string, condition: boolean) => 
   check('every fixture walk keeps revealing across most of its chapters instead of front-loading the journey', [plain, maze, varied, populated].every((each) => each.measurements.revealSpread >= 0.7));
   check('a pooled score carries a spawn consistency factor that only ever discounts, never rewards', [plain, maze, varied, populated].every((each) => spawnConsistencyOf(each) > 0.6 && spawnConsistencyOf(each) <= 1));
   check('trees block the eye and shallow water does not, so water gates the feet alone', sightIsBlockedByTreesButNotWater());
-  check('the grader allows a one-block rise, rejects anything higher, and allows the way down', graderUsesTheCharacterStepHeight());
+  check('the grader allows a half-level rise, rejects anything higher, and allows the way down', graderUsesTheCharacterStepHeight());
 
   const terraced = measuredFixture(terracedHighlandState());
   check('cliffs gate uphill travel in a terraced world while a plain never says no', terraced.measurements.elevationGateShare > plain.measurements.elevationGateShare && plain.measurements.elevationGateShare === 0);
@@ -95,7 +95,7 @@ function highGroundSeesOverTrees(): boolean {
 }
 
 function graderUsesTheCharacterStepHeight(): boolean {
-  const elevationAt = (x: number) => (x === 0 ? 0 : x === 1 ? 1 : 2.6);
+  const elevationAt = (x: number) => (x === 0 ? 0 : x === 1 ? 0.5 : 2.6);
   const canStep = stepProbeFrom(() => true, elevationAt);
   return canStep(0, 0, 1, 0) && !canStep(1, 0, 2, 0) && canStep(2, 0, 1, 0);
 }

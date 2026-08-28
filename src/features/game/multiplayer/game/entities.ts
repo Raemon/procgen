@@ -13,6 +13,7 @@ export interface Entity {
   cooldown: number;
   moveDir: number;
   order: MovementOrder;
+  jump: number | null;
   persistDirty: boolean;
 }
 
