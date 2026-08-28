@@ -17,6 +17,7 @@ import {
   type ActionOfferingCells,
 } from '@/features/game/puzzles/interaction/actionWithinReach';
 import type { AgentMode, AgentPose } from './agentMode';
+import { navigationLevelOf } from '@/features/game/climbing';
 
 export interface ObservedOverlay extends MarkerSource, ActionOfferingCells {}
 
@@ -114,7 +115,8 @@ function cellIsSeen(
 const TALLEST_ELEVATION_DIGIT = 35;
 
 function elevationDigit(elevation: number): string {
-  return Math.min(TALLEST_ELEVATION_DIGIT, Math.max(0, Math.round(elevation))).toString(36);
+  const navLevel = navigationLevelOf(elevation);
+  return Math.min(TALLEST_ELEVATION_DIGIT, Math.max(0, Math.round(navLevel * 2))).toString(36);
 }
 
 function observedGlyph(
