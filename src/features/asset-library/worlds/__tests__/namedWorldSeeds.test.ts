@@ -12,7 +12,7 @@ import { nodeTypeOf } from '../nodeRegistry';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { earthlikeState, fieldBytes, tileBytes, worldFromState } from './pipelineWorldFixtures';
 
-const SHIPPED_WORLDS = ['volcanic islands', 'infinite labyrinth'];
+const SHIPPED_WORLDS = ['volcanic islands', 'infinite labyrinth', 'sunken labyrinth'];
 
 function worldSeedStateNamed(name: string): PipelineState {
   return sanitizePipeline(examplePipelines().find((seed) => seed.name === name)!.state);
@@ -24,7 +24,7 @@ function shippedStates(): PipelineState[] {
 
 export function checkNamedWorldSeeds(check: CheckReporter): void {
   check(
-    'the editor ships exactly the two worlds it means to, named as the library lists them',
+    'the editor ships exactly the worlds it means to, named as the library lists them',
     examplePipelines().map((seed) => seed.name).join() === SHIPPED_WORLDS.join(),
   );
   check(
