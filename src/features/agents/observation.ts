@@ -116,7 +116,7 @@ const TALLEST_ELEVATION_DIGIT = 35;
 
 function elevationDigit(elevation: number): string {
   const navLevel = navigationLevelOf(elevation);
-  return Math.min(TALLEST_ELEVATION_DIGIT, Math.max(0, Math.round(navLevel * 2))).toString(36);
+  return Math.min(TALLEST_ELEVATION_DIGIT, Math.max(0, Math.round(navLevel))).toString(36);
 }
 
 function observedGlyph(
