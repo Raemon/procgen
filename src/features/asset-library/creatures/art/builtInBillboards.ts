@@ -1,16 +1,19 @@
 import type { CharacterBillboard } from '../../characters/characterBillboard';
 import { dwarfBillboard } from '../../characters/dwarf/dwarfBillboard';
+import { gauntOneBillboard } from './gauntOne/gauntOneBillboard';
 import { humanoidBillboard } from './humanoidBillboard';
 import { BLANK_CHARACTER_PALETTE, WANDERING_TRADER_PALETTE } from './humanoidPalette';
 
 export const MOONLIT_DWARF_ART = 'moonlit-dwarf';
 export const WANDERING_TRADER_ART = 'wandering-trader';
 export const BLANK_CHARACTER_ART = 'blank-character';
+export const GAUNT_ONE_ART = 'gaunt-one';
 
 const BUILDERS: Readonly<Record<string, () => CharacterBillboard>> = {
   [MOONLIT_DWARF_ART]: () => dwarfBillboard(),
   [WANDERING_TRADER_ART]: () => humanoidBillboard(WANDERING_TRADER_PALETTE),
   [BLANK_CHARACTER_ART]: () => humanoidBillboard(BLANK_CHARACTER_PALETTE),
+  [GAUNT_ONE_ART]: () => gauntOneBillboard(),
 };
 
 const alreadyBuilt = new Map<string, CharacterBillboard>();
