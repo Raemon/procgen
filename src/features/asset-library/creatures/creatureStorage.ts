@@ -7,7 +7,13 @@ import {
 } from '../tiles/storage/storedFaceArt';
 import { builtInBillboard, isBuiltInBillboardArt } from './art/builtInBillboards';
 import { sanitizeCharacterBillboard } from '../characters/sanitizeCharacterBillboard';
-import { CHARACTER_BODY, CREATURE_BODY, type CreatureDef } from './creatureDef';
+import {
+  CHARACTER_BODY,
+  CHARACTER_COMBAT,
+  CREATURE_BODY,
+  CREATURE_COMBAT,
+  type CreatureDef,
+} from './creatureDef';
 import { CHARACTER, CREATURE, isEntityKind } from './entityKinds';
 
 const FILE_NAME = 'creatures';
@@ -42,6 +48,7 @@ function withValidatedArt(stored: CreatureDef): CreatureDef {
   return {
     ...creature,
     ...bodySizeOfStoredCreature(creature, kind, size),
+    ...combatOfStoredCreature(creature, kind),
     faceArt: faceArtFromStoredShape(creature.faceArt),
     kind,
     inventory: sanitizeInventory(creature.inventory),
@@ -63,6 +70,23 @@ function bodySizeOfStoredCreature(
     bodyWidth: positiveNumber(creature.bodyWidth) ?? legacyCube ?? body.width,
     bodyHeight: positiveNumber(creature.bodyHeight) ?? legacyCube ?? body.height,
   };
+}
+
+function combatOfStoredCreature(
+  creature: CreatureDef,
+  kind: number,
+): Pick<CreatureDef, 'maxHp' | 'attackDamage' | 'attackReach' | 'attackCooldown'> {
+  const combat = kind === CHARACTER ? CHARACTER_COMBAT : CREATURE_COMBAT;
+  return {
+    maxHp: positiveNumber(creature.maxHp) ?? combat.maxHp,
+    attackDamage: nonNegativeNumber(creature.attackDamage) ?? combat.attackDamage,
+    attackReach: positiveNumber(creature.attackReach) ?? combat.attackReach,
+    attackCooldown: positiveNumber(creature.attackCooldown) ?? combat.attackCooldown,
+  };
+}
+
+function nonNegativeNumber(value: unknown): number | null {
+  return typeof value === 'number' && value >= 0 ? value : null;
 }
 
 function positiveNumber(value: unknown): number | null {

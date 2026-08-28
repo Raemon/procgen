@@ -19,6 +19,8 @@ import { AssetFolders } from '@/features/asset-library/folders/assetFolders';
 import { RandomizeHistory } from '../randomize/randomizeHistory';
 import { TemplateLibrary } from '@/features/asset-library/node-groups/templateLibrary';
 import { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
+import { DroppedItemSpawns } from '@/features/asset-library/items/pickups/droppedItemSpawns';
+import { SlainCreatureSpawns } from '@/features/game/creatureSim/slainCreatureSpawns';
 import { TakenItemSpawns } from '@/features/asset-library/items/pickups/takenItemSpawns';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 
@@ -122,6 +124,9 @@ function worldSeedEditor() {
       groundItems: NO_GROUND_ITEMS,
       puzzles: new PuzzleWorld(edited, () => true),
       takenItems: new TakenItemSpawns(),
+      slainCreatures: new SlainCreatureSpawns(),
+      droppedItems: new DroppedItemSpawns(),
+      combat: { strike: () => ({ kind: 'missed' as const }) },
       regionSampler: { tileAt: () => 0, elevationAt: () => 0, packedVoxelColumnAt: () => null },
       settleTheWorld: (change: () => void) => change(),
       actor: {

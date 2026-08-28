@@ -9,6 +9,9 @@ import { CHARACTER, CREATURE } from './entityKinds';
 export const CREATURE_BODY = { width: 0.7, height: 0.7 };
 export const CHARACTER_BODY = { width: 1, height: 2 };
 
+export const CREATURE_COMBAT = { maxHp: 3, attackDamage: 1, attackReach: 1.3, attackCooldown: 1.5 };
+export const CHARACTER_COMBAT = { maxHp: 10, attackDamage: 2, attackReach: 1.6, attackCooldown: 0.7 };
+
 export interface CreatureDef {
   id: CreatureId;
   name: string;
@@ -21,6 +24,10 @@ export interface CreatureDef {
   roam: number;
   bodyWidth: number;
   bodyHeight: number;
+  maxHp: number;
+  attackDamage: number;
+  attackReach: number;
+  attackCooldown: number;
   phasing: 0 | 1;
   kind: number;
   inventory: InventoryDef | null;
@@ -41,6 +48,7 @@ export function newCreatureWithId(id: CreatureId): CreatureDef {
     roam: 6,
     bodyWidth: CREATURE_BODY.width,
     bodyHeight: CREATURE_BODY.height,
+    ...CREATURE_COMBAT,
     phasing: 0,
     kind: CREATURE,
     inventory: null,
@@ -57,6 +65,7 @@ export function newCharacterWithId(id: CreatureId): CreatureDef {
     color: '#8ab4e8',
     bodyWidth: CHARACTER_BODY.width,
     bodyHeight: CHARACTER_BODY.height,
+    ...CHARACTER_COMBAT,
     kind: CHARACTER,
     inventory: blankInventory(),
     billboardArt: BLANK_CHARACTER_ART,

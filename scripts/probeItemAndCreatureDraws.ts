@@ -11,6 +11,7 @@ import { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
 import { CreatureAssets } from '@/features/asset-library/creatures/creatureAssets';
 import { ItemAssets } from '@/features/asset-library/items/itemAssets';
+import { SlainCreatureSpawns } from '@/features/game/creatureSim/slainCreatureSpawns';
 import { CreatureSim } from '@/features/game/creatureSim/creatureSim';
 import { CharacterSpriteAssets } from '@/features/game/render/view3d/characterSpriteAssets';
 import { CreatureMeshes } from '@/features/game/render/view3d/creatureMeshes';
@@ -95,8 +96,9 @@ function simSpawnedAroundOrigin(world: ReturnType<typeof worldOfScatteredItemsAn
   const sim = new CreatureSim({
     sampler: world.sampler,
     creatureAssets: world.creatureAssets,
-    world: { playerX: 0, playerY: 0 },
+    world: { actors: () => [{ id: 1, name: 'probe', x: 0, y: 0 }] },
     isWalkableAt: () => true,
+    slain: new SlainCreatureSpawns(),
   });
   sim.step(0);
   return sim;

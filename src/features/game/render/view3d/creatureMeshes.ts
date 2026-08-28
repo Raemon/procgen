@@ -1,8 +1,7 @@
 import * as THREE from 'three';
 import type { ReadOnlyCreatureAssets } from '@/features/app-shell/runtime/readOnlyAssets';
 import type { CreatureDef } from '@/features/asset-library/creatures/creatureDef';
-import type { CreatureInstance } from '../../creatureSim/creatureInstance';
-import type { CreatureSim } from '../../creatureSim/creatureSim';
+import type { LiveCreature, LiveCreatureSource } from '../../creatureSim/creatureInstance';
 import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import { hashString } from '@/features/asset-library/worlds/random/hashString';
 import type { CameraView } from './cameraView';
@@ -36,7 +35,7 @@ export class CreatureMeshes {
     for (const key of [...this.meshes.keys()]) this.dropMesh(key);
   }
 
-  syncTo(sim: CreatureSim, view: CameraView): void {
+  syncTo(sim: LiveCreatureSource, view: CameraView): void {
     const live = new Set<string>();
     for (const creature of sim.active()) {
       const def = this.creatureAssets.byId(creature.creatureId);
@@ -47,7 +46,7 @@ export class CreatureMeshes {
     for (const key of [...this.meshes.keys()]) if (!live.has(key)) this.dropMesh(key);
   }
 
-  private placeMesh(creature: CreatureInstance, def: CreatureDef, view: CameraView): void {
+  private placeMesh(creature: LiveCreature, def: CreatureDef, view: CameraView): void {
     const billboardedCenterHeight = this.dressAsCharacter(creature, def, view);
     const cubed = billboardedCenterHeight === null;
     const mesh = this.meshOf(creature.key, cubed ? def : null);
@@ -58,7 +57,7 @@ export class CreatureMeshes {
   }
 
   private dressAsCharacter(
-    creature: CreatureInstance,
+    creature: LiveCreature,
     def: CreatureDef,
     view: CameraView,
   ): number | null {
@@ -90,7 +89,7 @@ export class CreatureMeshes {
   }
 }
 
-function animationClock(creature: CreatureInstance, view: CameraView): number {
+function animationClock(creature: LiveCreature, view: CameraView): number {
   const offset = (hashString(creature.key) % 1000) / 1000;
   return view.seconds + offset * ANIMATION_SPREAD_SECONDS;
 }

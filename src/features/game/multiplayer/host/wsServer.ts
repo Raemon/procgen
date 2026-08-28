@@ -11,6 +11,9 @@ import {
   type SayMsg,
 } from '../client/protocol';
 import { sanitizeChatText } from '../../chat/sanitizeChatText';
+import { playerCharacterDef } from '@/features/asset-library/characters/playerCharacter';
+import { CHARACTER_COMBAT } from '@/features/asset-library/creatures/creatureDef';
+import type { ItemId } from '@/features/asset-library/asset';
 import { useHereOrAhead } from '../../puzzles/interaction/useAtPose';
 import {
   ORDER_DIR,
@@ -21,6 +24,7 @@ import {
   requestJump,
 } from '../../sim/movementOrder';
 import { turnedFacing } from '../../facing';
+import { droppedMsgOf } from '../game/combatBroadcast';
 import { joinConnection, leaveConnection } from '../game/joins';
 import { Connection } from './connection';
 import {
@@ -95,6 +99,28 @@ function handleMessage(conn: Connection, msg: ClientMsg, deps: WsDeps): void {
   if (msg.t === 'say') handleSay(conn, msg, deps);
   if (msg.t === 'use') useHereOrAhead(deps.worldHost.current().puzzles, conn.entity.x, conn.entity.y, conn.entity.facing);
   if (msg.t === 'resetRoom') deps.worldHost.current().puzzles.resetRoomAt(conn.entity.x, conn.entity.y);
+  if (msg.t === 'attack') handleAttack(conn, deps);
+  if (msg.t === 'tookDrop') handleTookDrop(msg.x, msg.y, msg.itemId, deps);
+}
+
+function handleAttack(conn: Connection, deps: WsDeps): void {
+  const entity = conn.entity!;
+  const world = deps.worldHost.current();
+  const character = playerCharacterDef(world.creatures);
+  const reach = character?.attackReach ?? CHARACTER_COMBAT.attackReach;
+  const damage = character?.attackDamage ?? CHARACTER_COMBAT.attackDamage;
+  const striker = { id: entity.id, name: entity.name, x: entity.x, y: entity.y };
+  const outcome = deps.worldHost.liveCreatures().strikeFrom(striker, entity.facing, reach, damage);
+  if (!outcome) conn.send({ t: 'combat', text: `${entity.name} swings at nothing` });
+}
+
+function handleTookDrop(x: unknown, y: unknown, itemId: unknown, deps: WsDeps): void {
+  if (typeof x !== 'number' || typeof y !== 'number' || typeof itemId !== 'number') return;
+  const world = deps.worldHost.current();
+  if (!world.droppedItems.takeOne(Math.round(x), Math.round(y), itemId as ItemId)) return;
+  for (const other of deps.connections) {
+    if (other.state === 'PLAYING') other.send(droppedMsgOf(deps.worldHost));
+  }
 }
 
 function handleHello(conn: Connection, hello: HelloMsg, deps: WsDeps): void {

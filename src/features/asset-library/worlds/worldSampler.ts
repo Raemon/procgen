@@ -3,6 +3,7 @@ import type { TileId } from '@/features/asset-library/asset';
 import { NO_ITEMS, type ItemSource } from '@/features/asset-library/items/itemAssets';
 import { measureWork } from '@/features/game/performance/workTimers';
 import { TakenItemSpawns } from '@/features/asset-library/items/pickups/takenItemSpawns';
+import { DROPPED_ITEM_TAG, DroppedItemSpawns } from '@/features/asset-library/items/pickups/droppedItemSpawns';
 import type { CubeFaceArt } from '@/features/asset-library/tiles/tileFaceArt';
 import type { TileAssets } from '@/features/asset-library/tiles/tileAssets';
 import { cellIndexInChunk, chunkCoordOfCell } from './chunk';
@@ -85,6 +86,7 @@ export class WorldSampler {
     private readonly items: ItemSource = NO_ITEMS,
     private readonly takenItems: TakenItemSpawns = new TakenItemSpawns(),
     cultures: CultureSource = NO_CULTURES,
+    private readonly droppedItems: DroppedItemSpawns = new DroppedItemSpawns(),
   ) {
     this.structureOverlay = new StructureOverlay(
       pieces,
@@ -166,7 +168,31 @@ export class WorldSampler {
         });
       }
     }
+    this.appendDroppedSpawns(spawns, minX, minY, maxX, maxY);
     return spawns;
+  }
+
+  private appendDroppedSpawns(
+    spawns: ItemSpawn[],
+    minX: number,
+    minY: number,
+    maxX: number,
+    maxY: number,
+  ): void {
+    for (const drop of this.droppedItems.snapshot()) {
+      if (drop.x < minX || drop.x > maxX || drop.y < minY || drop.y > maxY) continue;
+      const item = this.items.byId(drop.itemId);
+      if (!item) continue;
+      spawns.push({
+        x: drop.x,
+        y: drop.y,
+        itemId: item.id,
+        name: item.name,
+        glyph: item.symbol,
+        color: item.color,
+        tag: DROPPED_ITEM_TAG,
+      });
+    }
   }
 
   private sampledChunkOfCell(x: number, y: number): SampledChunk {

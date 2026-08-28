@@ -4,7 +4,7 @@ import type {
   ReadOnlyItemAssets,
   ReadOnlyTileAssets,
 } from '@/features/app-shell/runtime/readOnlyAssets';
-import type { CreatureInstance } from '../creatureSim/creatureInstance';
+import type { LiveCreature } from '../creatureSim/creatureInstance';
 import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import { carriedLightSourceOf, carriedLightSourcesOfCreatures } from './characterLightSources';
 import { itemLightSourcesInRect } from './itemLightSources';
@@ -18,7 +18,7 @@ export interface LitScene {
   tileAssets: ReadOnlyTileAssets;
   creatures: ReadOnlyCreatureAssets;
   items: ReadOnlyItemAssets;
-  activeCreatures(): readonly CreatureInstance[];
+  activeCreatures(): readonly LiveCreature[];
 }
 
 export class SceneLightSources {

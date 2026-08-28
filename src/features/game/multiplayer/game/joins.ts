@@ -6,6 +6,7 @@ import { loadCharacter } from '@/infrastructure/server/persistence/characterRepo
 import type { ServerWorld } from '../../../agents/api/serverWorld';
 import type { WsDeps } from '../host/wsDeps';
 import type { Entity } from './entities';
+import { sendWorldDivergencesTo } from './combatBroadcast';
 
 const SNAP_SEARCH_RADIUS = 64;
 
@@ -67,6 +68,7 @@ function sendWelcome(conn: Connection, deps: WsDeps): void {
   });
   deps.feed.sendFullSnapshotTo(conn, deps.loop.tick);
   deps.feed.sendPuzzlesTo(conn, deps.worldHost.current().puzzles.state);
+  sendWorldDivergencesTo(conn, deps.worldHost);
 }
 
 function sanitizeName(raw: unknown): string | null {

@@ -6,7 +6,7 @@ import type {
   ReadOnlyWorld,
 } from '@/features/app-shell/runtime/readOnlyAssets';
 import type { SpeechBubbles } from '../chat/speechBubbles';
-import type { CreatureSim } from '../creatureSim/creatureSim';
+import type { LiveCreatureSource } from '../creatureSim/creatureInstance';
 import type { RemotePlayers } from '../multiplayer/client/remotePlayers';
 import type { PipelineEvaluator } from '@/features/asset-library/worlds/eval/evaluator';
 import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
@@ -24,7 +24,7 @@ export interface WorldViewDeps {
   tileAssets: ReadOnlyTileAssets;
   creatures: ReadOnlyCreatureAssets;
   items: ReadOnlyItemAssets;
-  sim: CreatureSim;
+  sim: LiveCreatureSource;
   capture: CaptureTool;
   hoveredTile: HoveredTile;
   remotePlayers: RemotePlayers;

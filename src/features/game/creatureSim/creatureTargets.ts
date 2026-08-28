@@ -2,14 +2,27 @@ import { hashString } from '@/features/asset-library/worlds/random/hashString';
 import { CHASE, FLEE, GUARD, IDLE, PATROL } from '@/features/asset-library/creatures/behaviorKinds';
 import type { CreatureDef } from '@/features/asset-library/creatures/creatureDef';
 import { distanceBetween, type CreatureInstance } from './creatureInstance';
+import type { CombatActor } from './combatEvents';
 
 const PAUSE_SECONDS = 1.6;
 const ARRIVAL_DISTANCE = 0.35;
 const CHASE_STANDOFF_TILES = 1;
 
 export interface SimWorldView {
-  playerX: number;
-  playerY: number;
+  actors(): readonly CombatActor[];
+}
+
+export function nearestActorTo(x: number, y: number, world: SimWorldView): CombatActor | null {
+  let nearest: CombatActor | null = null;
+  let nearestDistance = Infinity;
+  for (const actor of world.actors()) {
+    const distance = distanceBetween(x, y, actor.x, actor.y);
+    if (distance < nearestDistance) {
+      nearest = actor;
+      nearestDistance = distance;
+    }
+  }
+  return nearest;
 }
 
 export function retargetCreature(
@@ -19,39 +32,40 @@ export function retargetCreature(
   dtSeconds: number,
 ): void {
   creature.repathIn -= dtSeconds;
-  if (chaseTargetsPlayer(creature, def, world)) return;
-  if (fleeTargetsAwayFromPlayer(creature, def, world)) return;
+  const nearest = nearestActorTo(creature.x, creature.y, world);
+  if (chaseTargetsNearestActor(creature, def, nearest)) return;
+  if (fleeTargetsAwayFromActor(creature, def, nearest)) return;
   if (def.behavior === IDLE) return homeTarget(creature);
   if (def.behavior === PATROL) return patrolTarget(creature, def);
   if (def.behavior === GUARD && !nearHome(creature, def)) return homeTarget(creature);
   wanderTarget(creature, def);
 }
 
-function playerInSight(creature: CreatureInstance, def: CreatureDef, world: SimWorldView): boolean {
-  return distanceBetween(creature.x, creature.y, world.playerX, world.playerY) <= def.sight;
+function actorInSight(creature: CreatureInstance, def: CreatureDef, actor: CombatActor): boolean {
+  return distanceBetween(creature.x, creature.y, actor.x, actor.y) <= def.sight;
 }
 
-function chaseTargetsPlayer(
+function chaseTargetsNearestActor(
   creature: CreatureInstance,
   def: CreatureDef,
-  world: SimWorldView,
+  actor: CombatActor | null,
 ): boolean {
   const chases = def.behavior === CHASE || (def.behavior === GUARD && nearHome(creature, def));
-  if (!chases || !playerInSight(creature, def, world)) return false;
-  const towardPlayerX = world.playerX - creature.x;
-  const towardPlayerY = world.playerY - creature.y;
-  const approach = Math.hypot(towardPlayerX, towardPlayerY) - CHASE_STANDOFF_TILES;
-  aimAlong(creature, towardPlayerX, towardPlayerY, Math.max(0, approach));
+  if (!chases || !actor || !actorInSight(creature, def, actor)) return false;
+  const towardActorX = actor.x - creature.x;
+  const towardActorY = actor.y - creature.y;
+  const approach = Math.hypot(towardActorX, towardActorY) - CHASE_STANDOFF_TILES;
+  aimAlong(creature, towardActorX, towardActorY, Math.max(0, approach));
   return true;
 }
 
-function fleeTargetsAwayFromPlayer(
+function fleeTargetsAwayFromActor(
   creature: CreatureInstance,
   def: CreatureDef,
-  world: SimWorldView,
+  actor: CombatActor | null,
 ): boolean {
-  if (def.behavior !== FLEE || !playerInSight(creature, def, world)) return false;
-  aimAlong(creature, creature.x - world.playerX, creature.y - world.playerY, def.sight);
+  if (def.behavior !== FLEE || !actor || !actorInSight(creature, def, actor)) return false;
+  aimAlong(creature, creature.x - actor.x, creature.y - actor.y, def.sight);
   return true;
 }
 

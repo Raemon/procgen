@@ -11,13 +11,21 @@ import { AssetFolders } from '@/features/asset-library/folders/assetFolders';
 import { CreatureAssets } from '@/features/asset-library/creatures/creatureAssets';
 import { ItemAssets } from '@/features/asset-library/items/itemAssets';
 import { PlayerInventoryPanelState } from '@/features/asset-library/items/inventory/playerInventoryPanelState';
-import { groundItemsOf } from '@/features/asset-library/items/pickups/groundItems';
+import { groundItemsOf, type GroundItems } from '@/features/asset-library/items/pickups/groundItems';
+import { DROPPED_ITEM_TAG, DroppedItemSpawns } from '@/features/asset-library/items/pickups/droppedItemSpawns';
 import { PickupFeed } from '@/features/asset-library/items/pickups/pickupFeed';
 import { TakenItemSpawns } from '@/features/asset-library/items/pickups/takenItemSpawns';
 import { WalkOverPickup } from '@/features/asset-library/items/pickups/walkOverPickup';
 import { MultiplayerSession } from '@/features/game/multiplayer/client/multiplayerSession';
 import { CreatureClock } from '@/features/game/creatureSim/creatureClock';
 import { CreatureSim } from '@/features/game/creatureSim/creatureSim';
+import { simCombatArena, type CombatArena } from '@/features/game/creatureSim/combatArena';
+import { combatEventText } from '@/features/game/creatureSim/combatEvents';
+import type { LiveCreatureSource } from '@/features/game/creatureSim/creatureInstance';
+import { SlainCreatureSpawns } from '@/features/game/creatureSim/slainCreatureSpawns';
+import { CombatFeed } from '@/features/game/chat/combatFeed';
+import { playerCharacterDef } from '@/features/asset-library/characters/playerCharacter';
+import { CHARACTER_COMBAT } from '@/features/asset-library/creatures/creatureDef';
 import { creatureAwareOverlay } from '@/features/agents/creatureMarkers';
 import type { ObservedOverlay } from '@/features/agents/observation';
 import { PipelineEvaluator } from '@/features/asset-library/worlds/eval/evaluator';
@@ -93,7 +101,9 @@ export interface AppRuntime {
   chatComposer: ChatComposerState;
   playerInventoryPanel: PlayerInventoryPanelState;
   pickupFeed: PickupFeed;
+  combatFeed: CombatFeed;
   sim: CreatureSim;
+  liveCreatures: LiveCreatureSource;
   clock: CreatureClock;
   capture: CaptureTool;
   cameraFocus: CameraFocus;
@@ -126,6 +136,8 @@ export function createAppRuntime(): AppRuntime {
   attachPipelinePersistence(store);
   const evaluator = new PipelineEvaluator(store);
   const takenItems = new TakenItemSpawns();
+  const slainCreatures = new SlainCreatureSpawns();
+  const droppedItems = new DroppedItemSpawns();
   const sampler = new WorldSampler(
     store,
     evaluator,
@@ -134,8 +146,9 @@ export function createAppRuntime(): AppRuntime {
     items,
     takenItems,
     cultures,
+    droppedItems,
   );
-  const groundItems = groundItemsOf(sampler, takenItems);
+  const localGroundItems = groundItemsOf(sampler, takenItems, droppedItems);
   const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileAssets, sampler.tileAt(x, y));
   const puzzles = new PuzzleWorld(store, tileIsWalkable);
   const isWalkableAt = (x: number, y: number) => tileIsWalkable(x, y) && !puzzles.blocksAt(x, y);
@@ -150,16 +163,75 @@ export function createAppRuntime(): AppRuntime {
     x: world.playerX,
     y: world.playerY,
   }));
-  const net = new MultiplayerSession(world, store, walkIntoCratesToPushThem, puzzles, () =>
-    redrawIfPuzzlesChanged(),
+  const combatFeed = new CombatFeed();
+  const net = new MultiplayerSession(
+    world,
+    store,
+    walkIntoCratesToPushThem,
+    puzzles,
+    { slainCreatures, droppedItems, combatFeed },
+    () => redrawIfPuzzlesChanged(),
   );
+  const groundItems: GroundItems = {
+    at: localGroundItems.at,
+    take: (spawn) => {
+      localGroundItems.take(spawn);
+      if (spawn.tag === DROPPED_ITEM_TAG) net.reportTookDrop(spawn.x, spawn.y, spawn.itemId);
+    },
+  };
   const chatComposer = new ChatComposerState();
   const playerInventoryPanel = new PlayerInventoryPanelState();
   const pickupFeed = new PickupFeed();
   const walkOverPickup = new WalkOverPickup({ creatures, items, groundItems }, pickupFeed);
-  const sim = new CreatureSim({ sampler, creatureAssets: creatures, world, isWalkableAt });
-  const clock = new CreatureClock(sim);
-  const agentOverlay = creatureAwareOverlay({ puzzles, sampler, creatures }, sim);
+  const playerCombatant = () => {
+    const character = playerCharacterDef(creatures);
+    return {
+      id: net.remotePlayers.selfId,
+      name: character?.name ?? 'you',
+      reach: character?.attackReach ?? CHARACTER_COMBAT.attackReach,
+      damage: character?.attackDamage ?? CHARACTER_COMBAT.attackDamage,
+    };
+  };
+  const sim = new CreatureSim({
+    sampler,
+    creatureAssets: creatures,
+    world: {
+      actors: () => [{ ...playerCombatant(), x: world.playerX, y: world.playerY }],
+    },
+    isWalkableAt,
+    slain: slainCreatures,
+    onCombat: (event) => {
+      combatFeed.announce(combatEventText(event));
+      if (event.kind !== 'creature_slain') return;
+      for (const itemId of event.droppedItemIds) {
+        droppedItems.drop({ x: event.x, y: event.y, itemId });
+      }
+    },
+  });
+  const liveCreatures: LiveCreatureSource = {
+    active: () => (net.isOnline() ? net.remoteCreatures.active() : sim.active()),
+  };
+  const localArena = simCombatArena({
+    sim: () => sim,
+    striker: playerCombatant,
+    knobs: playerCombatant,
+  });
+  const combat: CombatArena = {
+    strike: (pose) => {
+      if (!net.isOnline()) return localArena.strike(pose);
+      net.sendAttack();
+      return { kind: 'sent' };
+    },
+  };
+  const clock = new CreatureClock({
+    step: (dtSeconds) => {
+      if (!net.isOnline()) sim.step(dtSeconds);
+    },
+  });
+  const agentOverlay = creatureAwareOverlay(
+    { puzzles, sampler, creatures, slainCreatures },
+    liveCreatures,
+  );
   const renderers = new WorldRenderers();
   const hoveredTile = new HoveredTile();
   const cameraFocus = new CameraFocus();
@@ -249,6 +321,9 @@ export function createAppRuntime(): AppRuntime {
         worldSeeds,
         savedWorlds,
         takenItems,
+        slainCreatures,
+        droppedItems,
+        combat,
         runningWorld,
         settleTheWorld,
         randomizeHistory,
@@ -359,7 +434,9 @@ export function createAppRuntime(): AppRuntime {
     chatComposer,
     playerInventoryPanel,
     pickupFeed,
+    combatFeed,
     sim,
+    liveCreatures,
     clock,
     capture,
     cameraFocus,

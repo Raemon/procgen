@@ -18,6 +18,8 @@ import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { persistWorld, type ServerWorld } from '@/features/agents/api/serverWorld';
 import { emptyPipeline } from '../pipeline/pipelineState';
 import { PipelineStore } from '../pipeline/pipelineStore';
+import { DroppedItemSpawns } from '@/features/asset-library/items/pickups/droppedItemSpawns';
+import { SlainCreatureSpawns } from '@/features/game/creatureSim/slainCreatureSpawns';
 import { RandomizeHistory } from '../randomize/randomizeHistory';
 import { RunningWorld } from '../running/runningWorld';
 import { runningWorldRefFrom } from '../running/runningWorldStorage';
@@ -249,6 +251,9 @@ function playableWorld() {
     worldSeeds,
     savedWorlds,
     takenItems,
+    slainCreatures: new SlainCreatureSpawns(),
+    droppedItems: new DroppedItemSpawns(),
+    combat: { strike: () => ({ kind: 'missed' as const }) },
     runningWorld,
     randomizeHistory: new RandomizeHistory(),
     groundItems: {

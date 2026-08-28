@@ -3,15 +3,20 @@ import {
   Op,
   PROTOCOL_VERSION,
   type ClientMsg,
+  type CombatMsg,
+  type CreatureRow,
+  type DroppedMsg,
   type EntityMetaMsg,
   type HelloMsg,
   type KickMsg,
   type PuzzlesMsg,
   type SaidMsg,
   type ServerMsg,
+  type SlainMsg,
   type SnapshotRow,
   type WelcomeMsg,
 } from './protocol';
+import type { ItemId } from '@/features/asset-library/asset';
 import { Backoff } from './backoff';
 
 export type NetStatus = 'connecting' | 'online' | 'reconnecting' | 'kicked';
@@ -24,6 +29,10 @@ export interface NetHandlers {
   onSaid(msg: SaidMsg): void;
   onDocChanged(name: string, revision: string): void;
   onPuzzles(msg: PuzzlesMsg): void;
+  onCreatures(rows: CreatureRow[]): void;
+  onCombat(msg: CombatMsg): void;
+  onSlain(msg: SlainMsg): void;
+  onDropped(msg: DroppedMsg): void;
   onKick(msg: KickMsg): void;
 }
 
@@ -73,6 +82,14 @@ export class NetClient {
     this.send({ t: 'resetRoom' });
   }
 
+  sendAttack(): void {
+    this.send({ t: 'attack' });
+  }
+
+  sendTookDrop(x: number, y: number, itemId: ItemId): void {
+    this.send({ t: 'tookDrop', x, y, itemId });
+  }
+
   private open(): void {
     this.handlers.onStatus('connecting');
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
@@ -106,6 +123,7 @@ export class NetClient {
   private dispatch(msg: ServerMsg): void {
     if (Array.isArray(msg)) {
       if (msg[0] === Op.Snapshot) this.handlers.onSnapshot(msg[1], msg[2]);
+      if (msg[0] === Op.Creatures) this.handlers.onCreatures(msg[2]);
       return;
     }
     if (msg.t === 'welcome') return this.acceptWelcome(msg);
@@ -113,6 +131,9 @@ export class NetClient {
     if (msg.t === 'said') return this.handlers.onSaid(msg);
     if (msg.t === 'docChanged') return this.handlers.onDocChanged(msg.name, msg.revision);
     if (msg.t === 'puzzles') return this.handlers.onPuzzles(msg);
+    if (msg.t === 'combat') return this.handlers.onCombat(msg);
+    if (msg.t === 'slain') return this.handlers.onSlain(msg);
+    if (msg.t === 'dropped') return this.handlers.onDropped(msg);
     if (msg.t === 'kick') return this.acceptKick(msg);
   }
 

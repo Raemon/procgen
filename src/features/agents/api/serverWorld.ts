@@ -7,6 +7,9 @@ import { creaturesAsStoredJson } from '@/features/asset-library/creatures/creatu
 import { ItemAssets } from '@/features/asset-library/items/itemAssets';
 import { groundItemsOf, type GroundItems } from '@/features/asset-library/items/pickups/groundItems';
 import { TakenItemSpawns } from '@/features/asset-library/items/pickups/takenItemSpawns';
+import { DroppedItemSpawns } from '@/features/asset-library/items/pickups/droppedItemSpawns';
+import type { CreatureSim } from '@/features/game/creatureSim/creatureSim';
+import { SlainCreatureSpawns } from '@/features/game/creatureSim/slainCreatureSpawns';
 import { itemsAsStoredJson } from '@/features/asset-library/items/itemStorage';
 import { CultureAssets } from '@/features/asset-library/cultures/cultureAssets';
 import { PieceAssets } from '@/features/asset-library/pieces/pieceAssets';
@@ -59,6 +62,9 @@ export interface ServerWorld {
   runningWorld: RunningWorld;
   randomizeHistory: RandomizeHistory;
   takenItems: TakenItemSpawns;
+  slainCreatures: SlainCreatureSpawns;
+  droppedItems: DroppedItemSpawns;
+  liveCreatures: CreatureSim | null;
   groundItems: GroundItems;
   puzzles: PuzzleWorld;
   isWalkable(x: number, y: number): boolean;
@@ -104,6 +110,8 @@ export function currentServerWorld(docs: DocSource, previous: ServerWorld | null
     previous?.randomizeHistory ?? new RandomizeHistory(),
     previous?.takenItems ?? new TakenItemSpawns(),
     previous?.puzzles.state ?? new PuzzleState(),
+    previous?.slainCreatures ?? new SlainCreatureSpawns(),
+    previous?.droppedItems ?? new DroppedItemSpawns(),
   );
 }
 
@@ -113,6 +121,8 @@ function buildServerWorld(
   randomizeHistory: RandomizeHistory,
   takenItems: TakenItemSpawns,
   puzzleState: PuzzleState,
+  slainCreatures: SlainCreatureSpawns,
+  droppedItems: DroppedItemSpawns,
 ): ServerWorld {
   const collection = <Name extends CollectionDocumentName>(name: Name) =>
     parseStoredCollection(name, docs.read(name)) ?? undefined;
@@ -138,6 +148,7 @@ function buildServerWorld(
     items,
     takenItems,
     cultures,
+    droppedItems,
   );
   const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileAssets, sampler.tileAt(x, y));
   const puzzles = new PuzzleWorld(store, tileIsWalkable, puzzleState);
@@ -148,7 +159,7 @@ function buildServerWorld(
     stamp,
     sampler,
     puzzles,
-    groundItems: groundItemsOf(sampler, takenItems),
+    groundItems: groundItemsOf(sampler, takenItems, droppedItems),
     tileAssets,
     store,
     pieces,
@@ -162,6 +173,9 @@ function buildServerWorld(
     runningWorld,
     randomizeHistory,
     takenItems,
+    slainCreatures,
+    droppedItems,
+    liveCreatures: null,
     isWalkable,
     isStandable,
     stepRules: {

@@ -51,6 +51,7 @@ export class GameLoop {
   private step(): void {
     this.agentSync.sync();
     this.stepPlayers();
+    this.worldHost.liveCreatures().step(TICK_MS / 1000);
     this.sharePuzzleChanges();
     this.feed.broadcast(this.tick);
     this.tick++;

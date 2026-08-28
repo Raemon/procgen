@@ -2,6 +2,9 @@ import type { CommandParams } from '@/features/app-shell/runtime/commands/comman
 import { performCommand } from '@/features/app-shell/runtime/commands/performCommand';
 import type { WorldSeedLab } from '@/features/asset-library/worlds/lab/worldSeedLab';
 import { commandFor } from '@/features/app-shell/runtime/commands/commandCatalog';
+import { simCombatArena } from '@/features/game/creatureSim/combatArena';
+import { playerCharacterDef } from '@/features/asset-library/characters/playerCharacter';
+import { CHARACTER_COMBAT } from '@/features/asset-library/creatures/creatureDef';
 import { failureByCode } from '../failures';
 import type { ServerWorld } from './serverWorld';
 import { sessionActor, type AgentSession } from './sessions';
@@ -40,6 +43,19 @@ export function performVerb(
       worldSeeds: world.worldSeeds,
       savedWorlds: world.savedWorlds,
       takenItems: world.takenItems,
+      slainCreatures: world.slainCreatures,
+      droppedItems: world.droppedItems,
+      combat: simCombatArena({
+        sim: () => world.liveCreatures,
+        striker: () => ({ id: 0, name: session.name }),
+        knobs: () => {
+          const character = playerCharacterDef(world.creatures);
+          return {
+            reach: character?.attackReach ?? CHARACTER_COMBAT.attackReach,
+            damage: character?.attackDamage ?? CHARACTER_COMBAT.attackDamage,
+          };
+        },
+      }),
       settleTheWorld: (change: () => void) => change(),
       runningWorld: world.runningWorld,
       randomizeHistory: world.randomizeHistory,

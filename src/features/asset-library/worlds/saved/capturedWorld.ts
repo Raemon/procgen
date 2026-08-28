@@ -18,6 +18,8 @@ export function capturedWorld(
     state: sanitizePipeline(structuredClone(context.store.snapshot())),
     player: { x: pose.x, y: pose.y, facing: pose.facing },
     takenItems: context.takenItems.snapshot(),
+    slainCreatures: context.slainCreatures.snapshot(),
+    droppedItems: context.droppedItems.snapshot(),
     carried: carriedBy(context),
     puzzles: context.puzzles.state.snapshot(),
   };
@@ -27,6 +29,8 @@ export function restoreSavedWorld(context: CommandContext, saved: SavedWorld): v
   context.settleTheWorld(() => {
     context.store.replaceAll(sanitizePipeline(structuredClone(saved.state)));
     context.takenItems.replaceAll(saved.takenItems);
+    context.slainCreatures.replaceAll(saved.slainCreatures);
+    context.droppedItems.replaceAll(saved.droppedItems);
     context.puzzles.state.replaceAll(saved.puzzles);
     restoreCarried(context, saved);
     context.actor.snapTo(saved.player.x, saved.player.y, saved.player.facing as FacingIndex);
@@ -35,6 +39,8 @@ export function restoreSavedWorld(context: CommandContext, saved: SavedWorld): v
 
 export function forgetWhatWasDoneInTheLastWorld(context: CommandContext): void {
   context.takenItems.forgetAll();
+  context.slainCreatures.forgetAll();
+  context.droppedItems.forgetAll();
   context.puzzles.state.forgetAll();
 }
 

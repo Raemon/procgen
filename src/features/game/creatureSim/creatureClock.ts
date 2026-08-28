@@ -12,7 +12,7 @@ export class CreatureClock {
   private readonly redrawListeners = new Set<() => void>();
   private readonly stateListeners = new Set<() => void>();
 
-  constructor(private readonly sim: CreatureSim) {
+  constructor(private readonly sim: Pick<CreatureSim, 'step'>) {
     this.frame = requestAnimationFrame(this.onFrame);
   }
 

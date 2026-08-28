@@ -2,6 +2,7 @@ import type { AppRuntime } from '@/features/app-shell/runtime/appRuntime';
 import { facingRelativeStep } from '../input/facingRelativeStep';
 import { listenForJumpKey } from '../input/jumpInput';
 import { MovementInput } from '../input/movementInput';
+import { listenForAttackKey } from '../input/attackInput';
 import { listenForPickUpKey } from '../input/pickUpInput';
 import { listenForFixtureKeys } from '../input/useFixtureInput';
 import { AgentTextView } from '../render/agentText/agentTextView';
@@ -108,6 +109,11 @@ export function mountWorldViews(
     isSuspended: () => inputIsSuspended(runtime, currentMode()),
   });
 
+  const stopAttackKey = listenForAttackKey({
+    attack: () => perform(isCharacterControlled(currentMode()) ? 'attack' : 'attack_creature'),
+    isSuspended: () => inputIsSuspended(runtime, currentMode()),
+  });
+
   const redrawOnSightChange = world.on('sight-changed', () => {
     agentGodView.draw();
     agentCharacterView.draw();
@@ -132,6 +138,7 @@ export function mountWorldViews(
       movement.dispose();
       stopJumpKey();
       stopPickUpKey();
+      stopAttackKey();
       stopFixtureKeys();
       for (const remove of unregister) remove();
       featuresView.dispose();
@@ -162,7 +169,7 @@ function worldViewDepsOf(runtime: AppRuntime): WorldViewDeps {
     tileAssets: runtime.tileAssets,
     creatures: runtime.creatures,
     items: runtime.items,
-    sim: runtime.sim,
+    sim: runtime.liveCreatures,
     capture: runtime.capture,
     hoveredTile: runtime.hoveredTile,
     remotePlayers: runtime.net.remotePlayers,

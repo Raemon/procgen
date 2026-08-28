@@ -6,6 +6,7 @@ import { CharacterLegend } from './CharacterLegend';
 import { mountWorldViews, type MountedWorldViews } from './mountWorldViews';
 import { InteractPrompt } from './InteractPrompt';
 import { FpsBadge } from './performance/FpsBadge';
+import { CombatNotices } from './CombatNotices';
 import { PickupNotices } from './PickupNotices';
 import { PlayerInventoryOverlay } from './PlayerInventoryOverlay';
 import { TileHoverDetails } from './TileHoverDetails';
@@ -60,6 +61,7 @@ export function GameStage({ mode }: { mode: ViewMode }) {
       {isGodView(mode) && <CharacterLegend />}
       <div className="pointer-events-none absolute bottom-3 left-3 flex flex-col items-start gap-1">
         <PickupNotices />
+        <CombatNotices />
         <TileHoverDetails />
       </div>
       <PlayerInventoryOverlay />

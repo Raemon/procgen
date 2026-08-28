@@ -1,5 +1,5 @@
 import type { CreatureId } from '@/features/asset-library/asset';
-import type { CreatureInstance } from '../creatureSim/creatureInstance';
+import type { LiveCreature } from '../creatureSim/creatureInstance';
 import { brightestCarriedLight } from '@/features/asset-library/items/inventory/carriedLight';
 import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import type {
@@ -25,7 +25,7 @@ export function carriedLightSourceOf(
 }
 
 export function carriedLightSourcesOfCreatures(
-  active: readonly CreatureInstance[],
+  active: readonly LiveCreature[],
   creatures: ReadOnlyCreatureAssets,
   items: ReadOnlyItemAssets,
   sampler: WorldSampler,

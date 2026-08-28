@@ -39,7 +39,7 @@ export function checkCreatureObservation(check: CheckReporter): void {
 
 function checkLiveCreatureMarkers(check: CheckReporter, den: CreatureSpawn): void {
   const sampler = meadowWithSpawns([den]);
-  const wanderer = spawnedCreature(spawnKeyOf(den.tag, den.x, den.y), WOLF_ID, den.x, den.y);
+  const wanderer = spawnedCreature(spawnKeyOf(den.tag, den.x, den.y), WOLF_ID, den.x, den.y, 3);
   wanderer.x = 2.4;
   wanderer.y = -1.6;
 

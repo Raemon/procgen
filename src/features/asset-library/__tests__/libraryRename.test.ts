@@ -21,6 +21,8 @@ import { WorldSeedLibrary } from '@/features/asset-library/worlds/seeds/worldSee
 import { WorldSeedShelf } from '@/features/asset-library/worlds/seeds/worldSeedShelf';
 import { RandomizeHistory } from '@/features/asset-library/worlds/randomize/randomizeHistory';
 import { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
+import { DroppedItemSpawns } from '@/features/asset-library/items/pickups/droppedItemSpawns';
+import { SlainCreatureSpawns } from '@/features/game/creatureSim/slainCreatureSpawns';
 import { TakenItemSpawns } from '@/features/asset-library/items/pickups/takenItemSpawns';
 import { nextSelectionOnOpen } from '../librarySelection';
 
@@ -55,6 +57,9 @@ function renamer() {
     randomizeHistory: new RandomizeHistory(),
     groundItems: NO_GROUND_ITEMS,
     takenItems: new TakenItemSpawns(),
+    slainCreatures: new SlainCreatureSpawns(),
+    droppedItems: new DroppedItemSpawns(),
+    combat: { strike: () => ({ kind: 'missed' as const }) },
     puzzles: new PuzzleWorld(store, () => true),
     regionSampler: { tileAt: () => 0, elevationAt: () => 0, packedVoxelColumnAt: () => null },
     settleTheWorld: (change: () => void) => change(),

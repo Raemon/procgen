@@ -87,6 +87,10 @@ registerCreatureCommand({
     roam: { kind: 'number', help: 'how far from its spawn cell it will range', optional: true },
     body_width: { kind: 'number', help: 'how wide its body is, in tiles', optional: true },
     body_height: { kind: 'number', help: 'how tall its body is, in tiles — characters default to 2', optional: true },
+    max_hp: { kind: 'number', help: 'how much damage it takes before it dies', optional: true },
+    attack_damage: { kind: 'number', help: 'how hard it hits — 0 means it never attacks', optional: true },
+    attack_reach: { kind: 'number', help: 'how close, in tiles, it must be to land a hit', optional: true },
+    attack_cooldown: { kind: 'number', help: 'seconds between its attacks', optional: true },
     phasing: { kind: 'int', help: '1 if it walks through blocking tiles, 0 if it must go around', optional: true },
     kind: { kind: 'int', help: entityKindHelp(), optional: true },
     face_art: { kind: 'json', help: 'cube face art, or null to clear it', optional: true },
@@ -159,6 +163,7 @@ function creaturePatchFrom(params: CommandParams): CreaturePatchRead {
     if (read.ok) patch[knob] = read.value;
   }
   addBodySizeToPatch(params, patch);
+  addCombatToPatch(params, patch);
   const phasing = readInt(params, 'phasing');
   if (phasing.ok) patch.phasing = phasing.value === 0 ? 0 : 1;
   const behavior = behaviorFrom(params);
@@ -182,6 +187,20 @@ function addBodySizeToPatch(params: CommandParams, patch: CreaturePatch): void {
   for (const [param, field] of BODY_SIZE_PARAMS) {
     const read = readNumber(params, param);
     if (read.ok && read.value > 0) patch[field] = read.value;
+  }
+}
+
+const COMBAT_PARAMS = [
+  ['max_hp', 'maxHp', 1],
+  ['attack_damage', 'attackDamage', 0],
+  ['attack_reach', 'attackReach', 0.1],
+  ['attack_cooldown', 'attackCooldown', 0.1],
+] as const;
+
+function addCombatToPatch(params: CommandParams, patch: CreaturePatch): void {
+  for (const [param, field, least] of COMBAT_PARAMS) {
+    const read = readNumber(params, param);
+    if (read.ok) patch[field] = Math.max(least, read.value);
   }
 }
 

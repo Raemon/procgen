@@ -1,21 +1,46 @@
-import { Op, type SnapshotRow } from '../client/protocol';
+import { Op, type CreatureRow, type SnapshotRow } from '../client/protocol';
 import type { PuzzleState } from '../../puzzles/state/puzzleState';
+import type { CreatureInstance } from '../../creatureSim/creatureInstance';
 import type { Connection } from '../host/connection';
 import type { EntityRegistry } from './entities';
+
+const CREATURE_BROADCAST_EVERY_TICKS = 2;
 
 export class SnapshotFeed {
   constructor(
     private readonly connections: Set<Connection>,
     private readonly registry: EntityRegistry,
+    private readonly liveCreatures: () => readonly CreatureInstance[],
   ) {}
 
   broadcast(tick: number): void {
     const rows = this.snapshotRows();
     for (const conn of this.connections) this.sendSnapshotTo(conn, tick, rows);
+    if (tick % CREATURE_BROADCAST_EVERY_TICKS === 0) this.broadcastCreatures(tick);
+  }
+
+  broadcastCreatures(tick: number): void {
+    const rows = this.creatureRows();
+    for (const conn of this.connections) {
+      if (conn.state === 'PLAYING') conn.send([Op.Creatures, tick, rows]);
+    }
+  }
+
+  private creatureRows(): CreatureRow[] {
+    return this.liveCreatures().map((creature) => [
+      creature.id,
+      creature.creatureId,
+      round2(creature.x),
+      round2(creature.y),
+      round2(creature.heading),
+      creature.moving ? 1 : 0,
+      creature.hp,
+    ]);
   }
 
   sendFullSnapshotTo(conn: Connection, tick: number): void {
     this.sendSnapshotTo(conn, tick, this.snapshotRows());
+    conn.send([Op.Creatures, tick, this.creatureRows()]);
   }
 
   forgetEntityEverywhere(entityId: number): void {
@@ -53,4 +78,8 @@ export class SnapshotFeed {
       conn.knownEntities.add(entity.id);
     }
   }
+}
+
+function round2(value: number): number {
+  return Math.round(value * 100) / 100;
 }

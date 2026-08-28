@@ -13,6 +13,9 @@ import type { RunningWorld } from '@/features/asset-library/worlds/running/runni
 import type { WorldSeedLibrary } from '@/features/asset-library/worlds/seeds/worldSeedLibrary';
 import type { SavedWorldLibrary } from '@/features/asset-library/worlds/saved/savedWorldLibrary';
 import type { TakenItemSpawns } from '@/features/asset-library/items/pickups/takenItemSpawns';
+import type { DroppedItemSpawns } from '@/features/asset-library/items/pickups/droppedItemSpawns';
+import type { CombatArena } from '@/features/game/creatureSim/combatArena';
+import type { SlainCreatureSpawns } from '@/features/game/creatureSim/slainCreatureSpawns';
 import type { RandomizeHistory } from '@/features/asset-library/worlds/randomize/randomizeHistory';
 import type { TemplateLibrary } from '@/features/asset-library/node-groups/templateLibrary';
 import type { TileAssets } from '@/features/asset-library/tiles/tileAssets';
@@ -43,6 +46,9 @@ export interface CommandContext {
   worldSeeds: WorldSeedLibrary;
   savedWorlds: SavedWorldLibrary;
   takenItems: TakenItemSpawns;
+  slainCreatures: SlainCreatureSpawns;
+  droppedItems: DroppedItemSpawns;
+  combat: CombatArena;
   runningWorld: RunningWorld;
   randomizeHistory: RandomizeHistory;
   regionSampler: RegionSampler;

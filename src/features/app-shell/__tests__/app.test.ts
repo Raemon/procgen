@@ -78,6 +78,7 @@ import { routeHandlerTests } from './routeHandlers.test';
 import { bootstrapPersistenceTests } from './bootstrapPersistence.test';
 import { websocketUpgradeRoutingTests } from '@/features/game/__tests__/websocketUpgradeRouting.test';
 import { checkPuzzleSync } from '@/features/game/multiplayer/__tests__/puzzleSync.test';
+import { checkCreatureCombat } from '@/features/game/__tests__/creatureCombat.test';
 
 function check(name: string, condition: boolean): void {
   test(name, () => assert.ok(condition));
@@ -93,6 +94,7 @@ describe('custom script nodes', () => checkCustomScriptNodes(check));
 describe('pipeline sanitize and editing', () => checkPipelineSanitizeAndEditing(check));
 describe('the ascii snapshot', () => checkAsciiSnapshotAndPlayerFooting(check));
 describe('jumping', () => checkJumping(check));
+describe('creature combat', () => checkCreatureCombat(check));
 describe('face art editing', () => checkFaceArtEditingOps(check));
 describe('tile surfaces', () => checkTileSurfaceRendering(check));
 describe('the depth of ground', () => checkGroundHidesWhatIsUnderIt(check));

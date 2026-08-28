@@ -9,6 +9,8 @@ import { RandomizeHistory } from '@/features/asset-library/worlds/randomize/rand
 import { TemplateLibrary } from '@/features/asset-library/node-groups/templateLibrary';
 import { RunningWorld } from '@/features/asset-library/worlds/running/runningWorld';
 import { SavedWorldLibrary } from '@/features/asset-library/worlds/saved/savedWorldLibrary';
+import { DroppedItemSpawns } from '@/features/asset-library/items/pickups/droppedItemSpawns';
+import { SlainCreatureSpawns } from '@/features/game/creatureSim/slainCreatureSpawns';
 import { TakenItemSpawns } from '@/features/asset-library/items/pickups/takenItemSpawns';
 import { WorldSeedLibrary } from '@/features/asset-library/worlds/seeds/worldSeedLibrary';
 import { AssetFolders } from '@/features/asset-library/folders/assetFolders';
@@ -53,6 +55,9 @@ function abilityWorld(initialTiles: TileDef[] = []) {
     worldSeeds: new WorldSeedLibrary({ seeds: [], hiddenExamples: [] }),
     savedWorlds: new SavedWorldLibrary({ worlds: [] }),
     takenItems: new TakenItemSpawns(),
+    slainCreatures: new SlainCreatureSpawns(),
+    droppedItems: new DroppedItemSpawns(),
+    combat: { strike: () => ({ kind: 'missed' as const }) },
     settleTheWorld: (change: () => void) => change(),
     runningWorld: new RunningWorld(),
     randomizeHistory: new RandomizeHistory(),

@@ -9,7 +9,16 @@ import { ValueReadout } from '@/features/app-shell/controls/ValueReadout';
 import type { TooltipContent } from '@/features/app-shell/tooltips/tooltipContent';
 
 interface MotionKnob {
-  field: 'speed' | 'sight' | 'roam' | 'bodyWidth' | 'bodyHeight';
+  field:
+    | 'speed'
+    | 'sight'
+    | 'roam'
+    | 'bodyWidth'
+    | 'bodyHeight'
+    | 'maxHp'
+    | 'attackDamage'
+    | 'attackReach'
+    | 'attackCooldown';
   label: string;
   min: number;
   max: number;
@@ -50,6 +59,38 @@ const MOTION_KNOBS: readonly MotionKnob[] = [
     max: 4,
     step: 0.05,
     help: 'How tall the body is, in tiles. Characters default to 2 so they stand as tall as a blocking tile. A billboard sprite is scaled uniformly to fill the body box, so it is never squashed.',
+  },
+  {
+    field: 'maxHp',
+    label: 'max hp',
+    min: 1,
+    max: 50,
+    step: 1,
+    help: 'How much damage it takes before it dies. A slain spawn stays dead in this world.',
+  },
+  {
+    field: 'attackDamage',
+    label: 'attack damage',
+    min: 0,
+    max: 20,
+    step: 1,
+    help: 'How hard it hits when it attacks. At 0 it never attacks, whatever its behavior.',
+  },
+  {
+    field: 'attackReach',
+    label: 'attack reach',
+    min: 0.5,
+    max: 8,
+    step: 0.1,
+    help: 'How close, in tiles, it must be to land a hit.',
+  },
+  {
+    field: 'attackCooldown',
+    label: 'attack cooldown',
+    min: 0.2,
+    max: 10,
+    step: 0.1,
+    help: 'Seconds between its attacks.',
   },
 ];
 

@@ -7,6 +7,7 @@ import {
   afterDocChanged,
   type DocSyncDeps,
 } from '@/features/game/multiplayer/game/docSync';
+import { attachCombatBroadcast } from '@/features/game/multiplayer/game/combatBroadcast';
 import { EntityRegistry } from '@/features/game/multiplayer/game/entities';
 import { GameLoop } from '@/features/game/multiplayer/game/gameLoop';
 import { SnapshotFeed } from '@/features/game/multiplayer/game/snapshotFeed';
@@ -37,10 +38,11 @@ export async function createProcgenServices(): Promise<ProcgenServices> {
   const store = await initStore(config.databaseUrl);
   const docs = await createDocStore(store);
   const agents = newAgentApiState();
-  const worldHost = createWorldHost(agents, docs);
   const registry = new EntityRegistry();
+  const worldHost = createWorldHost(agents, docs, registry);
   const connections = new Set<Connection>();
-  const feed = new SnapshotFeed(connections, registry);
+  const feed = new SnapshotFeed(connections, registry, () => worldHost.liveCreatures().active());
+  attachCombatBroadcast(worldHost, connections);
   const chat = new ChatFeed(connections);
   const writeBehind = new WriteBehind(store, registry);
   const agentSync = new AgentEntitySync(agents.sessions, registry);

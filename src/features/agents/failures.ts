@@ -6,6 +6,11 @@ export interface FailureSpec {
 
 export const FAILURES: readonly FailureSpec[] = [
   {
+    code: 'nothing_in_reach',
+    meaning: 'No creature stands within attack reach.',
+    recovery: 'Step toward the creature and face it, then attack again.',
+  },
+  {
     code: 'blocked',
     meaning: 'You tried to step onto a tile that would not take you.',
     recovery:

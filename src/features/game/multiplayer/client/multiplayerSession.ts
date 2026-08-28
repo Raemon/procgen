@@ -9,13 +9,25 @@ import type { PuzzleWorld } from '../../puzzles/puzzleWorld';
 import type { World } from '../../world';
 import { LocalMovementSim } from './localMovementSim';
 import { NetClient, type NetStatus } from './netClient';
-import { JUMP_IN_PLACE, type PuzzlesMsg, type SnapshotRow, type WelcomeMsg } from './protocol';
+import { JUMP_IN_PLACE, type PuzzlesMsg, type SlainMsg, type SnapshotRow, type WelcomeMsg } from './protocol';
+import { RemoteCreatures } from './remoteCreatures';
 import { RemotePlayers } from './remotePlayers';
+import type { CombatFeed } from '../../chat/combatFeed';
+import type { SlainCreatureSpawns } from '../../creatureSim/slainCreatureSpawns';
+import type { DroppedItemSpawns } from '@/features/asset-library/items/pickups/droppedItemSpawns';
+import type { ItemId } from '@/features/asset-library/asset';
+
+export interface WorldDivergences {
+  slainCreatures: SlainCreatureSpawns;
+  droppedItems: DroppedItemSpawns;
+  combatFeed: CombatFeed;
+}
 
 const TURN_ECHO_QUIET_MS = 400;
 
 export class MultiplayerSession {
   readonly remotePlayers = new RemotePlayers();
+  readonly remoteCreatures = new RemoteCreatures();
   readonly speech = new SpeechBubbles();
   private readonly client: NetClient;
   private readonly localSim: LocalMovementSim;
@@ -31,6 +43,7 @@ export class MultiplayerSession {
     private readonly store: PipelineStore,
     isWalkableAt: WalkabilityProbe,
     private readonly puzzles: PuzzleWorld,
+    private readonly divergences: WorldDivergences,
     private readonly onPuzzlesApplied: () => void,
   ) {
     this.localSim = new LocalMovementSim(world, isWalkableAt);
@@ -42,6 +55,10 @@ export class MultiplayerSession {
       onSaid: (msg) => this.speech.add(msg.id, msg.text),
       onDocChanged: (name, revision) => this.reloadChangedDoc(name, revision),
       onPuzzles: (msg) => this.acceptPuzzles(msg),
+      onCreatures: (rows) => this.remoteCreatures.applyRows(rows),
+      onCombat: (msg) => this.divergences.combatFeed.announce(msg.text),
+      onSlain: (msg) => this.acceptSlain(msg),
+      onDropped: (msg) => this.acceptDropped(msg.drops),
       onKick: (msg) => console.warn(`[net] kicked: ${msg.code} — ${msg.message}`),
     });
     this.lastFacing = world.facing;
@@ -97,6 +114,14 @@ export class MultiplayerSession {
     this.client.sendResetRoom();
   }
 
+  sendAttack(): void {
+    this.client.sendAttack();
+  }
+
+  reportTookDrop(x: number, y: number, itemId: ItemId): void {
+    if (this.online) this.client.sendTookDrop(x, y, itemId);
+  }
+
   say(rawText: string): void {
     const text = sanitizeChatText(rawText);
     if (text === '') return;
@@ -109,6 +134,16 @@ export class MultiplayerSession {
     this.online = status === 'online';
     if (this.online) this.localSim.stop();
     else this.localSim.start();
+    if (!this.online) this.remoteCreatures.clear();
+  }
+
+  private acceptSlain(msg: SlainMsg): void {
+    if (msg.all) this.divergences.slainCreatures.replaceAll(msg.keys);
+    else for (const key of msg.keys) this.divergences.slainCreatures.slay(key);
+  }
+
+  private acceptDropped(drops: ReadonlyArray<[number, number, ItemId]>): void {
+    this.divergences.droppedItems.replaceAll(drops.map(([x, y, itemId]) => ({ x, y, itemId })));
   }
 
   private reportLocalTurn(): void {
