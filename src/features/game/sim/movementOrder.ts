@@ -3,7 +3,7 @@ import type { FacingIndex } from '../facing';
 export const TICK_MS = 50;
 export const MOVE_COOLDOWN_TICKS = 3;
 export const DIAGONAL_MOVE_COOLDOWN_TICKS = 4;
-export const JUMP_COOLDOWN_TICKS = 6;
+export const JUMP_COOLDOWN_TICKS = 11;
 
 export const ORDER_NONE = 0;
 export const ORDER_DIR = 1;

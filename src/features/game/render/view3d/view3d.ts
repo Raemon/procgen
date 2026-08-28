@@ -251,8 +251,8 @@ export class View3D {
 
   private renderFrame(dtSeconds: number): void {
     if (isCollapsed(containerSize(this.container))) return;
-    this.easedPlayer.approach(this.deps.world.playerX, this.deps.world.playerY, dtSeconds);
     this.jumpArc.advance(dtSeconds);
+    this.movePlayerTowardItsTile(dtSeconds);
     this.applySightRadius();
     this.elapsedSeconds += dtSeconds;
     advanceFaceArtAnimations(this.elapsedSeconds);
@@ -402,6 +402,15 @@ export class View3D {
       },
       view,
     );
+  }
+
+  private movePlayerTowardItsTile(dtSeconds: number): void {
+    const { playerX, playerY } = this.deps.world;
+    if (this.jumpArc.airborne()) {
+      this.easedPlayer.glideTo(playerX, playerY, dtSeconds, this.jumpArc.secondsRemaining());
+      return;
+    }
+    this.easedPlayer.approach(playerX, playerY, dtSeconds);
   }
 
   private playerElevation(): number {
