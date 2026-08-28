@@ -40,7 +40,9 @@
     "village:probe": "bash scripts/runTool.sh probeVillageSnapshot",
     "volcanic:probe": "bash scripts/runTool.sh probeVolcanicWorld",
     "village:overhead": "bash scripts/runTool.sh renderVillageOverhead",
-    "view:render": "NODE_PATH=\"$(npm root -g)\" npx tsx scripts/agentView/renderWorldView.ts"
+    "view:render": "NODE_PATH=\"$(npm root -g)\" npx tsx scripts/agentView/renderWorldView.ts",
+    "art:bake": "esbuild public/art/bake/bakeCreatureArt.ts --bundle --format=esm --platform=node --log-level=error --outfile=dist/bakeCreatureArt.mjs && node dist/bakeCreatureArt.mjs",
+    "art:preview": "esbuild public/art/preview/renderArtPreview.ts --bundle --format=esm --platform=node --log-level=error --outfile=dist/renderArtPreview.mjs && node dist/renderArtPreview.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

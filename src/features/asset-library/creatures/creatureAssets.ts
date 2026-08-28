@@ -1,6 +1,8 @@
 import type { AssetOfKind } from '@/features/asset-library/asset';
 import type { CreatureId } from '@/features/asset-library/asset';
 import { AssetCollection } from '../collection/assetCollection';
+import { BLANK_CHARACTER_ART } from '../characters/billboardArtNames';
+import type { CharacterBillboard } from '../characters/characterBillboard';
 import { newCharacterWithId, newCreatureWithId, type CreatureDef } from './creatureDef';
 import { loadStoredCreatures, storeCreatures } from './creatureStorage';
 
@@ -12,7 +14,12 @@ export class CreatureAssets extends AssetCollection<AssetOfKind<'creatures'>> {
   }
 
   addCharacter(): CreatureDef {
-    return this.append(newCharacterWithId(this.claimId()));
+    const character = newCharacterWithId(this.claimId());
+    return this.append({ ...character, billboard: this.artNamed(BLANK_CHARACTER_ART) });
+  }
+
+  artNamed(art: string): CharacterBillboard | null {
+    return this.all().find((creature) => creature.billboardArt === art)?.billboard ?? null;
   }
 
   protected blankAsset(id: CreatureId): CreatureDef {

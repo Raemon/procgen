@@ -18,7 +18,7 @@ import { ItemMeshes } from '@/features/game/render/view3d/itemMeshes';
 import { stubTheCanvasTexturesAreRasterizedOnto } from '@/features/asset-library/__tests__/stubCanvasRasterization';
 
 const SCATTERED_ITEM_IDS = [0, 1, 2, 3, 4, 5].map(assetId<'items'>);
-const SCATTERED_CREATURE_IDS = [0, 1, 2, 3, 4, 5, 6, 7].map(assetId<'creatures'>);
+const SCATTERED_CREATURE_IDS = [0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11].map(assetId<'creatures'>);
 const SCATTER_DENSITY = 0.02;
 const VIEW_RADIUS_TILES = 48;
 const CAMERA_VIEW = { yaw: 0, seconds: 0 };

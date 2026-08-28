@@ -1,6 +1,7 @@
 import type { PersistedDocumentName } from './persistedDocuments';
 import type { StoredAssetFolders } from '@/features/asset-library/folders/assetFolder';
 import type { CreatureDef } from '@/features/asset-library/creatures/creatureDef';
+import type { StoredCreature } from '@/features/asset-library/creatures/creatureStorage';
 import type { Culture } from '@/features/asset-library/cultures/cultureDef';
 import type { ItemDef } from '@/features/asset-library/items/itemDef';
 import type { StoredTemplateLibrary } from '@/features/asset-library/node-groups/storedTemplateLibrary';
@@ -26,7 +27,7 @@ export interface StoredDocumentContents {
   savedWorlds: StoredSavedWorlds;
   pieces: readonly Piece[];
   cultures: readonly Culture[];
-  creatures: StoredArtOf<CreatureDef>[];
+  creatures: StoredCreature[];
   items: StoredArtOf<ItemDef>[];
   uiState: PersistedUiState;
   worldSeedThumbnails: WorldSeedThumbnailIndex;

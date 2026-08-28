@@ -5,12 +5,22 @@ import {
   faceArtFromStoredShape,
   type StoredArtOf,
 } from '../tiles/storage/storedFaceArt';
-import { builtInBillboard, isBuiltInBillboardArt } from './art/builtInBillboards';
+import { isBillboardArtName } from '../characters/billboardArtNames';
 import { sanitizeCharacterBillboard } from '../characters/sanitizeCharacterBillboard';
+import {
+  billboardFromCompact,
+  compactBillboardOf,
+  type CompactCharacterBillboard,
+} from '../characters/storage/compactCharacterBillboard';
+import type { CharacterBillboard } from '../characters/characterBillboard';
 import { CHARACTER_BODY, CREATURE_BODY, type CreatureDef } from './creatureDef';
 import { CHARACTER, CREATURE, isEntityKind } from './entityKinds';
 
 const FILE_NAME = 'creatures';
+
+export type StoredCreature = Omit<StoredArtOf<CreatureDef>, 'billboard'> & {
+  billboard: CompactCharacterBillboard | CharacterBillboard | null;
+};
 
 export function loadStoredCreatures(): CreatureDef[] | null {
   return creaturesFromStoredJson(readPersistedFile<unknown>(FILE_NAME));
@@ -26,18 +36,17 @@ export function storeCreatures(creatures: readonly CreatureDef[]): void {
   writePersistedFile(FILE_NAME, creaturesAsStoredJson(creatures));
 }
 
-export function creaturesAsStoredJson(creatures: readonly CreatureDef[]): StoredArtOf<CreatureDef>[] {
-  return creatures.map(withoutGeneratedFrames).map(defWithCompactFaceArt);
+export function creaturesAsStoredJson(creatures: readonly CreatureDef[]): StoredCreature[] {
+  return creatures.map(defWithCompactFaceArt).map(withCompactBillboard);
 }
 
-function withoutGeneratedFrames(creature: CreatureDef): CreatureDef {
-  if (!isBuiltInBillboardArt(creature.billboardArt)) return creature;
-  return { ...creature, billboard: null };
+function withCompactBillboard(creature: StoredArtOf<CreatureDef>): StoredCreature {
+  if (!creature.billboard) return { ...creature, billboard: null };
+  return { ...creature, billboard: compactBillboardOf(creature.billboard) ?? creature.billboard };
 }
 
 function withValidatedArt(stored: CreatureDef): CreatureDef {
   const { size, ...creature } = stored as CreatureDef & { size?: unknown };
-  const billboardArt = isBuiltInBillboardArt(creature.billboardArt) ? creature.billboardArt : null;
   const kind = isEntityKind(creature.kind) ? creature.kind : CREATURE;
   return {
     ...creature,
@@ -45,10 +54,9 @@ function withValidatedArt(stored: CreatureDef): CreatureDef {
     faceArt: faceArtFromStoredShape(creature.faceArt),
     kind,
     inventory: sanitizeInventory(creature.inventory),
-    billboardArt,
-    billboard: billboardArt
-      ? builtInBillboard(billboardArt)
-      : sanitizeCharacterBillboard(creature.billboard),
+    billboardArt: isBillboardArtName(creature.billboardArt) ? creature.billboardArt : null,
+    billboard:
+      billboardFromCompact(creature.billboard) ?? sanitizeCharacterBillboard(creature.billboard),
   };
 }
 

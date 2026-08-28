@@ -1,6 +1,6 @@
 import type { CreatureId } from '@/features/asset-library/asset';
 import type { ReadOnlyCreatureAssets } from '@/features/app-shell/runtime/readOnlyAssets';
-import { MOONLIT_DWARF_ART } from '../creatures/art/builtInBillboards';
+import { MOONLIT_DWARF_ART } from './billboardArtNames';
 import { isCharacter, type CreatureDef } from '../creatures/creatureDef';
 
 export const PLAYER_CHARACTER_ID = 8 as CreatureId;

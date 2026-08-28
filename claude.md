@@ -12,6 +12,9 @@ Keep the source tree aligned with the rendered home-page tree:
 - `src/features/agents` owns Agents. Agent Log is its React child and folder.
 - `src/features/game` owns the running world: input, inventory, lighting, simulation, rendering, capture, puzzles, performance, and multiplayer.
 - `src/infrastructure` owns database, process startup, HTTP adapters, and WebSocket attachment.
+- `public/art` owns the character and creature art painters, which run only when re-baking and never at runtime.
+
+Painted art is authoring input, not runtime code. Bake it with `npm run art:bake`, which writes palette-indexed frames into `data/creatures.json` for the database to serve, and review it with `npm run art:preview`. A creature names its art with `billboardArt` and carries the frames themselves in `billboard`.
 
 Do not add generic `components`, `lib`, `assets`, `abilities`, `commands`, `common`, or `misc` feature roots. Put a product operation beside the UI or runtime concept that owns it. Direct cross-feature imports must name that owning feature explicitly; do not hide dependencies behind catch-all barrels.
 

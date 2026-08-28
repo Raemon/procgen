@@ -7,3 +7,4 @@ dist
 .claude/worktrees
 .env
 .env.*
+public/art/preview/*.html

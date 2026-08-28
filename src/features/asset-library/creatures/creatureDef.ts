@@ -1,6 +1,6 @@
 import type { CreatureId } from '../asset';
 import { blankInventory, type InventoryDef } from '../items/inventory/inventoryDef';
-import { BLANK_CHARACTER_ART, builtInBillboard } from './art/builtInBillboards';
+import { BLANK_CHARACTER_ART } from '../characters/billboardArtNames';
 import type { CharacterBillboard } from '../characters/characterBillboard';
 import type { CubeFaceArt } from '../tiles/tileFaceArt';
 import { WANDER } from './behaviorKinds';
@@ -60,7 +60,7 @@ export function newCharacterWithId(id: CreatureId): CreatureDef {
     kind: CHARACTER,
     inventory: blankInventory(),
     billboardArt: BLANK_CHARACTER_ART,
-    billboard: builtInBillboard(BLANK_CHARACTER_ART),
+    billboard: null,
   };
 }
 
