@@ -31,8 +31,8 @@ registerNodeType({
     radius: {
       kind: 'int',
       label: 'rim radius',
-      help: 'Distance in tiles from the center to the rim, where the bowl reaches full height and the surface begins.',
-      min: 32,
+      help: 'Distance in tiles from the center to the rim, where the bowl reaches full height and the surface begins. Small radii make masks — a clearing, a fade around one landmark — rather than terrain.',
+      min: 8,
       max: 2048,
       default: 384,
     },

@@ -14,7 +14,7 @@ export function sunkenLabyrinth(): ExamplePipeline {
   return {
     name: 'sunken labyrinth',
     description:
-      'You wake in a bare clearing at the bottom of a great open-air gorge, ten ledges below the daylight meadows on its rim, ringed by a labyrinth walled with sheer rock. Uphill is always out: the ground climbs toward the rim in full-level shelves too tall to walk up, so follow the winding ramps where they run and jump (Space) the ledges where they do not. Crevasses wind across the corridors exactly one jump wide — leap them, or drop in and jump back out — and the labyrinth walls sink with the land as you rise, from towering rock crowned in granite, to head-height masonry, to hoppable ridges, until the last of them dissolves into the flowered surface.',
+      'You wake in a bare clearing at the bottom of a great open-air gorge, ten ledges below the daylight meadows on its rim, ringed by a labyrinth walled with sheer rock. Uphill is always out: the ground climbs toward the rim in full-level shelves too tall to walk up, so follow the winding ramps where they run and jump (Space) the ledges where they do not. Crevasses wind across the corridors exactly one jump wide — leap them, or drop in and jump back out — and the labyrinth walls sink as you rise — towering rock crowned in granite, then head-height masonry, then hoppable ridges — until the upper slopes leave the maze behind entirely and the climb finishes on open shelves, with flowers patching the topmost ground.',
     state: {
       seed: 7414,
       daylight: 1,
@@ -177,7 +177,7 @@ export function sunkenLabyrinth(): ExamplePipeline {
           label: 'three wall heights',
           folder: 'the labyrinth',
           comment:
-            'The remaining depth snapped to three steps, so the walls stand at three discrete heights instead of melting smoothly: full height for the deep gorge, two thirds for the middle rings, one third near the rim, gone at the surface.',
+            'The remaining depth snapped to three steps, so the walls stand at three discrete heights instead of melting smoothly: full height for the deep gorge, two thirds for the middle rings, one third above that, and gone across the whole upper third of the climb.',
           enabled: true,
           params: { levels: 3, passesAbove: 1 },
           inputs: { source: 'depthLeft' },
@@ -316,7 +316,7 @@ export function sunkenLabyrinth(): ExamplePipeline {
           type: 'thresholdTiles',
           label: 'the surface',
           folder: 'what you see',
-          comment: 'Flowers only on the topmost shelf — the rim and the open country beyond it. Standing on these means you made it.',
+          comment: 'Flowers only where the topmost shelf crests — patches on the rim country, not a carpet. Standing on them means you made it.',
           enabled: true,
           params: { threshold: 0.98, belowTile: -1, aboveTile: defaultTileId('meadow flowers') },
           inputs: { source: 'shelves' },
@@ -366,7 +366,7 @@ export function sunkenLabyrinth(): ExamplePipeline {
           comment:
             'Oaks only where the bowl has topped out — a treeline ringing the rim that is visible from shelves below, so the way out has a landmark long before it has a route.',
           enabled: true,
-          params: { density: 0.02, maskAtLeast: 0.985, maskAtMost: 1 },
+          params: { density: 0.02, maskAtLeast: 0.98, maskAtMost: 1 },
           inputs: { mask: 'basin' },
           display: { mode: 'markers', tileId: defaultTileId('oak tree'), glyph: '♠', color: '#3f7a44' },
         },
