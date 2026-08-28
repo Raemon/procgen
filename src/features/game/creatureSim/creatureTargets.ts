@@ -5,6 +5,7 @@ import { distanceBetween, type CreatureInstance } from './creatureInstance';
 
 const PAUSE_SECONDS = 1.6;
 const ARRIVAL_DISTANCE = 0.35;
+const CHASE_STANDOFF_TILES = 1;
 
 export interface SimWorldView {
   playerX: number;
@@ -37,8 +38,17 @@ function chaseTargetsPlayer(
 ): boolean {
   const chases = def.behavior === CHASE || (def.behavior === GUARD && nearHome(creature, def));
   if (!chases || !playerInSight(creature, def, world)) return false;
-  creature.targetX = world.playerX;
-  creature.targetY = world.playerY;
+  const towardPlayerX = world.playerX - creature.x;
+  const towardPlayerY = world.playerY - creature.y;
+  const distance = Math.hypot(towardPlayerX, towardPlayerY);
+  if (distance <= CHASE_STANDOFF_TILES) {
+    creature.targetX = creature.x;
+    creature.targetY = creature.y;
+    return true;
+  }
+  const approach = distance - CHASE_STANDOFF_TILES;
+  creature.targetX = creature.x + (towardPlayerX / distance) * approach;
+  creature.targetY = creature.y + (towardPlayerY / distance) * approach;
   return true;
 }
 
