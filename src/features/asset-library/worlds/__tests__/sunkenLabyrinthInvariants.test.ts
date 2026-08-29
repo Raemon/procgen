@@ -3,7 +3,8 @@ import { defaultTileId, defaultTiles } from '@/features/asset-library/tiles/defa
 import { sanitizePipeline } from '../pipeline/sanitizePipeline';
 import type { PipelineState } from '../pipeline/pipelineState';
 import { asField, asTiles } from '../values/valueAccess';
-import { GORGE_RADIUS, sunkenLabyrinth } from '../seeds/sunkenLabyrinth';
+import { pointsInRect } from '../values/pointsInRect';
+import { GORGE_RADIUS, HUSH_RADIUS, sunkenLabyrinth } from '../seeds/sunkenLabyrinth';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { fieldAt, fieldBytes, stateOfNodes, worldFromState } from './pipelineWorldFixtures';
 
@@ -46,8 +47,32 @@ export function checkSunkenLabyrinthInvariants(check: CheckReporter): void {
   checkTheWaking(check, gorge);
   checkTheWalls(check, gorge);
   checkTheCrevasses(check, gorge);
+  checkTheGauntOnes(check, gorge);
   checkTheClimbOut(check, gorge);
   checkWallFieldMirrorsWallTiles(check);
+}
+
+function checkTheGauntOnes(check: CheckReporter, gorge: Gorge): void {
+  const survey = { minX: -240, minY: -240, maxX: 240, maxY: 240 };
+  const gaunts = pointsInRect(gorge.evaluator, 'gauntOnes', survey);
+  check('gaunt ones haunt the deep labyrinth in numbers', gaunts.length > 20);
+  check(
+    'every gaunt one wakes on walkable corridor floor rather than on a wall or in a crevasse',
+    gaunts.every(
+      (lair) =>
+        walkableAt(gorge, lair.x, lair.y) &&
+        fieldAt(gorge.evaluator, 'standingWalls', lair.x, lair.y) < 0.5 &&
+        fieldAt(gorge.evaluator, 'cracks', lair.x, lair.y) === 0,
+    ),
+  );
+  check(
+    'the hush holds: nothing hunts near the waking clearing, and nothing past the deep gorge',
+    gaunts.every(
+      (lair) =>
+        Math.hypot(lair.x, lair.y) > HUSH_RADIUS / 3 &&
+        Math.hypot(lair.x, lair.y) < GORGE_RADIUS / 2,
+    ),
+  );
 }
 
 function checkTheWaking(check: CheckReporter, gorge: Gorge): void {

@@ -9,12 +9,15 @@ export const GORGE_HEIGHT_SCALE = 12;
 export const GORGE_FLOOR = 0.09;
 export const CREVASSE_DEPTH = 0.08;
 export const WALL_HEIGHT = 0.3;
+export const HUSH_RADIUS = 60;
+export const GAUNT_DEPTH_AT_LEAST = 0.55;
+const GAUNT_ONE = 8;
 
 export function sunkenLabyrinth(): ExamplePipeline {
   return {
     name: 'sunken labyrinth',
     description:
-      'You wake in a bare clearing at the bottom of a great open-air gorge, ten ledges below the daylight meadows on its rim, ringed by a labyrinth walled with sheer rock. Uphill is always out: the ground climbs toward the rim in full-level shelves too tall to walk up, so follow the winding ramps where they run and jump (Space) the ledges where they do not. Crevasses wind across the corridors exactly one jump wide — leap them, or drop in and jump back out — and the labyrinth walls sink with the land as you rise, from towering rock crowned in granite, to head-height masonry, to hoppable ridges, until the last of them dissolves into the flowered surface.',
+      'You wake in a bare clearing at the bottom of a great open-air gorge, ten ledges below the daylight meadows on its rim, ringed by a labyrinth walled with sheer rock. Uphill is always out: the ground climbs toward the rim in full-level shelves too tall to walk up, so follow the winding ramps where they run and jump (Space) the ledges where they do not. Crevasses wind across the corridors exactly one jump wide — leap them, or drop in and jump back out — and the labyrinth walls sink with the land as you rise, from towering rock crowned in granite, to head-height masonry, to hoppable ridges, until the last of them dissolves into the flowered surface. You are not alone down there: gaunt ones stalk the deep corridors, and once one has seen you it will run you down and rake at you with its claws — the first stretch around the clearing is kept empty, and the climb outruns them for good once the walls shrink to ridges.',
     state: {
       seed: 7414,
       daylight: 1,
@@ -265,6 +268,77 @@ export function sunkenLabyrinth(): ExamplePipeline {
           params: { operation: COMBINE_SUBTRACT, clamp: 0 },
           inputs: { a: 'built', b: 'cut' },
           display: { mode: 'elevation', heightScale: GORGE_HEIGHT_SCALE },
+        },
+        {
+          id: 'openFloor',
+          type: 'combineFields',
+          label: 'floor, not wall',
+          folder: 'what stalks you',
+          comment:
+            'One minus the standing walls: full on corridor floors, zero on wall cells. The gaunt ones read this so they wake standing in the corridors they hunt, never on top of the masonry.',
+          enabled: true,
+          params: { operation: COMBINE_SUBTRACT, clamp: 1 },
+          inputs: { a: 'one', b: 'standingWalls' },
+          display: { mode: 'hidden' },
+        },
+        {
+          id: 'dryFloor',
+          type: 'combineFields',
+          label: 'floor, not crevasse',
+          folder: 'what stalks you',
+          comment:
+            'The corridor floor with the crevasse lines cut back out, so nothing wakes at the bottom of a crack it could never climb from.',
+          enabled: true,
+          params: { operation: COMBINE_SUBTRACT, clamp: 1 },
+          inputs: { a: 'openFloor', b: 'cracks' },
+          display: { mode: 'hidden' },
+        },
+        {
+          id: 'hauntDepth',
+          type: 'combineFields',
+          label: 'deep corridor floor',
+          folder: 'what stalks you',
+          comment:
+            'The clean floor weighted by how deep in the gorge it lies. The scatter below keeps only cells above 0.55, which confines the gaunt ones to the towering deep labyrinth — the climb toward the rim leaves them behind.',
+          enabled: true,
+          params: { operation: COMBINE_MULTIPLY, clamp: 1 },
+          inputs: { a: 'depthLeft', b: 'dryFloor' },
+          display: { mode: 'hidden' },
+        },
+        {
+          id: 'hush',
+          type: 'basinField',
+          label: 'the hush around the clearing',
+          folder: 'what stalks you',
+          comment:
+            'A second radial mask, wider than the waking clearing: zero at the spawn, full sixty tiles out. Multiplied into the haunt it keeps the first corridors empty, so the shelves and crevasses are learned before anything is met.',
+          enabled: true,
+          params: { centerX: 0, centerY: 0, radius: HUSH_RADIUS, floor: 0 },
+          inputs: {},
+          display: { mode: 'hidden' },
+        },
+        {
+          id: 'haunts',
+          type: 'combineFields',
+          label: 'where they hunt',
+          folder: 'what stalks you',
+          comment: 'Deep corridor floor outside the hush — every cell a gaunt one may call home.',
+          enabled: true,
+          params: { operation: COMBINE_MULTIPLY, clamp: 1 },
+          inputs: { a: 'hauntDepth', b: 'hush' },
+          display: { mode: 'hidden' },
+        },
+        {
+          id: 'gauntOnes',
+          type: 'scatterPoints',
+          label: 'the gaunt ones',
+          folder: 'what stalks you',
+          comment:
+            'One antlered hunter every few hundred deep-corridor cells. Sight 14 spans a corridor and then some, so meeting one usually means being chased; the standoff walls and one-jump crevasses are what you put between you and it.',
+          enabled: true,
+          params: { density: 0.003, maskAtLeast: GAUNT_DEPTH_AT_LEAST, maskAtMost: 1 },
+          inputs: { mask: 'haunts' },
+          display: { mode: 'creatures', creatureId: GAUNT_ONE },
         },
         {
           id: 'bedrock',

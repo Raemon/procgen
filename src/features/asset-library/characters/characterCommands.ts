@@ -92,7 +92,7 @@ registerCharacterArtCommand({
 registerCharacterArtCommand({
   action: 'set_character_animation_fps',
   humanControl: 'detail panel, characters: the idle and moving fps knobs',
-  description: 'How fast one of the two animations plays, in frames per second (0-30).',
+  description: 'How fast one of the three animations plays, in frames per second (0-30).',
   params: {
     creature_id: { kind: 'int', help: CREATURE_ID_HELP },
     animation: { kind: 'text', help: animationHelp() },
@@ -122,7 +122,7 @@ function rotationHelp(): string {
 }
 
 function animationHelp(): string {
-  return `'idle' or 'moving' — ${listOf(CHARACTER_ANIMATIONS)}`;
+  return `'idle', 'moving' or 'attack' — ${listOf(CHARACTER_ANIMATIONS)}`;
 }
 
 function setFrame(context: CommandContext, params: CommandParams): CommandResult {
@@ -174,6 +174,7 @@ function setFps(context: CommandContext, params: CommandParams): CommandResult {
       ...billboard,
       idleFps: animation.value === 'idle' ? clamped : billboard.idleFps,
       movingFps: animation.value === 'moving' ? clamped : billboard.movingFps,
+      attackFps: animation.value === 'attack' ? clamped : billboard.attackFps,
     });
     return commandSucceeded(`creature ${creatureId} plays ${animation.value} at ${clamped} fps`);
   });

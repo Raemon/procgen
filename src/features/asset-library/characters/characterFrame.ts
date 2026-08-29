@@ -13,6 +13,7 @@ import { viewRelativeRotation } from './characterFacing';
 export interface CharacterMotion {
   heading: number;
   moving: boolean;
+  attacking?: boolean;
 }
 
 export interface CharacterFrame {
@@ -32,7 +33,7 @@ export function characterFrame(
   const view = viewRelativeRotation(motion.heading, cameraYaw);
   const rotation = drawnRotation(billboard, view.rotation, motion.moving);
   if (!rotation) return null;
-  const animation = drawnAnimation(billboard, rotation, motion.moving);
+  const animation = drawnAnimation(billboard, rotation, motion);
   const frames = framesOf(billboard, rotation, animation);
   const index = frameIndexAt(frames.length, fpsOf(billboard, animation), seconds);
   return { rotation, animation, index, sprite: frames[index]!, mirrored: view.mirrored };
@@ -54,9 +55,10 @@ function drawnRotation(
 function drawnAnimation(
   billboard: CharacterBillboard,
   rotation: CharacterRotation,
-  moving: boolean,
+  motion: CharacterMotion,
 ): CharacterAnimation {
-  const wanted: CharacterAnimation = moving ? 'moving' : 'idle';
+  if (motion.attacking && framesOf(billboard, rotation, 'attack').length > 0) return 'attack';
+  const wanted: CharacterAnimation = motion.moving ? 'moving' : 'idle';
   return framesOf(billboard, rotation, wanted).length > 0 ? wanted : otherAnimation(wanted);
 }
 

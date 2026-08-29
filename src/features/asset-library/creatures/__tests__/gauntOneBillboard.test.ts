@@ -3,11 +3,13 @@ import { billboardFigureExtent } from '../../characters/billboardFigureExtent';
 import {
   CHARACTER_ROTATIONS,
   framesOf,
+  type CharacterAnimation,
   type CharacterBillboard,
 } from '../../characters/characterBillboard';
+import { characterFrame } from '../../characters/characterFrame';
 import { builtInBillboard, GAUNT_ONE_ART } from '../art/builtInBillboards';
 import { gauntOneBillboard } from '../art/gauntOne/gauntOneBillboard';
-import { GAUNT_IDLE_FRAMES, GAUNT_WALK_FRAMES } from '../art/gauntOne/gauntOnePose';
+import { GAUNT_ATTACK_FRAMES, GAUNT_IDLE_FRAMES, GAUNT_WALK_FRAMES } from '../art/gauntOne/gauntOnePose';
 import { GAUNT_ONE_INKS } from '../art/gauntOne/gauntOnePalette';
 
 export function checkGauntOneBillboard(check: CheckReporter): void {
@@ -22,7 +24,21 @@ export function checkGauntOneBillboard(check: CheckReporter): void {
   );
   check(
     'the walk cycle actually moves: every consecutive pair of walking frames differs',
-    CHARACTER_ROTATIONS.every((rotation) => framesAllDiffer(billboard, rotation)),
+    CHARACTER_ROTATIONS.every((rotation) => framesAllDiffer(billboard, rotation, 'moving')),
+  );
+  check(
+    'every rotation carries a full attack clip whose consecutive frames all differ',
+    CHARACTER_ROTATIONS.every(
+      (rotation) =>
+        framesOf(billboard, rotation, 'attack').length === GAUNT_ATTACK_FRAMES &&
+        framesAllDiffer(billboard, rotation, 'attack'),
+    ),
+  );
+  check(
+    'an attacking gaunt one draws its attack clip, and a calm one does not',
+    characterFrame(billboard, { heading: 0, moving: false, attacking: true }, 0, 0)?.animation === 'attack' &&
+      characterFrame(billboard, { heading: 0, moving: true, attacking: true }, 0, 0)?.animation === 'attack' &&
+      characterFrame(billboard, { heading: 0, moving: false }, 0, 0)?.animation === 'idle',
   );
   check(
     'the figure looms taller than wide, so it reads as a 2-unit-tall creature',
@@ -42,8 +58,12 @@ export function checkGauntOneBillboard(check: CheckReporter): void {
   );
 }
 
-function framesAllDiffer(billboard: CharacterBillboard, rotation: (typeof CHARACTER_ROTATIONS)[number]): boolean {
-  const frames = framesOf(billboard, rotation, 'moving');
+function framesAllDiffer(
+  billboard: CharacterBillboard,
+  rotation: (typeof CHARACTER_ROTATIONS)[number],
+  animation: CharacterAnimation,
+): boolean {
+  const frames = framesOf(billboard, rotation, animation);
   return frames.every((frame, index) => {
     const next = frames[(index + 1) % frames.length]!;
     return JSON.stringify(frame) !== JSON.stringify(next);

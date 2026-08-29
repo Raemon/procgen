@@ -1,7 +1,7 @@
 import type { SpriteArt } from '../tiles/spriteArt';
 
 export const CHARACTER_ROTATIONS = ['front', 'frontQuarter', 'side', 'backQuarter', 'back'] as const;
-export const CHARACTER_ANIMATIONS = ['idle', 'moving'] as const;
+export const CHARACTER_ANIMATIONS = ['idle', 'moving', 'attack'] as const;
 
 export type CharacterRotation = (typeof CHARACTER_ROTATIONS)[number];
 export type CharacterAnimation = (typeof CHARACTER_ANIMATIONS)[number];
@@ -17,30 +17,38 @@ export const ROTATION_HELP: Readonly<Record<CharacterRotation, string>> = {
 export const ANIMATION_HELP: Readonly<Record<CharacterAnimation, string>> = {
   idle: 'played while the character is standing still',
   moving: 'played while the character is walking',
+  attack: 'played while the character is striking at someone in reach',
 };
 
 export const MAX_ANIMATION_FRAMES = 16;
 export const DEFAULT_IDLE_FPS = 3;
 export const DEFAULT_MOVING_FPS = 8;
+export const DEFAULT_ATTACK_FPS = 10;
 
 export type CharacterClips = Record<CharacterRotation, Record<CharacterAnimation, SpriteArt[]>>;
 
 export interface CharacterBillboard {
   idleFps: number;
   movingFps: number;
+  attackFps: number;
   clips: CharacterClips;
 }
 
 export function blankCharacterClips(): CharacterClips {
   const clips = {} as CharacterClips;
   for (const rotation of CHARACTER_ROTATIONS) {
-    clips[rotation] = { idle: [], moving: [] };
+    clips[rotation] = { idle: [], moving: [], attack: [] };
   }
   return clips;
 }
 
 export function blankCharacterBillboard(): CharacterBillboard {
-  return { idleFps: DEFAULT_IDLE_FPS, movingFps: DEFAULT_MOVING_FPS, clips: blankCharacterClips() };
+  return {
+    idleFps: DEFAULT_IDLE_FPS,
+    movingFps: DEFAULT_MOVING_FPS,
+    attackFps: DEFAULT_ATTACK_FPS,
+    clips: blankCharacterClips(),
+  };
 }
 
 export function framesOf(
@@ -52,7 +60,8 @@ export function framesOf(
 }
 
 export function fpsOf(billboard: CharacterBillboard, animation: CharacterAnimation): number {
-  return animation === 'idle' ? billboard.idleFps : billboard.movingFps;
+  if (animation === 'idle') return billboard.idleFps;
+  return animation === 'attack' ? billboard.attackFps : billboard.movingFps;
 }
 
 export function frameIndexAt(frameCount: number, fps: number, seconds: number): number {

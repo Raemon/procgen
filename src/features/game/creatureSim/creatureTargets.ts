@@ -1,4 +1,5 @@
 import { hashString } from '@/features/asset-library/worlds/random/hashString';
+import { headingRadians } from '@/features/asset-library/characters/characterFacing';
 import { CHASE, FLEE, GUARD, IDLE, PATROL } from '@/features/asset-library/creatures/behaviorKinds';
 import type { CreatureDef } from '@/features/asset-library/creatures/creatureDef';
 import { distanceBetween, type CreatureInstance } from './creatureInstance';
@@ -6,6 +7,7 @@ import { distanceBetween, type CreatureInstance } from './creatureInstance';
 const PAUSE_SECONDS = 1.6;
 const ARRIVAL_DISTANCE = 0.35;
 const CHASE_STANDOFF_TILES = 1;
+const STRIKE_RANGE_TILES = 1.6;
 
 export interface SimWorldView {
   playerX: number;
@@ -19,6 +21,7 @@ export function retargetCreature(
   dtSeconds: number,
 ): void {
   creature.repathIn -= dtSeconds;
+  creature.attacking = false;
   if (chaseTargetsPlayer(creature, def, world)) return;
   if (fleeTargetsAwayFromPlayer(creature, def, world)) return;
   if (def.behavior === IDLE) return homeTarget(creature);
@@ -40,8 +43,12 @@ function chaseTargetsPlayer(
   if (!chases || !playerInSight(creature, def, world)) return false;
   const towardPlayerX = world.playerX - creature.x;
   const towardPlayerY = world.playerY - creature.y;
-  const approach = Math.hypot(towardPlayerX, towardPlayerY) - CHASE_STANDOFF_TILES;
-  aimAlong(creature, towardPlayerX, towardPlayerY, Math.max(0, approach));
+  const gap = Math.hypot(towardPlayerX, towardPlayerY);
+  if (gap <= STRIKE_RANGE_TILES) {
+    creature.attacking = true;
+    creature.heading = headingRadians(towardPlayerX, towardPlayerY);
+  }
+  aimAlong(creature, towardPlayerX, towardPlayerY, Math.max(0, gap - CHASE_STANDOFF_TILES));
   return true;
 }
 

@@ -1,6 +1,7 @@
 import {
   blankCharacterClips,
   CHARACTER_ROTATIONS,
+  DEFAULT_ATTACK_FPS,
   DEFAULT_IDLE_FPS,
   DEFAULT_MOVING_FPS,
   type CharacterBillboard,
@@ -26,5 +27,5 @@ export function humanoidBillboard(palette: HumanoidPalette): CharacterBillboard 
     clips[rotation].idle = IDLE_POSES.map((pose) => humanoidSprite({ rotation, ...pose }, palette));
     clips[rotation].moving = WALK_POSES.map((pose) => humanoidSprite({ rotation, ...pose }, palette));
   }
-  return { idleFps: DEFAULT_IDLE_FPS, movingFps: DEFAULT_MOVING_FPS, clips };
+  return { idleFps: DEFAULT_IDLE_FPS, movingFps: DEFAULT_MOVING_FPS, attackFps: DEFAULT_ATTACK_FPS, clips };
 }
