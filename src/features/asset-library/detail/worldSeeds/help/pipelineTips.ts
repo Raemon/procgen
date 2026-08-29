@@ -28,7 +28,7 @@ export const CLEAR_PIPELINE_TIP: TooltipContent = {
 export const RANDOMIZE_TIPS = {
   world: {
     title: 'roll a world',
-    body: 'Throws the pipeline away and rolls a fresh combination of nodes from scratch, re-rolling until the player would land with room to walk.',
+    body: 'Rolls a fresh combination of nodes from scratch, re-rolling until the player would land with room to walk. The roll runs as a world seed of its own, so the world you rolled it from keeps the parameters it had.',
     when: 'Looking for a starting point, or for ideas you would not have wired by hand.',
   },
   sliders: {

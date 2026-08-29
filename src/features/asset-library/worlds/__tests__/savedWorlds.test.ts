@@ -32,6 +32,7 @@ export function checkSavedWorlds(check: CheckReporter): void {
   checkAnItemPickedUpIsNeitherDuplicatedNorLostByASave(check);
   checkRestoreIsOneSettledChange(check);
   checkASaveOutlivesTheSeedItGrewFrom(check);
+  checkRollingANewWorldLeavesTheSaveItRolledFromAlone(check);
   checkSavedWorldRowsAreEditedLikeAnyOtherAsset(check);
   checkDocumentsWrittenBeforeTheRenameStillLoad(check);
   checkTheServerWritesSavesBackToTheDatabase(check);
@@ -138,6 +139,25 @@ function checkASaveOutlivesTheSeedItGrewFrom(check: CheckReporter): void {
   );
 }
 
+function checkRollingANewWorldLeavesTheSaveItRolledFromAlone(check: CheckReporter): void {
+  const game = playableWorld();
+  game.act('run_world_seed', { name: game.aSeedName() });
+  game.act('set_seed', { seed: 4321 });
+  game.act('save_world', { name: 'a camp' });
+
+  game.act('randomize_world_seed', { seed: 7 });
+  check(
+    'a save is left behind by a roll, not written over by it',
+    game.savedWorlds.byName('a camp')!.state.seed === 4321 &&
+      game.runningWorld.savedWorldName() === '',
+  );
+  check(
+    'the roll runs as a world seed of its own',
+    game.runningWorld.seedName() !== '' &&
+      game.worldSeeds.byName(game.runningWorld.seedName()) !== undefined,
+  );
+}
+
 function checkSavedWorldRowsAreEditedLikeAnyOtherAsset(check: CheckReporter): void {
   const game = playableWorld();
   game.act('run_world_seed', { name: game.aSeedName() });
@@ -239,6 +259,7 @@ function playableWorld() {
   });
   const context = {
     store,
+    pipelineIsOnScreen: true,
     tileAssets: new TileAssets(),
     pieces: new PieceAssets(),
     cultures: new CultureAssets(),
@@ -286,6 +307,7 @@ function playableWorld() {
   return {
     store,
     savedWorlds,
+    worldSeeds,
     takenItems,
     puzzles,
     runningWorld,

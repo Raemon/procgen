@@ -30,6 +30,7 @@ export function performVerb(
   const result = performCommand(
     {
       store: world.store,
+      pipelineIsOnScreen: true,
       tileAssets: world.tileAssets,
       pieces: world.pieces,
       cultures: world.cultures,

@@ -1,21 +1,27 @@
 import type { PipelineState } from '../pipeline/pipelineState';
+import type { RunningWorldRef } from '../running/runningWorld';
 import { clonedState } from './clonedState';
 
 const MAX_REMEMBERED = 30;
 
-export class RandomizeHistory {
-  private readonly states: PipelineState[] = [];
+export interface RememberedRoll {
+  state: PipelineState;
+  running: RunningWorldRef | null;
+}
 
-  remember(state: PipelineState): void {
-    this.states.push(clonedState(state));
-    if (this.states.length > MAX_REMEMBERED) this.states.shift();
+export class RandomizeHistory {
+  private readonly rolls: RememberedRoll[] = [];
+
+  remember(state: PipelineState, running: RunningWorldRef | null = null): void {
+    this.rolls.push({ state: clonedState(state), running });
+    if (this.rolls.length > MAX_REMEMBERED) this.rolls.shift();
   }
 
-  undo(): PipelineState | null {
-    return this.states.pop() ?? null;
+  undo(): RememberedRoll | null {
+    return this.rolls.pop() ?? null;
   }
 
   canUndo(): boolean {
-    return this.states.length > 0;
+    return this.rolls.length > 0;
   }
 }

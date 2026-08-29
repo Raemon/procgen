@@ -33,6 +33,7 @@ export interface CommandActor {
 
 export interface CommandContext {
   store: PipelineStore;
+  pipelineIsOnScreen: boolean;
   tileAssets: TileAssets;
   pieces: PieceAssets;
   cultures: CultureAssets;
