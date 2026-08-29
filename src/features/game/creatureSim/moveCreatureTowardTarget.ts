@@ -29,7 +29,7 @@ export function moveCreatureTowardTarget(
 
 function rememberMotion(creature: CreatureInstance, movedX: number, movedY: number): void {
   creature.moving = Math.hypot(movedX, movedY) > MOVING_THRESHOLD_TILES;
-  if (creature.moving) creature.heading = headingRadians(movedX, movedY);
+  if (creature.moving && !creature.attacking) creature.heading = headingRadians(movedX, movedY);
 }
 
 function slideAlongOpenAxes(

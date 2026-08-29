@@ -1,5 +1,6 @@
 import type { SpriteArt } from '../tiles/spriteArt';
 import {
+  CHARACTER_ANIMATIONS,
   CHARACTER_ROTATIONS,
   frameIndexAt,
   framesOf,
@@ -14,6 +15,7 @@ export interface CharacterMotion {
   heading: number;
   moving: boolean;
   attacking?: boolean;
+  attackSeconds?: number;
 }
 
 export interface CharacterFrame {
@@ -31,11 +33,12 @@ export function characterFrame(
   seconds: number,
 ): CharacterFrame | null {
   const view = viewRelativeRotation(motion.heading, cameraYaw);
-  const rotation = drawnRotation(billboard, view.rotation, motion.moving);
+  const rotation = drawnRotation(billboard, view.rotation);
   if (!rotation) return null;
   const animation = drawnAnimation(billboard, rotation, motion);
   const frames = framesOf(billboard, rotation, animation);
-  const index = frameIndexAt(frames.length, fpsOf(billboard, animation), seconds);
+  const clock = animation === 'attack' ? motion.attackSeconds ?? seconds : seconds;
+  const index = frameIndexAt(frames.length, fpsOf(billboard, animation), clock);
   return { rotation, animation, index, sprite: frames[index]!, mirrored: view.mirrored };
 }
 
@@ -46,10 +49,9 @@ export function frameKey(frame: CharacterFrame): string {
 function drawnRotation(
   billboard: CharacterBillboard,
   wanted: CharacterRotation,
-  moving: boolean,
 ): CharacterRotation | null {
-  if (hasFrames(billboard, wanted, moving)) return wanted;
-  return CHARACTER_ROTATIONS.find((rotation) => hasFrames(billboard, rotation, moving)) ?? null;
+  if (hasFrames(billboard, wanted)) return wanted;
+  return CHARACTER_ROTATIONS.find((rotation) => hasFrames(billboard, rotation)) ?? null;
 }
 
 function drawnAnimation(
@@ -57,22 +59,14 @@ function drawnAnimation(
   rotation: CharacterRotation,
   motion: CharacterMotion,
 ): CharacterAnimation {
-  if (motion.attacking && framesOf(billboard, rotation, 'attack').length > 0) return 'attack';
-  const wanted: CharacterAnimation = motion.moving ? 'moving' : 'idle';
-  return framesOf(billboard, rotation, wanted).length > 0 ? wanted : otherAnimation(wanted);
+  const walking: CharacterAnimation = motion.moving ? 'moving' : 'idle';
+  const standing: CharacterAnimation = motion.moving ? 'idle' : 'moving';
+  const preferred: CharacterAnimation[] = motion.attacking
+    ? ['attack', walking, standing]
+    : [walking, standing, 'attack'];
+  return preferred.find((animation) => framesOf(billboard, rotation, animation).length > 0)!;
 }
 
-function otherAnimation(animation: CharacterAnimation): CharacterAnimation {
-  return animation === 'moving' ? 'idle' : 'moving';
-}
-
-function hasFrames(
-  billboard: CharacterBillboard,
-  rotation: CharacterRotation,
-  moving: boolean,
-): boolean {
-  return (
-    framesOf(billboard, rotation, moving ? 'moving' : 'idle').length > 0 ||
-    framesOf(billboard, rotation, moving ? 'idle' : 'moving').length > 0
-  );
+function hasFrames(billboard: CharacterBillboard, rotation: CharacterRotation): boolean {
+  return CHARACTER_ANIMATIONS.some((animation) => framesOf(billboard, rotation, animation).length > 0);
 }
