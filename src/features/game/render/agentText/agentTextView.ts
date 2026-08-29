@@ -30,6 +30,7 @@ import {
   asciiGlyphPaint,
   type AsciiGlyphPaint,
 } from './asciiGlyphPaint';
+import { elevationGlyphPaint } from './elevationGlyphPaint';
 import { sizeSquareGlyphGrid, squareGlyphGrid } from './squareGlyphGrid';
 import { monospaceCellSize, type MonospaceCellSize } from './monospaceCellSize';
 import { worldCellOfObservationGridCell } from './observationGridCell';
@@ -150,7 +151,8 @@ export class AgentTextView {
     this.elevationColumn.classList.toggle('hidden', obs.elevation === null);
     if (obs.elevation) {
       sizeSquareGlyphGrid(this.elevationPre, obs.viewSize);
-      this.elevationPre.replaceChildren(...squareGlyphGrid(obs.elevation, null));
+      const elevationInk = ink === null ? null : elevationGlyphPaint(obs.elevation);
+      this.elevationPre.replaceChildren(...squareGlyphGrid(obs.elevation, elevationInk));
     } else {
       this.elevationPre.replaceChildren();
     }
