@@ -232,13 +232,14 @@ export function createAppRuntime(): AppRuntime {
   }
 
   function performCommandOnce(
-    store: PipelineStore,
+    edited: PipelineStore,
     action: string,
     params: CommandParams,
   ): CommandResult {
     return performCommand(
       {
-        store,
+        store: edited,
+        pipelineIsOnScreen: edited === store,
         tileAssets,
         pieces,
         cultures,

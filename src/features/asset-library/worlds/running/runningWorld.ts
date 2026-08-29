@@ -3,6 +3,7 @@ export type RunningWorldKind = 'seed' | 'saved';
 export interface RunningWorldRef {
   kind: RunningWorldKind;
   name: string;
+  rolled?: boolean;
 }
 
 export const NOTHING_RUNNING = null;
@@ -15,12 +16,16 @@ export function runningSavedWorld(name: string): RunningWorldRef {
   return { kind: 'saved', name };
 }
 
+export function runningRolledSeed(name: string): RunningWorldRef {
+  return { kind: 'seed', name, rolled: true };
+}
+
 export function sameRunningWorld(
   one: RunningWorldRef | null,
   other: RunningWorldRef | null,
 ): boolean {
   if (one === null || other === null) return one === other;
-  return one.kind === other.kind && one.name === other.name;
+  return one.kind === other.kind && one.name === other.name && one.rolled === other.rolled;
 }
 
 export class RunningWorld {
@@ -53,6 +58,10 @@ export class RunningWorld {
   renameTo(name: string): void {
     if (!this.running) return;
     this.run({ kind: this.running.kind, name });
+  }
+
+  isRolled(): boolean {
+    return this.running?.kind === 'seed' && this.running.rolled === true;
   }
 
   onChange(listener: () => void): () => void {

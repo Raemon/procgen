@@ -34,7 +34,8 @@ export function runningWorldRefFrom(raw: unknown): RunningWorldRef | null {
   const held = raw as { kind?: unknown; name?: unknown };
   if (typeof held.name !== 'string' || held.name === '') return NOTHING_RUNNING;
   if (held.kind !== 'seed' && held.kind !== 'saved') return NOTHING_RUNNING;
-  return { kind: held.kind, name: held.name };
+  const ref: RunningWorldRef = { kind: held.kind, name: held.name };
+  return (held as { rolled?: unknown }).rolled === true ? { ...ref, rolled: true } : ref;
 }
 
 function anything(value: unknown): value is unknown {

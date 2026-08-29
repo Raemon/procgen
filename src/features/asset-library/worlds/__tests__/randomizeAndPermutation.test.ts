@@ -210,6 +210,6 @@ export function checkRandomizeAndPermutation(check: CheckReporter): void {
   const restored = historyStates.undo();
   check(
     'randomize history restores snapshots untouched by later edits',
-    restored !== null && restored.nodes[0]!.params.scale !== 0.29 && historyStates.canUndo(),
+    restored !== null && restored.state.nodes[0]!.params.scale !== 0.29 && historyStates.canUndo(),
   );
 }

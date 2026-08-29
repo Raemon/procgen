@@ -14,6 +14,7 @@ import {
 import { randomWorldPipeline } from '@/features/asset-library/worlds/randomize/randomWorldPipeline';
 import { recipeTilesOf, type RecipeTiles } from '@/features/asset-library/worlds/randomize/recipeTiles';
 import { copyNameFor } from '@/features/asset-library/worlds/seeds/copyName';
+import { freeWorldSeedName } from '@/features/asset-library/worlds/seeds/freeWorldSeedName';
 import { stampTemplateInto } from '@/features/asset-library/node-groups/stampTemplate';
 import { templateFromNodes } from '@/features/asset-library/node-groups/templateFromNodes';
 import { mulberry32, type RandomStream } from '@/features/asset-library/worlds/random/mulberry32';
@@ -27,8 +28,16 @@ import {
 } from '@/features/app-shell/runtime/commands/command';
 import { listOf, readInt, readNumber, readOptionalText, readText } from '@/features/app-shell/runtime/commands/commandParams';
 import { createCommandCollection } from '@/features/app-shell/runtime/commands/commandCollection';
-import { runningSeed } from '@/features/asset-library/worlds/running/runningWorld';
-import { forgetWhatWasDoneInTheLastWorld } from '@/features/asset-library/worlds/saved/capturedWorld';
+import {
+  runningRolledSeed,
+  runningSeed,
+  sameRunningWorld,
+  type RunningWorldRef,
+} from '@/features/asset-library/worlds/running/runningWorld';
+import {
+  forgetWhatWasDoneInTheLastWorld,
+  restoreSavedWorld,
+} from '@/features/asset-library/worlds/saved/capturedWorld';
 
 const { define: registerCommand, commands: worldSeedCommands } = createCommandCollection();
 export { worldSeedCommands };
@@ -229,12 +238,17 @@ registerWorldSeedCommand({
 });
 
 
-const ROLLS: readonly {
+const A_NAME_FOR_A_WORLD_NOBODY_ASKED_FOR = 'rolled world';
+
+interface Roll {
   action: string;
   humanControl: string;
   description: string;
+  growsADifferentWorld?: boolean;
   roll(context: CommandContext, rng: RandomStream): PipelineState;
-}[] = [
+}
+
+const ROLLS: readonly Roll[] = [
   {
     action: 'randomize_seed',
     humanControl: 'game panel: 🎲 reroll — and detail panel, world seed: 🎲 on the seed number row',
@@ -244,7 +258,9 @@ const ROLLS: readonly {
   {
     action: 'randomize_world_seed',
     humanControl: 'game panel: ✨ new world — and detail panel, world seed: 🎲 world',
-    description: 'Replace the pipeline with a freshly rolled node combination.',
+    description:
+      'Replace the pipeline with a freshly rolled node combination. Rolling the world on screen grows a world of its own: the roll is filed under its own name and becomes the world running, so the seed or the save it came from keeps the parameters it had. Rolling a world seed you are not running rewrites that seed, as every other edit to it does.',
+    growsADifferentWorld: true,
     roll: (context, rng) => randomWorldPipeline(rng, recipeTilesFor(context)),
   },
   {
@@ -270,20 +286,22 @@ for (const entry of ROLLS) {
       seed: { kind: 'int', help: 'seed for this roll; omitted means an arbitrary one', optional: true },
     },
     example: { action: entry.action },
-    apply: (context, params) => applyRoll(context, params, entry.roll),
+    apply: (context, params) => applyRoll(context, params, entry),
   });
 }
 
 registerWorldSeedCommand({
   action: 'undo_randomize',
   humanControl: 'detail panel, world seed: undo',
-  description: 'Restore the pipeline from before the last roll.',
+  description:
+    'Restore the pipeline from before the last roll, and with it the world that was running when the roll was made.',
   params: {},
   example: { action: 'undo_randomize' },
   apply: (context) => {
     const previous = context.randomizeHistory.undo();
     if (!previous) return commandFailed('nothing_to_undo', 'no roll has been made yet');
-    context.store.replaceAll(previous);
+    context.store.replaceAll(previous.state);
+    if (context.pipelineIsOnScreen) putBackTheWorldThatWasRunning(context, previous.running);
     return commandSucceeded('pipeline restored to before the last roll');
   },
 });
@@ -292,25 +310,73 @@ function recipeTilesFor(context: CommandContext): RecipeTiles {
   return recipeTilesOf(context.tileAssets.all());
 }
 
-function applyRoll(
-  context: CommandContext,
-  params: CommandParams,
-  roll: (context: CommandContext, rng: RandomStream) => PipelineState,
-): CommandResult {
+function applyRoll(context: CommandContext, params: CommandParams, entry: Roll): CommandResult {
   const seed = readInt(params, 'seed');
-  context.randomizeHistory.remember(context.store.snapshot());
+  const rolledFrom = context.runningWorld.name();
+  context.randomizeHistory.remember(context.store.snapshot(), context.runningWorld.ref());
   if (seed.ok) {
-    context.store.replaceAll(sanitizePipeline(roll(context, mulberry32(seed.value >>> 0))));
-    return commandSucceeded(`rolled with seed ${seed.value >>> 0}`);
+    growTheRoll(context, entry, sanitizePipeline(entry.roll(context, mulberry32(seed.value >>> 0))));
+    return commandSucceeded(`rolled with seed ${seed.value >>> 0}${andFiledAs(context, entry, rolledFrom)}`);
   }
   const pose = context.actor.pose();
   const rolled = rolledUntilPlayable(
-    (rollSeed) => sanitizePipeline(roll(context, mulberry32(rollSeed))),
+    (rollSeed) => sanitizePipeline(entry.roll(context, mulberry32(rollSeed))),
     (state) => spawnPacesOf(state, context, pose),
     arbitrarySeed,
   );
-  context.store.replaceAll(rolled.state);
-  return commandSucceeded(rollSummaryOf(rolled));
+  growTheRoll(context, entry, rolled.state);
+  return commandSucceeded(`${rollSummaryOf(rolled)}${andFiledAs(context, entry, rolledFrom)}`);
+}
+
+function growTheRoll(context: CommandContext, entry: Roll, state: PipelineState): void {
+  if (!growsAWorldOfItsOwn(context, entry)) return context.store.replaceAll(state);
+  context.settleTheWorld(() => {
+    context.store.replaceAll(state);
+    forgetWhatWasDoneInTheLastWorld(context);
+  });
+  keepTheRollAsAWorldOfItsOwn(context);
+}
+
+function growsAWorldOfItsOwn(context: CommandContext, entry: Roll): boolean {
+  return entry.growsADifferentWorld === true && context.pipelineIsOnScreen;
+}
+
+function keepTheRollAsAWorldOfItsOwn(context: CommandContext): void {
+  const name = rolledWorldName(context);
+  context.worldSeeds.save({
+    name,
+    description: 'A world rolled by ✨ new world. Rolling again writes over it, so rename it to keep it.',
+    state: sanitizePipeline(context.store.snapshot()),
+  });
+  context.runningWorld.run(runningRolledSeed(name));
+}
+
+function rolledWorldName(context: CommandContext): string {
+  if (context.runningWorld.isRolled()) return context.runningWorld.name();
+  return freeWorldSeedName(A_NAME_FOR_A_WORLD_NOBODY_ASKED_FOR, worldSeedNames(context));
+}
+
+function andFiledAs(context: CommandContext, entry: Roll, rolledFrom: string): string {
+  if (!growsAWorldOfItsOwn(context, entry)) return '';
+  const name = context.runningWorld.name();
+  if (name === rolledFrom) return `; '${name}' is the world running`;
+  if (rolledFrom === '') return `; filed as '${name}', which is now running`;
+  return `; filed as '${name}', which is now running — '${rolledFrom}' keeps the parameters it had`;
+}
+
+function putBackTheWorldThatWasRunning(
+  context: CommandContext,
+  running: RunningWorldRef | null,
+): void {
+  if (!running || sameRunningWorld(running, context.runningWorld.ref())) return;
+  if (running.kind === 'seed') {
+    if (worldSeedNamed(context, running.name)) context.runningWorld.run(running);
+    return;
+  }
+  const saved = context.savedWorlds.byName(running.name);
+  if (!saved) return;
+  restoreSavedWorld(context, saved);
+  context.runningWorld.run(running);
 }
 
 function rollSummaryOf(rolled: PlayableRoll): string {

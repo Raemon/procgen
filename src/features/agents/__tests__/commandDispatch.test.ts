@@ -43,6 +43,7 @@ function abilityWorld(initialTiles: TileDef[] = []) {
   const sampler = new WorldSampler(store, new PipelineEvaluator(store), abilityTiles, pieces);
   const context = {
     store,
+    pipelineIsOnScreen: true,
     tileAssets: abilityTiles,
     pieces,
     cultures,

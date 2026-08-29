@@ -44,7 +44,7 @@ export const REROLL_SEED_TIP: TooltipContent = {
 
 export const RANDOMIZE_WORLD_TIP: TooltipContent = {
   title: 'roll a new world',
-  body: `Throws the running world's pipeline away and rolls a fresh combination of nodes, re-rolling until you would land somewhere with at least ${PLAYABLE_PACES} paces of walkable ground. The same roll the world detail panel offers; undo lives there too.`,
+  body: `Rolls a fresh combination of nodes, re-rolling until you would land somewhere with at least ${PLAYABLE_PACES} paces of walkable ground. The roll runs as a world seed of its own, so the seed or save you rolled it from keeps the parameters it had. The same roll the world detail panel offers; undo lives there too.`,
   when: 'The current world is dull, or you want somewhere new to walk right away.',
 };
 

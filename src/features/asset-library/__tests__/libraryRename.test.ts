@@ -40,6 +40,7 @@ function renamer() {
   });
   const context = {
     store,
+    pipelineIsOnScreen: true,
     tileAssets: new TileAssets(),
     pieces: new PieceAssets(),
     cultures: new CultureAssets(),
