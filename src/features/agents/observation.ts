@@ -41,6 +41,7 @@ export interface AgentObservation {
   sightRadiusTiles: number | null;
   view: string[];
   elevation: string[] | null;
+  elevationFloorSteps: number | null;
   legend: LegendEntry[];
   interaction: string | null;
 }
@@ -68,11 +69,10 @@ export function buildObservation(
   const legend = new Map<string, LegendEntry>();
   addFixedLegendEntries(legend, mode, radius);
   const view: string[] = [];
-  const heights: string[] = [];
-  const digitsSeen = new Set<string>();
+  const stepsSeen: (number | null)[][] = [];
   for (let row = 0; row < size; row++) {
     let line = '';
-    let heightLine = '';
+    const stepsRow: (number | null)[] = [];
     for (let column = 0; column < size; column++) {
       const x = viewport.originX + column;
       const y = viewport.originY + row;
@@ -80,13 +80,12 @@ export function buildObservation(
       line += seen
         ? observedGlyph(sampler, tileAssets, markers, legend, pose, mode, radius, x, y)
         : BLANK_GLYPH;
-      const digit = seen ? elevationDigit(sampler.elevationAt(x, y)) : BLANK_GLYPH;
-      heightLine += digit;
-      if (seen) digitsSeen.add(digit);
+      stepsRow.push(seen ? climbStepsOf(sampler.elevationAt(x, y)) : null);
     }
     view.push(line);
-    heights.push(heightLine);
+    stepsSeen.push(stepsRow);
   }
+  const ground = elevationGrid(stepsSeen);
   return {
     mode,
     position: { x: pose.x, y: pose.y },
@@ -94,7 +93,8 @@ export function buildObservation(
     viewSize: size,
     sightRadiusTiles: mode === 'character' ? radius : null,
     view,
-    elevation: digitsSeen.size > 1 ? heights : null,
+    elevation: ground?.rows ?? null,
+    elevationFloorSteps: ground?.floorSteps ?? null,
     legend: [...legend.values()],
     interaction: interactPrompt(actionWithinReach(overlay, pose)),
   };
@@ -114,9 +114,25 @@ function cellIsSeen(
 
 const TALLEST_ELEVATION_DIGIT = 35;
 
-function elevationDigit(elevation: number): string {
-  const steps = climbStepsOf(elevation);
-  return Math.min(TALLEST_ELEVATION_DIGIT, Math.max(0, steps)).toString(36);
+interface ElevationGrid {
+  rows: string[];
+  floorSteps: number;
+}
+
+function elevationGrid(stepsSeen: (number | null)[][]): ElevationGrid | null {
+  const seen = stepsSeen.flat().filter((steps): steps is number => steps !== null);
+  const floorSteps = Math.min(...seen);
+  if (seen.length === 0 || Math.max(...seen) === floorSteps) return null;
+  return {
+    rows: stepsSeen.map((row) =>
+      row.map((steps) => (steps === null ? BLANK_GLYPH : digitAbove(floorSteps, steps))).join(''),
+    ),
+    floorSteps,
+  };
+}
+
+function digitAbove(floorSteps: number, steps: number): string {
+  return Math.min(TALLEST_ELEVATION_DIGIT, steps - floorSteps).toString(36);
 }
 
 function observedGlyph(

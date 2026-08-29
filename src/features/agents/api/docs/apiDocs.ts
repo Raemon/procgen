@@ -71,8 +71,10 @@ An agent is created in one of two modes and stays in it for life.
 
 When the ground in view varies in height, the observation carries an
 \`elevation\` grid the same shape as the view: one digit per tile — how many
-climb steps that tile stands above the world's floor, written base-36 (0-9
-then a-z, capped at z) — blank exactly where the view is blank. Flat views
+climb steps that tile stands above the lowest ground you can see, written
+base-36 (0-9 then a-z, capped at z) — blank exactly where the view is blank.
+The label states how high that lowest ground itself stands, so two
+observations can be compared by adding their two floors back on. Flat views
 omit the grid entirely, so it costs nothing where it says nothing. One digit
 is exactly the tallest rise a single walking step can make, which is what
 makes the digits the truth movement runs on: a step onto ground ${CLIMB_STEPS_PER_WALK} digit above
