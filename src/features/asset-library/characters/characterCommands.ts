@@ -91,7 +91,7 @@ registerCharacterArtCommand({
 
 registerCharacterArtCommand({
   action: 'set_character_animation_fps',
-  humanControl: 'detail panel, characters: the idle and moving fps knobs',
+  humanControl: 'detail panel, characters: the idle, moving and attack fps knobs',
   description: 'How fast one of the three animations plays, in frames per second (0-30).',
   params: {
     creature_id: { kind: 'int', help: CREATURE_ID_HELP },

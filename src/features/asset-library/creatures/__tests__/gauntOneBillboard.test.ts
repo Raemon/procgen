@@ -1,6 +1,7 @@
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { billboardFigureExtent } from '../../characters/billboardFigureExtent';
 import {
+  blankCharacterBillboard,
   CHARACTER_ROTATIONS,
   framesOf,
   type CharacterAnimation,
@@ -41,6 +42,14 @@ export function checkGauntOneBillboard(check: CheckReporter): void {
       characterFrame(billboard, { heading: 0, moving: false }, 0, 0)?.animation === 'idle',
   );
   check(
+    'a strike begins at its windup frame no matter where the global clock stands',
+    characterFrame(billboard, { heading: 0, moving: false, attacking: true, attackSeconds: 0 }, 0, 123.4)?.index === 0,
+  );
+  check(
+    'a billboard holding only attack frames still draws instead of falling back to a cube',
+    attackOnlyDrawsItsClip(billboard),
+  );
+  check(
     'the figure looms taller than wide, so it reads as a 2-unit-tall creature',
     loomsTall(billboard),
   );
@@ -56,6 +65,12 @@ export function checkGauntOneBillboard(check: CheckReporter): void {
     'the eyes glow toward the viewer and never through the back of the skull',
     hasEyes(billboard, 'front') && hasEyes(billboard, 'side') && !hasEyes(billboard, 'back') && !hasEyes(billboard, 'backQuarter'),
   );
+}
+
+function attackOnlyDrawsItsClip(billboard: CharacterBillboard): boolean {
+  const attackOnly = blankCharacterBillboard();
+  attackOnly.clips.front.attack = framesOf(billboard, 'front', 'attack');
+  return characterFrame(attackOnly, { heading: 0, moving: false }, 0, 0)?.animation === 'attack';
 }
 
 function framesAllDiffer(

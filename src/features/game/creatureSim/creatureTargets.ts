@@ -21,7 +21,13 @@ export function retargetCreature(
   dtSeconds: number,
 ): void {
   creature.repathIn -= dtSeconds;
+  const wasAttacking = creature.attacking;
   creature.attacking = false;
+  aimCreature(creature, def, world);
+  creature.attackSeconds = creature.attacking && wasAttacking ? creature.attackSeconds + dtSeconds : 0;
+}
+
+function aimCreature(creature: CreatureInstance, def: CreatureDef, world: SimWorldView): void {
   if (chaseTargetsPlayer(creature, def, world)) return;
   if (fleeTargetsAwayFromPlayer(creature, def, world)) return;
   if (def.behavior === IDLE) return homeTarget(creature);
