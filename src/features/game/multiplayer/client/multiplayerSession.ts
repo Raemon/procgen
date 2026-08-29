@@ -2,11 +2,13 @@ import { sanitizeChatText } from '../../chat/sanitizeChatText';
 import { SpeechBubbles } from '../../chat/speechBubbles';
 import type { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
 import { sanitizePipeline } from '@/features/asset-library/worlds/pipeline/sanitizePipeline';
-import { ORDER_DIR, ORDER_NONE } from '../../sim/movementOrder';
-import { stepDirIndex, type WalkabilityProbe } from '../../sim/tickMovement';
+import { JUMP_MS, JUMP_UP, ORDER_DIR, ORDER_NONE, type JumpRequest } from '../../sim/movementOrder';
+import { stepDirIndex } from '../../sim/tickMovement';
+import type { WalkabilityProbe } from '../../tileWalkability';
 import type { FacingIndex } from '../../facing';
 import type { PuzzleWorld } from '../../puzzles/puzzleWorld';
 import type { World } from '../../world';
+import { SteeredJump } from '../../input/steeredJump';
 import { LocalMovementSim } from './localMovementSim';
 import { NetClient, type NetStatus } from './netClient';
 import { JUMP_IN_PLACE, type PuzzlesMsg, type SnapshotRow, type WelcomeMsg } from './protocol';
@@ -24,7 +26,8 @@ export class MultiplayerSession {
   private applyingRemotePipeline = false;
   private lastLocalTurnAt = 0;
   private lastFacing: FacingIndex = 0;
-  private intentDir: FacingIndex | null = null;
+  private readonly steering = new SteeredJump((jump) => this.launchJump(jump));
+  private lastJumpSentAt = -Infinity;
 
   constructor(
     private readonly world: World,
@@ -64,25 +67,30 @@ export class MultiplayerSession {
       this.clearMoveIntent();
       return;
     }
-    this.intentDir = dir;
     if (this.online) this.client.sendOrder(ORDER_DIR, dir);
     else this.localSim.hold(dir);
+    this.steering.hold(dir);
   }
 
   clearMoveIntent(): void {
-    this.intentDir = null;
     if (this.online) this.client.sendOrder(ORDER_NONE, 0);
     else this.localSim.release();
+    this.steering.release();
   }
 
   jump(): void {
-    const dir = this.intentDir;
-    if (this.online) {
-      this.client.sendJump(dir ?? JUMP_IN_PLACE);
-      this.world.announceJump();
-    } else {
-      this.localSim.jump(dir);
+    this.steering.request();
+  }
+
+  private launchJump(jump: JumpRequest): void {
+    if (!this.online) {
+      this.localSim.jump(jump);
+      return;
     }
+    if (Date.now() - this.lastJumpSentAt < JUMP_MS) return;
+    this.lastJumpSentAt = Date.now();
+    this.client.sendJump(jump === JUMP_UP ? JUMP_IN_PLACE : jump);
+    this.world.announceJump();
   }
 
   isOnline(): boolean {

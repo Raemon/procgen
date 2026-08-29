@@ -1,5 +1,7 @@
-const ARC_HEIGHT = 1;
-const ARC_SECONDS = 0.32;
+import { JUMP_MS } from '../../sim/movementOrder';
+
+const ARC_HEIGHT = 1.7;
+const ARC_SECONDS = JUMP_MS / 1000;
 
 export class JumpArc {
   private elapsedSeconds = ARC_SECONDS;
@@ -16,6 +18,10 @@ export class JumpArc {
 
   airborne(): boolean {
     return this.elapsedSeconds < ARC_SECONDS;
+  }
+
+  secondsRemaining(): number {
+    return ARC_SECONDS - this.elapsedSeconds;
   }
 
   elevationOver(landingGround: number): number {

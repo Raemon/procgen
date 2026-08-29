@@ -19,6 +19,7 @@ import {
   isDirIndex,
   releaseOrder,
   requestJump,
+  JUMP_UP,
 } from '../../sim/movementOrder';
 import { turnedFacing } from '../../facing';
 import { joinConnection, leaveConnection } from '../game/joins';
@@ -147,7 +148,7 @@ function applyOrder(conn: Connection, kind: unknown, dir: unknown): boolean {
 
 function applyJump(conn: Connection, dir: unknown): boolean {
   if (dir === JUMP_IN_PLACE) {
-    requestJump(conn.entity!, null);
+    requestJump(conn.entity!, JUMP_UP);
     return true;
   }
   if (!isDirIndex(dir)) return false;

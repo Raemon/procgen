@@ -3,7 +3,8 @@ import type { CreatureAssets } from '@/features/asset-library/creatures/creature
 import { climbGateFrom, type ClimbGate } from '../climbing';
 import { spawnedCreature, spawnKeyOf, type CreatureInstance } from './creatureInstance';
 import { retargetCreature, type SimWorldView } from './creatureTargets';
-import { moveCreatureTowardTarget, type WalkabilityProbe } from './moveCreatureTowardTarget';
+import { moveCreatureTowardTarget } from './moveCreatureTowardTarget';
+import type { WalkabilityProbe } from '../tileWalkability';
 
 const ACTIVE_RADIUS_TILES = 40;
 const DESPAWN_MARGIN_TILES = 16;
