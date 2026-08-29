@@ -8,10 +8,19 @@ import {
   MIN_CHARACTER_SIGHT_RADIUS_TILES,
   characterViewSize,
 } from '@/features/game/vision/characterSight';
+import {
+  CLIMB_STEPS_PER_JUMP,
+  CLIMB_STEPS_PER_WALK,
+  climbStepsOf,
+} from '@/features/game/climbing';
+import { EYE_HEIGHT, OPAQUE_SIGHT_HEIGHT } from '@/features/asset-library/worlds/walkingSim/isovist';
 import { GOD_VIEW_SIZE } from '../../observation';
 import { FAILURES } from '../../failures';
 import { everyRegisteredRoute } from '../everyRoute';
 import { metaTools } from '../agentTools';
+
+const CLIMB_STEPS_PER_TILE_HEIGHT = climbStepsOf(EYE_HEIGHT);
+const OPAQUE_SIGHT_DIGITS = climbStepsOf(OPAQUE_SIGHT_HEIGHT);
 
 const TEMPLATE = `# Procgen world — agent API
 
@@ -47,8 +56,8 @@ An agent is created in one of two modes and stays in it for life.
   which is why the corners of the grid are blank too. Ground standing twice
   your height or taller blocks the line of sight: you see the wall, never past
   it, so what lies behind stays blank until you walk around. The land itself
-  blocks sight the same way once it rises: ground standing 2 or more above the
-  tile you stand on is a ridge — you see every tile of the climb up to its
+  blocks sight the same way once it rises: ground standing twice your height
+  above the tile you stand on is a ridge — you see every tile of the climb up to its
   crest, but past the crest only ground at least as high shows, so the far
   slope and the valley beyond stay blank until you top it, and a crater rim
   walls in everything you see from inside the bowl. The blank half is how you
@@ -61,16 +70,19 @@ An agent is created in one of two modes and stays in it for life.
 ## Reading the ground's height
 
 When the ground in view varies in height, the observation carries an
-\`elevation\` grid the same shape as the view: one digit per tile — the tile's
-climb level, written base-36 (0-9 then a-z, capped at z) — blank exactly
-where the view is blank. Flat views omit the grid entirely, so it costs
-nothing where it says nothing. The digits are the truth movement runs on: a
-step onto ground at most 1 level above your own succeeds, ground 2 or more
-levels up refuses you, and stepping down any drop is always allowed — so a
-route is walkable exactly when its digits never rise by more than 1 per
-step. Levels share units with tile heights: you stand 1 tall, and ground 2
-or more levels above your own tile is a ridge that hides lower ground behind
-it.
+\`elevation\` grid the same shape as the view: one digit per tile — how many
+climb steps that tile stands above the lowest ground you can see, written
+base-36 (0-9 then a-z, capped at z) — blank exactly where the view is blank.
+The label states how high that lowest ground itself stands, so two
+observations can be compared by adding their two floors back on. Flat views
+omit the grid entirely, so it costs nothing where it says nothing. One digit
+is exactly the tallest rise a single walking step can make, which is what
+makes the digits the truth movement runs on: a step onto ground ${CLIMB_STEPS_PER_WALK} digit above
+your own succeeds, a jump reaches ${CLIMB_STEPS_PER_JUMP}, anything taller refuses you, and stepping
+down any drop is always allowed — so a route is walkable exactly when its
+digits never rise by more than ${CLIMB_STEPS_PER_WALK} per step. You stand ${CLIMB_STEPS_PER_TILE_HEIGHT} digits tall, and ground
+${OPAQUE_SIGHT_DIGITS} or more digits above your own tile is a ridge that hides lower ground
+behind it.
 
 ## Sight range, and what it costs
 

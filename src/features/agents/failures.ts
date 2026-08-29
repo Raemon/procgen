@@ -1,3 +1,5 @@
+import { CLIMB_STEPS_PER_JUMP, CLIMB_STEPS_PER_WALK } from '@/features/game/climbing';
+
 export interface FailureSpec {
   code: string;
   meaning: string;
@@ -9,7 +11,7 @@ export const FAILURES: readonly FailureSpec[] = [
     code: 'blocked',
     meaning: 'You tried to step onto a tile that would not take you.',
     recovery:
-      'The hint names what refused you. The elevation digits in your observation are climb levels: a step up at most 1 level succeeds, higher ground needs another route, and stepping down any drop is free.',
+      `The hint names what refused you. The elevation digits in your observation are climb steps: a step up ${CLIMB_STEPS_PER_WALK} digit succeeds and a jump reaches ${CLIMB_STEPS_PER_JUMP}, higher ground needs another route, and stepping down any drop is free.`,
   },
   {
     code: 'unknown_action',

@@ -63,6 +63,7 @@ function observationOf(view: string[], x: number, y: number): AgentObservation {
     sightRadiusTiles: null,
     view,
     elevation: null,
+    elevationFloorSteps: null,
     legend: [],
     interaction: null,
   };

@@ -10,7 +10,7 @@ export interface SightProbes {
 
 export const EYE_HEIGHT = 1;
 const TARGET_STANDOUT = 0.5;
-const OPAQUE_SIGHT_HEIGHT = 2;
+export const OPAQUE_SIGHT_HEIGHT = 2;
 const RAY_SLACK = 0.01;
 
 export function visibleCellsFrom(

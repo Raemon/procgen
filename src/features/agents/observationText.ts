@@ -3,6 +3,7 @@ import {
   MAX_CHARACTER_SIGHT_RADIUS_TILES,
   MIN_CHARACTER_SIGHT_RADIUS_TILES,
 } from '@/features/game/vision/characterSight';
+import { CLIMB_STEPS_PER_JUMP, CLIMB_STEPS_PER_WALK } from '@/features/game/climbing';
 import type { AgentObservation, LegendEntry } from './observation';
 
 export function observationText(obs: AgentObservation): string {
@@ -26,7 +27,7 @@ function elevationLines(obs: AgentObservation): string[] {
   if (obs.elevation === null) return [];
   return [
     '',
-    'elevation (climb level per tile, 0-9 then a-z; you can step up at most 1 level, down any; blank = unseen):',
+    `elevation (climb steps above the lowest ground in view, which itself stands ${obs.elevationFloorSteps} steps above the world floor; 0-9 then a-z; a step up spans at most ${CLIMB_STEPS_PER_WALK} digit and a jump ${CLIMB_STEPS_PER_JUMP}, taller ground refuses you, down any; blank = unseen):`,
     ...obs.elevation,
   ];
 }
