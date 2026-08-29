@@ -1,7 +1,7 @@
-import { JUMP_COOLDOWN_TICKS, TICK_MS } from '../../sim/movementOrder';
+import { JUMP_MS } from '../../sim/movementOrder';
 
 const ARC_HEIGHT = 1.7;
-const ARC_SECONDS = (JUMP_COOLDOWN_TICKS * TICK_MS) / 1000;
+const ARC_SECONDS = JUMP_MS / 1000;
 
 export class JumpArc {
   private elapsedSeconds = ARC_SECONDS;

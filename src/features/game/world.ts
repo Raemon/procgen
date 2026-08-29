@@ -1,4 +1,5 @@
 import { ANY_CLIMB_ALLOWED, standableProbeFrom, type ClimbGate } from './climbing';
+import type { WalkabilityProbe } from './tileWalkability';
 import { turnedFacing, type FacingIndex } from './facing';
 import { nearestWalkable, type CellPoint } from './nearestWalkable';
 import {
@@ -10,8 +11,6 @@ import { NOTHING_IN_THE_WAY, stepIsAllowed, type StepRules } from './sim/stepIsA
 import { WorldEvents, type WorldEvent } from './worldEvents';
 
 const SNAP_SEARCH_RADIUS = 64;
-
-export type WalkabilityProbe = (x: number, y: number) => boolean;
 
 export function walkableLandingSpot(
   x: number,

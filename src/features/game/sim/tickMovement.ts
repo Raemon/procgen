@@ -1,9 +1,11 @@
 import { facingVector, type FacingIndex } from '../facing';
+import type { WalkabilityProbe } from '../tileWalkability';
 import { jumpLandingDelta } from './jumpLanding';
 import type { StepRules } from './stepIsAllowed';
 import {
   DIAGONAL_MOVE_COOLDOWN_TICKS,
   JUMP_COOLDOWN_TICKS,
+  JUMP_UP,
   MOVE_COOLDOWN_TICKS,
   ORDER_NONE,
   ORDER_STEP,
@@ -19,7 +21,6 @@ export interface StepDelta {
   jumped?: boolean;
 }
 
-export type WalkabilityProbe = (x: number, y: number) => boolean;
 export type StepGate = (fromX: number, fromY: number, toX: number, toY: number) => boolean;
 
 export interface TickRules {
@@ -61,7 +62,7 @@ function beginJump(
   body.cooldown = JUMP_COOLDOWN_TICKS;
   body.moveDir = -1;
   const hopInPlace = { dx: 0, dy: 0, jumped: true };
-  if (jump === 'up' || !rules.jumpRules) return hopInPlace;
+  if (jump === JUMP_UP || !rules.jumpRules) return hopInPlace;
   const heading = facingVector(jump);
   const delta = jumpLandingDelta(rules.jumpRules, x, y, heading.dx, heading.dy);
   if (!delta) return hopInPlace;

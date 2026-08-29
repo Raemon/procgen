@@ -1,4 +1,5 @@
 import type { FacingIndex } from '../facing';
+import { JUMP_UP, type JumpRequest } from '../sim/movementOrder';
 
 export const JUMP_STEER_GRACE_MS = 120;
 
@@ -7,7 +8,7 @@ export interface JumpTimekeeper {
   after(ms: number, run: () => void): () => void;
 }
 
-export const WALL_CLOCK_TIMEKEEPER: JumpTimekeeper = {
+const WALL_CLOCK: JumpTimekeeper = {
   now: () => Date.now(),
   after: (ms, run) => {
     const timer = setTimeout(run, ms);
@@ -17,23 +18,24 @@ export const WALL_CLOCK_TIMEKEEPER: JumpTimekeeper = {
 
 export class SteeredJump {
   private heldDir: FacingIndex | null = null;
-  private lastDir: FacingIndex | null = null;
-  private releasedAt = -Infinity;
+  private taggedDir: FacingIndex | null = null;
+  private taggedAt = -Infinity;
   private cancelWait: (() => void) | null = null;
 
   constructor(
-    private readonly launch: (dir: FacingIndex | null) => void,
-    private readonly clock: JumpTimekeeper = WALL_CLOCK_TIMEKEEPER,
+    private readonly launch: (jump: JumpRequest) => void,
+    private readonly clock: JumpTimekeeper = WALL_CLOCK,
   ) {}
 
   hold(dir: FacingIndex): void {
     this.heldDir = dir;
-    this.lastDir = dir;
     if (this.cancelWait) this.launchNow(dir);
   }
 
   release(): void {
-    if (this.heldDir !== null) this.releasedAt = this.clock.now();
+    if (this.heldDir === null) return;
+    this.taggedDir = this.heldDir;
+    this.taggedAt = this.clock.now();
     this.heldDir = null;
   }
 
@@ -41,19 +43,24 @@ export class SteeredJump {
     if (this.cancelWait) return;
     const dir = this.heldDir ?? this.justReleasedDir();
     if (dir !== null) {
-      this.launch(dir);
+      this.launchNow(dir);
       return;
     }
-    this.cancelWait = this.clock.after(JUMP_STEER_GRACE_MS, () => this.launchNow(null));
+    this.cancelWait = this.clock.after(JUMP_STEER_GRACE_MS, () => this.launchNow(JUMP_UP));
+  }
+
+  private stopWaiting(): void {
+    this.cancelWait?.();
+    this.cancelWait = null;
   }
 
   private justReleasedDir(): FacingIndex | null {
-    return this.clock.now() - this.releasedAt <= JUMP_STEER_GRACE_MS ? this.lastDir : null;
+    return this.clock.now() - this.taggedAt <= JUMP_STEER_GRACE_MS ? this.taggedDir : null;
   }
 
-  private launchNow(dir: FacingIndex | null): void {
-    this.cancelWait?.();
-    this.cancelWait = null;
-    this.launch(dir);
+  private launchNow(jump: JumpRequest): void {
+    this.stopWaiting();
+    this.taggedAt = -Infinity;
+    this.launch(jump);
   }
 }

@@ -3,10 +3,12 @@ import {
   holdDirection,
   releaseOrder,
   requestJump,
+  type JumpRequest,
   restingBody,
   type MovingBody,
 } from '../../sim/movementOrder';
-import { tickMovement, type TickRules, type WalkabilityProbe } from '../../sim/tickMovement';
+import { tickMovement, type TickRules } from '../../sim/tickMovement';
+import type { WalkabilityProbe } from '../../tileWalkability';
 import type { FacingIndex } from '../../facing';
 import type { World } from '../../world';
 
@@ -41,8 +43,8 @@ export class LocalMovementSim {
     releaseOrder(this.body);
   }
 
-  jump(dir: FacingIndex | null): void {
-    requestJump(this.body, dir);
+  jump(jump: JumpRequest): void {
+    requestJump(this.body, jump);
   }
 
   private tickOnce(): void {

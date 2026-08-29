@@ -1,11 +1,11 @@
 import { headingRadians } from '@/features/asset-library/characters/characterFacing';
 import type { CreatureDef } from '@/features/asset-library/creatures/creatureDef';
 import { distanceBetween, type CreatureInstance } from './creatureInstance';
+import type { WalkabilityProbe } from '../tileWalkability';
 
 const MAX_STEP_PER_TICK = 0.5;
 const MOVING_THRESHOLD_TILES = 0.0005;
 
-export type WalkabilityProbe = (x: number, y: number) => boolean;
 
 export function moveCreatureTowardTarget(
   creature: CreatureInstance,

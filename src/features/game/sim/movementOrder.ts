@@ -4,6 +4,7 @@ export const TICK_MS = 50;
 export const MOVE_COOLDOWN_TICKS = 3;
 export const DIAGONAL_MOVE_COOLDOWN_TICKS = 4;
 export const JUMP_COOLDOWN_TICKS = 11;
+export const JUMP_MS = JUMP_COOLDOWN_TICKS * TICK_MS;
 
 export const ORDER_NONE = 0;
 export const ORDER_DIR = 1;
@@ -11,7 +12,9 @@ export const ORDER_STEP = 2;
 
 export type OrderKind = typeof ORDER_NONE | typeof ORDER_DIR | typeof ORDER_STEP;
 
-export type JumpRequest = FacingIndex | 'up';
+export const JUMP_UP = 'up';
+
+export type JumpRequest = FacingIndex | typeof JUMP_UP;
 
 export interface MovementOrder {
   kind: OrderKind;
@@ -46,8 +49,8 @@ export function releaseOrder(body: MovingBody): void {
       : idleOrder();
 }
 
-export function requestJump(body: MovingBody, dir: FacingIndex | null): void {
-  body.jump = dir ?? 'up';
+export function requestJump(body: MovingBody, jump: JumpRequest): void {
+  body.jump = jump;
 }
 
 export function takeJumpRequest(body: MovingBody): JumpRequest | null {

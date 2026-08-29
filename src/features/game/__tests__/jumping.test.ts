@@ -4,8 +4,14 @@ import { EntityRegistry } from '../multiplayer/game/entities';
 import { stepPlayerEntity, type PlayerStepWorld } from '../multiplayer/game/playerStep';
 import { EasedPoint } from '../render/view3d/easedPoint';
 import { JUMP_STEER_GRACE_MS, SteeredJump, type JumpTimekeeper } from '../input/steeredJump';
-import type { FacingIndex } from '../facing';
-import { JUMP_COOLDOWN_TICKS, MOVE_COOLDOWN_TICKS, TICK_MS, requestJump } from '../sim/movementOrder';
+import {
+  JUMP_COOLDOWN_TICKS,
+  JUMP_MS,
+  JUMP_UP,
+  MOVE_COOLDOWN_TICKS,
+  requestJump,
+  type JumpRequest,
+} from '../sim/movementOrder';
 import { NOTHING_IN_THE_WAY } from '../sim/stepIsAllowed';
 import { World } from '../world';
 
@@ -77,6 +83,7 @@ export function checkJumping(check: CheckReporter): void {
   check('a direction let go just before space still steers the jump', anEarlyDirectionSteersTheJump());
   check('space alone jumps straight up once the steering window passes', spaceAloneJumpsUp());
   check('a jump glides its whole distance over the arc', aJumpGlidesAcrossTheArc());
+  check('a direction tapped once steers only the jump that follows it', aTappedDirectionSteersOneJump());
 }
 
 class TestClock implements JumpTimekeeper {
@@ -104,22 +111,21 @@ class TestClock implements JumpTimekeeper {
   }
 }
 
-function steeringOnClock(clock: TestClock) {
-  const launched: (FacingIndex | null)[] = [];
-  return { launched, jump: new SteeredJump((dir) => launched.push(dir), clock) };
+function steeringOnAClock() {
+  const clock = new TestClock();
+  const launched: JumpRequest[] = [];
+  return { clock, launched, jump: new SteeredJump((request) => launched.push(request), clock) };
 }
 
 function aHeldDirectionSteersTheJump(): boolean {
-  const clock = new TestClock();
-  const { launched, jump } = steeringOnClock(clock);
+  const { launched, jump } = steeringOnAClock();
   jump.hold(2);
   jump.request();
   return launched.length === 1 && launched[0] === 2;
 }
 
 function aLateDirectionSteersTheJump(): boolean {
-  const clock = new TestClock();
-  const { launched, jump } = steeringOnClock(clock);
+  const { clock, launched, jump } = steeringOnAClock();
   jump.request();
   clock.advance(JUMP_STEER_GRACE_MS / 2);
   jump.hold(4);
@@ -128,8 +134,7 @@ function aLateDirectionSteersTheJump(): boolean {
 }
 
 function anEarlyDirectionSteersTheJump(): boolean {
-  const clock = new TestClock();
-  const { launched, jump } = steeringOnClock(clock);
+  const { clock, launched, jump } = steeringOnAClock();
   jump.hold(6);
   jump.release();
   clock.advance(JUMP_STEER_GRACE_MS / 2);
@@ -138,17 +143,26 @@ function anEarlyDirectionSteersTheJump(): boolean {
 }
 
 function spaceAloneJumpsUp(): boolean {
-  const clock = new TestClock();
-  const { launched, jump } = steeringOnClock(clock);
+  const { clock, launched, jump } = steeringOnAClock();
   jump.request();
   const waitedQuietly = launched.length === 0;
   clock.advance(JUMP_STEER_GRACE_MS);
-  return waitedQuietly && launched.length === 1 && launched[0] === null;
+  return waitedQuietly && launched.length === 1 && launched[0] === JUMP_UP;
+}
+
+function aTappedDirectionSteersOneJump(): boolean {
+  const { clock, launched, jump } = steeringOnAClock();
+  jump.hold(6);
+  jump.release();
+  jump.request();
+  jump.request();
+  clock.advance(JUMP_STEER_GRACE_MS);
+  return launched.length === 2 && launched[0] === 6 && launched[1] === JUMP_UP;
 }
 
 function aJumpGlidesAcrossTheArc(): boolean {
   const point = new EasedPoint(0, 0);
-  const arcSeconds = (JUMP_COOLDOWN_TICKS * TICK_MS) / 1000;
+  const arcSeconds = JUMP_MS / 1000;
   const frames = 12;
   for (let frame = 0; frame < frames; frame++) {
     const dt = arcSeconds / frames;
@@ -176,16 +190,12 @@ function spawnedEntity(registry: EntityRegistry) {
   return registry.add('jumper', 'jumper', 'player', 0, 0, 0);
 }
 
-function runTicks(world: PlayerStepWorld, registry: EntityRegistry, entity: ReturnType<typeof spawnedEntity>, ticks: number): void {
-  for (let tick = 0; tick < ticks; tick++) stepPlayerEntity(world, registry, entity);
-}
-
 function serverJumpClearsThePit(): boolean {
   const world = stepWorldOn(PIT_AT_ONE);
   const registry = new EntityRegistry();
   const entity = spawnedEntity(registry);
   requestJump(entity, 2);
-  runTicks(world, registry, entity, 1);
+  stepPlayerEntity(world, registry, entity);
   return entity.x === 2 && entity.y === 0;
 }
 
@@ -202,7 +212,7 @@ function anUpwardJumpStaysPut(): boolean {
   const world = stepWorldOn(() => 0);
   const registry = new EntityRegistry();
   const entity = spawnedEntity(registry);
-  requestJump(entity, null);
+  requestJump(entity, JUMP_UP);
   stepPlayerEntity(world, registry, entity);
   return entity.x === 0 && entity.y === 0 && entity.cooldown === JUMP_COOLDOWN_TICKS;
 }
