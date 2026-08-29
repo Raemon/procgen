@@ -33,6 +33,8 @@ export function checkSavedWorlds(check: CheckReporter): void {
   checkRestoreIsOneSettledChange(check);
   checkASaveOutlivesTheSeedItGrewFrom(check);
   checkRollingANewWorldLeavesTheSaveItRolledFromAlone(check);
+  checkRollingANewWorldLeavesTheLastWorldsDoingsBehind(check);
+  checkUndoingARollPutsTheSaveBackAsItWasPlayed(check);
   checkSavedWorldRowsAreEditedLikeAnyOtherAsset(check);
   checkDocumentsWrittenBeforeTheRenameStillLoad(check);
   checkTheServerWritesSavesBackToTheDatabase(check);
@@ -158,6 +160,45 @@ function checkRollingANewWorldLeavesTheSaveItRolledFromAlone(check: CheckReporte
   );
 }
 
+function checkRollingANewWorldLeavesTheLastWorldsDoingsBehind(check: CheckReporter): void {
+  const game = playableWorld();
+  game.act('run_world_seed', { name: game.aSeedName() });
+  game.walkTo(7, 3, 2);
+  game.pickUp(7, 3, 5);
+  game.workFixture('cell/lever');
+  game.act('save_world', { name: 'a camp' });
+
+  game.act('randomize_world_seed', { seed: 7 });
+  check(
+    'a roll grows a different world, so what was picked up and worked in the last one is left behind',
+    game.takenItems.snapshot().length === 0 && game.puzzles.state.snapshot().on.length === 0,
+  );
+  check(
+    'the save keeps what was done in it',
+    game.savedWorlds.byName('a camp')!.takenItems.length === 1 &&
+      game.savedWorlds.byName('a camp')!.puzzles.on.length === 1,
+  );
+}
+
+function checkUndoingARollPutsTheSaveBackAsItWasPlayed(check: CheckReporter): void {
+  const game = playableWorld();
+  game.act('run_world_seed', { name: game.aSeedName() });
+  game.walkTo(7, 3, 2);
+  game.pickUp(7, 3, 5);
+  game.act('save_world', { name: 'a camp' });
+
+  game.act('randomize_world_seed', { seed: 7 });
+  game.walkTo(0, 0, 0);
+  game.act('undo_randomize');
+  check(
+    'undoing a roll made in a saved world puts the run back, not just the pipeline',
+    game.runningWorld.savedWorldName() === 'a camp' &&
+      game.pose.x === 7 &&
+      game.pose.y === 3 &&
+      game.takenItems.snapshot().length === 1,
+  );
+}
+
 function checkSavedWorldRowsAreEditedLikeAnyOtherAsset(check: CheckReporter): void {
   const game = playableWorld();
   game.act('run_world_seed', { name: game.aSeedName() });
@@ -228,10 +269,20 @@ function checkTheServerWritesSavesBackToTheDatabase(check: CheckReporter): void 
     worldSeeds: { stored: () => ({ seeds: [], hiddenExamples: [] }) },
     savedWorlds: { stored: () => ({ worlds: [{ name: 'camp' }] }) },
     assetFolders: { stored: () => ({ folders: [], placements: {} }) },
+    runningWorld: { ref: () => ({ kind: 'saved', name: 'camp' }) },
+    uiState: { 'panel.widths': { library: 240 } },
   } as unknown as ServerWorld);
   check(
     'a save an agent made reaches the database, not just the memory it was made in',
     JSON.stringify(written.get('savedWorlds')) === JSON.stringify({ worlds: [{ name: 'camp' }] }),
+  );
+  check(
+    'the world an agent left running reaches the database too, beside the ui state already there',
+    JSON.stringify(written.get('uiState')) ===
+      JSON.stringify({
+        'panel.widths': { library: 240 },
+        'library.running': { kind: 'saved', name: 'camp' },
+      }),
   );
 }
 

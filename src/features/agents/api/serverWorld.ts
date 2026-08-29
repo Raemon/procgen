@@ -40,6 +40,8 @@ import type {
 import type { LibraryStamp } from '@/infrastructure/server/persistence/docsRepo';
 import { RunningWorld } from '@/features/asset-library/worlds/running/runningWorld';
 import { runningWorldIn } from '@/features/asset-library/worlds/running/runningWorldStorage';
+import { PERSISTED_UI_KEYS } from '@/features/app-shell/state/persistedUiKeys';
+import type { PersistedUiState } from '@/features/app-shell/persistence/persistedDocumentContents';
 
 const SPAWN_SEARCH_RADIUS = 128;
 
@@ -57,6 +59,7 @@ export interface ServerWorld {
   worldSeeds: WorldSeedLibrary;
   savedWorlds: SavedWorldLibrary;
   runningWorld: RunningWorld;
+  uiState: PersistedUiState;
   randomizeHistory: RandomizeHistory;
   takenItems: TakenItemSpawns;
   groundItems: GroundItems;
@@ -93,6 +96,10 @@ export function persistWorld(docs: DocSink, world: ServerWorld): void {
   docs.write('worldSeeds', world.worldSeeds.stored());
   docs.write('savedWorlds', world.savedWorlds.stored());
   docs.write('assetFolders', world.assetFolders.stored());
+  docs.write('uiState', {
+    ...world.uiState,
+    [PERSISTED_UI_KEYS.runningWorld]: world.runningWorld.ref(),
+  });
 }
 
 export function currentServerWorld(docs: DocSource, previous: ServerWorld | null): ServerWorld {
@@ -127,7 +134,8 @@ function buildServerWorld(
   const assetFolders = new AssetFolders(defaulted('assetFolders'));
   const worldSeeds = new WorldSeedLibrary(defaulted('worldSeeds'));
   const savedWorlds = new SavedWorldLibrary(defaulted('savedWorlds'));
-  const runningWorld = new RunningWorld(runningWorldIn(defaulted('uiState')));
+  const uiState = defaulted('uiState');
+  const runningWorld = new RunningWorld(runningWorldIn(uiState));
   const store = new PipelineStore(defaulted('pipeline'));
   const evaluator = new PipelineEvaluator(store);
   const sampler = new WorldSampler(
@@ -160,6 +168,7 @@ function buildServerWorld(
     worldSeeds,
     savedWorlds,
     runningWorld,
+    uiState,
     randomizeHistory,
     takenItems,
     isWalkable,

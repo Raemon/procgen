@@ -29,6 +29,9 @@ export async function checkWorldSeedsAreDocuments(check: CheckReporter): Promise
   await checkEditingANodeGroupSavesItself(check);
   checkRunningAWorldSeedPutsItOnScreen(check);
   checkRollingANewWorldLeavesTheWorldItRolledFromAlone(check);
+  checkARolledWorldYouNameIsYoursToKeep(check);
+  checkRollingASeedYouAreNotRunningRewritesThatSeedAlone(check);
+  checkUndoWithNothingToGoBackToLeavesTheWorldRunning(check);
   checkDeletingAnExampleTakesItOffTheShelf(check);
 }
 
@@ -114,6 +117,61 @@ function checkRollingANewWorldLeavesTheWorldItRolledFromAlone(check: CheckReport
   check(
     'undoing the roll puts back both the pipeline and the world it belonged to',
     editor.runningWorld.seedName() === world.name && editor.store.seed() === 4321,
+  );
+}
+
+function checkARolledWorldYouNameIsYoursToKeep(check: CheckReporter): void {
+  const editor = worldSeedEditor();
+  editor.act('run_world_seed', { name: editor.worlds.all()[0]!.name });
+  editor.act('randomize_world_seed', { seed: 7 });
+  const rolledWorld = editor.runningWorld.seedName();
+  editor.act('rename_world_seed', { name: rolledWorld, new_name: `${rolledWorld} of spires` });
+  const kept = editor.worlds.byName(`${rolledWorld} of spires`)!;
+
+  editor.act('randomize_world_seed', { seed: 8 });
+  check(
+    'a rolled world you rename is a world like any other, and the next roll leaves it alone',
+    editor.runningWorld.seedName() !== kept.name &&
+      JSON.stringify(editor.worlds.byName(kept.name)!.state) === JSON.stringify(kept.state),
+  );
+
+  const editorOfATunedWorld = worldSeedEditor();
+  editorOfATunedWorld.act('run_world_seed', { name: editorOfATunedWorld.worlds.all()[0]!.name });
+  editorOfATunedWorld.act('save_world_seed', { name: 'rolled world', description: 'mine, tuned by hand' });
+  editorOfATunedWorld.act('run_world_seed', { name: 'rolled world' });
+  const mine = editorOfATunedWorld.worlds.byName('rolled world')!;
+  editorOfATunedWorld.act('randomize_world_seed', { seed: 7 });
+  check(
+    'a world of your own that happens to be called rolled world is not taken over by a roll',
+    editorOfATunedWorld.runningWorld.seedName() !== 'rolled world' &&
+      editorOfATunedWorld.worlds.byName('rolled world')!.description === mine.description,
+  );
+}
+
+function checkRollingASeedYouAreNotRunningRewritesThatSeedAlone(check: CheckReporter): void {
+  const editor = worldSeedEditor();
+  const running = editor.worlds.all()[0]!;
+  editor.act('run_world_seed', { name: running.name });
+  const other = editor.worlds.all()[1]!;
+  const opened = editor.editing.worldSeed(other.name)!;
+
+  opened.perform('randomize_world_seed', { seed: 7 });
+  check(
+    'rolling a world seed opened as a document rolls that document, leaving the world on screen running',
+    editor.runningWorld.seedName() === running.name &&
+      editor.worlds.byName(running.name) !== undefined &&
+      JSON.stringify(opened.store.nodes()) !== JSON.stringify(other.state.nodes),
+  );
+}
+
+function checkUndoWithNothingToGoBackToLeavesTheWorldRunning(check: CheckReporter): void {
+  const editor = worldSeedEditor();
+  editor.act('randomize_world_seed', { seed: 7 });
+  const rolledWorld = editor.runningWorld.seedName();
+  editor.act('undo_randomize');
+  check(
+    'undoing a roll made with nothing running leaves the rolled world running rather than nothing at all',
+    rolledWorld !== '' && editor.runningWorld.seedName() === rolledWorld,
   );
 }
 
