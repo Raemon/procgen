@@ -16,8 +16,15 @@ const EXIT_STEPS = [
   [0, -1],
 ] as const;
 
+export const CLIMB_STEPS_PER_WALK = WALK_CLIMB_LIMIT / LEVEL_STEP;
+export const CLIMB_STEPS_PER_JUMP = JUMP_CLIMB_LIMIT / LEVEL_STEP;
+
 export function navigationLevelOf(elevation: number): number {
   return Math.round(elevation / LEVEL_STEP) * LEVEL_STEP;
+}
+
+export function climbStepsOf(elevation: number): number {
+  return Math.round(navigationLevelOf(elevation) / LEVEL_STEP);
 }
 
 export function navigationRiseBetween(fromElevation: number, toElevation: number): number {

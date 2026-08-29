@@ -1,5 +1,6 @@
 import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
+import { CLIMB_STEPS_PER_JUMP, LEVEL_STEP } from '@/features/game/climbing';
 import { buildObservation, type AgentObservation } from '../observation';
 import { observationText } from '../observationText';
 import { meadowTiles, MEADOW_TILE, stubSampler } from './observationTestKit';
@@ -11,7 +12,11 @@ export function checkElevationObservation(check: CheckReporter): void {
 
   const sloped = buildObservation(meadowAt((_x, y) => Math.max(0, -y)), meadowTiles, facingNorth, 'character');
   check('varied ground sends one elevation row per view row, each as wide as the view', sloped.elevation !== null && sloped.elevation.length === sloped.viewSize && sloped.elevation.every((row) => row.length === sloped.viewSize));
-  check('each digit encodes the navigation level written base-36', digitAt(sloped, 0, -8) === '8' && digitAt(sloped, 0, -1) === '1');
+  check('each digit counts the climb steps that tile stands above the floor, written base-36', digitAt(sloped, 0, -8) === 'g' && digitAt(sloped, 0, -1) === '2');
+
+  const halfSteps = buildObservation(meadowAt((_x, y) => Math.max(0, -y) * LEVEL_STEP), meadowTiles, facingNorth, 'character');
+  check('a rise a step can walk moves the digit by exactly one', digitAt(halfSteps, 0, -1) === '1' && digitAt(halfSteps, 0, -2) === '2');
+  check('a rise only a jump can climb moves the digit by two', digitAt(halfSteps, 0, 0) === '0' && digitAt(halfSteps, 0, -2) === String(CLIMB_STEPS_PER_JUMP));
   check('your own tile carries its height too', digitAt(sloped, 0, 0) === '0');
   check('the elevation grid is blank exactly where the view is unseen', blanksAlignWithTheView(sloped));
   check('the observation text carries the elevation grid under its own label', observationText(sloped).includes('elevation (') && observationText(sloped).includes(sloped.elevation!.join('\n')));
@@ -20,7 +25,7 @@ export function checkElevationObservation(check: CheckReporter): void {
   check('heights past 35 clamp to the tallest digit z', digitAt(towering, 0, -2) === 'z');
 
   const godView = buildObservation(meadowAt((_x, y) => Math.max(0, -y)), meadowTiles, facingNorth, 'god');
-  check('a god observation carries heights for every cell, even behind the pose', digitAt(godView, 0, 5) === '0' && digitAt(godView, 0, -8) === '8');
+  check('a god observation carries heights for every cell, even behind the pose', digitAt(godView, 0, 5) === '0' && digitAt(godView, 0, -8) === 'g');
 }
 
 function meadowAt(elevationAt: (x: number, y: number) => number): WorldSampler {
