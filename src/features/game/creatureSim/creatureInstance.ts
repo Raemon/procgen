@@ -15,6 +15,7 @@ export interface CreatureInstance {
   repathIn: number;
   heading: number;
   moving: boolean;
+  attacking: boolean;
   rng: RandomStream;
 }
 
@@ -36,6 +37,7 @@ export function spawnedCreature(key: string, creatureId: CreatureId, x: number, 
     repathIn: 0,
     heading: 0,
     moving: false,
+    attacking: false,
     rng: mulberry32(hashString(`creature:${key}`)),
   };
 }

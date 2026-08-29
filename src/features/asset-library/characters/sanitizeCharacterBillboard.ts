@@ -3,6 +3,7 @@ import {
   blankCharacterBillboard,
   CHARACTER_ANIMATIONS,
   CHARACTER_ROTATIONS,
+  DEFAULT_ATTACK_FPS,
   DEFAULT_IDLE_FPS,
   DEFAULT_MOVING_FPS,
   hasAnyFrame,
@@ -16,6 +17,7 @@ export function sanitizeCharacterBillboard(raw: unknown): CharacterBillboard | n
   const billboard = blankCharacterBillboard();
   billboard.idleFps = clampFps(stored.idleFps, DEFAULT_IDLE_FPS);
   billboard.movingFps = clampFps(stored.movingFps, DEFAULT_MOVING_FPS);
+  billboard.attackFps = clampFps(stored.attackFps, DEFAULT_ATTACK_FPS);
   for (const rotation of CHARACTER_ROTATIONS) {
     for (const animation of CHARACTER_ANIMATIONS) {
       billboard.clips[rotation][animation] = storedFrames(stored, rotation, animation);

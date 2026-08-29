@@ -31,14 +31,27 @@ export function paintGauntLeg(frame: GauntFrame, side: number): void {
 
 export function paintGauntArm(frame: GauntFrame, side: number): void {
   const { view, pose, canvas } = frame;
-  const swing = -(side < 0 ? pose.nearLegSwing : pose.farLegSwing);
+  const swing = pose.clawSwing === 0 ? -(side < 0 ? pose.nearLegSwing : pose.farLegSwing) : 0;
+  const raise = Math.max(0, -pose.clawSwing);
+  const strike = Math.max(0, pose.clawSwing);
+  const ahead = side * 3.5 * (1 - view.forward) + 6 * view.forward;
   const ink = side < 0 ? INK.body : INK.bodyShadow;
   const shoulderX = GAUNT_CENTER + side * 5 * view.breadth + (side > 0 ? 0.5 : 0);
   const shoulderY = 19 - (side > 0 ? 1 : 0) - pose.bodyLift;
-  const elbowX = shoulderX + side * (1 - view.forward) + swing * 2.5 * view.forward;
-  const elbowY = 25.5 - pose.bodyLift;
-  const wristX = elbowX + side * 1.5 * (1 - view.forward) + swing * 4.5 * view.forward;
-  const wristY = 34 - Math.abs(swing) * 1.2 * view.forward - pose.bodyLift * 0.5;
+  const elbowX =
+    shoulderX +
+    side * (1 - view.forward) +
+    swing * 2.5 * view.forward +
+    ahead * 0.35 * strike +
+    (side * 2 * (1 - view.forward) - 1.5 * view.forward) * raise;
+  const elbowY = 25.5 - pose.bodyLift - 4.5 * raise + strike;
+  const wristX =
+    elbowX +
+    side * 1.5 * (1 - view.forward) +
+    swing * 4.5 * view.forward +
+    ahead * 0.75 * strike +
+    (side * 2.5 * (1 - view.forward) - 0.5 * view.forward) * raise;
+  const wristY = 34 - Math.abs(swing) * 1.2 * view.forward - pose.bodyLift * 0.5 - 13 * raise + 2.5 * strike;
   strokeLine(canvas, shoulderX, shoulderY, elbowX, elbowY, ink);
   strokeLine(canvas, elbowX, elbowY + 1, wristX, wristY, ink);
   paintFingers(frame, wristX, wristY, ink, side);
@@ -50,9 +63,10 @@ export function paintGauntArm(frame: GauntFrame, side: number): void {
 }
 
 function paintFingers(frame: GauntFrame, wristX: number, wristY: number, ink: string, side: number): void {
+  const splay = 1 + Math.max(0, frame.pose.clawSwing);
   for (const finger of [-1, 0, 1]) {
     const length = finger === 0 ? 3 : 2;
-    const x = wristX + finger;
+    const x = wristX + finger * splay;
     strokeLine(frame.canvas, x, wristY + 1, x, wristY + length, ink);
     paintPixel(frame.canvas, x, wristY + length + 1, side < 0 ? INK.boneDark : INK.fingertip);
   }

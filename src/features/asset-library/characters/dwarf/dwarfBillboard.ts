@@ -1,6 +1,7 @@
 import {
   blankCharacterClips,
   CHARACTER_ROTATIONS,
+  DEFAULT_ATTACK_FPS,
   type CharacterBillboard,
 } from '../characterBillboard';
 import { MOONLIT_DWARF_PALETTE, type DwarfPalette } from './dwarfPalette';
@@ -22,7 +23,7 @@ export function dwarfBillboard(palette: DwarfPalette = MOONLIT_DWARF_PALETTE): C
       dwarfSprite(rotation, pose, palette),
     );
   }
-  return { idleFps: DWARF_IDLE_FPS, movingFps: DWARF_WALK_FPS, clips };
+  return { idleFps: DWARF_IDLE_FPS, movingFps: DWARF_WALK_FPS, attackFps: DEFAULT_ATTACK_FPS, clips };
 }
 
 function posesOf(frameCount: number, poseAt: (phase: number) => DwarfPose): DwarfPose[] {
