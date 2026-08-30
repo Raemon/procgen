@@ -1,9 +1,16 @@
 import type { CubeFaceArt } from '@/features/asset-library/tiles/tileFaceArt';
 import {
+  CRATE_FACE_ART,
+  CRATE_STANDS_SQUAT,
   DOOR_FACE_ART,
   DOOR_STANDS_TALL,
   LEVER_FACE_ART,
   LEVER_STANDS_LOW,
+  PILLAR_FACE_ART,
+  PILLAR_STANDS_TALL,
+  PLATE_FACE_ART,
+  PLATE_LIES_FLAT,
+  PLATE_SINKS_UNDER_A_CRATE,
 } from './fixtureFaceArt';
 import type { PuzzleFixtureKind } from './puzzleFixture';
 
@@ -15,8 +22,6 @@ export interface FixtureLook {
   standingHeight?: number;
   seeThroughUnpaintedArt?: boolean;
 }
-
-const FLAT = { faceArt: null };
 
 export type DoorLock = 'key' | 'mechanism';
 
@@ -70,16 +75,52 @@ const LOOKS: Record<PuzzleFixtureKind, { off: FixtureLook; on: FixtureLook }> = 
     },
   },
   plate: {
-    off: { glyph: '▫', color: '#b08f5a', tag: 'pressure plate, unweighted', ...FLAT },
-    on: { glyph: '▪', color: '#7fdc6a', tag: 'pressure plate, weighted', ...FLAT },
+    off: {
+      glyph: '◻',
+      color: '#f0b043',
+      tag: 'pressure plate, waiting for a crate',
+      faceArt: PLATE_FACE_ART.off,
+      standingHeight: PLATE_LIES_FLAT,
+    },
+    on: {
+      glyph: '◼',
+      color: '#6fe08a',
+      tag: 'pressure plate, weighted down',
+      faceArt: PLATE_FACE_ART.on,
+      standingHeight: PLATE_SINKS_UNDER_A_CRATE,
+    },
   },
   crate: {
-    off: { glyph: '▣', color: '#a9743f', tag: 'crate, push it by walking into it', ...FLAT },
-    on: { glyph: '▣', color: '#a9743f', tag: 'crate, push it by walking into it', ...FLAT },
+    off: {
+      glyph: '▣',
+      color: '#a06a33',
+      tag: 'crate, push it by walking into it',
+      faceArt: CRATE_FACE_ART.off,
+      standingHeight: CRATE_STANDS_SQUAT,
+    },
+    on: {
+      glyph: '▩',
+      color: '#a06a33',
+      tag: 'crate, settled on a pressure plate',
+      faceArt: CRATE_FACE_ART.on,
+      standingHeight: CRATE_STANDS_SQUAT,
+    },
   },
   pillar: {
-    off: { glyph: '■', color: '#6d6d6d', tag: 'pillar, immovable', ...FLAT },
-    on: { glyph: '■', color: '#6d6d6d', tag: 'pillar, immovable', ...FLAT },
+    off: {
+      glyph: '■',
+      color: '#7b7368',
+      tag: 'pillar, immovable',
+      faceArt: PILLAR_FACE_ART,
+      standingHeight: PILLAR_STANDS_TALL,
+    },
+    on: {
+      glyph: '■',
+      color: '#7b7368',
+      tag: 'pillar, immovable',
+      faceArt: PILLAR_FACE_ART,
+      standingHeight: PILLAR_STANDS_TALL,
+    },
   },
   gate: GATE_LOOKS.mechanism,
 };
