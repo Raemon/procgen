@@ -1,5 +1,6 @@
 import type { RandomStream } from '@/features/asset-library/worlds/random/mulberry32';
 import type { PuzzleFixture } from '../fixtures/puzzleFixture';
+import type { RoomItem, RoomUnlock } from '../rooms/roomItem';
 import type { Cell, RoomCells } from './roomCells';
 
 export interface CratePush {
@@ -12,6 +13,8 @@ export interface FurnishedRoom {
   fixtures: PuzzleFixture[];
   opensWhen: string[];
   solution: CratePush[];
+  items?: RoomItem[];
+  unlock?: RoomUnlock;
 }
 
 export interface FurnishContext {

@@ -113,6 +113,8 @@ function roomWithOnePlateAndOneCrate(): PuzzleRoomLayout {
     gates: { east: [], south: [], west: [], north: [] },
     opensWhen: ['plate0'],
     solution: [],
+    items: [],
+    unlock: 'signals',
   };
 }
 

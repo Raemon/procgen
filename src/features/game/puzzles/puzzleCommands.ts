@@ -15,10 +15,10 @@ export { puzzleCommands };
 
 
 const USE_DESCRIPTION =
-  'Work whatever puzzle fixture you are standing on, or failing that the one directly ahead of you: pull a lever, take a key, or read whether a door is still locked. Levers and keys latch once worked, and a chamber unlocks both of its doors the moment every lever, key and pressure plate it lists is satisfied. Crates are the exception — they are pushed by walking into them, not worked.';
+  'Work whatever puzzle fixture you are standing on, or failing that the one directly ahead of you: pull a lever, or try a door. A chamber of levers and pressure plates unlocks its doors the moment every one it lists is satisfied. A keyhole door instead spends one key out of your bag and opens that doorway alone; keys lie on the floor of key chambers and are picked up by walking over them. Crates are the exception — they are pushed by walking into them, not worked.';
 
 const RESET_DESCRIPTION =
-  'Put the chamber you are standing in back the way it was generated: crates return to where they started, levers spring back, keys reappear, and its doors lock again. The only way out of a sokoban chamber whose crate you have shoved into a corner.';
+  'Put the chamber you are standing in back the way it was generated: crates return to where they started, levers spring back, keys lie on its floor again, and its doors lock again. Keys already in your bag stay there. The only way out of a sokoban chamber whose crate you have shoved into a corner.';
 
 const USE_ACTIONS: readonly { action: string; mode: CommandMode }[] = [
   { action: 'use_fixture', mode: 'god' },
@@ -60,7 +60,9 @@ for (const spec of RESET_ACTIONS) {
 
 function useUnderOrAheadOfActor(context: CommandContext): CommandResult {
   const pose = context.actor.pose();
-  return asCommandResult(useHereOrAhead(context.puzzles, pose.x, pose.y, pose.facing));
+  return asCommandResult(
+    useHereOrAhead(context.puzzles, pose.x, pose.y, pose.facing, context.keyPurse),
+  );
 }
 
 function resetRoomUnderActor(context: CommandContext): CommandResult {

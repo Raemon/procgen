@@ -11,7 +11,6 @@ export function useFixture(
   fixture: PuzzleFixture,
 ): UseOutcome {
   if (fixture.kind === 'lever') return latchOn(layout, state, fixture, 'pulled the lever');
-  if (fixture.kind === 'key') return latchOn(layout, state, fixture, 'took the key');
   if (fixture.kind === 'crate') {
     return { ok: false, code: 'push_it_instead', hint: 'a crate moves by being walked into' };
   }

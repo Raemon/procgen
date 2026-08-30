@@ -43,6 +43,8 @@ import { debounce } from './debounce';
 import { CameraFocus } from '@/features/game/render/camera/cameraFocus';
 import { CaptureTool } from '@/features/game/capture/captureTool';
 import { HoveredTile } from '@/features/game/hover/hoveredTile';
+import { carriedKeysOf } from '@/features/game/puzzles/interaction/carriedKeys';
+import { PuzzleState } from '@/features/game/puzzles/state/puzzleState';
 import { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
 import { playerCanEnter } from '@/features/game/puzzles/playerCanEnter';
 import { isWalkableTile } from '@/features/game/tileWalkability';
@@ -135,9 +137,11 @@ export function createAppRuntime(): AppRuntime {
     takenItems,
     cultures,
   );
-  const groundItems = groundItemsOf(sampler, takenItems);
   const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileAssets, sampler.tileAt(x, y));
-  const puzzles = new PuzzleWorld(store, tileIsWalkable);
+  const puzzles = new PuzzleWorld(store, tileIsWalkable, new PuzzleState(), items);
+  sampler.alsoSpawnItemsFrom(puzzles);
+  const groundItems = groundItemsOf(sampler, takenItems, puzzles);
+  const keyPurse = carriedKeysOf(creatures, items);
   const isWalkableAt = (x: number, y: number) => tileIsWalkable(x, y) && !puzzles.blocksAt(x, y);
   const characterGates = climbGatesFrom((x, y) => sampler.elevationAt(x, y));
   const world = new World(
@@ -258,6 +262,7 @@ export function createAppRuntime(): AppRuntime {
         lab: null,
         groundItems,
         puzzles,
+        keyPurse,
         actor: {
           pose: () => ({ x: world.playerX, y: world.playerY, facing: world.facing }),
           snapTo: (x, y, facing) => world.snapTo(x, y, facing),
@@ -282,13 +287,6 @@ export function createAppRuntime(): AppRuntime {
   function isACharacterCommandSharedWithGodView(action: string): boolean {
     const command = commandFor('character', action);
     return command?.group === 'senses' || action === 'turn_left' || action === 'turn_right';
-  }
-
-  function announceKeysTakenByWalkingOver(): void {
-    for (const key of puzzles.takeKeysAt(world.playerX, world.playerY)) {
-      pickupFeed.announceTaken(`${key} (a door key)`);
-    }
-    redrawIfPuzzlesChanged();
   }
 
   function applyWorldChange(): void {
@@ -331,7 +329,7 @@ export function createAppRuntime(): AppRuntime {
   world.on('player-moved', () => {
     if (settlingTheWorld) return;
     walkOverPickup.onSteppedOnto(world.playerX, world.playerY);
-    announceKeysTakenByWalkingOver();
+    redrawIfPuzzlesChanged();
     keepPlayingAfterTheAction.schedule();
   });
   world.on('player-moved', () => renderers.recenterAll());

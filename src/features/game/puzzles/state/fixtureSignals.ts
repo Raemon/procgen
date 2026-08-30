@@ -18,9 +18,7 @@ export function fixtureIsOn(
 ): boolean {
   if (fixture.kind === 'plate') return crateSitsOn(layout, state, fixture.x, fixture.y);
   if (fixture.kind === 'crate') return crateRestsOnAPlate(layout, state, fixture);
-  if (fixture.kind === 'lever' || fixture.kind === 'key') {
-    return state.isOn(fixtureIdIn(layout, fixture.id));
-  }
+  if (fixture.kind === 'lever') return state.isOn(fixtureIdIn(layout, fixture.id));
   return false;
 }
 

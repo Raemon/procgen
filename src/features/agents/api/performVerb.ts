@@ -48,6 +48,7 @@ export function performVerb(
       worldSampler: world.sampler,
       lab,
       groundItems: world.groundItems,
+      keyPurse: world.keyPurse,
       puzzles: world.puzzles,
       actor: sessionActor(session, world.stepRules),
     },

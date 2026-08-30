@@ -164,7 +164,7 @@ function stepBy(context: CommandContext, step: Step): CommandResult {
   });
   const pose = context.actor.pose();
   if (!moved) return commandFailed('blocked', refusals.join('; '));
-  return commandSucceeded(`moved to (${pose.x},${pose.y})${keysPickedUp(context, pose)}`);
+  return commandSucceeded(`moved to (${pose.x},${pose.y})`);
 }
 
 function refusalAhead(context: CommandContext, dx: number, dy: number): string {
@@ -200,7 +200,7 @@ function jumpBy(context: CommandContext, step: Step): CommandResult {
   const [dx, dy] = step;
   if (context.actor.tryJump(dx, dy)) {
     const pose = context.actor.pose();
-    return commandSucceeded(`jumped to (${pose.x},${pose.y})${keysPickedUp(context, pose)}`);
+    return commandSucceeded(`jumped to (${pose.x},${pose.y})`);
   }
   return commandFailed('blocked', jumpRefusal(context, dx, dy));
 }
@@ -219,11 +219,6 @@ function jumpRefusal(context: CommandContext, dx: number, dy: number): string {
     ),
   );
   return `nowhere to land: ${reasons.join('; ')}`;
-}
-
-function keysPickedUp(context: CommandContext, pose: { x: number; y: number }): string {
-  const taken = context.puzzles.takeKeysAt(pose.x, pose.y);
-  return taken.length === 0 ? '' : `, taking ${taken.length} key(s) lying here`;
 }
 
 function turnBy(context: CommandContext, eighths: -1 | 1): CommandResult {

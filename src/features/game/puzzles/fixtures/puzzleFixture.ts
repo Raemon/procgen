@@ -1,4 +1,4 @@
-export type PuzzleFixtureKind = 'lever' | 'key' | 'plate' | 'crate' | 'pillar' | 'gate';
+export type PuzzleFixtureKind = 'lever' | 'plate' | 'crate' | 'pillar' | 'gate';
 
 export interface PuzzleFixture {
   id: string;

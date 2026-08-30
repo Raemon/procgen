@@ -4,6 +4,7 @@ import type { ItemAssets } from '@/features/asset-library/items/itemAssets';
 import type { GroundItems } from '@/features/asset-library/items/pickups/groundItems';
 import type { CultureAssets } from '@/features/asset-library/cultures/cultureAssets';
 import type { PieceAssets } from '@/features/asset-library/pieces/pieceAssets';
+import type { KeyPurse } from '@/features/game/puzzles/interaction/keyPurse';
 import type { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
 import type { RegionSampler } from '@/features/asset-library/pieces/captureRegionAsPiece';
 import type { WorldSeedLab } from '@/features/asset-library/worlds/lab/worldSeedLab';
@@ -51,6 +52,7 @@ export interface CommandContext {
   lab: WorldSeedLab | null;
   groundItems: GroundItems;
   puzzles: PuzzleWorld;
+  keyPurse: KeyPurse;
   actor: CommandActor;
   settleTheWorld(change: () => void): void;
 }

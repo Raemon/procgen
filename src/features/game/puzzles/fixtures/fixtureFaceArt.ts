@@ -1,10 +1,15 @@
 import { crateFaceArt, crateOnPlateFaceArt } from '@/features/asset-library/tiles/art/fixtures/crateArt';
 import { leverIdleFaceArt, leverThrownFaceArt } from '@/features/asset-library/tiles/art/fixtures/leverArt';
+import { barredDoorFaceArt } from '@/features/asset-library/tiles/art/fixtures/barredDoorArt';
 import { lockedDoorFaceArt } from '@/features/asset-library/tiles/art/fixtures/lockedDoorArt';
 import { openDoorwayFaceArt } from '@/features/asset-library/tiles/art/fixtures/openDoorwayArt';
 import { pillarFaceArt } from '@/features/asset-library/tiles/art/fixtures/pillarArt';
 import { platePressedFaceArt, plateWaitingFaceArt } from '@/features/asset-library/tiles/art/fixtures/pressurePlateArt';
-export const DOOR_FACE_ART = { off: lockedDoorFaceArt(), on: openDoorwayFaceArt() };
+export const DOOR_FACE_ART = {
+  key: lockedDoorFaceArt(),
+  mechanism: barredDoorFaceArt(),
+  on: openDoorwayFaceArt(),
+};
 export const LEVER_FACE_ART = { off: leverIdleFaceArt(), on: leverThrownFaceArt() };
 export const CRATE_FACE_ART = { off: crateFaceArt(), on: crateOnPlateFaceArt() };
 export const PLATE_FACE_ART = { off: plateWaitingFaceArt(), on: platePressedFaceArt() };

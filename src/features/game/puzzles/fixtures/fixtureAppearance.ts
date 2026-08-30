@@ -23,7 +23,39 @@ export interface FixtureLook {
   seeThroughUnpaintedArt?: boolean;
 }
 
-const FLAT = { faceArt: null };
+export type DoorLock = 'key' | 'mechanism';
+
+const DOOR_STANDS_OPEN: FixtureLook = {
+  glyph: "'",
+  color: '#6fb98a',
+  tag: 'unlocked door, standing open',
+  faceArt: DOOR_FACE_ART.on,
+  standingHeight: DOOR_STANDS_TALL,
+  seeThroughUnpaintedArt: true,
+};
+
+const GATE_LOOKS: Record<DoorLock, { off: FixtureLook; on: FixtureLook }> = {
+  key: {
+    off: {
+      glyph: '+',
+      color: '#e0b33c',
+      tag: 'locked door, a keyhole in its brass plate',
+      faceArt: DOOR_FACE_ART.key,
+      standingHeight: DOOR_STANDS_TALL,
+    },
+    on: DOOR_STANDS_OPEN,
+  },
+  mechanism: {
+    off: {
+      glyph: '+',
+      color: '#c05a4a',
+      tag: 'door barred from within',
+      faceArt: DOOR_FACE_ART.mechanism,
+      standingHeight: DOOR_STANDS_TALL,
+    },
+    on: DOOR_STANDS_OPEN,
+  },
+};
 
 const LOOKS: Record<PuzzleFixtureKind, { off: FixtureLook; on: FixtureLook }> = {
   lever: {
@@ -41,10 +73,6 @@ const LOOKS: Record<PuzzleFixtureKind, { off: FixtureLook; on: FixtureLook }> = 
       faceArt: LEVER_FACE_ART.on,
       standingHeight: LEVER_STANDS_LOW,
     },
-  },
-  key: {
-    off: { glyph: '♦', color: '#ffd24a', tag: 'key', ...FLAT },
-    on: { glyph: '♦', color: '#5a5a4a', tag: 'key, already taken', ...FLAT },
   },
   plate: {
     off: {
@@ -94,26 +122,14 @@ const LOOKS: Record<PuzzleFixtureKind, { off: FixtureLook; on: FixtureLook }> = 
       standingHeight: PILLAR_STANDS_TALL,
     },
   },
-  gate: {
-    off: {
-      glyph: '+',
-      color: '#c05a4a',
-      tag: 'locked door',
-      faceArt: DOOR_FACE_ART.off,
-      standingHeight: DOOR_STANDS_TALL,
-    },
-    on: {
-      glyph: "'",
-      color: '#6fb98a',
-      tag: 'unlocked door, standing open',
-      faceArt: DOOR_FACE_ART.on,
-      standingHeight: DOOR_STANDS_TALL,
-      seeThroughUnpaintedArt: true,
-    },
-  },
+  gate: GATE_LOOKS.mechanism,
 };
 
 export function fixtureLook(kind: PuzzleFixtureKind, isOn: boolean): FixtureLook {
   return LOOKS[kind][isOn ? 'on' : 'off'];
+}
+
+export function gateLook(lock: DoorLock, isOn: boolean): FixtureLook {
+  return GATE_LOOKS[lock][isOn ? 'on' : 'off'];
 }
 
