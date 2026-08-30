@@ -247,7 +247,7 @@ export function spriteFrom(params: CommandParams, name = 'sprite'): SpriteRead {
       ok: false,
       failure: commandFailed(
         'invalid_value',
-        `'${name}' must be a square array of "#rrggbb" strings and nulls, or null to clear it`,
+        `'${name}' must be a square array of "#rrggbb" strings and nulls or the compact {palette, pixels} form GET reports, or null to clear it`,
       ),
     };
   }

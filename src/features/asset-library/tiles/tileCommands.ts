@@ -189,7 +189,7 @@ export function faceArtFrom(params: CommandParams): ArtRead {
   if (art === null) {
     return {
       ok: false,
-      failure: commandFailed('invalid_value', "'face_art' must be cube face art, or null to clear it"),
+      failure: commandFailed('invalid_value', "'face_art' must be cube face art in either shape GET reports, or null to clear it"),
     };
   }
   return { ok: true, value: art };
