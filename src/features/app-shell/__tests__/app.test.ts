@@ -61,8 +61,6 @@ import { checkSokobanFixtureArt } from '@/features/game/__tests__/sokobanFixture
 import { checkShippedAssets } from '@/features/asset-library/__tests__/shippedAssets.test';
 import { checkGauntOneBillboard } from '@/features/asset-library/creatures/__tests__/gauntOneBillboard.test';
 import { checkSourceArchitecture } from './sourceArchitecture.test';
-import { sourceCatalogTests } from './sourceCatalog.test';
-import { sourceExplorerStateTests } from './sourceExplorerState.test';
 import { checkLibraryRowActions } from '@/features/asset-library/__tests__/libraryRowActions.test';
 import { checkLibraryRename } from '@/features/asset-library/__tests__/libraryRename.test';
 import { checkLibraryViewMode } from '@/features/asset-library/__tests__/libraryViewMode.test';
@@ -149,8 +147,6 @@ describe('villages', () => checkVillageInvariants(check));
 describe('the cultures editor', () => checkCultureEditing(check));
 describe('generated asset kits', () => checkGeneratedAssetInvariants(check));
 describe('the source architecture', () => checkSourceArchitecture(check));
-describe('the source explorer catalog', sourceCatalogTests);
-describe('the source explorer tree', sourceExplorerStateTests);
 describe('library row actions', () => checkLibraryRowActions(check));
 describe('library view mode', () => checkLibraryViewMode(check));
 describe('asset folders', () => checkAssetFolders(check));

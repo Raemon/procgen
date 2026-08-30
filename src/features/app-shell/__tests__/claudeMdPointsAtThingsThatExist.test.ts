@@ -37,7 +37,7 @@ export function checkClaudeMdPointsAtThingsThatExist(
 }
 
 function isServed(path: string): boolean {
-  if (path === '/docs') return true;
+  if (path === '/docs') return existsSync('src/app/docs/route.ts');
   return buildApiEndpointCatalog().some((endpoint) => endpoint.path === path);
 }
 

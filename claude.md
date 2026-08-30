@@ -15,7 +15,7 @@ Keep the source tree aligned with the rendered home-page tree:
 
 Do not add generic `components`, `lib`, `assets`, `abilities`, `commands`, `common`, or `misc` feature roots. Put a product operation beside the UI or runtime concept that owns it. Direct cross-feature imports must name that owning feature explicitly; do not hide dependencies behind catch-all barrels.
 
-All server mutations cross the canonical API. Persistent Asset Library changes use Route Handlers under `/api/v1/asset-library`. Live Game input uses `/api/v1/game/socket`. Agents and humans share the same contracts exposed at GET `/api/v1/openapi.json`. Add an HTTP contract before adding a Route Handler, and do not add compatibility aliases for removed URLs.
+All server mutations cross the canonical API. Persistent Asset Library changes use Route Handlers under `/api/v1/asset-library`. Live Game input uses `/api/v1/game/socket`. Agents and humans share the same contracts exposed at GET `/api/v1/openapi.json`, written out for an LLM as plain text at GET `/docs`. Add an HTTP contract before adding a Route Handler, and do not add compatibility aliases for removed URLs.
 
 Use ETags for persistent edits. Send `If-Match`, return `412` for stale writes, refetch, and reconcile. Keep resource functions private to their owning feature; use named POST commands only for procedural work such as randomize, undo, stamp, capture, run, move, turn, interact, and reset.
 

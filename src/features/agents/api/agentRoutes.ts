@@ -162,7 +162,8 @@ function createAgent(sessions: SessionStore, world: ServerWorld, body: unknown):
   return json(201, {
     agent: agentJson(session),
     urls: {
-      docs: '/api/v1/openapi.json',
+      docs: '/docs',
+      openapi: '/api/v1/openapi.json',
       observe: `/api/v1/agents/${id}/observe`,
       pipeline: '/api/v1/asset-library/world-seeds/current',
       node_types: '/api/v1/asset-library/node-types',
