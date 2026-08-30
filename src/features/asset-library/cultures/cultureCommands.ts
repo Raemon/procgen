@@ -48,7 +48,7 @@ registerCultureCommand({
 
 registerCultureCommand({
   action: 'rename_culture',
-  humanControl: 'detail panel, cultures: the name on a culture row',
+  humanControl: 'detail panel, cultures: the name field',
   description: 'Rename a culture. Nodes bind cultures by id, so renaming is safe.',
   params: {
     culture_id: { kind: 'int', help: CULTURE_ID_HELP },
@@ -66,7 +66,7 @@ registerCultureCommand({
 
 registerCultureCommand({
   action: 'duplicate_culture',
-  humanControl: 'asset library, cultures folder: ⧉ on a culture row',
+  humanControl: 'detail panel, cultures: ⧉ duplicate',
   description: 'Copy a culture, its tiles and role bindings included, as a new culture with its own id.',
   params: { culture_id: { kind: 'int', help: CULTURE_ID_HELP } },
   example: { action: 'duplicate_culture', culture_id: 0 },
@@ -81,7 +81,7 @@ registerCultureCommand({
 
 registerCultureCommand({
   action: 'remove_culture',
-  humanControl: 'detail panel, cultures: ✕ on a culture row',
+  humanControl: 'detail panel, cultures: ✕ beside duplicate',
   description: 'Delete a culture. Points bound to it stop growing buildings.',
   params: { culture_id: { kind: 'int', help: CULTURE_ID_HELP } },
   example: { action: 'remove_culture', culture_id: 1 },
@@ -94,7 +94,7 @@ registerCultureCommand({
 
 registerCultureCommand({
   action: 'set_culture_tiles',
-  humanControl: 'detail panel, cultures: the tile pickers on a culture row',
+  humanControl: 'detail panel, cultures: the tile pickers',
   description:
     'Choose the tiles a culture builds from. These are what the assembler paints wherever no piece is bound, so a culture with tiles alone still yields a whole building.',
   params: {
