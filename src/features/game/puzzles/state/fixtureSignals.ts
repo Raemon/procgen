@@ -17,6 +17,7 @@ export function fixtureIsOn(
   fixture: PuzzleFixture,
 ): boolean {
   if (fixture.kind === 'plate') return crateSitsOn(layout, state, fixture.x, fixture.y);
+  if (fixture.kind === 'crate') return crateRestsOnAPlate(layout, state, fixture);
   if (fixture.kind === 'lever' || fixture.kind === 'key') {
     return state.isOn(fixtureIdIn(layout, fixture.id));
   }
@@ -34,6 +35,17 @@ export function unmetSignals(layout: PuzzleRoomLayout, state: PuzzleState): numb
 function signalNamed(layout: PuzzleRoomLayout, state: PuzzleState, fixtureId: string): boolean {
   const fixture = layout.fixtures.find((candidate) => candidate.id === fixtureId);
   return fixture ? fixtureIsOn(layout, state, fixture) : false;
+}
+
+function crateRestsOnAPlate(
+  layout: PuzzleRoomLayout,
+  state: PuzzleState,
+  crate: PuzzleFixture,
+): boolean {
+  const at = livePosition(layout, state, crate);
+  return layout.fixtures.some(
+    (candidate) => candidate.kind === 'plate' && candidate.x === at.x && candidate.y === at.y,
+  );
 }
 
 function crateSitsOn(

@@ -54,6 +54,7 @@ import { checkVillageInvariants } from '@/features/asset-library/worlds/__tests_
 import { checkCultureEditing } from '@/features/asset-library/__tests__/cultureEditing.test';
 import { checkShapedTileInvariants } from '@/features/asset-library/__tests__/shapedTileInvariants.test';
 import { checkMarkerBillboardInvariants } from '@/features/game/__tests__/markerBillboardInvariants.test';
+import { checkSokobanFixtureArt } from '@/features/game/__tests__/sokobanFixtureArt.test';
 import { checkGauntOneBillboard } from '@/features/asset-library/creatures/__tests__/gauntOneBillboard.test';
 import { checkSourceArchitecture } from './sourceArchitecture.test';
 import { sourceCatalogTests } from './sourceCatalog.test';
@@ -131,6 +132,7 @@ describe('tile art mips', () => checkTileArtMipInvariants(check));
 describe('tile art storage', () => checkTileArtStorageInvariants(check));
 describe('shaped tiles and per-voxel facing', () => checkShapedTileInvariants(check));
 describe('scattered prop billboards', () => checkMarkerBillboardInvariants(check));
+describe('sokoban fixture art', () => checkSokobanFixtureArt(check));
 describe('the gaunt one billboard', () => checkGauntOneBillboard(check));
 describe('pieces', () => checkPieceInvariants(check));
 describe('villages', () => checkVillageInvariants(check));
