@@ -20,7 +20,24 @@ function jumpIsAllowed(
   if (!jumpGateOf(rules)(fromX, fromY, toX, toY)) return false;
   const dx = Math.sign(toX - fromX);
   const dy = Math.sign(toY - fromY);
+  if (!vaultIsClear(rules, fromX, fromY, toX, toY, dx, dy)) return false;
   return rules.clearTheWay(toX, toY, dx, dy, false) && rules.isWalkableAt(toX, toY);
+}
+
+function vaultIsClear(
+  rules: StepRules,
+  fromX: number,
+  fromY: number,
+  toX: number,
+  toY: number,
+  dx: number,
+  dy: number,
+): boolean {
+  const distance = Math.max(Math.abs(toX - fromX), Math.abs(toY - fromY));
+  for (let step = 1; step < distance; step++) {
+    if (!rules.clearTheWay(fromX + dx * step, fromY + dy * step, dx, dy, false)) return false;
+  }
+  return true;
 }
 
 export function jumpLandingDelta(

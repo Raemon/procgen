@@ -19,6 +19,7 @@ import {
   oppositeSide,
   roomAcrossTheGate,
   sideOfGate,
+  stepEntersTheRoom,
   type PuzzleRoomLayout,
 } from './rooms/puzzleRoomLayout';
 import type { RoomItem } from './rooms/roomItem';
@@ -28,6 +29,10 @@ import { sameKnobs } from './sameKnobs';
 import { PuzzleState } from './state/puzzleState';
 
 const ROOMS_KEPT = 512;
+
+function isFurniture(fixture: PuzzleFixture): boolean {
+  return fixture.kind === 'crate' || fixture.kind === 'pillar';
+}
 
 export class PuzzleWorld {
   private readonly rooms = new RoomCache(ROOMS_KEPT);
@@ -102,11 +107,17 @@ export class PuzzleWorld {
     return layout !== null && this.blockerAt(layout, x, y) !== null;
   }
 
+  blocksTheWayInAt(x: number, y: number): boolean {
+    const layout = this.roomAt(x, y);
+    return layout !== null && this.furnitureAt(layout, x, y) !== null;
+  }
+
   clearTheWay(x: number, y: number, dx: number, dy: number, mayPush = true): boolean {
     const layout = this.roomAt(x, y);
     if (!layout) return true;
     const blocker = this.blockerAt(layout, x, y);
     if (!blocker) return true;
+    if (blocker.kind === 'gate') return stepEntersTheRoom(layout, blocker, dx, dy);
     if (blocker.kind !== 'crate' || !mayPush) return false;
     return pushCrate(layout, this.state, blocker, dx, dy, this.tileIsWalkable);
   }
@@ -175,6 +186,7 @@ export class PuzzleWorld {
   }
 
   private roomOpensGate(layout: PuzzleRoomLayout, side: DoorwaySide): boolean {
+    if (layout.gates[side].length === 0) return false;
     if (layout.unlock !== 'key') return roomIsSolved(layout, this.state);
     return this.state.isOn(unlockedSideId(layout, side));
   }
@@ -266,8 +278,12 @@ export class PuzzleWorld {
     return this.fixturesAt(layout, x, y).find((fixture) => this.standsInTheWay(layout, fixture)) ?? null;
   }
 
+  private furnitureAt(layout: PuzzleRoomLayout, x: number, y: number): PuzzleFixture | null {
+    return this.fixturesAt(layout, x, y).find(isFurniture) ?? null;
+  }
+
   private standsInTheWay(layout: PuzzleRoomLayout, fixture: PuzzleFixture): boolean {
-    if (fixture.kind === 'crate' || fixture.kind === 'pillar') return true;
+    if (isFurniture(fixture)) return true;
     return fixture.kind === 'gate' && !this.gateIsOpen(layout, fixture);
   }
 }
