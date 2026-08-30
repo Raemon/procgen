@@ -1,4 +1,4 @@
-import { compactSpriteArtOf, type CompactSpriteArt } from '../tiles/storage/storedSpriteArt';
+import { storedSpriteOf, type StoredSpriteArt } from '../tiles/storage/storedSpriteArt';
 import {
   CHARACTER_ANIMATIONS,
   CHARACTER_ROTATIONS,
@@ -9,7 +9,7 @@ import {
 
 export type StoredCharacterClips = Record<
   CharacterRotation,
-  Record<CharacterAnimation, CompactSpriteArt[]>
+  Record<CharacterAnimation, StoredSpriteArt[]>
 >;
 
 export type StoredCharacterBillboard = Omit<CharacterBillboard, 'clips'> & {
@@ -21,7 +21,7 @@ export function billboardAsStoredJson(billboard: CharacterBillboard): StoredChar
   for (const rotation of CHARACTER_ROTATIONS) {
     clips[rotation] = {} as StoredCharacterClips[CharacterRotation];
     for (const animation of CHARACTER_ANIMATIONS) {
-      clips[rotation][animation] = billboard.clips[rotation][animation].map(compactSpriteArtOf);
+      clips[rotation][animation] = billboard.clips[rotation][animation].map(storedSpriteOf);
     }
   }
   return { ...billboard, clips };

@@ -7,9 +7,9 @@ import { itemsAsStoredJson, itemsFromStoredJson } from '@/features/asset-library
 import { blankInventory } from '@/features/asset-library/items/inventory/inventoryDef';
 import { blankSpriteArt, type SpriteArt } from '@/features/asset-library/tiles/spriteArt';
 import {
-  compactSpriteArtOf,
   isCompactSpriteArt,
   spriteArtFromStoredShape,
+  storedSpriteOf,
 } from '@/features/asset-library/tiles/storage/storedSpriteArt';
 import { CHARACTER } from '@/features/asset-library/creatures/entityKinds';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
@@ -18,13 +18,14 @@ export function checkSpriteArtStorageInvariants(check: CheckReporter): void {
   checkEveryPixelSurvivesTheCompactForm(check);
   checkSpritesStoredInTheOldExpandedShapeStillLoad(check);
   checkCorruptCompactSpritesAreDroppedRatherThanDecodedWrong(check);
+  checkAPaletteTooWideForTheCompactFormStaysExpanded(check);
   checkItemsStoreTheirSpritesCompactly(check);
   checkCreaturesStoreTheirClipsAndBackdropsCompactly(check);
 }
 
 function checkEveryPixelSurvivesTheCompactForm(check: CheckReporter): void {
   const sprite = spriteWithAlphaAndTransparency();
-  const reloaded = spriteArtFromStoredShape(JSON.parse(JSON.stringify(compactSpriteArtOf(sprite))));
+  const reloaded = spriteArtFromStoredShape(JSON.parse(JSON.stringify(storedSpriteOf(sprite))));
   check('a sprite keeps every pixel through the compact form', sameArt(reloaded, sprite));
   check(
     'unpainted pixels come back as nothing painted, not as a colour',
@@ -40,8 +41,21 @@ function checkSpritesStoredInTheOldExpandedShapeStillLoad(check: CheckReporter):
   );
 }
 
+function checkAPaletteTooWideForTheCompactFormStaysExpanded(check: CheckReporter): void {
+  const side = 256;
+  const everyColorDifferent = Array.from(
+    { length: side * side },
+    (_, at) => `#${at.toString(16).padStart(6, '0')}`,
+  );
+  const stored = storedSpriteOf(everyColorDifferent);
+  check(
+    'a sprite with more colours than the palette can index is stored expanded, not corrupted',
+    !isCompactSpriteArt(stored) && sameArt(spriteArtFromStoredShape(stored), everyColorDifferent),
+  );
+}
+
 function checkCorruptCompactSpritesAreDroppedRatherThanDecodedWrong(check: CheckReporter): void {
-  const compact = compactSpriteArtOf(spriteWithAlphaAndTransparency());
+  const compact = storedSpriteOf(spriteWithAlphaAndTransparency());
   check(
     'a sprite whose pixels were truncated in storage is refused, not decoded short',
     spriteArtFromStoredShape({ ...compact, pixels: 'AAAA' }) === null,
