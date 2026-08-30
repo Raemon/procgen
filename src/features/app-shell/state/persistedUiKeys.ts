@@ -10,7 +10,6 @@ export const PERSISTED_UI_KEYS = {
   openCreaturePanels: 'assets.openCreaturePanels',
   openItemPanels: 'assets.openItemPanels',
   openInventoryBackdrops: 'assets.openInventoryBackdrops',
-  openCulturePanels: 'assets.openCulturePanels',
   hintsVisible: 'ui.hintsVisible',
   collapsedNodeCards: 'procgen.collapsedNodeCards',
   collapsedNodeFolders: 'procgen.collapsedNodeFolders',

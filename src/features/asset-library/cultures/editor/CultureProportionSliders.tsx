@@ -1,5 +1,4 @@
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
-import { DrawerPanel } from '@/features/app-shell/controls/DrawerPanel';
 import { KnobRow } from '@/features/app-shell/controls/KnobRow';
 import { Select } from '@/features/app-shell/controls/Select';
 import { Slider } from '@/features/app-shell/controls/Slider';
@@ -14,7 +13,7 @@ export function CultureProportionSliders({ culture }: { culture: Culture }) {
   const setProportion = (param: string, value: number) =>
     perform('set_culture_numbers', { culture_id: culture.id, [param]: value });
   return (
-    <DrawerPanel>
+    <>
       <KnobRow label="roof style" tip={ROOF_STYLE_TIP}>
         <Select
           value={String(culture.roofStyle)}
@@ -37,6 +36,6 @@ export function CultureProportionSliders({ culture }: { culture: Culture }) {
           <ValueReadout value={proportionOf(culture, knob)} />
         </KnobRow>
       ))}
-    </DrawerPanel>
+    </>
   );
 }

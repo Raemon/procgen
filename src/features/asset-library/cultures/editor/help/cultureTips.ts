@@ -17,17 +17,17 @@ export const CULTURE_NAME_TIP: TooltipContent = {
 
 export const CULTURE_TILES_TIP: TooltipContent = {
   title: 'tiles',
-  body: 'Opens the tiles this culture builds from: wall, trim, roof, floor and path. A culture with tiles alone still assembles a whole building.',
+  body: 'The tiles this culture builds from: wall, trim, roof, floor and path. A culture with tiles alone still assembles a whole building.',
 };
 
 export const CULTURE_PROPORTIONS_TIP: TooltipContent = {
   title: 'proportions',
-  body: 'Opens the roof style, the layers in one story and the window rhythm every building of this culture follows.',
+  body: 'The roof style, the layers in one story and the window rhythm every building of this culture follows.',
 };
 
 export const CULTURE_PIECES_TIP: TooltipContent = {
   title: 'pieces',
-  body: 'Opens the role bindings: which authored pieces this culture may stamp for each part of a building.',
+  body: 'The role bindings: which authored pieces this culture may stamp for each part of a building.',
 };
 
 export const ROOF_STYLE_TIP: TooltipContent = {
@@ -71,5 +71,12 @@ export function deleteCultureTip(culture: Culture): TooltipContent {
   return {
     title: `delete ${culture.name}`,
     body: 'Removes the culture. Points bound to it stop growing buildings.',
+  };
+}
+
+export function duplicateCultureTip(culture: Culture): TooltipContent {
+  return {
+    title: `duplicate ${culture.name}`,
+    body: 'Files a copy of this culture, its tiles, proportions and piece bindings included.',
   };
 }

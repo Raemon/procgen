@@ -22,9 +22,7 @@ import {
 } from '@/features/asset-library/cultures/pieceOffersPerRole';
 import { roleBindingsWithoutPiece } from '@/features/asset-library/cultures/forgetRemovedPieceInRoleBindings';
 import { ROOF_STYLE_CHOICES, roofStyleLabel } from '@/features/asset-library/cultures/roofStyleChoices';
-import { CULTURE_DRAWERS, CULTURE_PANELS } from '@/features/asset-library/cultures/editor/cultureDrawers';
 import { newPieceWithId, type Piece, type PieceRole } from '@/features/asset-library/pieces/pieceDef';
-import { isOneOf } from '@/features/app-shell/state/persistedUiGuards';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 
 const CULTURES_PANEL_SOURCES = [
@@ -46,7 +44,7 @@ const CULTURE_ABILITY_ACTIONS = [
 
 export function checkCultureEditing(check: CheckReporter): void {
   checkEveryCultureCommandIsReachableFromThePanel(check);
-  checkTheDrawersSurviveAReload(check);
+  checkEveryKnobIsOnTheSheet(check);
   checkTheKnobsCoverEveryParamTheCommandsTake(check);
   checkPiecesAreOfferedToTheRolesTheyWereAuthoredFor(check);
   checkADeletedPieceLeavesNoBindingBehind(check);
@@ -73,30 +71,21 @@ function checkEveryCultureCommandIsReachableFromThePanel(check: CheckReporter): 
   );
 }
 
-function checkTheDrawersSurviveAReload(check: CheckReporter): void {
-  const isPanel = isOneOf(CULTURE_PANELS);
+function checkEveryKnobIsOnTheSheet(check: CheckReporter): void {
+  const sheet = panelComponentSourcesMentioning('export function CultureSheet');
   check(
-    'each culture drawer names a panel the persisted ui guard accepts, so a stored drawer reopens',
-    CULTURE_DRAWERS.every((drawer) => isPanel(drawer.panel)) &&
-      CULTURE_DRAWERS.length === CULTURE_PANELS.length - 1,
+    'the culture sheet is where this check can read it, so it cannot pass by finding nothing',
+    sheet.length === 1,
   );
-  const decidingWhichDrawerIsOpen = panelComponentSourcesMentioning('CULTURE_PANELS');
   check(
-    'whichever culture drawer is open comes from persisted ui state, not a useState a reload forgets',
-    decidingWhichDrawerIsOpen.length > 0 &&
-      decidingWhichDrawerIsOpen.every(
-        (source) => source.includes('usePersistedOpenPanel') && !source.includes('useState'),
-      ),
+    'the sheet lays every culture knob out at once, so none of them waits behind a drawer to open',
+    sheet.every(
+      (source) =>
+        ['CultureProportionSliders', 'CultureTileChoices', 'CultureRoleBindings'].every((section) =>
+          source.includes(`<${section} culture={culture} />`),
+        ) && !source.includes('usePersistedOpenPanel'),
+    ),
   );
-  const deletingACulture = panelComponentSourcesMentioning("perform('remove_culture'");
-  check(
-    'deleting a culture forgets its drawer, so a later culture handed the same id does not inherit it',
-    deletingACulture.length > 0 && deletingACulture.every(forgetsTheDrawerItDeletes),
-  );
-}
-
-function forgetsTheDrawerItDeletes(source: string): boolean {
-  return source.includes('forgetRow()') || source.includes('forgetOpenPanelOfRow(');
 }
 
 function checkTheKnobsCoverEveryParamTheCommandsTake(check: CheckReporter): void {
@@ -149,7 +138,7 @@ function checkPiecesAreOfferedToTheRolesTheyWereAuthoredFor(check: CheckReporter
 function checkARowSaysWhatTheCultureWillBuild(check: CheckReporter): void {
   const culture = newCultureWithId(assetId<'cultures'>(0));
   check(
-    'a culture row reads out the roof style, the story height and the window rhythm',
+    'a culture reads out the roof style, the story height and the window rhythm',
     proportionsSummaryOf({ ...culture, roofStyle: HIP_ROOF, storyLayers: 4, windowEvery: 2 }) ===
       'hip roof · 4 layers per story · window every 2',
   );
