@@ -1,4 +1,5 @@
 import type { SpriteArt } from '../../tiles/spriteArt';
+import { spriteFromPaintedRows } from '../../tiles/storage/paintedRowsArt';
 
 const TORCH_ROWS = [
   '...ww...',
@@ -20,5 +21,5 @@ const TORCH_PALETTE: Record<string, string> = {
 };
 
 export function torchSprite(): SpriteArt {
-  return TORCH_ROWS.flatMap((row) => [...row].map((key) => TORCH_PALETTE[key] ?? null));
+  return spriteFromPaintedRows({ palette: TORCH_PALETTE, rows: TORCH_ROWS })!;
 }

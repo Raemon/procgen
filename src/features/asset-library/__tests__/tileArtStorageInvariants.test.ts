@@ -2,7 +2,7 @@ import { assetId } from '@/features/asset-library/asset';
 import { persistWorld, type ServerWorld } from '../../agents/api/serverWorld';
 import { compactFaceArtOf } from '@/features/asset-library/tiles/storage/compactFaceArtEncode';
 import { isCompactFaceArt } from '@/features/asset-library/tiles/storage/compactFaceArtShape';
-import { faceArtFromStoredShape } from '@/features/asset-library/tiles/storage/storedFaceArt';
+import { faceArtFromStoredShape, storedFaceArtOf } from '@/features/asset-library/tiles/storage/storedFaceArt';
 import { blankFacePixels, type CubeFaceArt } from '@/features/asset-library/tiles/tileFaceArt';
 import { newTileWithId, type TileDef } from '@/features/asset-library/tiles/tileDef';
 import { tilesAsStoredJson, tilesFromStoredJson } from '@/features/asset-library/tiles/tileStorage';
@@ -13,8 +13,27 @@ export function checkTileArtStorageInvariants(check: CheckReporter): void {
   checkEveryFrameAndLayerSurvivesTheCompactForm(check);
   checkArtStoredInTheOldShapeStillLoads(check);
   checkCorruptCompactArtIsDroppedRatherThanDecodedWrong(check);
+  checkAPaletteTooWideForTheCompactFormStaysExpanded(check);
   checkReloadedArtOwnsItsOwnPixelArrays(check);
   checkSavingTheWorldStoresArtCompactly(check);
+}
+
+function checkAPaletteTooWideForTheCompactFormStaysExpanded(check: CheckReporter): void {
+  const side = 256;
+  const art: CubeFaceArt = {
+    size: side,
+    top: Array.from({ length: side * side }, (_, at) => `#${at.toString(16).padStart(6, '0')}`),
+    north: blankFacePixels(side),
+    east: blankFacePixels(side),
+    south: blankFacePixels(side),
+    west: blankFacePixels(side),
+    bottom: blankFacePixels(side),
+  };
+  const stored = storedFaceArtOf(art);
+  check(
+    'face art with more colours than the palette can index is stored expanded, not corrupted',
+    stored === art && faceArtFromStoredShape(stored) === art,
+  );
 }
 
 function checkEveryFrameAndLayerSurvivesTheCompactForm(check: CheckReporter): void {

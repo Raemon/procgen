@@ -22,5 +22,5 @@ export interface CompactFaceArt {
 export function isCompactFaceArt(value: unknown): value is CompactFaceArt {
   if (typeof value !== 'object' || value === null) return false;
   const art = value as Partial<CompactFaceArt>;
-  return art.compact === COMPACT_FACE_ART_FORMAT;
+  return art.compact === COMPACT_FACE_ART_FORMAT && typeof art.color === 'object' && art.color !== null;
 }

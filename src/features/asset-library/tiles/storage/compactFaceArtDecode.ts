@@ -1,8 +1,7 @@
 import {
   CUBE_FACES,
   isCubeFaceArt,
-  MAX_FACE_ART_SIZE,
-  MIN_FACE_ART_SIZE,
+  isValidFaceArtSize,
   type CubeFaceArt,
   type FaceArtFrame,
   type PartialFaceGrids,
@@ -20,7 +19,7 @@ type GridUnpacker = (grids: unknown) => PartialFaceGrids | null;
 
 export function faceArtFromCompact(value: unknown): CubeFaceArt | null {
   if (!isCompactFaceArt(value)) return null;
-  if (!isStorableSize(value.size) || !isPalette(value.palette)) return null;
+  if (!isValidFaceArtSize(value.size) || !isPalette(value.palette)) return null;
   const unpack = gridUnpackerFor(value.palette, value.size);
   const color = unpack(value.color);
   if (color === null) return null;
@@ -59,13 +58,4 @@ function gridUnpackerFor(palette: readonly string[], size: number): GridUnpacker
     }
     return unpacked;
   };
-}
-
-function isStorableSize(size: unknown): size is number {
-  return (
-    typeof size === 'number' &&
-    Number.isInteger(size) &&
-    size >= MIN_FACE_ART_SIZE &&
-    size <= MAX_FACE_ART_SIZE
-  );
 }

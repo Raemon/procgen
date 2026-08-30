@@ -1,6 +1,5 @@
-import { useEffect, useRef } from 'react';
-import { paintSpritePixels } from '@/features/game/render/paintSpritePixels';
-import { spriteGridSize, type SpriteArt } from '../../tiles/spriteArt';
+import { PixelGridCanvas } from '../../pixelArtEditor/PixelGridCanvas';
+import type { SpriteArt } from '../../tiles/spriteArt';
 import { Button } from '@/features/app-shell/controls/Button';
 import { classes } from '@/features/app-shell/controls/classes';
 import { tooltipHandlers } from '@/features/app-shell/tooltips/tooltipHandlers';
@@ -63,7 +62,7 @@ function FrameThumb({
           isSelected ? 'border-accent' : 'border-panel-edge',
         )}
       >
-        <SpriteThumb sprite={frame} />
+        <PixelGridCanvas pixels={frame} className="block h-full w-full [image-rendering:pixelated]" />
       </button>
       <button
         type="button"
@@ -76,14 +75,4 @@ function FrameThumb({
       </button>
     </span>
   );
-}
-
-function SpriteThumb({ sprite }: { sprite: SpriteArt }) {
-  const canvas = useRef<HTMLCanvasElement>(null);
-  useEffect(() => {
-    if (!canvas.current) return;
-    canvas.current.width = canvas.current.height = spriteGridSize(sprite);
-    paintSpritePixels(canvas.current.getContext('2d')!, sprite, 1);
-  }, [sprite]);
-  return <canvas ref={canvas} className="block h-full w-full [image-rendering:pixelated]" />;
 }

@@ -1,4 +1,5 @@
 import type { SpriteArt } from '../../tiles/spriteArt';
+import { spriteFromPaintedRows } from '../../tiles/storage/paintedRowsArt';
 
 const KEY_ROWS = [
   '....bbbb....',
@@ -23,5 +24,5 @@ const KEY_PALETTE: Record<string, string> = {
 };
 
 export function keySprite(): SpriteArt {
-  return KEY_ROWS.flatMap((row) => [...row].map((key) => KEY_PALETTE[key] ?? null));
+  return spriteFromPaintedRows({ palette: KEY_PALETTE, rows: KEY_ROWS })!;
 }

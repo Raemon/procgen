@@ -4,7 +4,7 @@ const hexByPacked = new Map<number, string>();
 export function packHex(hex: string): number {
   const cached = packedByHex.get(hex);
   if (cached !== undefined) return cached;
-  const packed = Number.parseInt(hex.slice(1), 16) & 0xffffff;
+  const packed = Number.parseInt(hex.slice(1, 7), 16) & 0xffffff;
   packedByHex.set(hex, packed);
   return packed;
 }

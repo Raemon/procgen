@@ -133,7 +133,7 @@ function isValidFrameMs(value: unknown): value is number {
   return typeof value === 'number' && value >= MIN_FRAME_MS && value <= MAX_FRAME_MS;
 }
 
-function isValidFaceArtSize(size: unknown): size is number {
+export function isValidFaceArtSize(size: unknown): size is number {
   return (
     typeof size === 'number' &&
     Number.isInteger(size) &&

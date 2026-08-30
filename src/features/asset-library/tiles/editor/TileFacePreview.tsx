@@ -1,23 +1,15 @@
-import { useEffect, useRef } from 'react';
-import { paintFacePixels } from '@/features/game/render/paintFacePixels';
+import { PixelGridCanvas } from '../../pixelArtEditor/PixelGridCanvas';
 import type { TileDef } from '../tileDef';
-import { blankFacePixels, faceGridSize } from '../tileFaceArt';
+import { blankFacePixels } from '../tileFaceArt';
+
+const UNPAINTED_FACE = blankFacePixels();
 
 export function TileFacePreview({ tile }: { tile: TileDef }) {
-  const canvas = useRef<HTMLCanvasElement>(null);
-  useEffect(() => {
-    if (canvas.current) drawTopFace(canvas.current, tile);
-  }, [tile, tile.faceArt, tile.color]);
   return (
-    <canvas
-      ref={canvas}
+    <PixelGridCanvas
+      pixels={tile.faceArt?.top ?? UNPAINTED_FACE}
+      unpainted={tile.color}
       className="block h-full w-full rounded-[2px] [image-rendering:pixelated]"
     />
   );
-}
-
-function drawTopFace(canvas: HTMLCanvasElement, tile: TileDef): void {
-  const pixels = tile.faceArt?.top ?? blankFacePixels();
-  canvas.width = canvas.height = faceGridSize(pixels);
-  paintFacePixels(canvas.getContext('2d')!, pixels, tile.color, 1);
 }

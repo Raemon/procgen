@@ -4,16 +4,9 @@ import { tooltipHandlers } from '../tooltips/tooltipHandlers';
 import { IconButton } from './IconButton';
 import { classes } from './classes';
 import { COLOR_INPUT_CLASSES } from './fieldClasses';
+import { transparencyCheckerStyle } from './transparencyChecker';
 
-const CHECKER =
-  'linear-gradient(45deg, #2b2b2b 25%, transparent 25%, transparent 75%, #2b2b2b 75%)';
-
-const TRANSPARENT_SWATCH = {
-  backgroundImage: `${CHECKER}, ${CHECKER}`,
-  backgroundSize: '8px 8px',
-  backgroundPosition: '0 0, 4px 4px',
-  backgroundColor: '#1e1e1e',
-};
+const TRANSPARENT_SWATCH = transparencyCheckerStyle(8);
 
 export function ColorField({
   ink,

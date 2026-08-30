@@ -54,7 +54,7 @@ registerCharacterArtCommand({
     frame: { kind: 'int', help: `0-based frame index; the frame count is the append slot (max ${MAX_ANIMATION_FRAMES})` },
     sprite: {
       kind: 'json',
-      help: 'a flat array of size*size "#rrggbb" strings and nulls, where null is transparent',
+      help: 'the frame pixels: {palette: {"d": "#d9a878"}, rows: ["dd..", ...]} rows of palette characters ("." is transparent) — the easiest form to write — or a flat array of size*size "#rrggbb" strings and nulls, or the compact form GET reports',
     },
   },
   example: {
@@ -63,7 +63,7 @@ registerCharacterArtCommand({
     rotation: 'front',
     animation: 'idle',
     frame: 0,
-    sprite: ['#d9a878', null, null, '#d9a878'],
+    sprite: { palette: { d: '#d9a878' }, rows: ['d.', '.d'] },
   },
   apply: (context, params) => setFrame(context, params),
 });

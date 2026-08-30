@@ -98,7 +98,7 @@ registerInventoryCommand({
     creature_id: { kind: 'int', help: CREATURE_ID_HELP },
     sprite: {
       kind: 'json',
-      help: 'a flat array of size*size "#rrggbb" strings and nulls, where null is transparent; or null to clear it',
+      help: 'the backdrop pixels: {palette: {"s": "#3a2f22"}, rows: ["ss..", ...]} rows of palette characters ("." is transparent) — the easiest form to write — or a flat array of size*size "#rrggbb" strings and nulls, or the compact form GET reports; null to clear it',
     },
   },
   example: { action: 'set_inventory_background', creature_id: 7, sprite: null },

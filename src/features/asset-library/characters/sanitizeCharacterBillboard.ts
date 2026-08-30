@@ -1,4 +1,5 @@
-import { isSpriteArt } from '../tiles/spriteArt';
+import type { SpriteArt } from '../tiles/spriteArt';
+import { spriteArtFromStoredShape } from '../tiles/storage/storedSpriteArt';
 import {
   blankCharacterBillboard,
   CHARACTER_ANIMATIONS,
@@ -42,5 +43,8 @@ function storedFrames(
 
 function framesFromUnknown(raw: unknown) {
   if (!Array.isArray(raw)) return [];
-  return raw.filter(isSpriteArt).slice(0, MAX_ANIMATION_FRAMES);
+  return raw
+    .map(spriteArtFromStoredShape)
+    .filter((sprite): sprite is SpriteArt => sprite !== null)
+    .slice(0, MAX_ANIMATION_FRAMES);
 }

@@ -1,19 +1,12 @@
 import { useEffect, useRef, type PointerEvent } from 'react';
 import { paintFacePixels } from '@/features/game/render/paintFacePixels';
+import { transparencyCheckerStyle } from '@/features/app-shell/controls/transparencyChecker';
 import { faceGridSize, type FacePixels } from '../tiles/tileFaceArt';
 
 const CANVAS_TARGET_PIXELS = 256;
 const SMALLEST_LEGIBLE_GRID_SCALE = 4;
 
-const CHECKER_SQUARES =
-  'linear-gradient(45deg, #2b2b2b 25%, transparent 25%, transparent 75%, #2b2b2b 75%)';
-
-const TRANSPARENCY_CHECKER = {
-  backgroundImage: `${CHECKER_SQUARES}, ${CHECKER_SQUARES}`,
-  backgroundSize: '12px 12px',
-  backgroundPosition: '0 0, 6px 6px',
-  backgroundColor: '#1e1e1e',
-};
+const TRANSPARENCY_CHECKER = transparencyCheckerStyle(12);
 
 export type StrokePhase = 'start' | 'drag';
 

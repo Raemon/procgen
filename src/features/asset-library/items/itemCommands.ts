@@ -9,7 +9,7 @@ import {
 } from '@/features/asset-library/items/itemDef';
 import type { ItemPatch } from '@/features/asset-library/items/itemAssets';
 import { clampLightRadius, MAX_LIGHT_RADIUS } from '@/features/game/light/lightEmission';
-import { isSpriteArt } from '@/features/asset-library/tiles/spriteArt';
+import { spriteArtFromStoredShape } from '@/features/asset-library/tiles/storage/storedSpriteArt';
 import {
   commandFailed,
   commandSucceeded,
@@ -81,10 +81,10 @@ registerItemCommand({
     hover: { kind: 'number', help: 'how far above the ground it floats, in tiles', optional: true },
     sprite: {
       kind: 'json',
-      help: 'billboard art: a flat array of size*size "#rrggbb" strings and nulls, where null is transparent; or null to clear it',
+      help: 'billboard art: {palette: {"f": "#ff8a1f"}, rows: ["..ff..", ...]} rows of palette characters ("." is transparent) — the easiest form to write — or a flat array of size*size "#rrggbb" strings and nulls, or the compact form GET reports; null to clear it',
       optional: true,
     },
-    face_art: { kind: 'json', help: 'cube art as GET /api/v1/asset-library/tiles reports it, or null to clear it', optional: true },
+    face_art: { kind: 'json', help: 'cube art: {palette: {"g": "#7bbf5a"}, top: ["g.", ".g"], ...} rows of palette characters per face, or either shape GET /api/v1/asset-library/tiles reports; null to clear it', optional: true },
     light: {
       kind: 'number',
       help: `how far this item lights the dark around it, in tiles (0-${MAX_LIGHT_RADIUS}); a character carrying it casts the same light`,
@@ -241,16 +241,17 @@ export function spriteFrom(params: CommandParams, name = 'sprite'): SpriteRead {
   const raw = params[name];
   if (raw === undefined) return { ok: true, value: undefined };
   if (raw === null) return { ok: true, value: null };
-  if (!isSpriteArt(raw)) {
+  const sprite = spriteArtFromStoredShape(raw);
+  if (sprite === null) {
     return {
       ok: false,
       failure: commandFailed(
         'invalid_value',
-        `'${name}' must be a square array of "#rrggbb" strings and nulls, or null to clear it`,
+        `'${name}' must be pixel art — {palette, rows} rows of palette characters, a square array of "#rrggbb" strings and nulls, or the compact form GET reports — or null to clear it`,
       ),
     };
   }
-  return { ok: true, value: raw };
+  return { ok: true, value: sprite };
 }
 
 type TagsRead = { ok: true; value: string[] | undefined } | { ok: false; failure: CommandResult };

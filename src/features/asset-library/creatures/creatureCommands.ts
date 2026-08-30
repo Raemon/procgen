@@ -89,7 +89,7 @@ registerCreatureCommand({
     body_height: { kind: 'number', help: 'how tall its body is, in tiles — characters default to 2', optional: true },
     phasing: { kind: 'int', help: '1 if it walks through blocking tiles, 0 if it must go around', optional: true },
     kind: { kind: 'int', help: entityKindHelp(), optional: true },
-    face_art: { kind: 'json', help: 'cube face art, or null to clear it', optional: true },
+    face_art: { kind: 'json', help: 'cube face art: {palette: {"g": "#7bbf5a"}, top: ["g.", ".g"], ...} rows of palette characters per face, or either shape GET reports; null to clear it', optional: true },
   },
   example: { action: 'update_creature', creature_id: 0, behavior: 3, speed: 2.5 },
   apply: (context, params) => updateCreature(context, params),

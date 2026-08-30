@@ -1,5 +1,4 @@
-import { useEffect, useRef } from 'react';
-import { paintFacePixels } from '@/features/game/render/paintFacePixels';
+import { PixelGridCanvas } from '../../pixelArtEditor/PixelGridCanvas';
 import { tooltipHandlers } from '@/features/app-shell/tooltips/tooltipHandlers';
 import { faceArtMips, type FaceMip } from '../mips/faceArtMips';
 import type { FacePixels } from '../tileFaceArt';
@@ -25,21 +24,12 @@ export function ScaledArtStrip({
 }
 
 function MipSwatch({ mip }: { mip: FaceMip }) {
-  const canvas = useRef<HTMLCanvasElement>(null);
-  useEffect(() => {
-    if (canvas.current) drawMip(canvas.current, mip);
-  }, [mip]);
   return (
-    <canvas
-      ref={canvas}
+    <PixelGridCanvas
+      pixels={mip.inks}
       className="block rounded-[2px] [image-rendering:pixelated]"
       style={{ width: SWATCH_PIXELS, height: SWATCH_PIXELS }}
       {...tooltipHandlers(scaledArtTip(mip.side))}
     />
   );
-}
-
-function drawMip(canvas: HTMLCanvasElement, mip: FaceMip): void {
-  canvas.width = canvas.height = mip.side;
-  paintFacePixels(canvas.getContext('2d')!, mip.inks, null, 1);
 }

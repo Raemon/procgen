@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { paintSpritePixels } from '../paintSpritePixels';
+import { paintFacePixels } from '../paintFacePixels';
 import { spriteGridSize, type SpriteArt } from '@/features/asset-library/tiles/spriteArt';
 
 export function spriteMaterial(
@@ -18,7 +18,7 @@ export function spriteMaterial(
 export function spriteTexture(sprite: SpriteArt): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = spriteGridSize(sprite);
-  paintSpritePixels(canvas.getContext('2d')!, sprite, 1);
+  paintFacePixels(canvas.getContext('2d')!, sprite, null, 1);
   const texture = new THREE.CanvasTexture(canvas);
   texture.magFilter = THREE.NearestFilter;
   texture.minFilter = THREE.NearestFilter;
