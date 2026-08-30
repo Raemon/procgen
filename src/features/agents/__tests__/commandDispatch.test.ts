@@ -335,6 +335,14 @@ export function checkCommandDispatch(check: CheckReporter): void {
       shipped !== undefined && shipped.nodes.length !== nodeIds.length
     );
   })());
+  check('deleting your copy of a built-in world seed gives the shipped one back', (() => {
+    const dropped = act('god', 'delete_world_seed', { name: 'volcanic islands' });
+    return (
+      dropped.ok &&
+      commands.context.worldSeeds.byName('volcanic islands') === undefined &&
+      !commands.context.worldSeeds.hiddenExamples().includes('volcanic islands')
+    );
+  })());
   check('deleting a built-in world seed takes it off the shelf without making its name unloadable', (() => {
     const deleted = act('god', 'delete_world_seed', { name: 'volcanic islands' });
     const stillLoadable = act('god', 'load_world_seed', { name: 'volcanic islands' });
