@@ -54,7 +54,7 @@ registerPieceCommand({
 
 registerPieceCommand({
   action: 'duplicate_piece',
-  humanControl: 'detail panel, pieces: ⧉ on a piece row',
+  humanControl: 'detail panel, pieces: ⧉ duplicate',
   description: 'Copy a piece with all its voxels.',
   params: { piece_id: { kind: 'int', help: PIECE_ID_HELP } },
   example: { action: 'duplicate_piece', piece_id: 0 },
@@ -69,7 +69,7 @@ registerPieceCommand({
 
 registerPieceCommand({
   action: 'rename_piece',
-  humanControl: 'detail panel, pieces: the name field on a piece row',
+  humanControl: 'detail panel, pieces: the name field',
   description: 'Rename a piece. Nodes bind pieces by id, so renaming is safe.',
   params: {
     piece_id: { kind: 'int', help: PIECE_ID_HELP },
@@ -194,7 +194,7 @@ registerPieceCommand({
 
 registerPieceCommand({
   action: 'set_piece_role',
-  humanControl: 'detail panel, pieces: the role dropdown on a piece row',
+  humanControl: 'detail panel, pieces: the role knob',
   description:
     'Tag what part of a building this piece is, so the assembler knows where it may go.',
   params: {
@@ -226,7 +226,7 @@ registerPieceCommand({
 
 registerPieceCommand({
   action: 'remove_piece',
-  humanControl: 'detail panel, pieces: ✕ on a piece row',
+  humanControl: 'detail panel, pieces: ✕ beside duplicate',
   description:
     'Delete a piece. Nodes bound to it stop stamping anything, and cultures that bound it to a building role fall back to their tiles.',
   params: { piece_id: { kind: 'int', help: PIECE_ID_HELP } },
