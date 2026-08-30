@@ -16,10 +16,12 @@ export const NODE_NOTES_TIP: TooltipContent = {
   body: 'A free-text note kept with the node and saved into world seeds and node groups. Nothing reads it but you.',
 };
 
-export const NODE_FOLDER_TIP: TooltipContent = {
-  title: 'folder',
-  body: 'Grouping for the editor only. Adjacent nodes sharing a folder name fold into one band that can be collapsed or sent to the asset library as a node group; nothing about generation changes.',
-};
+export function nodeFolderTip(node: NodeInstance): TooltipContent {
+  return {
+    title: node.folder ? `folder: ${node.folder}` : 'folder: ungrouped',
+    body: 'Grouping for the editor only. Adjacent nodes sharing a folder name fold into one band that can be collapsed or sent to the asset library as a node group; nothing about generation changes.',
+  };
+}
 
 export const FOLDER_NAME_TIP: TooltipContent = {
   title: 'folder name',
