@@ -6,7 +6,7 @@ const DETAIL_KEY = 'tileMaterialDetail';
 
 export type TileMaterialDetail =
   | { kind: 'faceArt'; surface: TileSurface }
-  | { kind: 'png'; textureId: string; baseColor: string; glow: number };
+  | { kind: 'png'; textureId: string; baseColor: string; glow: number; pull: number };
 
 export function rememberTileMaterialDetail(
   mesh: THREE.Mesh,
@@ -24,7 +24,7 @@ export function tileMaterialsAtDetail(
   sideBudget: number,
 ): THREE.Material | THREE.Material[] {
   if (detail.kind === 'faceArt') return tileSurfaceMaterials(detail.surface, sideBudget);
-  return pngCubeMaterials(detail.textureId, detail.baseColor, detail.glow, sideBudget);
+  return pngCubeMaterials(detail.textureId, detail.baseColor, detail.glow, sideBudget, detail.pull);
 }
 
 export function applyTileSideBudget(group: THREE.Object3D, sideBudget: number): void {
