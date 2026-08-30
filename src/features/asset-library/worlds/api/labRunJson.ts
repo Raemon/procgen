@@ -14,7 +14,7 @@ export function runListJson(run: LabRun) {
     candidates_done: run.done,
     elites: run.worldSeeds.length,
     coverage: latestCoverageOf(run),
-    world_seeds_graded: run.worldSeeds.length,
+    world_seeds_graded: run.done,
     world_seeds_with_nowhere_to_walk: run.unwalkable,
     best_fun: run.worldSeeds[0]?.grade.fun ?? null,
     error: run.error,
