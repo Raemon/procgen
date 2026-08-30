@@ -58,7 +58,7 @@ registerCreatureCommand({
 
 registerCreatureCommand({
   action: 'duplicate_creature',
-  humanControl: 'detail panel, creatures: ⧉ on a creature row',
+  humanControl: 'detail panel, creatures: ⧉ duplicate',
   description: 'Copy a creature definition with all its knobs.',
   params: { creature_id: { kind: 'int', help: CREATURE_ID_HELP } },
   example: { action: 'duplicate_creature', creature_id: 0 },
@@ -73,7 +73,7 @@ registerCreatureCommand({
 
 registerCreatureCommand({
   action: 'update_creature',
-  humanControl: 'detail panel, creatures: the fields and knobs on a creature row',
+  humanControl: 'detail panel, creatures: the name, colour, symbol and behavior knobs',
   description:
     "Change a creature's look or how it moves. Only the fields you pass change.",
   params: {
@@ -97,7 +97,7 @@ registerCreatureCommand({
 
 registerCreatureCommand({
   action: 'remove_creature',
-  humanControl: 'detail panel, creatures: ✕ on a creature row',
+  humanControl: 'detail panel, creatures: ✕ beside duplicate',
   description: 'Delete a creature definition. Nodes bound to it stop spawning anything.',
   params: { creature_id: { kind: 'int', help: CREATURE_ID_HELP } },
   example: { action: 'remove_creature', creature_id: 3 },
