@@ -1,6 +1,5 @@
 import type { CultureId, PieceId } from '@/features/asset-library/asset';
 import type { PieceRoleBindings } from './cultureDef';
-import { generatedCultures } from '../generation/generatedAssets';
 import { defaultPieceId } from '../pieces/defaultPieces';
 import { FURNISHING_PIECE_NAMES } from '../pieces/defaults/furnishingPieces';
 import { STONEWOLD_PIECE_NAMES } from '../pieces/defaults/stonewoldPieces';
@@ -14,7 +13,7 @@ export const STONEWOLD_CULTURE_ID = 0 as CultureId;
 export const THATCHMERE_CULTURE_ID = 1 as CultureId;
 
 export function defaultCultures(): Culture[] {
-  return [stonewold(), thatchmere(), ...generatedCultures];
+  return [stonewold(), thatchmere()];
 }
 
 function stonewold(): Culture {
