@@ -1,4 +1,5 @@
 import { floodFillFacePixels } from '@/features/asset-library/pixelArtEditor/ops/floodFillFacePixels';
+import { packHex } from '@/features/asset-library/tiles/art/packedHex';
 import {
   isTransparentInk,
   opaqueInk,
@@ -21,6 +22,10 @@ export function checkInkTransparency(check: CheckReporter): void {
     opaqueInk('#7bbf5aff') === '#7bbf5a' &&
       opaqueInk('#7bbf5a') === '#7bbf5a' &&
       opaqueInk(TRANSPARENT_INK) === '#000000',
+  );
+  check(
+    'packing an alpha-carrying ink keeps its hue rather than its low bytes',
+    packHex('#7bbf5aff') === packHex('#7bbf5a'),
   );
   check(
     'a color editor toggles transparency without losing the hue it had',

@@ -1,3 +1,4 @@
+import { isTransparentInk, opaqueInk } from '@/features/asset-library/tiles/inkColor';
 import { faceGridSize, type FacePixels } from '@/features/asset-library/tiles/tileFaceArt';
 import { paintPixelsAsImage } from './paintPixelsAsImage';
 
@@ -15,8 +16,8 @@ export function paintFacePixels(
   }
   pixels.forEach((pixel, index) => {
     const ink = pixel ?? unpainted;
-    if (ink === null) return;
-    ctx.fillStyle = ink;
+    if (ink === null || isTransparentInk(ink)) return;
+    ctx.fillStyle = opaqueInk(ink);
     ctx.fillRect(
       (index % size) * pixelSize,
       Math.floor(index / size) * pixelSize,
