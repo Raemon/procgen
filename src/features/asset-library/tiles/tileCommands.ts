@@ -1,6 +1,6 @@
 import type { TileId } from '@/features/asset-library/asset';
 import { clampLightRadius, MAX_LIGHT_RADIUS } from '@/features/game/light/lightEmission';
-import { isCubeFaceArt } from '@/features/asset-library/tiles/tileFaceArt';
+import { faceArtFromStoredShape } from '@/features/asset-library/tiles/storage/storedFaceArt';
 import type { EditableTileFields } from '@/features/asset-library/tiles/tileAssets';
 import { TILE_SHAPE_KINDS } from '@/features/asset-library/tiles/tileShapeKind';
 import {
@@ -185,11 +185,12 @@ export function faceArtFrom(params: CommandParams): ArtRead {
   const raw = params.face_art;
   if (raw === undefined) return { ok: true, value: undefined };
   if (raw === null) return { ok: true, value: null };
-  if (!isCubeFaceArt(raw)) {
+  const art = faceArtFromStoredShape(raw);
+  if (art === null) {
     return {
       ok: false,
       failure: commandFailed('invalid_value', "'face_art' must be cube face art, or null to clear it"),
     };
   }
-  return { ok: true, value: raw };
+  return { ok: true, value: art };
 }

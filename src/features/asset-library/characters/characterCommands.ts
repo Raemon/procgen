@@ -54,7 +54,7 @@ registerCharacterArtCommand({
     frame: { kind: 'int', help: `0-based frame index; the frame count is the append slot (max ${MAX_ANIMATION_FRAMES})` },
     sprite: {
       kind: 'json',
-      help: 'a flat array of size*size "#rrggbb" strings and nulls, where null is transparent',
+      help: 'a flat array of size*size "#rrggbb" strings and nulls, where null is transparent, or the compact {palette, pixels} form GET reports',
     },
   },
   example: {
