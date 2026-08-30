@@ -59,16 +59,25 @@ export function faceArtFromPaintedRows(art: PaintedRowsFaceArt): CubeFaceArt | n
     if (pixels === null) return null;
     grids[face] = pixels;
   }
-  const assembled = { size, ...grids, ...optionalLayersOf(art, size) };
+  const layers = optionalLayersOf(art, size);
+  if (layers === null) return null;
+  const assembled = { size, ...grids, ...layers };
   return isCubeFaceArt(assembled) ? assembled : null;
 }
 
-function optionalLayersOf(art: PaintedRowsFaceArt, size: number): Partial<CubeFaceArt> {
+function optionalLayersOf(art: PaintedRowsFaceArt, size: number): Partial<CubeFaceArt> | null {
+  let height: PartialFaceGrids | null | undefined;
+  if (art.height !== undefined) {
+    if (art.height === null) {
+      height = null;
+    } else {
+      height = partialGridsFromRows(art.height, art.palette, size);
+      if (height === null) return null;
+    }
+  }
   return {
     ...(art.frameMs === undefined ? {} : { frameMs: art.frameMs }),
-    ...(art.height === undefined
-      ? {}
-      : { height: art.height && partialGridsFromRows(art.height, art.palette, size) }),
+    ...(art.height === undefined ? {} : { height }),
     ...(art.framesAfterFirst === undefined
       ? {}
       : { framesAfterFirst: framesFromRows(art.framesAfterFirst, art.palette, size) }),
