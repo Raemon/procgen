@@ -4,13 +4,13 @@ import type { ExamplePipeline } from './examplePipeline';
 
 const ROOF_ON_THE_WALLS = BLOCKING_TILE_HEIGHT;
 const TORCH_ITEM = 5;
-const ASH_HOUND = 4;
+const GAUNT_ONE = 8;
 
 export function infiniteLabyrinth(): ExamplePipeline {
   return {
     name: 'infinite labyrinth',
     description:
-      'One node is the whole dungeon: every 8-tile cell is either a walled room holding a single puzzle or a dense warren, and every cell opens onto its neighbours through one to four doorways. The doors spiral — the ways outward from each ring are gathered into one quarter of it, turned a golden angle from the ring before, with one seam of the ring sealed shut — so moving outward means winding around each ring rather than walking straight. You wake in the empty room at the origin with a torch beside you; the first rings are all rooms of escalating challenge, and beyond them a quarter of the chunks give way to warrens you can wander freely. Something lives down here too: about one cell in twenty beyond the fourth ring keeps an ash hound. Walk over a key to pocket it and spend it at a keyhole door with F; F also works a lever or tries a barred door. Walk into a crate to push it, and press R to reset a room you have wedged shut.',
+      'One node is the whole dungeon: every 8-tile cell is either a walled room holding a single puzzle or a dense warren, and every cell opens onto its neighbours through one to four doorways. The doors spiral — the ways outward from each ring are gathered into one quarter of it, turned a golden angle from the ring before, with one seam of the ring sealed shut — so moving outward means winding around each ring rather than walking straight. You wake in the empty room at the origin with a torch beside you; the first rings are all rooms of escalating challenge, and beyond them a quarter of the chunks give way to warrens you can wander freely. Something lives down here too: about one cell in twenty beyond the fourth ring keeps a gaunt one, and once one has seen you it will run you down and rake at you with its claws. Walk over a key to pocket it and spend it at a keyhole door with F; F also works a lever or tries a barred door. Walk into a crate to push it, and press R to reset a room you have wedged shut.',
     state: {
       seed: 5309,
       daylight: 0,
@@ -40,24 +40,18 @@ export function infiniteLabyrinth(): ExamplePipeline {
         {
           id: 'denizens',
           type: 'labyrinthDenizens',
-          label: 'what lives down here',
+          label: 'what stalks you',
           folder: 'the dungeon',
           comment:
-            'Roughly one cell in twenty beyond the fourth ring is home to an ash hound, standing somewhere on that room or warren floor. The knobs here mirror the labyrinth node above so the hounds stand on its floors and not in its walls; the first four rings stay empty, because the opening is for learning in.',
+            'Roughly one cell in twenty beyond the fourth ring is home to a gaunt one, standing somewhere on that room or warren floor. It reads the labyrinth node above rather than laying out its own, so a hunter wakes on the floor that is actually painted there and never inside a wall; the first four rings stay empty, because the opening is for learning in. Sight 14 outreaches a room, so meeting one usually means being chased — the doorways and the rooms you can wedge shut are what you put between you and it.',
           enabled: true,
           params: {
-            roomFraction: 0.75,
-            tutorialRings: 3,
-            corridor: 1,
-            wall: 1,
-            braid: 0.15,
-            carver: 0,
-            doorJitter: 0.5,
+            floorTile: defaultTileId('cobbled street'),
             rarity: 0.05,
             safeRings: 4,
           },
-          inputs: {},
-          display: { mode: 'creatures', creatureId: ASH_HOUND },
+          inputs: { labyrinth: 'n1' },
+          display: { mode: 'creatures', creatureId: GAUNT_ONE },
         },
         {
           id: 'n2',

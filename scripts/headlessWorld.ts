@@ -6,6 +6,7 @@ import { loadStoredPipeline } from '@/features/asset-library/worlds/pipeline/pip
 import { sanitizePipeline } from '@/features/asset-library/worlds/pipeline/sanitizePipeline';
 import type { PipelineState } from '@/features/asset-library/worlds/pipeline/pipelineState';
 import { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
+import { CreatureAssets } from '@/features/asset-library/creatures/creatureAssets';
 import { CultureAssets } from '@/features/asset-library/cultures/cultureAssets';
 import { PieceAssets } from '@/features/asset-library/pieces/pieceAssets';
 import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
@@ -16,12 +17,13 @@ export interface HeadlessWorld {
   tileAssets: TileAssets;
   pieceAssets: PieceAssets;
   cultureAssets: CultureAssets;
+  creatureAssets: CreatureAssets;
   store: PipelineStore;
   evaluator: PipelineEvaluator;
   sampler: WorldSampler;
 }
 
-const SEEDED_ASSET_FILES = ['tiles', 'pieces', 'cultures'];
+const SEEDED_ASSET_FILES = ['tiles', 'pieces', 'cultures', 'creatures'];
 
 export function worldFromRepoData(): HeadlessWorld {
   seedAssetFiles();
@@ -64,6 +66,7 @@ function worldAround(store: PipelineStore): HeadlessWorld {
   const tileAssets = new TileAssets();
   const pieceAssets = new PieceAssets();
   const cultureAssets = new CultureAssets();
+  const creatureAssets = new CreatureAssets();
   const evaluator = new PipelineEvaluator(store);
   const sampler = new WorldSampler(
     store,
@@ -74,5 +77,5 @@ function worldAround(store: PipelineStore): HeadlessWorld {
     new TakenItemSpawns(),
     cultureAssets,
   );
-  return { tileAssets, pieceAssets, cultureAssets, store, evaluator, sampler };
+  return { tileAssets, pieceAssets, cultureAssets, creatureAssets, store, evaluator, sampler };
 }

@@ -1,24 +1,33 @@
 import { registerNodeType } from '../../nodeRegistry';
 import type { ChunkGenCtx } from '../../nodeType';
-import { pointsValue, type ChunkValue, type PointsChunk } from '../../values/chunkValues';
-import { lairInCell } from '../../labyrinth/denizenLairs';
-import { LABYRINTH_SEED_LABEL, labyrinthKnobsFrom } from '../../labyrinth/labyrinthKnobs';
-import { LABYRINTH_CELL_SIZE, labyrinthCellCoordOf } from '../../labyrinth/labyrinthLattice';
-import { LABYRINTH_GEOMETRY_PARAMS } from './labyrinthGeometryParams';
+import { pointsValue, type ChunkValue, type PointsChunk, type TilesChunk } from '../../values/chunkValues';
+import { lairInCell, type DenizenLair } from '../../labyrinth/denizenLairs';
+import { LABYRINTH_CELL_SIZE, labyrinthCellCoordOf, labyrinthCellOrigin } from '../../labyrinth/labyrinthLattice';
 
 export const DENIZEN_TAG = 'denizen';
+const DENIZEN_SEED_LABEL = 'denizens';
 
 registerNodeType({
   type: 'labyrinthDenizens',
   title: 'labyrinth denizens',
   category: 'maze',
   description:
-    'One rare inhabitant per haunted labyrinth cell, standing on a floor tile of the room or warren the labyrinth carved there. Rings near the origin are left empty so the opening stays a place to learn in.',
+    'One rare inhabitant per haunted labyrinth cell, standing on a floor tile of the room or warren painted there. It reads the labyrinth it is given rather than laying one out of its own, so an inhabitant never wakes inside a wall. Rings near the origin are left empty so the opening stays a place to learn in.',
   whenToUse:
-    'The thing you did not want to meet, in a world made of rooms. Give it the same geometry knobs as the labyrinth node beside it and bind it to a creature, so the delve has something living in it as well as puzzles.',
-  inputs: {},
+    'The thing you did not want to meet, in a world made of rooms. Feed it the labyrinth tiles beside it and bind it to a creature, so the delve has something living in it as well as puzzles.',
+  inputs: {
+    labyrinth: {
+      kind: 'tiles',
+      label: 'labyrinth',
+      help: 'The painted labyrinth these things live in. Their lairs are picked from its floor tiles, so they stand where you can walk.',
+    },
+  },
   params: {
-    ...LABYRINTH_GEOMETRY_PARAMS,
+    floorTile: {
+      kind: 'tile',
+      label: 'floor',
+      help: 'The floor tile of the labyrinth above. Cells painted with it are where an inhabitant may stand.',
+    },
     rarity: {
       kind: 'number',
       label: 'rarity',
@@ -42,19 +51,45 @@ registerNodeType({
 });
 
 function denizenChunk(ctx: ChunkGenCtx): ChunkValue {
-  const knobs = labyrinthKnobsFrom(ctx.hashSeed(LABYRINTH_SEED_LABEL), ctx.params);
+  const labyrinth = ctx.tilesInput('labyrinth');
+  if (!labyrinth) return pointsValue([]);
+  const seed = ctx.hashSeed(DENIZEN_SEED_LABEL);
   const denizens = denizenKnobsOf(ctx);
+  const floorTile = ctx.params.floorTile as number;
   const cellsAcross = ctx.size / LABYRINTH_CELL_SIZE;
   const firstCellX = labyrinthCellCoordOf(ctx.originX);
   const firstCellY = labyrinthCellCoordOf(ctx.originY);
   const points: PointsChunk = [];
   for (let cy = 0; cy < cellsAcross; cy++) {
     for (let cx = 0; cx < cellsAcross; cx++) {
-      const lair = lairInCell(firstCellX + cx, firstCellY + cy, knobs, denizens);
+      const cellX = firstCellX + cx;
+      const cellY = firstCellY + cy;
+      const floors = floorCellsOf(ctx, labyrinth, cellX, cellY, floorTile);
+      const lair = lairInCell(cellX, cellY, seed, denizens, floors);
       if (lair) points.push({ x: lair.x, y: lair.y, tag: DENIZEN_TAG });
     }
   }
   return pointsValue(points);
+}
+
+function floorCellsOf(
+  ctx: ChunkGenCtx,
+  labyrinth: TilesChunk,
+  cellX: number,
+  cellY: number,
+  floorTile: number,
+): DenizenLair[] {
+  const originX = labyrinthCellOrigin(cellX);
+  const originY = labyrinthCellOrigin(cellY);
+  const floors: DenizenLair[] = [];
+  for (let y = 0; y < LABYRINTH_CELL_SIZE; y++) {
+    for (let x = 0; x < LABYRINTH_CELL_SIZE; x++) {
+      const world = { x: originX + x, y: originY + y };
+      const index = (world.y - ctx.originY) * ctx.size + (world.x - ctx.originX);
+      if (labyrinth[index] === floorTile) floors.push(world);
+    }
+  }
+  return floors;
 }
 
 function denizenKnobsOf(ctx: ChunkGenCtx) {
