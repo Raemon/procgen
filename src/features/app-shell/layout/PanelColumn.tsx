@@ -12,6 +12,7 @@ export function PanelColumn({
   tone,
   rail,
   headerActions,
+  fill,
   layout,
   children,
 }: {
@@ -22,6 +23,7 @@ export function PanelColumn({
   tone: string;
   rail: ReactNode;
   headerActions?: ReactNode;
+  fill?: boolean;
   layout: PanelLayout;
   children: ReactNode;
 }) {
@@ -35,6 +37,7 @@ export function PanelColumn({
           tone,
           rail,
           headerActions,
+          fill,
           collapsed: layout.isCollapsed(panelKey),
           onToggleCollapsed: () => layout.toggleCollapsed(panelKey),
         }}

@@ -5,7 +5,7 @@ import { measureWork } from '@/features/game/performance/workTimers';
 import { NO_ITEM_SPAWNS, type ItemSpawnSource } from '@/features/asset-library/items/pickups/itemSpawnSource';
 import { TakenItemSpawns } from '@/features/asset-library/items/pickups/takenItemSpawns';
 import type { CubeFaceArt } from '@/features/asset-library/tiles/tileFaceArt';
-import type { TileAssets } from '@/features/asset-library/tiles/tileAssets';
+import type { ReadOnlyTileAssets } from '@/features/app-shell/runtime/readOnlyAssets';
 import { cellIndexInChunk, chunkCoordOfCell } from './chunk';
 import { markerAppearance } from './display/markerAppearance';
 import type { PipelineEvaluator } from './eval/evaluator';
@@ -82,7 +82,7 @@ export class WorldSampler {
   constructor(
     private readonly store: PipelineStore,
     private readonly evaluator: PipelineEvaluator,
-    private readonly tileAssets: TileAssets,
+    private readonly tileAssets: ReadOnlyTileAssets,
     pieces: PieceSource = NO_PIECES,
     private readonly items: ItemSource = NO_ITEMS,
     private readonly takenItems: TakenItemSpawns = new TakenItemSpawns(),

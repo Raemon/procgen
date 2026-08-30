@@ -15,4 +15,8 @@ export const PERSISTED_UI_KEYS = {
   collapsedNodeCards: 'procgen.collapsedNodeCards',
   collapsedNodeFolders: 'procgen.collapsedNodeFolders',
   performancePanelOpen: 'world.performancePanelOpen',
+  worldsColumns: 'worlds.columns',
+  worldsRows: 'worlds.rows',
+  worldsZoom: 'worlds.zoom',
+  worldsCamera: 'worlds.camera',
 } as const;

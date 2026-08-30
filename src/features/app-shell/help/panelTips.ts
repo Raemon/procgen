@@ -18,6 +18,10 @@ export const PANEL_TIPS: Readonly<Record<PanelKey, TooltipContent>> = {
     title: 'agent log',
     body: 'The transcript of the selected agent: what it saw, what it decided, and what it spent.',
   },
+  worlds: {
+    title: 'worlds',
+    body: 'Other seeds of the world on screen, grown in a grid. Ascii and 3-D god cameras look at every roll the same way; click one to put it in the game view.',
+  },
 };
 
 export const RESIZER_TIP: TooltipContent = {
