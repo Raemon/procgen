@@ -13,6 +13,7 @@ import {
   NODE_LABEL_TIP,
   nodeEnabledTip,
 } from './help/nodeCardTips';
+import { NodeFolderMenu } from './NodeFolderMenu';
 import { NODE_ID_MIME } from './nodeDragTransfer';
 import { NodeTypeIcon } from './nodeTypeIcon';
 
@@ -59,6 +60,7 @@ export function NodeCardHeader({
         {...tooltipHandlers(nodeEnabledTip(node))}
       />
       <NodeLabelInput node={node} />
+      <NodeFolderMenu node={node} />
       <Button
         className={classes(REVEALED_ON_ROW_HOVER, 'px-1.5 py-0.5 text-[11px]')}
         tip={duplicateNodeTip(node)}

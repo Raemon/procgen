@@ -38,3 +38,11 @@ export function TrashIcon({ size }: { size?: number }) {
     </Icon>
   );
 }
+
+export function FolderIcon({ size }: { size?: number }) {
+  return (
+    <Icon size={size}>
+      <path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4L11 7.5h8.5A1.5 1.5 0 0 1 21 9v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18Z" />
+    </Icon>
+  );
+}
