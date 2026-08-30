@@ -1,6 +1,6 @@
 import { CHUNK_SIZE } from '@/features/asset-library/worlds/chunk';
 
-const MIN_RADIUS_CHUNKS = 2;
+export const MIN_RADIUS_CHUNKS = 2;
 export const MAX_RADIUS_CHUNKS = 6;
 const TERRAIN_OVERVIEW_RADIUS_CELLS = 5;
 
