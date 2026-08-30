@@ -2,6 +2,12 @@ import * as THREE from 'three';
 import { cameraRelativeStep } from '../input/cameraRelativeStep';
 import { PanOffset } from '../render/camera/panOffset';
 import { ZoomScale } from '../render/camera/zoomScale';
+import { WheelTileZoom } from '../render/camera/wheelTileZoom';
+import {
+  MAX_GOD_VIEW_SIZE_TILES,
+  MIN_GOD_VIEW_SIZE_TILES,
+  clampGodViewSizeTiles,
+} from '../vision/godViewSize';
 import { worldPanForDrag } from '../render/view3d/dragToWorldPan';
 import {
   detailedContentRadiusTiles,
@@ -65,6 +71,25 @@ export function checkCameraMovementAndZoom(check: CheckReporter): void {
   check('zooming in stops at the maximum scale', zoom.current() === 4);
   zoom.applyWheelPixels(42000);
   check('zooming out stops at the minimum scale', zoom.current() === 0.25);
+
+  const tileZoom = new WheelTileZoom(clampGodViewSizeTiles);
+  check('one wheel notch out roughly doubles the tiles in an ascii view', tileZoom.sizeAfterWheelPixels(33, 420) === 67);
+  check('a notch too small to change the tile count leaves the view alone', tileZoom.sizeAfterWheelPixels(33, 4) === null);
+  check('nudges that add up to a notch do change it, since the leftovers are kept', (() => {
+    const nudged = new WheelTileZoom(clampGodViewSizeTiles);
+    for (let nudge = 0; nudge < 3; nudge++) {
+      if (nudged.sizeAfterWheelPixels(33, 5) !== null) return false;
+    }
+    return nudged.sizeAfterWheelPixels(33, 5) === 35;
+  })());
+  check('zooming an ascii view in and out stops at the supported widths', (() => {
+    const bounded = new WheelTileZoom(clampGodViewSizeTiles);
+    return (
+      bounded.sizeAfterWheelPixels(33, 4200) === MAX_GOD_VIEW_SIZE_TILES &&
+      bounded.sizeAfterWheelPixels(MAX_GOD_VIEW_SIZE_TILES, -42000) === MIN_GOD_VIEW_SIZE_TILES &&
+      bounded.sizeAfterWheelPixels(MIN_GOD_VIEW_SIZE_TILES, -4200) === null
+    );
+  })());
 
   const pan = new PanOffset();
   pan.shiftBy(3, -2);

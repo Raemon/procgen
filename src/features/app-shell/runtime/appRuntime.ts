@@ -273,6 +273,8 @@ export function createAppRuntime(): AppRuntime {
           turn: (eighthTurns) => world.turn(eighthTurns),
           sightRadiusTiles: () => world.sightRadiusTiles,
           setSightRadiusTiles: (radius) => world.setSightRadiusTiles(radius),
+          godViewSizeTiles: () => world.godViewSizeTiles,
+          setGodViewSizeTiles: (sizeTiles) => world.setGodViewSizeTiles(sizeTiles),
         },
       },
       abilityModeFor(action),

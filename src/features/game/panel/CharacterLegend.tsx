@@ -10,7 +10,7 @@ import { glyphOf, inkOf } from '../render/agentText/characterGlyphs';
 
 const ROSTER_POLL_MS = 250;
 
-export function CharacterLegend() {
+export function CharacterLegend({ placement }: { placement: 'overlay' | 'column' }) {
   const runtime = useAppRuntime();
   const characters = useRoster();
   const followedId = useSyncExternalStore(
@@ -20,7 +20,12 @@ export function CharacterLegend() {
   );
   const you = characters[0];
   return (
-    <div className="pointer-events-auto absolute right-3 top-3 w-60 rounded bg-black/70 p-2 font-mono text-[11px]">
+    <div
+      className={classes(
+        'rounded bg-black/70 p-2 font-mono text-[11px]',
+        placement === 'overlay' ? 'pointer-events-auto absolute right-3 top-3 w-60' : 'w-full',
+      )}
+    >
       <div className="mb-1 uppercase tracking-wider text-ink-dim">characters</div>
       {characters.map((character) => (
         <button

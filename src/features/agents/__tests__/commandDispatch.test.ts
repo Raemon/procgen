@@ -29,6 +29,12 @@ import {
   MIN_CHARACTER_SIGHT_RADIUS_TILES,
   clampSightRadiusTiles,
 } from '@/features/game/vision/characterSight';
+import {
+  DEFAULT_GOD_VIEW_SIZE_TILES,
+  MAX_GOD_VIEW_SIZE_TILES,
+  MIN_GOD_VIEW_SIZE_TILES,
+  clampGodViewSizeTiles,
+} from '@/features/game/vision/godViewSize';
 import { commandsForMode, commandFor } from '@/features/app-shell/runtime/commands/commandCatalog';
 import { performCommand } from '@/features/app-shell/runtime/commands/performCommand';
 import { everyCommand } from '../api/docs/apiDocs';
@@ -41,6 +47,7 @@ function abilityWorld(initialTiles: TileDef[] = []) {
   const cultures = new CultureAssets();
   const pose = { x: 0, y: 0, facing: 0 as FacingIndex };
   const sight: { radius: number } = { radius: DEFAULT_CHARACTER_SIGHT_RADIUS_TILES };
+  const godView: { sizeTiles: number } = { sizeTiles: DEFAULT_GOD_VIEW_SIZE_TILES };
   const sampler = new WorldSampler(store, new PipelineEvaluator(store), abilityTiles, pieces);
   const context = {
     store,
@@ -80,9 +87,12 @@ function abilityWorld(initialTiles: TileDef[] = []) {
       turn: (turns: number) => (pose.facing = turnedFacing(pose.facing, turns)),
       sightRadiusTiles: () => sight.radius,
       setSightRadiusTiles: (radius: number) => (sight.radius = clampSightRadiusTiles(radius)),
+      godViewSizeTiles: () => godView.sizeTiles,
+      setGodViewSizeTiles: (sizeTiles: number) =>
+        (godView.sizeTiles = clampGodViewSizeTiles(sizeTiles)),
     },
   };
-  return { context, store, pose, sight, pieces, tileAssets: abilityTiles };
+  return { context, store, pose, sight, godView, pieces, tileAssets: abilityTiles };
 }
 
 function steppingWorld(elevationAt: (x: number, y: number) => number) {
@@ -177,6 +187,36 @@ export function checkCommandDispatch(check: CheckReporter): void {
       tooNear.ok && narrowedTo === MIN_CHARACTER_SIGHT_RADIUS_TILES &&
       back.ok && commands.sight.radius === DEFAULT_CHARACTER_SIGHT_RADIUS_TILES
     );
+  })());
+  check('set_view_size is a god power, and character mode has no such knob', (() => {
+    const widened = act('god', 'set_view_size', { view_size_tiles: 65 });
+    const inCharacterMode = act('character', 'set_view_size', { view_size_tiles: 65 });
+    return (
+      widened.ok &&
+      widened.summary.includes('65') &&
+      commands.godView.sizeTiles === 65 &&
+      !inCharacterMode.ok &&
+      inCharacterMode.code === 'unknown_action'
+    );
+  })());
+  check('set_view_size rounds even widths and clamps out-of-range ones, and says so', (() => {
+    const even = act('god', 'set_view_size', { view_size_tiles: 40 });
+    const rounded = commands.godView.sizeTiles;
+    const tooWide = act('god', 'set_view_size', { view_size_tiles: 5000 });
+    const widestIs = commands.godView.sizeTiles;
+    const tooNarrow = act('god', 'set_view_size', { view_size_tiles: 1 });
+    const narrowestIs = commands.godView.sizeTiles;
+    const back = act('god', 'set_view_size', { view_size_tiles: DEFAULT_GOD_VIEW_SIZE_TILES });
+    return (
+      even.ok && rounded === 41 &&
+      tooWide.ok && tooWide.summary.includes('clamped') && widestIs === MAX_GOD_VIEW_SIZE_TILES &&
+      tooNarrow.ok && narrowestIs === MIN_GOD_VIEW_SIZE_TILES &&
+      back.ok && commands.godView.sizeTiles === DEFAULT_GOD_VIEW_SIZE_TILES
+    );
+  })());
+  check('set_view_size refuses a width that is not a number', (() => {
+    const result = act('god', 'set_view_size', { view_size_tiles: 'wide' });
+    return !result.ok && result.code === 'invalid_value';
   })());
   check('set_sight_radius refuses a radius that is not a number', (() => {
     const result = act('character', 'set_sight_radius', { radius_tiles: 'far' });

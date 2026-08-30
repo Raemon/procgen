@@ -1,9 +1,8 @@
 import type { FacingIndex } from '@/features/game/facing';
 import type { CommandActor } from '@/features/app-shell/runtime/commands/command';
-import {
-  DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
-  clampSightRadiusTiles,
-} from '@/features/game/vision/characterSight';
+import { clampSightRadiusTiles } from '@/features/game/vision/characterSight';
+import { clampGodViewSizeTiles } from '@/features/game/vision/godViewSize';
+import { godViewSizeOf, sightRadiusOf, type ViewVision } from '../observation';
 import type { AgentMode, AgentPose } from '../agentMode';
 import { jumpLandingDelta } from '@/features/game/sim/jumpLanding';
 import { stepIsAllowed, type StepRules } from '@/features/game/sim/stepIsAllowed';
@@ -17,6 +16,7 @@ export interface AgentSession {
   y: number;
   facing: FacingIndex;
   sightRadiusTiles: number;
+  godViewSizeTiles: number;
   createdAt: number;
   lastAction: { action: string; outcome: string } | null;
   notebook: AgentNotebook;
@@ -49,7 +49,7 @@ export function newSession(
   name: string,
   mode: AgentMode,
   spawn: { x: number; y: number },
-  sightRadiusTiles: number = DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
+  vision: ViewVision = {},
 ): AgentSession {
   return {
     id,
@@ -58,11 +58,19 @@ export function newSession(
     x: spawn.x,
     y: spawn.y,
     facing: 0,
-    sightRadiusTiles: clampSightRadiusTiles(sightRadiusTiles),
+    sightRadiusTiles: sightRadiusOf(vision),
+    godViewSizeTiles: godViewSizeOf(vision),
     createdAt: Date.now(),
     lastAction: null,
     notebook: newNotebook(),
     run: null,
+  };
+}
+
+export function sessionVision(session: AgentSession): ViewVision {
+  return {
+    sightRadiusTiles: session.sightRadiusTiles,
+    godViewSizeTiles: session.godViewSizeTiles,
   };
 }
 
@@ -99,6 +107,10 @@ export function sessionActor(session: AgentSession, rules: StepRules): CommandAc
     sightRadiusTiles: () => session.sightRadiusTiles,
     setSightRadiusTiles: (radius) => {
       session.sightRadiusTiles = clampSightRadiusTiles(radius);
+    },
+    godViewSizeTiles: () => session.godViewSizeTiles,
+    setGodViewSizeTiles: (sizeTiles) => {
+      session.godViewSizeTiles = clampGodViewSizeTiles(sizeTiles);
     },
   };
 }

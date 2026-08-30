@@ -12,7 +12,7 @@ import { RemotePlayers } from '../multiplayer/client/remotePlayers';
 import { AGENT_GLYPH, withCharactersPainted } from '../render/agentText/characterGlyphs';
 
 export function checkCharactersOnStage(check: CheckReporter): void {
-  const world = { playerX: 4, playerY: 4, facing: 0 as const, sightRadiusTiles: 10, on: () => () => undefined };
+  const world = { playerX: 4, playerY: 4, facing: 0 as const, sightRadiusTiles: 10, godViewSizeTiles: 33, on: () => () => undefined };
   const remote = new RemotePlayers();
   remote.selfId = 1;
   remote.applyMeta({ t: 'entityMeta', id: 7, name: 'agent_probe', kind: 'agent' });
@@ -61,6 +61,7 @@ function observationOf(view: string[], x: number, y: number): AgentObservation {
     facing: 'north',
     viewSize: view.length,
     sightRadiusTiles: null,
+  godViewSizeTiles: 33,
     view,
     elevation: null,
     elevationFloorSteps: null,

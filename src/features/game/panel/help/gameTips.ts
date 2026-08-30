@@ -16,7 +16,7 @@ export const VIEW_MODE_TIPS: Readonly<Record<ViewMode, TooltipContent>> = {
   },
   'agent-god': {
     title: 'Agent God',
-    body: 'The same overhead view rendered as ASCII — exactly the characters an agent reads over the API.',
+    body: 'The same overhead view rendered as ASCII — exactly the characters an agent reads over the API. The wheel zooms it the way it zooms the 3-D view, by widening or narrowing the window of world one look hands you.',
     when: 'Checking that what a language model sees matches what you see.',
   },
   character: {

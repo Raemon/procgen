@@ -22,7 +22,7 @@ import { performVerb } from './performVerb';
 import { runScript, scriptRunText } from './scriptRunner';
 import { creatureAwareOverlay } from '../creatureMarkers';
 import type { WorldAccess } from './serverWorld';
-import { appendTranscript, sessionPose, type AgentSession, type AutopilotRun } from './sessions';
+import { appendTranscript, sessionPose, sessionVision, type AgentSession, type AutopilotRun } from './sessions';
 
 export type ToolInput = Record<string, unknown>;
 
@@ -184,7 +184,7 @@ function observe(session: AgentSession, access: WorldAccess): string {
       world.tileAssets,
       sessionPose(session),
       session.mode,
-      session.sightRadiusTiles,
+      sessionVision(session),
       creatureAwareOverlay(world),
     ),
   );
