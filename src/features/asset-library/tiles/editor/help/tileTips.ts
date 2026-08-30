@@ -59,3 +59,10 @@ export function scaledArtTip(side: number): TooltipContent {
         : `The copy drawn once a tile covers fewer than ${side * 2} screen pixels.`,
   };
 }
+
+export function duplicateTileTip(tile: TileDef): TooltipContent {
+  return {
+    title: `duplicate ${tile.name}`,
+    body: 'Files a copy of this tile — art, shape and knobs included — as a new tile with its own id.',
+  };
+}
