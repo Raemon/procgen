@@ -42,7 +42,7 @@ registerTileCommand({
 
 registerTileCommand({
   action: 'update_tile',
-  humanControl: 'detail panel, tiles: the fields on a tile row',
+  humanControl: 'detail panel, tiles: the name, symbol, walkable, height and light knobs',
   description:
     "Change a tile's look or walkability. Only the fields you pass change; walkable decides whether anyone can stand on it.",
   params: {
@@ -89,7 +89,7 @@ registerTileCommand({
 
 registerTileCommand({
   action: 'remove_tile',
-  humanControl: 'detail panel, tiles: ✕ on a tile row',
+  humanControl: 'detail panel, tiles: ✕ beside duplicate',
   description: 'Delete a tile type. Nodes still pointing at its id fall back to drawing nothing.',
   params: { tile_id: { kind: 'int', help: TILE_ID_HELP } },
   example: { action: 'remove_tile', tile_id: 7 },
@@ -102,7 +102,7 @@ registerTileCommand({
 
 registerTileCommand({
   action: 'set_tile_shape',
-  humanControl: 'detail panel, tiles: the shape dropdown on a tile row',
+  humanControl: 'detail panel, tiles: the shape knob',
   description: `Choose the solid this tile draws as in the 3-D view. Shapes are: ${listOf(TILE_SHAPE_KINDS)}. Everything but cube leaves part of the cell open and is turned by the per-voxel facing.`,
   params: {
     tile_id: { kind: 'int', help: TILE_ID_HELP },
