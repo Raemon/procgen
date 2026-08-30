@@ -7,7 +7,6 @@ import {
   RENDER_CHOICES,
   type ItemDef,
 } from '../itemDef';
-import { DrawerPanel } from '@/features/app-shell/controls/DrawerPanel';
 import { KnobRow } from '@/features/app-shell/controls/KnobRow';
 import { Select } from '@/features/app-shell/controls/Select';
 import { Slider } from '@/features/app-shell/controls/Slider';
@@ -67,7 +66,7 @@ export function ItemRenderKnobs({ item }: { item: ItemDef }) {
   const edit = (patch: CommandParams) => perform('update_item', { item_id: item.id, ...patch });
   const isBillboard = item.render === BILLBOARD;
   return (
-    <DrawerPanel>
+    <>
       <KnobRow label="render" tip={choiceTooltip('render', RENDER_CHOICES)}>
         <Select
           value={String(item.render)}
@@ -134,7 +133,7 @@ export function ItemRenderKnobs({ item }: { item: ItemDef }) {
           onChange={(tags) => edit({ tags })}
         />
       </KnobRow>
-    </DrawerPanel>
+    </>
   );
 }
 
