@@ -13,7 +13,7 @@ export function ProcgenApp() {
       <div className="grid h-full" style={{ gridTemplateColumns: layout.gridTemplateColumns }}>
         <AssetLibrary layout={layout} />
         <Agents selectedId={selectedAgentId} onSelect={setSelectedAgentId} layout={layout} />
-        <Game />
+        <Game layout={layout} />
       </div>
       <FloatingTooltip />
     </>
@@ -22,6 +22,6 @@ export function ProcgenApp() {
 
 function visiblePanels(selectedAgentId: string | null): PanelKey[] {
   return selectedAgentId
-    ? ['library', 'detail', 'agents', 'log']
-    : ['library', 'detail', 'agents'];
+    ? ['library', 'detail', 'agents', 'log', 'worlds']
+    : ['library', 'detail', 'agents', 'worlds'];
 }

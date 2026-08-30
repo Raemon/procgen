@@ -80,6 +80,17 @@ export function HelpIcon({ size }: { size?: number }) {
   );
 }
 
+export function WorldsIcon({ size }: { size?: number }) {
+  return (
+    <Icon size={size}>
+      <rect x="3" y="3" width="8" height="8" />
+      <rect x="13" y="3" width="8" height="8" />
+      <rect x="3" y="13" width="8" height="8" />
+      <rect x="13" y="13" width="8" height="8" />
+    </Icon>
+  );
+}
+
 export function CollapseIcon({ size }: { size?: number }) {
   return (
     <Icon size={size}>

@@ -6,7 +6,7 @@ import { usePersistedUiValue } from '@/features/app-shell/state/usePersistedUiVa
 import { panelWidthsThatLeaveRoomForWorld } from './panelWidthBudget';
 import { useWindowWidth } from './useWindowWidth';
 
-export type PanelKey = 'library' | 'detail' | 'agents' | 'log';
+export type PanelKey = 'library' | 'detail' | 'agents' | 'log' | 'worlds';
 
 const MIN_PANEL_WIDTH = 150;
 const MAX_PANEL_WIDTH = 640;
@@ -18,6 +18,7 @@ const START_WIDTHS: Readonly<Record<PanelKey, number>> = {
   detail: 300,
   agents: 250,
   log: 270,
+  worlds: 520,
 };
 
 export interface PanelLayout {

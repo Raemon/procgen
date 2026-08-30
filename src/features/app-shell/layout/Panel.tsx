@@ -16,6 +16,7 @@ export interface PanelChrome {
   rail: ReactNode;
   headerActions?: ReactNode;
   collapsed: boolean;
+  fill?: boolean;
   onToggleCollapsed(): void;
 }
 
@@ -24,11 +25,15 @@ export function Panel({ chrome, children }: { chrome: PanelChrome; children: Rea
   if (chrome.collapsed) return <CollapsedRail chrome={chrome} />;
   return (
     <div
-      className={classes('overflow-y-auto border-r border-panel-edge p-3', chrome.tone)}
+      className={classes(
+        'border-r border-panel-edge p-3',
+        chrome.tone,
+        chrome.fill ? 'flex h-full min-h-0 flex-col overflow-hidden' : 'overflow-y-auto',
+      )}
       onBlur={flushPendingTweaks}
     >
       <PanelHeader chrome={chrome} />
-      {children}
+      {chrome.fill ? <div className="min-h-0 flex-1 overflow-hidden">{children}</div> : children}
     </div>
   );
 }

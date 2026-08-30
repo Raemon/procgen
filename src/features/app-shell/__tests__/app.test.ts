@@ -78,6 +78,8 @@ import { checkWalkingSimFun } from '@/features/asset-library/worlds/__tests__/wa
 import { checkSelfPlayLoop } from '@/features/asset-library/worlds/__tests__/selfPlayLoop.test';
 import { checkFeatureExtraction } from '@/features/asset-library/worlds/__tests__/featureExtraction.test';
 import { checkFeatureViewLayout } from '@/features/asset-library/worlds/__tests__/featureViewLayout.test';
+import { checkSeedFamily } from '@/features/game/worlds/__tests__/seedFamily.test';
+import { checkSeedWorlds } from '@/features/game/worlds/__tests__/seedWorld.test';
 import { routeHandlerTests } from './routeHandlers.test';
 import { bootstrapPersistenceTests } from './bootstrapPersistence.test';
 import { websocketUpgradeRoutingTests } from '@/features/game/__tests__/websocketUpgradeRouting.test';
@@ -168,6 +170,8 @@ describe('the walking simulator benchmark', () => checkWalkingSimFun(check));
 describe('the self play loop', () => checkSelfPlayLoop(check));
 describe('feature extraction', () => checkFeatureExtraction(check));
 describe('the features map layout', () => checkFeatureViewLayout(check));
+describe('a family of world seeds', () => checkSeedFamily(check));
+describe('preview worlds grown from a seed', () => checkSeedWorlds(check));
 describe('Route Handlers', routeHandlerTests);
 describe('browser persistence bootstrap', bootstrapPersistenceTests);
 describe('websocket upgrade routing', websocketUpgradeRoutingTests);

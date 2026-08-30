@@ -10,7 +10,7 @@ Keep the source tree aligned with the rendered home-page tree:
 - `src/features/app-shell` owns shared controls, layout, tooltips, client state, persistence, and composition.
 - `src/features/asset-library` owns editable definitions. Detail is its React child and folder. World seeds, saved worlds, and node groups are editable library assets.
 - `src/features/agents` owns Agents. Agent Log is its React child and folder.
-- `src/features/game` owns the running world: input, inventory, lighting, simulation, rendering, capture, puzzles, performance, and multiplayer.
+- `src/features/game` owns the running world: input, inventory, lighting, simulation, rendering, capture, puzzles, performance, and multiplayer. Worlds is its React child and folder.
 - `src/infrastructure` owns database, process startup, HTTP adapters, and WebSocket attachment.
 
 Do not add generic `components`, `lib`, `assets`, `abilities`, `commands`, `common`, or `misc` feature roots. Put a product operation beside the UI or runtime concept that owns it. Direct cross-feature imports must name that owning feature explicitly; do not hide dependencies behind catch-all barrels.

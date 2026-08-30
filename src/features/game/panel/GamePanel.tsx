@@ -26,7 +26,7 @@ export function GamePanel() {
     [cameraFocus],
   );
   return (
-    <div className="flex min-w-0 flex-col">
+    <div className="flex h-full min-h-0 min-w-0 flex-col">
       <div className="flex items-center gap-1.5 px-3 py-2">
         <span className="text-ink-dim" {...tooltipHandlers(GAME_VIEW_TIP)}>
           <WorldIcon />
