@@ -15,6 +15,7 @@ import {
 } from '@/features/asset-library/worlds/seeds/worldSeedSync';
 import { sanitizeWorldSeeds } from '@/features/asset-library/worlds/seeds/worldSeed';
 import { assetFoldersFromStoredJson } from '@/features/asset-library/folders/assetFolder';
+import { syncMissingCreatures } from '@/features/asset-library/creatures/creatureSync';
 import { syncMissingAssetFolders } from '@/features/asset-library/folders/folderSync';
 
 export const PERSISTED_DOC_NAMES = PERSISTED_DOCUMENT_NAMES;
@@ -83,7 +84,16 @@ async function loadDocs(store: Store): Promise<Map<string, unknown>> {
   reportDocsTheDatabaseIsMissing(docs);
   installWorldSeedsShippedInDataFiles(docs, store);
   installAssetFoldersShippedInDataFiles(docs, store);
+  installCreaturesShippedInDataFiles(docs, store);
   return docs;
+}
+
+function installCreaturesShippedInDataFiles(docs: Map<string, unknown>, store: Store): void {
+  const synced = syncMissingCreatures(docs.get('creatures'), dataFileJson('creatures'));
+  if (synced.added === 0) return;
+  docs.set('creatures', synced.stored);
+  void saveDoc(store, 'creatures', synced.stored);
+  console.log(`[db] installed ${synced.added} creatures shipped in the repo data files`);
 }
 
 function installAssetFoldersShippedInDataFiles(docs: Map<string, unknown>, store: Store): void {

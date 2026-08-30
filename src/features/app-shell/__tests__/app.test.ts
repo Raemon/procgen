@@ -55,6 +55,7 @@ import { checkCultureEditing } from '@/features/asset-library/__tests__/cultureE
 import { checkShapedTileInvariants } from '@/features/asset-library/__tests__/shapedTileInvariants.test';
 import { checkMarkerBillboardInvariants } from '@/features/game/__tests__/markerBillboardInvariants.test';
 import { checkSokobanFixtureArt } from '@/features/game/__tests__/sokobanFixtureArt.test';
+import { checkCreatureSync } from '@/features/asset-library/creatures/__tests__/creatureSync.test';
 import { checkGauntOneBillboard } from '@/features/asset-library/creatures/__tests__/gauntOneBillboard.test';
 import { checkSourceArchitecture } from './sourceArchitecture.test';
 import { sourceCatalogTests } from './sourceCatalog.test';
@@ -135,6 +136,7 @@ describe('shaped tiles and per-voxel facing', () => checkShapedTileInvariants(ch
 describe('scattered prop billboards', () => checkMarkerBillboardInvariants(check));
 describe('sokoban fixture art', () => checkSokobanFixtureArt(check));
 describe('the gaunt one billboard', () => checkGauntOneBillboard(check));
+describe('creatures shipped in the repo data files', () => checkCreatureSync(check));
 describe('pieces', () => checkPieceInvariants(check));
 describe('villages', () => checkVillageInvariants(check));
 describe('the cultures editor', () => checkCultureEditing(check));
