@@ -50,7 +50,7 @@ registerItemCommand({
 
 registerItemCommand({
   action: 'duplicate_item',
-  humanControl: 'detail panel, items: ⧉ on an item row',
+  humanControl: 'detail panel, items: ⧉ duplicate',
   description: 'Copy an item definition with its art, render knobs, footprint and tags.',
   params: { item_id: { kind: 'int', help: ITEM_ID_HELP } },
   example: { action: 'duplicate_item', item_id: 0 },
@@ -65,7 +65,7 @@ registerItemCommand({
 
 registerItemCommand({
   action: 'update_item',
-  humanControl: 'detail panel, items: the fields and knobs on an item row',
+  humanControl: 'detail panel, items: the name, colour, symbol and render knobs',
   description:
     "Change an item's art, how it is drawn in the world, the inventory space it takes, or the tags that decide which slots accept it. Only the fields you pass change.",
   params: {
@@ -105,7 +105,7 @@ registerItemCommand({
 
 registerItemCommand({
   action: 'remove_item',
-  humanControl: 'detail panel, items: ✕ on an item row',
+  humanControl: 'detail panel, items: ✕ beside duplicate',
   description:
     'Delete an item definition. Nodes bound to it stop spawning it and inventories holding it drop it.',
   params: { item_id: { kind: 'int', help: ITEM_ID_HELP } },

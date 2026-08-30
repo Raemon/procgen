@@ -166,9 +166,9 @@ function checkEveryRowThatForgetsAnAssetForgetsItsDrawerToo(): void {
 
 function checkTheOpenItemPanelSurvivesTheNextLoad(): void {
   const key = PERSISTED_UI_KEYS.openItemPanels;
-  seedUiState({ [key]: { '7': 'knobs' } });
+  seedUiState({ [key]: { '7': 'art' } });
   assert(
-    persistedUiValue(key, {}, isRecordOf(isOneOf(ITEM_PANELS)))['7'] === 'knobs',
+    persistedUiValue(key, {}, isRecordOf(isOneOf(ITEM_PANELS)))['7'] === 'art',
     'the item drawer left open last session is the drawer that opens',
   );
   writePersistedUiValue(key, { '7': 'art' });
