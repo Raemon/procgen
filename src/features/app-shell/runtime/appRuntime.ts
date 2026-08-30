@@ -143,14 +143,16 @@ export function createAppRuntime(): AppRuntime {
   const groundItems = groundItemsOf(sampler, takenItems, puzzles);
   const keyPurse = carriedKeysOf(creatures, items);
   const isWalkableAt = (x: number, y: number) => tileIsWalkable(x, y) && !puzzles.blocksAt(x, y);
+  const playerMayStandAt = (x: number, y: number) =>
+    tileIsWalkable(x, y) && !puzzles.blocksTheWayInAt(x, y);
   const characterGates = climbGatesFrom((x, y) => sampler.elevationAt(x, y));
   const world = new World(
-    isWalkableAt,
+    playerMayStandAt,
     (x, y, dx, dy, mayPush) => puzzles.clearTheWay(x, y, dx, dy, mayPush),
     characterGates.climbGateAt,
     characterGates.jumpGateAt,
   );
-  const walkIntoCratesToPushThem = playerCanEnter(isWalkableAt, puzzles, () => ({
+  const walkIntoCratesToPushThem = playerCanEnter(playerMayStandAt, puzzles, () => ({
     x: world.playerX,
     y: world.playerY,
   }));

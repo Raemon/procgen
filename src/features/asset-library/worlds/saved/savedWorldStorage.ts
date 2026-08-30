@@ -1,12 +1,12 @@
-import { readPersistedFile, writePersistedFile } from '@/features/app-shell/persistence/repoFileStore';
+import { readPersistedDocument, writePersistedDocument } from '@/features/app-shell/persistence/persistedDocumentStore';
 import { savedWorldsFromStoredJson, type StoredSavedWorlds } from './storedSavedWorlds';
 
 const FILE_NAME = 'savedWorlds';
 
 export function loadStoredSavedWorlds(): StoredSavedWorlds {
-  return savedWorldsFromStoredJson(readPersistedFile(FILE_NAME));
+  return savedWorldsFromStoredJson(readPersistedDocument(FILE_NAME));
 }
 
 export function storeSavedWorlds(saved: StoredSavedWorlds): void {
-  writePersistedFile(FILE_NAME, saved);
+  writePersistedDocument(FILE_NAME, saved);
 }

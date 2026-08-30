@@ -53,6 +53,16 @@ export function oppositeSide(side: DoorwaySide): DoorwaySide {
   return 'north';
 }
 
+export function stepEntersTheRoom(
+  layout: PuzzleRoomLayout,
+  gate: PuzzleFixture,
+  dx: number,
+  dy: number,
+): boolean {
+  const [outX, outY] = SIDE_STEPS[sideOfGate(layout, gate)];
+  return outX !== 0 ? dx === -outX : dy === -outY;
+}
+
 export function roomAcrossTheGate(
   layout: PuzzleRoomLayout,
   gate: PuzzleFixture,

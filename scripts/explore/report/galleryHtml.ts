@@ -56,7 +56,7 @@ function metricRowHtml(reading: { name: string; value: number; score: number }):
 function loadHintHtml(world: GalleryWorld): string {
   return [
     `<details><summary>pipeline json (${world.pipelineFileName})</summary>`,
-    `<p>To play this world: copy this file over <code>data/pipeline.json</code> and reload.</p>`,
+    `<p>To play this world: paste this pipeline into the world editor.</p>`,
     `<pre class="json">${world.pipelineJson.replace(/</g, '&lt;')}</pre></details>`,
   ].join('');
 }

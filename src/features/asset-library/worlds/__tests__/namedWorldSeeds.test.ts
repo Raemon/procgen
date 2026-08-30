@@ -4,6 +4,8 @@ import type { TileDef } from '@/features/asset-library/tiles/tileDef';
 import type { PipelineState } from '../pipeline/pipelineState';
 import { sanitizePipeline } from '../pipeline/sanitizePipeline';
 import { pointsInRect } from '../values/pointsInRect';
+import { ringOf } from '../labyrinth/chunkRing';
+import { labyrinthCellCoordOf } from '../labyrinth/labyrinthLattice';
 import { asField } from '../values/valueAccess';
 import { SEA_LEVEL } from '../volcanic/seaLevel';
 import { examplePipelines } from '../seeds/examplePipelines';
@@ -44,6 +46,7 @@ export function checkNamedWorldSeeds(check: CheckReporter): void {
   );
   checkVolcanicIslandsRegenerates(check);
   checkInfiniteLabyrinthRegenerates(check);
+  checkTheSameHunterStalksBothLabyrinths(check);
   checkSavedWorldSeedsRoundTrip(check);
   checkShippedWorldTiles(check);
 }
@@ -136,6 +139,33 @@ function checkInfiniteLabyrinthRegenerates(check: CheckReporter): void {
       tileBytes(delve.evaluator, 'n1', 3, -2) === tileBytes(again.evaluator, 'n1', 3, -2),
   );
   check('the infinite labyrinth is unlit, so its own torches are what you see by', delve.store.daylight() === 0);
+}
+
+function creatureBoundTo(state: PipelineState, nodeId: string): number | undefined {
+  const display = state.nodes.find((node) => node.id === nodeId)?.display;
+  return display?.mode === 'creatures' ? display.creatureId : undefined;
+}
+
+function checkTheSameHunterStalksBothLabyrinths(check: CheckReporter): void {
+  const delve = worldSeedStateNamed('infinite labyrinth');
+  const gaunt = creatureBoundTo(worldSeedStateNamed('sunken labyrinth'), 'gauntOnes');
+  check(
+    'the thing that stalks the infinite labyrinth is the gaunt one that haunts the sunken one',
+    gaunt !== undefined && creatureBoundTo(delve, 'denizens') === gaunt,
+  );
+  const world = worldFromState(delve);
+  const safeRings = delve.nodes.find((node) => node.id === 'denizens')!.params.safeRings as number;
+  const floorTile = delve.nodes.find((node) => node.id === 'n1')!.params.floorTile as number;
+  const lairs = pointsInRect(world.evaluator, 'denizens', { minX: -160, minY: -160, maxX: 160, maxY: 160 });
+  check('gaunt ones keep lairs across the delve rather than a handful of them', lairs.length > 5);
+  check(
+    'every gaunt one wakes on labyrinth floor, out beyond the rings kept for learning in',
+    lairs.every(
+      (lair) =>
+        world.sampler.tileAt(lair.x, lair.y) === floorTile &&
+        ringOf(labyrinthCellCoordOf(lair.x), labyrinthCellCoordOf(lair.y)) > safeRings,
+    ),
+  );
 }
 
 function groundAround(

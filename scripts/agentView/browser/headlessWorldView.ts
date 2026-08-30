@@ -1,6 +1,11 @@
 import * as THREE from 'three';
 import '@/features/game/puzzles/kinds';
+import { facingYawRadians } from '@/features/game/facing';
+import { CreatureSim } from '@/features/game/creatureSim/creatureSim';
 import { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
+import { CharacterSpriteAssets } from '@/features/game/render/view3d/characterSpriteAssets';
+import { CreatureMeshes } from '@/features/game/render/view3d/creatureMeshes';
+import { isWalkableTile } from '@/features/game/tileWalkability';
 import { ChunkMeshStreamer } from '@/features/game/render/view3d/chunkMeshStreamer';
 import {
   LAMPLIT_AMBIENT,
@@ -22,6 +27,8 @@ export class HeadlessWorldView {
   private readonly chunkGroups = new THREE.Group();
   private readonly streamer: ChunkMeshStreamer;
   private readonly lights: WorldLights;
+  private readonly creatures: CreatureMeshes;
+  private readonly sim: CreatureSim;
 
   constructor(
     private readonly world: HeadlessWorld,
@@ -37,6 +44,18 @@ export class HeadlessWorldView {
       new PuzzleWorld(world.store, () => true),
     );
     this.lights = new WorldLights(this.scene, tileLightsOnlyDeps(world));
+    this.creatures = new CreatureMeshes(
+      this.chunkGroups,
+      world.creatureAssets,
+      world.sampler,
+      new CharacterSpriteAssets(),
+    );
+    this.sim = new CreatureSim({
+      sampler: world.sampler,
+      creatureAssets: world.creatureAssets,
+      world: { playerX: request.x, playerY: request.y },
+      isWalkableAt: (x, y) => isWalkableTile(world.tileAssets, world.sampler.tileAt(x, y)),
+    });
     this.applyCharacterSightline();
     if (request.showCeilings) this.streamer.showCeilings(true);
   }
@@ -65,6 +84,7 @@ export class HeadlessWorldView {
     this.framedCamera.update();
     this.streamAroundFocus();
     this.lights.syncAround(this.request.x, this.request.y);
+    this.showTheLivingWorld();
   }
 
   paintFrame(): void {
@@ -74,6 +94,11 @@ export class HeadlessWorldView {
 
   pngDataUrl(): string {
     return this.renderer.domElement.toDataURL('image/png');
+  }
+
+  private showTheLivingWorld(): void {
+    this.sim.step(0);
+    this.creatures.syncTo(this.sim, { yaw: facingYawRadians(this.request.facing), seconds: 0 });
   }
 
   private applyCharacterSightline(): void {

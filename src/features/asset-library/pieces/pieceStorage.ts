@@ -1,4 +1,4 @@
-import { readPersistedFile, writePersistedFile } from '@/features/app-shell/persistence/repoFileStore';
+import { readPersistedDocument, writePersistedDocument } from '@/features/app-shell/persistence/persistedDocumentStore';
 import {
   blankFacings,
   DEFAULT_PIECE_ROLE,
@@ -12,7 +12,7 @@ import {
 const FILE_NAME = 'pieces';
 
 export function loadStoredPieces(): Piece[] | null {
-  return piecesFromStoredJson(readPersistedFile<unknown>(FILE_NAME));
+  return piecesFromStoredJson(readPersistedDocument<unknown>(FILE_NAME));
 }
 
 export function piecesFromStoredJson(parsed: unknown): Piece[] | null {
@@ -22,7 +22,7 @@ export function piecesFromStoredJson(parsed: unknown): Piece[] | null {
 }
 
 export function storePieces(pieces: readonly Piece[]): void {
-  writePersistedFile(FILE_NAME, pieces);
+  writePersistedDocument(FILE_NAME, pieces);
 }
 
 function isPiece(value: unknown): value is Piece {

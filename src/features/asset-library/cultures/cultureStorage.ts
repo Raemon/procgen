@@ -1,6 +1,6 @@
 import type { PieceId } from '@/features/asset-library/asset';
 import type { PieceRoleBindings } from './cultureDef';
-import { readPersistedFile, writePersistedFile } from '@/features/app-shell/persistence/repoFileStore';
+import { readPersistedDocument, writePersistedDocument } from '@/features/app-shell/persistence/persistedDocumentStore';
 import { isPieceRole } from '../pieces/pieceDef';
 import {
   MAX_STORY_LAYERS,
@@ -14,7 +14,7 @@ import {
 const FILE_NAME = 'cultures';
 
 export function loadStoredCultures(): Culture[] | null {
-  return culturesFromStoredJson(readPersistedFile<unknown>(FILE_NAME));
+  return culturesFromStoredJson(readPersistedDocument<unknown>(FILE_NAME));
 }
 
 export function culturesFromStoredJson(parsed: unknown): Culture[] | null {
@@ -24,7 +24,7 @@ export function culturesFromStoredJson(parsed: unknown): Culture[] | null {
 }
 
 export function storeCultures(cultures: readonly Culture[]): void {
-  writePersistedFile(FILE_NAME, cultures);
+  writePersistedDocument(FILE_NAME, cultures);
 }
 
 function isCulture(value: unknown): value is Culture {

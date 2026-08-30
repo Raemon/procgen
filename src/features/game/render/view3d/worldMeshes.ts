@@ -4,7 +4,7 @@ import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler'
 import { isTransparentInk, opaqueInk } from '@/features/asset-library/tiles/inkColor';
 import type { ReadOnlyTileAssets } from '@/features/app-shell/runtime/readOnlyAssets';
 import { instancedTileMesh } from './instancedTileMesh';
-import { MAX_FACE_ART_SIZE } from '@/features/asset-library/tiles/tileFaceArt';
+import { MAX_FACE_ART_SIZE, type CubeFaceArt } from '@/features/asset-library/tiles/tileFaceArt';
 import {
   rememberTileMaterialDetail,
   tileMaterialsAtDetail,
@@ -27,6 +27,8 @@ import {
 import { EVERY_FACE, visibleFacesOf } from './culling/visibleFaceMask';
 import { foldRareFaceVariants, type FacedPlacement } from './culling/foldRareFaceVariants';
 import { groupsOfLikeSurfaceAndFaces, type PlacementGroup } from './placementGroups';
+import { coplanarPullOf, pullTowardCamera, type CoplanarLayer } from './coplanarPull';
+import { hashString } from '@/features/asset-library/worlds/random/hashString';
 import {
   billboardShape,
   blockShape,
@@ -62,9 +64,9 @@ export function buildChunkMeshGroup(
   const group = new THREE.Group();
   group.add(
     ...terrainMeshes(around, minX, minY, detail),
-    ...meshesForShape(markers.pins, markerShape(), detail),
-    ...meshesForShape(markers.billboards, billboardShape(), detail),
-    ...meshesForShape(markers.standingFixtures, standingFixtureShape(), detail),
+    ...meshesForShape(markers.pins, markerShape(), 'marker', detail),
+    ...meshesForShape(markers.billboards, billboardShape(), 'marker', detail),
+    ...meshesForShape(markers.standingFixtures, standingFixtureShape(), 'marker', detail),
     ceilingGroup(around, minX, minY, detail),
   );
   return group;
@@ -78,9 +80,9 @@ function terrainMeshes(
 ): THREE.InstancedMesh[] {
   const field = occluderFieldOfPlacements(around.window, terrainOccluders(around));
   return [
-    ...meshesForShape(insideChunk(around.floors, minX, minY), floorShape(), detail, field),
-    ...meshesForShape(insideChunk(around.blocks, minX, minY), blockShape(), detail, field),
-    ...meshesForShape(insideChunk(around.voxels, minX, minY), voxelShape(), detail, field),
+    ...meshesForShape(insideChunk(around.floors, minX, minY), floorShape(), 'terrain', detail, field),
+    ...meshesForShape(insideChunk(around.blocks, minX, minY), blockShape(), 'terrain', detail, field),
+    ...meshesForShape(insideChunk(around.voxels, minX, minY), voxelShape(), 'terrain', detail, field),
     ...shapedMeshes(insideChunk(around.shaped, minX, minY), detail),
   ];
 }
@@ -90,7 +92,7 @@ function shapedMeshes(
   detail: MeshBuildDetail,
 ): THREE.InstancedMesh[] {
   return groupedByShapeAndFacing(placements).flatMap((solid) =>
-    meshesForShape(solid.placements, shapedShape(solid.shape, solid.facing), detail),
+    meshesForShape(solid.placements, shapedShape(solid.shape, solid.facing), 'terrain', detail),
   );
 }
 
@@ -116,6 +118,7 @@ function ceilingGroup(
   const meshes = meshesForShape(
     insideChunk(around.ceilings, minX, minY),
     ceilingShape(),
+    'terrain',
     detail,
     field,
   );
@@ -126,12 +129,29 @@ function ceilingGroup(
 function meshesForShape(
   placements: readonly TilePlacement[],
   shape: TileShape,
+  layer: CoplanarLayer,
   detail: MeshBuildDetail,
   field?: ChunkOccluderField,
 ): THREE.InstancedMesh[] {
   return groupsOfLikeSurfaceAndFaces(foldRareFaceVariants(facedPlacements(placements, shape, field)))
-    .map((group) => groupMesh(group, shape, detail))
+    .map((group) => groupMesh(group, shape, detail, groupPullOf(layer, group)))
     .filter((mesh): mesh is THREE.InstancedMesh => mesh !== null);
+}
+
+function groupPullOf(layer: CoplanarLayer, group: PlacementGroup): number {
+  if (layer === 'terrain') return coplanarPullOf('terrain');
+  return coplanarPullOf(layer, `${faceArtSeedOf(group.art)}|${group.baseColor}|${group.textureId}`);
+}
+
+const faceArtSeeds = new WeakMap<CubeFaceArt, number>();
+
+function faceArtSeedOf(art: CubeFaceArt | null): number {
+  if (art === null) return 0;
+  const known = faceArtSeeds.get(art);
+  if (known !== undefined) return known;
+  const seed = hashString(`${art.size}:${art.north.join(',')}`);
+  faceArtSeeds.set(art, seed);
+  return seed;
 }
 
 function facedPlacements(
@@ -165,12 +185,13 @@ function groupMesh(
   group: PlacementGroup,
   shape: TileShape,
   buildDetail: MeshBuildDetail,
+  pull: number,
 ): THREE.InstancedMesh | null {
   if (group.placements.length === 0) return null;
-  const detail = materialDetailOf(group, shape);
+  const detail = materialDetailOf(group, shape, pull);
   const mesh = instancedTileMesh(
     shape.geometry(group.faces),
-    detail ? tileMaterialsAtDetail(detail, buildDetail.sideBudget) : untexturedMaterial(group),
+    detail ? tileMaterialsAtDetail(detail, buildDetail.sideBudget) : untexturedMaterial(group, pull),
     group.placements,
     shape.positionOf,
     shape.scaleOf,
@@ -179,7 +200,7 @@ function groupMesh(
   return mesh;
 }
 
-function materialDetailOf(group: PlacementGroup, shape: TileShape): TileMaterialDetail | null {
+function materialDetailOf(group: PlacementGroup, shape: TileShape, pull: number): TileMaterialDetail | null {
   if (group.art) {
     return {
       kind: 'faceArt',
@@ -188,6 +209,7 @@ function materialDetailOf(group: PlacementGroup, shape: TileShape): TileMaterial
         baseColor: group.baseColor,
         glow: group.glow,
         drawnFromBothSides: shape.drawnFromBothSides === true,
+        pull,
       },
     };
   }
@@ -197,13 +219,15 @@ function materialDetailOf(group: PlacementGroup, shape: TileShape): TileMaterial
       textureId: group.textureId,
       baseColor: group.baseColor,
       glow: group.glow,
+      pull,
     };
   }
   return null;
 }
 
-function untexturedMaterial(group: PlacementGroup): THREE.Material {
+function untexturedMaterial(group: PlacementGroup, pull: number): THREE.Material {
   const material = new THREE.MeshLambertMaterial();
   glowSelfLit(material, group.glow, opaqueInk(group.baseColor));
+  pullTowardCamera(material, pull);
   return material;
 }

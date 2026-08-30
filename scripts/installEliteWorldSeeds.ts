@@ -2,7 +2,8 @@ import '@/features/asset-library/worlds/nodes';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { genomeFromJson } from '@/features/asset-library/worlds/selfPlay/worldSeedGenome';
-import { installGenomeAsWorldSeed } from './worldShots/installWorldSeed';
+import { withTheAssetLibrary } from './assetKit/assetLibraryInTheDatabase';
+import { installLabWorldSeed } from '@/features/asset-library/worlds/lab/installLabWorldSeed';
 import type { WorldShotRecord } from './worldShots/galleryReport';
 
 const SHOTS_DIR = flagValue('shots') ?? 'artifacts/worldShots';
@@ -23,17 +24,20 @@ const distinct = pool.filter((record) =>
 const chosen = WANTED_SLUGS.length > 0 ? namedRecords(records, WANTED_SLUGS) : autoChosen(distinct);
 
 const taken = new Set<string>();
-for (const record of chosen) {
-  const genome = genomeFromJson(
-    JSON.parse(readFileSync(join(SHOTS_DIR, record.slug, 'genome.json'), 'utf8')),
-  );
-  const name = freeName(`${record.name} (evolved)`, taken);
-  const installed = installGenomeAsWorldSeed(genome, name, descriptionOf(record));
-  console.log(
-    `installed ${installed.name}: +${installed.tilesAdded} tiles, +${installed.piecesAdded} pieces`,
-  );
-}
-console.log('run `npm run docs:seed` (or open a fresh database) to load the new world seeds');
+await withTheAssetLibrary((library) => {
+  for (const record of chosen) {
+    const genome = genomeFromJson(
+      JSON.parse(readFileSync(join(SHOTS_DIR, record.slug, 'genome.json'), 'utf8')),
+    );
+    const name = freeName(`${record.name} (evolved)`, taken);
+    const installed = installLabWorldSeed(library, genome, name, descriptionOf(record));
+    console.log(
+      `installed ${installed.name}: +${installed.tilesAdded} tiles, +${installed.piecesAdded} pieces`,
+    );
+  }
+  return chosen.length > 0;
+});
+console.log('the new world seeds are in the database; reload the app to see them in the library');
 
 function namedRecords(
   records: readonly WorldShotRecord[],

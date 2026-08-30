@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import '@/features/asset-library/worlds/nodes';
-import { worldFromRepoData } from './headlessWorld';
+import { worldTheAppOpensWith } from './headlessWorld';
 import { stubTheCanvasTexturesAreRasterizedOnto } from './stubCanvasForHeadlessTextures';
 import { applyTileSideBudget } from '@/features/game/render/view3d/chunkDetail';
 import { disposeMeshChildren } from '@/features/game/render/view3d/disposeMeshResources';
@@ -13,7 +13,7 @@ const CAMERA_DISTANCES = [1.2, 8, 32, 128, 512, 800];
 
 stubTheCanvasTexturesAreRasterizedOnto();
 
-const world = worldFromRepoData();
+const world = worldTheAppOpensWith();
 const chunk = buildChunkMeshGroup(world.sampler, world.tileAssets, 0, 0);
 
 console.log('== what one chunk of the ember marches draws at each camera distance ==');

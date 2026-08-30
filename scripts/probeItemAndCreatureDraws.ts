@@ -1,8 +1,6 @@
 import { assetId } from '@/features/asset-library/asset';
-import { readFileSync } from 'node:fs';
 import * as THREE from 'three';
 import '@/features/asset-library/worlds/nodes';
-import { seedPersistedFile } from '@/features/app-shell/persistence/repoFileStore';
 import { PipelineEvaluator } from '@/features/asset-library/worlds/eval/evaluator';
 import { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
 import { loadStoredPipeline } from '@/features/asset-library/worlds/pipeline/pipelineStorage';
@@ -103,8 +101,6 @@ function simSpawnedAroundOrigin(world: ReturnType<typeof worldOfScatteredItemsAn
 }
 
 function worldOfScatteredItemsAndCreatures() {
-  seedPersistedFile('tiles', JSON.parse(readFileSync('data/tiles.json', 'utf8')));
-  seedPersistedFile('pipeline', JSON.parse(readFileSync('data/pipeline.json', 'utf8')));
   const tileAssets = new TileAssets();
   const itemAssets = new ItemAssets();
   const creatureAssets = new CreatureAssets();

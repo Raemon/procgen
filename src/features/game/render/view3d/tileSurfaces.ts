@@ -5,12 +5,14 @@ import { stopFaceArtAnimation } from './faceArtAnimations';
 import { disposeSharedFaceArtTextures } from './faceArtTextures';
 import { cubeFaceMaterials } from './faceArtMaterials';
 import { glowSelfLit } from './selfLitGlow';
+import { pullTowardCamera } from './coplanarPull';
 
 export interface TileSurface {
   art: CubeFaceArt;
   baseColor: string;
   glow: number;
   drawnFromBothSides: boolean;
+  pull: number;
 }
 
 type SurfaceMaterials = THREE.Material | THREE.Material[];
@@ -24,7 +26,7 @@ export function tileSurfaceMaterials(
 ): SurfaceMaterials {
   const byVariant = materialsByArt.get(surface.art) ?? new Map<string, SurfaceMaterials>();
   materialsByArt.set(surface.art, byVariant);
-  const key = `${surface.baseColor}|${surface.glow}|${sideBudget}|${surface.drawnFromBothSides}`;
+  const key = `${surface.baseColor}|${surface.glow}|${sideBudget}|${surface.drawnFromBothSides}|${surface.pull}`;
   const cached = byVariant.get(key);
   if (cached) return cached;
   const materials = builtSurface(surface, sideBudget);
@@ -50,6 +52,7 @@ function builtSurface(surface: TileSurface, sideBudget: number): SurfaceMaterial
     surface.drawnFromBothSides,
   );
   glowSelfLit(materials, surface.glow, opaqueInk(surface.baseColor));
+  pullTowardCamera(materials, surface.pull);
   for (const single of Array.isArray(materials) ? materials : [materials])
     builtMaterials.add(single);
   return materials;
