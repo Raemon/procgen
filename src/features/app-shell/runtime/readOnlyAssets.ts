@@ -44,5 +44,5 @@ export type ReadOnlyRunningWorld = Pick<
 export type ReadOnlySavedWorldLibrary = Pick<SavedWorldLibrary, 'all' | 'byName' | 'onChange'>;
 export type ReadOnlyWorld = Pick<
   World,
-  'playerX' | 'playerY' | 'facing' | 'sightRadiusTiles' | 'on'
+  'playerX' | 'playerY' | 'facing' | 'sightRadiusTiles' | 'godViewSizeTiles' | 'on'
 >;

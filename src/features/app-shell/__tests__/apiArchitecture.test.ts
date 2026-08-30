@@ -43,8 +43,8 @@ export function checkApiArchitecture(check: (name: string, condition: boolean) =
 
   const documentRead = endpointAt(endpoints, 'GET', '/api/v1/asset-library/tiles');
   const observe = endpointAt(endpoints, 'GET', '/api/v1/agents/{id}/observe');
-  check('a registered route publishes its declared body and query inputs', inputText(agentCreate) === 'mode:string:body, name?:string:body, sight_radius_tiles?:int:body');
-  check('path segments become typed inputs alongside declared query knobs', inputText(observe) === 'id:string:path, format?:string:query, sight_radius_tiles?:int:query');
+  check('a registered route publishes its declared body and query inputs', inputText(agentCreate) === 'mode:string:body, name?:string:body, sight_radius_tiles?:int:body, view_size_tiles?:int:body');
+  check('path segments become typed inputs alongside declared query knobs', inputText(observe) === 'id:string:path, format?:string:query, sight_radius_tiles?:int:query, view_size_tiles?:int:query');
   check('a registered route publishes the shapes it answers with', outputText(agentCreate) === '201 { agent, urls: object }, 400 { error: string, meaning: string, recovery: string, hint: string }');
   check('a document write publishes its revision header and the document envelope', inputText(documentWrite) === 'If-Match:string:header, body:json:body' && outputText(documentRead).startsWith('200 { data, revision }'));
   check('summaries reach the endpoint signature so a reader knows what an operation is for', agentCreate.signature.summary.startsWith('create an agent'));

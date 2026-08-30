@@ -1,5 +1,5 @@
 import type { AgentMode, AgentPose } from '../../agents/agentMode';
-import { viewSizeFor, type ObservedOverlay } from '../../agents/observation';
+import { sightRadiusOf, viewSizeFor, type ObservedOverlay, type ViewVision } from '../../agents/observation';
 import {
   BLANK_GLYPH,
   agentCanSee,
@@ -11,7 +11,6 @@ import { terrainHidesTileFrom } from '../../agents/terrainSightline';
 import type { ReadOnlyTileAssets } from '@/features/app-shell/runtime/readOnlyAssets';
 import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import { pointOverlayLookup } from '../render/ascii/asciiCells';
-import { clampSightRadiusTiles } from '../vision/characterSight';
 import type { HoveredCell } from './hoveredTile';
 
 export interface AgentEyes {
@@ -20,7 +19,7 @@ export interface AgentEyes {
   overlay: ObservedOverlay;
   pose: AgentPose;
   mode: AgentMode;
-  sightRadiusTiles: number;
+  vision: ViewVision;
 }
 
 export interface HoveredTileReport {
@@ -30,8 +29,8 @@ export interface HoveredTileReport {
 }
 
 export function hoveredTileReport(eyes: AgentEyes, cell: HoveredCell): HoveredTileReport {
-  const radius = clampSightRadiusTiles(eyes.sightRadiusTiles);
-  const size = viewSizeFor(eyes.mode, radius);
+  const radius = sightRadiusOf(eyes.vision);
+  const size = viewSizeFor(eyes.mode, eyes.vision);
   if (!fallsInsideTheAgentsGrid(eyes.pose, size, cell)) {
     return { cell, observed: beyondTheGrid(size), action: null };
   }

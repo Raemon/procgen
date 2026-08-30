@@ -1,4 +1,4 @@
-const WHEEL_PIXELS_PER_DOUBLING = 420;
+export const WHEEL_PIXELS_PER_DOUBLING = 420;
 
 export class ZoomScale {
   constructor(

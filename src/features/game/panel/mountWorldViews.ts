@@ -14,6 +14,7 @@ import { isCharacterControlled, type ViewMode } from './viewMode';
 export interface ViewSlots {
   view3d: HTMLElement;
   agentGod: HTMLElement;
+  agentGodSidebar: HTMLElement;
   agentCharacter: HTMLElement;
   features: HTMLElement;
 }
@@ -30,28 +31,27 @@ export function mountWorldViews(
 ): MountedWorldViews {
   const { world, sampler, tileAssets, perform } = runtime;
   const view3d = new View3D(slots.view3d, worldViewDepsOf(runtime));
-  const agentGodView = new AgentTextView(
-    slots.agentGod,
+  const agentTextViewParts = {
     world,
     sampler,
     tileAssets,
-    'god',
-    runtime.agentOverlay,
-    runtime.hoveredTile,
-    runtime.net.remotePlayers,
-    runtime.cameraFocus,
-  );
-  const agentCharacterView = new AgentTextView(
-    slots.agentCharacter,
-    world,
-    sampler,
-    tileAssets,
-    'character',
-    runtime.agentOverlay,
-    runtime.hoveredTile,
-    runtime.net.remotePlayers,
-    runtime.cameraFocus,
-  );
+    overlay: runtime.agentOverlay,
+    hoveredTile: runtime.hoveredTile,
+    remotePlayers: runtime.net.remotePlayers,
+    cameraFocus: runtime.cameraFocus,
+  };
+  const agentGodView = new AgentTextView({
+    ...agentTextViewParts,
+    container: slots.agentGod,
+    sidebar: slots.agentGodSidebar,
+    mode: 'god',
+    setViewSizeTiles: (sizeTiles) => perform('set_view_size', { view_size_tiles: sizeTiles }),
+  });
+  const agentCharacterView = new AgentTextView({
+    ...agentTextViewParts,
+    container: slots.agentCharacter,
+    mode: 'character',
+  });
   const featuresView = new FeaturesView(slots.features, worldViewDepsOf(runtime));
 
   setWorldViewSnapshotter((size, use) => view3d.captureAfterNextFrame(size, use));

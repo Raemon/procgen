@@ -30,6 +30,8 @@ export interface CommandActor {
   turn(eighthTurns: number): void;
   sightRadiusTiles(): number;
   setSightRadiusTiles(radius: number): void;
+  godViewSizeTiles(): number;
+  setGodViewSizeTiles(sizeTiles: number): void;
 }
 
 export interface CommandContext {

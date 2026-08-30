@@ -6,6 +6,7 @@ import {
   DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
   clampSightRadiusTiles,
 } from './vision/characterSight';
+import { DEFAULT_GOD_VIEW_SIZE_TILES, clampGodViewSizeTiles } from './vision/godViewSize';
 import { jumpLandingDelta } from './sim/jumpLanding';
 import { NOTHING_IN_THE_WAY, stepIsAllowed, type StepRules } from './sim/stepIsAllowed';
 import { WorldEvents, type WorldEvent } from './worldEvents';
@@ -39,6 +40,7 @@ export class World {
   playerY = 0;
   facing: FacingIndex = 0;
   sightRadiusTiles = DEFAULT_CHARACTER_SIGHT_RADIUS_TILES;
+  godViewSizeTiles = DEFAULT_GOD_VIEW_SIZE_TILES;
   private readonly events = new WorldEvents();
   private readonly rules: StepRules;
 
@@ -55,6 +57,13 @@ export class World {
     const clamped = clampSightRadiusTiles(radius);
     if (clamped === this.sightRadiusTiles) return;
     this.sightRadiusTiles = clamped;
+    this.events.emit('sight-changed');
+  }
+
+  setGodViewSizeTiles(sizeTiles: number): void {
+    const clamped = clampGodViewSizeTiles(sizeTiles);
+    if (clamped === this.godViewSizeTiles) return;
+    this.godViewSizeTiles = clamped;
     this.events.emit('sight-changed');
   }
 

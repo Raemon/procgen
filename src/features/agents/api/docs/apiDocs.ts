@@ -14,7 +14,11 @@ import {
   climbStepsOf,
 } from '@/features/game/climbing';
 import { EYE_HEIGHT, OPAQUE_SIGHT_HEIGHT } from '@/features/asset-library/worlds/walkingSim/isovist';
-import { GOD_VIEW_SIZE } from '../../observation';
+import {
+  DEFAULT_GOD_VIEW_SIZE_TILES,
+  MAX_GOD_VIEW_SIZE_TILES,
+  MIN_GOD_VIEW_SIZE_TILES,
+} from '@/features/game/vision/godViewSize';
 import { FAILURES } from '../../failures';
 import { everyRegisteredRoute } from '../everyRoute';
 import { metaTools } from '../agentTools';
@@ -69,10 +73,12 @@ the text you receive — nothing more.
 
 An agent is created in one of two modes and stays in it for life.
 
-- **god** — a {{GOD_SIZE}}x{{GOD_SIZE}} window centered on you. You see every
-  generated tile in the window, and your facing is stated in the observation.
-  You move by absolute compass steps, and you can REBUILD THE WORLD: the
-  pipeline, asset, world seed and saved world actions below are the whole editor.
+- **god** — a square window centered on you, {{GOD_SIZE}}x{{GOD_SIZE}} tiles by
+  default and yours to resize between {{MIN_GOD_SIZE}} and {{MAX_GOD_SIZE}}
+  tiles a side. You see every generated tile in the window, and your facing is
+  stated in the observation. You move by absolute compass steps, and you can
+  REBUILD THE WORLD: the pipeline, asset, world seed and saved world actions
+  below are the whole editor.
 - **character** — a {{CHARACTER_SIZE}}x{{CHARACTER_SIZE}} window centered on
   you, but you only see the half-disc in front of you: tiles behind you are
   blank, and so is everything past your {{SIGHT_RADIUS}}-tile sight radius,
@@ -106,6 +112,23 @@ down any drop is always allowed — so a route is walkable exactly when its
 digits never rise by more than ${CLIMB_STEPS_PER_WALK} per step. You stand ${CLIMB_STEPS_PER_TILE_HEIGHT} digits tall, and ground
 ${OPAQUE_SIGHT_DIGITS} or more digits above your own tile is a ridge that hides lower ground
 behind it.
+
+## How much world one look hands you
+
+A god agent chooses the width of its window, anywhere from {{MIN_GOD_SIZE}} to
+{{MAX_GOD_SIZE}} tiles, the same three ways a character chooses its sight radius:
+
+- at birth — \`POST /api/v1/agents\` with \`"view_size_tiles": 65\`
+- for the rest of the session — the \`set_view_size\` action below
+- on one read — \`GET /api/v1/agents/{id}/observe?view_size_tiles=65\`, which
+  also becomes the agent's window from then on
+
+Even widths round up to an odd one so you stay at the exact center, and every
+observation reports the width in force as \`view_size_tiles\`. This is the same
+zoom the human drives with the mouse wheel over the agent god view. Widen it to
+survey a region before you edit it — a river's whole course, whether two
+settlements meet — then narrow it again, because the tiles you read grow with
+the square of the width and an autopilot run pays for them every turn.
 
 ## Sight range, and what it costs
 
@@ -176,7 +199,9 @@ along the other.
 | --- | --- | --- | --- |
 {{MOVEMENT_ACTIONS}}
 
-## Actions — your senses (character mode)
+## Actions — your senses
+
+\`set_sight_radius\` is a character's; \`set_view_size\` is a god's.
 
 | action | params | the human control | what it does |
 | --- | --- | --- | --- |
@@ -291,7 +316,9 @@ export function everyCommand(): CommandSpec[] {
 }
 
 function placeholderValue(tileAssets: ReadOnlyTileAssets, key: string): string {
-  if (key === 'GOD_SIZE') return String(GOD_VIEW_SIZE);
+  if (key === 'GOD_SIZE') return String(DEFAULT_GOD_VIEW_SIZE_TILES);
+  if (key === 'MIN_GOD_SIZE') return String(MIN_GOD_VIEW_SIZE_TILES);
+  if (key === 'MAX_GOD_SIZE') return String(MAX_GOD_VIEW_SIZE_TILES);
   if (key === 'CHARACTER_SIZE') return String(characterViewSize());
   if (key === 'SIGHT_RADIUS') return String(DEFAULT_CHARACTER_SIGHT_RADIUS_TILES);
   if (key === 'MIN_SIGHT_RADIUS') return String(MIN_CHARACTER_SIGHT_RADIUS_TILES);
