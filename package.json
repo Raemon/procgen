@@ -25,6 +25,7 @@
     "tiles:detail": "bash scripts/runTool.sh probeTileDetail",
     "items:draws": "bash scripts/runTool.sh probeItemAndCreatureDraws",
     "billboards:preview": "bash scripts/runTool.sh renderBillboardSheet",
+    "fixtures:preview": "bash scripts/runTool.sh renderPuzzleFixtureSheet",
     "characters:preview": "bash scripts/runTool.sh renderCharacterSheet",
     "perf": "bash scripts/runTool.sh benchmarkWorldPerf",
     "dwarf:preview": "bash scripts/runTool.sh renderDwarfPortrait",
