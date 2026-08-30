@@ -5,8 +5,9 @@ export function panelWidthsThatLeaveRoomForWorld(
   handleWidth: number,
   smallestPanelWidth: number,
   availableWidth: number,
+  worldWidth: number,
 ): number[] {
-  const budget = availableWidth - MIN_WORLD_WIDTH - requested.length * handleWidth;
+  const budget = availableWidth - worldWidth - requested.length * handleWidth;
   const requestedTotal = requested.reduce((total, width) => total + width, 0);
   if (requestedTotal <= budget) return [...requested];
   return requested.map((width) =>

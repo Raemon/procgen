@@ -13,7 +13,7 @@ export function ProcgenApp() {
       <div className="grid h-full" style={{ gridTemplateColumns: layout.gridTemplateColumns }}>
         <AssetLibrary layout={layout} />
         <Agents selectedId={selectedAgentId} onSelect={setSelectedAgentId} layout={layout} />
-        <Game />
+        <Game layout={layout} />
       </div>
       <FloatingTooltip />
     </>

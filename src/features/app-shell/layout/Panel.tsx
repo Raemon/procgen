@@ -14,6 +14,7 @@ export interface PanelChrome {
   icon: ReactNode;
   tone: string;
   rail: ReactNode;
+  expandTip?: TooltipContent;
   headerActions?: ReactNode;
   collapsed: boolean;
   onToggleCollapsed(): void;

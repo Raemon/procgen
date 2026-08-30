@@ -1,9 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/features/app-shell/controls/Button';
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
-import { WorldIcon } from '@/features/app-shell/icons/panelIcons';
+import { CollapseIcon, WorldIcon } from '@/features/app-shell/icons/panelIcons';
 import { tooltipHandlers } from '@/features/app-shell/tooltips/tooltipHandlers';
-import { GAME_VIEW_TIP, RANDOMIZE_WORLD_TIP, REROLL_SEED_TIP, SAVE_WORLD_TIP } from './help/gameTips';
+import {
+  COLLAPSE_WORLD_VIEW_TIP,
+  GAME_VIEW_TIP,
+  RANDOMIZE_WORLD_TIP,
+  REROLL_SEED_TIP,
+  SAVE_WORLD_TIP,
+} from './help/gameTips';
 import { RunningWorldName } from './RunningWorldName';
 import { GameStage } from './GameStage';
 import { GameToolbar } from './GameToolbar';
@@ -11,7 +17,7 @@ import { ViewModePicker } from './ViewModePicker';
 import { isGodView, type ViewMode } from './viewMode';
 import { lastUsedViewMode, rememberViewMode } from './viewModePreference';
 
-export function GamePanel() {
+export function GamePanel({ onCollapse }: { onCollapse(): void }) {
   const { cameraFocus, perform } = useAppRuntime();
   const [mode, setMode] = useState<ViewMode>(lastUsedViewMode);
   const chooseMode = (next: ViewMode): void => {
@@ -55,8 +61,23 @@ export function GamePanel() {
         </Button>
         <ViewModePicker mode={mode} onChoose={chooseMode} />
         <GameToolbar mode={mode} />
+        <CollapseWorldButton onCollapse={onCollapse} />
       </div>
       <GameStage mode={mode} />
     </div>
+  );
+}
+
+function CollapseWorldButton({ onCollapse }: { onCollapse(): void }) {
+  return (
+    <button
+      type="button"
+      aria-label="collapse world view"
+      className="cursor-pointer rounded border border-transparent p-0.5 text-ink-dim hover:border-panel-edge hover:text-ink"
+      onClick={onCollapse}
+      {...tooltipHandlers(COLLAPSE_WORLD_VIEW_TIP)}
+    >
+      <CollapseIcon />
+    </button>
   );
 }
