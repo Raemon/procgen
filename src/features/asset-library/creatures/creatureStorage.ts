@@ -1,5 +1,5 @@
 import { sanitizeInventory } from '../items/inventory/sanitizeInventory';
-import { readPersistedFile, writePersistedFile } from '@/features/app-shell/persistence/repoFileStore';
+import { readPersistedDocument, writePersistedDocument } from '@/features/app-shell/persistence/persistedDocumentStore';
 import {
   defWithCompactFaceArt,
   faceArtFromStoredShape,
@@ -13,7 +13,7 @@ import { CHARACTER, CREATURE, isEntityKind } from './entityKinds';
 const FILE_NAME = 'creatures';
 
 export function loadStoredCreatures(): CreatureDef[] | null {
-  return creaturesFromStoredJson(readPersistedFile<unknown>(FILE_NAME));
+  return creaturesFromStoredJson(readPersistedDocument<unknown>(FILE_NAME));
 }
 
 export function creaturesFromStoredJson(parsed: unknown): CreatureDef[] | null {
@@ -23,7 +23,7 @@ export function creaturesFromStoredJson(parsed: unknown): CreatureDef[] | null {
 }
 
 export function storeCreatures(creatures: readonly CreatureDef[]): void {
-  writePersistedFile(FILE_NAME, creaturesAsStoredJson(creatures));
+  writePersistedDocument(FILE_NAME, creaturesAsStoredJson(creatures));
 }
 
 export function creaturesAsStoredJson(creatures: readonly CreatureDef[]): StoredArtOf<CreatureDef>[] {

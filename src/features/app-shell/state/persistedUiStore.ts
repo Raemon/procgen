@@ -1,5 +1,5 @@
 import type { PersistedUiState } from '../persistence/persistedDocumentContents';
-import { readPersistedFile, writePersistedFile } from '../persistence/repoFileStore';
+import { readPersistedDocument, writePersistedDocument } from '../persistence/persistedDocumentStore';
 
 const UI_STATE_DOC = 'uiState';
 
@@ -19,7 +19,7 @@ export function persistedUiValue<T>(
 
 export function writePersistedUiValue<T>(key: string, value: T): void {
   snapshots.set(key, value);
-  writePersistedFile(UI_STATE_DOC, { ...storedUiState(), [key]: value });
+  writePersistedDocument(UI_STATE_DOC, { ...storedUiState(), [key]: value });
   for (const listener of listeners.get(key) ?? []) listener();
 }
 
@@ -40,5 +40,5 @@ function storedOrFallback<T>(
 }
 
 function storedUiState(): PersistedUiState {
-  return readPersistedFile<PersistedUiState>(UI_STATE_DOC) ?? {};
+  return readPersistedDocument<PersistedUiState>(UI_STATE_DOC) ?? {};
 }

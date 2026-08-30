@@ -1,6 +1,7 @@
 import type { AssetOfKind } from '@/features/asset-library/asset';
 import type { PieceId } from '@/features/asset-library/asset';
 import { AssetCollection } from '../collection/assetCollection';
+import { defaultPieces } from './defaultPieces';
 import { newPieceWithId, pieceFootprintRadius, type Piece } from './pieceDef';
 import { loadStoredPieces, storePieces } from './pieceStorage';
 
@@ -11,7 +12,7 @@ export class PieceAssets extends AssetCollection<AssetOfKind<'pieces'>> {
   private readonly addedListeners = new Set<PieceAddedListener>();
 
   constructor(initialPieces?: Piece[]) {
-    super(initialPieces ?? loadStoredPieces() ?? []);
+    super(initialPieces ?? loadStoredPieces() ?? defaultPieces());
   }
 
   largestFootprint(): number {

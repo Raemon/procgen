@@ -19,4 +19,3 @@ export interface WorldViewRequest {
 }
 
 export const DEFAULT_WORLD_NAME = 'volcanic islands';
-export const REPO_PIPELINE_WORLD_NAME = 'repo';

@@ -1,5 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
-import { seedPersistedFile } from '@/features/app-shell/persistence/repoFileStore';
+import { holdPersistedDocument } from '@/features/app-shell/persistence/persistedDocumentStore';
 import { PipelineEvaluator } from '@/features/asset-library/worlds/eval/evaluator';
 import { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
 import { loadStoredPipeline } from '@/features/asset-library/worlds/pipeline/pipelineStorage';
@@ -23,16 +22,11 @@ export interface HeadlessWorld {
   sampler: WorldSampler;
 }
 
-const SEEDED_ASSET_FILES = ['tiles', 'pieces', 'cultures', 'creatures'];
-
-export function worldFromRepoData(): HeadlessWorld {
-  seedAssetFiles();
-  seedFromRepoData('pipeline');
+export function worldTheAppOpensWith(): HeadlessWorld {
   return worldAround(new PipelineStore(loadStoredPipeline()));
 }
 
 export function worldFromPipelineState(state: PipelineState): HeadlessWorld {
-  seedAssetFiles();
   return worldAround(new PipelineStore(sanitizePipeline(state)));
 }
 
@@ -45,21 +39,10 @@ export interface WorldDocument {
 }
 
 export function worldFromDocument(document: WorldDocument): HeadlessWorld {
-  seedAssetFiles();
-  seedPersistedFile('tiles', document.tiles);
-  seedPersistedFile('pieces', document.pieces);
-  seedPersistedFile('cultures', document.cultures);
+  holdPersistedDocument('tiles', document.tiles);
+  holdPersistedDocument('pieces', document.pieces);
+  holdPersistedDocument('cultures', document.cultures);
   return worldAround(new PipelineStore(sanitizePipeline(document.pipeline)));
-}
-
-function seedAssetFiles(): void {
-  for (const name of SEEDED_ASSET_FILES) seedFromRepoData(name);
-}
-
-function seedFromRepoData(name: string): void {
-  const path = `data/${name}.json`;
-  if (!existsSync(path)) return;
-  seedPersistedFile(name, JSON.parse(readFileSync(path, 'utf8')));
 }
 
 function worldAround(store: PipelineStore): HeadlessWorld {

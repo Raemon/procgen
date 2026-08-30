@@ -22,7 +22,7 @@ export async function initStore(databaseUrl: string | null): Promise<Store> {
 }
 
 const NO_DATABASE_URL =
-  'DATABASE_URL is not set. The database is the only store for worlds and assets, so the server cannot start without it. Point DATABASE_URL at a Postgres, run `npx prisma db push`, then `npm run docs:seed` to load the repo asset library into it.';
+  'DATABASE_URL is not set. The database is where the app keeps worlds and assets you edit, so the server cannot start without it. Point DATABASE_URL at a Postgres and run `npx prisma db push`; the assets the app ships install themselves on the next boot.';
 
 async function connectedStore(): Promise<Store> {
   const mod = (await import('@prisma/client')) as unknown as { PrismaClient: new () => PrismaLike };

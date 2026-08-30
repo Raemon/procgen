@@ -1,9 +1,9 @@
 import assert from 'node:assert';
 import { test } from 'node:test';
 import {
-  preloadPersistedFiles,
-  readPersistedFile,
-} from '@/features/app-shell/persistence/repoFileStore';
+  preloadPersistedDocuments,
+  readPersistedDocument,
+} from '@/features/app-shell/persistence/persistedDocumentStore';
 import { persistedDocumentIsValid } from '@/features/app-shell/api/persistedDocumentValidation';
 
 export function bootstrapPersistenceTests(): void {
@@ -16,14 +16,14 @@ export function bootstrapPersistenceTests(): void {
       return Response.json({ data: { seed: 42 }, revision: '7' }, { headers: { ETag: '"7"' } });
     };
     try {
-      await preloadPersistedFiles(['pipeline']);
+      await preloadPersistedDocuments(['pipeline']);
       assert.equal(attempts, 2);
-      assert.deepEqual(readPersistedFile('pipeline'), { seed: 42 });
+      assert.deepEqual(readPersistedDocument('pipeline'), { seed: 42 });
     } finally {
       globalThis.fetch = originalFetch;
     }
   });
-  test('the world seed library is accepted as the envelope the browser writes and as the array the data file ships', () => {
+  test('the world seed library is accepted as the envelope the browser writes and as the bare array older databases hold', () => {
     assert.ok(persistedDocumentIsValid('worldSeeds', { presets: [], hiddenExamples: [] }));
     assert.ok(persistedDocumentIsValid('worldSeeds', []));
     assert.ok(persistedDocumentIsValid('templates', { templates: [], hiddenBuiltIns: [] }));

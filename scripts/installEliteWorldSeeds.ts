@@ -33,7 +33,7 @@ for (const record of chosen) {
     `installed ${installed.name}: +${installed.tilesAdded} tiles, +${installed.piecesAdded} pieces`,
   );
 }
-console.log('run `npm run docs:seed` (or open a fresh database) to load the new world seeds');
+console.log('the new world seeds are code now: they load with the app, and a database picks up their assets on its next boot');
 
 function namedRecords(
   records: readonly WorldShotRecord[],

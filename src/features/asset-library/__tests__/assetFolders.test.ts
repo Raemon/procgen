@@ -8,13 +8,11 @@ import {
   type StoredAssetFolders,
 } from '../folders/assetFolder';
 import { AssetFolders } from '../folders/assetFolders';
-import { syncMissingAssetFolders } from '../folders/folderSync';
 
 export function checkAssetFolders(check: CheckReporter): void {
   checkTheSanitizer(check);
   checkFolderMutations(check);
   checkFolderCommands(check);
-  checkShippedFolderSync(check);
   checkTheDocumentReachesTheApi(check);
 }
 
@@ -132,34 +130,6 @@ function checkFolderCommands(check: CheckReporter): void {
   check('move_asset_folder with no parent lifts a folder to the top of its section', act('move_asset_folder', { folder_id: nestedId }).ok && assetFolders.byId(nestedId)?.parentId === null);
   check('every folder command refuses a folder id nothing answers to', ['rename_asset_folder', 'remove_asset_folder', 'move_asset_folder'].every((action) => !act(action, { folder_id: 'nope', name: 'x' }).ok));
   check('remove_asset_folder deletes through the command layer', act('remove_asset_folder', { folder_id: folderId }).ok && assetFolders.byId(folderId) === undefined);
-}
-
-function checkShippedFolderSync(check: CheckReporter): void {
-  const shipped: StoredAssetFolders = {
-    folders: [{ id: 'round-1', name: 'Round 1', section: 'worldSeeds', parentId: null }],
-    placements: { worldSeeds: { islands: 'round-1', dunes: 'round-1' } },
-  };
-  const fresh = syncMissingAssetFolders({ folders: [], placements: {} }, shipped);
-  check('a database with no folders receives every folder and filing shipped in the repo data files', fresh.addedFolders === 1 && fresh.addedPlacements === 2);
-
-  const renamed: StoredAssetFolders = {
-    folders: [{ id: 'round-1', name: 'my heats', section: 'worldSeeds', parentId: null }],
-    placements: { worldSeeds: { islands: 'round-1' } },
-  };
-  const merged = syncMissingAssetFolders(renamed, shipped);
-  check('a folder the user renamed keeps that name when the shipped folders sync again', merged.stored.folders[0]!.name === 'my heats' && merged.addedFolders === 0);
-  check('a filing the shipped data adds and the database lacked arrives on the next boot', merged.addedPlacements === 1 && merged.stored.placements.worldSeeds?.dunes === 'round-1');
-
-  const moved: StoredAssetFolders = {
-    folders: [
-      { id: 'round-1', name: 'Round 1', section: 'worldSeeds', parentId: null },
-      { id: 'mine', name: 'mine', section: 'worldSeeds', parentId: null },
-    ],
-    placements: { worldSeeds: { islands: 'mine', dunes: 'round-1' } },
-  };
-  const again = syncMissingAssetFolders(moved, shipped);
-  check('a world seed the user filed somewhere else stays where they put it', again.stored.placements.worldSeeds?.islands === 'mine');
-  check('syncing a database that already holds everything shipped changes nothing', again.addedFolders === 0 && again.addedPlacements === 0);
 }
 
 function checkTheDocumentReachesTheApi(check: CheckReporter): void {

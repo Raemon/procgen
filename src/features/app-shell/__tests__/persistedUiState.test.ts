@@ -7,8 +7,8 @@ delete (globalThis as { localStorage?: unknown }).localStorage;
 const { isBoolean, isNumber, isNumberOrNull, isOneOf, isRecordOf, isStringArray } = await import(
   '@/features/app-shell/state/persistedUiGuards'
 );
-const { readPersistedFile, seedPersistedFile } = await import(
-  '../persistence/repoFileStore'
+const { readPersistedDocument, holdPersistedDocument } = await import(
+  '../persistence/persistedDocumentStore'
 );
 const { persistedUiValue, subscribeToPersistedUiValue, writePersistedUiValue } = await import(
   '@/features/app-shell/state/persistedUiStore'
@@ -201,11 +201,11 @@ function assetEditorComponents(): string[] {
 }
 
 function seedUiState(state: Record<string, unknown>): void {
-  seedPersistedFile('uiState', state);
+  holdPersistedDocument('uiState', state);
 }
 
 function storedUiState(): Record<string, unknown> {
-  return readPersistedFile<Record<string, unknown>>('uiState') ?? {};
+  return readPersistedDocument<Record<string, unknown>>('uiState') ?? {};
 }
 
 function assert(condition: boolean, what: string): void {

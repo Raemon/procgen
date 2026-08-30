@@ -36,7 +36,7 @@ import { checkSunkenLabyrinthInvariants } from '@/features/asset-library/worlds/
 import { checkWorldSeedLab } from '@/features/asset-library/worlds/__tests__/worldSeedLab.test';
 import { checkGenerationLabCharts } from '@/features/asset-library/worlds/__tests__/generationLabCharts.test';
 import { checkWorldShotQueue } from '@/features/game/__tests__/worldShotQueue.test';
-import { checkWorldSeedSync } from '@/features/asset-library/worlds/__tests__/worldSeedSync.test';
+import { checkAssetIdRemap } from '@/features/asset-library/worlds/__tests__/assetIdRemap.test';
 import { checkAgentObservation } from '@/features/agents/__tests__/agentObservation.test';
 import { checkOccludedObservation } from '@/features/agents/__tests__/occludedObservation.test';
 import { checkCreatureObservation } from '@/features/agents/__tests__/creatureObservation.test';
@@ -55,7 +55,7 @@ import { checkCultureEditing } from '@/features/asset-library/__tests__/cultureE
 import { checkShapedTileInvariants } from '@/features/asset-library/__tests__/shapedTileInvariants.test';
 import { checkMarkerBillboardInvariants } from '@/features/game/__tests__/markerBillboardInvariants.test';
 import { checkSokobanFixtureArt } from '@/features/game/__tests__/sokobanFixtureArt.test';
-import { checkCreatureSync } from '@/features/asset-library/creatures/__tests__/creatureSync.test';
+import { checkShippedAssets } from '@/features/asset-library/__tests__/shippedAssets.test';
 import { checkGauntOneBillboard } from '@/features/asset-library/creatures/__tests__/gauntOneBillboard.test';
 import { checkSourceArchitecture } from './sourceArchitecture.test';
 import { sourceCatalogTests } from './sourceCatalog.test';
@@ -120,7 +120,7 @@ describe('the sunken labyrinth', () => checkSunkenLabyrinthInvariants(check));
 describe('the world lab', () => checkWorldSeedLab(check));
 describe('the generation lab charts', () => checkGenerationLabCharts(check));
 describe('the world shot queue', () => checkWorldShotQueue(check));
-describe('world seeds shipped in data files sync into the database', () => checkWorldSeedSync(check));
+describe('landing a generated world in a library', () => checkAssetIdRemap(check));
 describe('worlds and node groups as documents', () => checkWorldSeedsAreDocuments(check));
 describe('saved worlds', () => checkSavedWorlds(check));
 describe('agent observation', () => checkAgentObservation(check));
@@ -136,7 +136,7 @@ describe('shaped tiles and per-voxel facing', () => checkShapedTileInvariants(ch
 describe('scattered prop billboards', () => checkMarkerBillboardInvariants(check));
 describe('sokoban fixture art', () => checkSokobanFixtureArt(check));
 describe('the gaunt one billboard', () => checkGauntOneBillboard(check));
-describe('creatures shipped in the repo data files', () => checkCreatureSync(check));
+describe('the assets the app ships', () => checkShippedAssets(check));
 describe('pieces', () => checkPieceInvariants(check));
 describe('villages', () => checkVillageInvariants(check));
 describe('the cultures editor', () => checkCultureEditing(check));

@@ -1,6 +1,7 @@
 import type { AssetOfKind } from '@/features/asset-library/asset';
 import type { TileId } from '@/features/asset-library/asset';
 import { AssetCollection } from '../collection/assetCollection';
+import { defaultTiles } from './defaultTiles';
 import { newTileWithId, type TileDef, type TileRole } from './tileDef';
 import { loadStoredTiles, storeTiles } from './tileStorage';
 
@@ -8,7 +9,7 @@ export type EditableTileFields = Partial<Omit<TileDef, 'id' | 'role'>>;
 
 export class TileAssets extends AssetCollection<AssetOfKind<'tiles'>> {
   constructor(initialTiles?: TileDef[]) {
-    super(initialTiles ?? loadStoredTiles() ?? []);
+    super(initialTiles ?? loadStoredTiles() ?? defaultTiles());
   }
 
   byRole(role: TileRole): TileDef | undefined {

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { AppRuntimeProvider } from './runtime/appRuntimeContext';
 import { createAppRuntime, type AppRuntime } from './runtime/appRuntime';
-import { preloadPersistedFiles } from './persistence/repoFileStore';
+import { preloadPersistedDocuments } from './persistence/persistedDocumentStore';
 import { PERSISTED_DOCUMENT_NAMES } from './persistence/persistedDocuments';
 import { ProcgenApp } from './ProcgenApp';
 
@@ -58,7 +58,7 @@ export function ProcgenClient() {
 }
 
 function loadRuntime(): Promise<AppRuntime> {
-  runtimePromise ??= preloadPersistedFiles(PERSISTED_DOCUMENT_NAMES)
+  runtimePromise ??= preloadPersistedDocuments(PERSISTED_DOCUMENT_NAMES)
     .then(createAppRuntime)
     .catch((error) => {
       runtimePromise = null;

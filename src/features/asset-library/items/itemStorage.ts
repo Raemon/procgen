@@ -1,4 +1,4 @@
-import { readPersistedFile, writePersistedFile } from '@/features/app-shell/persistence/repoFileStore';
+import { readPersistedDocument, writePersistedDocument } from '@/features/app-shell/persistence/persistedDocumentStore';
 import { isSpriteArt } from '../tiles/spriteArt';
 import {
   defWithCompactFaceArt,
@@ -18,7 +18,7 @@ import {
 const FILE_NAME = 'items';
 
 export function loadStoredItems(): ItemDef[] | null {
-  return itemsFromStoredJson(readPersistedFile<unknown>(FILE_NAME));
+  return itemsFromStoredJson(readPersistedDocument<unknown>(FILE_NAME));
 }
 
 export function itemsFromStoredJson(parsed: unknown): ItemDef[] | null {
@@ -28,7 +28,7 @@ export function itemsFromStoredJson(parsed: unknown): ItemDef[] | null {
 }
 
 export function storeItems(items: readonly ItemDef[]): void {
-  writePersistedFile(FILE_NAME, itemsAsStoredJson(items));
+  writePersistedDocument(FILE_NAME, itemsAsStoredJson(items));
 }
 
 export function itemsAsStoredJson(items: readonly ItemDef[]): StoredArtOf<ItemDef>[] {

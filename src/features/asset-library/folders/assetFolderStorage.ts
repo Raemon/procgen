@@ -1,12 +1,12 @@
-import { readPersistedFile, writePersistedFile } from '@/features/app-shell/persistence/repoFileStore';
+import { readPersistedDocument, writePersistedDocument } from '@/features/app-shell/persistence/persistedDocumentStore';
 import { assetFoldersFromStoredJson, type StoredAssetFolders } from './assetFolder';
 
 const FILE_NAME = 'assetFolders';
 
 export function loadStoredAssetFolders(): StoredAssetFolders {
-  return assetFoldersFromStoredJson(readPersistedFile(FILE_NAME));
+  return assetFoldersFromStoredJson(readPersistedDocument(FILE_NAME));
 }
 
 export function storeAssetFolders(stored: StoredAssetFolders): void {
-  writePersistedFile(FILE_NAME, stored);
+  writePersistedDocument(FILE_NAME, stored);
 }
