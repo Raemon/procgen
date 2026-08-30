@@ -26,13 +26,36 @@ const TEMPLATE = `# Procgen world — agent API
 
 You are an agent in an infinite, procedurally generated world. Everything you
 can know about the world arrives as an ASCII grid plus a legend; everything you
-can do goes through one action per request.
+can do goes through one action at a time.
+
+This page is the whole contract, served as plain text at GET /docs. Every URL
+below is relative to this server, and every request and response is JSON.
 
 **Every command in this application is one of the actions below.** The human
 sitting at the browser has no powers you lack: their buttons, knobs and drags
 call exactly the same actions with the same validation, and each action's row
 names the control they would use. A human in an agent view mode reads exactly
 the text you receive — nothing more.
+
+## Two ways in
+
+- **Autopilot** — \`POST /api/v1/agents/{id}/run\` drives the agent with an LLM
+  that is handed this page, one tool per action below, and the meta tools at the
+  end. Inside a run an action is a tool call, and every tool result carries a
+  fresh observation.
+- **By hand** — the endpoint table below is the whole HTTP surface: create an
+  agent, read its observations, start and stop runs, read transcripts, and edit
+  the asset library. Library documents are ETagged: send \`If-Match\` on a write,
+  expect \`412\` when it is stale, refetch and reconcile.
+
+## Getting started
+
+1. \`POST /api/v1/agents\` with \`{"mode": "god"}\` or \`{"mode": "character"}\`.
+   The answer carries the agent's id and the URLs it uses.
+2. \`GET /api/v1/agents/{id}/observe\` for the grid, its legend, and your pose;
+   add \`?format=text\` for the grid an agent view renders.
+3. \`POST /api/v1/agents/{id}/run\` with a goal to have a model drive it, or read
+   \`GET /api/v1/agents/{id}/transcript\` to watch what it did.
 
 ## Coordinate system (read this first)
 
@@ -114,6 +137,34 @@ narrow it again and travel cheaply on what you learned.
 | method and path | body | query | what it does |
 | --- | --- | --- | --- |
 {{ENDPOINTS}}
+
+## The asset library over HTTP
+
+Every editable document is one URL. GET answers \`{ data, revision }\` and puts
+that revision in an ETag; PUT replaces the whole document and must carry it as
+\`If-Match\` — \`428\` means you sent none, \`412\` means someone edited first, so
+refetch, reconcile and send again. These are the same documents the actions
+above edit a piece at a time.
+
+| method and path | what it holds |
+| --- | --- |
+| GET, PUT /api/v1/asset-library/world-seeds/current | the running world seed: its pipeline nodes, seed number, daylight and time |
+| GET, PUT /api/v1/asset-library/world-seeds | the world seed library — every named recipe |
+| GET, PUT /api/v1/asset-library/world-seeds/thumbnails | one rendered thumbnail per world seed |
+| GET, PUT /api/v1/asset-library/saved-worlds | saved worlds: a frozen seed plus what the player did there |
+| GET, PUT /api/v1/asset-library/tiles | the tile vocabulary a pipeline draws from |
+| GET, PUT /api/v1/asset-library/items | item definitions: art, how it is drawn, how much inventory room it takes |
+| GET, PUT /api/v1/asset-library/pieces | piece definitions: the structures a pipeline stamps |
+| GET, PUT /api/v1/asset-library/creatures | creature and character definitions |
+| GET, PUT /api/v1/asset-library/cultures | cultures: which tiles, pieces and creatures a settlement is built from |
+| GET, PUT /api/v1/asset-library/node-groups | saved node groups, ready to paste into a pipeline |
+| GET, PUT /api/v1/asset-library/folders | how the library rows are foldered |
+| GET, PUT /api/v1/app-shell/state | the editor's own persisted state: what is open, selected and toggled |
+| GET /api/v1/asset-library/node-types | every node type with its params and inputs, read only |
+| GET /api/v1/game/performance | what the running world costs to draw and simulate |
+| GET /api/v1/openapi.json | this same contract as a machine-readable schema |
+| GET /api/health | whether the server is up, and which commit it is running |
+| WS /api/v1/game/socket | the live game: player input in, world and puzzle state out |
 
 ## Actions — moving
 
@@ -204,9 +255,9 @@ legend names every glyph visible in that observation.
 
 ## The loop
 
-Observe, decide, act, repeat. Every act response carries a fresh observation,
-so a simple loop needs only POST .../act. Nothing moves while you think: the
-world only changes when someone acts on it.
+Observe, decide, act, repeat. Inside a run every tool result carries a fresh
+observation, so one tool call is one whole step. Nothing moves while you think:
+the world only changes when someone acts on it.
 
 ## Autopilot runs
 
