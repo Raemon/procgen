@@ -12,6 +12,7 @@ import type { EditedPipeline } from '../editing/editedPipeline';
 import { emptyPipeline } from '../pipeline/pipelineState';
 import { PipelineStore } from '../pipeline/pipelineStore';
 import { exampleWorldSeeds } from '../seeds/exampleWorldSeeds';
+import type { WorldSeed } from '../seeds/worldSeed';
 import { RunningWorld } from '../running/runningWorld';
 import { WorldSeedLibrary } from '../seeds/worldSeedLibrary';
 import { WorldSeedShelf } from '../seeds/worldSeedShelf';
@@ -33,6 +34,7 @@ export async function checkWorldSeedsAreDocuments(check: CheckReporter): Promise
   checkRollingASeedYouAreNotRunningRewritesThatSeedAlone(check);
   checkUndoWithNothingToGoBackToLeavesTheWorldRunning(check);
   checkDeletingAnExampleTakesItOffTheShelf(check);
+  checkDeletingYourCopyBringsBackTheWorldAsItShips(check);
 }
 
 async function checkEditingAWorldSeedThatIsNotRunningSavesItself(check: CheckReporter): Promise<void> {
@@ -176,7 +178,7 @@ function checkUndoWithNothingToGoBackToLeavesTheWorldRunning(check: CheckReporte
 }
 
 function checkDeletingAnExampleTakesItOffTheShelf(check: CheckReporter): void {
-  const editor = worldSeedEditor();
+  const editor = worldSeedEditor(NOTHING_SAVED_OF_YOUR_OWN);
   const example = exampleWorldSeeds()[0]!;
   editor.act('delete_world_seed', { name: example.name });
   check(
@@ -189,12 +191,33 @@ function settle(): Promise<void> {
   return new Promise((done) => setTimeout(done, LONGER_THAN_THE_WRITE_BACK_WAIT_MS));
 }
 
-function worldSeedEditor() {
+function checkDeletingYourCopyBringsBackTheWorldAsItShips(check: CheckReporter): void {
+  const editor = worldSeedEditor();
+  const shipped = exampleWorldSeeds()[0]!;
+  editor.act('run_world_seed', { name: shipped.name });
+  editor.act('set_seed', { seed: 4321 });
+  editor.act('save_world_seed', { name: shipped.name });
+
+  editor.act('delete_world_seed', { name: shipped.name });
+  check(
+    'deleting your copy of a world that ships with the editor brings the shipped one back',
+    editor.worlds.byName(shipped.name)?.state.seed === shipped.state.seed,
+  );
+
+  editor.act('delete_world_seed', { name: shipped.name });
+  editor.act('save_world_seed', { name: shipped.name });
+  editor.act('delete_world_seed', { name: shipped.name });
+  check(
+    'a shipped world you had taken off the shelf comes back with it, so nothing is lost for good',
+    editor.worlds.byName(shipped.name)?.state.seed === shipped.state.seed,
+  );
+}
+
+const NOTHING_SAVED_OF_YOUR_OWN: WorldSeed[] = [];
+
+function worldSeedEditor(saved = exampleWorldSeeds().map((example) => structuredClone(example))) {
   const store = new PipelineStore(emptyPipeline());
-  const worldSeeds = new WorldSeedLibrary({
-    seeds: exampleWorldSeeds().map((example) => structuredClone(example)),
-    hiddenExamples: [],
-  });
+  const worldSeeds = new WorldSeedLibrary({ seeds: saved, hiddenExamples: [] });
   const worlds = new WorldSeedShelf(worldSeeds);
   const templates = new TemplateLibrary({ templates: [], hiddenBuiltIns: [] });
   const runningWorld = new RunningWorld();

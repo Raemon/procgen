@@ -20,6 +20,7 @@
     "walk:rank": "esbuild scripts/rankWalkingSimWorlds.ts --bundle --format=esm --platform=node --log-level=error --outfile=dist/rankWalkingSimWorlds.mjs && node dist/rankWalkingSimWorlds.mjs",
     "walk:calibrate": "esbuild scripts/calibrateWalkingSimBands.ts --bundle --format=esm --platform=node --log-level=error --outfile=dist/calibrateWalkingSimBands.mjs && node dist/calibrateWalkingSimBands.mjs",
     "docs:seed": "npx tsx --env-file-if-exists=.env scripts/seedDocsFromDataFiles.ts",
+    "worldseed:restore": "npx tsx --env-file-if-exists=.env scripts/restoreShippedWorldSeed.ts",
     "pipeline:write": "bash scripts/runTool.sh writePipelineDataFile",
     "chunk:load": "bash scripts/runTool.sh probeChunkDrawLoad",
     "tiles:detail": "bash scripts/runTool.sh probeTileDetail",

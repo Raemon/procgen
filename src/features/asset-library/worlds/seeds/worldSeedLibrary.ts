@@ -44,6 +44,12 @@ export class WorldSeedLibrary {
     this.persistAndNotify();
   }
 
+  showExample(name: string): void {
+    if (!this.hidden.includes(name)) return;
+    this.hidden = this.hidden.filter((hidden) => hidden !== name);
+    this.persistAndNotify();
+  }
+
   onChange(listener: () => void): () => void {
     this.listeners.add(listener);
     return () => void this.listeners.delete(listener);

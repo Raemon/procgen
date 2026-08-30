@@ -167,7 +167,7 @@ registerWorldSeedCommand({
   action: 'delete_world_seed',
   humanControl: 'asset library, world seeds folder: ✕ on a world seed',
   description:
-    'Delete a world seed. Yours is dropped; a built-in example is taken off the library shelf, and load_world_seed can still name it. Saved worlds grown from it are untouched — each keeps its own copy.',
+    'Delete a world seed. Yours is dropped, and where it was your copy of a built-in example the example comes back to the shelf as it ships — the way back to a world you have edited beyond recognition. Deleting a built-in example you never copied takes it off the shelf, and load_world_seed can still name it. Saved worlds grown from it are untouched — each keeps its own copy.',
   params: { name: { kind: 'text', help: 'the world seed name' } },
   example: { action: 'delete_world_seed', name: 'my archipelago' },
   apply: (context, params) => deleteWorldSeed(context, params),
@@ -503,10 +503,11 @@ function deleteWorldSeed(context: CommandContext, params: CommandParams): Comman
 }
 
 function takeWorldSeedOffTheShelf(context: CommandContext, name: string): void {
+  const yoursWasShadowingTheExample = context.worldSeeds.byName(name) !== undefined;
   context.worldSeeds.remove(name);
-  if (examplePipelines().some((example) => example.name === name)) {
-    context.worldSeeds.hideExample(name);
-  }
+  if (!examplePipelines().some((example) => example.name === name)) return;
+  if (yoursWasShadowingTheExample) return context.worldSeeds.showExample(name);
+  context.worldSeeds.hideExample(name);
 }
 
 function renameWorldSeed(context: CommandContext, params: CommandParams): CommandResult {
