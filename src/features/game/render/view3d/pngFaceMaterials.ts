@@ -3,6 +3,7 @@ import { opaqueInk } from '@/features/asset-library/tiles/inkColor';
 import { canLoadPngTextures, pngColorTexture, pngNormalTexture } from './pngTileTextures';
 import type { TextureFace } from '@/features/asset-library/textures/materialSynth';
 import { glowSelfLit } from './selfLitGlow';
+import { pullTowardCamera } from './coplanarPull';
 import { MAX_FACE_ART_SIZE } from '@/features/asset-library/tiles/tileFaceArt';
 import { drawsPngColorAt, drawsPngNormalAt } from './tileDetailBudget';
 
@@ -15,12 +16,14 @@ export function pngCubeMaterials(
   baseColor: string,
   glow: number,
   sideBudget: number = MAX_FACE_ART_SIZE,
+  pull = 0,
 ): THREE.Material[] {
   const detail = materialDetail(sideBudget);
-  const key = `${textureId}|${baseColor}|${glow}|${detail}`;
+  const key = `${textureId}|${baseColor}|${glow}|${detail}|${pull}`;
   const cached = cachedCubes.get(key);
   if (cached) return cached;
   const materials = builtCubeMaterials(textureId, baseColor, glow, sideBudget);
+  pullTowardCamera(materials, pull);
   cachedCubes.set(key, materials);
   return materials;
 }

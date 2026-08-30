@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import type { SpriteArt } from '@/features/asset-library/tiles/spriteArt';
+import { coplanarLane, coplanarPullOf, pullTowardCamera } from './coplanarPull';
 import { spriteMaterial, spriteTexture } from './spriteMaterial';
 import { spriteRimMaterial } from './spriteRimMaterial';
 
@@ -14,6 +15,7 @@ export class CharacterSpriteTextures {
     const cached = this.rims.get(tint);
     if (cached) return cached;
     const material = spriteRimMaterial(tint);
+    pullTowardCamera(material, coplanarPullOf('character', coplanarLane(`rim ${tint}`)));
     this.rims.set(tint, material);
     return material;
   }
@@ -23,6 +25,7 @@ export class CharacterSpriteTextures {
     const cached = this.materials.get(tintedKey);
     if (cached) return cached;
     const material = spriteMaterial(this.textureFor(key, sprite), tint);
+    pullTowardCamera(material, coplanarPullOf('character', coplanarLane(tintedKey)));
     this.materials.set(tintedKey, material);
     return material;
   }

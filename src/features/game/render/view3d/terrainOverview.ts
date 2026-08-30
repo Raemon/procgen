@@ -3,6 +3,7 @@ import { EMPTY_TILE } from '@/features/asset-library/worlds/values/chunkValues';
 import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import type { ReadOnlyTileAssets } from '@/features/app-shell/runtime/readOnlyAssets';
 import { isTransparentInk, opaqueInk } from '@/features/asset-library/tiles/inkColor';
+import { coplanarPullOf, pullTowardCamera } from './coplanarPull';
 import { GROUND_DEPTH, WATER_DROP } from './tileShapes';
 import { terrainOverviewCellSpan } from './streamingRadius';
 
@@ -12,6 +13,11 @@ const MAX_INSTANCES = GRID_SIDE_CELLS * GRID_SIDE_CELLS;
 const BUILD_BUDGET_MS_PER_FRAME = 4;
 const CELL_OVERLAP = 1.005;
 const GROUND_DROP = 0.04;
+const NEIGHBOR_STAGGER = 0.002;
+
+export function overviewNeighborDrop(cellSpan: number, cellX: number, cellY: number): number {
+  return cellSpan * NEIGHBOR_STAGGER * ((cellX & 1) + 2 * (cellY & 1));
+}
 
 interface OverviewCell {
   x: number;
@@ -29,11 +35,7 @@ interface OverviewSample {
 export class TerrainOverview {
   private readonly group = new THREE.Group();
   private readonly geometry = new THREE.BoxGeometry(1, 1, 1);
-  private readonly material = new THREE.MeshBasicMaterial({
-    polygonOffset: true,
-    polygonOffsetFactor: 1,
-    polygonOffsetUnits: 1,
-  });
+  private readonly material = new THREE.MeshBasicMaterial();
   private readonly mesh = new THREE.InstancedMesh(this.geometry, this.material, MAX_INSTANCES);
   private readonly samples = new Map<string, OverviewSample | null>();
   private readonly displayed: (OverviewSample | null)[] = new Array(MAX_INSTANCES).fill(null);
@@ -49,6 +51,7 @@ export class TerrainOverview {
     private readonly sampler: WorldSampler,
     private readonly tileAssets: ReadOnlyTileAssets,
   ) {
+    pullTowardCamera(this.material, coplanarPullOf('terrainOverview'));
     this.mesh.count = 0;
     this.mesh.frustumCulled = false;
     this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
@@ -121,12 +124,12 @@ export class TerrainOverview {
         wanted.add(key);
         if (this.samples.has(key)) {
           const sample = this.samples.get(key) ?? null;
-          this.writeSample(instance, sample);
+          this.writeSample(cell, sample);
         } else {
           pending.push(cell);
           const cellCenterX = cell.x * cellSpan + cellSpan / 2;
           const cellCenterY = cell.y * cellSpan + cellSpan / 2;
-          this.writeSample(instance, {
+          this.writeSample(cell, {
             ...nearestSample(seeds, cellCenterX, cellCenterY),
             centerX: cellCenterX,
             centerY: cellCenterY,
@@ -169,7 +172,7 @@ export class TerrainOverview {
       const cell = this.pending[this.pendingIndex++]!;
       const sample = this.sample(cell);
       this.samples.set(cellKey(cell), sample);
-      this.writeSample(cell.instance, sample);
+      this.writeSample(cell, sample);
       attempted++;
     }
     if (attempted > 0) this.markInstancesChanged();
@@ -212,11 +215,11 @@ export class TerrainOverview {
     };
   }
 
-  private writeSample(index: number, sample: OverviewSample | null): void {
-    this.displayed[index] = sample;
+  private writeSample(cell: OverviewCell, sample: OverviewSample | null): void {
+    this.displayed[cell.instance] = sample;
     if (!sample) {
       this.matrix.makeScale(0, 0, 0);
-      this.mesh.setMatrixAt(index, this.matrix);
+      this.mesh.setMatrixAt(cell.instance, this.matrix);
       return;
     }
     this.matrix.makeScale(
@@ -226,11 +229,11 @@ export class TerrainOverview {
     );
     this.matrix.setPosition(
       sample.centerX,
-      sample.elevation - GROUND_DEPTH / 2,
+      sample.elevation - overviewNeighborDrop(this.cellSpan, cell.x, cell.y) - GROUND_DEPTH / 2,
       sample.centerY,
     );
-    this.mesh.setMatrixAt(index, this.matrix);
-    this.mesh.setColorAt(index, this.color.setHex(sample.color));
+    this.mesh.setMatrixAt(cell.instance, this.matrix);
+    this.mesh.setColorAt(cell.instance, this.color.setHex(sample.color));
   }
 
   private markInstancesChanged(): void {

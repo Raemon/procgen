@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import type { CreatureDef } from '@/features/asset-library/creatures/creatureDef';
+import { coplanarLane, coplanarPullOf, pullTowardCamera } from './coplanarPull';
 import { disposeMaterials } from './disposeMeshResources';
 import { cubeFaceMaterials } from './faceArtMaterials';
 import { lambertFromInk } from './inkMaterial';
@@ -15,6 +16,7 @@ export function creatureBodyMaterials(def: CreatureDef): THREE.Material | THREE.
   const cached = materialsByCreatureId.get(def.id);
   if (cached) return cached;
   const materials = builtBodyMaterials(def);
+  pullTowardCamera(materials, coplanarPullOf('character', coplanarLane(def.id)));
   materialsByCreatureId.set(def.id, materials);
   return materials;
 }
