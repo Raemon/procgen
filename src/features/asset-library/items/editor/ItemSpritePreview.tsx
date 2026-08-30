@@ -1,34 +1,20 @@
-import { useEffect, useRef } from 'react';
 import type { ItemDef } from '../itemDef';
-import { paintSpritePixels } from '@/features/game/render/paintSpritePixels';
-import { spriteGridSize, type SpriteArt } from '../../tiles/spriteArt';
+import { PixelGridCanvas } from '../../pixelArtEditor/PixelGridCanvas';
+import type { SpriteArt } from '../../tiles/spriteArt';
+
+const SOLID_SWATCH: SpriteArt = [null];
 
 export function itemPreviewSprite(item: ItemDef): SpriteArt | null {
   return item.sprite ?? item.faceArt?.north ?? null;
 }
 
 export function ItemSpritePreview({ item, className }: { item: ItemDef; className?: string }) {
-  const canvas = useRef<HTMLCanvasElement>(null);
   const sprite = itemPreviewSprite(item);
-  useEffect(() => {
-    if (canvas.current) drawSprite(canvas.current, sprite, item.color);
-  }, [sprite, item.color]);
   return (
-    <canvas
-      ref={canvas}
+    <PixelGridCanvas
+      pixels={sprite ?? SOLID_SWATCH}
+      unpainted={sprite ? null : item.color}
       className={className ?? 'block h-full w-full rounded-[2px] [image-rendering:pixelated]'}
     />
   );
-}
-
-function drawSprite(canvas: HTMLCanvasElement, sprite: SpriteArt | null, fallback: string): void {
-  const ctx = canvas.getContext('2d')!;
-  if (!sprite) {
-    canvas.width = canvas.height = 1;
-    ctx.fillStyle = fallback;
-    ctx.fillRect(0, 0, 1, 1);
-    return;
-  }
-  canvas.width = canvas.height = spriteGridSize(sprite);
-  paintSpritePixels(ctx, sprite, 1);
 }
