@@ -1,4 +1,4 @@
-import { isSpriteArt } from '../../tiles/spriteArt';
+import { spriteArtFromStoredShape } from '../../tiles/storage/storedSpriteArt';
 import { normalizedTags } from '../itemDef';
 import {
   blankInventory,
@@ -17,7 +17,7 @@ export function sanitizeInventory(raw: unknown): InventoryDef | null {
   const inventory = blankInventory(clampSide(stored.width), clampSide(stored.height));
   applyStoredSlots(inventory, stored.slots);
   inventory.placements = storedPlacements(inventory, stored.placements);
-  inventory.background = isSpriteArt(stored.background) ? stored.background : null;
+  inventory.background = spriteArtFromStoredShape(stored.background);
   return inventory;
 }
 

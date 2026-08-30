@@ -1,4 +1,5 @@
 import { sanitizeInventory } from '../items/inventory/sanitizeInventory';
+import { inventoryAsStoredJson, type StoredInventory } from '../items/inventory/storedInventory';
 import { readPersistedFile, writePersistedFile } from '@/features/app-shell/persistence/repoFileStore';
 import {
   defWithCompactFaceArt,
@@ -7,6 +8,10 @@ import {
 } from '../tiles/storage/storedFaceArt';
 import { builtInBillboard, isBuiltInBillboardArt } from './art/builtInBillboards';
 import { sanitizeCharacterBillboard } from '../characters/sanitizeCharacterBillboard';
+import {
+  billboardAsStoredJson,
+  type StoredCharacterBillboard,
+} from '../characters/storedCharacterBillboard';
 import { CHARACTER_BODY, CREATURE_BODY, type CreatureDef } from './creatureDef';
 import { CHARACTER, CREATURE, isEntityKind } from './entityKinds';
 
@@ -26,8 +31,21 @@ export function storeCreatures(creatures: readonly CreatureDef[]): void {
   writePersistedFile(FILE_NAME, creaturesAsStoredJson(creatures));
 }
 
-export function creaturesAsStoredJson(creatures: readonly CreatureDef[]): StoredArtOf<CreatureDef>[] {
-  return creatures.map(withoutGeneratedFrames).map(defWithCompactFaceArt);
+export function creaturesAsStoredJson(creatures: readonly CreatureDef[]): StoredCreature[] {
+  return creatures.map(withoutGeneratedFrames).map(creatureAsStoredJson);
+}
+
+export type StoredCreature = Omit<StoredArtOf<CreatureDef>, 'inventory' | 'billboard'> & {
+  inventory: StoredInventory | null;
+  billboard: StoredCharacterBillboard | null;
+};
+
+function creatureAsStoredJson(creature: CreatureDef): StoredCreature {
+  return {
+    ...defWithCompactFaceArt(creature),
+    inventory: creature.inventory && inventoryAsStoredJson(creature.inventory),
+    billboard: creature.billboard && billboardAsStoredJson(creature.billboard),
+  };
 }
 
 function withoutGeneratedFrames(creature: CreatureDef): CreatureDef {

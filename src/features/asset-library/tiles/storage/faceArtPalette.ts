@@ -1,14 +1,19 @@
-import { allFaceGridsOf, CUBE_FACES, type CubeFaceArt } from '../tileFaceArt';
+import { allFaceGridsOf, CUBE_FACES, type CubeFaceArt, type FacePixels } from '../tileFaceArt';
 
 export const MAX_PALETTE_COLORS = 0xffff;
 
 const INDEXES_IN_ONE_BYTE = 256;
 
 export function paletteOfFaceArt(art: CubeFaceArt): string[] {
+  const grids: FacePixels[] = [];
+  for (const faces of allFaceGridsOf(art))
+    for (const face of CUBE_FACES) if (faces[face]) grids.push(faces[face]!);
+  return paletteOfPixelGrids(grids);
+}
+
+export function paletteOfPixelGrids(grids: readonly FacePixels[]): string[] {
   const colors = new Set<string>();
-  for (const grids of allFaceGridsOf(art))
-    for (const face of CUBE_FACES)
-      for (const pixel of grids[face] ?? []) if (pixel !== null) colors.add(pixel);
+  for (const pixels of grids) for (const pixel of pixels) if (pixel !== null) colors.add(pixel);
   return [...colors].sort();
 }
 

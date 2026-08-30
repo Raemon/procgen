@@ -48,6 +48,7 @@ import { checkLandmarkAndCeilingInvariants } from '@/features/game/__tests__/lan
 import { checkInsertAhead } from '@/features/game/__tests__/insertAhead.test';
 import { checkTileArtMipInvariants } from '@/features/asset-library/__tests__/tileArtMipInvariants.test';
 import { checkTileArtStorageInvariants } from '@/features/asset-library/__tests__/tileArtStorageInvariants.test';
+import { checkSpriteArtStorageInvariants } from '@/features/asset-library/__tests__/spriteArtStorageInvariants.test';
 import { checkGeneratedAssetInvariants } from '@/features/asset-library/__tests__/generatedAssetInvariants.test';
 import { checkPieceInvariants } from '@/features/asset-library/__tests__/pieceInvariants.test';
 import { checkVillageInvariants } from '@/features/asset-library/worlds/__tests__/villageInvariants.test';
@@ -131,6 +132,7 @@ describe('command dispatch', () => checkCommandDispatch(check));
 describe('the mutation boundary', () => checkOnlyTheCommandLayerCanMutate(check));
 describe('tile art mips', () => checkTileArtMipInvariants(check));
 describe('tile art storage', () => checkTileArtStorageInvariants(check));
+describe('sprite art storage', () => checkSpriteArtStorageInvariants(check));
 describe('shaped tiles and per-voxel facing', () => checkShapedTileInvariants(check));
 describe('scattered prop billboards', () => checkMarkerBillboardInvariants(check));
 describe('sokoban fixture art', () => checkSokobanFixtureArt(check));
