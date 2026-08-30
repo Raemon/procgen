@@ -51,7 +51,7 @@ export function spriteFromPaintedRows(art: PaintedRowsSprite): FacePixels | null
 
 export function faceArtFromPaintedRows(art: PaintedRowsFaceArt): CubeFaceArt | null {
   const size = sizeOfFirstPaintedFace(art);
-  if (size === null) return null;
+  if (size === null || !isValidFaceArtSize(size)) return null;
   const grids = blankFaceGrids(size);
   for (const face of CUBE_FACES) {
     if (art[face] === undefined) continue;
