@@ -128,3 +128,18 @@ export const ADD_CHARACTER_TIP: TooltipContent = {
   title: 'add character',
   body: 'Appends a creature that carries things: the same rules plus an inventory grid.',
 };
+
+export const WORLD_SEED_NAME_TIP: TooltipContent = {
+  title: 'world seed name',
+  body: 'What this seed is called in the library and in every saved world grown from it. Enter or clicking away keeps the new name, Esc leaves it as it was.',
+};
+
+export const SAVED_WORLD_NAME_TIP: TooltipContent = {
+  title: 'saved world name',
+  body: 'What this save is called in the library. Enter or clicking away keeps the new name, Esc leaves it as it was.',
+};
+
+export const NODE_GROUP_NAME_TIP: TooltipContent = {
+  title: 'node group name',
+  body: 'What this group is called wherever it can be stamped. Enter or clicking away keeps the new name, Esc leaves it as it was.',
+};

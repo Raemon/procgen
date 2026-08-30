@@ -12,6 +12,9 @@ import {
 import { NodeList } from '@/features/asset-library/detail/worldSeeds/NodeList';
 import { scrollNodeCardIntoView } from '@/features/asset-library/detail/worldSeeds/scrollNodeCardIntoView';
 import type { NodeTemplate } from '@/features/asset-library/node-groups/nodeTemplate';
+import { NODE_GROUP_NAME_TIP } from '../help/libraryTips';
+import { useRenameNodeGroup } from '../panel/useLibraryRename';
+import { DetailNameField } from './DetailNameField';
 import { NothingHere } from './NothingHere';
 import { NodeGroupActionsRow } from './NodeGroupActionsRow';
 
@@ -33,6 +36,7 @@ export function NodeGroupDetail({ name }: { name: string }) {
 
 function NodeGroupEditor({ group }: { group: NodeTemplate }) {
   const { store, perform } = useEditedPipeline();
+  const renameNodeGroup = useRenameNodeGroup();
   useRerenderOnEditedPipelineChange();
 
   function addNodeAndReveal(type: string): void {
@@ -43,7 +47,12 @@ function NodeGroupEditor({ group }: { group: NodeTemplate }) {
 
   return (
     <>
-      <h3 className="mb-1 text-sm text-ink">{group.name}</h3>
+      <DetailNameField
+        name={group.name}
+        label="node group name"
+        tip={NODE_GROUP_NAME_TIP}
+        onRename={(named) => renameNodeGroup(group.name, named)}
+      />
       <p className={classes(HINT_CLASSES, 'mb-2')}>{group.description}</p>
       <NodeGroupActionsRow name={group.name} />
       <NodeList />

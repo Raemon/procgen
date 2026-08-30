@@ -7,7 +7,10 @@ import { classes } from '@/features/app-shell/controls/classes';
 import { DIM_READOUT_CLASSES } from '@/features/app-shell/controls/fieldClasses';
 import type { SavedWorld } from '@/features/asset-library/worlds/saved/savedWorld';
 import { deleteRowConfirmation } from '../help/rowActionTips';
+import { SAVED_WORLD_NAME_TIP } from '../help/libraryTips';
+import { useRenameSavedWorld } from '../panel/useLibraryRename';
 import { useLibrarySelection } from '../panel/useLibrarySelection';
+import { DetailNameField } from './DetailNameField';
 import { useRunningSavedWorld } from '../panel/useRunningWorld';
 import { NothingHere } from './NothingHere';
 
@@ -26,6 +29,7 @@ export function SavedWorldDetail({ name }: { name: string }) {
 function SavedWorldSheet({ saved, running }: { saved: SavedWorld; running: boolean }) {
   const { perform } = useAppRuntime();
   const { clear } = useLibrarySelection();
+  const renameSavedWorld = useRenameSavedWorld();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   function deleteThisSave(): void {
@@ -36,7 +40,12 @@ function SavedWorldSheet({ saved, running }: { saved: SavedWorld; running: boole
 
   return (
     <>
-      <h3 className="mb-1 text-sm text-ink">{saved.name}</h3>
+      <DetailNameField
+        name={saved.name}
+        label="saved world name"
+        tip={SAVED_WORLD_NAME_TIP}
+        onRename={(named) => renameSavedWorld(saved.name, named)}
+      />
       <div className="mb-2 flex gap-1.5">
         <Button
           className="flex-1"
