@@ -2,12 +2,12 @@ import { useSyncExternalStore } from 'react';
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
 import type { NodeTemplate } from '@/features/asset-library/node-groups/nodeTemplate';
 import { NodeGroupIcon } from '../icons/NodeGroupIcon';
-import { useFollowRenamedRow } from './useFollowRenamedRow';
+import { useRenameNodeGroup } from '../useLibraryRename';
 import type { LibraryEntry } from './libraryEntry';
 
 export function useNodeGroupEntries(): LibraryEntry[] {
   const { templates, perform } = useAppRuntime();
-  const followRenamed = useFollowRenamedRow('groups');
+  const renameNodeGroup = useRenameNodeGroup();
   const groups = useSyncExternalStore(
     (listener) => templates.onChange(listener),
     () => templates.all(),
@@ -18,11 +18,7 @@ export function useNodeGroupEntries(): LibraryEntry[] {
     name: group.name,
     icon: <NodeGroupIcon />,
     tip: { title: group.name, body: summaryOf(group) },
-    rename: (name: string) => {
-      if (perform('rename_template', { name: group.name, new_name: name }).ok) {
-        followRenamed(group.name, name);
-      }
-    },
+    rename: (name: string) => renameNodeGroup(group.name, name),
     duplicate: () => perform('duplicate_template', { name: group.name }),
     remove: saved.some((each) => each.name === group.name)
       ? () => perform('delete_template', { name: group.name })

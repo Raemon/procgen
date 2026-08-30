@@ -16,7 +16,10 @@ import { DaylightRow } from '@/features/asset-library/detail/worldSeeds/Daylight
 import { SeedNumberRow } from '@/features/asset-library/detail/worldSeeds/SeedNumberRow';
 import { TimeRow } from '@/features/asset-library/detail/worldSeeds/TimeRow';
 import type { WorldSeed } from '@/features/asset-library/worlds/seeds/worldSeed';
+import { WORLD_SEED_NAME_TIP } from '../help/libraryTips';
+import { useRenameWorldSeed } from '../panel/useLibraryRename';
 import { useRunningWorldSeed } from '../panel/useRunningWorld';
+import { DetailNameField } from './DetailNameField';
 import { NothingHere } from './NothingHere';
 import { WorldSeedActionsRow } from './WorldSeedActionsRow';
 
@@ -39,6 +42,7 @@ export function WorldSeedDetail({ name }: { name: string }) {
 
 function WorldSeedEditor({ seed, running }: { seed: WorldSeed; running: boolean }) {
   const { store, perform } = useEditedPipeline();
+  const renameWorldSeed = useRenameWorldSeed();
   useRerenderOnEditedPipelineChange();
   useRerenderOnTileAssetChange();
 
@@ -50,7 +54,12 @@ function WorldSeedEditor({ seed, running }: { seed: WorldSeed; running: boolean 
 
   return (
     <>
-      <h3 className="mb-1 text-sm text-ink">{seed.name}</h3>
+      <DetailNameField
+        name={seed.name}
+        label="world seed name"
+        tip={WORLD_SEED_NAME_TIP}
+        onRename={(named) => renameWorldSeed(seed.name, named)}
+      />
       <WorldSeedActionsRow seed={seed} running={running} />
       <SeedNumberRow />
       <DaylightRow />
