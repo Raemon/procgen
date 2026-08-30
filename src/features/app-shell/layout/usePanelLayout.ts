@@ -18,7 +18,7 @@ const START_WIDTHS: Readonly<Record<PanelKey, number>> = {
   detail: 300,
   agents: 250,
   log: 270,
-  worlds: 420,
+  worlds: 520,
 };
 
 export interface PanelLayout {

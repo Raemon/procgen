@@ -17,7 +17,7 @@ export function releaseSharedGodPreviewRenderer(): void {
   shared = null;
 }
 
-const PAINTS_AFTER_A_CHANGE = 90;
+const PAINTS_AFTER_A_CHANGE = 180;
 
 export class SharedGodPreviewRenderer {
   private readonly renderer: THREE.WebGLRenderer;
@@ -43,6 +43,7 @@ export class SharedGodPreviewRenderer {
   remove(view: SeedWorldGodView): void {
     this.views.delete(view);
     if (this.views.size === 0) this.stop();
+    else this.requestPaint();
     releaseSharedGodPreviewRenderer();
   }
 

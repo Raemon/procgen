@@ -13,7 +13,7 @@ import {
 } from './seedFamily';
 import { WORLDS_GRID_SIZE_TIP, WORLDS_ZOOM_TIP } from './help/worldsTips';
 
-const COMPACT_FIELD = classes(FIELD_CLASSES, 'h-5 w-7 px-0.5 py-0 text-center text-[11px]');
+const COMPACT_FIELD = classes(FIELD_CLASSES, 'h-5 w-8 px-0.5 py-0 text-center text-[11px] [appearance:textfield]');
 
 export function WorldsGridParams({
   columns,
@@ -33,6 +33,7 @@ export function WorldsGridParams({
   return (
     <span className="flex items-center gap-1.5">
       <span className="flex items-center gap-0.5" {...tooltipHandlers(WORLDS_GRID_SIZE_TIP)}>
+        <span className="text-[11px] text-ink-dim">grid</span>
         <input
           type="number"
           min={MIN_WORLD_GRID_SIDE}

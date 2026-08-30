@@ -106,6 +106,7 @@ export class SeedWorldGodView {
     this.width = Math.max(1, Math.round(size.cssWidth));
     this.height = Math.max(1, Math.round(size.cssHeight));
     this.framed = this.cameraForSize(this.width, this.height);
+    this.streamer.invalidateAll();
     this.shared.requestPaint();
   }
 
