@@ -7,7 +7,7 @@ import {
   remappedPieceTiles,
   remappedPipeline,
   type AssetIdMaps,
-} from '../seeds/worldSeedSync';
+} from '../seeds/assetIdRemap';
 import type { WorldSeedLibrary } from '../seeds/worldSeedLibrary';
 import { worldPaletteOfKit } from '../selfPlay/worldPalette';
 import type { WorldSeedGenome } from '../selfPlay/worldSeedGenome';

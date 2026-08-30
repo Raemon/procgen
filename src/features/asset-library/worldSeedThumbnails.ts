@@ -4,7 +4,7 @@ import {
   type WorldSeedKey,
   type WorldSeedThumbnailIndex,
 } from './worldSeedThumbnailIndex';
-import { readPersistedFile, writePersistedFile } from '@/features/app-shell/persistence/repoFileStore';
+import { readPersistedDocument, writePersistedDocument } from '@/features/app-shell/persistence/persistedDocumentStore';
 import { requestWorldViewSnapshot } from '@/features/game/render/worldViewSnapshot';
 
 const FILE_NAME = 'worldSeedThumbnails';
@@ -50,13 +50,13 @@ class WorldSeedThumbnails {
   }
 
   private persistAndNotify(): void {
-    writePersistedFile(FILE_NAME, this.byWorldSeedKey);
+    writePersistedDocument(FILE_NAME, this.byWorldSeedKey);
     for (const listener of this.listeners) listener();
   }
 }
 
 function storedThumbnails(): WorldSeedThumbnailIndex {
-  return worldSeedThumbnailIndexFrom(readPersistedFile<unknown>(FILE_NAME));
+  return worldSeedThumbnailIndexFrom(readPersistedDocument<unknown>(FILE_NAME));
 }
 
 export const worldSeedThumbnails = new WorldSeedThumbnails();

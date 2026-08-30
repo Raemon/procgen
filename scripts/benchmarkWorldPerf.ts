@@ -1,7 +1,5 @@
 import '@/features/asset-library/worlds/nodes';
-import { readFileSync } from 'node:fs';
 import { performance } from 'node:perf_hooks';
-import { seedPersistedFile } from '@/features/app-shell/persistence/repoFileStore';
 import { CHUNK_SIZE, chunkOrigin } from '@/features/asset-library/worlds/chunk';
 import { PipelineEvaluator } from '@/features/asset-library/worlds/eval/evaluator';
 import { allNodeTypes } from '@/features/asset-library/worlds/nodeRegistry';
@@ -294,7 +292,7 @@ function knobTweakScenario(tileAssets: TileAssets): void {
   printTopNodes(bench.state, 12);
 }
 
-const tileAssets = tilesetFromRepoData();
+const tileAssets = tilesetTheAppShips();
 instrumentNodeGeneration();
 
 console.log('== ember marches: cold generation at the frontier (0,0), zoom sweep ==');
@@ -306,7 +304,6 @@ warmScenarios(tileAssets);
 console.log('\n== knob tweak invalidation ==');
 knobTweakScenario(tileAssets);
 
-function tilesetFromRepoData(): TileAssets {
-  seedPersistedFile('tiles', JSON.parse(readFileSync('data/tiles.json', 'utf8')));
+function tilesetTheAppShips(): TileAssets {
   return new TileAssets();
 }

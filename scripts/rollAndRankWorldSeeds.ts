@@ -1,5 +1,5 @@
 import '@/features/asset-library/worlds/nodes';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { stepsTaken } from './explore/explorationTrace';
 import {
@@ -9,10 +9,10 @@ import {
 } from './explore/metrics/measureWorld';
 import { thumbnailHtml } from './explore/report/asciiThumbnail';
 import { galleryPageHtml, type GalleryWorld } from './explore/report/galleryHtml';
-import { seedPersistedFile } from '@/features/app-shell/persistence/repoFileStore';
 import { PipelineEvaluator } from '@/features/asset-library/worlds/eval/evaluator';
 import type { PipelineState } from '@/features/asset-library/worlds/pipeline/pipelineState';
 import { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
+import { loadStoredPipeline } from '@/features/asset-library/worlds/pipeline/pipelineStorage';
 import { sanitizePipeline } from '@/features/asset-library/worlds/pipeline/sanitizePipeline';
 import { randomWorldPipeline } from '@/features/asset-library/worlds/randomize/randomWorldPipeline';
 import { recipeTilesOf } from '@/features/asset-library/worlds/randomize/recipeTiles';
@@ -38,20 +38,18 @@ interface RankedWorld {
   sampler: WorldSampler;
 }
 
-const tileAssets = tilesetFromRepoData();
+const tileAssets = tilesetTheAppShips();
 const candidates = [currentPipelineCandidate(), ...rolledCandidates(tileAssets)];
 const { ranked, unmeasurable } = measureCandidates(candidates, tileAssets);
 writeGallery(ranked);
 printRanking(ranked, unmeasurable);
 
-function tilesetFromRepoData(): TileAssets {
-  seedPersistedFile('tiles', JSON.parse(readFileSync('data/tiles.json', 'utf8')));
+function tilesetTheAppShips(): TileAssets {
   return new TileAssets();
 }
 
 function currentPipelineCandidate(): Candidate {
-  const state = sanitizePipeline(JSON.parse(readFileSync('data/pipeline.json', 'utf8')));
-  return { index: 0, title: 'current data/pipeline.json', state };
+  return { index: 0, title: 'the world the app opens with', state: loadStoredPipeline() };
 }
 
 function rolledCandidates(activeTiles: TileAssets): Candidate[] {

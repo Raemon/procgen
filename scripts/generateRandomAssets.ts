@@ -1,24 +1,19 @@
 import { generateAssetKit } from '@/features/asset-library/generation/assetKit';
-import { appendKitToDataFiles } from './assetKit/appendKitToDataFiles';
-import {
-  CULTURES_PATH,
-  PIECES_PATH,
-  TILES_PATH,
-  libraryOfDataFiles,
-  readAssetDataFiles,
-} from './assetKit/assetDataFiles';
+import { appendKitToTheLibrary, generatorViewOf } from './assetKit/appendKitToTheLibrary';
+import { withTheAssetLibrary } from './assetKit/assetLibraryInTheDatabase';
 import { generatorOptionsOf } from './assetKit/generatorOptions';
 import { printKitSummary } from './assetKit/printKitSummary';
 
 const options = generatorOptionsOf(process.argv.slice(2));
-const files = readAssetDataFiles();
-const kit = generateAssetKit(options.seed, libraryOfDataFiles(files));
 
-printKitSummary(kit, options.seed);
-if (options.dry) console.log('\ndry run: data files left untouched');
-else appendAndReport();
-
-function appendAndReport(): void {
-  appendKitToDataFiles(kit, files);
-  console.log(`\nappended to ${TILES_PATH}, ${PIECES_PATH}, ${CULTURES_PATH}`);
-}
+await withTheAssetLibrary((library) => {
+  const kit = generateAssetKit(options.seed, generatorViewOf(library));
+  printKitSummary(kit, options.seed);
+  if (options.dry) {
+    console.log('\ndry run: the library is left as it stands');
+    return false;
+  }
+  appendKitToTheLibrary(kit, library);
+  console.log(`\nadded ${kit.tiles.length} tiles, ${kit.pieces.length} pieces and 1 culture to the asset library`);
+  return true;
+});

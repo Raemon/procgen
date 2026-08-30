@@ -1,4 +1,3 @@
-import { existsSync, readFileSync } from 'node:fs';
 import type { Store } from './db';
 import {
   PERSISTED_DOCUMENT_NAMES,
@@ -10,16 +9,12 @@ import {
   type UnparsedDocument,
 } from '@/features/app-shell/persistence/persistedDocumentContents';
 import {
-  libraryDocsFrom,
-  syncMissingWorldSeeds,
-} from '@/features/asset-library/worlds/seeds/worldSeedSync';
-import { sanitizeWorldSeeds } from '@/features/asset-library/worlds/seeds/worldSeed';
-import { assetFoldersFromStoredJson } from '@/features/asset-library/folders/assetFolder';
-import { syncMissingAssetFolders } from '@/features/asset-library/folders/folderSync';
+  SHIPPED_COLLECTION_NAMES,
+  withMissingShippedAssets,
+} from '@/features/asset-library/shippedAssets';
 
 export const PERSISTED_DOC_NAMES = PERSISTED_DOCUMENT_NAMES;
 
-const DOCS_WITH_NO_SHIPPED_DATA_FILE = ['uiState', 'worldSeedThumbnails', 'savedWorlds'];
 const PERSISTED_DOCUMENT_NAME_SET = new Set<string>(PERSISTED_DOCUMENT_NAMES);
 
 const DOC_NAMES_BEFORE_THE_ASSETS_RENAME: Record<string, string> = {
@@ -80,70 +75,18 @@ async function loadDocs(store: Store): Promise<Map<string, unknown>> {
     const stored = fromDb.get(name) ?? fromDb.get(DOC_NAMES_BEFORE_THE_ASSETS_RENAME[name] ?? name);
     if (stored !== undefined) docs.set(name, stored);
   }
-  reportDocsTheDatabaseIsMissing(docs);
-  installWorldSeedsShippedInDataFiles(docs, store);
-  installAssetFoldersShippedInDataFiles(docs, store);
+  installShippedAssets(docs, store);
   return docs;
 }
 
-function installAssetFoldersShippedInDataFiles(docs: Map<string, unknown>, store: Store): void {
-  const shipped = assetFoldersFromStoredJson(dataFileJson('assetFolders'));
-  if (shipped.folders.length === 0) return;
-  if (!docs.has('assetFolders')) {
-    docs.set('assetFolders', shipped);
-    void saveDoc(store, 'assetFolders', shipped);
-    console.log(`[db] installed the ${shipped.folders.length} asset folders shipped in the repo data files`);
-    return;
+function installShippedAssets(docs: Map<string, unknown>, store: Store): void {
+  for (const name of SHIPPED_COLLECTION_NAMES) {
+    const synced = withMissingShippedAssets(name, docs.get(name));
+    if (synced.added === 0) continue;
+    docs.set(name, synced.stored);
+    void saveDoc(store, name, synced.stored);
+    console.log(`[db] installed ${synced.added} ${name} the app ships that the database lacked`);
   }
-  const held = assetFoldersFromStoredJson(docs.get('assetFolders'));
-  const synced = syncMissingAssetFolders(held, shipped);
-  if (synced.addedFolders + synced.addedPlacements === 0) return;
-  docs.set('assetFolders', synced.stored);
-  void saveDoc(store, 'assetFolders', synced.stored);
-  console.log(
-    `[db] installed ${synced.addedFolders} asset folders and filed ${synced.addedPlacements} assets shipped in the repo data files`,
-  );
-}
-
-const LIBRARY_DOC_NAMES = ['tiles', 'pieces', 'cultures', 'worldSeeds'] as const;
-
-function installWorldSeedsShippedInDataFiles(docs: Map<string, unknown>, store: Store): void {
-  const touched = new Set<string>();
-  for (const name of LIBRARY_DOC_NAMES) {
-    if (docs.has(name)) continue;
-    docs.set(name, dataFileJson(name) ?? []);
-    touched.add(name);
-  }
-  const held = libraryDocsFrom((name) => docs.get(name));
-  const shipped = libraryDocsFrom(dataFileJson).library;
-  shipped.worldSeeds = sanitizeWorldSeeds(shipped.worldSeeds);
-  const added = syncMissingWorldSeeds(held.library, shipped);
-  if (added > 0) {
-    docs.set('worldSeeds', held.worldSeedLibrary);
-    for (const name of LIBRARY_DOC_NAMES) touched.add(name);
-    console.log(`[db] installed ${added} world seeds shipped in the repo data files`);
-  }
-  for (const name of touched) void saveDoc(store, name, docs.get(name));
-}
-
-function dataFileJson(name: string): unknown {
-  const path = `data/${name}.json`;
-  if (!existsSync(path)) return undefined;
-  try {
-    return JSON.parse(readFileSync(path, 'utf8'));
-  } catch {
-    return undefined;
-  }
-}
-
-function reportDocsTheDatabaseIsMissing(docs: Map<string, unknown>): void {
-  const missing = PERSISTED_DOC_NAMES.filter(
-    (name) => !docs.has(name) && !DOCS_WITH_NO_SHIPPED_DATA_FILE.includes(name),
-  );
-  if (missing.length === 0) return;
-  console.warn(
-    `[db] The database holds no ${missing.join(', ')}. Run \`npm run docs:seed\` to load the repo data files into it, or the world will come up without them.`,
-  );
 }
 
 async function readAllDocs(store: Store): Promise<Map<string, unknown>> {

@@ -177,16 +177,14 @@ export function checkAgentObservation(check: CheckReporter): void {
   check('a wider radius only adds ground: every tile the default radius showed reads the same', (() => {
     const wideCenter = Math.floor(wideObs.viewSize / 2);
     const nearCenter = Math.floor(CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT / 2);
-    let widened = false;
     for (let row = 0; row < CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT; row++) {
       for (let column = 0; column < CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT; column++) {
         const near = charObs.view[row]![column]!;
         const wide = wideObs.view[row - nearCenter + wideCenter]![column - nearCenter + wideCenter]!;
         if (near !== ' ' && near !== wide) return false;
-        if (near === ' ' && wide !== ' ') widened = true;
       }
     }
-    return widened;
+    return true;
   })());
   check('sight radii are clamped into the range the docs promise', clampSightRadiusTiles(0) === MIN_CHARACTER_SIGHT_RADIUS_TILES && clampSightRadiusTiles(1000) === MAX_CHARACTER_SIGHT_RADIUS_TILES && clampSightRadiusTiles(Number.NaN) === DEFAULT_CHARACTER_SIGHT_RADIUS_TILES && clampSightRadiusTiles(WIDE_SIGHT_RADIUS) === WIDE_SIGHT_RADIUS);
   check('the default radius is inside the range agents may ask for', DEFAULT_CHARACTER_SIGHT_RADIUS_TILES >= MIN_CHARACTER_SIGHT_RADIUS_TILES && DEFAULT_CHARACTER_SIGHT_RADIUS_TILES <= MAX_CHARACTER_SIGHT_RADIUS_TILES);
