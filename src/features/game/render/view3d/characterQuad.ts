@@ -49,7 +49,7 @@ function paintSlab(mesh: THREE.Mesh, dressing: CharacterQuadDressing, frame: Cha
   const { sprites, def, tint } = dressing;
   const key = `${def.id}:${frameKey(frame)}`;
   mesh.geometry = sprites.slabs.slabFor(key, frame.sprite);
-  mesh.material = [sprites.textures.materialFor(key, frame.sprite, tint), sprites.textures.rimFor(tint)];
+  mesh.material = [sprites.textures.materialFor(key, frame.sprite, def.id, tint), sprites.textures.rimFor(def.id, tint)];
 }
 
 function poseSlab(

@@ -1,31 +1,38 @@
 import * as THREE from 'three';
 import type { SpriteArt } from '@/features/asset-library/tiles/spriteArt';
-import { coplanarLane, coplanarPullOf, pullTowardCamera } from './coplanarPull';
+import { COPLANAR_LANES, coplanarLane, coplanarPullOf, pullTowardCamera } from './coplanarPull';
 import { spriteMaterial, spriteTexture } from './spriteMaterial';
 import { spriteRimMaterial } from './spriteRimMaterial';
 
 const UNTINTED = 0xffffff;
+const FRAME_LANES = 4;
+const CHARACTER_LANES = COPLANAR_LANES / FRAME_LANES;
+
+export function characterLane(character: string, frame: string): number {
+  return coplanarLane(character, CHARACTER_LANES) * FRAME_LANES + coplanarLane(frame, FRAME_LANES);
+}
 
 export class CharacterSpriteTextures {
   private readonly textures = new Map<string, THREE.CanvasTexture>();
   private readonly materials = new Map<string, THREE.MeshLambertMaterial>();
-  private readonly rims = new Map<number, THREE.MeshLambertMaterial>();
+  private readonly rims = new Map<string, THREE.MeshLambertMaterial>();
 
-  rimFor(tint = UNTINTED): THREE.MeshLambertMaterial {
-    const cached = this.rims.get(tint);
+  rimFor(characterId: number, tint = UNTINTED): THREE.MeshLambertMaterial {
+    const character = `${characterId}@${tint}`;
+    const cached = this.rims.get(character);
     if (cached) return cached;
     const material = spriteRimMaterial(tint);
-    pullTowardCamera(material, coplanarPullOf('character', coplanarLane(`rim ${tint}`)));
-    this.rims.set(tint, material);
+    pullTowardCamera(material, coplanarPullOf('character', characterLane(character, 'rim')));
+    this.rims.set(character, material);
     return material;
   }
 
-  materialFor(key: string, sprite: SpriteArt, tint = UNTINTED): THREE.MeshLambertMaterial {
+  materialFor(key: string, sprite: SpriteArt, characterId: number, tint = UNTINTED): THREE.MeshLambertMaterial {
     const tintedKey = `${key}@${tint}`;
     const cached = this.materials.get(tintedKey);
     if (cached) return cached;
     const material = spriteMaterial(this.textureFor(key, sprite), tint);
-    pullTowardCamera(material, coplanarPullOf('character', coplanarLane(tintedKey)));
+    pullTowardCamera(material, coplanarPullOf('character', characterLane(`${characterId}@${tint}`, tintedKey)));
     this.materials.set(tintedKey, material);
     return material;
   }

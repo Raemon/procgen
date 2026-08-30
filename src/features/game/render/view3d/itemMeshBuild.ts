@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { BILLBOARD, LYING_FLAT, type ItemDef } from '@/features/asset-library/items/itemDef';
 import type { SpriteArt } from '@/features/asset-library/tiles/spriteArt';
-import { coplanarLane, coplanarPullOf, pullTowardCamera } from './coplanarPull';
+import { coplanarPullOf, pullTowardCamera } from './coplanarPull';
 import { cubeFaceMaterials } from './faceArtMaterials';
 import { lambertFromInk } from './inkMaterial';
 import { glowOfEmitter, glowSelfLit } from './selfLitGlow';
@@ -51,7 +51,7 @@ export function itemHalfHeight(item: ItemDef): number {
 export function itemMaterials(item: ItemDef): THREE.Material | THREE.Material[] {
   const surfaces = itemSurfaces(item);
   glowSelfLit(surfaces, glowOfEmitter(item));
-  pullTowardCamera(surfaces, coplanarPullOf('item', coplanarLane(item.id)));
+  pullTowardCamera(surfaces, coplanarPullOf('item', item.id));
   return surfaces;
 }
 

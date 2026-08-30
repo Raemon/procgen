@@ -4,7 +4,7 @@ import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler'
 import { isTransparentInk, opaqueInk } from '@/features/asset-library/tiles/inkColor';
 import type { ReadOnlyTileAssets } from '@/features/app-shell/runtime/readOnlyAssets';
 import { instancedTileMesh } from './instancedTileMesh';
-import { MAX_FACE_ART_SIZE } from '@/features/asset-library/tiles/tileFaceArt';
+import { MAX_FACE_ART_SIZE, type CubeFaceArt } from '@/features/asset-library/tiles/tileFaceArt';
 import {
   rememberTileMaterialDetail,
   tileMaterialsAtDetail,
@@ -27,7 +27,8 @@ import {
 import { EVERY_FACE, visibleFacesOf } from './culling/visibleFaceMask';
 import { foldRareFaceVariants, type FacedPlacement } from './culling/foldRareFaceVariants';
 import { groupsOfLikeSurfaceAndFaces, type PlacementGroup } from './placementGroups';
-import { coplanarLane, coplanarPullOf, laneSubjectOf, pullTowardCamera, type CoplanarLayer } from './coplanarPull';
+import { coplanarPullOf, pullTowardCamera, type CoplanarLayer } from './coplanarPull';
+import { hashString } from '@/features/asset-library/worlds/random/hashString';
 import {
   billboardShape,
   blockShape,
@@ -139,8 +140,18 @@ function meshesForShape(
 
 function groupPullOf(layer: CoplanarLayer, group: PlacementGroup): number {
   if (layer === 'terrain') return coplanarPullOf('terrain');
-  const surfaceSpread = laneSubjectOf(group.art) + coplanarLane(`${group.baseColor}|${group.textureId}`);
-  return coplanarPullOf(layer, coplanarLane(surfaceSpread));
+  return coplanarPullOf(layer, `${faceArtSeedOf(group.art)}|${group.baseColor}|${group.textureId}`);
+}
+
+const faceArtSeeds = new WeakMap<CubeFaceArt, number>();
+
+function faceArtSeedOf(art: CubeFaceArt | null): number {
+  if (art === null) return 0;
+  const known = faceArtSeeds.get(art);
+  if (known !== undefined) return known;
+  const seed = hashString(`${art.size}:${art.north.join(',')}`);
+  faceArtSeeds.set(art, seed);
+  return seed;
 }
 
 function facedPlacements(

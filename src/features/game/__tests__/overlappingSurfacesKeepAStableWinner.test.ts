@@ -2,12 +2,13 @@ import * as THREE from 'three';
 import type { ItemId } from '@/features/asset-library/asset';
 import type { CreatureDef } from '@/features/asset-library/creatures/creatureDef';
 import { newItemWithId } from '@/features/asset-library/items/itemDef';
+import { tileMaterialsAtDetail } from '../render/view3d/chunkDetail';
 import {
   COPLANAR_LANES,
-  coplanarLane,
   coplanarPullOf,
   pullTowardCamera,
 } from '../render/view3d/coplanarPull';
+import { characterLane } from '../render/view3d/characterSpriteTextures';
 import { creatureBodyMaterials } from '../render/view3d/creatureSurfaces';
 import { itemMaterials } from '../render/view3d/itemMeshBuild';
 import { overviewNeighborDrop } from '../render/view3d/terrainOverview';
@@ -18,6 +19,8 @@ export function checkOverlappingSurfacesKeepAStableWinner(check: CheckReporter):
   checkLanesSpreadSurfacesWithinALayer(check);
   checkPullingWritesThePolygonOffset(check);
   checkItemsAndCreaturesCarryTheirPulls(check);
+  checkACharacterKeepsItsLaneWhileItAnimates(check);
+  checkThePullRidesTheMaterialCacheThroughDetailSwaps(check);
   checkTheOverviewStaggersItsOverlappingCells(check);
 }
 
@@ -49,10 +52,13 @@ function checkLanesSpreadSurfacesWithinALayer(check: CheckReporter): void {
   const catalogOfNeighbouringIds = Array.from({ length: COPLANAR_LANES }, (_, index) => index + 1);
   check(
     'every id in a small catalog takes its own lane, so two items on one tile cannot tie',
-    new Set(catalogOfNeighbouringIds.map(coplanarLane)).size === COPLANAR_LANES,
+    new Set(catalogOfNeighbouringIds.map((id) => coplanarPullOf('item', id))).size === COPLANAR_LANES,
   );
-  check('a hashed lane stays inside its layer band', coplanarLane('gaunt one:walk@16777215') < COPLANAR_LANES);
-  check('a negative id still lands on a lane', coplanarLane(-3) >= 0 && coplanarLane(-3) < COPLANAR_LANES);
+  check(
+    'a negative id still lands inside its band',
+    coplanarPullOf('item', -3) <= coplanarPullOf('item', 0) &&
+      coplanarPullOf('item', -3) >= coplanarPullOf('item', COPLANAR_LANES - 1),
+  );
 }
 
 function checkPullingWritesThePolygonOffset(check: CheckReporter): void {
@@ -77,7 +83,7 @@ function checkItemsAndCreaturesCarryTheirPulls(check: CheckReporter): void {
   const spearUnits = offsetUnitsOf(itemMaterials(newItemWithId(1 as ItemId)));
   const shieldUnits = offsetUnitsOf(itemMaterials(newItemWithId(2 as ItemId)));
   const creatureUnits = offsetUnitsOf(
-    creatureBodyMaterials({ id: 3, color: '#a05252', faceArt: null } as unknown as CreatureDef),
+    creatureBodyMaterials({ id: 9001, color: '#a05252', faceArt: null } as unknown as CreatureDef),
   );
   check(
     'two items dropped on the same tile pull to different depths',
@@ -90,8 +96,38 @@ function checkItemsAndCreaturesCarryTheirPulls(check: CheckReporter): void {
     ),
   );
   check(
-    'a creature body pulls in front of every item',
-    [...creatureUnits].every((units) => units <= coplanarPullOf('character', 0)),
+    'a creature body pulls inside the character band, in front of every item',
+    [...creatureUnits].every(
+      (units) => units <= coplanarPullOf('character', 0) && units >= coplanarPullOf('character', COPLANAR_LANES - 1),
+    ),
+  );
+}
+
+function checkACharacterKeepsItsLaneWhileItAnimates(check: CheckReporter): void {
+  const walkingFrames = ['5:walk:0', '5:walk:1', '5:stand:0', '6:walk:2'];
+  const laneBlocks = walkingFrames.map((frame) => Math.floor(characterLane('5@16777215', frame) / 4));
+  check(
+    'a character stays in its own lane block through every animation frame, so its depth never pops',
+    new Set(laneBlocks).size === 1,
+  );
+  check(
+    'two of a kind spread their frames within the block, so a crossing pair still resolves',
+    new Set(walkingFrames.map((frame) => characterLane('5@16777215', frame))).size > 1,
+  );
+  check(
+    'a character lane stays inside the character band',
+    walkingFrames.every((frame) => characterLane('5@16777215', frame) < COPLANAR_LANES),
+  );
+}
+
+function checkThePullRidesTheMaterialCacheThroughDetailSwaps(check: CheckReporter): void {
+  const pull = coplanarPullOf('marker', 'granite|#888888');
+  const detail = { kind: 'png', textureId: 'granite', baseColor: '#888888', glow: 0, pull } as const;
+  const closeUp = offsetUnitsOf(tileMaterialsAtDetail(detail, 512));
+  const farAway = offsetUnitsOf(tileMaterialsAtDetail(detail, 4));
+  check(
+    'swapping a mesh to a cheaper detail budget keeps the pull it was placed with',
+    [...closeUp, ...farAway].every((units) => units === pull),
   );
 }
 

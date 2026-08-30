@@ -13,13 +13,13 @@ const LAYER_BANDS = {
 
 export type CoplanarLayer = keyof typeof LAYER_BANDS;
 
-export function coplanarLane(seed: number | string): number {
+export function coplanarLane(seed: number | string, lanes = COPLANAR_LANES): number {
   const spread = typeof seed === 'number' ? Math.trunc(seed) : hashString(seed);
-  return ((spread % COPLANAR_LANES) + COPLANAR_LANES) % COPLANAR_LANES;
+  return ((spread % lanes) + lanes) % lanes;
 }
 
-export function coplanarPullOf(layer: CoplanarLayer, lane = 0): number {
-  return LAYER_BANDS[layer] * COPLANAR_LANES - lane;
+export function coplanarPullOf(layer: CoplanarLayer, laneSeed: number | string = 0): number {
+  return LAYER_BANDS[layer] * COPLANAR_LANES - coplanarLane(laneSeed);
 }
 
 export function pullTowardCamera(
@@ -32,15 +32,4 @@ export function pullTowardCamera(
     material.polygonOffsetFactor = pull / COPLANAR_LANES;
     material.polygonOffsetUnits = pull;
   }
-}
-
-const laneSubjects = new WeakMap<object, number>();
-let nextLaneSubject = 1;
-
-export function laneSubjectOf(subject: object | null): number {
-  if (subject === null) return 0;
-  const known = laneSubjects.get(subject);
-  if (known !== undefined) return known;
-  laneSubjects.set(subject, nextLaneSubject);
-  return nextLaneSubject++;
 }
