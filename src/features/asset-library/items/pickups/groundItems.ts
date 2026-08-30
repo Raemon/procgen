@@ -1,4 +1,5 @@
 import type { ItemSpawn, WorldSampler } from '@/features/asset-library/worlds/worldSampler';
+import { NO_ITEM_SPAWNS, type ItemSpawnSource } from './itemSpawnSource';
 import type { TakenItemSpawns } from './takenItemSpawns';
 
 export interface GroundItems {
@@ -8,9 +9,15 @@ export interface GroundItems {
 
 export const NO_GROUND_ITEMS: GroundItems = { at: () => [], take: () => undefined };
 
-export function groundItemsOf(sampler: WorldSampler, taken: TakenItemSpawns): GroundItems {
+export function groundItemsOf(
+  sampler: WorldSampler,
+  taken: TakenItemSpawns,
+  extra: ItemSpawnSource = NO_ITEM_SPAWNS,
+): GroundItems {
   return {
     at: (x, y) => sampler.itemSpawnsIn(x, y, x, y),
-    take: (spawn) => taken.take(spawn),
+    take: (spawn) => {
+      if (!extra.takeSpawn(spawn)) taken.take(spawn);
+    },
   };
 }

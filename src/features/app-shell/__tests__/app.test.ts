@@ -78,6 +78,7 @@ import { checkFeatureViewLayout } from '@/features/asset-library/worlds/__tests_
 import { routeHandlerTests } from './routeHandlers.test';
 import { bootstrapPersistenceTests } from './bootstrapPersistence.test';
 import { websocketUpgradeRoutingTests } from '@/features/game/__tests__/websocketUpgradeRouting.test';
+import { checkKeyRoomsAndDoors } from '@/features/game/puzzles/__tests__/keyRoomsAndDoors.test';
 import { checkPuzzleSync } from '@/features/game/multiplayer/__tests__/puzzleSync.test';
 
 function check(name: string, condition: boolean): void {
@@ -163,4 +164,5 @@ describe('the features map layout', () => checkFeatureViewLayout(check));
 describe('Route Handlers', routeHandlerTests);
 describe('browser persistence bootstrap', bootstrapPersistenceTests);
 describe('websocket upgrade routing', websocketUpgradeRoutingTests);
+describe('key rooms and the doors they open', () => checkKeyRoomsAndDoors(check));
 describe('puzzle state over the game socket', () => checkPuzzleSync(check));

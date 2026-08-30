@@ -2,6 +2,7 @@ import type { CreatureId, ItemId } from '@/features/asset-library/asset';
 import type { TileId } from '@/features/asset-library/asset';
 import { NO_ITEMS, type ItemSource } from '@/features/asset-library/items/itemAssets';
 import { measureWork } from '@/features/game/performance/workTimers';
+import { NO_ITEM_SPAWNS, type ItemSpawnSource } from '@/features/asset-library/items/pickups/itemSpawnSource';
 import { TakenItemSpawns } from '@/features/asset-library/items/pickups/takenItemSpawns';
 import type { CubeFaceArt } from '@/features/asset-library/tiles/tileFaceArt';
 import type { TileAssets } from '@/features/asset-library/tiles/tileAssets';
@@ -76,6 +77,7 @@ export class WorldSampler {
   private readonly structureOverlay: StructureOverlay;
   private readonly sampledChunks = new SampledChunkCache(SAMPLED_CHUNKS_KEPT);
   private readonly displayedByMode = new Map<DisplayedMode, NodeInstance[]>();
+  private extraSpawns: ItemSpawnSource = NO_ITEM_SPAWNS;
 
   constructor(
     private readonly store: PipelineStore,
@@ -147,8 +149,12 @@ export class WorldSampler {
     return spawns;
   }
 
+  alsoSpawnItemsFrom(source: ItemSpawnSource): void {
+    this.extraSpawns = source;
+  }
+
   itemSpawnsIn(minX: number, minY: number, maxX: number, maxY: number): ItemSpawn[] {
-    const spawns: ItemSpawn[] = [];
+    const spawns: ItemSpawn[] = [...this.extraSpawns.itemSpawnsIn(minX, minY, maxX, maxY)];
     for (const node of this.displayedNodes('items')) {
       if (node.display.mode !== 'items') continue;
       const item = this.items.byId(node.display.itemId);

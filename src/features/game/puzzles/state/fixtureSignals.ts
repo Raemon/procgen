@@ -17,9 +17,7 @@ export function fixtureIsOn(
   fixture: PuzzleFixture,
 ): boolean {
   if (fixture.kind === 'plate') return crateSitsOn(layout, state, fixture.x, fixture.y);
-  if (fixture.kind === 'lever' || fixture.kind === 'key') {
-    return state.isOn(fixtureIdIn(layout, fixture.id));
-  }
+  if (fixture.kind === 'lever') return state.isOn(fixtureIdIn(layout, fixture.id));
   return false;
 }
 

@@ -20,6 +20,7 @@ import { CultureAssets } from '@/features/asset-library/cultures/cultureAssets';
 import { MAX_STORY_LAYERS, piecesBoundToRole } from '@/features/asset-library/cultures/cultureDef';
 import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
 import type { TileDef } from '@/features/asset-library/tiles/tileDef';
+import { NO_KEYS } from '@/features/game/puzzles/interaction/keyPurse';
 import { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
 import { turnedFacing, type FacingIndex } from '@/features/game/facing';
 import {
@@ -59,6 +60,7 @@ function abilityWorld(initialTiles: TileDef[] = []) {
     randomizeHistory: new RandomizeHistory(),
     groundItems: NO_GROUND_ITEMS,
     puzzles: new PuzzleWorld(store, () => true),
+    keyPurse: NO_KEYS,
     regionSampler: {
       tileAt: () => assetId<'tiles'>(0),
       elevationAt: () => 0,

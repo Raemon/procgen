@@ -127,9 +127,16 @@ function crateSpaceOf(layout: PuzzleRoomLayout): CrateFloorSpace {
 
 function furnishedRoomIsBeatable(layout: PuzzleRoomLayout): boolean {
   if (layout.kindName === '') return true;
+  if (layout.unlock === 'key') return everyKeyCanBeWalkedTo(layout);
   if (layout.kindName !== 'sokoban') return everyTriggerCanBeWalkedTo(layout);
   if (layout.solution.length === 0) return layout.opensWhen.length === 0;
   return forwardSolutionWorks(crateSpaceOf(layout), layout.entrance, layout.solution);
+}
+
+function everyKeyCanBeWalkedTo(layout: PuzzleRoomLayout): boolean {
+  if (layout.items.length === 0) return false;
+  const space = crateSpaceOf(layout);
+  return layout.items.every((key) => canWalkBetween(space, layout.entrance, key));
 }
 
 function everyTriggerCanBeWalkedTo(layout: PuzzleRoomLayout): boolean {

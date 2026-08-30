@@ -11,6 +11,7 @@ import {
   type SayMsg,
 } from '../client/protocol';
 import { sanitizeChatText } from '../../chat/sanitizeChatText';
+import type { KeyPurse } from '../../puzzles/interaction/keyPurse';
 import { useHereOrAhead } from '../../puzzles/interaction/useAtPose';
 import {
   ORDER_DIR,
@@ -22,6 +23,7 @@ import {
   JUMP_UP,
 } from '../../sim/movementOrder';
 import { turnedFacing } from '../../facing';
+import type { Entity } from '../game/entities';
 import { joinConnection, leaveConnection } from '../game/joins';
 import { Connection } from './connection';
 import {
@@ -94,8 +96,21 @@ function handleMessage(conn: Connection, msg: ClientMsg, deps: WsDeps): void {
   if (msg.t === 'hello' && conn.state === 'AWAITING_HELLO') handleHello(conn, msg, deps);
   if (conn.state !== 'PLAYING' || !conn.entity) return;
   if (msg.t === 'say') handleSay(conn, msg, deps);
-  if (msg.t === 'use') useHereOrAhead(deps.worldHost.current().puzzles, conn.entity.x, conn.entity.y, conn.entity.facing);
+  if (msg.t === 'use') {
+    const at = conn.entity;
+    useHereOrAhead(deps.worldHost.current().puzzles, at.x, at.y, at.facing, keyringOf(at));
+  }
   if (msg.t === 'resetRoom') deps.worldHost.current().puzzles.resetRoomAt(conn.entity.x, conn.entity.y);
+}
+
+function keyringOf(entity: Entity): KeyPurse {
+  return {
+    spendKey: () => {
+      if (entity.keys <= 0) return false;
+      entity.keys--;
+      return true;
+    },
+  };
 }
 
 function handleHello(conn: Connection, hello: HelloMsg, deps: WsDeps): void {

@@ -33,6 +33,8 @@ export function buildPuzzleRoom(
     gates: isRoom ? gatesOf(geometry) : { east: [], south: [], west: [], north: [] },
     opensWhen: furnished.opensWhen,
     solution: furnished.solution,
+    items: furnished.items ?? [],
+    unlock: furnished.unlock ?? 'signals',
   };
 }
 

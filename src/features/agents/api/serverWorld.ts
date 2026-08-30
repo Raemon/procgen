@@ -19,6 +19,8 @@ import { TemplateLibrary } from '@/features/asset-library/node-groups/templateLi
 import { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import { nearestWalkable } from '@/features/game/nearestWalkable';
 import type { StepRules } from '@/features/game/sim/stepIsAllowed';
+import { carriedKeysOf } from '@/features/game/puzzles/interaction/carriedKeys';
+import type { KeyPurse } from '@/features/game/puzzles/interaction/keyPurse';
 import { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
 import { PuzzleState } from '@/features/game/puzzles/state/puzzleState';
 import { isWalkableTile } from '@/features/game/tileWalkability';
@@ -64,6 +66,7 @@ export interface ServerWorld {
   takenItems: TakenItemSpawns;
   groundItems: GroundItems;
   puzzles: PuzzleWorld;
+  keyPurse: KeyPurse;
   isWalkable(x: number, y: number): boolean;
   isStandable(x: number, y: number): boolean;
   stepRules: StepRules;
@@ -148,7 +151,8 @@ function buildServerWorld(
     cultures,
   );
   const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileAssets, sampler.tileAt(x, y));
-  const puzzles = new PuzzleWorld(store, tileIsWalkable, puzzleState);
+  const puzzles = new PuzzleWorld(store, tileIsWalkable, puzzleState, items);
+  sampler.alsoSpawnItemsFrom(puzzles);
   const isWalkable = (x: number, y: number) => tileIsWalkable(x, y) && !puzzles.blocksAt(x, y);
   const gates = climbGatesFrom((x, y) => sampler.elevationAt(x, y));
   const isStandable = standableProbeFrom(isWalkable, gates.climbGateAt);
@@ -156,7 +160,8 @@ function buildServerWorld(
     stamp,
     sampler,
     puzzles,
-    groundItems: groundItemsOf(sampler, takenItems),
+    groundItems: groundItemsOf(sampler, takenItems, puzzles),
+    keyPurse: carriedKeysOf(creatures, items),
     tileAssets,
     store,
     pieces,

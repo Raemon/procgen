@@ -26,5 +26,5 @@ export function stepPlayerEntity(
   const nextY = entity.y + delta.dy;
   if (!delta.jumped && !stepIsAllowed(world.stepRules, nextX, nextY, delta.dx, delta.dy)) return;
   registry.moveTo(entity, nextX, nextY);
-  world.puzzles.takeKeysAt(nextX, nextY);
+  entity.keys += world.puzzles.takeKeysAt(nextX, nextY).length;
 }
