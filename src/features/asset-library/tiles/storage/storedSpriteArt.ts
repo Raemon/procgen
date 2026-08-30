@@ -1,5 +1,6 @@
 import { isSpriteArt, spriteGridSize, type SpriteArt } from '../spriteArt';
 import { isValidFaceArtSize } from '../tileFaceArt';
+import { isPaintedRowsSprite, spriteFromPaintedRows } from './paintedRowsArt';
 import {
   bytesPerIndex,
   isPalette,
@@ -39,6 +40,7 @@ export function storedSpriteOf(sprite: SpriteArt): StoredSpriteArt {
 
 export function spriteArtFromStoredShape(value: unknown): SpriteArt | null {
   if (isCompactSpriteArt(value)) return spriteArtFromCompact(value);
+  if (isPaintedRowsSprite(value)) return spriteFromPaintedRows(value);
   return isSpriteArt(value) ? value : null;
 }
 

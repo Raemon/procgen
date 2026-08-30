@@ -64,7 +64,7 @@ registerTileCommand({
     light_ink: { kind: 'text', help: 'a #rrggbb color for the light this tile casts', optional: true },
     face_art: {
       kind: 'json',
-      help: 'cube face art as GET /api/v1/asset-library/tiles reports it, or null to clear it',
+      help: 'cube face art: {palette: {"g": "#7bbf5a"}, top: ["g.", ".g"], ...} rows of palette characters per face ("." is transparent, unpainted faces stay blank), or either shape GET reports; null to clear it',
       optional: true,
     },
   },
@@ -189,7 +189,7 @@ export function faceArtFrom(params: CommandParams): ArtRead {
   if (art === null) {
     return {
       ok: false,
-      failure: commandFailed('invalid_value', "'face_art' must be cube face art in either shape GET reports, or null to clear it"),
+      failure: commandFailed('invalid_value', "'face_art' must be cube face art — {palette, top: [rows], ...} rows per face or either shape GET reports — or null to clear it"),
     };
   }
   return { ok: true, value: art };

@@ -4,11 +4,13 @@ import { compactFaceArtOf } from './compactFaceArtEncode';
 import { faceArtFromCompact } from './compactFaceArtDecode';
 import { isCompactFaceArt, type CompactFaceArt } from './compactFaceArtShape';
 import { MAX_PALETTE_COLORS, paletteOfFaceArt } from './faceArtPalette';
+import { faceArtFromPaintedRows, isPaintedRowsFaceArt } from './paintedRowsArt';
 
 export type StoredFaceArt = CompactFaceArt | CubeFaceArt;
 
 export function faceArtFromStoredShape(value: unknown): CubeFaceArt | null {
   if (isCompactFaceArt(value)) return faceArtFromCompact(value);
+  if (isPaintedRowsFaceArt(value)) return faceArtFromPaintedRows(value);
   if (isCubeFaceArt(value)) return value;
   return legacyFaceArtUpgraded(value);
 }
