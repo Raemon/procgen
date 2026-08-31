@@ -1,4 +1,3 @@
-import { classes } from '@/features/app-shell/controls/classes';
 import { tooltipHandlers } from '@/features/app-shell/tooltips/tooltipHandlers';
 import { expandPanelTip } from '../help/panelTips';
 import type { PanelChrome } from './Panel';
@@ -6,10 +5,7 @@ import type { PanelChrome } from './Panel';
 export function CollapsedRail({ chrome }: { chrome: PanelChrome }) {
   return (
     <div
-      className={classes(
-        'flex cursor-pointer flex-col items-center gap-1.5 overflow-hidden border-r border-panel-edge py-2.5 text-ink-dim hover:text-ink',
-        chrome.tone,
-      )}
+      className="flex cursor-pointer flex-col items-center gap-1.5 overflow-hidden border-r border-panel-edge bg-panel py-2.5 text-ink-dim hover:text-ink"
       onClick={chrome.onToggleCollapsed}
     >
       <button

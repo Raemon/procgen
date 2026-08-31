@@ -6,7 +6,7 @@ export function Game({ layout }: { layout: PanelLayout }) {
   return (
     <div className="contents">
       <WorldsPanel layout={layout} />
-      <GamePanel />
+      <GamePanel layout={layout} />
     </div>
   );
 }

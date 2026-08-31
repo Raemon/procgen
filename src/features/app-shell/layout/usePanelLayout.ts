@@ -3,10 +3,11 @@ import { isNumber, isRecordOf } from '@/features/app-shell/state/persistedUiGuar
 import { PERSISTED_UI_KEYS } from '@/features/app-shell/state/persistedUiKeys';
 import { usePersistedUiSet } from '@/features/app-shell/state/usePersistedUiSet';
 import { usePersistedUiValue } from '@/features/app-shell/state/usePersistedUiValue';
-import { panelWidthsThatLeaveRoomForWorld } from './panelWidthBudget';
+import { MIN_WORLD_WIDTH, panelWidthsThatLeaveRoomForWorld } from './panelWidthBudget';
 import { useWindowWidth } from './useWindowWidth';
 
 export type PanelKey = 'library' | 'detail' | 'agents' | 'log' | 'worlds';
+export type ColumnKey = PanelKey | 'game';
 
 const MIN_PANEL_WIDTH = 150;
 const MAX_PANEL_WIDTH = 640;
@@ -24,10 +25,10 @@ const START_WIDTHS: Readonly<Record<PanelKey, number>> = {
 export interface PanelLayout {
   gridTemplateColumns: string;
   widthOf(key: PanelKey): number;
-  isCollapsed(key: PanelKey): boolean;
+  isCollapsed(key: ColumnKey): boolean;
   resizePanel(key: PanelKey, width: number): void;
   resetPanelWidth(key: PanelKey): void;
-  toggleCollapsed(key: PanelKey): void;
+  toggleCollapsed(key: ColumnKey): void;
 }
 
 export function usePanelLayout(visible: readonly PanelKey[]): PanelLayout {
@@ -49,7 +50,8 @@ export function usePanelLayout(visible: readonly PanelKey[]): PanelLayout {
     [widths, setWidths],
   );
 
-  const isCollapsed = (key: PanelKey) => collapsed.has(key);
+  const isCollapsed = (key: ColumnKey) => collapsed.has(key);
+  const gameIsCollapsed = isCollapsed('game');
   const requestedWidthOf = (key: PanelKey) =>
     isCollapsed(key) ? COLLAPSED_PANEL_WIDTH : (widths[key] ?? START_WIDTHS[key]);
 
@@ -57,12 +59,17 @@ export function usePanelLayout(visible: readonly PanelKey[]): PanelLayout {
     visible.map(requestedWidthOf),
     HANDLE_WIDTH,
     COLLAPSED_PANEL_WIDTH,
+    gameIsCollapsed ? COLLAPSED_PANEL_WIDTH : MIN_WORLD_WIDTH,
     windowWidth,
   );
   const widthOf = (key: PanelKey) => fitted[visible.indexOf(key)] ?? requestedWidthOf(key);
 
   return {
-    gridTemplateColumns: columnTemplate(fitted),
+    gridTemplateColumns: columnTemplate(
+      fitted,
+      gameIsCollapsed ? lastExpanded(visible, isCollapsed) : NOTHING_STRETCHES,
+      gameIsCollapsed,
+    ),
     widthOf,
     isCollapsed,
     resizePanel,
@@ -71,9 +78,27 @@ export function usePanelLayout(visible: readonly PanelKey[]): PanelLayout {
   };
 }
 
-function columnTemplate(widths: readonly number[]): string {
-  const panelTracks = widths.map((width) => `${width}px ${HANDLE_WIDTH}px`).join(' ');
-  return `${panelTracks} minmax(0, 1fr)`;
+const NOTHING_STRETCHES = -1;
+
+function lastExpanded(
+  visible: readonly PanelKey[],
+  isCollapsed: (key: PanelKey) => boolean,
+): number {
+  return visible.reduce((last, key, index) => (isCollapsed(key) ? last : index), NOTHING_STRETCHES);
+}
+
+function columnTemplate(
+  widths: readonly number[],
+  stretching: number,
+  gameIsCollapsed: boolean,
+): string {
+  const panelTracks = widths
+    .map(
+      (width, index) =>
+        `${index === stretching ? `minmax(${width}px, 1fr)` : `${width}px`} ${HANDLE_WIDTH}px`,
+    )
+    .join(' ');
+  return `${panelTracks} ${gameIsCollapsed ? `${COLLAPSED_PANEL_WIDTH}px` : 'minmax(0, 1fr)'}`;
 }
 
 function clamped(width: number): number {
