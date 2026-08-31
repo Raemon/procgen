@@ -4,15 +4,24 @@ import { fetchLabRun, fetchLabRuns, type LabRunDetail, type LabRunSummary } from
 const POLL_WHILE_RUNNING_MS = 1000;
 const POLL_WHILE_IDLE_MS = 5000;
 
-export function useLabRuns(watched: number): LabRunSummary[] {
-  const [runs, setRuns] = useState<LabRunSummary[]>([]);
+export interface LabPoll<Value> {
+  value: Value;
+  answeredAt: number | null;
+  waitingSince: number | null;
+  failure: string | null;
+}
+
+export function useLabRuns(watched: number): LabPoll<LabRunSummary[]> {
+  const [poll, setPoll] = useState<LabPoll<LabRunSummary[]>>(pollWaiting([]));
   useEffect(() => {
     let alive = true;
     let timer: ReturnType<typeof setTimeout> | null = null;
     const pollAgain = async () => {
-      const listed = await fetchLabRuns();
+      setPoll((was) => ({ ...was, waitingSince: was.waitingSince ?? Date.now() }));
+      const answer = await fetchLabRuns();
       if (!alive) return;
-      setRuns(listed);
+      const listed = answer.failure === null ? answer.runs : [];
+      setPoll((was) => pollAnswered(answer.failure === null ? listed : was.value, answer.failure));
       timer = setTimeout(() => void pollAgain(), pollGapOf(listed.some(isRunning)));
     };
     void pollAgain();
@@ -21,23 +30,27 @@ export function useLabRuns(watched: number): LabRunSummary[] {
       if (timer) clearTimeout(timer);
     };
   }, [watched]);
-  return runs;
+  return poll;
 }
 
-export function useLabRun(id: string | null): LabRunDetail | null {
-  const [run, setRun] = useState<LabRunDetail | null>(null);
+export function useLabRun(id: string | null): LabPoll<LabRunDetail | null> {
+  const [poll, setPoll] = useState<LabPoll<LabRunDetail | null>>(pollWaiting(null));
   useEffect(() => {
     if (id === null) {
-      setRun(null);
+      setPoll(pollWaiting(null));
       return;
     }
     let alive = true;
     let timer: ReturnType<typeof setTimeout> | null = null;
     const pollAgain = async () => {
-      const detail = await fetchLabRun(id);
+      setPoll((was) => ({ ...was, waitingSince: was.waitingSince ?? Date.now() }));
+      const answer = await fetchLabRun(id);
       if (!alive) return;
-      setRun(detail);
-      timer = setTimeout(() => void pollAgain(), pollGapOf(detail !== null && isRunning(detail)));
+      setPoll((was) => pollAnswered(answer.failure === null ? answer.run : was.value, answer.failure));
+      timer = setTimeout(
+        () => void pollAgain(),
+        pollGapOf(answer.run !== null && isRunning(answer.run)),
+      );
     };
     void pollAgain();
     return () => {
@@ -45,7 +58,15 @@ export function useLabRun(id: string | null): LabRunDetail | null {
       if (timer) clearTimeout(timer);
     };
   }, [id]);
-  return run;
+  return poll;
+}
+
+function pollWaiting<Value>(value: Value): LabPoll<Value> {
+  return { value, answeredAt: null, waitingSince: null, failure: null };
+}
+
+function pollAnswered<Value>(value: Value, failure: string | null): LabPoll<Value> {
+  return { value, answeredAt: Date.now(), waitingSince: null, failure };
 }
 
 function isRunning(run: { status: string }): boolean {

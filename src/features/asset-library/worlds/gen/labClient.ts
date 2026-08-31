@@ -48,41 +48,82 @@ export interface TrainRequest {
   seed?: number;
 }
 
-export async function fetchLabRuns(): Promise<LabRunSummary[]> {
-  const response = await fetch('/api/v1/asset-library/world-seeds/lab');
-  if (!response.ok) return [];
-  return ((await response.json()) as { runs: LabRunSummary[] }).runs;
+export interface LabRunsAnswer {
+  runs: LabRunSummary[];
+  failure: string | null;
 }
 
-export async function fetchLabRun(id: string): Promise<LabRunDetail | null> {
-  const response = await fetch(`/api/v1/asset-library/world-seeds/lab/${id}`);
-  if (!response.ok) return null;
-  return ((await response.json()) as { run: LabRunDetail }).run;
+export interface LabRunAnswer {
+  run: LabRunDetail | null;
+  failure: string | null;
 }
 
-export async function startTrainingRun(request: TrainRequest): Promise<LabRunSummary | null> {
-  const response = await fetch('/api/v1/asset-library/world-seeds/train', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(request),
-  });
-  if (!response.ok) return null;
-  return ((await response.json()) as { run: LabRunSummary }).run;
+export interface LabStartAnswer {
+  run: LabRunSummary | null;
+  failure: string | null;
 }
 
-export async function stopLabRun(id: string): Promise<void> {
-  await fetch(`/api/v1/asset-library/world-seeds/lab/${id}/stop`, { method: 'POST' });
+export async function fetchLabRuns(): Promise<LabRunsAnswer> {
+  const answer = await askTheLab('/api/v1/asset-library/world-seeds/lab');
+  if (answer.failure !== null) return { runs: [], failure: answer.failure };
+  return { runs: (answer.body as { runs: LabRunSummary[] }).runs, failure: null };
+}
+
+export async function fetchLabRun(id: string): Promise<LabRunAnswer> {
+  const answer = await askTheLab(`/api/v1/asset-library/world-seeds/lab/${id}`);
+  if (answer.failure !== null) return { run: null, failure: answer.failure };
+  return { run: (answer.body as { run: LabRunDetail }).run, failure: null };
+}
+
+export async function startTrainingRun(request: TrainRequest): Promise<LabStartAnswer> {
+  const answer = await askTheLab('/api/v1/asset-library/world-seeds/train', request);
+  if (answer.failure !== null) return { run: null, failure: answer.failure };
+  return { run: (answer.body as { run: LabRunSummary }).run, failure: null };
+}
+
+export async function stopLabRun(id: string): Promise<string | null> {
+  const answer = await askTheLab(`/api/v1/asset-library/world-seeds/lab/${id}/stop`, {});
+  return answer.failure;
 }
 
 export async function installLabWorldSeeds(
   id: string,
   names: readonly string[],
 ): Promise<InstalledWorldSeed[]> {
-  const response = await fetch(`/api/v1/asset-library/world-seeds/lab/${id}/install`, {
+  const answer = await askTheLab(`/api/v1/asset-library/world-seeds/lab/${id}/install`, { names });
+  if (answer.failure !== null) return [];
+  return (answer.body as { installed: InstalledWorldSeed[] }).installed;
+}
+
+async function askTheLab(
+  path: string,
+  post?: unknown,
+): Promise<{ body: unknown; failure: string | null }> {
+  try {
+    const response = await fetch(path, postOptions(post));
+    const text = await response.text();
+    if (!response.ok) return { body: null, failure: refusalText(response.status, text) };
+    return { body: JSON.parse(text) as unknown, failure: null };
+  } catch (thrown) {
+    return { body: null, failure: thrown instanceof Error ? thrown.message : String(thrown) };
+  }
+}
+
+function postOptions(post: unknown): RequestInit | undefined {
+  if (post === undefined) return undefined;
+  return {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ names }),
-  });
-  if (!response.ok) return [];
-  return ((await response.json()) as { installed: InstalledWorldSeed[] }).installed;
+    body: JSON.stringify(post),
+  };
+}
+
+export function refusalText(status: number, text: string): string {
+  try {
+    const said = JSON.parse(text) as { error?: string; hint?: string };
+    if (said.hint) return `${status} ${said.error ?? 'refused'} — ${said.hint}`;
+  } catch {
+    /* the server answered with something other than our failure json */
+  }
+  return `${status} — ${text.slice(0, 200) || 'the server said nothing'}`;
 }
