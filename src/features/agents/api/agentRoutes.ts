@@ -1,9 +1,13 @@
 import {
-  DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
   MAX_CHARACTER_SIGHT_RADIUS_TILES,
   MIN_CHARACTER_SIGHT_RADIUS_TILES,
   clampSightRadiusTiles,
 } from '@/features/game/vision/characterSight';
+import {
+  MAX_GOD_VIEW_SIZE_TILES,
+  MIN_GOD_VIEW_SIZE_TILES,
+  clampGodViewSizeTiles,
+} from '@/features/game/vision/godViewSize';
 import { isAgentMode, type AgentMode } from '../agentMode';
 import { commandsForMode } from '@/features/app-shell/runtime/commands/commandCatalog';
 import { buildObservation, type AgentObservation } from '../observation';
@@ -11,7 +15,13 @@ import { observationText } from '../observationText';
 import { startAutopilot } from './autopilot';
 import { creatureAwareOverlay } from '../creatureMarkers';
 import type { ServerWorld, WorldAccess } from './serverWorld';
-import { newSession, sessionPose, type AgentSession, type SessionStore } from './sessions';
+import {
+  newSession,
+  sessionPose,
+  sessionVision,
+  type AgentSession,
+  type SessionStore,
+} from './sessions';
 import { failure, json, type ApiRequest, type ApiResponse } from './apiMessages';
 import { registerRoute, type RouteContext } from './routeRegistry';
 
@@ -34,6 +44,11 @@ registerRoute({
     sight_radius_tiles: {
       kind: 'int',
       help: 'how far a character sees, clamped to the supported range',
+      optional: true,
+    },
+    view_size_tiles: {
+      kind: 'int',
+      help: 'how wide a god window is, in tiles; even sizes round to odd and out-of-range values are clamped',
       optional: true,
     },
   },
@@ -74,6 +89,11 @@ registerRoute({
     sight_radius_tiles: {
       kind: 'int',
       help: "widen or narrow the character's sight before looking; the new radius sticks",
+      optional: true,
+    },
+    view_size_tiles: {
+      kind: 'int',
+      help: 'widen or narrow the god window before looking; the new size sticks',
       optional: true,
     },
   },
@@ -141,28 +161,28 @@ function createAgent(sessions: SessionStore, world: ServerWorld, body: unknown):
   if (!isAgentMode(mode)) {
     return failure(400, 'bad_request', 'body must be {"mode": "god" | "character"}');
   }
-  const sightRadius = readSightRadius((body as { sight_radius_tiles?: unknown } | null)?.sight_radius_tiles);
-  if (sightRadius === 'invalid') {
-    return failure(
-      400,
-      'invalid_value',
-      `"sight_radius_tiles" takes a number of tiles (${MIN_CHARACTER_SIGHT_RADIUS_TILES}-${MAX_CHARACTER_SIGHT_RADIUS_TILES}; out-of-range values are clamped)`,
-    );
-  }
+  const sightRadius = readTiles(
+    (body as { sight_radius_tiles?: unknown } | null)?.sight_radius_tiles,
+    clampSightRadiusTiles,
+  );
+  if (sightRadius === 'invalid') return failure(400, 'invalid_value', sightRadiusHint('"sight_radius_tiles"'));
+  const viewSize = readTiles(
+    (body as { view_size_tiles?: unknown } | null)?.view_size_tiles,
+    clampGodViewSizeTiles,
+  );
+  if (viewSize === 'invalid') return failure(400, 'invalid_value', viewSizeHint('"view_size_tiles"'));
   const id = `agent_${Math.random().toString(36).slice(2, 10)}`;
   const name = readName(body) ?? id;
-  const session = newSession(
-    id,
-    name,
-    mode,
-    world.spawn(),
-    sightRadius ?? DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
-  );
+  const session = newSession(id, name, mode, world.spawn(), {
+    sightRadiusTiles: sightRadius ?? undefined,
+    godViewSizeTiles: viewSize ?? undefined,
+  });
   sessions.set(id, session);
   return json(201, {
     agent: agentJson(session),
     urls: {
-      docs: '/api/v1/openapi.json',
+      docs: '/docs',
+      openapi: '/api/v1/openapi.json',
       observe: `/api/v1/agents/${id}/observe`,
       pipeline: '/api/v1/asset-library/world-seeds/current',
       node_types: '/api/v1/asset-library/node-types',
@@ -170,11 +190,19 @@ function createAgent(sessions: SessionStore, world: ServerWorld, body: unknown):
   });
 }
 
-function readSightRadius(raw: unknown): number | null | 'invalid' {
+function readTiles(raw: unknown, clamp: (tiles: number) => number): number | null | 'invalid' {
   if (raw === undefined || raw === null) return null;
   const value = typeof raw === 'number' ? raw : typeof raw === 'string' ? Number(raw) : NaN;
   if (!Number.isFinite(value)) return 'invalid';
-  return clampSightRadiusTiles(value);
+  return clamp(value);
+}
+
+function sightRadiusHint(name: string): string {
+  return `${name} takes a number of tiles (${MIN_CHARACTER_SIGHT_RADIUS_TILES}-${MAX_CHARACTER_SIGHT_RADIUS_TILES}; out-of-range values are clamped)`;
+}
+
+function viewSizeHint(name: string): string {
+  return `${name} takes a number of tiles (${MIN_GOD_VIEW_SIZE_TILES}-${MAX_GOD_VIEW_SIZE_TILES}; even sizes round to odd, out-of-range values are clamped)`;
 }
 
 function readName(body: unknown): string | null {
@@ -183,21 +211,18 @@ function readName(body: unknown): string | null {
 }
 
 function observe(session: AgentSession, world: ServerWorld, req: ApiRequest): ApiResponse {
-  const asked = readSightRadius(req.query.get('sight_radius_tiles'));
-  if (asked === 'invalid') {
-    return failure(
-      400,
-      'invalid_value',
-      `sight_radius_tiles takes a number of tiles (${MIN_CHARACTER_SIGHT_RADIUS_TILES}-${MAX_CHARACTER_SIGHT_RADIUS_TILES}; out-of-range values are clamped)`,
-    );
-  }
+  const asked = readTiles(req.query.get('sight_radius_tiles'), clampSightRadiusTiles);
+  if (asked === 'invalid') return failure(400, 'invalid_value', sightRadiusHint('sight_radius_tiles'));
   if (asked !== null) session.sightRadiusTiles = asked;
+  const askedSize = readTiles(req.query.get('view_size_tiles'), clampGodViewSizeTiles);
+  if (askedSize === 'invalid') return failure(400, 'invalid_value', viewSizeHint('view_size_tiles'));
+  if (askedSize !== null) session.godViewSizeTiles = askedSize;
   const observation = buildObservation(
     world.sampler,
     world.tileAssets,
     sessionPose(session),
     session.mode,
-    session.sightRadiusTiles,
+    sessionVision(session),
     creatureAwareOverlay(world),
   );
   if (req.query.get('format') === 'text') {
@@ -252,6 +277,7 @@ function agentJson(session: AgentSession) {
     mode: session.mode,
     position: { x: session.x, y: session.y },
     sight_radius_tiles: session.mode === 'character' ? session.sightRadiusTiles : null,
+    view_size_tiles: session.mode === 'god' ? session.godViewSizeTiles : null,
     last_action: session.lastAction,
     run_status: session.run?.status ?? 'idle',
     run_goal: session.run?.goal ?? null,
@@ -272,6 +298,7 @@ function observationJson(mode: AgentMode, observation: AgentObservation) {
     grid_orientation: 'north-up',
     view_size: observation.viewSize,
     sight_radius_tiles: observation.sightRadiusTiles,
+    view_size_tiles: observation.godViewSizeTiles,
     view: observation.view,
     elevation: observation.elevation,
     legend: observation.legend,

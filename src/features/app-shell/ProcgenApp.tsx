@@ -22,6 +22,6 @@ export function ProcgenApp() {
 
 function visiblePanels(selectedAgentId: string | null): PanelKey[] {
   return selectedAgentId
-    ? ['library', 'detail', 'agents', 'log']
-    : ['library', 'detail', 'agents'];
+    ? ['library', 'detail', 'agents', 'log', 'worlds']
+    : ['library', 'detail', 'agents', 'worlds'];
 }

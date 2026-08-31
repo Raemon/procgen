@@ -34,7 +34,10 @@ function whatTheAgentWouldSee(runtime: AppRuntime): AgentEyes {
     overlay: runtime.agentOverlay,
     pose: { x: world.playerX, y: world.playerY, facing: world.facing },
     mode: runtime.playerMode(),
-    sightRadiusTiles: world.sightRadiusTiles,
+    vision: {
+      sightRadiusTiles: world.sightRadiusTiles,
+      godViewSizeTiles: world.godViewSizeTiles,
+    },
   };
 }
 

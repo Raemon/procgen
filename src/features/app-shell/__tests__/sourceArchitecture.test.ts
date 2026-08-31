@@ -32,6 +32,9 @@ export function checkSourceArchitecture(check: (name: string, condition: boolean
   const agents = readFileSync('src/features/agents/Agents.tsx', 'utf8');
   check('Agent Log is rendered by Agents rather than beside it in App Shell', agents.includes('<AgentsPanel') && agents.includes('<AgentLogPanel'));
 
+  const game = readFileSync('src/features/game/Game.tsx', 'utf8');
+  check('Worlds is rendered by Game rather than beside it in App Shell', game.includes('<WorldsPanel') && game.includes('<GamePanel'));
+
   const productFilesInApp = filesUnder('src/app').filter((path) => /\.(?:ts|tsx)$/.test(path)).filter(
     (path) => !/(?:^|\/)(?:layout|page|route)\.tsx?$/.test(path),
   );

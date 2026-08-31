@@ -103,7 +103,7 @@ function observationOf(mode: AgentMode): AgentObservation {
     eyes.tileAssets,
     POSE,
     mode,
-    DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
+    { sightRadiusTiles: DEFAULT_CHARACTER_SIGHT_RADIUS_TILES },
     NO_OVERLAY,
   );
 }
@@ -118,7 +118,7 @@ function eyesOf(mode: AgentMode): AgentEyes {
     overlay: NO_OVERLAY,
     pose: POSE,
     mode,
-    sightRadiusTiles: DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
+    vision: { sightRadiusTiles: DEFAULT_CHARACTER_SIGHT_RADIUS_TILES },
   };
 }
 

@@ -14,7 +14,11 @@ import {
   climbStepsOf,
 } from '@/features/game/climbing';
 import { EYE_HEIGHT, OPAQUE_SIGHT_HEIGHT } from '@/features/asset-library/worlds/walkingSim/isovist';
-import { GOD_VIEW_SIZE } from '../../observation';
+import {
+  DEFAULT_GOD_VIEW_SIZE_TILES,
+  MAX_GOD_VIEW_SIZE_TILES,
+  MIN_GOD_VIEW_SIZE_TILES,
+} from '@/features/game/vision/godViewSize';
 import { FAILURES } from '../../failures';
 import { everyRegisteredRoute } from '../everyRoute';
 import { metaTools } from '../agentTools';
@@ -26,13 +30,36 @@ const TEMPLATE = `# Procgen world — agent API
 
 You are an agent in an infinite, procedurally generated world. Everything you
 can know about the world arrives as an ASCII grid plus a legend; everything you
-can do goes through one action per request.
+can do goes through one action at a time.
+
+This page is the whole contract, served as plain text at GET /docs. Every URL
+below is relative to this server, and every request and response is JSON.
 
 **Every command in this application is one of the actions below.** The human
 sitting at the browser has no powers you lack: their buttons, knobs and drags
 call exactly the same actions with the same validation, and each action's row
 names the control they would use. A human in an agent view mode reads exactly
 the text you receive — nothing more.
+
+## Two ways in
+
+- **Autopilot** — \`POST /api/v1/agents/{id}/run\` drives the agent with an LLM
+  that is handed this page, one tool per action below, and the meta tools at the
+  end. Inside a run an action is a tool call, and every tool result carries a
+  fresh observation.
+- **By hand** — the endpoint table below is the whole HTTP surface: create an
+  agent, read its observations, start and stop runs, read transcripts, and edit
+  the asset library. Library documents are ETagged: send \`If-Match\` on a write,
+  expect \`412\` when it is stale, refetch and reconcile.
+
+## Getting started
+
+1. \`POST /api/v1/agents\` with \`{"mode": "god"}\` or \`{"mode": "character"}\`.
+   The answer carries the agent's id and the URLs it uses.
+2. \`GET /api/v1/agents/{id}/observe\` for the grid, its legend, and your pose;
+   add \`?format=text\` for the grid an agent view renders.
+3. \`POST /api/v1/agents/{id}/run\` with a goal to have a model drive it, or read
+   \`GET /api/v1/agents/{id}/transcript\` to watch what it did.
 
 ## Coordinate system (read this first)
 
@@ -46,10 +73,12 @@ the text you receive — nothing more.
 
 An agent is created in one of two modes and stays in it for life.
 
-- **god** — a {{GOD_SIZE}}x{{GOD_SIZE}} window centered on you. You see every
-  generated tile in the window, and your facing is stated in the observation.
-  You move by absolute compass steps, and you can REBUILD THE WORLD: the
-  pipeline, asset, world seed and saved world actions below are the whole editor.
+- **god** — a square window centered on you, {{GOD_SIZE}}x{{GOD_SIZE}} tiles by
+  default and yours to resize between {{MIN_GOD_SIZE}} and {{MAX_GOD_SIZE}}
+  tiles a side. You see every generated tile in the window, and your facing is
+  stated in the observation. You move by absolute compass steps, and you can
+  REBUILD THE WORLD: the pipeline, asset, world seed and saved world actions
+  below are the whole editor.
 - **character** — a {{CHARACTER_SIZE}}x{{CHARACTER_SIZE}} window centered on
   you, but you only see the half-disc in front of you: tiles behind you are
   blank, and so is everything past your {{SIGHT_RADIUS}}-tile sight radius,
@@ -84,6 +113,23 @@ digits never rise by more than ${CLIMB_STEPS_PER_WALK} per step. You stand ${CLI
 ${OPAQUE_SIGHT_DIGITS} or more digits above your own tile is a ridge that hides lower ground
 behind it.
 
+## How much world one look hands you
+
+A god agent chooses the width of its window, anywhere from {{MIN_GOD_SIZE}} to
+{{MAX_GOD_SIZE}} tiles, the same three ways a character chooses its sight radius:
+
+- at birth — \`POST /api/v1/agents\` with \`"view_size_tiles": 65\`
+- for the rest of the session — the \`set_view_size\` action below
+- on one read — \`GET /api/v1/agents/{id}/observe?view_size_tiles=65\`, which
+  also becomes the agent's window from then on
+
+Even widths round up to an odd one so you stay at the exact center, and every
+observation reports the width in force as \`view_size_tiles\`. This is the same
+zoom the human drives with the mouse wheel over the agent god view. Widen it to
+survey a region before you edit it — a river's whole course, whether two
+settlements meet — then narrow it again, because the tiles you read grow with
+the square of the width and an autopilot run pays for them every turn.
+
 ## Sight range, and what it costs
 
 {{SIGHT_RADIUS}} tiles is only the default. A character's sight radius is a
@@ -115,6 +161,34 @@ narrow it again and travel cheaply on what you learned.
 | --- | --- | --- | --- |
 {{ENDPOINTS}}
 
+## The asset library over HTTP
+
+Every editable document is one URL. GET answers \`{ data, revision }\` and puts
+that revision in an ETag; PUT replaces the whole document and must carry it as
+\`If-Match\` — \`428\` means you sent none, \`412\` means someone edited first, so
+refetch, reconcile and send again. These are the same documents the actions
+above edit a piece at a time.
+
+| method and path | what it holds |
+| --- | --- |
+| GET, PUT /api/v1/asset-library/world-seeds/current | the running world seed: its pipeline nodes, seed number, daylight and time |
+| GET, PUT /api/v1/asset-library/world-seeds | the world seed library — every named recipe |
+| GET, PUT /api/v1/asset-library/world-seeds/thumbnails | one rendered thumbnail per world seed |
+| GET, PUT /api/v1/asset-library/saved-worlds | saved worlds: a frozen seed plus what the player did there |
+| GET, PUT /api/v1/asset-library/tiles | the tile vocabulary a pipeline draws from |
+| GET, PUT /api/v1/asset-library/items | item definitions: art, how it is drawn, how much inventory room it takes |
+| GET, PUT /api/v1/asset-library/pieces | piece definitions: the structures a pipeline stamps |
+| GET, PUT /api/v1/asset-library/creatures | creature and character definitions |
+| GET, PUT /api/v1/asset-library/cultures | cultures: which tiles, pieces and creatures a settlement is built from |
+| GET, PUT /api/v1/asset-library/node-groups | saved node groups, ready to paste into a pipeline |
+| GET, PUT /api/v1/asset-library/folders | how the library rows are foldered |
+| GET, PUT /api/v1/app-shell/state | the editor's own persisted state: what is open, selected and toggled |
+| GET /api/v1/asset-library/node-types | every node type with its params and inputs, read only |
+| GET /api/v1/game/performance | what the running world costs to draw and simulate |
+| GET /api/v1/openapi.json | this same contract as a machine-readable schema |
+| GET /api/health | whether the server is up, and which commit it is running |
+| WS /api/v1/game/socket | the live game: player input in, world and puzzle state out |
+
 ## Actions — moving
 
 God mode moves by compass; character mode moves relative to its facing.
@@ -125,7 +199,9 @@ along the other.
 | --- | --- | --- | --- |
 {{MOVEMENT_ACTIONS}}
 
-## Actions — your senses (character mode)
+## Actions — your senses
+
+\`set_sight_radius\` is a character's; \`set_view_size\` is a god's.
 
 | action | params | the human control | what it does |
 | --- | --- | --- | --- |
@@ -204,9 +280,9 @@ legend names every glyph visible in that observation.
 
 ## The loop
 
-Observe, decide, act, repeat. Every act response carries a fresh observation,
-so a simple loop needs only POST .../act. Nothing moves while you think: the
-world only changes when someone acts on it.
+Observe, decide, act, repeat. Inside a run every tool result carries a fresh
+observation, so one tool call is one whole step. Nothing moves while you think:
+the world only changes when someone acts on it.
 
 ## Autopilot runs
 
@@ -240,7 +316,9 @@ export function everyCommand(): CommandSpec[] {
 }
 
 function placeholderValue(tileAssets: ReadOnlyTileAssets, key: string): string {
-  if (key === 'GOD_SIZE') return String(GOD_VIEW_SIZE);
+  if (key === 'GOD_SIZE') return String(DEFAULT_GOD_VIEW_SIZE_TILES);
+  if (key === 'MIN_GOD_SIZE') return String(MIN_GOD_VIEW_SIZE_TILES);
+  if (key === 'MAX_GOD_SIZE') return String(MAX_GOD_VIEW_SIZE_TILES);
   if (key === 'CHARACTER_SIZE') return String(characterViewSize());
   if (key === 'SIGHT_RADIUS') return String(DEFAULT_CHARACTER_SIGHT_RADIUS_TILES);
   if (key === 'MIN_SIGHT_RADIUS') return String(MIN_CHARACTER_SIGHT_RADIUS_TILES);

@@ -8,6 +8,10 @@ import {
   characterViewSize,
   clampSightRadiusTiles,
 } from '@/features/game/vision/characterSight';
+import {
+  DEFAULT_GOD_VIEW_SIZE_TILES,
+  clampGodViewSizeTiles,
+} from '@/features/game/vision/godViewSize';
 import { BLANK_GLYPH, SELF_GLYPH, agentCanSee, observedTileAt } from './observedTile';
 import { terrainSightlineFor, type TerrainSightline } from './terrainSightline';
 import type { MarkerSource } from '@/features/game/render/markerSource';
@@ -23,8 +27,6 @@ export interface ObservedOverlay extends MarkerSource, ActionOfferingCells {}
 
 export const NO_OVERLAY: ObservedOverlay = { markersIn: () => [], actionAt: () => null };
 
-export const GOD_VIEW_SIZE = 33;
-
 export { SELF_GLYPH } from './observedTile';
 
 export interface LegendEntry {
@@ -33,12 +35,18 @@ export interface LegendEntry {
   walkable: boolean | null;
 }
 
+export interface ViewVision {
+  sightRadiusTiles?: number;
+  godViewSizeTiles?: number;
+}
+
 export interface AgentObservation {
   mode: AgentMode;
   position: { x: number; y: number };
   facing: (typeof FACING_NAMES)[number] | null;
   viewSize: number;
   sightRadiusTiles: number | null;
+  godViewSizeTiles: number | null;
   view: string[];
   elevation: string[] | null;
   elevationFloorSteps: number | null;
@@ -46,11 +54,18 @@ export interface AgentObservation {
   interaction: string | null;
 }
 
-export function viewSizeFor(
-  mode: AgentMode,
-  sightRadiusTiles: number = DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
-): number {
-  return mode === 'god' ? GOD_VIEW_SIZE : characterViewSize(clampSightRadiusTiles(sightRadiusTiles));
+export function viewSizeFor(mode: AgentMode, vision: ViewVision = {}): number {
+  return mode === 'god'
+    ? godViewSizeOf(vision)
+    : characterViewSize(sightRadiusOf(vision));
+}
+
+export function sightRadiusOf(vision: ViewVision): number {
+  return clampSightRadiusTiles(vision.sightRadiusTiles ?? DEFAULT_CHARACTER_SIGHT_RADIUS_TILES);
+}
+
+export function godViewSizeOf(vision: ViewVision): number {
+  return clampGodViewSizeTiles(vision.godViewSizeTiles ?? DEFAULT_GOD_VIEW_SIZE_TILES);
 }
 
 export function buildObservation(
@@ -58,11 +73,11 @@ export function buildObservation(
   tileAssets: ReadOnlyTileAssets,
   pose: AgentPose,
   mode: AgentMode,
-  sightRadiusTiles: number = DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
+  vision: ViewVision = {},
   overlay: ObservedOverlay = NO_OVERLAY,
 ): AgentObservation {
-  const radius = clampSightRadiusTiles(sightRadiusTiles);
-  const size = viewSizeFor(mode, radius);
+  const radius = sightRadiusOf(vision);
+  const size = viewSizeFor(mode, vision);
   const viewport = viewportCenteredOn(pose.x, pose.y, size, size);
   const markers = pointOverlayLookup(sampler, viewport, overlay);
   const seesPast = terrainSightlineFor(sampler, tileAssets, pose, mode, radius);
@@ -92,6 +107,7 @@ export function buildObservation(
     facing: mode === 'god' ? FACING_NAMES[pose.facing] : null,
     viewSize: size,
     sightRadiusTiles: mode === 'character' ? radius : null,
+    godViewSizeTiles: mode === 'god' ? size : null,
     view,
     elevation: ground?.rows ?? null,
     elevationFloorSteps: ground?.floorSteps ?? null,

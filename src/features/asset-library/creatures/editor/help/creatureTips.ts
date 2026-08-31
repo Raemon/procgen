@@ -60,3 +60,10 @@ export function deleteCreatureTip(creature: CreatureDef): TooltipContent {
     body: 'Removes the creature from the creature assets. Nodes bound to it stop spawning anything.',
   };
 }
+
+export function duplicateCreatureTip(creature: CreatureDef): TooltipContent {
+  return {
+    title: `duplicate ${creature.name}`,
+    body: 'Copies the creature, art and knobs included.',
+  };
+}

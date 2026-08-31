@@ -32,8 +32,9 @@ export function GamePanel({ onCollapse }: { onCollapse(): void }) {
     [cameraFocus],
   );
   return (
-    <div className="flex min-w-0 flex-col">
+    <div className="flex h-full min-h-0 min-w-0 flex-col">
       <div className="flex items-center gap-1.5 px-3 py-2">
+        <CollapseWorldViewButton onCollapse={onCollapse} />
         <span className="text-ink-dim" {...tooltipHandlers(GAME_VIEW_TIP)}>
           <WorldIcon />
         </span>
@@ -61,19 +62,18 @@ export function GamePanel({ onCollapse }: { onCollapse(): void }) {
         </Button>
         <ViewModePicker mode={mode} onChoose={chooseMode} />
         <GameToolbar mode={mode} />
-        <CollapseWorldButton onCollapse={onCollapse} />
       </div>
       <GameStage mode={mode} />
     </div>
   );
 }
 
-function CollapseWorldButton({ onCollapse }: { onCollapse(): void }) {
+function CollapseWorldViewButton({ onCollapse }: { onCollapse(): void }) {
   return (
     <button
       type="button"
       aria-label="collapse world view"
-      className="cursor-pointer rounded border border-transparent p-0.5 text-ink-dim hover:border-panel-edge hover:text-ink"
+      className="shrink-0 cursor-pointer rounded border border-transparent p-0.5 text-ink-dim hover:border-panel-edge hover:text-ink"
       onClick={onCollapse}
       {...tooltipHandlers(COLLAPSE_WORLD_VIEW_TIP)}
     >

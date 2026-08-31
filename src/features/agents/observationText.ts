@@ -3,6 +3,11 @@ import {
   MAX_CHARACTER_SIGHT_RADIUS_TILES,
   MIN_CHARACTER_SIGHT_RADIUS_TILES,
 } from '@/features/game/vision/characterSight';
+import {
+  DEFAULT_GOD_VIEW_SIZE_TILES,
+  MAX_GOD_VIEW_SIZE_TILES,
+  MIN_GOD_VIEW_SIZE_TILES,
+} from '@/features/game/vision/godViewSize';
 import { CLIMB_STEPS_PER_JUMP, CLIMB_STEPS_PER_WALK } from '@/features/game/climbing';
 import type { AgentObservation, LegendEntry } from './observation';
 
@@ -52,6 +57,9 @@ function headerLines(obs: AgentObservation): string[] {
     `origin (top-left of grid) = (${originX},${originY}); y increases south (down); north is up.`,
     `grid: row r, col c = world tile (${originX}+c, ${originY}+r). you are '@' at the center.`,
   ];
+  if (obs.mode === 'god') {
+    lines.push(viewSizeLine(obs.godViewSizeTiles ?? DEFAULT_GOD_VIEW_SIZE_TILES));
+  }
   if (obs.mode === 'character') {
     lines.push(
       'you only see what is in front of you; the blank side of the grid is behind you, and it tells you which way you face.',
@@ -60,6 +68,18 @@ function headerLines(obs: AgentObservation): string[] {
     );
   }
   return lines;
+}
+
+function viewSizeLine(sizeTiles: number): string {
+  const range = `${MIN_GOD_VIEW_SIZE_TILES}-${MAX_GOD_VIEW_SIZE_TILES}`;
+  const at =
+    sizeTiles === DEFAULT_GOD_VIEW_SIZE_TILES
+      ? `the default ${sizeTiles}`
+      : `${sizeTiles}, resized from the default ${DEFAULT_GOD_VIEW_SIZE_TILES}`;
+  return (
+    `how much world one look hands you is yours to set: 'set_view_size' takes any width in ${range} tiles (currently ${at}). ` +
+    'the tiles you read grow with the square of the width, so widen it to survey, then narrow it again to work closely.'
+  );
 }
 
 function sightRadiusLine(radius: number): string {

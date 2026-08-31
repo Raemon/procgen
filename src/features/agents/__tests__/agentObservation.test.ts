@@ -1,6 +1,11 @@
 import '@/features/asset-library/worlds/nodes';
 import { Vector3 } from 'three';
-import { buildObservation, GOD_VIEW_SIZE, SELF_GLYPH } from '../observation';
+import { buildObservation, SELF_GLYPH } from '../observation';
+import {
+  DEFAULT_GOD_VIEW_SIZE_TILES,
+  MAX_GOD_VIEW_SIZE_TILES,
+  MIN_GOD_VIEW_SIZE_TILES,
+} from '@/features/game/vision/godViewSize';
 import { observationText } from '../observationText';
 import { facingRelativeStep } from '@/features/game/input/facingRelativeStep';
 import {
@@ -44,15 +49,30 @@ function round(value: number): number {
 export function checkAgentObservation(check: CheckReporter): void {
   const agentWorld = worldFromState(islandsState());
   const godObs = buildObservation(agentWorld.sampler, tileAssets, { x: 0, y: 0, facing: 0 }, 'god');
-  check('god observation grid is GOD_VIEW_SIZE² with @ at the center', (() => {
-    const center = Math.floor(GOD_VIEW_SIZE / 2);
+  const godAtDefault = 'god observation grid is the default width squared with @ at the center';
+  check(godAtDefault, (() => {
+    const center = Math.floor(DEFAULT_GOD_VIEW_SIZE_TILES / 2);
     return (
-      godObs.view.length === GOD_VIEW_SIZE &&
-      godObs.view.every((row) => row.length === GOD_VIEW_SIZE) &&
+      godObs.view.length === DEFAULT_GOD_VIEW_SIZE_TILES &&
+      godObs.view.every((row) => row.length === DEFAULT_GOD_VIEW_SIZE_TILES) &&
       godObs.view[center]![center] === SELF_GLYPH
     );
   })());
   check('god observation states its facing', godObs.facing === 'north');
+  const wideGodObs = buildObservation(agentWorld.sampler, tileAssets, { x: 0, y: 0, facing: 0 }, 'god', { godViewSizeTiles: 65 });
+  check('a god agent that asks for more world gets a wider grid, and is told its width', wideGodObs.viewSize === 65 && wideGodObs.godViewSizeTiles === 65 && wideGodObs.view.length === 65 && wideGodObs.view.every((row) => row.length === 65) && wideGodObs.view[32]![32] === SELF_GLYPH);
+  check('the god observation text names the width and how to change it', observationText(wideGodObs).includes('set_view_size') && observationText(wideGodObs).includes('65'));
+  check('an even width rounds to an odd one so @ stays at the exact center', (() => {
+    const even = buildObservation(agentWorld.sampler, tileAssets, { x: 0, y: 0, facing: 0 }, 'god', { godViewSizeTiles: 40 });
+    const center = Math.floor(even.viewSize / 2);
+    return even.viewSize % 2 === 1 && even.view[center]![center] === SELF_GLYPH;
+  })());
+  check('a god width outside the supported range is clamped rather than refused', (() => {
+    const huge = buildObservation(agentWorld.sampler, tileAssets, { x: 0, y: 0, facing: 0 }, 'god', { godViewSizeTiles: 10000 });
+    const tiny = buildObservation(agentWorld.sampler, tileAssets, { x: 0, y: 0, facing: 0 }, 'god', { godViewSizeTiles: -4 });
+    return huge.viewSize === MAX_GOD_VIEW_SIZE_TILES && tiny.viewSize === MIN_GOD_VIEW_SIZE_TILES;
+  })());
+  check('the god window a character asks for is ignored: sight radius still sizes its grid', buildObservation(agentWorld.sampler, tileAssets, { x: 0, y: 0, facing: 0 }, 'character', { godViewSizeTiles: 65 }).viewSize === CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT);
 
   const charObs = buildObservation(agentWorld.sampler, tileAssets, { x: 0, y: 0, facing: 0 }, 'character');
   check('character observation never states a facing', charObs.facing === null);
@@ -118,7 +138,7 @@ export function checkAgentObservation(check: CheckReporter): void {
     }
     return true;
   })());
-  check('a character observation stays smaller to read than a god observation', CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT < GOD_VIEW_SIZE);
+  check('a character observation stays smaller to read than a god observation', CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT < DEFAULT_GOD_VIEW_SIZE_TILES);
   check('the character observation states its sight radius, the god one has none', charObs.sightRadiusTiles === DEFAULT_CHARACTER_SIGHT_RADIUS_TILES && godObs.sightRadiusTiles === null);
   check('the character observation text names the sight radius', observationText(charObs).includes(`${DEFAULT_CHARACTER_SIGHT_RADIUS_TILES} tiles`));
   check('every facing rotates the blank half of the character view', (() => {
@@ -158,7 +178,7 @@ export function checkAgentObservation(check: CheckReporter): void {
   );
 
   const WIDE_SIGHT_RADIUS = 24;
-  const wideObs = buildObservation(agentWorld.sampler, tileAssets, { x: 0, y: 0, facing: 0 }, 'character', WIDE_SIGHT_RADIUS);
+  const wideObs = buildObservation(agentWorld.sampler, tileAssets, { x: 0, y: 0, facing: 0 }, 'character', { sightRadiusTiles: WIDE_SIGHT_RADIUS });
   check('a widened sight radius widens the observation grid to match', wideObs.viewSize === characterViewSize(WIDE_SIGHT_RADIUS) && wideObs.view.length === wideObs.viewSize && wideObs.view.every((row) => row.length === wideObs.viewSize));
   check('a widened observation reports the radius it was built with', wideObs.sightRadiusTiles === WIDE_SIGHT_RADIUS && observationText(wideObs).includes(`${WIDE_SIGHT_RADIUS} tiles`));
   check('a widened sight radius still blanks everything behind and past the fog', (() => {

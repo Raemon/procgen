@@ -15,7 +15,6 @@ const ALWAYS_VISIBLE_DIM_TEXT_SITES = [
   'src/features/agents/log/AgentLogPanel.tsx',
   'src/features/agents/panel/AgentsPanel.tsx',
   'src/features/asset-library/characters/editor/CharacterSpritesEditor.tsx',
-  'src/features/asset-library/cultures/editor/CultureRow.tsx',
   'src/features/asset-library/items/inventoryEditor/InventoryEditor.tsx',
   'src/features/asset-library/detail/worldSeeds/NodeList.tsx',
   'src/features/asset-library/detail/NodeGroupDetail.tsx',

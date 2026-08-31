@@ -12,6 +12,7 @@ export function PanelColumn({
   tone,
   rail,
   headerActions,
+  fill,
   layout,
   children,
 }: {
@@ -22,6 +23,7 @@ export function PanelColumn({
   tone: string;
   rail: ReactNode;
   headerActions?: ReactNode;
+  fill?: boolean;
   layout: PanelLayout;
   children: ReactNode;
 }) {
@@ -35,6 +37,7 @@ export function PanelColumn({
           tone,
           rail,
           headerActions,
+          fill,
           collapsed: layout.isCollapsed(panelKey),
           onToggleCollapsed: () => layout.toggleCollapsed(panelKey),
         }}
@@ -43,7 +46,7 @@ export function PanelColumn({
       </Panel>
       <PanelResizer
         width={layout.widthOf(panelKey)}
-        disabled={layout.isCollapsed(panelKey) || layout.stretchesIntoFoldedWorld(panelKey)}
+        disabled={layout.isCollapsed(panelKey) || layout.stretchesIntoFoldedWorldView(panelKey)}
         onResize={(width) => layout.resizePanel(panelKey, width)}
         onResetWidth={() => layout.resetPanelWidth(panelKey)}
       />
