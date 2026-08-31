@@ -1,18 +1,19 @@
 import { useEffect, useState } from 'react';
-import { Button } from '@/features/app-shell/controls/Button';
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
 import { WorldIcon } from '@/features/app-shell/icons/panelIcons';
-import { tooltipHandlers } from '@/features/app-shell/tooltips/tooltipHandlers';
-import { GAME_VIEW_TIP, RANDOMIZE_WORLD_TIP, REROLL_SEED_TIP, SAVE_WORLD_TIP } from './help/gameTips';
-import { RunningWorldName } from './RunningWorldName';
+import { CollapsedRail } from '@/features/app-shell/layout/CollapsedRail';
+import type { PanelChrome } from '@/features/app-shell/layout/Panel';
+import type { PanelLayout } from '@/features/app-shell/layout/usePanelLayout';
+import { GAME_VIEW_TIP } from './help/gameTips';
+import { GameHeader } from './GameHeader';
 import { GameStage } from './GameStage';
-import { GameToolbar } from './GameToolbar';
-import { ViewModePicker } from './ViewModePicker';
 import { isGodView, type ViewMode } from './viewMode';
 import { lastUsedViewMode, rememberViewMode } from './viewModePreference';
 
-export function GamePanel() {
-  const { cameraFocus, perform } = useAppRuntime();
+const GAME_COLUMN_TITLE = 'game';
+
+export function GamePanel({ layout }: { layout: PanelLayout }) {
+  const { cameraFocus } = useAppRuntime();
   const [mode, setMode] = useState<ViewMode>(lastUsedViewMode);
   const chooseMode = (next: ViewMode): void => {
     rememberViewMode(next);
@@ -25,38 +26,30 @@ export function GamePanel() {
       }),
     [cameraFocus],
   );
+  const toggleCollapsed = () => layout.toggleCollapsed('game');
+  if (layout.isCollapsed('game'))
+    return <CollapsedRail chrome={collapsedGameChrome(toggleCollapsed)} />;
   return (
     <div className="flex h-full min-h-0 min-w-0 flex-col">
-      <div className="flex items-center gap-1.5 px-3 py-2">
-        <span className="text-ink-dim" {...tooltipHandlers(GAME_VIEW_TIP)}>
-          <WorldIcon />
-        </span>
-        <RunningWorldName />
-        <Button
-          className="whitespace-nowrap"
-          tip={REROLL_SEED_TIP}
-          onClick={() => perform('randomize_seed')}
-        >
-          🎲 reroll
-        </Button>
-        <Button
-          className="whitespace-nowrap"
-          tip={RANDOMIZE_WORLD_TIP}
-          onClick={() => perform('randomize_world_seed')}
-        >
-          ✨ new world
-        </Button>
-        <Button
-          className="whitespace-nowrap"
-          tip={SAVE_WORLD_TIP}
-          onClick={() => perform('save_world')}
-        >
-          💾 save
-        </Button>
-        <ViewModePicker mode={mode} onChoose={chooseMode} />
-        <GameToolbar mode={mode} />
-      </div>
+      <GameHeader
+        title={GAME_COLUMN_TITLE}
+        mode={mode}
+        onChooseMode={chooseMode}
+        onCollapse={toggleCollapsed}
+      />
       <GameStage mode={mode} />
     </div>
   );
+}
+
+function collapsedGameChrome(onToggleCollapsed: () => void): PanelChrome {
+  return {
+    title: GAME_COLUMN_TITLE,
+    tip: GAME_VIEW_TIP,
+    icon: <WorldIcon />,
+    tone: 'bg-panel',
+    rail: null,
+    collapsed: true,
+    onToggleCollapsed,
+  };
 }
