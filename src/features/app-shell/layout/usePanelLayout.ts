@@ -29,6 +29,7 @@ export interface PanelLayout {
   resizePanel(key: PanelKey, width: number): void;
   resetPanelWidth(key: PanelKey): void;
   toggleCollapsed(key: ColumnKey): void;
+  stretchesIntoFoldedWorldView(key: PanelKey): boolean;
 }
 
 export function usePanelLayout(visible: readonly PanelKey[]): PanelLayout {
@@ -63,18 +64,16 @@ export function usePanelLayout(visible: readonly PanelKey[]): PanelLayout {
     windowWidth,
   );
   const widthOf = (key: PanelKey) => fitted[visible.indexOf(key)] ?? requestedWidthOf(key);
+  const stretched = gameIsCollapsed ? lastExpanded(visible, isCollapsed) : NOTHING_STRETCHES;
 
   return {
-    gridTemplateColumns: columnTemplate(
-      fitted,
-      gameIsCollapsed ? lastExpanded(visible, isCollapsed) : NOTHING_STRETCHES,
-      gameIsCollapsed,
-    ),
+    gridTemplateColumns: columnTemplate(fitted, stretched, gameIsCollapsed),
     widthOf,
     isCollapsed,
     resizePanel,
     resetPanelWidth,
     toggleCollapsed: (key) => collapsed.toggle(key),
+    stretchesIntoFoldedWorldView: (key) => visible.indexOf(key) === stretched,
   };
 }
 
@@ -87,18 +86,25 @@ function lastExpanded(
   return visible.reduce((last, key, index) => (isCollapsed(key) ? last : index), NOTHING_STRETCHES);
 }
 
+function gameTrack(gameIsCollapsed: boolean, stretched: number): string {
+  if (!gameIsCollapsed) return 'minmax(0, 1fr)';
+  if (stretched === NOTHING_STRETCHES) return `minmax(${COLLAPSED_PANEL_WIDTH}px, 1fr)`;
+  return `${COLLAPSED_PANEL_WIDTH}px`;
+}
+
 function columnTemplate(
   widths: readonly number[],
-  stretching: number,
+  stretched: number,
   gameIsCollapsed: boolean,
 ): string {
   const panelTracks = widths
-    .map(
-      (width, index) =>
-        `${index === stretching ? `minmax(${width}px, 1fr)` : `${width}px`} ${HANDLE_WIDTH}px`,
-    )
+    .map((width, index) => `${panelTrack(width, index === stretched)} ${HANDLE_WIDTH}px`)
     .join(' ');
-  return `${panelTracks} ${gameIsCollapsed ? `${COLLAPSED_PANEL_WIDTH}px` : 'minmax(0, 1fr)'}`;
+  return `${panelTracks} ${gameTrack(gameIsCollapsed, stretched)}`;
+}
+
+function panelTrack(width: number, stretches: boolean): string {
+  return stretches ? `minmax(${width}px, 1fr)` : `${width}px`;
 }
 
 function clamped(width: number): number {
