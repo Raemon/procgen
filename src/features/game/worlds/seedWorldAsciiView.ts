@@ -8,7 +8,7 @@ import { NIGHT_INK } from '../render/view3d/skyInk';
 import type { SeedWorld } from './seedWorld';
 
 const GLYPH_PX_AT_UNIT_ZOOM = 8;
-const MIN_GLYPH_PX = 4;
+const MIN_GLYPH_PX = 2;
 const MIN_VIEW_SIDE = 5;
 
 export class SeedWorldAsciiView {

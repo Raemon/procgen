@@ -10,7 +10,7 @@ import { WorldsGrid } from './WorldsGrid';
 import { WorldsGridParams } from './WorldsGridParams';
 import { WorldsRail } from './WorldsRail';
 import {
-  DEFAULT_WORLD_VIEW_COLUMNS,
+  DEFAULT_WORLD_COLUMNS,
   DEFAULT_WORLD_ROWS,
   DEFAULT_WORLDS_ZOOM,
   clampedGridSide,
@@ -21,7 +21,7 @@ import { isWorldsCamera, type WorldsCamera } from './worldsCamera';
 export function WorldsPanel({ layout }: { layout: PanelLayout }) {
   const [columns, setColumns] = usePersistedUiValue(
     PERSISTED_UI_KEYS.worldsColumns,
-    DEFAULT_WORLD_VIEW_COLUMNS,
+    DEFAULT_WORLD_COLUMNS,
     isNumber,
   );
   const [rows, setRows] = usePersistedUiValue(

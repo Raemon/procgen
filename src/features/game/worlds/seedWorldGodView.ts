@@ -6,7 +6,12 @@ import type { FramedCamera } from '../render/view3d/framedCamera';
 import { godFramedCamera } from '../render/view3d/godFramedCamera';
 import { ChunkMeshStreamer } from '../render/view3d/chunkMeshStreamer';
 import { OVERHEAD_AMBIENT, SceneDaylight } from '../render/view3d/sceneDaylight';
-import { streamingRadiusChunks } from '../render/view3d/streamingRadius';
+import {
+  MIN_RADIUS_CHUNKS,
+  needsTerrainOverview,
+  streamingRadiusChunks,
+} from '../render/view3d/streamingRadius';
+import { TerrainOverview } from '../render/view3d/terrainOverview';
 import { tileLightsOnlyDeps } from '../render/view3d/tileLightsOnlyDeps';
 import { createWorldScene } from '../render/view3d/worldScene';
 import { WorldLights } from '../render/view3d/worldLights';
@@ -21,8 +26,10 @@ export class SeedWorldGodView {
   private readonly scene = createWorldScene();
   private readonly daylight = new SceneDaylight(this.scene, OVERHEAD_AMBIENT);
   private readonly chunkGroups = new THREE.Group();
+  private readonly overviewGroup = new THREE.Group();
   private readonly streamer: ChunkMeshStreamer;
   private readonly lights: WorldLights;
+  private readonly overview: TerrainOverview;
   private readonly resizeObserver: ResizeObserver;
   private readonly shared: SharedGodPreviewRenderer;
   private framed: FramedCamera;
@@ -37,7 +44,7 @@ export class SeedWorldGodView {
   ) {
     this.canvas.className = 'block h-full w-full';
     container.appendChild(this.canvas);
-    this.scene.add(this.chunkGroups);
+    this.scene.add(this.chunkGroups, this.overviewGroup);
     this.streamer = new ChunkMeshStreamer(
       this.chunkGroups,
       world.sampler,
@@ -45,6 +52,7 @@ export class SeedWorldGodView {
       NO_EXTRA_MARKERS,
     );
     this.lights = new WorldLights(this.scene, tileLightsOnlyDeps({ sampler: world.sampler, tileAssets }));
+    this.overview = new TerrainOverview(this.overviewGroup, world.sampler, tileAssets);
     this.framed = this.cameraForSize(1, 1);
     this.shared = acquireSharedGodPreviewRenderer();
     this.resizeObserver = new ResizeObserver(() => this.resize());
@@ -57,6 +65,7 @@ export class SeedWorldGodView {
     this.world = world;
     this.streamer.invalidateAll();
     this.lights.invalidate();
+    this.overview.invalidate();
     this.framed = this.cameraForSize(this.width, this.height);
     this.shared.requestPaint();
   }
@@ -72,8 +81,11 @@ export class SeedWorldGodView {
     this.daylight.setLevel(this.world.store.daylight());
     this.framed.update();
     const focus = this.framed.focusPoint();
+    const radiusTiles = this.framed.visibleRadiusTiles();
+    if (needsTerrainOverview(radiusTiles)) this.overview.syncAround(focus.x, focus.y, radiusTiles);
+    else this.overview.hide();
     this.streamer.detailFromCamera(this.framed.camera, this.height, this.focusGroundHeight());
-    this.streamer.streamAround(focus.x, focus.y, this.streamingRadiusChunks());
+    this.streamer.streamAround(focus.x, focus.y, this.streamedRadiusChunks());
     this.lights.syncAround(this.world.spawnX, this.world.spawnY);
   }
 
@@ -96,6 +108,7 @@ export class SeedWorldGodView {
     this.shared.remove(this);
     this.streamer.dispose();
     this.lights.dispose();
+    this.overview.dispose();
     this.canvas.remove();
   }
 
@@ -121,8 +134,10 @@ export class SeedWorldGodView {
     });
   }
 
-  private streamingRadiusChunks(): number {
-    return streamingRadiusChunks(this.framed.visibleRadiusTiles());
+  private streamedRadiusChunks(): number {
+    const radiusTiles = this.framed.visibleRadiusTiles();
+    if (needsTerrainOverview(radiusTiles)) return MIN_RADIUS_CHUNKS;
+    return streamingRadiusChunks(radiusTiles);
   }
 
   private focusGroundHeight(): number {
@@ -135,7 +150,7 @@ export class SeedWorldGodView {
   }
 
   private neededChunkCount(): number {
-    const acrossChunks = 2 * this.streamingRadiusChunks() + 1;
+    const acrossChunks = 2 * this.streamedRadiusChunks() + 1;
     return acrossChunks * acrossChunks;
   }
 }

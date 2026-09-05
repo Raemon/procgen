@@ -1,12 +1,11 @@
 import type { ReactNode } from 'react';
 import { classes } from '@/features/app-shell/controls/classes';
 import { HintsToggle } from '../help/HintsToggle';
-import { CollapseIcon } from '@/features/app-shell/icons/panelIcons';
+import { CollapseButton } from './CollapseButton';
 import type { TooltipContent } from '@/features/app-shell/tooltips/tooltipContent';
 import { tooltipHandlers } from '@/features/app-shell/tooltips/tooltipHandlers';
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
 import { CollapsedRail } from './CollapsedRail';
-import { collapsePanelTip } from '../help/panelTips';
 
 export interface PanelChrome {
   title: string;
@@ -54,15 +53,7 @@ function PanelHeader({ chrome }: { chrome: PanelChrome }) {
       <span className="flex-1" />
       {chrome.headerActions}
       <HintsToggle />
-      <button
-        type="button"
-        aria-label={`collapse ${chrome.title}`}
-        className="cursor-pointer rounded border border-transparent p-0.5 text-ink-dim hover:border-panel-edge hover:text-ink"
-        onClick={chrome.onToggleCollapsed}
-        {...tooltipHandlers(collapsePanelTip(chrome.title))}
-      >
-        <CollapseIcon />
-      </button>
+      <CollapseButton title={chrome.title} onCollapse={chrome.onToggleCollapsed} />
     </div>
   );
 }

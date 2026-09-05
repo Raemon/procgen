@@ -7,8 +7,7 @@ import { MIN_WORLD_WIDTH, panelWidthsThatLeaveRoomForWorld } from './panelWidthB
 import { useWindowWidth } from './useWindowWidth';
 
 export type PanelKey = 'library' | 'detail' | 'agents' | 'log' | 'worlds';
-
-export const WORLD_VIEW_COLUMN = 'worldView';
+export type ColumnKey = PanelKey | 'game';
 
 const MIN_PANEL_WIDTH = 150;
 const MAX_PANEL_WIDTH = 640;
@@ -26,13 +25,11 @@ const START_WIDTHS: Readonly<Record<PanelKey, number>> = {
 export interface PanelLayout {
   gridTemplateColumns: string;
   widthOf(key: PanelKey): number;
-  isCollapsed(key: PanelKey): boolean;
+  isCollapsed(key: ColumnKey): boolean;
   resizePanel(key: PanelKey, width: number): void;
   resetPanelWidth(key: PanelKey): void;
-  toggleCollapsed(key: PanelKey): void;
+  toggleCollapsed(key: ColumnKey): void;
   stretchesIntoFoldedWorldView(key: PanelKey): boolean;
-  worldViewIsCollapsed: boolean;
-  toggleWorldViewCollapsed(): void;
 }
 
 export function usePanelLayout(visible: readonly PanelKey[]): PanelLayout {
@@ -54,8 +51,8 @@ export function usePanelLayout(visible: readonly PanelKey[]): PanelLayout {
     [widths, setWidths],
   );
 
-  const isCollapsed = (key: PanelKey) => collapsed.has(key);
-  const worldViewIsCollapsed = collapsed.has(WORLD_VIEW_COLUMN);
+  const isCollapsed = (key: ColumnKey) => collapsed.has(key);
+  const gameIsCollapsed = isCollapsed('game');
   const requestedWidthOf = (key: PanelKey) =>
     isCollapsed(key) ? COLLAPSED_PANEL_WIDTH : (widths[key] ?? START_WIDTHS[key]);
 
@@ -63,33 +60,34 @@ export function usePanelLayout(visible: readonly PanelKey[]): PanelLayout {
     visible.map(requestedWidthOf),
     HANDLE_WIDTH,
     COLLAPSED_PANEL_WIDTH,
+    gameIsCollapsed ? COLLAPSED_PANEL_WIDTH : MIN_WORLD_WIDTH,
     windowWidth,
-    worldViewIsCollapsed ? COLLAPSED_PANEL_WIDTH : MIN_WORLD_WIDTH,
   );
   const widthOf = (key: PanelKey) => fitted[visible.indexOf(key)] ?? requestedWidthOf(key);
-  const stretched = worldViewIsCollapsed ? lastOpenPanel(visible.map(isCollapsed)) : NOTHING_STRETCHES;
+  const stretched = gameIsCollapsed ? lastExpanded(visible, isCollapsed) : NOTHING_STRETCHES;
 
   return {
-    gridTemplateColumns: columnTemplate(fitted, stretched, worldViewTrack(worldViewIsCollapsed, stretched)),
+    gridTemplateColumns: columnTemplate(fitted, stretched, gameIsCollapsed),
     widthOf,
     isCollapsed,
     resizePanel,
     resetPanelWidth,
     toggleCollapsed: (key) => collapsed.toggle(key),
     stretchesIntoFoldedWorldView: (key) => visible.indexOf(key) === stretched,
-    worldViewIsCollapsed,
-    toggleWorldViewCollapsed: () => collapsed.toggle(WORLD_VIEW_COLUMN),
   };
 }
 
 const NOTHING_STRETCHES = -1;
 
-function lastOpenPanel(collapsedPanels: readonly boolean[]): number {
-  return collapsedPanels.lastIndexOf(false);
+function lastExpanded(
+  visible: readonly PanelKey[],
+  isCollapsed: (key: PanelKey) => boolean,
+): number {
+  return visible.reduce((last, key, index) => (isCollapsed(key) ? last : index), NOTHING_STRETCHES);
 }
 
-function worldViewTrack(worldViewIsCollapsed: boolean, stretched: number): string {
-  if (!worldViewIsCollapsed) return 'minmax(0, 1fr)';
+function gameTrack(gameIsCollapsed: boolean, stretched: number): string {
+  if (!gameIsCollapsed) return 'minmax(0, 1fr)';
   if (stretched === NOTHING_STRETCHES) return `minmax(${COLLAPSED_PANEL_WIDTH}px, 1fr)`;
   return `${COLLAPSED_PANEL_WIDTH}px`;
 }
@@ -97,12 +95,12 @@ function worldViewTrack(worldViewIsCollapsed: boolean, stretched: number): strin
 function columnTemplate(
   widths: readonly number[],
   stretched: number,
-  lastTrack: string,
+  gameIsCollapsed: boolean,
 ): string {
   const panelTracks = widths
     .map((width, index) => `${panelTrack(width, index === stretched)} ${HANDLE_WIDTH}px`)
     .join(' ');
-  return `${panelTracks} ${lastTrack}`;
+  return `${panelTracks} ${gameTrack(gameIsCollapsed, stretched)}`;
 }
 
 function panelTrack(width: number, stretches: boolean): string {
