@@ -4,7 +4,7 @@ import { WorldIcon } from '@/features/app-shell/icons/panelIcons';
 import { CollapsedRail } from '@/features/app-shell/layout/CollapsedRail';
 import type { PanelChrome } from '@/features/app-shell/layout/Panel';
 import type { PanelLayout } from '@/features/app-shell/layout/usePanelLayout';
-import { GAME_VIEW_TIP } from './help/gameTips';
+import { EXPAND_WORLD_VIEW_TIP, GAME_VIEW_TIP } from './help/gameTips';
 import { GameHeader } from './GameHeader';
 import { GameStage } from './GameStage';
 import { isGodView, type ViewMode } from './viewMode';
@@ -49,6 +49,7 @@ function collapsedGameChrome(onToggleCollapsed: () => void): PanelChrome {
     icon: <WorldIcon />,
     tone: 'bg-panel',
     rail: null,
+    expandTip: EXPAND_WORLD_VIEW_TIP,
     collapsed: true,
     onToggleCollapsed,
   };

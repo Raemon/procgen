@@ -46,7 +46,7 @@ export function PanelColumn({
       </Panel>
       <PanelResizer
         width={layout.widthOf(panelKey)}
-        disabled={layout.isCollapsed(panelKey)}
+        disabled={layout.isCollapsed(panelKey) || layout.stretchesIntoFoldedWorldView(panelKey)}
         onResize={(width) => layout.resizePanel(panelKey, width)}
         onResetWidth={() => layout.resetPanelWidth(panelKey)}
       />

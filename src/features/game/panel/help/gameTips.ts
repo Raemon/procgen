@@ -8,6 +8,16 @@ export const GAME_VIEW_TIP: TooltipContent = {
   body: 'The generated world itself. Everything the panels on the left describe is drawn here; the pipeline re-runs and this redraws as you tweak.',
 };
 
+export const COLLAPSE_WORLD_VIEW_TIP: TooltipContent = {
+  title: 'collapse world view',
+  body: 'Folds the world down to a rail and gives its width to the columns beside it. Click the rail to bring it back.',
+};
+
+export const EXPAND_WORLD_VIEW_TIP: TooltipContent = {
+  title: 'expand world view',
+  body: 'Reopens the world in whatever room the columns leave it.',
+};
+
 export const VIEW_MODE_TIPS: Readonly<Record<ViewMode, TooltipContent>> = {
   '3d-god': {
     title: '3-D God',
