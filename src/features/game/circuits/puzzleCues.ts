@@ -1,9 +1,21 @@
 import type { Cell } from '../worldRules';
 import { cellKeyOf, cellWithin, type Circuit, type CircuitDoor, type CircuitPlate } from './circuit';
 
-export type PuzzleCue = 'crate-pushed' | 'plate-lit' | 'door-opened' | 'circuit-powered';
+export interface CratePush {
+  from: Cell;
+  to: Cell;
+}
 
-export type PuzzleCueListener = (cells: Cell[]) => void;
+export interface PuzzleCuePayloads {
+  'crate-pushed': CratePush[];
+  'plate-lit': Cell[];
+  'door-opened': Cell[];
+  'circuit-powered': Cell[];
+}
+
+export type PuzzleCue = keyof PuzzleCuePayloads;
+
+export type PuzzleCueListener<C extends PuzzleCue> = (payload: PuzzleCuePayloads[C]) => void;
 
 export interface PuzzleSource {
   circuitsIn(minX: number, minY: number, maxX: number, maxY: number): Circuit[];
@@ -21,17 +33,20 @@ interface Glance {
   circuits: Map<string, Circuit>;
 }
 
+type FiredCue = { [C in PuzzleCue]: [C, PuzzleCuePayloads[C]] }[PuzzleCue];
+
 export class PuzzleCues {
-  private readonly listeners = new Map<PuzzleCue, Set<PuzzleCueListener>>();
+  private readonly listeners = new Map<PuzzleCue, Set<PuzzleCueListener<PuzzleCue>>>();
   private seen: Glance | null = null;
 
   constructor(private readonly source: PuzzleSource) {}
 
-  on(cue: PuzzleCue, listener: PuzzleCueListener): () => void {
-    const existing = this.listeners.get(cue) ?? new Set<PuzzleCueListener>();
-    existing.add(listener);
+  on<C extends PuzzleCue>(cue: C, listener: PuzzleCueListener<C>): () => void {
+    const existing = this.listeners.get(cue) ?? new Set<PuzzleCueListener<PuzzleCue>>();
+    const heard = listener as PuzzleCueListener<PuzzleCue>;
+    existing.add(heard);
     this.listeners.set(cue, existing);
-    return () => existing.delete(listener);
+    return () => existing.delete(heard);
   }
 
   forget(): void {
@@ -40,13 +55,13 @@ export class PuzzleCues {
 
   sync(centre: Cell): void {
     const next = glanceAround(this.source, centre);
-    if (this.seen) for (const [cue, cells] of cuesBetween(this.seen, next)) this.emit(cue, cells);
+    if (this.seen) for (const [cue, payload] of cuesBetween(this.seen, next)) this.emit(cue, payload);
     this.seen = next;
   }
 
-  private emit(cue: PuzzleCue, cells: Cell[]): void {
-    if (cells.length === 0) return;
-    for (const listener of this.listeners.get(cue) ?? []) listener(cells);
+  private emit<C extends PuzzleCue>(cue: C, payload: PuzzleCuePayloads[C]): void {
+    if (payload.length === 0) return;
+    for (const listener of this.listeners.get(cue) ?? []) listener(payload);
   }
 }
 
@@ -65,8 +80,8 @@ function glanceAround(source: PuzzleSource, centre: Cell): Glance {
   };
 }
 
-function cuesBetween(before: Glance, after: Glance): Array<[PuzzleCue, Cell[]]> {
-  const found: Array<[PuzzleCue, Cell[]]> = [];
+function cuesBetween(before: Glance, after: Glance): FiredCue[] {
+  const found: FiredCue[] = [];
   const pushed = pushedCrates(before, after);
   if (pushed.length > 0) found.push(['crate-pushed', pushed]);
   const lit: Cell[] = [];
@@ -85,7 +100,7 @@ function cuesBetween(before: Glance, after: Glance): Array<[PuzzleCue, Cell[]]> 
   return found;
 }
 
-function pushedCrates(before: Glance, after: Glance): Cell[] {
+function pushedCrates(before: Glance, after: Glance): CratePush[] {
   const bothSaw = (cell: Cell) =>
     cellWithin(
       cell,
@@ -96,7 +111,10 @@ function pushedCrates(before: Glance, after: Glance): Cell[] {
     );
   const left = [...before.crates.values()].filter((cell) => bothSaw(cell) && !after.crates.has(cellKeyOf(cell)));
   const arrived = [...after.crates.values()].filter((cell) => bothSaw(cell) && !before.crates.has(cellKeyOf(cell)));
-  return arrived.filter((cell) => left.some((from) => Math.abs(from.x - cell.x) + Math.abs(from.y - cell.y) === 1));
+  return arrived.flatMap((to) => {
+    const from = left.find((cell) => Math.abs(cell.x - to.x) + Math.abs(cell.y - to.y) === 1);
+    return from ? [{ from, to }] : [];
+  });
 }
 
 function newlyTrue<T extends CircuitPlate | CircuitDoor>(
