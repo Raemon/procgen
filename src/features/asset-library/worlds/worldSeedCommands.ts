@@ -44,9 +44,9 @@ export { worldSeedCommands };
 
 
 function registerWorldSeedCommand(
-  spec: Omit<CommandSpec, 'mode' | 'group' | 'changesWorld'>,
+  spec: Omit<CommandSpec, 'modes' | 'group' | 'changesWorld'>,
 ): CommandSpec {
-  return registerCommand({ ...spec, mode: 'god', group: 'world', changesWorld: true });
+  return registerCommand({ ...spec, modes: ['god'], group: 'world', changesWorld: true });
 }
 
 registerWorldSeedCommand({

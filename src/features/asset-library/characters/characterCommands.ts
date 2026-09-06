@@ -37,9 +37,9 @@ export { characterCommands };
 const CREATURE_ID_HELP = 'id of an existing creature or character — see GET /api/v1/asset-library/creatures';
 
 function registerCharacterArtCommand(
-  spec: Omit<CommandSpec, 'mode' | 'group' | 'changesWorld'>,
+  spec: Omit<CommandSpec, 'modes' | 'group' | 'changesWorld'>,
 ): CommandSpec {
-  return registerCommand({ ...spec, mode: 'god', group: 'assets', changesWorld: true });
+  return registerCommand({ ...spec, modes: ['god'], group: 'assets', changesWorld: true });
 }
 
 registerCharacterArtCommand({

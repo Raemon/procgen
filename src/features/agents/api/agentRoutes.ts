@@ -40,11 +40,14 @@ registerRoute({
   path: '/agents',
   summary: 'create an agent; responds with its id and urls',
   body: {
-    mode: { kind: 'text', help: '"god" or "character" — an agent keeps its mode for life' },
+    mode: {
+      kind: 'text',
+      help: '"god", "character" or "topdown" — an agent keeps its mode for life',
+    },
     name: { kind: 'text', help: 'what to call it in listings; defaults to its id', optional: true },
     sight_radius_tiles: {
       kind: 'int',
-      help: 'how far a character sees, clamped to the supported range',
+      help: 'how far a character or top-down agent sees, clamped to the supported range',
       optional: true,
     },
     view_size_tiles: {
@@ -89,7 +92,7 @@ registerRoute({
     format: { kind: 'text', help: '"json" or "text"; text is the grid an agent view renders', optional: true },
     sight_radius_tiles: {
       kind: 'int',
-      help: "widen or narrow the character's sight before looking; the new radius sticks",
+      help: "widen or narrow a character's or top-down agent's sight before looking; the new radius sticks",
       optional: true,
     },
     view_size_tiles: {
@@ -161,7 +164,7 @@ function createAgent(sessions: SessionStore, world: ServerWorld, body: unknown):
   if (!world.ready()) return failure(409, 'world_building', worldBuildingHint(world));
   const mode = (body as { mode?: unknown } | null)?.mode;
   if (!isAgentMode(mode)) {
-    return failure(400, 'bad_request', 'body must be {"mode": "god" | "character"}');
+    return failure(400, 'bad_request', 'body must be {"mode": "god" | "character" | "topdown"}');
   }
   const sightRadius = readTiles(
     (body as { sight_radius_tiles?: unknown } | null)?.sight_radius_tiles,
@@ -279,7 +282,7 @@ function agentJson(session: AgentSession) {
     name: session.name,
     mode: session.mode,
     position: { x: session.x, y: session.y },
-    sight_radius_tiles: session.mode === 'character' ? session.sightRadiusTiles : null,
+    sight_radius_tiles: session.mode === 'god' ? null : session.sightRadiusTiles,
     view_size_tiles: session.mode === 'god' ? session.godViewSizeTiles : null,
     last_action: session.lastAction,
     run_status: session.run?.status ?? 'idle',
@@ -303,6 +306,7 @@ function observationJson(mode: AgentMode, observation: AgentObservation) {
     sight_radius_tiles: observation.sightRadiusTiles,
     view_size_tiles: observation.godViewSizeTiles,
     view: observation.view,
+    in_sight: observation.inSight,
     elevation: observation.elevation,
     legend: observation.legend,
     available_actions: commandsForMode(mode).map((spec) => ({

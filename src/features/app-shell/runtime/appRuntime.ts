@@ -290,16 +290,17 @@ export function createAppRuntime(): AppRuntime {
 
   function abilityModeFor(action: string): CommandMode {
     if (commandFor(playerMode, action)) return playerMode;
-    return isACharacterCommandSharedWithGodView(action) ? 'character' : 'god';
+    return isACharacterCommandSharedWithEveryView(action) ? 'character' : 'god';
   }
 
-  function isACharacterCommandSharedWithGodView(action: string): boolean {
+  function isACharacterCommandSharedWithEveryView(action: string): boolean {
     const command = commandFor('character', action);
     return command?.group === 'senses' || action === 'turn_left' || action === 'turn_right';
   }
 
   function applyWorldChange(): void {
     sampler.invalidateStructureOverlay();
+    world.explored.forgetAll();
     sim.forget();
     puzzleCues.forget();
     world.ensurePlayerOnWalkableGround();

@@ -12,3 +12,9 @@ export interface AsciiGlyphPaint {
 export function asciiGlyphPaint(color: string, walkable: boolean | null): AsciiGlyphPaint {
   return { color, opacity: walkable === true ? WALKABLE_GLYPH_OPACITY : 1 };
 }
+
+export const REMEMBERED_GLYPH_SHADE = 0.25;
+
+export function dimmedToMemory(paint: AsciiGlyphPaint): AsciiGlyphPaint {
+  return { ...paint, opacity: paint.opacity * REMEMBERED_GLYPH_SHADE };
+}

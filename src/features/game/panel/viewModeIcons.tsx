@@ -37,6 +37,28 @@ function AgentCharacterIcon({ size }: { size?: number }) {
   );
 }
 
+function TopDownIcon({ size }: { size?: number }) {
+  return (
+    <Icon size={size}>
+      <rect x="3.5" y="3.5" width="17" height="17" rx="1.5" />
+      <circle cx="12" cy="12" r="2" />
+      <path d="M3.5 8.5h5v12h-5Z" />
+      <path d="M15.5 3.5h5v6h-5Z" />
+    </Icon>
+  );
+}
+
+function AgentTopDownIcon({ size }: { size?: number }) {
+  return (
+    <Icon size={size}>
+      <rect x="3.5" y="3.5" width="17" height="17" rx="1.5" />
+      <path d="M8 8.5 6 12l2 3.5" />
+      <path d="M16 8.5 18 12l-2 3.5" />
+      <path d="M13.2 7.5 10.8 16.5" />
+    </Icon>
+  );
+}
+
 function FeatureMapIcon({ size }: { size?: number }) {
   return (
     <Icon size={size}>
@@ -53,6 +75,8 @@ export const VIEW_MODE_ICONS: Readonly<
 > = {
   '3d-god': VoxelGodIcon,
   'agent-god': AgentGodIcon,
+  'top-down': TopDownIcon,
+  'agent-top-down': AgentTopDownIcon,
   character: WalkIcon,
   'agent-character': AgentCharacterIcon,
   features: FeatureMapIcon,

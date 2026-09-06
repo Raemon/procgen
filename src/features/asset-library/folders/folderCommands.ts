@@ -21,9 +21,9 @@ const SECTION_HELP = `the library section that owns the folder, one of: ${listOf
 const FOLDER_ID_HELP = 'id of a folder — see GET /api/v1/asset-library/folders';
 
 function registerFolderCommand(
-  spec: Omit<CommandSpec, 'mode' | 'group' | 'changesWorld'>,
+  spec: Omit<CommandSpec, 'modes' | 'group' | 'changesWorld'>,
 ): CommandSpec {
-  return registerCommand({ ...spec, mode: 'god', group: 'assets', changesWorld: true });
+  return registerCommand({ ...spec, modes: ['god'], group: 'assets', changesWorld: true });
 }
 
 registerFolderCommand({

@@ -1,4 +1,4 @@
-import type { CommandParams } from '@/features/app-shell/runtime/commands/command';
+import type { CommandMode, CommandParams } from '@/features/app-shell/runtime/commands/command';
 import { assetId } from '@/features/asset-library/asset';
 import { emptyPipeline } from '@/features/asset-library/worlds/pipeline/pipelineState';
 import { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
@@ -123,7 +123,7 @@ function steppingWorld(elevationAt: (x: number, y: number) => number) {
 
 export function checkCommandDispatch(check: CheckReporter): void {
   const commands = abilityWorld();
-  const act = (mode: 'god' | 'character', action: string, params: CommandParams = {}) =>
+  const act = (mode: CommandMode, action: string, params: CommandParams = {}) =>
     performCommand(commands.context, mode, action, params);
   const addedCulture = () => {
     act('god', 'add_culture');
@@ -154,10 +154,11 @@ export function checkCommandDispatch(check: CheckReporter): void {
     const result = act('god', 'set_param', { node_id: 'n1' });
     return !result.ok && result.code === 'bad_request' && result.hint.includes('param');
   })());
-  check('moving and turning go through the same registry the API uses', (() => {
+  check('moving and turning go through the same registry the API uses, and a compass step leaves you facing the way it walked', (() => {
     const moved = act('god', 'step_east');
+    const facedEast = commands.pose.facing === 2;
     const turned = act('character', 'turn_right');
-    return moved.ok && commands.pose.x === 1 && turned.ok && commands.pose.facing === 1;
+    return moved.ok && commands.pose.x === 1 && facedEast && turned.ok && commands.pose.facing === 3;
   })());
   check('a step refused by high ground names the levels in its hint', (() => {
     const steep = steppingWorld((x) => (x === 0 ? 0.4 : 2.6));
@@ -466,7 +467,40 @@ export function checkCommandDispatch(check: CheckReporter): void {
       result.hint.includes('(0,-1)')
     );
   })());
-  check('every command is reachable through the API dispatcher', everyCommand().every((spec) => commandFor(spec.mode, spec.action) === spec));
+  check('every command is reachable through the API dispatcher', everyCommand().every((spec) => spec.modes.every((mode) => commandFor(mode, spec.action) === spec)));
   check('character mode owns nothing but its own movement and senses, never the world editor', commandsForMode('character').every((spec) => spec.group === 'movement' || spec.group === 'senses'));
   check('character mode can widen its own sight and nothing else senses-shaped', commandsForMode('character').filter((spec) => spec.group === 'senses').map((spec) => spec.action).join() === 'set_sight_radius');
+  check('top-down mode walks by compass and works fixtures, but never edits the world', (() => {
+    const actions = commandsForMode('topdown').map((spec) => spec.action);
+    return (
+      commandsForMode('topdown').every((spec) => spec.group === 'movement' || spec.group === 'senses') &&
+      ['step_north', 'face', 'jump', 'use', 'pick_up', 'set_sight_radius'].every((action) => actions.includes(action)) &&
+      !actions.includes('turn_left') &&
+      !actions.includes('step_forward') &&
+      !actions.includes('set_view_size')
+    );
+  })());
+  check('a compass step turns you the way you walked, so the character view picks it up', (() => {
+    const stepped = act('topdown', 'step_east');
+    return stepped.ok && commands.pose.facing === 2;
+  })());
+  check('facing a compass point turns without moving', (() => {
+    const before = { x: commands.pose.x, y: commands.pose.y };
+    const faced = act('topdown', 'face', { compass: 4 });
+    return (
+      faced.ok &&
+      commands.pose.facing === 4 &&
+      commands.pose.x === before.x &&
+      commands.pose.y === before.y
+    );
+  })());
+  check('a compass outside the eight points is refused rather than wrapped', (() => {
+    const result = act('topdown', 'face', { compass: 9 });
+    return !result.ok && result.code === 'invalid_value';
+  })());
+  check('a blocked compass step still leaves you facing the way you tried to walk', (() => {
+    const walled = steppingWorld(() => 0);
+    const result = performCommand(walled, 'topdown', 'step_west', {});
+    return !result.ok && walled.actor.pose().facing === 6;
+  })());
 }

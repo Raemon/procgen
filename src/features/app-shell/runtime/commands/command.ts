@@ -19,7 +19,7 @@ import type { FacingIndex } from '@/features/game/facing';
 import type { MineSlots } from '@/features/game/worldRules';
 import type { WorldRulesSet } from '@/features/game/worldRulesSet';
 
-export type CommandMode = 'god' | 'character';
+export type CommandMode = 'god' | 'character' | 'topdown';
 export type CommandGroup = 'movement' | 'senses' | 'pipeline' | 'assets' | 'world';
 
 export interface CommandActor {
@@ -78,7 +78,7 @@ export type CommandParamSpecs = Record<string, CommandParamSpec>;
 
 export interface CommandSpec {
   action: string;
-  mode: CommandMode;
+  modes: readonly CommandMode[];
   group: CommandGroup;
   humanControl: string;
   description: string;

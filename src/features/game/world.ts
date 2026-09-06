@@ -5,6 +5,7 @@ import {
   clampSightRadiusTiles,
 } from './vision/characterSight';
 import { DEFAULT_GOD_VIEW_SIZE_TILES, clampGodViewSizeTiles } from './vision/godViewSize';
+import { ExploredCells } from './vision/exploredCells';
 import { jumpLandingDelta } from './sim/jumpLanding';
 import { isAxisStep, type StepRules } from './sim/stepIsAllowed';
 import { WorldEvents, type WorldEvent } from './worldEvents';
@@ -32,6 +33,7 @@ export class World {
   facing: FacingIndex = 0;
   sightRadiusTiles = DEFAULT_CHARACTER_SIGHT_RADIUS_TILES;
   godViewSizeTiles = DEFAULT_GOD_VIEW_SIZE_TILES;
+  readonly explored = new ExploredCells();
   private readonly events = new WorldEvents();
 
   constructor(private readonly rules: StepRules) {}

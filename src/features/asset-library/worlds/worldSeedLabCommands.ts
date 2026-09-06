@@ -27,9 +27,9 @@ export { worldSeedLabCommands };
 const LAB_CONTROL = 'no button of its own — the world seed lab runs on the server, under /api/v1/asset-library/world-seeds';
 
 function registerLabCommand(
-  spec: Omit<CommandSpec, 'mode' | 'group' | 'humanControl'>,
+  spec: Omit<CommandSpec, 'modes' | 'group' | 'humanControl'>,
 ): CommandSpec {
-  return registerCommand({ ...spec, mode: 'god', group: 'world', humanControl: LAB_CONTROL });
+  return registerCommand({ ...spec, modes: ['god'], group: 'world', humanControl: LAB_CONTROL });
 }
 
 registerLabCommand({

@@ -18,6 +18,7 @@ import { checkInkTransparency } from '@/features/game/__tests__/inkTransparency.
 import { checkCameraMovementAndZoom } from '@/features/game/__tests__/cameraMovementAndZoom.test';
 import { checkCharactersOnStage } from '@/features/game/__tests__/charactersOnStage.test';
 import { checkViewRecentering } from '@/features/game/__tests__/viewRecentering.test';
+import { checkTopDownControls } from '@/features/game/__tests__/topDownControls.test';
 import { checkRandomizeAndPermutation } from '@/features/asset-library/worlds/__tests__/randomizeAndPermutation.test';
 import { checkTerrainFieldNodes } from '@/features/asset-library/worlds/__tests__/terrainFieldNodes.test';
 import { checkHydrologyNodes } from '@/features/asset-library/worlds/__tests__/hydrologyNodes.test';
@@ -39,6 +40,7 @@ import { checkWorldShotQueue } from '@/features/game/__tests__/worldShotQueue.te
 import { checkAssetIdRemap } from '@/features/asset-library/worlds/__tests__/assetIdRemap.test';
 import { checkAgentObservation } from '@/features/agents/__tests__/agentObservation.test';
 import { checkOccludedObservation } from '@/features/agents/__tests__/occludedObservation.test';
+import { checkTopDownObservation } from '@/features/agents/__tests__/topDownObservation.test';
 import { checkCreatureObservation } from '@/features/agents/__tests__/creatureObservation.test';
 import { checkElevationObservation } from '@/features/agents/__tests__/elevationObservation.test';
 import { checkAgentApiDocs } from '@/features/agents/__tests__/agentApiDocs.test';
@@ -134,6 +136,8 @@ describe('worlds and node groups as documents', () => checkWorldSeedsAreDocument
 describe('saved worlds', () => checkSavedWorlds(check));
 describe('agent observation', () => checkAgentObservation(check));
 describe('what a character cannot see past', () => checkOccludedObservation(check));
+describe('what a top-down agent sees and remembers', () => checkTopDownObservation(check));
+describe('top-down and compass controls', () => checkTopDownControls(check));
 describe('creatures in agent views', () => checkCreatureObservation(check));
 describe('what an agent reads of the ground height', () => checkElevationObservation(check));
 describe('the agent api docs', () => checkAgentApiDocs(check));

@@ -9,8 +9,15 @@ const MOVEMENT_KEYS: Readonly<Record<string, MovementAxis>> = {
   KeyE: 'right',
 };
 
-export function movementAxisForKey(code: string): MovementAxis | undefined {
-  return MOVEMENT_KEYS[code];
+const SIDESTEP_KEYS: Readonly<Record<string, MovementAxis>> = {
+  KeyA: 'left',
+  ArrowLeft: 'left',
+  KeyD: 'right',
+  ArrowRight: 'right',
+};
+
+export function movementAxisForKey(code: string, sidestepping = false): MovementAxis | undefined {
+  return MOVEMENT_KEYS[code] ?? (sidestepping ? SIDESTEP_KEYS[code] : undefined);
 }
 
 export function isTypingInFormControl(event: KeyboardEvent): boolean {

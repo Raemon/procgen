@@ -43,3 +43,7 @@ export function isInFrontHalfPlane(facing: FacingIndex, dx: number, dy: number):
   const forward = facingVector(facing);
   return forward.dx * dx + forward.dy * dy > 0;
 }
+
+export function isFacingIndex(value: unknown): value is FacingIndex {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= 7;
+}

@@ -54,7 +54,8 @@ the text you receive — nothing more.
 
 ## Getting started
 
-1. \`POST /api/v1/agents\` with \`{"mode": "god"}\` or \`{"mode": "character"}\`.
+1. \`POST /api/v1/agents\` with \`{"mode": "god"}\`, \`{"mode": "character"}\` or
+   \`{"mode": "topdown"}\`.
    The answer carries the agent's id and the URLs it uses.
 2. \`GET /api/v1/agents/{id}/observe\` for the grid, its legend, and your pose;
    add \`?format=text\` for the grid an agent view renders.
@@ -71,7 +72,7 @@ the text you receive — nothing more.
 
 ## Modes
 
-An agent is created in one of two modes and stays in it for life.
+An agent is created in one of three modes and stays in it for life.
 
 - **god** — a square window centered on you, {{GOD_SIZE}}x{{GOD_SIZE}} tiles by
   default and yours to resize between {{MIN_GOD_SIZE}} and {{MAX_GOD_SIZE}}
@@ -95,6 +96,20 @@ An agent is created in one of two modes and stays in it for life.
   which is first person and shows no more of the world than you are told. You move
   relative to your facing and turn in 45-degree steps. Characters can move and
   can change how far they see.
+- **topdown** — the same {{CHARACTER_SIZE}}x{{CHARACTER_SIZE}} window and the
+  same {{SIGHT_RADIUS}}-tile sight radius as a character, and the same walls and
+  ridges blocking the line of sight, but you look straight down on yourself
+  rather than out from your own eyes: you see the whole disc around you at once,
+  with no blind side, and facing changes nothing about what you see. What you
+  have already looked at you keep: a tile you saw on an earlier turn stays in
+  the grid as remembered ground even once a wall stands between you, so the map
+  fills in as you walk. The observation carries an \`in_sight\` grid the same
+  shape as the view saying which is which — '#' in sight now, '-' remembered
+  (its ground is what you last saw, and anything that moves may have moved
+  since), blank never seen. That memory is yours alone and lasts as long as the
+  agent does. You move by absolute compass steps, which also turn you to face
+  the way you walked, and you can change how far you see. You cannot edit the
+  world.
 
 ## Reading the ground's height
 
@@ -116,7 +131,8 @@ behind it.
 ## How much world one look hands you
 
 A god agent chooses the width of its window, anywhere from {{MIN_GOD_SIZE}} to
-{{MAX_GOD_SIZE}} tiles, the same three ways a character chooses its sight radius:
+{{MAX_GOD_SIZE}} tiles, the same three ways a character or top-down agent
+chooses its sight radius:
 
 - at birth — \`POST /api/v1/agents\` with \`"view_size_tiles": 65\`
 - for the rest of the session — the \`set_view_size\` action below
@@ -132,8 +148,8 @@ the square of the width and an autopilot run pays for them every turn.
 
 ## Sight range, and what it costs
 
-{{SIGHT_RADIUS}} tiles is only the default. A character's sight radius is a
-parameter you control, anywhere from {{MIN_SIGHT_RADIUS}} to
+{{SIGHT_RADIUS}} tiles is only the default. The sight radius of a character or a
+top-down agent is a parameter you control, anywhere from {{MIN_SIGHT_RADIUS}} to
 {{MAX_SIGHT_RADIUS}} tiles, and there are three ways to set it:
 
 - at birth — \`POST /api/v1/agents\` with \`"sight_radius_tiles": 24\`
@@ -192,7 +208,7 @@ above edit a piece at a time.
 
 ## Actions — moving
 
-God mode moves by compass; character mode moves relative to its facing.
+God and top-down modes move by compass; character mode moves relative to its facing.
 Diagonal steps slide: if the diagonal is blocked on one axis, you still move
 along the other.
 
@@ -202,7 +218,7 @@ along the other.
 
 ## Actions — your senses
 
-\`set_sight_radius\` is a character's; \`set_view_size\` is a god's.
+\`set_sight_radius\` belongs to character and top-down modes; \`set_view_size\` is a god's.
 
 | action | params | the human control | what it does |
 | --- | --- | --- | --- |
@@ -319,7 +335,7 @@ export function buildApiDocs(tileAssets: ReadOnlyTileAssets): string {
 }
 
 export function everyCommand(): CommandSpec[] {
-  const modes: CommandMode[] = ['god', 'character'];
+  const modes: CommandMode[] = ['god', 'character', 'topdown'];
   return modes.flatMap((mode) => commandsForMode(mode));
 }
 
@@ -436,7 +452,7 @@ function legendBlock(tileAssets: ReadOnlyTileAssets): string {
     );
   return [
     "- '@' = you",
-    "- ' ' = nothing generated here (in character mode, also: behind you, fogged out past your sight radius, or hidden behind tall ground or a ridge)",
+    "- ' ' = nothing generated here (in character mode, also: behind you, fogged out past your sight radius, or hidden behind tall ground or a ridge; in topdown mode, also: past your sight radius, or ground you have never yet laid eyes on)",
     "- '?' = unrecognized tile",
     ...tiles,
   ].join('\n');

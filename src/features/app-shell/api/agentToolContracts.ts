@@ -29,7 +29,7 @@ const LAB_PATHS: Readonly<Record<string, string>> = {
 
 function toolContract(spec: CommandSpec): AgentToolContract {
   const entries = Object.entries(spec.params);
-  const gameInput = spec.mode === 'character' || spec.group === 'movement' || spec.group === 'senses';
+  const gameInput = !spec.modes.includes('god') || spec.group === 'movement' || spec.group === 'senses';
   const labPath = LAB_PATHS[spec.action];
   if (labPath) {
     return {

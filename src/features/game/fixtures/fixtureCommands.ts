@@ -19,14 +19,14 @@ const USE_DESCRIPTION =
 const RESET_DESCRIPTION =
   'Put the puzzle room you are standing in back the way it was generated: crates return to where they started, levers spring back, keys lie on its floor again, and doors that only this room opens lock again. Keys already in your bag stay there. The only way out of a room whose crate you have shoved into a corner.';
 
-const USE_ACTIONS: readonly { action: string; mode: CommandMode }[] = [
-  { action: 'use_fixture', mode: 'god' },
-  { action: 'use', mode: 'character' },
+const USE_ACTIONS: readonly { action: string; modes: readonly CommandMode[] }[] = [
+  { action: 'use_fixture', modes: ['god'] },
+  { action: 'use', modes: ['character', 'topdown'] },
 ];
 
-const RESET_ACTIONS: readonly { action: string; mode: CommandMode }[] = [
-  { action: 'reset_puzzle_room', mode: 'god' },
-  { action: 'reset_room', mode: 'character' },
+const RESET_ACTIONS: readonly { action: string; modes: readonly CommandMode[] }[] = [
+  { action: 'reset_puzzle_room', modes: ['god'] },
+  { action: 'reset_room', modes: ['character', 'topdown'] },
 ];
 
 export const WORLD_VERB_ACTIONS: ReadonlySet<string> = new Set(
@@ -40,7 +40,7 @@ export function isWorldVerb(action: string): boolean {
 for (const spec of USE_ACTIONS) {
   registerCommand({
     action: spec.action,
-    mode: spec.mode,
+    modes: spec.modes,
     group: 'movement',
     humanControl: 'F',
     description: USE_DESCRIPTION,
@@ -54,7 +54,7 @@ for (const spec of USE_ACTIONS) {
 for (const spec of RESET_ACTIONS) {
   registerCommand({
     action: spec.action,
-    mode: spec.mode,
+    modes: spec.modes,
     group: 'movement',
     humanControl: 'R, in a world whose rules put a room back rather than grow a fresh one',
     description: RESET_DESCRIPTION,
