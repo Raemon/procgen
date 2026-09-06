@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { DOOR_STANDS_TALL } from '../fixtures/looks/door';
-import { DOOR_OPENING_SECONDS, DoorOpenings } from '../render/view3d/doorOpenings';
+import { DOOR_OPENING_SECONDS, DoorOpenings } from '../render/view3d/animations/doorOpenings';
 
 export function checkDoorOpenings(check: CheckReporter): void {
   const root = new THREE.Group();

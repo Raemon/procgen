@@ -1,13 +1,14 @@
 import * as THREE from 'three';
 import { MAX_FACE_ART_SIZE } from '@/features/asset-library/tiles/tileFaceArt';
 import { withTransparency } from '@/features/asset-library/tiles/inkColor';
-import { gateLook } from '../../fixtures/fixtureAppearance';
-import { DOOR_FACE_ART, DOOR_STANDS_TALL } from '../../fixtures/looks/door';
-import type { Cell } from '../../worldRules';
-import { coplanarPullOf } from './coplanarPull';
-import { EVERY_FACE } from './culling/visibleFaceMask';
-import { sharedTileBoxGeometry } from './sharedTileGeometries';
-import { tileSurfaceMaterials } from './tileSurfaces';
+import { gateLook } from '../../../fixtures/fixtureAppearance';
+import { DOOR_FACE_ART, DOOR_STANDS_TALL } from '../../../fixtures/looks/door';
+import type { Cell } from '../../../worldRules';
+import { coplanarPullOf } from '../coplanarPull';
+import { EVERY_FACE } from '../culling/visibleFaceMask';
+import { sharedTileBoxGeometry } from '../sharedTileGeometries';
+import { tileSurfaceMaterials } from '../tileSurfaces';
+import type { WorldAnimation } from './worldAnimations';
 
 export const DOOR_OPENING_SECONDS = 0.6;
 const LEAF_OVERHANG = 1.03;
@@ -21,7 +22,7 @@ interface OpeningDoor {
 
 export type LeafMaterials = () => THREE.Material | THREE.Material[];
 
-export class DoorOpenings {
+export class DoorOpenings implements WorldAnimation {
   private readonly lifting: OpeningDoor[] = [];
 
   constructor(
