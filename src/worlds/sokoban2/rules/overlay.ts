@@ -147,12 +147,16 @@ class Sokoban2Overlay implements Sokoban2Rules {
     const room = roomAt(this.world, cell.x, cell.y)
     if (room < 0) return null
     const original = new Map(this.world.crates.map((crate) => [crate.id, crate]))
+    let moved = false
     for (const crate of this.state.live) {
       const home = original.get(crate.id)
       if (!home || roomAt(this.world, home.x, home.y) !== room) continue
+      if (crate.x === home.x && crate.y === home.y) continue
       crate.x = home.x
       crate.y = home.y
+      moved = true
     }
+    if (!moved) return `room ${room}`
     this.state.crateAt = crateFinder(this.state.live)
     this.changes.bump()
     return `room ${room}`
