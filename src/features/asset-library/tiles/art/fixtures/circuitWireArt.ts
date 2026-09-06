@@ -4,11 +4,19 @@ import { TILE_ART_SIZE as SIZE } from '../artSize';
 import { animatedCubeArt } from '../cubeArtFrom';
 import { barPainter, discPainter, type PixelPoint } from '../painters/shapePainters';
 import { stackedPainters, type PixelPainter } from '../pixelCanvas';
+import { rememberedArt } from '../rememberedArt';
 
 export const WIRE_NORTH = 1;
 export const WIRE_EAST = 2;
 export const WIRE_SOUTH = 4;
 export const WIRE_WEST = 8;
+
+export const WIRE_SIDES = [
+  { bit: WIRE_NORTH, dx: 0, dy: -1 },
+  { bit: WIRE_EAST, dx: 1, dy: 0 },
+  { bit: WIRE_SOUTH, dx: 0, dy: 1 },
+  { bit: WIRE_WEST, dx: -1, dy: 0 },
+] as const;
 
 export const DARK_WIRE_INK = '#4a6b80';
 export const LIT_WIRE_INK = '#6fe08a';
@@ -23,13 +31,6 @@ const CENTRE: PixelPoint = { x: (SIZE - 1) / 2, y: (SIZE - 1) / 2 };
 const PULSE_MS = 420;
 const STRAIGHT_MASKS = [WIRE_NORTH | WIRE_SOUTH, WIRE_EAST | WIRE_WEST];
 
-const EDGE_MIDPOINTS: Record<number, PixelPoint> = {
-  [WIRE_NORTH]: { x: CENTRE.x, y: -1 },
-  [WIRE_EAST]: { x: SIZE, y: CENTRE.y },
-  [WIRE_SOUTH]: { x: CENTRE.x, y: SIZE },
-  [WIRE_WEST]: { x: -1, y: CENTRE.y },
-};
-
 interface WireTone {
   casing: string;
   core: string;
@@ -38,12 +39,7 @@ interface WireTone {
 const wireArt = new Map<string, CubeFaceArt>();
 
 export function wireFaceArt(mask: number, lit: boolean): CubeFaceArt {
-  const key = `${mask}:${lit}`;
-  const known = wireArt.get(key);
-  if (known) return known;
-  const art = lit ? litWireArt(mask) : darkWireArt(mask);
-  wireArt.set(key, art);
-  return art;
+  return rememberedArt(wireArt, `${mask}:${lit}`, () => (lit ? litWireArt(mask) : darkWireArt(mask)));
 }
 
 function darkWireArt(mask: number): CubeFaceArt {
@@ -86,9 +82,10 @@ function wireReliefPainter(mask: number): PixelPainter {
 }
 
 function armsOf(mask: number): PixelPoint[] {
-  return [WIRE_NORTH, WIRE_EAST, WIRE_SOUTH, WIRE_WEST]
-    .filter((side) => (mask & side) !== 0)
-    .map((side) => EDGE_MIDPOINTS[side]!);
+  return WIRE_SIDES.filter((side) => (mask & side.bit) !== 0).map((side) => ({
+    x: CENTRE.x + side.dx * (CENTRE.x + 1),
+    y: CENTRE.y + side.dy * (CENTRE.y + 1),
+  }));
 }
 
 function nodePainters(mask: number, radius: number, ink: string): PixelPainter[] {

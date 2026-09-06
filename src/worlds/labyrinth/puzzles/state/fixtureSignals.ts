@@ -22,17 +22,19 @@ export function fixtureIsOn(
   return false;
 }
 
+export function signalFixturesOf(layout: PuzzleRoomLayout): PuzzleFixture[] {
+  return layout.opensWhen
+    .map((id) => layout.fixtures.find((fixture) => fixture.id === id))
+    .filter((fixture): fixture is PuzzleFixture => fixture !== undefined);
+}
+
 export function roomIsSolved(layout: PuzzleRoomLayout, state: PuzzleState): boolean {
-  return layout.opensWhen.every((fixtureId) => signalNamed(layout, state, fixtureId));
+  return unmetSignals(layout, state) === 0;
 }
 
 export function unmetSignals(layout: PuzzleRoomLayout, state: PuzzleState): number {
-  return layout.opensWhen.filter((fixtureId) => !signalNamed(layout, state, fixtureId)).length;
-}
-
-function signalNamed(layout: PuzzleRoomLayout, state: PuzzleState, fixtureId: string): boolean {
-  const fixture = layout.fixtures.find((candidate) => candidate.id === fixtureId);
-  return fixture ? fixtureIsOn(layout, state, fixture) : false;
+  const met = signalFixturesOf(layout).filter((fixture) => fixtureIsOn(layout, state, fixture)).length;
+  return layout.opensWhen.length - met;
 }
 
 function crateRestsOnAPlate(

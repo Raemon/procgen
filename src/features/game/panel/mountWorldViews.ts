@@ -124,7 +124,7 @@ export function mountWorldViews(
     if (runtime.playerInventoryPanel.isOpen()) movement.releaseHeldKeys();
   });
 
-  const stopSounds = playWorldSounds(runtime, createSoundPlayer(), soundOn);
+  const stopSounds = playWorldSounds(runtime, createSoundPlayer(soundOn), soundOn);
 
   runtime.applyWorldChange();
 

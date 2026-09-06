@@ -3,7 +3,7 @@ import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { WIRE_EAST, WIRE_NORTH, WIRE_SOUTH, WIRE_WEST } from '@/features/asset-library/tiles/art/fixtures/circuitWireArt';
 import { SIDE_FACES } from '@/features/asset-library/tiles/tileFaceArt';
 import type { Marker, WorldSampler } from '@/features/asset-library/worlds/worldSampler';
-import { cellKeyOf, circuitTouches, type Circuit, type WireCell } from '../circuits/circuit';
+import { cellKeyOf, cellWithin, circuitTouches, type Circuit } from '../circuits/circuit';
 import { CUE_EARSHOT_TILES, PuzzleCues, type PuzzleCue, type PuzzleSource } from '../circuits/puzzleCues';
 import { LIT_WIRE_GLOW, WIRE_LIES_FLAT, wireMarkersOf, wireMaskAt } from '../circuits/wireMarkers';
 import { routeWires } from '../circuits/wireRoutes';
@@ -15,7 +15,8 @@ import { JUMP_MS } from '../sim/movementOrder';
 import type { SoundCue, SoundPlayer } from '../sound/soundSynth';
 import { loudnessFrom, playWorldSounds } from '../sound/worldSounds';
 import { World } from '../world';
-import { registerWorldRules, rulesWithDefaults } from '../worldRules';
+import { registerWorldRules, rulesWithDefaults, type Cell } from '../worldRules';
+import { wiresJoin } from './circuitFixtures';
 import { FLAT_GROUND, nodeOfType, rulesOn, stepRulesOn, storeWithNodes } from './rulesFixtures';
 
 const ROOM = { minX: 0, minY: 0, maxX: 8, maxY: 6 };
@@ -59,16 +60,19 @@ export function checkCircuitsAndCues(check: CheckReporter): void {
 }
 
 function checkWiresRouteFromPlatesToDoors(check: CheckReporter): void {
+  const endpoints = [NEAR_PLATE, FAR_PLATE, EAST_DOOR];
   const wires = routeWires([NEAR_PLATE, FAR_PLATE], [EAST_DOOR], roomFloor);
+  const isEndpoint = (cell: Cell) => endpoints.some((end) => end.x === cell.x && end.y === cell.y);
   check(
     'every wire cell lies on the floor and never on a plate or the door',
-    wires.length > 0 && wires.every((cell) => roomFloor(cell.x, cell.y)),
+    wires.length > 0 && wires.every((cell) => roomFloor(cell.x, cell.y) && !isEndpoint(cell)),
   );
+  const joined = new Set([...wires, ...endpoints].map(cellKeyOf));
   check(
     'each plate reaches the door along the wires',
-    [NEAR_PLATE, FAR_PLATE].every((plate) => joinedThroughWires(wires, [NEAR_PLATE, FAR_PLATE, EAST_DOOR], plate, EAST_DOOR)),
+    [NEAR_PLATE, FAR_PLATE].every((plate) => wiresJoin(joined, plate, EAST_DOOR)),
   );
-  const alone = (plate: WireCell) => routeWires([plate], [EAST_DOOR], roomFloor).length;
+  const alone = (plate: Cell) => routeWires([plate], [EAST_DOOR], roomFloor).length;
   check(
     'the second plate rides the first plate\'s trunk instead of laying its own line to the door',
     wires.length < alone(NEAR_PLATE) + alone(FAR_PLATE),
@@ -89,7 +93,7 @@ function checkWireMarkersReadTheirJoins(check: CheckReporter): void {
   const lit = wireMarkersOf([{ ...SCENE_CIRCUIT, powered: true }], -9, -9, 9, 9);
   const glyphsOf = (markers: Marker[]) => markers.map((marker) => marker.glyph).join('');
   check(
-    'a run, a corner and a straight read as their box-drawing joins, and lit wires switch to double lines',
+    'runs read as lines, any bend or junction as a cross, and lit wires switch to double lines',
     glyphsOf(dark) === '─┼│' && glyphsOf(lit) === '═╬║',
   );
   check(
@@ -159,8 +163,12 @@ function checkCuesFireOnceForEachChange(check: CheckReporter): void {
     cellKeyOf(heard.get('plate-lit')![0]![0]!) === '5,5' &&
       cellKeyOf(heard.get('door-opened')![0]![0]!) === '8,5' &&
       cellKeyOf(heard.get('circuit-powered')![0]![0]!) === '8,5' &&
-      heard.get('plate-lit')!.length === 1 && heard.get('door-opened')!.length === 1,
+      ['plate-lit', 'door-opened', 'circuit-powered'].every((cue) => heard.get(cue as PuzzleCue)!.length === 1),
   );
+  heard.clear();
+  scene.crates[0] = { x: 12, y: 12 };
+  cues.sync({ x: 0, y: 0 });
+  check('a crate that jumps home on a room reset is not a push', heard.size === 0);
   heard.clear();
   cues.forget();
   scene.crates[0] = { x: 6, y: 3 };
@@ -170,7 +178,7 @@ function checkCuesFireOnceForEachChange(check: CheckReporter): void {
 
 function checkCuesIgnoreWhatScrollsIntoEarshot(check: CheckReporter): void {
   const scene = sceneWithOneCrate();
-  const farAway = CUE_EARSHOT_TILES * 2 + 3;
+  const farAway = CUE_EARSHOT_TILES + 3;
   scene.crates.push({ x: farAway, y: 0 });
   scene.circuit.plates[0] = { x: farAway, y: 5, lit: true };
   scene.circuit.doors[0] = { x: farAway + 3, y: 5, open: false };
@@ -206,7 +214,7 @@ function checkSoundsFollowTheWorld(check: CheckReporter): void {
   check('walking on after the jump sounds footfalls again', heard.map(([cue]) => cue).join() === 'step,jump,step');
   heard.length = 0;
   cues.sync({ x: world.playerX, y: world.playerY });
-  scene.crates[0] = { x: world.playerX + 1, y: world.playerY };
+  scene.crates[0] = { x: 4, y: 3 };
   cues.sync({ x: world.playerX, y: world.playerY });
   scene.circuit.plates[0]!.lit = true;
   scene.circuit.doors[0]!.open = true;
@@ -253,7 +261,7 @@ function checkADoorLiftsIntoItsLintel(check: CheckReporter): void {
 }
 
 interface CueScene {
-  crates: WireCell[];
+  crates: Cell[];
   circuit: Circuit;
   source: PuzzleSource;
 }
@@ -271,15 +279,14 @@ function sceneWithOneCrate(): CueScene {
     source: {
       circuitsIn: (minX, minY, maxX, maxY) =>
         [structuredClone(scene.circuit)].filter((circuit) => circuitTouches(circuit, minX, minY, maxX, maxY)),
-      cratesIn: (minX, minY, maxX, maxY) =>
-        scene.crates.filter((cell) => cell.x >= minX && cell.x <= maxX && cell.y >= minY && cell.y <= maxY),
+      cratesIn: (minX, minY, maxX, maxY) => scene.crates.filter((cell) => cellWithin(cell, minX, minY, maxX, maxY)),
     },
   };
   return scene;
 }
 
-function listenTo(cues: PuzzleCues): Map<PuzzleCue, WireCell[][]> {
-  const heard = new Map<PuzzleCue, WireCell[][]>();
+function listenTo(cues: PuzzleCues): Map<PuzzleCue, Cell[][]> {
+  const heard = new Map<PuzzleCue, Cell[][]>();
   const every: PuzzleCue[] = ['crate-pushed', 'plate-lit', 'door-opened', 'circuit-powered'];
   for (const cue of every) cues.on(cue, (cells) => heard.set(cue, [...(heard.get(cue) ?? []), cells]));
   return heard;
@@ -287,23 +294,6 @@ function listenTo(cues: PuzzleCues): Map<PuzzleCue, WireCell[][]> {
 
 function roomFloor(x: number, y: number): boolean {
   return x >= ROOM.minX && x <= ROOM.maxX && y >= ROOM.minY && y <= ROOM.maxY;
-}
-
-function joinedThroughWires(wires: WireCell[], endpoints: WireCell[], from: WireCell, to: WireCell): boolean {
-  const joined = new Set([...wires, ...endpoints].map(cellKeyOf));
-  const seen = new Set([cellKeyOf(from)]);
-  const queue = [from];
-  for (let head = 0; head < queue.length; head++) {
-    const at = queue[head]!;
-    if (at.x === to.x && at.y === to.y) return true;
-    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-      const next = { x: at.x + dx!, y: at.y + dy! };
-      if (!joined.has(cellKeyOf(next)) || seen.has(cellKeyOf(next))) continue;
-      seen.add(cellKeyOf(next));
-      queue.push(next);
-    }
-  }
-  return false;
 }
 
 function emptySampler(): WorldSampler {

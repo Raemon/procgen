@@ -1,13 +1,10 @@
-export interface WireCell {
-  x: number;
-  y: number;
-}
+import type { Cell } from '../worldRules';
 
-export interface CircuitPlate extends WireCell {
+export interface CircuitPlate extends Cell {
   lit: boolean;
 }
 
-export interface CircuitDoor extends WireCell {
+export interface CircuitDoor extends Cell {
   open: boolean;
 }
 
@@ -15,12 +12,16 @@ export interface Circuit {
   key: string;
   plates: CircuitPlate[];
   doors: CircuitDoor[];
-  wires: WireCell[];
+  wires: Cell[];
   powered: boolean;
 }
 
-export function cellKeyOf(cell: WireCell): string {
+export function cellKeyOf(cell: Cell): string {
   return `${cell.x},${cell.y}`;
+}
+
+export function cellWithin(cell: Cell, minX: number, minY: number, maxX: number, maxY: number): boolean {
+  return cell.x >= minX && cell.x <= maxX && cell.y >= minY && cell.y <= maxY;
 }
 
 export function circuitTouches(
@@ -30,6 +31,6 @@ export function circuitTouches(
   maxX: number,
   maxY: number,
 ): boolean {
-  const within = (cell: WireCell) => cell.x >= minX && cell.x <= maxX && cell.y >= minY && cell.y <= maxY;
+  const within = (cell: Cell) => cellWithin(cell, minX, minY, maxX, maxY);
   return circuit.wires.some(within) || circuit.plates.some(within) || circuit.doors.some(within);
 }

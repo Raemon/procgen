@@ -13,6 +13,7 @@ import {
   type PixelRect,
 } from '../painters/shapePainters';
 import { flatPainter, stackedPainters, type PixelPainter } from '../pixelCanvas';
+import { rememberedArt } from '../rememberedArt';
 
 export const ARCANE_CORE = '#4fd8ff';
 
@@ -52,13 +53,13 @@ const dormantArt = new Map<string, CubeFaceArt>();
 const chargedArt = new Map<string, CubeFaceArt>();
 
 export function crateFaceArt(core: string = ARCANE_CORE): CubeFaceArt {
-  return remembered(dormantArt, core, () =>
+  return rememberedArt(dormantArt, core, () =>
     animatedCubeArt(SIZE, [crateFrame({ hue: core, swell: 0.85, brightness: 0.55, haloed: false })]),
   );
 }
 
 export function crateOnPlateFaceArt(core: string = ARCANE_CORE): CubeFaceArt {
-  return remembered(chargedArt, core, () =>
+  return rememberedArt(chargedArt, core, () =>
     animatedCubeArt(
       SIZE,
       [
@@ -68,14 +69,6 @@ export function crateOnPlateFaceArt(core: string = ARCANE_CORE): CubeFaceArt {
       PULSE_MS,
     ),
   );
-}
-
-function remembered(cache: Map<string, CubeFaceArt>, core: string, paint: () => CubeFaceArt): CubeFaceArt {
-  const known = cache.get(core);
-  if (known) return known;
-  const art = paint();
-  cache.set(core, art);
-  return art;
 }
 
 function crateFrame(glow: CoreGlow): CubeArtFramePainters {
@@ -94,7 +87,7 @@ function crateFrame(glow: CoreGlow): CubeArtFramePainters {
 
 function cagedCorePainter(glow: CoreGlow, cage: PixelPainter): PixelPainter {
   return stackedPainters(
-    ironPlatePainter(0xc201),
+    ironPlatePainter(),
     windowPainter(glow),
     ...veinPainters(glow),
     corePainter(glow),
@@ -121,10 +114,10 @@ function cagedCoreReliefPainter(glow: CoreGlow, cage: PixelPainter): PixelPainte
   );
 }
 
-function ironPlatePainter(seed: number): PixelPainter {
+function ironPlatePainter(): PixelPainter {
   return stackedPainters(
-    patchPainter(shadedRamp(PLATE_IRON, 5, 0.14), { seed, cell: 12, size: SIZE }),
-    specklePainter(darken(PLATE_IRON, 0.3), seed ^ 0x3d, 0.08),
+    patchPainter(shadedRamp(PLATE_IRON, 5, 0.14), { seed: 0xc201, cell: 12, size: SIZE }),
+    specklePainter(darken(PLATE_IRON, 0.3), 0xc201 ^ 0x3d, 0.08),
   );
 }
 
@@ -180,13 +173,11 @@ function crossBracesReliefPainter(): PixelPainter {
 }
 
 function lidSpokesPainter(): PixelPainter {
-  return stackedPainters(...windowSpokes().map(([from, to]) => cageBarPainter(from, to)));
+  return stackedPainters(...veinsOf().map(([from, to]) => cageBarPainter(from, to)));
 }
 
 function lidSpokesReliefPainter(): PixelPainter {
-  return stackedPainters(
-    ...windowSpokes().map(([from, to]) => barPainter(from, to, CAGE_THICKNESS, heightInk(0.8))),
-  );
+  return stackedPainters(...veinsOf().map(([from, to]) => barPainter(from, to, CAGE_THICKNESS, heightInk(0.8))));
 }
 
 function cageBarPainter(from: PixelPoint, to: PixelPoint): PixelPainter {
@@ -208,10 +199,6 @@ function windowDiagonals(): [PixelPoint, PixelPoint][] {
       { x: near, y: far },
     ],
   ];
-}
-
-function windowSpokes(): [PixelPoint, PixelPoint][] {
-  return veinsOf();
 }
 
 function framePainter(): PixelPainter {

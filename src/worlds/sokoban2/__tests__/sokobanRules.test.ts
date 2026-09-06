@@ -123,7 +123,7 @@ function checkGoalsAreWiredToTheDoorTheyOpen(check: CheckReporter): void {
   const finished = rules.circuitsIn(...everywhere)[0]!
   check('settling the crate lights the goal, powers the circuit and opens its door', finished.plates[0]!.lit && finished.powered && finished.doors[0]!.open)
   check('a powered circuit draws its wires lit', wireMarkersOf([finished], ...everywhere).every((marker) => marker.tag.startsWith('circuit line, lit')))
-  check('a room no door waits on has no circuit to draw', circuits.every((each) => each.key !== 'room 1'))
+  check('a room no door waits on has no circuit to draw', circuits.every((each) => !each.key.endsWith(':room 1')))
 }
 
 function checkTwoPlayersShareTheCrates(check: CheckReporter): void {

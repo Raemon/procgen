@@ -1,6 +1,6 @@
 import { labyrinthCellCoordOf, labyrinthCellKey } from '@/features/asset-library/worlds/labyrinth/labyrinthLattice';
 import { rectContains } from '@/features/asset-library/worlds/labyrinth/roomLayout';
-import { circuitTouches, type Circuit, type WireCell } from '@/features/game/circuits/circuit';
+import { cellKeyOf, cellWithin, circuitTouches, type Circuit } from '@/features/game/circuits/circuit';
 import { routeWires } from '@/features/game/circuits/wireRoutes';
 import type { LabyrinthKnobs } from '@/features/asset-library/worlds/labyrinth/labyrinthKnobs';
 import { NO_ITEMS, type ItemSource } from '@/features/asset-library/items/itemAssets';
@@ -8,6 +8,7 @@ import { KEY_ITEM_ID } from '@/features/asset-library/items/defaultItems';
 import type { DoorwaySide } from '@/features/asset-library/worlds/labyrinth/roomLayout';
 import type { ItemSpawn, Marker } from '@/features/asset-library/worlds/worldSampler';
 import type { ReadOnlyPipelineStore } from '@/features/app-shell/runtime/readOnlyAssets';
+import type { Cell } from '@/features/game/worldRules';
 import { fixtureLook, gateLook } from '@/features/game/fixtures/fixtureAppearance';
 import type { PuzzleFixture } from '@/features/game/fixtures/fixtureKinds';
 import { fixtureAction } from './interaction/fixtureAction';
@@ -27,7 +28,7 @@ import {
   type PuzzleRoomLayout,
 } from './rooms/puzzleRoomLayout';
 import type { RoomItem } from './rooms/roomItem';
-import { fixtureIsOn, livePosition, roomIsSolved } from './state/fixtureSignals';
+import { fixtureIsOn, livePosition, roomIsSolved, signalFixturesOf } from './state/fixtureSignals';
 import { keyItemId, unlockedSideId } from './state/roomKeys';
 import { PuzzleState } from './state/puzzleState';
 
@@ -37,20 +38,14 @@ function isFurniture(fixture: PuzzleFixture): boolean {
   return fixture.kind === 'crate' || fixture.kind === 'pillar';
 }
 
-function signalFixturesOf(layout: PuzzleRoomLayout): PuzzleFixture[] {
-  return layout.opensWhen
-    .map((id) => layout.fixtures.find((fixture) => fixture.id === id))
-    .filter((fixture): fixture is PuzzleFixture => fixture !== undefined);
-}
-
 export class PuzzleWorld {
   private readonly rooms = new RoomCache(ROOMS_KEPT);
-  private readonly wires = new WeakMap<PuzzleRoomLayout, WireCell[]>();
+  private readonly wires = new WeakMap<PuzzleRoomLayout, Cell[]>();
   private readonly knobs: LabyrinthKnobs | null;
 
   constructor(
     store: ReadOnlyPipelineStore,
-    nodeId: string,
+    private readonly nodeId: string,
     private readonly tileIsWalkable: WalkableProbe,
     readonly state: PuzzleState = new PuzzleState(),
     private readonly items: ItemSource = NO_ITEMS,
@@ -85,13 +80,13 @@ export class PuzzleWorld {
       .filter((circuit): circuit is Circuit => circuit !== null && circuitTouches(circuit, minX, minY, maxX, maxY));
   }
 
-  cratesIn(minX: number, minY: number, maxX: number, maxY: number): WireCell[] {
+  cratesIn(minX: number, minY: number, maxX: number, maxY: number): Cell[] {
     if (!this.knobs) return [];
     return this.roomsOverlapping(minX, minY, maxX, maxY).flatMap((layout) =>
       layout.fixtures
         .filter((fixture) => fixture.kind === 'crate')
         .map((crate) => livePosition(layout, this.state, crate))
-        .filter((at) => at.x >= minX && at.x <= maxX && at.y >= minY && at.y <= maxY),
+        .filter((at) => cellWithin(at, minX, minY, maxX, maxY)),
     );
   }
 
@@ -223,7 +218,7 @@ export class PuzzleWorld {
     const signals = signalFixturesOf(layout);
     if (layout.unlock === 'key' || gates.length === 0 || signals.length === 0) return null;
     return {
-      key: layout.key,
+      key: `${this.nodeId}:${layout.key}`,
       plates: signals.map((fixture) => ({ x: fixture.x, y: fixture.y, lit: fixtureIsOn(layout, this.state, fixture) })),
       doors: gates.map((gate) => ({ x: gate.x, y: gate.y, open: this.gateIsOpen(layout, gate) })),
       wires: this.wiresOf(layout, signals, gates),
@@ -231,14 +226,12 @@ export class PuzzleWorld {
     };
   }
 
-  private wiresOf(layout: PuzzleRoomLayout, signals: PuzzleFixture[], gates: PuzzleFixture[]): WireCell[] {
+  private wiresOf(layout: PuzzleRoomLayout, signals: PuzzleFixture[], gates: PuzzleFixture[]): Cell[] {
     const known = this.wires.get(layout);
     if (known) return known;
-    const pillars = new Set(
-      layout.fixtures.filter((fixture) => fixture.kind === 'pillar').map((pillar) => `${pillar.x},${pillar.y}`),
-    );
+    const pillars = new Set(layout.fixtures.filter((fixture) => fixture.kind === 'pillar').map(cellKeyOf));
     const isFloor = (x: number, y: number) =>
-      rectContains(layout.interior, x, y) && !pillars.has(`${x},${y}`) && this.tileIsWalkable(x, y);
+      rectContains(layout.interior, x, y) && !pillars.has(cellKeyOf({ x, y })) && this.tileIsWalkable(x, y);
     const routed = routeWires(signals, gates, isFloor);
     this.wires.set(layout, routed);
     return routed;

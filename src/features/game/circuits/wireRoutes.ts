@@ -1,14 +1,10 @@
-import { cellKeyOf, type WireCell } from './circuit';
+import { CARDINAL_STEPS } from '@/features/asset-library/worlds/walkingSim/cellGrid';
+import type { Cell } from '../worldRules';
+import { cellKeyOf } from './circuit';
 
 export type FloorProbe = (x: number, y: number) => boolean;
 
-const HEADINGS: WireCell[] = [
-  { x: 1, y: 0 },
-  { x: 0, y: 1 },
-  { x: -1, y: 0 },
-  { x: 0, y: -1 },
-];
-const NO_HEADING = HEADINGS.length;
+const NO_HEADING = CARDINAL_STEPS.length;
 const FRESH_CELL_COST = 2;
 const TURN_COST = 1;
 
@@ -18,8 +14,8 @@ interface RouteState {
   heading: number;
 }
 
-export function routeWires(plates: readonly WireCell[], doors: readonly WireCell[], isFloor: FloorProbe): WireCell[] {
-  const laid = new Map<string, WireCell>();
+export function routeWires(plates: readonly Cell[], doors: readonly Cell[], isFloor: FloorProbe): Cell[] {
+  const laid = new Map<string, Cell>();
   const endpoints = new Set([...plates, ...doors].map(cellKeyOf));
   for (const door of doors) {
     for (const plate of plates) {
@@ -31,12 +27,7 @@ export function routeWires(plates: readonly WireCell[], doors: readonly WireCell
   return [...laid.values()];
 }
 
-function cheapestPath(
-  from: WireCell,
-  to: WireCell,
-  isFloor: FloorProbe,
-  laid: ReadonlyMap<string, WireCell>,
-): WireCell[] {
+function cheapestPath(from: Cell, to: Cell, isFloor: FloorProbe, laid: ReadonlyMap<string, Cell>): Cell[] {
   const costs = new Map<string, number>();
   const parents = new Map<string, RouteState | null>();
   const buckets: RouteState[][] = [];
@@ -62,20 +53,20 @@ function cheapestPath(
   return [];
 }
 
-function stepsFrom(state: RouteState, goal: WireCell, isFloor: FloorProbe): RouteState[] {
-  return HEADINGS.map((delta, heading) => ({ x: state.x + delta.x, y: state.y + delta.y, heading })).filter(
+function stepsFrom(state: RouteState, goal: Cell, isFloor: FloorProbe): RouteState[] {
+  return CARDINAL_STEPS.map((step, heading) => ({ x: state.x + step.dx, y: state.y + step.dy, heading })).filter(
     (next) => (next.x === goal.x && next.y === goal.y) || isFloor(next.x, next.y),
   );
 }
 
-function costOfStep(state: RouteState, next: RouteState, laid: ReadonlyMap<string, WireCell>): number {
+function costOfStep(state: RouteState, next: RouteState, laid: ReadonlyMap<string, Cell>): number {
   const ground = laid.has(cellKeyOf(next)) ? 0 : FRESH_CELL_COST;
   const turn = state.heading !== NO_HEADING && state.heading !== next.heading ? TURN_COST : 0;
   return ground + turn;
 }
 
-function pathBackFrom(end: RouteState, parents: ReadonlyMap<string, RouteState | null>): WireCell[] {
-  const path: WireCell[] = [];
+function pathBackFrom(end: RouteState, parents: ReadonlyMap<string, RouteState | null>): Cell[] {
+  const path: Cell[] = [];
   for (let state: RouteState | null = end; state; state = parents.get(stateKey(state)) ?? null) {
     path.push({ x: state.x, y: state.y });
   }

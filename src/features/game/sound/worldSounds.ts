@@ -1,7 +1,7 @@
 import type { ReadOnlyWorld } from '@/features/app-shell/runtime/readOnlyAssets';
-import type { WireCell } from '../circuits/circuit';
 import type { PuzzleCue, PuzzleCues } from '../circuits/puzzleCues';
 import { JUMP_MS } from '../sim/movementOrder';
+import type { Cell } from '../worldRules';
 import type { SoundCue, SoundPlayer } from './soundSynth';
 
 export interface SoundedWorld {
@@ -49,7 +49,7 @@ export function playWorldSounds(
   };
 }
 
-export function loudnessFrom(listener: { playerX: number; playerY: number }, cells: readonly WireCell[]): number {
+export function loudnessFrom(listener: { playerX: number; playerY: number }, cells: readonly Cell[]): number {
   const nearest = Math.min(
     ...cells.map((cell) => Math.max(Math.abs(cell.x - listener.playerX), Math.abs(cell.y - listener.playerY))),
   );

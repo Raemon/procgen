@@ -14,6 +14,7 @@ import {
   type PixelRect,
 } from '../painters/shapePainters';
 import { stackedPainters, type PixelPainter } from '../pixelCanvas';
+import { rememberedArt } from '../rememberedArt';
 
 const SOCKET_STONE = '#4c4740';
 const SLAB_IRON = '#5b6068';
@@ -41,19 +42,11 @@ const waitingArt = new Map<string, CubeFaceArt>();
 const pressedArt = new Map<string, CubeFaceArt>();
 
 export function plateWaitingFaceArt(signal: string = WAITING_SIGNAL): CubeFaceArt {
-  return remembered(waitingArt, signal, () => plateFaceArt({ signal, slabRelief: 0.62, glowing: false }));
+  return rememberedArt(waitingArt, signal, () => plateFaceArt({ signal, slabRelief: 0.62, glowing: false }));
 }
 
 export function platePressedFaceArt(signal: string = PRESSED_SIGNAL): CubeFaceArt {
-  return remembered(pressedArt, signal, () => plateFaceArt({ signal, slabRelief: 0.4, glowing: true }));
-}
-
-function remembered(cache: Map<string, CubeFaceArt>, signal: string, paint: () => CubeFaceArt): CubeFaceArt {
-  const known = cache.get(signal);
-  if (known) return known;
-  const art = paint();
-  cache.set(signal, art);
-  return art;
+  return rememberedArt(pressedArt, signal, () => plateFaceArt({ signal, slabRelief: 0.4, glowing: true }));
 }
 
 function plateFaceArt(pose: PlatePose): CubeFaceArt {

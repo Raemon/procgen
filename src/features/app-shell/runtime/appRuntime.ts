@@ -153,7 +153,17 @@ export function createAppRuntime(): AppRuntime {
   const mine = mineSlotsOf(localMine, rules);
   const world = new World(stepRulesOf(rules, mine));
   const puzzleCues = new PuzzleCues(rules);
-  const net = new MultiplayerSession(world, store, rules, () => redrawIfSharedChanged());
+  let joining = false;
+  const net = new MultiplayerSession(world, store, rules, {
+    onJoined: () => {
+      joining = true;
+      puzzleCues.forget();
+    },
+    onSharedApplied: () => {
+      joining = false;
+      redrawIfSharedChanged();
+    },
+  });
   const chatComposer = new ChatComposerState();
   const playerInventoryPanel = new PlayerInventoryPanelState();
   const pickupFeed = new PickupFeed();
@@ -202,15 +212,16 @@ export function createAppRuntime(): AppRuntime {
     return edited === store ? perform(action, params) : performCommandOnce(edited, action, params);
   }
 
-  function redrawIfSharedChanged(): void {
-    if (rules.revision() === lastSharedRevision) return;
+  function redrawIfSharedChanged(): boolean {
+    if (rules.revision() === lastSharedRevision) return false;
     lastSharedRevision = rules.revision();
-    puzzleCues.sync(playerCell());
+    syncCues();
     renderers.redrawAll();
+    return true;
   }
 
-  function playerCell(): { x: number; y: number } {
-    return { x: world.playerX, y: world.playerY };
+  function syncCues(): void {
+    if (!joining) puzzleCues.sync({ x: world.playerX, y: world.playerY });
   }
 
   function settleTheWorld(change: () => void): void {
@@ -328,8 +339,7 @@ export function createAppRuntime(): AppRuntime {
   world.on('player-moved', () => {
     if (settlingTheWorld) return;
     walkOverPickup.onSteppedOnto(world.playerX, world.playerY);
-    redrawIfSharedChanged();
-    puzzleCues.sync(playerCell());
+    if (!redrawIfSharedChanged()) syncCues();
     keepPlayingAfterTheAction.schedule();
   });
   world.on('player-moved', () => renderers.recenterAll());

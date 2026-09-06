@@ -6,7 +6,7 @@ import {
 } from '@/features/app-shell/runtime/rerenderHooks';
 import { Button } from '@/features/app-shell/controls/Button';
 import { asciiColorOn, setAsciiColorOn } from '../render/agentText/asciiColorPreference';
-import { setSoundOn, soundOn } from '../sound/soundPreference';
+import { useSoundOn } from '../sound/soundPreference';
 import { SightRangeControl } from './SightRangeControl';
 import { ASCII_COLOR_TIP, CAPTURE_TIP, LIFE_TIP, SOUND_TIP } from './help/gameTips';
 import { isCharacterControlled, usesAgentText, type ViewMode } from './viewMode';
@@ -40,13 +40,9 @@ export function GameToolbar({ mode }: { mode: ViewMode }) {
 }
 
 function SoundToggle() {
-  const [on, setOn] = useState(soundOn);
-  const toggle = (): void => {
-    setSoundOn(!on);
-    setOn(!on);
-  };
+  const [on, setOn] = useSoundOn();
   return (
-    <Button active={on} onClick={toggle} tip={SOUND_TIP}>
+    <Button active={on} onClick={() => setOn(!on)} tip={SOUND_TIP}>
       sound
     </Button>
   );

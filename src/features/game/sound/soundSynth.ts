@@ -32,7 +32,7 @@ interface NoiseVoice extends Voice {
 
 const UNLOCKING_GESTURES = ['keydown', 'pointerdown'] as const;
 
-export function createSoundPlayer(): SoundPlayer {
+export function createSoundPlayer(isOn: () => boolean = () => true): SoundPlayer {
   if (typeof AudioContext === 'undefined') return SILENT_PLAYER;
   let context: AudioContext | null = null;
   let master: GainNode | null = null;
@@ -44,7 +44,9 @@ export function createSoundPlayer(): SoundPlayer {
     if (context.state === 'suspended') void context.resume();
     return { context, master, noise };
   };
-  const unlock = (): void => void ready();
+  const unlock = (): void => {
+    if (isOn()) ready();
+  };
   for (const gesture of UNLOCKING_GESTURES) window.addEventListener(gesture, unlock);
   return {
     play: (cue, volume = 1) => {

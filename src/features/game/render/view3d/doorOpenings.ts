@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import { MAX_FACE_ART_SIZE } from '@/features/asset-library/tiles/tileFaceArt';
 import { withTransparency } from '@/features/asset-library/tiles/inkColor';
-import type { WireCell } from '../../circuits/circuit';
 import { gateLook } from '../../fixtures/fixtureAppearance';
-import { DOOR_STANDS_TALL } from '../../fixtures/fixtureFaceArt';
+import { DOOR_FACE_ART, DOOR_STANDS_TALL } from '../../fixtures/fixtureFaceArt';
+import type { Cell } from '../../worldRules';
 import { coplanarPullOf } from './coplanarPull';
 import { EVERY_FACE } from './culling/visibleFaceMask';
 import { sharedTileBoxGeometry } from './sharedTileGeometries';
@@ -30,7 +30,7 @@ export class DoorOpenings {
     private readonly leafMaterials: LeafMaterials = closedLeafMaterials,
   ) {}
 
-  open(cells: readonly WireCell[]): void {
+  open(cells: readonly Cell[]): void {
     for (const cell of cells) this.lifting.push(this.closedLeafAt(cell));
   }
 
@@ -46,7 +46,7 @@ export class DoorOpenings {
     for (const door of [...this.lifting]) this.finish(door);
   }
 
-  private closedLeafAt(cell: WireCell): OpeningDoor {
+  private closedLeafAt(cell: Cell): OpeningDoor {
     const mesh = new THREE.Mesh(sharedTileBoxGeometry(1, 1, 1, EVERY_FACE), this.leafMaterials());
     mesh.position.set(cell.x + 0.5, 0, cell.y + 0.5);
     this.root.add(mesh);
@@ -72,12 +72,10 @@ function liftIntoLintel(door: OpeningDoor, progress: number): void {
 }
 
 function closedLeafMaterials(): THREE.Material | THREE.Material[] {
-  const look = gateLook('mechanism', false);
-  if (!look.faceArt) return new THREE.MeshLambertMaterial({ color: look.color });
   return tileSurfaceMaterials(
     {
-      art: look.faceArt,
-      baseColor: withTransparency(look.color, false),
+      art: DOOR_FACE_ART.mechanism,
+      baseColor: withTransparency(gateLook('mechanism', false).color, false),
       glow: 0,
       drawnFromBothSides: false,
       pull: coplanarPullOf('marker', LINTEL_LANE),
