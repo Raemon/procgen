@@ -1,3 +1,4 @@
+import { BAY_MIN_CELLS, BAY_ROOM_CELLS, BAY_SIZES, BIG_ROOM_CELLS } from '../roomSizes'
 import { DIRS, DIR_LIST } from '../types'
 import {
   at,
@@ -11,12 +12,6 @@ import {
   type Rect,
   type RoomCanvas,
 } from '../puzzle/canvas'
-
-const BAY_ROOM_CELLS = 56
-const BAY_SIZES = [{ x: 7, y: 7 }, { x: 7, y: 9 }, { x: 9, y: 7 }]
-const BAY_MIN_CELLS = 34
-
-const BIG_ROOM_CELLS = 50
 
 export function chooseBay(canvas: RoomCanvas): Rect | null {
   if (inRoomCount(canvas) <= BAY_ROOM_CELLS) return null

@@ -1,5 +1,5 @@
 import type { Rng } from '../rng'
-import type { Layout } from './layout'
+import type { Layout } from './layout/buildLayout'
 import { DIRS, DIR_LIST, type CrateColor, type Door, type Goal, type Vec } from '../types'
 import { at, inside, isFloor, markChannel, reserve, type RoomCanvas } from '../puzzle/canvas'
 

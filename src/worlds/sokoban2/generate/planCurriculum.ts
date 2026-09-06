@@ -1,6 +1,7 @@
 import type { Rng } from '../rng'
-import type { Layout } from './layout'
+import type { Layout } from './layout/buildLayout'
 import type { GenParams } from '../params'
+import { BIG_ROOM_CELLS } from '../roomSizes'
 import { COLORS, type CrateColor } from '../types'
 import type { Lever } from '../puzzle/reverse/reverseRun'
 import type { RoomBrief2 } from './briefs'
@@ -22,8 +23,6 @@ export interface Lesson {
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value))
-
-const BIG_ROOM_CELLS = 50
 
 const DEPENDENCY_RATIO = 0.5
 

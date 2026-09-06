@@ -1,5 +1,5 @@
 import type { Rng } from '../rng'
-import type { Layout } from './layout'
+import type { Layout } from './layout/buildLayout'
 import { HEIGHT, type Vec, type World } from '../types'
 import { index } from '../world'
 import { reachableCells } from '../play/reach'

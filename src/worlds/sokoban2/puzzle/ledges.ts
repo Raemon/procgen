@@ -1,5 +1,6 @@
 import { DIRS, DIR_LIST, HEIGHT, type Vec } from '../types'
 import type { Rng } from '../rng'
+import { SINGLE_SLOT_CELLS } from '../roomSizes'
 import {
   at,
   canvasCells,
@@ -27,8 +28,6 @@ export interface LedgePlacement {
 
   landings: Vec[]
 }
-
-const SINGLE_SLOT_CELLS = 56
 
 const SINGLE_SLOT_AREA = 8
 const MULTI_SLOT_AREA = 10
