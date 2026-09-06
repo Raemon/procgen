@@ -171,6 +171,7 @@ above edit a piece at a time.
 
 | method and path | what it holds |
 | --- | --- |
+| POST /api/v1/asset-library/world-seeds/builds | ask for a whole-world build; GET /api/v1/asset-library/world-seeds/builds/{key} follows its progress and hands back the value |
 | GET, PUT /api/v1/asset-library/world-seeds/current | the running world seed: its pipeline nodes, seed number, daylight and time |
 | GET, PUT /api/v1/asset-library/world-seeds | the world seed library — every named recipe |
 | GET, PUT /api/v1/asset-library/world-seeds/thumbnails | one rendered thumbnail per world seed |
@@ -216,6 +217,13 @@ binding maps a node into the world: tile layers stack in list order, elevation
 shapes the ground, markers draw glyphs, pieces stamp structures, creatures
 spawn life, items float loot above the ground. Every act that edits echoes the full pipeline back, and every later
 observation is regenerated from it.
+
+Most nodes generate one chunk at a time and are ready the instant they are
+edited. A node marked "whole world" in the table below is built all at once on
+the server, in the background, and can take seconds: until every such node in
+the running pipeline is built, moving and observing answer \`world_building\`
+with the build's progress, and an autopilot run simply waits it out. The build
+is cached by seed and params, so the same world never builds twice.
 
 | action | params | the human control | what it does |
 | --- | --- | --- | --- |
@@ -409,9 +417,14 @@ function nodeTypesTable(): string {
   return allNodeTypes()
     .map(
       (def) =>
-        `| \`${def.type}\` | ${typeof def.output === 'function' ? 'depends on params' : def.output} | ${def.category} | ${def.whenToUse} |`,
+        `| \`${def.type}\` | ${outputCell(def)} | ${def.category} | ${def.whenToUse} |`,
     )
     .join('\n');
+}
+
+function outputCell(def: ReturnType<typeof allNodeTypes>[number]): string {
+  const output = typeof def.output === 'function' ? 'depends on params' : def.output;
+  return def.wholeWorld ? `${output} (whole world)` : output;
 }
 
 function legendBlock(tileAssets: ReadOnlyTileAssets): string {

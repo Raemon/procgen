@@ -87,6 +87,12 @@ export const FAILURES: readonly FailureSpec[] = [
       'Worlds and node groups are named uniquely: GET /api/v1/asset-library/world-seeds and /api/v1/asset-library/node-groups list the names in use.',
   },
   {
+    code: 'world_building',
+    meaning: 'The world is still being built on the server, so there is no ground to stand on yet.',
+    recovery:
+      'Wait a moment and try again. GET /api/v1/agents/{id}/observe answers with the build progress until the world is ready.',
+  },
+  {
     code: 'bad_request',
     meaning: 'The request body was not valid JSON or is missing a required field.',
     recovery: 'Check the endpoint table in GET /api/v1/openapi.json.',

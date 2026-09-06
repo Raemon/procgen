@@ -10,15 +10,17 @@ import {
 } from './serverWorld';
 import type { SessionStore } from './sessions';
 import { WorldSeedLab } from '@/features/asset-library/worlds/lab/worldSeedLab';
+import { synchronousBuilds, type WorldBuilds } from '@/features/asset-library/worlds/eval/builtValues';
 
 export interface AgentApiState {
   sessions: SessionStore;
   world: ServerWorld | null;
   lab: WorldSeedLab;
+  builds: WorldBuilds;
 }
 
-export function newAgentApiState(): AgentApiState {
-  return { sessions: new Map(), world: null, lab: new WorldSeedLab() };
+export function newAgentApiState(builds: WorldBuilds = synchronousBuilds()): AgentApiState {
+  return { sessions: new Map(), world: null, lab: new WorldSeedLab(), builds };
 }
 
 export async function serveAgentApi(
@@ -47,8 +49,9 @@ function worldAccess(
 ): WorldAccess {
   return {
     lab: state.lab,
+    builds: state.builds,
     current: () => {
-      state.world = currentServerWorld(docs, state.world);
+      state.world = currentServerWorld(docs, state.world, state.builds);
       return state.world;
     },
     persistWorld: (world) => {

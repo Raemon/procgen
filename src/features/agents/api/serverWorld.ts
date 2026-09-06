@@ -9,6 +9,12 @@ import { TakenItemSpawns } from '@/features/asset-library/items/pickups/takenIte
 import { itemsAsStoredJson } from '@/features/asset-library/items/itemStorage';
 import { CultureAssets } from '@/features/asset-library/cultures/cultureAssets';
 import { PieceAssets } from '@/features/asset-library/pieces/pieceAssets';
+import {
+  synchronousBuilds,
+  type BuildProgress,
+  type BuiltValueSource,
+  type WorldBuilds,
+} from '@/features/asset-library/worlds/eval/builtValues';
 import { PipelineEvaluator } from '@/features/asset-library/worlds/eval/evaluator';
 import { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
 import { WorldSeedLibrary } from '@/features/asset-library/worlds/seeds/worldSeedLibrary';
@@ -61,6 +67,9 @@ export interface ServerWorld {
   takenItems: TakenItemSpawns;
   groundItems: GroundItems;
   rules: WorldRulesSet;
+  evaluator: PipelineEvaluator;
+  ready(): boolean;
+  buildProgress(): BuildProgress[];
   isWalkable(x: number, y: number): boolean;
   isStandable(x: number, y: number): boolean;
   spawn(): { x: number; y: number };
@@ -70,6 +79,7 @@ export interface WorldAccess {
   current(): ServerWorld;
   persistWorld(world: ServerWorld): void;
   lab: WorldSeedLab;
+  builds: WorldBuilds;
 }
 
 export interface DocSource {
@@ -98,7 +108,11 @@ export function persistWorld(docs: DocSink, world: ServerWorld): void {
   });
 }
 
-export function currentServerWorld(docs: DocSource, previous: ServerWorld | null): ServerWorld {
+export function currentServerWorld(
+  docs: DocSource,
+  previous: ServerWorld | null,
+  builds: BuiltValueSource = synchronousBuilds(),
+): ServerWorld {
   const stamp = docs.stamp();
   if (previous && previous.stamp === stamp) return previous;
   return buildServerWorld(
@@ -107,6 +121,7 @@ export function currentServerWorld(docs: DocSource, previous: ServerWorld | null
     previous?.randomizeHistory ?? new RandomizeHistory(),
     previous?.takenItems ?? new TakenItemSpawns(),
     previous?.rules ?? null,
+    builds,
   );
 }
 
@@ -116,6 +131,7 @@ function buildServerWorld(
   randomizeHistory: RandomizeHistory,
   takenItems: TakenItemSpawns,
   previousRules: WorldRulesSet | null,
+  builds: BuiltValueSource,
 ): ServerWorld {
   const collection = <Name extends CollectionDocumentName>(name: Name) =>
     parseStoredCollection(name, docs.read(name)) ?? undefined;
@@ -133,7 +149,7 @@ function buildServerWorld(
   const uiState = defaulted('uiState');
   const runningWorld = new RunningWorld(runningWorldIn(uiState));
   const store = new PipelineStore(defaulted('pipeline'));
-  const evaluator = new PipelineEvaluator(store);
+  const evaluator = new PipelineEvaluator(store, builds);
   const sampler = new WorldSampler(
     store,
     evaluator,
@@ -145,7 +161,8 @@ function buildServerWorld(
   );
   const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileAssets, sampler.tileAt(x, y));
   const rules = new WorldRulesSet({ tileIsWalkable, elevationAt: (x, y) => sampler.elevationAt(x, y) });
-  rules.followStore(store, { items, builtValueOf: () => null });
+  rules.followStore(store, { items, builtValueOf: (nodeId) => evaluator.builtValueOf(nodeId) });
+  evaluator.onBuilt(() => rules.refresh());
   if (previousRules) rules.adoptStateOf(previousRules);
   sampler.alsoSpawnItemsFrom(rules.items);
   const isWalkable = (x: number, y: number) => rules.isWalkable(x, y);
@@ -154,6 +171,9 @@ function buildServerWorld(
     stamp,
     sampler,
     rules,
+    evaluator,
+    ready: () => evaluator.ready(),
+    buildProgress: () => evaluator.buildProgress(),
     groundItems: groundItemsOf(sampler, takenItems, rules.items),
     tileAssets,
     store,

@@ -49,6 +49,7 @@ import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
 import { World } from '@/features/game/world';
 import { WorldRulesSet, mineSlotsOf, stepRulesOf } from '@/features/game/worldRulesSet';
 import { ChangeNotifier } from './changeNotifier';
+import { RemoteBuiltValues } from './remoteBuiltValues';
 import type {
   ReadOnlyAssetFolders,
   ReadOnlyCreatureAssets,
@@ -86,6 +87,7 @@ export interface AppRuntime {
   editing: EditablePipelines;
   runningPipeline: EditedPipeline;
   evaluator: PipelineEvaluator;
+  builds: RemoteBuiltValues;
   sampler: WorldSampler;
   world: ReadOnlyWorld;
   net: MultiplayerSession;
@@ -123,7 +125,8 @@ export function createAppRuntime(): AppRuntime {
   const items = new ItemAssets();
   const store = new PipelineStore(loadStoredPipeline());
   attachPipelinePersistence(store);
-  const evaluator = new PipelineEvaluator(store);
+  const builds = new RemoteBuiltValues();
+  const evaluator = new PipelineEvaluator(store, builds);
   const takenItems = new TakenItemSpawns();
   const sampler = new WorldSampler(
     store,
@@ -136,7 +139,11 @@ export function createAppRuntime(): AppRuntime {
   );
   const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileAssets, sampler.tileAt(x, y));
   const rules = new WorldRulesSet({ tileIsWalkable, elevationAt: (x, y) => sampler.elevationAt(x, y) });
-  rules.followStore(store, { items, builtValueOf: () => null });
+  rules.followStore(store, { items, builtValueOf: (nodeId) => evaluator.builtValueOf(nodeId) });
+  evaluator.onBuilt(() => {
+    rules.refresh();
+    applyWorldChange();
+  });
   sampler.alsoSpawnItemsFrom(rules.items);
   const groundItems = groundItemsOf(sampler, takenItems, rules.items);
   const isWalkableAt = (x: number, y: number) => rules.isWalkable(x, y);
@@ -335,6 +342,7 @@ export function createAppRuntime(): AppRuntime {
     items,
     store,
     evaluator,
+    builds,
     sampler,
     world,
     net,

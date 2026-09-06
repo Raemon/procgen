@@ -9,6 +9,7 @@ import { commandFor } from '@/features/app-shell/runtime/commands/commandCatalog
 import { failureByCode } from '../failures';
 import type { ServerWorld } from './serverWorld';
 import { sessionActor, type AgentSession } from './sessions';
+import { worldBuildingHint } from './worldBuilding';
 
 export interface VerbFailure {
   code: string;
@@ -31,6 +32,15 @@ export function performVerb(
   params: CommandParams,
   lab: WorldSeedLab | null = null,
 ): VerbResult {
+  if (!world.ready()) {
+    session.lastAction = { action, outcome: 'failed' };
+    return {
+      outcome: 'failed',
+      summary: null,
+      failure: verbFailure('world_building', worldBuildingHint(world)),
+      changedPipeline: false,
+    };
+  }
   const result = performCommand(
     serverCommandContext(world, sessionActor(session, world.rules), lab),
     session.mode,

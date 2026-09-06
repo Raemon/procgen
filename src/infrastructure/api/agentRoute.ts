@@ -16,8 +16,9 @@ export async function agentRoute(request: Request, path: string): Promise<Respon
   function worldAccess(): WorldAccess {
     return {
       lab: services.agents.lab,
+      builds: services.agents.builds,
       current: () => {
-        services.agents.world = currentServerWorld(services.docs, services.agents.world);
+        services.agents.world = currentServerWorld(services.docs, services.agents.world, services.agents.builds);
         return services.agents.world;
       },
       persistWorld: (world) => {

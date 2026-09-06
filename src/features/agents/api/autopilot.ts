@@ -31,6 +31,8 @@ export type MessageBlock = Record<string, unknown>;
 const MAX_RESPONSE_TOKENS = 16000;
 const HISTORY_MESSAGE_CAP = 40;
 const RUNAWAY_TURN_CAP = 500;
+const WORLD_BUILD_POLL_MS = 250;
+const WORLD_BUILD_PATIENCE_MS = 5 * 60 * 1000;
 
 export interface AutopilotOpts {
   goal: string;
@@ -76,6 +78,7 @@ async function driveAgent(
 ): Promise<void> {
   const run = session.run!;
   if (!opts.apiKey) return failWithoutKey(run);
+  await untilTheWorldIsBuilt(access, run);
   announceStart(run, opts);
   const turn: Turn = { session, access, run };
   const tools = toolDefinitions(session.mode);
@@ -87,6 +90,7 @@ async function driveAgent(
   for (let turnsTaken = 0; run.status === 'running'; turnsTaken += 1) {
     const halt = haltBeforeTurn(run, turnsTaken);
     if (halt) return endRun(run, halt.status, halt.note);
+    await untilTheWorldIsBuilt(access, run);
     const reply = await callAnthropic({
       apiKey: opts.apiKey,
       model: opts.model,
@@ -109,6 +113,14 @@ async function driveAgent(
     messages.push({ role: 'user', content: answered.results });
     trimHistory(messages);
     moveCacheBreakpointToNewestTurn(messages);
+  }
+}
+
+async function untilTheWorldIsBuilt(access: WorldAccess, run: AutopilotRun): Promise<void> {
+  if (access.current().ready()) return;
+  appendTranscript(run, 'status', 'waiting for the server to finish building the world');
+  for (let waited = 0; waited < WORLD_BUILD_PATIENCE_MS && !access.current().ready(); waited += WORLD_BUILD_POLL_MS) {
+    await new Promise((resolve) => setTimeout(resolve, WORLD_BUILD_POLL_MS));
   }
 }
 

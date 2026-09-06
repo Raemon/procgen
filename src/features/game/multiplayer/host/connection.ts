@@ -4,7 +4,7 @@ import type { KickCode, ServerMsg } from '../client/protocol';
 import type { Entity } from '../game/entities';
 import { newSayAllowance } from './sayAllowance';
 
-export type ConnState = 'AWAITING_HELLO' | 'PLAYING';
+export type ConnState = 'AWAITING_HELLO' | 'WAITING' | 'PLAYING';
 
 const BACKPRESSURE_LIMIT = 1_000_000;
 

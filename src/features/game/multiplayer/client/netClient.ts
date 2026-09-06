@@ -2,6 +2,7 @@ import { decodeServer, encodeClient } from './codec';
 import {
   Op,
   PROTOCOL_VERSION,
+  type BuildingMsg,
   type ClientMsg,
   type EntityMetaMsg,
   type HelloMsg,
@@ -24,6 +25,7 @@ export interface NetHandlers {
   onSaid(msg: SaidMsg): void;
   onDocChanged(name: string, revision: string): void;
   onShared(msg: SharedMsg): void;
+  onBuilding(msg: BuildingMsg): void;
   onKick(msg: KickMsg): void;
 }
 
@@ -109,6 +111,7 @@ export class NetClient {
     if (msg.t === 'said') return this.handlers.onSaid(msg);
     if (msg.t === 'docChanged') return this.handlers.onDocChanged(msg.name, msg.revision);
     if (msg.t === 'shared') return this.handlers.onShared(msg);
+    if (msg.t === 'building') return this.handlers.onBuilding(msg);
     if (msg.t === 'kick') return this.acceptKick(msg);
   }
 

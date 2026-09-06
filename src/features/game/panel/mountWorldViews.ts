@@ -149,7 +149,12 @@ export function mountWorldViews(
 }
 
 function inputIsSuspended(runtime: AppRuntime, mode: ViewMode): boolean {
-  return runtime.chatComposer.isOpen() || runtime.playerInventoryPanel.isOpen() || mode === 'features';
+  return (
+    runtime.chatComposer.isOpen() ||
+    runtime.playerInventoryPanel.isOpen() ||
+    mode === 'features' ||
+    !runtime.evaluator.ready()
+  );
 }
 
 function worldViewDepsOf(runtime: AppRuntime): WorldViewDeps {

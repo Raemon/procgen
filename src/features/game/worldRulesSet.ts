@@ -47,6 +47,7 @@ interface AttachedRules {
 export class WorldRulesSet {
   private overlays: WorldRules[] = [];
   private readonly attached = new Map<string, AttachedRules>();
+  private lastAttach: { store: ReadOnlyPipelineStore; sources: AttachSources } | null = null;
   readonly defaults: DefaultRules;
   readonly items: ItemSpawnSource;
 
@@ -66,13 +67,15 @@ export class WorldRulesSet {
   }
 
   attach(store: ReadOnlyPipelineStore, sources: AttachSources): void {
+    this.lastAttach = { store, sources };
     const seen = new Set<string>();
     this.overlays = [];
     for (const node of store.nodes()) {
       if (!node.enabled) continue;
       const factory = worldRulesFor(node.type);
       if (!factory) continue;
-      const key = `${store.seed()}:${JSON.stringify(node)}`;
+      const built = sources.builtValueOf(node.id) === null ? 'unbuilt' : 'built';
+      const key = `${store.seed()}:${JSON.stringify(node)}:${built}`;
       const kept = this.attached.get(node.id);
       const rules =
         kept && kept.key === key ? kept.rules : this.buildRules(factory, store, node, sources, kept?.rules ?? null);
@@ -105,6 +108,10 @@ export class WorldRulesSet {
   followStore(store: ReadOnlyPipelineStore, sources: AttachSources): () => void {
     this.attach(store, sources);
     return store.onChange(() => this.attach(store, sources));
+  }
+
+  refresh(): void {
+    if (this.lastAttach) this.attach(this.lastAttach.store, this.lastAttach.sources);
   }
 
   adoptStateOf(previous: WorldRulesSet): void {

@@ -3,6 +3,7 @@ import type { AgentEntitySync } from './agentEntitySync';
 import { stepPlayerEntity } from './playerStep';
 import type { EntityRegistry } from './entities';
 import type { SnapshotFeed } from './snapshotFeed';
+import type { WaitingRoom } from './waitingRoom';
 import type { WorldHost } from './worldHost';
 
 const MAX_LAG_TICKS = 5;
@@ -19,6 +20,7 @@ export class GameLoop {
     private readonly worldHost: WorldHost,
     private readonly feed: SnapshotFeed,
     private readonly agentSync: AgentEntitySync,
+    private readonly waitingRoom: WaitingRoom | null = null,
   ) {}
 
   start(): void {
@@ -50,6 +52,7 @@ export class GameLoop {
 
   private step(): void {
     this.agentSync.sync();
+    this.waitingRoom?.tick();
     this.stepPlayers();
     this.shareStateChanges();
     this.feed.broadcast(this.tick);
@@ -58,6 +61,7 @@ export class GameLoop {
 
   private stepPlayers(): void {
     const world = this.worldHost.current();
+    if (!world.ready()) return;
     for (const entity of this.registry.byId.values()) {
       if (entity.kind === 'player') stepPlayerEntity(world, this.registry, entity);
     }

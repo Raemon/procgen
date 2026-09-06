@@ -19,10 +19,12 @@ export interface GenCtxArgs {
   chunkY: number;
   resolveInput: InputResolver;
   memo: RegionMemo;
+  built: () => unknown | null;
+  builtInput: (name: string) => unknown | null;
 }
 
 export function createChunkGenCtx(args: GenCtxArgs): ChunkGenCtx {
-  const { seed, time, nodeId, params, chunkX, chunkY, resolveInput, memo } = args;
+  const { seed, time, nodeId, params, chunkX, chunkY, resolveInput, memo, built, builtInput } = args;
   const labelSeeds = new Map<string, number>();
   const labelSeed = (label: string): number => seedForLabel(labelSeeds, seed, nodeId, label);
   const input = (name: string): ChunkValue | null => resolveInput(name, chunkX, chunkY);
@@ -49,6 +51,8 @@ export function createChunkGenCtx(args: GenCtxArgs): ChunkGenCtx {
     newField: newFieldChunk,
     newTiles: newTilesChunk,
     memo,
+    built,
+    builtInput,
   };
 }
 

@@ -8,7 +8,7 @@ export interface WorldHost {
 export function createWorldHost(state: AgentApiState, docs: DocSource): WorldHost {
   return {
     current() {
-      state.world = currentServerWorld(docs, state.world);
+      state.world = currentServerWorld(docs, state.world, state.builds);
       return state.world;
     },
   };

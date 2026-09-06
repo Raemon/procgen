@@ -28,6 +28,7 @@ import {
 import { turnedFacing } from '../../facing';
 import { entityActor } from '../game/entityActor';
 import { joinConnection, leaveConnection } from '../game/joins';
+import { WaitingRoom } from '../game/waitingRoom';
 import { Connection } from './connection';
 import {
   characterIdOfRequest,
@@ -117,10 +118,24 @@ function handleHello(conn: Connection, hello: HelloMsg, deps: WsDeps): void {
     conn.kick('version', `server speaks protocol v${PROTOCOL_VERSION}`);
     return;
   }
+  if (!deps.worldHost.current().ready()) {
+    waitingRoomOf(deps).hold(conn);
+    return;
+  }
   void joinConnection(conn, deps).catch((err) => {
     console.error('[ws] join failed', err);
     conn.kick('abuse', 'join failed');
   });
+}
+
+const waitingRooms = new WeakMap<WsDeps, WaitingRoom>();
+
+function waitingRoomOf(deps: WsDeps): WaitingRoom {
+  const known = waitingRooms.get(deps);
+  if (known) return known;
+  const room = deps.waitingRoom ?? new WaitingRoom(deps.connections, deps.worldHost, (held) => joinConnection(held, deps));
+  waitingRooms.set(deps, room);
+  return room;
 }
 
 function handleSay(conn: Connection, msg: SayMsg, deps: WsDeps): void {

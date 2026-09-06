@@ -14,7 +14,7 @@ import { nodeTypeOf } from '../nodeRegistry';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { earthlikeState, fieldBytes, tileBytes, worldFromState } from './pipelineWorldFixtures';
 
-const SHIPPED_WORLDS = ['volcanic islands', 'infinite labyrinth', 'sunken labyrinth'];
+const SHIPPED_WORLDS = ['volcanic islands', 'infinite labyrinth', 'sunken labyrinth', 'sokoban dungeon'];
 
 function worldSeedStateNamed(name: string): PipelineState {
   return sanitizePipeline(examplePipelines().find((seed) => seed.name === name)!.state);

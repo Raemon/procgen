@@ -10,7 +10,13 @@ import type { WorldRulesSet } from '../../worldRulesSet';
 import { SteeredJump } from '../../input/steeredJump';
 import { LocalMovementSim } from './localMovementSim';
 import { NetClient, type NetStatus } from './netClient';
-import { JUMP_IN_PLACE, type SharedMsg, type SnapshotRow, type WelcomeMsg } from './protocol';
+import {
+  JUMP_IN_PLACE,
+  type BuildingMsg,
+  type SharedMsg,
+  type SnapshotRow,
+  type WelcomeMsg,
+} from './protocol';
 import { RemotePlayers } from './remotePlayers';
 
 const TURN_ECHO_QUIET_MS = 400;
@@ -27,6 +33,7 @@ export class MultiplayerSession {
   private lastFacing: FacingIndex = 0;
   private readonly steering = new SteeredJump((jump) => this.launchJump(jump));
   private lastJumpSentAt = -Infinity;
+  private serverBuilding: BuildingMsg | null = null;
 
   constructor(
     private readonly world: World,
@@ -43,6 +50,7 @@ export class MultiplayerSession {
       onSaid: (msg) => this.speech.add(msg.id, msg.text),
       onDocChanged: (name, revision) => this.reloadChangedDoc(name, revision),
       onShared: (msg) => this.acceptShared(msg),
+      onBuilding: (msg) => (this.serverBuilding = msg),
       onKick: (msg) => console.warn(`[net] kicked: ${msg.code} — ${msg.message}`),
     });
     this.lastFacing = world.facing;
@@ -95,6 +103,10 @@ export class MultiplayerSession {
     return this.online;
   }
 
+  serverBuildProgress(): BuildingMsg | null {
+    return this.serverBuilding;
+  }
+
   sendVerb(action: string, params: Record<string, unknown> = {}): void {
     this.client.sendVerb(action, params);
   }
@@ -122,6 +134,7 @@ export class MultiplayerSession {
   }
 
   private acceptWelcome(msg: WelcomeMsg): void {
+    this.serverBuilding = null;
     this.remotePlayers.selfId = msg.id;
     this.remotePlayers.clear();
     this.speech.clear();

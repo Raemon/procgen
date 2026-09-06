@@ -2,6 +2,7 @@ import type { ItemSource } from '@/features/asset-library/items/itemAssets';
 import { TakenItemSpawns } from '@/features/asset-library/items/pickups/takenItemSpawns';
 import type { CultureSource } from '@/features/asset-library/worlds/assembly/cultureSource';
 import type { PieceSource } from '@/features/asset-library/worlds/assembly/pieceSource';
+import { NO_BUILT_VALUES } from '@/features/asset-library/worlds/eval/builtValues';
 import { PipelineEvaluator } from '@/features/asset-library/worlds/eval/evaluator';
 import { clonedState } from '@/features/asset-library/worlds/randomize/clonedState';
 import type { NodeInstance, PipelineState } from '@/features/asset-library/worlds/pipeline/pipelineState';
@@ -35,7 +36,7 @@ export function growSeedWorld(
   assets: SeedWorldAssets,
 ): SeedWorld {
   const store = new PipelineStore(clonedState({ ...pipeline, seed }));
-  const evaluator = new PipelineEvaluator(store);
+  const evaluator = new PipelineEvaluator(store, NO_BUILT_VALUES);
   const sampler = new WorldSampler(
     store,
     evaluator,

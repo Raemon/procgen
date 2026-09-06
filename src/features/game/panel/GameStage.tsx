@@ -10,6 +10,7 @@ import { PickupNotices } from './PickupNotices';
 import { PlayerInventoryOverlay } from './PlayerInventoryOverlay';
 import { TileHoverDetails } from './TileHoverDetails';
 import { usesView3d, type ViewMode } from './viewMode';
+import { WorldBuildingOverlay } from './WorldBuildingOverlay';
 
 export function GameStage({ mode }: { mode: ViewMode }) {
   const runtime = useAppRuntime();
@@ -70,6 +71,7 @@ export function GameStage({ mode }: { mode: ViewMode }) {
       <PlayerInventoryOverlay />
       <ChatComposer />
       <FpsBadge />
+      <WorldBuildingOverlay />
     </div>
   );
 }

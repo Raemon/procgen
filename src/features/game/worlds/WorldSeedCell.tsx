@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { classes } from '@/features/app-shell/controls/classes';
 import { tooltipHandlers } from '@/features/app-shell/tooltips/tooltipHandlers';
+import { wholeWorldNodesOf } from '@/features/asset-library/worlds/eval/builtValues';
 import type { PipelineState } from '@/features/asset-library/worlds/pipeline/pipelineState';
 import { selectSeedTip } from './help/worldsTips';
 import { growSeedWorld, type SeedWorld, type SeedWorldAssets } from './seedWorld';
@@ -38,6 +39,7 @@ export function WorldSeedCell({
   pipelineRef.current = pipeline;
   const [world, setWorld] = useState<SeedWorld | null>(null);
   const [cellCamera, setCellCamera] = useState(camera);
+  const builtOnTheServer = useMemo(() => wholeWorldNodesOf(pipeline.nodes).length > 0, [pipeline]);
   useEffect(() => setCellCamera(camera), [camera]);
 
   useEffect(() => {
@@ -78,6 +80,11 @@ export function WorldSeedCell({
         {...tooltipHandlers(selectSeedTip(seed, selected))}
       >
         <span ref={slot} className="absolute inset-0" />
+        {builtOnTheServer && (
+          <span className="pointer-events-none absolute inset-0 flex items-center justify-center px-2 text-center text-[10px] text-white/70">
+            built whole on the server, so run it to see it
+          </span>
+        )}
       </button>
       <span
         className="absolute top-0.5 right-0.5 z-10"

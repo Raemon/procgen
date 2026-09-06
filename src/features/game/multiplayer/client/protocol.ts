@@ -83,12 +83,6 @@ export interface BuildingMsg {
   elapsedMs: number;
 }
 
-export interface NodeBuiltMsg {
-  t: 'nodeBuilt';
-  nodeId: string;
-  signature: string;
-}
-
 export type ClientMsg = HelloMsg | SayMsg | OrderMsg | TurnMsg | JumpMsg | VerbMsg;
 export type ServerMsg =
   | WelcomeMsg
@@ -98,5 +92,4 @@ export type ServerMsg =
   | KickMsg
   | SnapshotMsg
   | SharedMsg
-  | BuildingMsg
-  | NodeBuiltMsg;
+  | BuildingMsg;

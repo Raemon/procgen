@@ -3,6 +3,7 @@ import './examples/noiseField';
 import './examples/combineFields';
 import './examples/thresholdTiles';
 import './examples/scatterPoints';
+import './examples/builtField';
 import './terrain/terrainNoiseNode';
 import './terrain/tectonicUpliftNode';
 import './terrain/domainWarpNode';
