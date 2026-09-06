@@ -127,8 +127,24 @@ const CUES: Record<SoundCue, CueRecipe> = {
   },
   jump: (context, noise, out) => {
     const now = context.currentTime;
-    playTone(context, out, { at: now, seconds: 0.2, peak: 0.16, hz: 220, slideTo: 660, wave: 'triangle' });
-    playNoise(context, noise, out, { at: now, seconds: 0.09, peak: 0.1, filter: 'highpass', hz: 1800 });
+    playNoise(context, noise, out, {
+      at: now,
+      seconds: 0.12,
+      peak: 0.05,
+      filter: 'lowpass',
+      hz: 800,
+      slideTo: 300,
+      attack: 0.008,
+    });
+    playTone(context, out, { at: now, seconds: 0.14, peak: 0.07, hz: 150, slideTo: 90, wave: 'sine', attack: 0.006 });
+    playNoise(context, noise, out, {
+      at: now + 0.03,
+      seconds: 0.15,
+      peak: 0.014,
+      filter: 'highpass',
+      hz: 3000,
+      attack: 0.04,
+    });
     playNoise(context, noise, out, {
       at: now + 0.5,
       seconds: 0.18,
