@@ -1,14 +1,9 @@
 import { slideAlongEachAxis, type Step } from '@/features/game/input/cameraRelativeStep';
 import { facingRelativeStep } from '@/features/game/input/facingRelativeStep';
 import { FACING_NAMES, facingVector, type FacingIndex } from '@/features/game/facing';
-import {
-  JUMP_CLIMB_LIMIT,
-  WALK_CLIMB_LIMIT,
-  climbGateFrom,
-  navigationLevelOf,
-} from '@/features/game/climbing';
+import { JUMP_CLIMB_LIMIT, WALK_CLIMB_LIMIT } from '@/features/game/climbing';
 import { JUMP_REACH_TILES, LANDING_DISTANCES } from '@/features/game/sim/jumpLanding';
-import { isWalkableTile } from '@/features/game/tileWalkability';
+import { obstacleRefusal } from '@/features/game/worldRules';
 import {
   commandFailed,
   commandSucceeded,
@@ -160,40 +155,19 @@ function stepBy(context: CommandContext, step: Step): CommandResult {
   const refusals: string[] = [];
   slideAlongEachAxis(step, (dx, dy) => {
     if (context.actor.tryStep(dx, dy, mayPush)) moved = true;
-    else refusals.push(refusalAhead(context, dx, dy));
+    else refusals.push(refusalAhead(context, dx, dy, mayPush));
   });
   const pose = context.actor.pose();
   if (!moved) return commandFailed('blocked', refusals.join('; '));
   return commandSucceeded(`moved to (${pose.x},${pose.y})`);
 }
 
-function refusalAhead(context: CommandContext, dx: number, dy: number): string {
+function refusalAhead(context: CommandContext, dx: number, dy: number, mayPush: boolean): string {
   const pose = context.actor.pose();
-  return refusalAt(context, pose.x, pose.y, pose.x + dx, pose.y + dy, WALK_CLIMB_LIMIT, 'a step');
-}
-
-function refusalAt(
-  context: CommandContext,
-  fromX: number,
-  fromY: number,
-  x: number,
-  y: number,
-  limit: number,
-  effort: string,
-): string {
-  const elevationAt = (px: number, py: number) => context.worldSampler.elevationAt(px, py);
-  if (!climbGateFrom(elevationAt, limit)(fromX, fromY, x, y)) {
-    const from = navigationLevelOf(elevationAt(fromX, fromY));
-    const to = navigationLevelOf(elevationAt(x, y));
-    return `the ground at (${x},${y}) is level ${to}, ${to - from} above your level ${from}; ${effort} climbs at most ${limit} level`;
-  }
-  if (!isWalkableTile(context.tileAssets, context.worldSampler.tileAt(x, y))) {
-    const tile = context.tileAssets.byId(context.worldSampler.tileAt(x, y));
-    return tile
-      ? `the ${tile.name} at (${x},${y}) blocks you`
-      : `the ground at (${x},${y}) blocks you`;
-  }
-  return `something solid at (${x},${y}) is in the way`;
+  return (
+    context.actor.explainStep(dx, dy, mayPush) ??
+    obstacleRefusal({ x: pose.x + dx, y: pose.y + dy })
+  );
 }
 
 function jumpBy(context: CommandContext, step: Step): CommandResult {
@@ -207,18 +181,10 @@ function jumpBy(context: CommandContext, step: Step): CommandResult {
 
 function jumpRefusal(context: CommandContext, dx: number, dy: number): string {
   const pose = context.actor.pose();
-  const reasons = LANDING_DISTANCES.map((distance) =>
-    refusalAt(
-      context,
-      pose.x,
-      pose.y,
-      pose.x + dx * distance,
-      pose.y + dy * distance,
-      JUMP_CLIMB_LIMIT,
-      'a jump',
-    ),
+  const landings = LANDING_DISTANCES.map(
+    (distance) => `(${pose.x + dx * distance},${pose.y + dy * distance})`,
   );
-  return `nowhere to land: ${reasons.join('; ')}`;
+  return `nowhere to land: neither ${landings.join(' nor ')} takes a jump of at most ${JUMP_CLIMB_LIMIT} level up onto open ground`;
 }
 
 function turnBy(context: CommandContext, eighths: -1 | 1): CommandResult {

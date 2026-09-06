@@ -2,15 +2,16 @@ import type { ItemSource } from '@/features/asset-library/items/itemAssets';
 import { TakenItemSpawns } from '@/features/asset-library/items/pickups/takenItemSpawns';
 import type { CultureSource } from '@/features/asset-library/worlds/assembly/cultureSource';
 import type { PieceSource } from '@/features/asset-library/worlds/assembly/pieceSource';
+import { NO_BUILT_VALUES } from '@/features/asset-library/worlds/eval/builtValues';
 import { PipelineEvaluator } from '@/features/asset-library/worlds/eval/evaluator';
 import { clonedState } from '@/features/asset-library/worlds/randomize/clonedState';
 import type { NodeInstance, PipelineState } from '@/features/asset-library/worlds/pipeline/pipelineState';
 import { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipelineStore';
 import { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import type { ReadOnlyTileAssets } from '@/features/app-shell/runtime/readOnlyAssets';
-import { climbGateFrom } from '../climbing';
+import { climbGateFrom, standableProbeFrom } from '../climbing';
 import { isWalkableTile } from '../tileWalkability';
-import { World } from '../world';
+import { walkableLandingSpot } from '../world';
 
 export interface SeedWorldAssets {
   tileAssets: ReadOnlyTileAssets;
@@ -35,7 +36,7 @@ export function growSeedWorld(
   assets: SeedWorldAssets,
 ): SeedWorld {
   const store = new PipelineStore(clonedState({ ...pipeline, seed }));
-  const evaluator = new PipelineEvaluator(store);
+  const evaluator = new PipelineEvaluator(store, NO_BUILT_VALUES);
   const sampler = new WorldSampler(
     store,
     evaluator,
@@ -81,11 +82,7 @@ function landingOf(
   sampler: WorldSampler,
   tileAssets: ReadOnlyTileAssets,
 ): { x: number; y: number } {
-  const world = new World(
-    (x, y) => isWalkableTile(tileAssets, sampler.tileAt(x, y)),
-    undefined,
-    climbGateFrom((x, y) => sampler.elevationAt(x, y)),
-  );
-  world.ensurePlayerOnWalkableGround();
-  return { x: world.playerX, y: world.playerY };
+  const isWalkable = (x: number, y: number) => isWalkableTile(tileAssets, sampler.tileAt(x, y));
+  const isStandable = standableProbeFrom(isWalkable, climbGateFrom((x, y) => sampler.elevationAt(x, y)));
+  return walkableLandingSpot(0, 0, isWalkable, isStandable) ?? { x: 0, y: 0 };
 }

@@ -2,13 +2,14 @@ import { decodeServer, encodeClient } from './codec';
 import {
   Op,
   PROTOCOL_VERSION,
+  type BuildingMsg,
   type ClientMsg,
   type EntityMetaMsg,
   type HelloMsg,
   type KickMsg,
-  type PuzzlesMsg,
   type SaidMsg,
   type ServerMsg,
+  type SharedMsg,
   type SnapshotRow,
   type WelcomeMsg,
 } from './protocol';
@@ -23,7 +24,8 @@ export interface NetHandlers {
   onEntityMeta(msg: EntityMetaMsg): void;
   onSaid(msg: SaidMsg): void;
   onDocChanged(name: string, revision: string): void;
-  onPuzzles(msg: PuzzlesMsg): void;
+  onShared(msg: SharedMsg): void;
+  onBuilding(msg: BuildingMsg): void;
   onKick(msg: KickMsg): void;
 }
 
@@ -65,12 +67,8 @@ export class NetClient {
     this.send({ t: 'say', text });
   }
 
-  sendUse(): void {
-    this.send({ t: 'use' });
-  }
-
-  sendResetRoom(): void {
-    this.send({ t: 'resetRoom' });
+  sendVerb(action: string, params: Record<string, unknown> = {}): void {
+    this.send({ t: 'verb', action, params });
   }
 
   private open(): void {
@@ -112,7 +110,8 @@ export class NetClient {
     if (msg.t === 'entityMeta') return this.handlers.onEntityMeta(msg);
     if (msg.t === 'said') return this.handlers.onSaid(msg);
     if (msg.t === 'docChanged') return this.handlers.onDocChanged(msg.name, msg.revision);
-    if (msg.t === 'puzzles') return this.handlers.onPuzzles(msg);
+    if (msg.t === 'shared') return this.handlers.onShared(msg);
+    if (msg.t === 'building') return this.handlers.onBuilding(msg);
     if (msg.t === 'kick') return this.acceptKick(msg);
   }
 

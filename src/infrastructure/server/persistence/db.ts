@@ -17,12 +17,19 @@ export interface Store {
 }
 
 export async function initStore(databaseUrl: string | null): Promise<Store> {
-  if (!databaseUrl) throw new Error(NO_DATABASE_URL);
+  if (!databaseUrl) {
+    console.warn(NO_DATABASE_URL);
+    return memoryOnlyStore();
+  }
   return connectedStore();
 }
 
 const NO_DATABASE_URL =
-  'DATABASE_URL is not set. The database is where the app keeps worlds and assets you edit, so the server cannot start without it. Point DATABASE_URL at a Postgres and run `npx prisma db push`; the assets the app ships install themselves on the next boot.';
+  '[db] DATABASE_URL is not set, so worlds and assets you edit live in memory and are gone when this process stops. Point DATABASE_URL at a Postgres and run `npx prisma db push` to keep them; the assets the app ships install themselves on the next boot.';
+
+function memoryOnlyStore(): Store {
+  return { enabled: false, disconnect: async () => undefined };
+}
 
 async function connectedStore(): Promise<Store> {
   const mod = (await import('@prisma/client')) as unknown as { PrismaClient: new () => PrismaLike };

@@ -5,7 +5,7 @@ import { ConfirmModal } from '@/features/app-shell/controls/ConfirmModal';
 import { PanelHint } from '@/features/app-shell/help/PanelHint';
 import { classes } from '@/features/app-shell/controls/classes';
 import { DIM_READOUT_CLASSES } from '@/features/app-shell/controls/fieldClasses';
-import type { SavedWorld } from '@/features/asset-library/worlds/saved/savedWorld';
+import { describeShared, type SavedWorld } from '@/features/asset-library/worlds/saved/savedWorld';
 import { deleteRowConfirmation } from '../help/rowActionTips';
 import { SAVED_WORLD_NAME_TIP } from '../help/libraryTips';
 import { useRenameSavedWorld } from '../panel/useLibraryRename';
@@ -103,8 +103,7 @@ function WhatHappenedHere({ saved }: { saved: SavedWorld }) {
     ['seed number', String(saved.state.seed)],
     ['player', `(${saved.player.x}, ${saved.player.y}) facing ${saved.player.facing}`],
     ['items taken', String(saved.takenItems.length)],
-    ['fixtures worked', String(saved.puzzles.on.length)],
-    ['crates moved', String(saved.puzzles.crates.length)],
+    ['worked', describeShared(saved)],
   ];
   return (
     <dl className={classes(DIM_READOUT_CLASSES, 'mb-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5')}>

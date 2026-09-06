@@ -83,9 +83,12 @@ import { checkSeedWorlds } from '@/features/game/worlds/__tests__/seedWorld.test
 import { routeHandlerTests } from './routeHandlers.test';
 import { bootstrapPersistenceTests } from './bootstrapPersistence.test';
 import { websocketUpgradeRoutingTests } from '@/features/game/__tests__/websocketUpgradeRouting.test';
-import { checkKeyRoomsAndDoors } from '@/features/game/puzzles/__tests__/keyRoomsAndDoors.test';
-import { checkRoomsHoldYouUntilSolved } from '@/features/game/puzzles/__tests__/roomsHoldYouUntilSolved.test';
-import { checkPuzzleSync } from '@/features/game/multiplayer/__tests__/puzzleSync.test';
+import { checkKeyRoomsAndDoors } from '@/worlds/labyrinth/puzzles/__tests__/keyRoomsAndDoors.test';
+import { checkRoomsHoldYouUntilSolved } from '@/worlds/labyrinth/puzzles/__tests__/roomsHoldYouUntilSolved.test';
+import { checkSharedStateSync } from '@/features/game/multiplayer/__tests__/sharedStateSync.test';
+import { checkWorldsStayApart } from './worldsStayApart.test';
+import { checkWholeWorldNodes } from '@/features/asset-library/worlds/__tests__/wholeWorldNodes.test';
+import { checkSokobanRules } from '@/worlds/sokoban2/__tests__/sokobanRules.test';
 
 function check(name: string, condition: boolean): void {
   test(name, () => assert.ok(condition));
@@ -177,4 +180,7 @@ describe('browser persistence bootstrap', bootstrapPersistenceTests);
 describe('websocket upgrade routing', websocketUpgradeRoutingTests);
 describe('key rooms and the doors they open', () => checkKeyRoomsAndDoors(check));
 describe('chambers hold you until you have worked them', () => checkRoomsHoldYouUntilSolved(check));
-describe('puzzle state over the game socket', () => checkPuzzleSync(check));
+describe('shared world state over the game socket', () => checkSharedStateSync(check));
+describe('worlds stay apart from the engine and each other', () => checkWorldsStayApart(check));
+describe('whole-world nodes', () => checkWholeWorldNodes(check));
+describe('the sokoban dungeon rules', () => checkSokobanRules(check));

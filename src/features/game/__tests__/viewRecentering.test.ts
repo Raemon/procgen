@@ -2,6 +2,7 @@ import { PanOffset } from '../render/camera/panOffset';
 import { WorldRenderers, type WorldRenderer } from '@/features/app-shell/runtime/worldRenderers';
 import { World } from '../world';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
+import { stepRulesOn } from './rulesFixtures';
 
 function recenteringRenderer(recenterOnPlayer: () => void): WorldRenderer {
   return { redraw: () => {}, recenterOnPlayer };
@@ -16,7 +17,7 @@ function recenterViewsWhenPlayerMoves(world: World, views: WorldRenderer[]): voi
 export function checkViewRecentering(check: CheckReporter): void {
   const pannedViews = [new PanOffset(), new PanOffset()];
   pannedViews.forEach((offset) => offset.shiftBy(40, -25));
-  const walkableWorld = new World(() => true);
+  const walkableWorld = new World(stepRulesOn({ tileIsWalkable: () => true, elevationAt: () => 0 }));
   recenterViewsWhenPlayerMoves(
     walkableWorld,
     pannedViews.map((offset) => recenteringRenderer(() => void offset.recenter())),
@@ -31,7 +32,7 @@ export function checkViewRecentering(check: CheckReporter): void {
     pannedViews.every((offset) => offset.tilesX() === 0 && offset.tilesY() === 0),
   );
 
-  const walledWorld = new World(() => false);
+  const walledWorld = new World(stepRulesOn({ tileIsWalkable: () => false, elevationAt: () => 0 }));
   const walledViewPan = new PanOffset();
   walledViewPan.shiftBy(40, -25);
   recenterViewsWhenPlayerMoves(walledWorld, [

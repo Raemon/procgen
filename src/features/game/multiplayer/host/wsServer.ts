@@ -1,6 +1,9 @@
 import type { IncomingMessage, Server } from 'node:http';
 import type { Duplex } from 'node:stream';
 import { WebSocketServer, type RawData, type WebSocket } from 'ws';
+import { commandFor } from '@/features/app-shell/runtime/commands/commandCatalog';
+import { performCommand } from '@/features/app-shell/runtime/commands/performCommand';
+import { serverCommandContext } from '@/features/agents/api/performVerb';
 import { decodeClient } from '../client/codec';
 import {
   JUMP_IN_PLACE,
@@ -9,10 +12,10 @@ import {
   type ClientMsg,
   type HelloMsg,
   type SayMsg,
+  type VerbMsg,
 } from '../client/protocol';
 import { sanitizeChatText } from '../../chat/sanitizeChatText';
-import type { KeyPurse } from '../../puzzles/interaction/keyPurse';
-import { useHereOrAhead } from '../../puzzles/interaction/useAtPose';
+import { isWorldVerb } from '../../fixtures/fixtureCommands';
 import {
   ORDER_DIR,
   ORDER_NONE,
@@ -23,8 +26,9 @@ import {
   JUMP_UP,
 } from '../../sim/movementOrder';
 import { turnedFacing } from '../../facing';
-import type { Entity } from '../game/entities';
+import { entityActor } from '../game/entityActor';
 import { joinConnection, leaveConnection } from '../game/joins';
+import { WaitingRoom } from '../game/waitingRoom';
 import { Connection } from './connection';
 import {
   characterIdOfRequest,
@@ -96,21 +100,16 @@ function handleMessage(conn: Connection, msg: ClientMsg, deps: WsDeps): void {
   if (msg.t === 'hello' && conn.state === 'AWAITING_HELLO') handleHello(conn, msg, deps);
   if (conn.state !== 'PLAYING' || !conn.entity) return;
   if (msg.t === 'say') handleSay(conn, msg, deps);
-  if (msg.t === 'use') {
-    const at = conn.entity;
-    useHereOrAhead(deps.worldHost.current().puzzles, at.x, at.y, at.facing, keyringOf(at));
-  }
-  if (msg.t === 'resetRoom') deps.worldHost.current().puzzles.resetRoomAt(conn.entity.x, conn.entity.y);
+  if (msg.t === 'verb') handleVerb(conn, msg, deps);
 }
 
-function keyringOf(entity: Entity): KeyPurse {
-  return {
-    spendKey: () => {
-      if (entity.keys <= 0) return false;
-      entity.keys--;
-      return true;
-    },
-  };
+function handleVerb(conn: Connection, msg: VerbMsg, deps: WsDeps): void {
+  if (typeof msg.action !== 'string' || !isWorldVerb(msg.action)) return;
+  const world = deps.worldHost.current();
+  const actor = entityActor(conn.entity!, deps.registry, world.rules);
+  const params = msg.params && typeof msg.params === 'object' ? msg.params : {};
+  const mode = commandFor('character', msg.action) ? 'character' : 'god';
+  performCommand(serverCommandContext(world, actor, null), mode, msg.action, params);
 }
 
 function handleHello(conn: Connection, hello: HelloMsg, deps: WsDeps): void {
@@ -119,10 +118,24 @@ function handleHello(conn: Connection, hello: HelloMsg, deps: WsDeps): void {
     conn.kick('version', `server speaks protocol v${PROTOCOL_VERSION}`);
     return;
   }
+  if (!deps.worldHost.current().ready()) {
+    waitingRoomOf(deps).hold(conn);
+    return;
+  }
   void joinConnection(conn, deps).catch((err) => {
     console.error('[ws] join failed', err);
     conn.kick('abuse', 'join failed');
   });
+}
+
+const waitingRooms = new WeakMap<WsDeps, WaitingRoom>();
+
+function waitingRoomOf(deps: WsDeps): WaitingRoom {
+  const known = waitingRooms.get(deps);
+  if (known) return known;
+  const room = deps.waitingRoom ?? new WaitingRoom(deps.connections, deps.worldHost, (held) => joinConnection(held, deps));
+  waitingRooms.set(deps, room);
+  return room;
 }
 
 function handleSay(conn: Connection, msg: SayMsg, deps: WsDeps): void {

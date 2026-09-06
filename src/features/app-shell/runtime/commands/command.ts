@@ -4,8 +4,6 @@ import type { ItemAssets } from '@/features/asset-library/items/itemAssets';
 import type { GroundItems } from '@/features/asset-library/items/pickups/groundItems';
 import type { CultureAssets } from '@/features/asset-library/cultures/cultureAssets';
 import type { PieceAssets } from '@/features/asset-library/pieces/pieceAssets';
-import type { KeyPurse } from '@/features/game/puzzles/interaction/keyPurse';
-import type { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
 import type { RegionSampler } from '@/features/asset-library/pieces/captureRegionAsPiece';
 import type { WorldSeedLab } from '@/features/asset-library/worlds/lab/worldSeedLab';
 import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
@@ -18,6 +16,8 @@ import type { RandomizeHistory } from '@/features/asset-library/worlds/randomize
 import type { TemplateLibrary } from '@/features/asset-library/node-groups/templateLibrary';
 import type { TileAssets } from '@/features/asset-library/tiles/tileAssets';
 import type { FacingIndex } from '@/features/game/facing';
+import type { MineSlots } from '@/features/game/worldRules';
+import type { WorldRulesSet } from '@/features/game/worldRulesSet';
 
 export type CommandMode = 'god' | 'character';
 export type CommandGroup = 'movement' | 'senses' | 'pipeline' | 'assets' | 'world';
@@ -26,12 +26,14 @@ export interface CommandActor {
   pose(): { x: number; y: number; facing: FacingIndex };
   snapTo(x: number, y: number, facing: FacingIndex): void;
   tryStep(dx: number, dy: number, mayPush?: boolean): boolean;
+  explainStep(dx: number, dy: number, mayPush?: boolean): string | null;
   tryJump(dx: number, dy: number): boolean;
   turn(eighthTurns: number): void;
   sightRadiusTiles(): number;
   setSightRadiusTiles(radius: number): void;
   godViewSizeTiles(): number;
   setGodViewSizeTiles(sizeTiles: number): void;
+  mine: MineSlots;
 }
 
 export interface CommandContext {
@@ -53,8 +55,7 @@ export interface CommandContext {
   worldSampler: WorldSampler;
   lab: WorldSeedLab | null;
   groundItems: GroundItems;
-  puzzles: PuzzleWorld;
-  keyPurse: KeyPurse;
+  rules: WorldRulesSet;
   actor: CommandActor;
   settleTheWorld(change: () => void): void;
 }

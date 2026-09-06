@@ -42,6 +42,7 @@ function nodeTypeJson(def: NodeTypeDef) {
     description: def.description,
     when_to_use: def.whenToUse,
     output: typeof def.output === 'function' ? 'depends on params' : def.output,
+    whole_world: def.wholeWorld !== undefined,
     params: Object.fromEntries(
       Object.entries(def.params).map(([name, spec]) => [name, paramSpecJson(spec)]),
     ),

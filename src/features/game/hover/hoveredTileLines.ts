@@ -1,5 +1,5 @@
 import { walkabilityPhrase } from '../../agents/observationText';
-import { interactPrompt } from '../puzzles/interaction/actionWithinReach';
+import { interactPrompt } from '../fixtures/actionWithinReach';
 import type { HoveredTileReport } from './hoveredTileReport';
 
 export function hoveredTileLines(report: HoveredTileReport): string[] {

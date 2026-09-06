@@ -3,6 +3,7 @@ import type { AgentEntitySync } from './agentEntitySync';
 import { stepPlayerEntity } from './playerStep';
 import type { EntityRegistry } from './entities';
 import type { SnapshotFeed } from './snapshotFeed';
+import type { WaitingRoom } from './waitingRoom';
 import type { WorldHost } from './worldHost';
 
 const MAX_LAG_TICKS = 5;
@@ -12,13 +13,14 @@ export class GameLoop {
   private running = false;
   private nextAt = 0;
   private timer?: ReturnType<typeof setTimeout>;
-  private lastPuzzleRevision: number | null = null;
+  private lastSharedRevision: number | null = null;
 
   constructor(
     private readonly registry: EntityRegistry,
     private readonly worldHost: WorldHost,
     private readonly feed: SnapshotFeed,
     private readonly agentSync: AgentEntitySync,
+    private readonly waitingRoom: WaitingRoom | null = null,
   ) {}
 
   start(): void {
@@ -50,24 +52,27 @@ export class GameLoop {
 
   private step(): void {
     this.agentSync.sync();
+    this.waitingRoom?.tick();
     this.stepPlayers();
-    this.sharePuzzleChanges();
+    this.shareStateChanges();
     this.feed.broadcast(this.tick);
     this.tick++;
   }
 
   private stepPlayers(): void {
     const world = this.worldHost.current();
+    if (!world.ready()) return;
     for (const entity of this.registry.byId.values()) {
       if (entity.kind === 'player') stepPlayerEntity(world, this.registry, entity);
     }
   }
 
-  private sharePuzzleChanges(): void {
-    const revision = this.worldHost.current().puzzles.state.revision();
-    if (revision === this.lastPuzzleRevision) return;
-    const isFirstLook = this.lastPuzzleRevision === null;
-    this.lastPuzzleRevision = revision;
-    if (!isFirstLook) this.feed.broadcastPuzzles(this.worldHost.current().puzzles.state);
+  private shareStateChanges(): void {
+    const rules = this.worldHost.current().rules;
+    const revision = rules.revision();
+    if (revision === this.lastSharedRevision) return;
+    const isFirstLook = this.lastSharedRevision === null;
+    this.lastSharedRevision = revision;
+    if (!isFirstLook) this.feed.broadcastShared(rules.snapshot());
   }
 }

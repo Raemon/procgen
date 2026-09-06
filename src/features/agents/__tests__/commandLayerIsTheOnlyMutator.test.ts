@@ -4,6 +4,7 @@ import { join } from 'node:path';
 const COMMAND_OWNERS = [
   'src/features/asset-library/',
   'src/features/game/',
+  'src/worlds/',
 ];
 
 export function checkOnlyTheCommandLayerCanMutate(
@@ -11,8 +12,8 @@ export function checkOnlyTheCommandLayerCanMutate(
 ): void {
   check('the former global commands feature no longer exists', !existsSync('src/features/commands'));
 
-  const commandFiles = filesUnder('src/features').filter((path) => path.endsWith('Commands.ts'));
-  check('commands are owned by Asset Library or Game', commandFiles.every(hasProductOwner));
+  const commandFiles = [...filesUnder('src/features'), ...filesUnder('src/worlds')].filter((path) => path.endsWith('Commands.ts'));
+  check('commands are owned by Asset Library, Game, or a world', commandFiles.every(hasProductOwner));
 
   const globalRegistries = filesUnder('src').filter((path) => /(?:ability|command)Registry\.ts$/i.test(path));
   check('there is no process-global ability or command registry', globalRegistries.length === 0);

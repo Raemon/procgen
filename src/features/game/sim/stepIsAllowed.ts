@@ -1,13 +1,11 @@
-import { ANY_CLIMB_ALLOWED, type ClimbGate } from '../climbing';
+import type { Cell, StepVerdict } from '../worldRules';
 
 export interface StepRules {
   isWalkableAt(x: number, y: number): boolean;
-  clearTheWay(x: number, y: number, dx: number, dy: number, mayPush: boolean): boolean;
-  climbGateAt?: ClimbGate;
-  jumpGateAt?: ClimbGate;
+  isStandableAt(x: number, y: number): boolean;
+  step(from: Cell, to: Cell, dx: number, dy: number, mayPush: boolean, commit: boolean): StepVerdict;
+  jump(from: Cell, dx: number, dy: number): Cell | null;
 }
-
-export const NOTHING_IN_THE_WAY = (): boolean => true;
 
 export function stepIsAllowed(
   rules: StepRules,
@@ -16,8 +14,23 @@ export function stepIsAllowed(
   dx: number,
   dy: number,
   mayPush = true,
+  commit = true,
 ): boolean {
-  const climbGate = rules.climbGateAt ?? ANY_CLIMB_ALLOWED;
-  if (!climbGate(nextX - dx, nextY - dy, nextX, nextY)) return false;
-  return rules.clearTheWay(nextX, nextY, dx, dy, mayPush) && rules.isWalkableAt(nextX, nextY);
+  return stepVerdict(rules, nextX, nextY, dx, dy, mayPush, commit).allowed;
+}
+
+export function stepVerdict(
+  rules: StepRules,
+  nextX: number,
+  nextY: number,
+  dx: number,
+  dy: number,
+  mayPush = true,
+  commit = false,
+): StepVerdict {
+  return rules.step({ x: nextX - dx, y: nextY - dy }, { x: nextX, y: nextY }, dx, dy, mayPush, commit);
+}
+
+export function isAxisStep(dx: number, dy: number): boolean {
+  return dx === 0 || dy === 0;
 }

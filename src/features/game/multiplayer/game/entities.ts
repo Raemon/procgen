@@ -14,7 +14,7 @@ export interface Entity {
   moveDir: number;
   order: MovementOrder;
   jump: JumpRequest | null;
-  keys: number;
+  mine: Map<string, unknown>;
   persistDirty: boolean;
 }
 
@@ -32,7 +32,7 @@ export class EntityRegistry {
       y,
       facing,
       ...restingBody(),
-      keys: 0,
+      mine: new Map(),
       persistDirty: false,
     };
     this.byId.set(entity.id, entity);

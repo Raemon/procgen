@@ -24,6 +24,7 @@ import {
 } from './sessions';
 import { failure, json, type ApiRequest, type ApiResponse } from './apiMessages';
 import { registerRoute, type RouteContext } from './routeRegistry';
+import { worldBuildingHint } from './worldBuilding';
 
 registerRoute({
   method: 'GET',
@@ -157,6 +158,7 @@ function withSession(
 }
 
 function createAgent(sessions: SessionStore, world: ServerWorld, body: unknown): ApiResponse {
+  if (!world.ready()) return failure(409, 'world_building', worldBuildingHint(world));
   const mode = (body as { mode?: unknown } | null)?.mode;
   if (!isAgentMode(mode)) {
     return failure(400, 'bad_request', 'body must be {"mode": "god" | "character"}');
@@ -211,6 +213,7 @@ function readName(body: unknown): string | null {
 }
 
 function observe(session: AgentSession, world: ServerWorld, req: ApiRequest): ApiResponse {
+  if (!world.ready()) return failure(409, 'world_building', worldBuildingHint(world));
   const asked = readTiles(req.query.get('sight_radius_tiles'), clampSightRadiusTiles);
   if (asked === 'invalid') return failure(400, 'invalid_value', sightRadiusHint('sight_radius_tiles'));
   if (asked !== null) session.sightRadiusTiles = asked;

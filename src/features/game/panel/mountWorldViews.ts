@@ -149,7 +149,12 @@ export function mountWorldViews(
 }
 
 function inputIsSuspended(runtime: AppRuntime, mode: ViewMode): boolean {
-  return runtime.chatComposer.isOpen() || runtime.playerInventoryPanel.isOpen() || mode === 'features';
+  return (
+    runtime.chatComposer.isOpen() ||
+    runtime.playerInventoryPanel.isOpen() ||
+    mode === 'features' ||
+    !runtime.evaluator.ready()
+  );
 }
 
 function worldViewDepsOf(runtime: AppRuntime): WorldViewDeps {
@@ -158,7 +163,8 @@ function worldViewDepsOf(runtime: AppRuntime): WorldViewDeps {
     sampler: runtime.sampler,
     evaluator: runtime.evaluator,
     store: runtime.store,
-    puzzles: runtime.puzzles,
+    overlay: runtime.rules,
+    surfaceAt: (x, y) => runtime.rules.surfaceAt(x, y),
     tileAssets: runtime.tileAssets,
     creatures: runtime.creatures,
     items: runtime.items,

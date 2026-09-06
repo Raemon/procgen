@@ -18,7 +18,7 @@ import { WorldSeedShelf } from '../seeds/worldSeedShelf';
 import { AssetFolders } from '@/features/asset-library/folders/assetFolders';
 import { RandomizeHistory } from '../randomize/randomizeHistory';
 import { TemplateLibrary } from '@/features/asset-library/node-groups/templateLibrary';
-import { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
+import { WorldRulesSet } from '@/features/game/worldRulesSet';
 import { TakenItemSpawns } from '@/features/asset-library/items/pickups/takenItemSpawns';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 
@@ -214,7 +214,7 @@ function worldSeedEditor() {
       runningWorld,
       randomizeHistory,
       groundItems: NO_GROUND_ITEMS,
-      puzzles: new PuzzleWorld(edited, () => true),
+      rules: new WorldRulesSet({ tileIsWalkable: () => true, elevationAt: () => 0 }),
       takenItems: new TakenItemSpawns(),
       regionSampler: { tileAt: () => 0, elevationAt: () => 0, packedVoxelColumnAt: () => null },
       settleTheWorld: (change: () => void) => change(),

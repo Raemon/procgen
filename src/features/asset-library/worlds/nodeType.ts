@@ -69,6 +69,21 @@ export interface ChunkGenCtx {
   newField(): FieldChunk;
   newTiles(): TilesChunk;
   memo<Value>(key: string, compute: () => Value): Value;
+  built(): unknown | null;
+  builtInput(name: string): unknown | null;
+}
+
+export interface WholeWorldBuildArgs {
+  seed: number;
+  params: Record<string, ParamValue>;
+  report(fraction: number, stage: string): void;
+}
+
+export interface WholeWorldSpec<Value = unknown> {
+  build(args: WholeWorldBuildArgs): Value;
+  serialize(value: Value): unknown;
+  parse(data: unknown): Value;
+  estimateMs(params: Record<string, ParamValue>): number;
 }
 
 export interface NodeTypeDef {
@@ -81,6 +96,8 @@ export interface NodeTypeDef {
   inputs: Record<string, InputSpec>;
   params: Record<string, ParamSpec>;
   output: ValueKind | ((params: Record<string, ParamValue>) => ValueKind);
+  wholeWorld?: WholeWorldSpec;
+  readsBuiltWorld?: true;
   generateChunk(ctx: ChunkGenCtx): ChunkValue;
 }
 

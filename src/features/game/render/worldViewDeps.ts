@@ -19,7 +19,8 @@ export interface WorldViewDeps {
   world: ReadOnlyWorld;
   sampler: WorldSampler;
   evaluator: PipelineEvaluator;
-  puzzles: MarkerSource;
+  overlay: MarkerSource;
+  surfaceAt(x: number, y: number): number;
   store: ReadOnlyPipelineStore;
   tileAssets: ReadOnlyTileAssets;
   creatures: ReadOnlyCreatureAssets;

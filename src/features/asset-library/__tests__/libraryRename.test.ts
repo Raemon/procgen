@@ -20,7 +20,7 @@ import { RunningWorld } from '@/features/asset-library/worlds/running/runningWor
 import { WorldSeedLibrary } from '@/features/asset-library/worlds/seeds/worldSeedLibrary';
 import { WorldSeedShelf } from '@/features/asset-library/worlds/seeds/worldSeedShelf';
 import { RandomizeHistory } from '@/features/asset-library/worlds/randomize/randomizeHistory';
-import { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
+import { WorldRulesSet } from '@/features/game/worldRulesSet';
 import { TakenItemSpawns } from '@/features/asset-library/items/pickups/takenItemSpawns';
 import { nextSelectionOnOpen } from '../librarySelection';
 
@@ -56,7 +56,7 @@ function renamer() {
     randomizeHistory: new RandomizeHistory(),
     groundItems: NO_GROUND_ITEMS,
     takenItems: new TakenItemSpawns(),
-    puzzles: new PuzzleWorld(store, () => true),
+    rules: new WorldRulesSet({ tileIsWalkable: () => true, elevationAt: () => 0 }),
     regionSampler: { tileAt: () => 0, elevationAt: () => 0, packedVoxelColumnAt: () => null },
     settleTheWorld: (change: () => void) => change(),
     actor: {

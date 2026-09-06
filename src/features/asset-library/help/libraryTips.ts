@@ -1,6 +1,6 @@
 import type { TooltipContent } from '@/features/app-shell/tooltips/tooltipContent';
 import type { LibraryFolder } from '../librarySelection';
-import type { SavedWorld } from '../worlds/saved/savedWorld';
+import { describeShared, type SavedWorld } from '../worlds/saved/savedWorld';
 
 export const FOLDER_TIPS: Readonly<Record<LibraryFolder, TooltipContent>> = {
   worldSeeds: {
@@ -42,11 +42,7 @@ export const FOLDER_TIPS: Readonly<Record<LibraryFolder, TooltipContent>> = {
 };
 
 export function savedWorldTip(saved: SavedWorld, running: boolean): TooltipContent {
-  const doneHere = [
-    `${saved.takenItems.length} items taken`,
-    `${saved.puzzles.on.length} fixtures worked`,
-    `${saved.puzzles.crates.length} crates moved`,
-  ].join(', ');
+  const doneHere = [`${saved.takenItems.length} items taken`, describeShared(saved)].join(', ');
   return {
     title: running ? `${saved.name} — running` : saved.name,
     body: `${saved.description || `Grown from the world seed '${saved.seededBy}'.`} ${doneHere}; the player stands at (${saved.player.x},${saved.player.y}).`,

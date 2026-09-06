@@ -1,0 +1,36 @@
+import { fixture, type PuzzleFixture } from '@/features/game/fixtures/fixtureKinds';
+import type { FurnishContext } from './puzzleKind';
+import type { Cell } from './roomCells';
+
+export function scatterPillars(context: FurnishContext, count: number): PuzzleFixture[] {
+  for (const entrance of context.entrances) reserveWalkingRoom(context, entrance);
+  const pillars: PuzzleFixture[] = [];
+  for (let index = 0; index < count; index++) {
+    const cell = context.cells.takeFreeCell(context.rng);
+    if (!cell) break;
+    pillars.push(fixture(`pillar${index}`, 'pillar', cell));
+  }
+  return pillars;
+}
+
+function reserveWalkingRoom(context: FurnishContext, around: Cell): void {
+  for (const cell of cellAndItsNeighbours(around)) {
+    if (context.cells.isFree(cell.x, cell.y)) context.cells.occupy(cell);
+  }
+}
+
+export function releaseWalkingRoom(context: FurnishContext): void {
+  for (const entrance of context.entrances) {
+    for (const cell of cellAndItsNeighbours(entrance)) context.cells.release(cell);
+  }
+}
+
+function cellAndItsNeighbours(cell: Cell): Cell[] {
+  return [
+    cell,
+    { x: cell.x + 1, y: cell.y },
+    { x: cell.x - 1, y: cell.y },
+    { x: cell.x, y: cell.y + 1 },
+    { x: cell.x, y: cell.y - 1 },
+  ];
+}

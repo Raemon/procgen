@@ -94,6 +94,7 @@ export class WorldSampler {
       cultures,
     );
     store.onChange(() => this.dropSampledState());
+    evaluator.onBuilt(() => this.dropSampledState());
   }
 
   invalidateStructureOverlay(): void {

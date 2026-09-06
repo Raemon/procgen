@@ -3,6 +3,7 @@ import type { ChatFeed } from '../game/chatFeed';
 import type { EntityRegistry } from '../game/entities';
 import type { GameLoop } from '../game/gameLoop';
 import type { SnapshotFeed } from '../game/snapshotFeed';
+import type { WaitingRoom } from '../game/waitingRoom';
 import type { WorldHost } from '../game/worldHost';
 import type { Store } from '@/infrastructure/server/persistence/db';
 import type { WriteBehind } from '@/infrastructure/server/persistence/writeBehind';
@@ -18,4 +19,5 @@ export interface WsDeps {
   connections: Set<Connection>;
   worldHost: WorldHost;
   writeBehind: WriteBehind;
+  waitingRoom?: WaitingRoom;
 }

@@ -1,0 +1,65 @@
+import { defaultTileId } from '@/features/asset-library/tiles/defaultTiles'
+import type { ExamplePipeline } from '@/features/asset-library/worlds/seeds/examplePipeline'
+import { GEN_PARAMS } from '../benchConfig'
+import { SOKOBAN2_HEIGHTS_NODE_TYPE, SOKOBAN2_NODE_TYPE } from './dungeonKnobs'
+
+export const SOKOBAN_DUNGEON_SEED_NAME = 'sokoban dungeon'
+
+export function sokobanDungeon(): ExamplePipeline {
+  return {
+    name: SOKOBAN_DUNGEON_SEED_NAME,
+    description:
+      'A finite maze of twenty-five room slots, every room a crate-pushing puzzle proven solvable before it ships. Walk into a crate to push it along level floor; a crate standing taller than you is something to jump onto, and from its top you can jump up onto a ledge. Each door waits on the room in front of it: finish that room by settling a crate of the right colour on every goal and the door swings open, and once open it stays open. Some rooms want a crate delivered from a neighbour, so a spare is parked by the door with its lane kept clear. Press R to put the room you stand in back the way it was built. The whole maze is built on the server in a few seconds before anyone can enter.',
+    state: {
+      seed: 4711,
+      daylight: 1,
+      nodes: [
+        {
+          id: 'dungeon',
+          type: SOKOBAN2_NODE_TYPE,
+          label: 'the dungeon',
+          folder: 'the dungeon',
+          comment:
+            'The whole maze in one node, built whole on the server: 5x5 slots gathered into rooms of up to two slots, a spanning tree of doors with a few loops, and a curriculum of crate puzzles that gets harder with depth. Cobbles are floor, flagstones the two-high ledges, dressed granite the walls. The rules layer reads this same node to stand the crates, goals and doors in the world.',
+          enabled: true,
+          params: {
+            cols: GEN_PARAMS.cols,
+            rows: GEN_PARAMS.rows,
+            maxRoomSlots: GEN_PARAMS.maxRoomSlots,
+            roomW: GEN_PARAMS.roomW,
+            roomH: GEN_PARAMS.roomH,
+            loopChance: GEN_PARAMS.loopChance,
+            obstacleDensity: GEN_PARAMS.obstacleDensity,
+            minCrates: GEN_PARAMS.minCrates,
+            maxCrates: GEN_PARAMS.maxCrates,
+            pullEffort: GEN_PARAMS.pullEffort,
+            difficultyRamp: GEN_PARAMS.difficultyRamp,
+            crossRoomStart: GEN_PARAMS.crossRoomStart,
+            crossRoomChance: GEN_PARAMS.crossRoomChance,
+            runSolver: 0,
+            ledgeChance: GEN_PARAMS.ledgeChance,
+            colorMixStart: GEN_PARAMS.colorMixStart,
+            lessonJitter: GEN_PARAMS.lessonJitter,
+            floorTile: defaultTileId('cobbled street'),
+            ledgeTile: defaultTileId('flagstone plaza'),
+            wallTile: defaultTileId('dressed granite wall'),
+          },
+          inputs: {},
+          display: { mode: 'tileLayer' },
+        },
+        {
+          id: 'heights',
+          type: SOKOBAN2_HEIGHTS_NODE_TYPE,
+          label: 'ledges and walls',
+          folder: 'the ground',
+          comment:
+            'Reads the dungeon above and raises ledges and walls two units, bound to elevation at scale 1. A crate is one unit tall, so a ledge is exactly one jump up from the top of a crate and never reachable straight from the floor.',
+          enabled: true,
+          params: {},
+          inputs: { dungeon: 'dungeon' },
+          display: { mode: 'elevation', heightScale: 1 },
+        },
+      ],
+    },
+  }
+}

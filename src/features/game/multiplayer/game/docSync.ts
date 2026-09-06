@@ -25,6 +25,11 @@ export function afterWorldPersistedByAgent(deps: DocSyncDeps): void {
   snapEntitiesToWalkableGround(deps);
 }
 
+export function afterWorldBuilt(deps: DocSyncDeps): void {
+  if (!deps.worldHost.current().ready()) return;
+  snapEntitiesToWalkableGround(deps);
+}
+
 function broadcastDocChanged(deps: DocSyncDeps, name: PersistedDocumentName): void {
   for (const conn of deps.connections) {
     if (conn.state === 'PLAYING') {

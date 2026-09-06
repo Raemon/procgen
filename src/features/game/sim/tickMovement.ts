@@ -1,7 +1,4 @@
 import { facingVector, type FacingIndex } from '../facing';
-import type { WalkabilityProbe } from '../tileWalkability';
-import { jumpLandingDelta } from './jumpLanding';
-import type { StepRules } from './stepIsAllowed';
 import {
   DIAGONAL_MOVE_COOLDOWN_TICKS,
   JUMP_COOLDOWN_TICKS,
@@ -21,12 +18,9 @@ export interface StepDelta {
   jumped?: boolean;
 }
 
-export type StepGate = (fromX: number, fromY: number, toX: number, toY: number) => boolean;
-
 export interface TickRules {
-  isWalkable: WalkabilityProbe;
-  climbGateAt?: StepGate;
-  jumpRules?: StepRules;
+  canStepTo(fromX: number, fromY: number, toX: number, toY: number): boolean;
+  jumpLanding(fromX: number, fromY: number, dx: number, dy: number): StepDelta | null;
 }
 
 export function tickMovement(
@@ -41,10 +35,7 @@ export function tickMovement(
   if (jump !== null) return beginJump(body, jump, x, y, rules);
   const order = body.order;
   if (order.kind === ORDER_NONE) return null;
-  const climbGateAt = rules.climbGateAt;
-  const canEnter = (nx: number, ny: number) =>
-    rules.isWalkable(nx, ny) && (climbGateAt ? climbGateAt(x, y, nx, ny) : true);
-  const delta = walkableStepToward(order.dir, x, y, canEnter);
+  const delta = walkableStepToward(order.dir, x, y, (nx, ny) => rules.canStepTo(x, y, nx, ny));
   if (order.kind === ORDER_STEP) body.order = idleOrder();
   if (!delta) return null;
   order.stepped = true;
@@ -62,9 +53,9 @@ function beginJump(
   body.cooldown = JUMP_COOLDOWN_TICKS;
   body.moveDir = -1;
   const hopInPlace = { dx: 0, dy: 0, jumped: true };
-  if (jump === JUMP_UP || !rules.jumpRules) return hopInPlace;
+  if (jump === JUMP_UP) return hopInPlace;
   const heading = facingVector(jump);
-  const delta = jumpLandingDelta(rules.jumpRules, x, y, heading.dx, heading.dy);
+  const delta = rules.jumpLanding(x, y, heading.dx, heading.dy);
   if (!delta) return hopInPlace;
   body.moveDir = jump;
   return delta;
@@ -79,13 +70,13 @@ function walkableStepToward(
   dir: FacingIndex,
   x: number,
   y: number,
-  isWalkable: WalkabilityProbe,
+  canEnter: (nx: number, ny: number) => boolean,
 ): StepDelta | null {
   const v = facingVector(dir);
-  if (isWalkable(x + v.dx, y + v.dy)) return { dx: v.dx, dy: v.dy };
+  if (canEnter(x + v.dx, y + v.dy)) return { dx: v.dx, dy: v.dy };
   if (v.dx === 0 || v.dy === 0) return null;
-  if (isWalkable(x + v.dx, y)) return { dx: v.dx, dy: 0 };
-  if (isWalkable(x, y + v.dy)) return { dx: 0, dy: v.dy };
+  if (canEnter(x + v.dx, y)) return { dx: v.dx, dy: 0 };
+  if (canEnter(x, y + v.dy)) return { dx: 0, dy: v.dy };
   return null;
 }
 

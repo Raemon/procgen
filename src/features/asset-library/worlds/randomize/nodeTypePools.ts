@@ -5,7 +5,9 @@ import type { ValueKind } from '../values/chunkValues';
 const EXCLUDED_FROM_RANDOM = new Set(['customScript']);
 
 export function randomizableNodeTypes(): NodeTypeDef[] {
-  return allNodeTypes().filter((def) => !EXCLUDED_FROM_RANDOM.has(def.type));
+  return allNodeTypes().filter(
+    (def) => !EXCLUDED_FROM_RANDOM.has(def.type) && def.wholeWorld === undefined && def.readsBuiltWorld !== true,
+  );
 }
 
 export function defaultOutputKindOf(def: NodeTypeDef): ValueKind {

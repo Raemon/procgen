@@ -2,7 +2,6 @@ import type * as THREE from 'three';
 import type { ReadOnlyCreatureAssets } from '@/features/app-shell/runtime/readOnlyAssets';
 import type { CharacterMotion } from '@/features/asset-library/characters/characterFrame';
 import type { RemoteEntity, RemotePlayers } from '../../multiplayer/client/remotePlayers';
-import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import { facingYawRadians, type FacingIndex } from '../../facing';
 import type { CameraView } from './cameraView';
 import type { CharacterSpriteAssets } from './characterSpriteAssets';
@@ -21,7 +20,7 @@ export class RemotePlayerMeshes {
   constructor(
     private readonly root: THREE.Group,
     private readonly creatures: ReadOnlyCreatureAssets,
-    private readonly sampler: WorldSampler,
+    private readonly surfaceAt: (x: number, y: number) => number,
     private readonly sprites: CharacterSpriteAssets,
   ) {}
 
@@ -54,7 +53,7 @@ export class RemotePlayerMeshes {
       {
         x: eased.x + 0.5,
         y: eased.y + 0.5,
-        elevation: this.sampler.elevationAt(Math.round(eased.x), Math.round(eased.y)),
+        elevation: this.surfaceAt(Math.round(eased.x), Math.round(eased.y)),
         motion: motionOf(entity),
       },
       { yaw: view.yaw, seconds: view.seconds + spreadOf(entity.id) },

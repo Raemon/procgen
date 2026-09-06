@@ -5,7 +5,8 @@ import { clampGodViewSizeTiles } from '@/features/game/vision/godViewSize';
 import { godViewSizeOf, sightRadiusOf, type ViewVision } from '../observation';
 import type { AgentMode, AgentPose } from '../agentMode';
 import { jumpLandingDelta } from '@/features/game/sim/jumpLanding';
-import { stepIsAllowed, type StepRules } from '@/features/game/sim/stepIsAllowed';
+import { isAxisStep } from '@/features/game/sim/stepIsAllowed';
+import { mineSlotsOf, stepRulesOf, type WorldRulesSet } from '@/features/game/worldRulesSet';
 import { newNotebook, type AgentNotebook } from './agentNotebook';
 
 export interface AgentSession {
@@ -21,6 +22,7 @@ export interface AgentSession {
   lastAction: { action: string; outcome: string } | null;
   notebook: AgentNotebook;
   run: AutopilotRun | null;
+  mine: Map<string, unknown>;
 }
 
 export interface TranscriptEntry {
@@ -64,6 +66,7 @@ export function newSession(
     lastAction: null,
     notebook: newNotebook(),
     run: null,
+    mine: new Map(),
   };
 }
 
@@ -78,7 +81,9 @@ export function sessionPose(session: AgentSession): AgentPose {
   return { x: session.x, y: session.y, facing: session.facing };
 }
 
-export function sessionActor(session: AgentSession, rules: StepRules): CommandActor {
+export function sessionActor(session: AgentSession, world: WorldRulesSet): CommandActor {
+  const mine = mineSlotsOf(session.mine, world);
+  const rules = stepRulesOf(world, mine);
   return {
     pose: () => sessionPose(session),
     snapTo: (x, y, facing) => {
@@ -86,13 +91,18 @@ export function sessionActor(session: AgentSession, rules: StepRules): CommandAc
       session.y = y;
       session.facing = facing;
     },
-    tryStep: (dx, dy, mayPush = true) => {
-      const nextX = session.x + dx;
-      const nextY = session.y + dy;
-      if (!stepIsAllowed(rules, nextX, nextY, dx, dy, mayPush)) return false;
-      session.x = nextX;
-      session.y = nextY;
+    tryStep: (dx, dy, mayPush = isAxisStep(dx, dy)) => {
+      const from = { x: session.x, y: session.y };
+      const to = { x: from.x + dx, y: from.y + dy };
+      if (!rules.step(from, to, dx, dy, mayPush, true).allowed) return false;
+      session.x = to.x;
+      session.y = to.y;
       return true;
+    },
+    explainStep: (dx, dy, mayPush = isAxisStep(dx, dy)) => {
+      const from = { x: session.x, y: session.y };
+      const verdict = rules.step(from, { x: from.x + dx, y: from.y + dy }, dx, dy, mayPush, false);
+      return verdict.allowed ? null : verdict.why;
     },
     tryJump: (dx, dy) => {
       const delta = jumpLandingDelta(rules, session.x, session.y, dx, dy);
@@ -112,6 +122,7 @@ export function sessionActor(session: AgentSession, rules: StepRules): CommandAc
     setGodViewSizeTiles: (sizeTiles) => {
       session.godViewSizeTiles = clampGodViewSizeTiles(sizeTiles);
     },
+    mine,
   };
 }
 

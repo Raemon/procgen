@@ -11,7 +11,7 @@ export type LiveCreatures = Pick<CreatureSim, 'active'>;
 const NOTHING_LIVE: LiveCreatures = { active: () => [] };
 
 export interface CreatureHabitat {
-  puzzles: ObservedOverlay;
+  rules: ObservedOverlay;
   sampler: WorldSampler;
   creatures: ReadOnlyCreatureAssets;
 }
@@ -23,10 +23,10 @@ export function creatureAwareOverlay(
   const creatures = creatureMarkers(world.sampler, world.creatures, sim);
   return {
     markersIn: (minX, minY, maxX, maxY) => [
-      ...world.puzzles.markersIn(minX, minY, maxX, maxY),
+      ...world.rules.markersIn(minX, minY, maxX, maxY),
       ...creatures.markersIn(minX, minY, maxX, maxY),
     ],
-    actionAt: (x, y) => world.puzzles.actionAt(x, y),
+    actionAt: (x, y) => world.rules.actionAt(x, y),
   };
 }
 
