@@ -158,9 +158,15 @@ export class View3D {
     this.daylight.seeInTheDark(style === 'character' ? LAMPLIT_AMBIENT : OVERHEAD_AMBIENT);
     this.streamer.showCeilings(style === 'character');
     this.player.visible = style === 'god';
+    this.characterCamera.levelLook();
     this.characterCamera.snapOnNextFrame();
     this.followCamera.snapToFocusOnNextUpdate();
     this.resize();
+  }
+
+  lookBy(step: -1 | 1): void {
+    if (this.cameraStyle !== 'character') return;
+    this.characterCamera.lookBy(step);
   }
 
   private gpuSceneLoad(): GpuSceneLoad {

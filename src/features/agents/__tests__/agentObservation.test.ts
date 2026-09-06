@@ -25,6 +25,8 @@ import {
   isWithinCharacterSight,
 } from '@/features/game/vision/characterSight';
 import { CharacterCamera } from '@/features/game/render/view3d/characterCamera';
+import { CHARACTER_DOWNWARD_PITCH_DEG } from '@/features/game/render/view3d/firstPersonSightline';
+import { downwardPitchDeg, LOOK_STEP_DEG, MOST_LOOK_STEPS } from '@/features/game/render/view3d/lookPitch';
 import { createCharacterFog } from '@/features/game/render/view3d/worldScene';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { islandsState, tileAssets, worldFromState } from '@/features/asset-library/worlds/__tests__/pipelineWorldFixtures';
@@ -40,6 +42,19 @@ function firstPersonCamera(
   const camera = new CharacterCamera();
   camera.update(0, x, y, elevation, facingYawRadians(facing));
   return camera;
+}
+
+function firstPersonCameraLooking(steps: number): CharacterCamera {
+  const camera = firstPersonCamera();
+  for (let step = 0; step < Math.abs(steps); step++) camera.lookBy(steps < 0 ? -1 : 1);
+  camera.update(1, 0, 0, 0, facingYawRadians(0));
+  return camera;
+}
+
+function forwardOf(camera: CharacterCamera): Vector3 {
+  const forward = new Vector3();
+  camera.camera.getWorldDirection(forward);
+  return forward;
 }
 
 function round(value: number): number {
@@ -111,6 +126,20 @@ export function checkAgentObservation(check: CheckReporter): void {
       seen.add(`${round(forward.x)},${round(forward.z)}`);
     }
     return seen.size === 8;
+  })());
+  check('looking up raises the character camera above the horizon and looking down drops it further below', forwardOf(firstPersonCameraLooking(1)).y > 0 && forwardOf(firstPersonCameraLooking(-1)).y < forwardOf(firstPersonCamera()).y);
+  check('the look keys never bend the neck past three steps either way', (() => {
+    const up = round(forwardOf(firstPersonCameraLooking(MOST_LOOK_STEPS)).y);
+    const down = round(forwardOf(firstPersonCameraLooking(-MOST_LOOK_STEPS)).y);
+    return up === round(forwardOf(firstPersonCameraLooking(MOST_LOOK_STEPS + 2)).y) && down === round(forwardOf(firstPersonCameraLooking(-MOST_LOOK_STEPS - 2)).y);
+  })());
+  check('neither look ever tips the eye past vertical, where up and down would swap', Math.abs(downwardPitchDeg(MOST_LOOK_STEPS)) < 90 && Math.abs(downwardPitchDeg(-MOST_LOOK_STEPS)) < 90);
+  check('a look step is thirty degrees off the resting stoop', downwardPitchDeg(1) === CHARACTER_DOWNWARD_PITCH_DEG - LOOK_STEP_DEG);
+  check('stepping into a character view starts the eye level with its resting stoop', (() => {
+    const camera = firstPersonCameraLooking(MOST_LOOK_STEPS);
+    camera.levelLook();
+    camera.update(1, 0, 0, 0, facingYawRadians(0));
+    return round(forwardOf(camera).y) === round(forwardOf(firstPersonCamera()).y);
   })());
   check('character observation blanks every tile the fog would swallow', (() => {
     const center = Math.floor(CHARACTER_VIEW_SIZE_AT_DEFAULT_SIGHT / 2);

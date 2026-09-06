@@ -7,6 +7,7 @@ import {
   CHARACTER_EYE_HEIGHT as EYE_HEIGHT,
   CHARACTER_FIELD_OF_VIEW_AT_UNIT_ZOOM_DEG as FIELD_OF_VIEW_AT_UNIT_ZOOM_DEG,
 } from './firstPersonSightline';
+import { clampLookSteps, downwardPitchDeg } from './lookPitch';
 
 const WIDEST_FIELD_OF_VIEW_DEG = 95;
 const NARROWEST_FIELD_OF_VIEW_DEG = 40;
@@ -14,6 +15,7 @@ const MIN_MAGNIFICATION = FIELD_OF_VIEW_AT_UNIT_ZOOM_DEG / WIDEST_FIELD_OF_VIEW_
 const MAX_MAGNIFICATION = FIELD_OF_VIEW_AT_UNIT_ZOOM_DEG / NARROWEST_FIELD_OF_VIEW_DEG;
 const NEAR_PLANE = 0.05;
 const TURN_SMOOTHING_RATE = 12;
+const LOOK_SMOOTHING_RATE = 12;
 const WALK_SMOOTHING_RATE = 14;
 
 export class CharacterCamera {
@@ -26,6 +28,8 @@ export class CharacterCamera {
 
   private readonly zoom = new ZoomScale(1, MIN_MAGNIFICATION, MAX_MAGNIFICATION);
   private yaw = 0;
+  private pitch = radiansOf(DOWNWARD_PITCH_DEG);
+  private lookSteps = 0;
   private eyeX = 0;
   private eyeY = 0;
   private eyeElevation = 0;
@@ -33,6 +37,14 @@ export class CharacterCamera {
 
   zoomByWheelPixels(wheelPixelsY: number): void {
     this.zoom.applyWheelPixels(wheelPixelsY);
+  }
+
+  lookBy(step: -1 | 1): void {
+    this.lookSteps = clampLookSteps(this.lookSteps + step);
+  }
+
+  levelLook(): void {
+    this.lookSteps = 0;
   }
 
   snapOnNextFrame(): void {
@@ -77,6 +89,7 @@ export class CharacterCamera {
     this.eyeY = targetY;
     this.eyeElevation = targetElevation;
     this.yaw = facingYaw;
+    this.pitch = this.targetPitch();
     this.snapOnNextUpdate = false;
   }
 
@@ -92,6 +105,7 @@ export class CharacterCamera {
     this.eyeY += (targetY - this.eyeY) * walkStep;
     this.eyeElevation += (targetElevation - this.eyeElevation) * walkStep;
     this.yaw += shortestArc(this.yaw, facingYaw) * easeFraction(TURN_SMOOTHING_RATE, dtSeconds);
+    this.pitch += (this.targetPitch() - this.pitch) * easeFraction(LOOK_SMOOTHING_RATE, dtSeconds);
   }
 
   private applyFieldOfView(): void {
@@ -101,15 +115,22 @@ export class CharacterCamera {
     this.camera.updateProjectionMatrix();
   }
 
+  private targetPitch(): number {
+    return radiansOf(downwardPitchDeg(this.lookSteps));
+  }
+
   private lookAlongFacing(): void {
     const eyeHeight = this.eyeElevation + EYE_HEIGHT;
     this.camera.position.set(this.eyeX + 0.5, eyeHeight, this.eyeY + 0.5);
-    const pitch = (DOWNWARD_PITCH_DEG * Math.PI) / 180;
-    const aheadDistance = Math.cos(pitch);
+    const aheadDistance = Math.cos(this.pitch);
     this.camera.lookAt(
       this.camera.position.x + Math.sin(this.yaw) * aheadDistance,
-      eyeHeight - Math.sin(pitch),
+      eyeHeight - Math.sin(this.pitch),
       this.camera.position.z - Math.cos(this.yaw) * aheadDistance,
     );
   }
+}
+
+function radiansOf(degrees: number): number {
+  return (degrees * Math.PI) / 180;
 }
