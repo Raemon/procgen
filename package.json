@@ -19,6 +19,7 @@
     "check:sokoban2:puzzle": "esbuild src/worlds/sokoban2/__tests__/referees/puzzleSmoke.ts --bundle --platform=node --format=esm --log-level=error --outfile=dist/referees/sokoban2Puzzle.mjs && node dist/referees/sokoban2Puzzle.mjs",
     "check:sokoban2:quality": "esbuild src/worlds/sokoban2/__tests__/referees/qualitySmoke.ts --bundle --platform=node --format=esm --log-level=error --outfile=dist/referees/sokoban2Quality.mjs && node dist/referees/sokoban2Quality.mjs",
     "check:sokoban2:reverse": "esbuild src/worlds/sokoban2/__tests__/referees/reverseSmoke.ts --bundle --platform=node --format=esm --log-level=error --outfile=dist/referees/sokoban2Reverse.mjs && node dist/referees/sokoban2Reverse.mjs",
+    "check:sokoban2:all": "npm run check:sokoban2 && npm run check:sokoban2:play && npm run check:sokoban2:puzzle && npm run check:sokoban2:quality && npm run check:sokoban2:reverse",
     "deploy:wait": "bash scripts/waitForProductionCommit.sh",
     "test": "node --import tsx --test --test-reporter=spec src/features/app-shell/__tests__/app.test.ts",
     "roll": "esbuild scripts/rollAndRankWorlds.ts --bundle --format=esm --platform=node --log-level=error --outfile=dist/rollAndRankWorlds.mjs && node dist/rollAndRankWorlds.mjs",

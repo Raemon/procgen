@@ -93,6 +93,8 @@ import { checkWholeWorldNodes } from '@/features/asset-library/worlds/__tests__/
 import { checkSokobanRules } from '@/worlds/sokoban2/__tests__/sokobanRules.test';
 import { checkCircuitsAndCues } from '@/features/game/__tests__/circuitsAndCues.test';
 import { checkPanelShortcuts } from './panelShortcuts.test';
+import { checkGenerationPins } from '@/worlds/sokoban2/__tests__/generationPins.test';
+import { checkLabyrinthPins } from '@/worlds/labyrinth/__tests__/labyrinthPins.test';
 
 function check(name: string, condition: boolean): void {
   test(name, () => assert.ok(condition));
@@ -192,3 +194,5 @@ describe('worlds stay apart from the engine and each other', () => checkWorldsSt
 describe('whole-world nodes', () => checkWholeWorldNodes(check));
 describe('the sokoban dungeon rules', () => checkSokobanRules(check));
 describe('circuits, cues and sounds', () => checkCircuitsAndCues(check));
+describe('the sokoban generation pins', () => checkGenerationPins(check));
+describe('the labyrinth generation pins', () => checkLabyrinthPins(check));
