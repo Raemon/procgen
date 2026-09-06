@@ -7,7 +7,7 @@ import { fixtureIsOn } from '@/worlds/labyrinth/rules/state/fixtureSignals';
 import { PuzzleState } from '@/worlds/labyrinth/rules/state/puzzleState';
 import { markerPlacementsForRect } from '../render/view3d/markerPlacements';
 import { standingFixtureShape } from '../render/view3d/tileShapes';
-import { crateFaceArtIn } from '../fixtures/fixtureFaceArt';
+import { crateFaceArtIn } from '../fixtures/looks/crate';
 import type { Marker, WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 
 const PLATE_CELL = { x: 4, y: 2 };

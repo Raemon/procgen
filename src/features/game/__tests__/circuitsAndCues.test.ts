@@ -8,7 +8,7 @@ import { CUE_EARSHOT_TILES, PuzzleCues, type PuzzleCue, type PuzzleSource } from
 import { LIT_WIRE_GLOW, WIRE_LIES_FLAT, wireMarkersOf, wireMaskAt } from '../circuits/wireMarkers';
 import { routeWires } from '../circuits/wireRoutes';
 import { fixtureLook } from '../fixtures/fixtureAppearance';
-import { DOOR_STANDS_TALL } from '../fixtures/fixtureFaceArt';
+import { DOOR_STANDS_TALL } from '../fixtures/looks/door';
 import { pointOverlayLookup } from '../render/ascii/asciiCells';
 import { DOOR_OPENING_SECONDS, DoorOpenings } from '../render/view3d/doorOpenings';
 import { JUMP_MS } from '../sim/movementOrder';

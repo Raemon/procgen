@@ -1,5 +1,5 @@
 import { fixtureLook, type FixtureLook } from '@/features/game/fixtures/fixtureAppearance'
-import { crateFaceArtIn } from '@/features/game/fixtures/fixtureFaceArt'
+import { crateFaceArtIn } from '@/features/game/fixtures/looks/crate'
 import type { CrateColor } from '../types'
 import { TINTS } from './tints'
 

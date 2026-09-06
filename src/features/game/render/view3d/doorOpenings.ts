@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { MAX_FACE_ART_SIZE } from '@/features/asset-library/tiles/tileFaceArt';
 import { withTransparency } from '@/features/asset-library/tiles/inkColor';
 import { gateLook } from '../../fixtures/fixtureAppearance';
-import { DOOR_FACE_ART, DOOR_STANDS_TALL } from '../../fixtures/fixtureFaceArt';
+import { DOOR_FACE_ART, DOOR_STANDS_TALL } from '../../fixtures/looks/door';
 import type { Cell } from '../../worldRules';
 import { coplanarPullOf } from './coplanarPull';
 import { EVERY_FACE } from './culling/visibleFaceMask';
