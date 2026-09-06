@@ -1,6 +1,7 @@
 import type { AppRuntime } from '@/features/app-shell/runtime/appRuntime';
 import { facingRelativeStep } from '../input/facingRelativeStep';
 import { listenForJumpKey } from '../input/jumpInput';
+import { listenForLookKeys } from '../input/lookInput';
 import { MovementInput } from '../input/movementInput';
 import { listenForPickUpKey } from '../input/pickUpInput';
 import { listenForFixtureKeys, resetKeyAction } from '../input/useFixtureInput';
@@ -132,6 +133,11 @@ export function mountWorldViews(
     isSuspended: () => inputIsSuspended(runtime, currentMode()),
   });
 
+  const stopLookKeys = listenForLookKeys({
+    look: (step) => view3d.lookBy(step),
+    isSuspended: () => currentMode() !== 'character' || inputIsSuspended(runtime, currentMode()),
+  });
+
   const stopPickUpKey = listenForPickUpKey({
     pickUp: () => perform(isCharacterControlled(currentMode()) ? 'pick_up' : 'pick_up_item'),
     isSuspended: () => inputIsSuspended(runtime, currentMode()),
@@ -165,6 +171,7 @@ export function mountWorldViews(
       movement.dispose();
       stopJumpKey();
       stopPickUpKey();
+      stopLookKeys();
       stopFixtureKeys();
       for (const remove of unregister) remove();
       featuresView.dispose();

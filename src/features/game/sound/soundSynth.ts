@@ -9,7 +9,11 @@ const SILENT_PLAYER: SoundPlayer = { play: () => undefined, dispose: () => undef
 
 const MASTER_GAIN = 0.7;
 const NOISE_SECONDS = 1;
-const STEP_PITCH_SPREAD = 0.18;
+const STEP_PITCH_SPREAD = 0.12;
+const STEP_WEIGHT_SPREAD = 0.25;
+const FOOT_PITCH_OFFSET = 0.06;
+const ROOM_SECONDS = 1.4;
+const ROOM_DECAY = 3.2;
 
 interface Voice {
   at: number;
@@ -28,21 +32,35 @@ interface NoiseVoice extends Voice {
   filter: BiquadFilterType;
   hz: number;
   slideTo?: number;
+  attack?: number;
 }
 
+const CUE_ROOM_SEND: Record<SoundCue, number> = {
+  step: 0.5,
+  jump: 0.45,
+  push: 0.3,
+  plate: 0.25,
+  door: 0.3,
+  power: 0.35,
+};
+
 const UNLOCKING_GESTURES = ['keydown', 'pointerdown'] as const;
+
+let footfall = 0;
 
 export function createSoundPlayer(isOn: () => boolean = () => true): SoundPlayer {
   if (typeof AudioContext === 'undefined') return SILENT_PLAYER;
   let context: AudioContext | null = null;
   let master: GainNode | null = null;
+  let room: ConvolverNode | null = null;
   let noise: AudioBuffer | null = null;
-  const ready = (): { context: AudioContext; master: GainNode; noise: AudioBuffer } => {
+  const ready = (): { context: AudioContext; master: GainNode; room: ConvolverNode; noise: AudioBuffer } => {
     context ??= new AudioContext();
     master ??= masterGainOf(context);
+    room ??= roomReverbOf(context, master);
     noise ??= whiteNoiseOf(context);
     if (context.state === 'suspended') void context.resume();
-    return { context, master, noise };
+    return { context, master, room, noise };
   };
   const unlock = (): void => {
     if (isOn()) ready();
@@ -55,6 +73,10 @@ export function createSoundPlayer(isOn: () => boolean = () => true): SoundPlayer
       const out = audio.context.createGain();
       out.gain.value = Math.max(0, Math.min(1, volume));
       out.connect(audio.master);
+      const send = audio.context.createGain();
+      send.gain.value = CUE_ROOM_SEND[cue];
+      out.connect(send);
+      send.connect(audio.room);
       CUES[cue](audio.context, audio.noise, out);
     },
     dispose: () => {
@@ -62,6 +84,7 @@ export function createSoundPlayer(isOn: () => boolean = () => true): SoundPlayer
       void context?.close();
       context = null;
       master = null;
+      room = null;
       noise = null;
     },
   };
@@ -72,16 +95,66 @@ type CueRecipe = (context: AudioContext, noise: AudioBuffer, out: AudioNode) => 
 const CUES: Record<SoundCue, CueRecipe> = {
   step: (context, noise, out) => {
     const now = context.currentTime;
-    const spread = 1 + (Math.random() * 2 - 1) * STEP_PITCH_SPREAD;
-    playNoise(context, noise, out, { at: now, seconds: 0.07, peak: 0.22, filter: 'bandpass', hz: 900 * spread });
-    playTone(context, out, { at: now, seconds: 0.06, peak: 0.16, hz: 120 * spread, slideTo: 70, wave: 'sine' });
+    const foot = footfall++ % 2 === 0 ? 1 + FOOT_PITCH_OFFSET : 1 - FOOT_PITCH_OFFSET;
+    const spread = foot * (1 + (Math.random() * 2 - 1) * STEP_PITCH_SPREAD);
+    const weight = 1 + (Math.random() * 2 - 1) * STEP_WEIGHT_SPREAD;
+    playNoise(context, noise, out, {
+      at: now,
+      seconds: 0.13,
+      peak: 0.06 * weight,
+      filter: 'lowpass',
+      hz: 1100 * spread,
+      slideTo: 380,
+      attack: 0.012,
+    });
+    playNoise(context, noise, out, {
+      at: now + 0.02,
+      seconds: 0.17,
+      peak: 0.018 * weight,
+      filter: 'highpass',
+      hz: 2600,
+      attack: 0.03,
+    });
+    playTone(context, out, {
+      at: now,
+      seconds: 0.11,
+      peak: 0.05 * weight,
+      hz: 95 * spread,
+      slideTo: 55,
+      wave: 'sine',
+      attack: 0.01,
+    });
   },
   jump: (context, noise, out) => {
     const now = context.currentTime;
-    playTone(context, out, { at: now, seconds: 0.2, peak: 0.16, hz: 220, slideTo: 660, wave: 'triangle' });
-    playNoise(context, noise, out, { at: now, seconds: 0.09, peak: 0.1, filter: 'highpass', hz: 1800 });
-    playNoise(context, noise, out, { at: now + 0.5, seconds: 0.08, peak: 0.24, filter: 'lowpass', hz: 700 });
-    playTone(context, out, { at: now + 0.5, seconds: 0.09, peak: 0.2, hz: 110, slideTo: 60, wave: 'sine' });
+    playNoise(context, noise, out, {
+      at: now,
+      seconds: 0.12,
+      peak: 0.05,
+      filter: 'lowpass',
+      hz: 800,
+      slideTo: 300,
+      attack: 0.008,
+    });
+    playTone(context, out, { at: now, seconds: 0.14, peak: 0.07, hz: 150, slideTo: 90, wave: 'sine', attack: 0.006 });
+    playNoise(context, noise, out, {
+      at: now + 0.03,
+      seconds: 0.15,
+      peak: 0.014,
+      filter: 'highpass',
+      hz: 3000,
+      attack: 0.04,
+    });
+    playNoise(context, noise, out, {
+      at: now + 0.5,
+      seconds: 0.18,
+      peak: 0.11,
+      filter: 'lowpass',
+      hz: 900,
+      slideTo: 320,
+      attack: 0.01,
+    });
+    playTone(context, out, { at: now + 0.5, seconds: 0.16, peak: 0.11, hz: 105, slideTo: 55, wave: 'sine', attack: 0.008 });
   },
   push: (context, noise, out) => {
     const now = context.currentTime;
@@ -152,6 +225,29 @@ function masterGainOf(context: AudioContext): GainNode {
   gain.gain.value = MASTER_GAIN;
   gain.connect(context.destination);
   return gain;
+}
+
+function roomReverbOf(context: AudioContext, master: GainNode): ConvolverNode {
+  const convolver = context.createConvolver();
+  convolver.buffer = roomImpulseOf(context);
+  const damping = context.createBiquadFilter();
+  damping.type = 'lowpass';
+  damping.frequency.value = 2200;
+  convolver.connect(damping);
+  damping.connect(master);
+  return convolver;
+}
+
+function roomImpulseOf(context: AudioContext): AudioBuffer {
+  const length = Math.round(context.sampleRate * ROOM_SECONDS);
+  const buffer = context.createBuffer(2, length, context.sampleRate);
+  for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
+    const samples = buffer.getChannelData(channel);
+    for (let index = 0; index < length; index++) {
+      samples[index] = (Math.random() * 2 - 1) * (1 - index / length) ** ROOM_DECAY;
+    }
+  }
+  return buffer;
 }
 
 function whiteNoiseOf(context: AudioContext): AudioBuffer {

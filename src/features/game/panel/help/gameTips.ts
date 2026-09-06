@@ -41,7 +41,7 @@ export const VIEW_MODE_TIPS: Readonly<Record<ViewMode, TooltipContent>> = {
   },
   character: {
     title: '2.5D Character',
-    body: 'Walk the world in the body of a player, with the camera at ground level and elevation shaping what you can see.',
+    body: 'Walk the world in the body of a player, with the camera at ground level and elevation shaping what you can see. X tips your head up and Z tips it down, three steps either way.',
     when: 'Feeling out scale, walkability and whether a place is legible from inside it.',
   },
   'agent-character': {

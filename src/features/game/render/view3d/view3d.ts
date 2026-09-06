@@ -176,10 +176,16 @@ export class View3D {
       this.sightShadows.hide();
       this.topDownMarker.hide();
     }
+    this.characterCamera.levelLook();
     this.characterCamera.snapOnNextFrame();
     this.followCamera.snapToFocusOnNextUpdate();
     this.topDownCamera.snapToFocusOnNextUpdate();
     this.resize();
+  }
+
+  lookBy(step: -1 | 1): void {
+    if (this.cameraStyle !== 'character') return;
+    this.characterCamera.lookBy(step);
   }
 
   private gpuSceneLoad(): GpuSceneLoad {
