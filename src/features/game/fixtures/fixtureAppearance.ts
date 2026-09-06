@@ -1,6 +1,9 @@
+import { ARCANE_CORE } from '@/features/asset-library/tiles/art/fixtures/crateArt';
 import type { CubeFaceArt } from '@/features/asset-library/tiles/tileFaceArt';
 import {
+  CHARGED_CRATE_GLOW,
   CRATE_FACE_ART,
+  CRATE_FOOTPRINT,
   CRATE_STANDS_SQUAT,
   DOOR_FACE_ART,
   DOOR_STANDS_TALL,
@@ -11,6 +14,7 @@ import {
   PLATE_FACE_ART,
   PLATE_LIES_FLAT,
   PLATE_SINKS_UNDER_A_CRATE,
+  PRESSED_PLATE_GLOW,
 } from './fixtureFaceArt';
 import type { PuzzleFixtureKind } from './fixtureKinds';
 
@@ -21,6 +25,8 @@ export interface FixtureLook {
   faceArt: CubeFaceArt | null;
   standingHeight?: number;
   seeThroughUnpaintedArt?: boolean;
+  glow?: number;
+  footprint?: number;
 }
 
 export type DoorLock = 'key' | 'mechanism';
@@ -85,25 +91,29 @@ const LOOKS: Record<PuzzleFixtureKind, { off: FixtureLook; on: FixtureLook }> = 
     on: {
       glyph: '◼',
       color: '#6fe08a',
-      tag: 'pressure plate, weighted down',
+      tag: 'pressure plate, weighted down and glowing',
       faceArt: PLATE_FACE_ART.on,
       standingHeight: PLATE_SINKS_UNDER_A_CRATE,
+      glow: PRESSED_PLATE_GLOW,
     },
   },
   crate: {
     off: {
       glyph: '▣',
-      color: '#a06a33',
-      tag: 'crate, push it by walking into it',
+      color: ARCANE_CORE,
+      tag: 'crate: a caged power core, push it by walking into it',
       faceArt: CRATE_FACE_ART.off,
       standingHeight: CRATE_STANDS_SQUAT,
+      footprint: CRATE_FOOTPRINT,
     },
     on: {
       glyph: '▩',
-      color: '#a06a33',
-      tag: 'crate, settled on a pressure plate',
+      color: ARCANE_CORE,
+      tag: 'crate, its power core charged on the pressure plate beneath it',
       faceArt: CRATE_FACE_ART.on,
       standingHeight: CRATE_STANDS_SQUAT,
+      footprint: CRATE_FOOTPRINT,
+      glow: CHARGED_CRATE_GLOW,
     },
   },
   pillar: {

@@ -53,9 +53,10 @@ function placementForMarker(marker: Marker, elevation: number): TilePlacement {
     shade: 1,
     faceArt: marker.faceArt,
     textureId: null,
-    glow: 0,
+    glow: marker.glow ?? 0,
     sunkenAsWater: false,
     shape: DEFAULT_TILE_SHAPE,
     facing: 0,
+    footprint: marker.footprint,
   };
 }

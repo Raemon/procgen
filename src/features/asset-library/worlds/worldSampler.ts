@@ -42,6 +42,8 @@ export interface Marker {
   standingHeight?: number;
   billboardHeight?: number;
   seeThroughUnpaintedArt?: boolean;
+  glow?: number;
+  footprint?: number;
 }
 
 export interface CreatureSpawn {

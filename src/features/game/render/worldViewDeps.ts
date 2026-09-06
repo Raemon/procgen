@@ -6,6 +6,7 @@ import type {
   ReadOnlyWorld,
 } from '@/features/app-shell/runtime/readOnlyAssets';
 import type { SpeechBubbles } from '../chat/speechBubbles';
+import type { PuzzleCues } from '../circuits/puzzleCues';
 import type { CreatureSim } from '../creatureSim/creatureSim';
 import type { RemotePlayers } from '../multiplayer/client/remotePlayers';
 import type { PipelineEvaluator } from '@/features/asset-library/worlds/eval/evaluator';
@@ -20,6 +21,7 @@ export interface WorldViewDeps {
   sampler: WorldSampler;
   evaluator: PipelineEvaluator;
   overlay: MarkerSource;
+  puzzleCues: Pick<PuzzleCues, 'on'>;
   surfaceAt(x: number, y: number): number;
   store: ReadOnlyPipelineStore;
   tileAssets: ReadOnlyTileAssets;

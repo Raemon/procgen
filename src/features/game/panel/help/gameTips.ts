@@ -74,6 +74,11 @@ export const ASCII_COLOR_TIP: TooltipContent = {
   body: 'Colored mode paints each glyph with the average color of its tile and draws walkable tiles at 35% opacity. White text is exactly the characters an agent reads. This panel only — agents always receive plain text.',
 };
 
+export const SOUND_TIP: TooltipContent = {
+  title: 'sound',
+  body: 'Plays the world: footsteps, jumps, crates scraping along the floor, a goal plate lighting, and a door opening once every goal on its circuit is filled. Off, the world is silent; the setting is remembered.',
+};
+
 export const LIFE_TIP: TooltipContent = {
   title: 'life',
   body: 'Runs the creature simulation. Paused, creatures hold their positions; the world itself is unaffected either way.',

@@ -7,6 +7,7 @@ import { PipelineEvaluator } from '@/features/asset-library/worlds/eval/evaluato
 import type { NodeInstance } from '@/features/asset-library/worlds/pipeline/pipelineState'
 import { asField, asTiles } from '@/features/asset-library/worlds/values/valueAccess'
 import { nodeOfType, storeWithNodes } from '@/features/game/__tests__/rulesFixtures'
+import { wireMarkersOf } from '@/features/game/circuits/wireMarkers'
 import type { DefaultRules, MineSlots, StepAttempt } from '@/features/game/worldRules'
 import { WorldRulesSet } from '@/features/game/worldRulesSet'
 import { generateWorld2 } from '../generate/generateWorld'
@@ -16,8 +17,8 @@ import { fromDungeon, toDungeon } from '../node/worldValue'
 import { DEFAULT_PARAMS } from '../params'
 import { doorLock } from '../play/doors'
 import { reachableCells } from '../play/reach'
-import { DIRS, DIR_LIST, type World } from '../types'
-import { crateFinder, index } from '../world'
+import { DIRS, DIR_LIST, HEIGHT, type World } from '../types'
+import { crateFinder, index, roomAt, terrainHeight } from '../world'
 import { worldFromAscii } from './referees/ascii'
 
 const NO_MINE: MineSlots = { get: () => null, set: () => undefined }
@@ -37,6 +38,7 @@ export function checkSokobanRules(check: CheckReporter): void {
   checkResetPutsTheRoomBack(check)
   checkTheOverlayAgreesWithTheReferee(check)
   checkTheNodesSliceTheBuiltWorld(check)
+  checkGoalsAreWiredToTheDoorTheyOpen(check)
 }
 
 function checkAStepPushesButNeverClimbs(check: CheckReporter): void {
@@ -98,6 +100,30 @@ function checkDoorsOpenWhenTheirRoomIsSolvedAndStayOpen(check: CheckReporter): v
   check('a snapshot carries the moved crate and the opened door to another overlay', twin.crates()[0]!.x === rules.crates()[0]!.x && twin.openedDoors().length === 1)
   twin.applySnapshot(null)
   check('forgetting the snapshot puts the crate back and shuts the door again', twin.crates()[0]!.x === world.crates[0]!.x && twin.openedDoors().length === 0)
+}
+
+function checkGoalsAreWiredToTheDoorTheyOpen(check: CheckReporter): void {
+  const world = worldFromAscii(DOOR_ROWS, DOOR_OPTIONS)
+  const rules = rulesFor(world)
+  const everywhere = [-100, -100, 100, 100] as const
+  const circuits = rules.circuitsIn(...everywhere)
+  const circuit = circuits[0]!
+  const door = fromDungeon(world, world.doors[0]!)
+  const goal = fromDungeon(world, world.rooms[0]!.goals[0]!)
+  check('the room a door waits on is wired from its goals to that door', circuits.length === 1 && circuit.doors[0]!.x === door.x && circuit.doors[0]!.y === door.y && circuit.plates[0]!.x === goal.x && circuit.plates.length === 1)
+  const wires = circuit.wires.map((cell) => toDungeon(world, cell.x, cell.y))
+  check('wires run only along floor cells of that room, never onto walls, the goal or the door', wires.length > 0 && wires.every((cell) => roomAt(world, cell.x, cell.y) === 0 && terrainHeight(world, cell.x, cell.y) === HEIGHT.Floor && !(cell.x === world.goals[0]!.x && cell.y === world.goals[0]!.y)))
+  check('the wire runs from beside the goal to beside the door', wires.some((cell) => Math.abs(cell.x - world.goals[0]!.x) + Math.abs(cell.y - world.goals[0]!.y) === 1) && wires.some((cell) => Math.abs(cell.x - world.doors[0]!.x) + Math.abs(cell.y - world.doors[0]!.y) === 1))
+  const player = rules.spawn()!
+  check('the crates are listed for the cue watcher where they stand', rules.cratesIn(...everywhere).some((cell) => cell.x === player.x + 1 && cell.y === player.y))
+  const wiresBefore = wireMarkersOf(circuits, ...everywhere)
+  check('before the room is finished the circuit is dark, its door shut, and its wires drawn dark', !circuit.powered && !circuit.doors[0]!.open && !circuit.plates[0]!.lit && wiresBefore.length === wires.length && wiresBefore.every((marker) => marker.tag.startsWith('circuit line, dark')))
+  rules.step(attempt(player, 1, 0, true, true), NO_MINE, NEVER_ASKED)
+  rules.step(attempt({ x: player.x + 1, y: player.y }, 1, 0, true, true), NO_MINE, NEVER_ASKED)
+  const finished = rules.circuitsIn(...everywhere)[0]!
+  check('settling the crate lights the goal, powers the circuit and opens its door', finished.plates[0]!.lit && finished.powered && finished.doors[0]!.open)
+  check('a powered circuit draws its wires lit', wireMarkersOf([finished], ...everywhere).every((marker) => marker.tag.startsWith('circuit line, lit')))
+  check('a room no door waits on has no circuit to draw', circuits.every((each) => each.key !== 'room 1'))
 }
 
 function checkTwoPlayersShareTheCrates(check: CheckReporter): void {

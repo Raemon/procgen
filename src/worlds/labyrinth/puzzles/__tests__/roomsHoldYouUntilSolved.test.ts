@@ -11,6 +11,8 @@ import { PipelineStore } from '@/features/asset-library/worlds/pipeline/pipeline
 import { sanitizePipeline } from '@/features/asset-library/worlds/pipeline/sanitizePipeline';
 import { infiniteLabyrinth } from '@/features/asset-library/worlds/seeds/infiniteLabyrinth';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
+import { rectContains } from '@/features/asset-library/worlds/labyrinth/roomLayout';
+import { cellKeyOf, type Circuit, type WireCell } from '@/features/game/circuits/circuit';
 import { jumpLandingDelta } from '@/features/game/sim/jumpLanding';
 import { stepIsAllowed, type StepRules } from '@/features/game/sim/stepIsAllowed';
 import type { PuzzleFixture } from '@/features/game/fixtures/fixtureKinds';
@@ -31,6 +33,7 @@ export function checkRoomsHoldYouUntilSolved(check: CheckReporter): void {
   checkAShutDoorLetsYouInButNotOut(check);
   checkPullingEveryLeverOpensTheRoom(check);
   checkAJumpCannotVaultAShutDoor(check);
+  checkEverySignalIsWiredToEveryDoorway(check);
 }
 
 function checkFurnishedRoomsStartShut(check: CheckReporter): void {
@@ -90,6 +93,70 @@ function checkAJumpCannotVaultAShutDoor(check: CheckReporter): void {
     'a jump cannot vault a shut door out of a chamber',
     vaulted.length === 0,
   );
+}
+
+function checkEverySignalIsWiredToEveryDoorway(check: CheckReporter): void {
+  const { puzzles } = labyrinthPuzzles();
+  const worked = everyRoom(puzzles).filter((layout) => hasSomethingToDo(layout));
+  const signalled = worked.filter((layout) => layout.unlock !== 'key');
+  const circuitOf = (layout: PuzzleRoomLayout): Circuit | undefined =>
+    puzzles.circuitsIn(...boundsOf(layout)).find((circuit) => circuit.key === layout.key);
+  const wired = signalled.filter((layout) => {
+    const circuit = circuitOf(layout);
+    return (
+      circuit !== undefined &&
+      circuit.plates.length === layout.opensWhen.length &&
+      circuit.doors.length === everyGateOf(layout).length &&
+      circuit.plates.every((plate) => circuit.doors.every((door) => joinedThrough(circuit, plate, door)))
+    );
+  });
+  check(
+    'every worked chamber wires each of its signals to each of its doorways',
+    signalled.length > 50 && wired.length === signalled.length,
+  );
+  const pillared = (layout: PuzzleRoomLayout) =>
+    new Set(layout.fixtures.filter((fixture) => fixture.kind === 'pillar').map(cellKeyOf));
+  check(
+    'wires stay inside the chamber floor and never run under a pillar',
+    signalled.every((layout) =>
+      circuitOf(layout)!.wires.every((cell) => rectContains(layout.interior, cell.x, cell.y) && !pillared(layout).has(cellKeyOf(cell))),
+    ),
+  );
+  check(
+    'a key chamber carries no circuit, since a key and not a signal opens it',
+    worked.filter((layout) => layout.unlock === 'key').every((layout) => circuitOf(layout) === undefined),
+  );
+  const levers = signalled.find((layout) => layout.kindName === 'lever')!;
+  const dark = circuitOf(levers)!;
+  for (const lever of levers.fixtures.filter((fixture) => fixture.kind === 'lever')) puzzles.use(lever.x, lever.y);
+  const lit = circuitOf(levers)!;
+  check(
+    'a chamber circuit is dark with its doors shut until every signal is worked, then powered with its doors open',
+    !dark.powered && dark.doors.every((door) => !door.open) && lit.powered && lit.doors.every((door) => door.open),
+  );
+}
+
+function joinedThrough(circuit: Circuit, from: WireCell, to: WireCell): boolean {
+  const joined = new Set([...circuit.wires, ...circuit.plates, ...circuit.doors].map(cellKeyOf));
+  const seen = new Set([cellKeyOf(from)]);
+  const queue = [from];
+  for (let head = 0; head < queue.length; head++) {
+    const at = queue[head]!;
+    if (at.x === to.x && at.y === to.y) return true;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const next = { x: at.x + dx!, y: at.y + dy! };
+      if (!joined.has(cellKeyOf(next)) || seen.has(cellKeyOf(next))) continue;
+      seen.add(cellKeyOf(next));
+      queue.push(next);
+    }
+  }
+  return false;
+}
+
+function boundsOf(layout: PuzzleRoomLayout): [number, number, number, number] {
+  const originX = labyrinthCellOrigin(layout.roomX);
+  const originY = labyrinthCellOrigin(layout.roomY);
+  return [originX, originY, originX + LABYRINTH_CELL_SIZE - 1, originY + LABYRINTH_CELL_SIZE - 1];
 }
 
 interface RoomDoor {

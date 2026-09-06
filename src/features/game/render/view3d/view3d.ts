@@ -16,6 +16,7 @@ import { CharacterCamera } from './characterCamera';
 import { CharacterSpriteAssets } from './characterSpriteAssets';
 import { ChunkMeshStreamer } from './chunkMeshStreamer';
 import { CreatureMeshes } from './creatureMeshes';
+import { DoorOpenings } from './doorOpenings';
 import { EasedPoint } from './easedPoint';
 import { advanceFaceArtAnimations } from './faceArtAnimations';
 import { ItemMeshes } from './itemMeshes';
@@ -67,6 +68,8 @@ export class View3D {
   private readonly easedPlayer: EasedPoint;
   private readonly jumpArc = new JumpArc();
   private readonly stopWatchingJumps: () => void;
+  private readonly doorOpenings: DoorOpenings;
+  private readonly stopWatchingDoors: () => void;
   private readonly streamer: ChunkMeshStreamer;
   private readonly terrainOverview: TerrainOverview;
   private readonly creatureMeshes: CreatureMeshes;
@@ -119,6 +122,8 @@ export class View3D {
     listenForCaptureDrag(this.canvas, deps.capture, (x, y) => this.cellAtPixel(x, y));
     listenForTileHover(this.canvas, deps.hoveredTile, (x, y) => this.cellAtPixel(x, y));
     this.stopWatchingJumps = deps.world.on('player-jumped', () => this.jumpArc.launch(this.groundUnderPlayer()));
+    this.doorOpenings = new DoorOpenings(this.worldGroup, (x, y) => deps.sampler.elevationAt(x, y));
+    this.stopWatchingDoors = deps.puzzleCues.on('door-opened', (cells) => this.doorOpenings.open(cells));
     this.resizeObserver.observe(container);
     this.resize();
     this.animationFrame = requestAnimationFrame(this.onFrame);
@@ -127,6 +132,8 @@ export class View3D {
   dispose(): void {
     cancelAnimationFrame(this.animationFrame);
     this.stopWatchingJumps();
+    this.stopWatchingDoors();
+    this.doorOpenings.dispose();
     this.stopReportingGpuLoad();
     this.resizeObserver.disconnect();
     this.creatureMeshes.dispose();
@@ -252,6 +259,7 @@ export class View3D {
   private renderFrame(dtSeconds: number): void {
     if (isCollapsed(containerSize(this.container))) return;
     this.jumpArc.advance(dtSeconds);
+    this.doorOpenings.advance(dtSeconds);
     this.movePlayerTowardItsTile(dtSeconds);
     this.applySightRadius();
     this.elapsedSeconds += dtSeconds;

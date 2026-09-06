@@ -17,6 +17,7 @@ import { PickupFeed } from '@/features/asset-library/items/pickups/pickupFeed';
 import { TakenItemSpawns } from '@/features/asset-library/items/pickups/takenItemSpawns';
 import { WalkOverPickup } from '@/features/asset-library/items/pickups/walkOverPickup';
 import { MultiplayerSession } from '@/features/game/multiplayer/client/multiplayerSession';
+import { PuzzleCues } from '@/features/game/circuits/puzzleCues';
 import { CreatureClock } from '@/features/game/creatureSim/creatureClock';
 import { CreatureSim } from '@/features/game/creatureSim/creatureSim';
 import { creatureAwareOverlay } from '@/features/agents/creatureMarkers';
@@ -100,6 +101,7 @@ export interface AppRuntime {
   cameraFocus: CameraFocus;
   hoveredTile: HoveredTile;
   rules: WorldRulesSet;
+  puzzleCues: Pick<PuzzleCues, 'on'>;
   agentOverlay: ObservedOverlay;
   renderers: WorldRenderers;
   perform(action: string, params?: CommandParams): CommandResult;
@@ -150,6 +152,7 @@ export function createAppRuntime(): AppRuntime {
   const localMine = new Map<string, unknown>();
   const mine = mineSlotsOf(localMine, rules);
   const world = new World(stepRulesOf(rules, mine));
+  const puzzleCues = new PuzzleCues(rules);
   const net = new MultiplayerSession(world, store, rules, () => redrawIfSharedChanged());
   const chatComposer = new ChatComposerState();
   const playerInventoryPanel = new PlayerInventoryPanelState();
@@ -202,7 +205,12 @@ export function createAppRuntime(): AppRuntime {
   function redrawIfSharedChanged(): void {
     if (rules.revision() === lastSharedRevision) return;
     lastSharedRevision = rules.revision();
+    puzzleCues.sync(playerCell());
     renderers.redrawAll();
+  }
+
+  function playerCell(): { x: number; y: number } {
+    return { x: world.playerX, y: world.playerY };
   }
 
   function settleTheWorld(change: () => void): void {
@@ -282,6 +290,7 @@ export function createAppRuntime(): AppRuntime {
   function applyWorldChange(): void {
     sampler.invalidateStructureOverlay();
     sim.forget();
+    puzzleCues.forget();
     world.ensurePlayerOnWalkableGround();
     renderers.redrawAll();
     worldChanged.emit();
@@ -320,6 +329,7 @@ export function createAppRuntime(): AppRuntime {
     if (settlingTheWorld) return;
     walkOverPickup.onSteppedOnto(world.playerX, world.playerY);
     redrawIfSharedChanged();
+    puzzleCues.sync(playerCell());
     keepPlayingAfterTheAction.schedule();
   });
   world.on('player-moved', () => renderers.recenterAll());
@@ -355,6 +365,7 @@ export function createAppRuntime(): AppRuntime {
     cameraFocus,
     hoveredTile,
     rules,
+    puzzleCues,
     agentOverlay,
     renderers,
     perform,

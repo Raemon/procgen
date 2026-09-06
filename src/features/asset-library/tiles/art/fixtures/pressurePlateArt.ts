@@ -37,12 +37,23 @@ interface PlatePose {
   glowing: boolean;
 }
 
-export function plateWaitingFaceArt(): CubeFaceArt {
-  return plateFaceArt({ signal: WAITING_SIGNAL, slabRelief: 0.62, glowing: false });
+const waitingArt = new Map<string, CubeFaceArt>();
+const pressedArt = new Map<string, CubeFaceArt>();
+
+export function plateWaitingFaceArt(signal: string = WAITING_SIGNAL): CubeFaceArt {
+  return remembered(waitingArt, signal, () => plateFaceArt({ signal, slabRelief: 0.62, glowing: false }));
 }
 
-export function platePressedFaceArt(): CubeFaceArt {
-  return plateFaceArt({ signal: PRESSED_SIGNAL, slabRelief: 0.4, glowing: true });
+export function platePressedFaceArt(signal: string = PRESSED_SIGNAL): CubeFaceArt {
+  return remembered(pressedArt, signal, () => plateFaceArt({ signal, slabRelief: 0.4, glowing: true }));
+}
+
+function remembered(cache: Map<string, CubeFaceArt>, signal: string, paint: () => CubeFaceArt): CubeFaceArt {
+  const known = cache.get(signal);
+  if (known) return known;
+  const art = paint();
+  cache.set(signal, art);
+  return art;
 }
 
 function plateFaceArt(pose: PlatePose): CubeFaceArt {
