@@ -6,8 +6,9 @@ import {
 } from '@/features/app-shell/runtime/rerenderHooks';
 import { Button } from '@/features/app-shell/controls/Button';
 import { asciiColorOn, setAsciiColorOn } from '../render/agentText/asciiColorPreference';
+import { useSoundOn } from '../sound/soundPreference';
 import { SightRangeControl } from './SightRangeControl';
-import { ASCII_COLOR_TIP, CAPTURE_TIP, LIFE_TIP } from './help/gameTips';
+import { ASCII_COLOR_TIP, CAPTURE_TIP, LIFE_TIP, SOUND_TIP } from './help/gameTips';
 import { isCharacterControlled, usesAgentText, type ViewMode } from './viewMode';
 
 export function GameToolbar({ mode }: { mode: ViewMode }) {
@@ -31,9 +32,19 @@ export function GameToolbar({ mode }: { mode: ViewMode }) {
       >
         life
       </Button>
+      <SoundToggle />
       {isCharacterControlled(mode) ? <SightRangeControl /> : null}
       {usesAgentText(mode) ? <AsciiColorToggle /> : null}
     </>
+  );
+}
+
+function SoundToggle() {
+  const [on, setOn] = useSoundOn();
+  return (
+    <Button active={on} onClick={() => setOn(!on)} tip={SOUND_TIP}>
+      sound
+    </Button>
   );
 }
 

@@ -3,6 +3,8 @@ import type { ItemSpawnSource } from '@/features/asset-library/items/pickups/ite
 import type { ReadOnlyPipelineStore } from '@/features/app-shell/runtime/readOnlyAssets';
 import type { NodeInstance } from '@/features/asset-library/worlds/pipeline/pipelineState';
 import type { Marker } from '@/features/asset-library/worlds/worldSampler';
+import type { Circuit } from './circuits/circuit';
+import { wireMarkersOf } from './circuits/wireMarkers';
 import {
   JUMP_CLIMB_LIMIT,
   WALK_CLIMB_LIMIT,
@@ -179,7 +181,18 @@ export class WorldRulesSet {
   }
 
   markersIn(minX: number, minY: number, maxX: number, maxY: number): Marker[] {
-    return this.overlays.flatMap((rules) => rules.markersIn(minX, minY, maxX, maxY));
+    return [
+      ...wireMarkersOf(this.circuitsIn(minX, minY, maxX, maxY), minX, minY, maxX, maxY),
+      ...this.overlays.flatMap((rules) => rules.markersIn(minX, minY, maxX, maxY)),
+    ];
+  }
+
+  circuitsIn(minX: number, minY: number, maxX: number, maxY: number): Circuit[] {
+    return this.overlays.flatMap((rules) => rules.circuitsIn(minX, minY, maxX, maxY));
+  }
+
+  cratesIn(minX: number, minY: number, maxX: number, maxY: number): Cell[] {
+    return this.overlays.flatMap((rules) => rules.cratesIn(minX, minY, maxX, maxY));
   }
 
   actionAt(x: number, y: number): string | null {

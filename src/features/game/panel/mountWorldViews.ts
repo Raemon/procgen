@@ -9,6 +9,9 @@ import { FeaturesView } from '../render/features/featuresView';
 import { View3D } from '../render/view3d/view3d';
 import { setWorldViewSnapshotter } from '../render/worldViewSnapshot';
 import type { WorldViewDeps } from '../render/worldViewDeps';
+import { soundOn } from '../sound/soundPreference';
+import { createSoundPlayer } from '../sound/soundSynth';
+import { playWorldSounds } from '../sound/worldSounds';
 import { isCharacterControlled, type ViewMode } from './viewMode';
 
 export interface ViewSlots {
@@ -128,6 +131,8 @@ export function mountWorldViews(
     if (runtime.playerInventoryPanel.isOpen()) movement.releaseHeldKeys();
   });
 
+  const stopSounds = playWorldSounds(runtime, createSoundPlayer(soundOn), soundOn);
+
   runtime.applyWorldChange();
 
   return {
@@ -136,6 +141,7 @@ export function mountWorldViews(
       redrawOnSightChange();
       stopWalkingWhileTyping();
       stopWalkingWhileBagIsOpen();
+      stopSounds();
       movement.dispose();
       stopJumpKey();
       stopPickUpKey();
@@ -171,6 +177,7 @@ function worldViewDepsOf(runtime: AppRuntime): WorldViewDeps {
     evaluator: runtime.evaluator,
     store: runtime.store,
     overlay: runtime.rules,
+    puzzleCues: runtime.puzzleCues,
     surfaceAt: (x, y) => runtime.rules.surfaceAt(x, y),
     tileAssets: runtime.tileAssets,
     creatures: runtime.creatures,

@@ -17,6 +17,7 @@ import { PickupFeed } from '@/features/asset-library/items/pickups/pickupFeed';
 import { TakenItemSpawns } from '@/features/asset-library/items/pickups/takenItemSpawns';
 import { WalkOverPickup } from '@/features/asset-library/items/pickups/walkOverPickup';
 import { MultiplayerSession } from '@/features/game/multiplayer/client/multiplayerSession';
+import { PuzzleCues } from '@/features/game/circuits/puzzleCues';
 import { CreatureClock } from '@/features/game/creatureSim/creatureClock';
 import { CreatureSim } from '@/features/game/creatureSim/creatureSim';
 import { creatureAwareOverlay } from '@/features/agents/creatureMarkers';
@@ -100,6 +101,7 @@ export interface AppRuntime {
   cameraFocus: CameraFocus;
   hoveredTile: HoveredTile;
   rules: WorldRulesSet;
+  puzzleCues: Pick<PuzzleCues, 'on'>;
   agentOverlay: ObservedOverlay;
   renderers: WorldRenderers;
   perform(action: string, params?: CommandParams): CommandResult;
@@ -150,7 +152,18 @@ export function createAppRuntime(): AppRuntime {
   const localMine = new Map<string, unknown>();
   const mine = mineSlotsOf(localMine, rules);
   const world = new World(stepRulesOf(rules, mine));
-  const net = new MultiplayerSession(world, store, rules, () => redrawIfSharedChanged());
+  const puzzleCues = new PuzzleCues(rules);
+  let joining = false;
+  const net = new MultiplayerSession(world, store, rules, {
+    onJoined: () => {
+      joining = true;
+      puzzleCues.forget();
+    },
+    onSharedApplied: () => {
+      joining = false;
+      redrawIfSharedChanged();
+    },
+  });
   const chatComposer = new ChatComposerState();
   const playerInventoryPanel = new PlayerInventoryPanelState();
   const pickupFeed = new PickupFeed();
@@ -199,10 +212,16 @@ export function createAppRuntime(): AppRuntime {
     return edited === store ? perform(action, params) : performCommandOnce(edited, action, params);
   }
 
-  function redrawIfSharedChanged(): void {
-    if (rules.revision() === lastSharedRevision) return;
+  function redrawIfSharedChanged(): boolean {
+    if (rules.revision() === lastSharedRevision) return false;
     lastSharedRevision = rules.revision();
+    syncCues();
     renderers.redrawAll();
+    return true;
+  }
+
+  function syncCues(): void {
+    if (!joining) puzzleCues.sync({ x: world.playerX, y: world.playerY });
   }
 
   function settleTheWorld(change: () => void): void {
@@ -282,6 +301,7 @@ export function createAppRuntime(): AppRuntime {
   function applyWorldChange(): void {
     sampler.invalidateStructureOverlay();
     sim.forget();
+    puzzleCues.forget();
     world.ensurePlayerOnWalkableGround();
     renderers.redrawAll();
     worldChanged.emit();
@@ -319,7 +339,7 @@ export function createAppRuntime(): AppRuntime {
   world.on('player-moved', () => {
     if (settlingTheWorld) return;
     walkOverPickup.onSteppedOnto(world.playerX, world.playerY);
-    redrawIfSharedChanged();
+    if (!redrawIfSharedChanged()) syncCues();
     keepPlayingAfterTheAction.schedule();
   });
   world.on('player-moved', () => renderers.recenterAll());
@@ -355,6 +375,7 @@ export function createAppRuntime(): AppRuntime {
     cameraFocus,
     hoveredTile,
     rules,
+    puzzleCues,
     agentOverlay,
     renderers,
     perform,

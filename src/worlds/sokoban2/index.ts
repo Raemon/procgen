@@ -1,6 +1,7 @@
 import { NO_ITEM_SPAWNS } from '@/features/asset-library/items/pickups/itemSpawnSource'
 import { registerExampleWorldSeed } from '@/features/asset-library/worlds/seeds/examplePipelines'
 import type { Marker } from '@/features/asset-library/worlds/worldSampler'
+import { cellWithin, circuitTouches, type Circuit } from '@/features/game/circuits/circuit'
 import { nothingToUse } from '@/features/game/fixtures/useOutcome'
 import {
   STEP_ALLOWED,
@@ -23,8 +24,10 @@ import { fromDungeon, toDungeon } from './node/worldValue'
 import { closedDoorsAt, doorIndexAt, openedDoorsOf } from './play/doors'
 import { goalSatisfied, type CrateAt } from './play/goals'
 import { moveKind } from './play/physics'
+import { roomSolved } from './play/rooms'
 import { CLIMB, DIRS, HEIGHT, type Crate, type Dir, type Vec, type World } from './types'
 import { crateFinder, inBounds, roomAt, surfaceHeight, terrainHeight } from './world'
+import { wireDungeon, type RoomWiring } from './play/wiring'
 
 registerExampleWorldSeed(sokobanDungeon)
 registerWorldRules({ nodeType: SOKOBAN2_NODE_TYPE, attach: sokoban2Rules, describe: describeSokobanState })
@@ -65,6 +68,7 @@ class Sokoban2Overlay implements Sokoban2Rules {
   private crateAt: CrateAt
   private opened: Set<number>
   private changes = 0
+  private wiring: RoomWiring[] | null = null
 
   constructor(
     readonly nodeId: string,
@@ -157,6 +161,17 @@ class Sokoban2Overlay implements Sokoban2Rules {
     return markers
   }
 
+  circuitsIn(minX: number, minY: number, maxX: number, maxY: number): Circuit[] {
+    this.wiring ??= wireDungeon(this.world)
+    return this.wiring
+      .map((room) => this.circuitOf(room))
+      .filter((circuit) => circuitTouches(circuit, minX, minY, maxX, maxY))
+  }
+
+  cratesIn(minX: number, minY: number, maxX: number, maxY: number): Cell[] {
+    return this.live.map((crate) => fromDungeon(this.world, crate)).filter((at) => cellWithin(at, minX, minY, maxX, maxY))
+  }
+
   actionAt(): string | null {
     return null
   }
@@ -225,6 +240,16 @@ class Sokoban2Overlay implements Sokoban2Rules {
     this.crateAt = crateFinder(this.live)
     this.opened = openedDoorsOf(this.world, this.live, this.opened)
     this.changes += 1
+  }
+
+  private circuitOf(room: RoomWiring): Circuit {
+    return {
+      key: `${this.nodeId}:room ${room.room}`,
+      plates: room.goals.map((goal) => ({ ...fromDungeon(this.world, goal), lit: goalSatisfied(goal, this.crateAt) })),
+      doors: room.doors.map((id) => ({ ...fromDungeon(this.world, this.world.doors[id]!), open: this.opened.has(id) })),
+      wires: room.wires.map((cell) => fromDungeon(this.world, cell)),
+      powered: roomSolved(this.world, this.live, room.room),
+    }
   }
 
   private doorIsShut(cell: Vec): boolean {

@@ -21,6 +21,11 @@ import { RemotePlayers } from './remotePlayers';
 
 const TURN_ECHO_QUIET_MS = 400;
 
+export interface SessionHooks {
+  onJoined(): void;
+  onSharedApplied(): void;
+}
+
 export class MultiplayerSession {
   readonly remotePlayers = new RemotePlayers();
   readonly speech = new SpeechBubbles();
@@ -39,7 +44,7 @@ export class MultiplayerSession {
     private readonly world: World,
     private readonly store: PipelineStore,
     private readonly rules: WorldRulesSet,
-    private readonly onSharedApplied: () => void,
+    private readonly hooks: SessionHooks,
   ) {
     this.localSim = new LocalMovementSim(world);
     this.client = new NetClient({
@@ -139,11 +144,12 @@ export class MultiplayerSession {
     this.remotePlayers.clear();
     this.speech.clear();
     this.snapToServerPose(msg.x, msg.y, msg.facing);
+    this.hooks.onJoined();
   }
 
   private acceptShared(msg: SharedMsg): void {
     this.rules.applySnapshot(msg.states);
-    this.onSharedApplied();
+    this.hooks.onSharedApplied();
   }
 
   private acceptSnapshot(rows: SnapshotRow[]): void {

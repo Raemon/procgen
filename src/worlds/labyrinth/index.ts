@@ -68,6 +68,8 @@ export function labyrinthRules(context: AttachContext): LabyrinthRules {
         return STEP_ALLOWED;
       },
       markersIn: (minX, minY, maxX, maxY) => puzzles.markersIn(minX, minY, maxX, maxY),
+      circuitsIn: (minX, minY, maxX, maxY) => puzzles.circuitsIn(minX, minY, maxX, maxY),
+      cratesIn: (minX, minY, maxX, maxY) => puzzles.cratesIn(minX, minY, maxX, maxY),
       actionAt: (x, y) => puzzles.actionAt(x, y),
       use: (x, y, mine, purse) => puzzles.use(x, y, purseOf(mine, purse)),
       resetRoomAt: (x, y) => {

@@ -3,6 +3,7 @@ import { NO_ITEM_SPAWNS, type ItemSpawnSource } from '@/features/asset-library/i
 import type { NodeInstance } from '@/features/asset-library/worlds/pipeline/pipelineState';
 import type { Marker } from '@/features/asset-library/worlds/worldSampler';
 import type { ReadOnlyPipelineStore } from '@/features/app-shell/runtime/readOnlyAssets';
+import type { Circuit } from './circuits/circuit';
 import { navigationLevelOf } from './climbing';
 import type { KeyPurse } from './fixtures/keyPurse';
 import { nothingToUse, type UseOutcome } from './fixtures/useOutcome';
@@ -76,6 +77,8 @@ export interface WorldRules {
   step(attempt: StepAttempt, mine: MineSlots, defaults: DefaultRules): StepVerdict;
   jump(attempt: JumpAttempt, mine: MineSlots, defaults: DefaultRules): Cell | null;
   markersIn(minX: number, minY: number, maxX: number, maxY: number): Marker[];
+  circuitsIn(minX: number, minY: number, maxX: number, maxY: number): Circuit[];
+  cratesIn(minX: number, minY: number, maxX: number, maxY: number): Cell[];
   actionAt(x: number, y: number): string | null;
   use(x: number, y: number, mine: MineSlots, purse: KeyPurse): UseOutcome;
   resetRoomAt(x: number, y: number): string | null;
@@ -128,6 +131,8 @@ export function inertRules(nodeId: string, nodeType: string): WorldRules {
     step: (attempt, _mine, defaults) => defaults.step(attempt),
     jump: (attempt, _mine, defaults) => defaults.jump(attempt),
     markersIn: () => [],
+    circuitsIn: () => [],
+    cratesIn: () => [],
     actionAt: () => null,
     use: (x, y) => nothingToUse(x, y),
     resetRoomAt: () => null,
