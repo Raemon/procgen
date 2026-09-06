@@ -11,11 +11,13 @@ import type { ViewMode } from './viewMode';
 
 export function GameHeader({
   title,
+  shortcut,
   mode,
   onChooseMode,
   onCollapse,
 }: {
   title: string;
+  shortcut?: string;
   mode: ViewMode;
   onChooseMode(next: ViewMode): void;
   onCollapse(): void;
@@ -52,7 +54,7 @@ export function GameHeader({
         <ViewModePicker mode={mode} onChoose={onChooseMode} />
         <GameToolbar mode={mode} />
       </div>
-      <CollapseButton title={title} onCollapse={onCollapse} />
+      <CollapseButton title={title} shortcut={shortcut} onCollapse={onCollapse} />
     </div>
   );
 }

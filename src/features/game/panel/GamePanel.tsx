@@ -27,12 +27,14 @@ export function GamePanel({ layout }: { layout: PanelLayout }) {
     [cameraFocus],
   );
   const toggleCollapsed = () => layout.toggleCollapsed('game');
+  const shortcut = layout.shortcutOf('game');
   if (layout.isCollapsed('game'))
-    return <CollapsedRail chrome={collapsedGameChrome(toggleCollapsed)} />;
+    return <CollapsedRail chrome={collapsedGameChrome(shortcut, toggleCollapsed)} />;
   return (
     <div className="flex h-full min-h-0 min-w-0 flex-col">
       <GameHeader
         title={GAME_COLUMN_TITLE}
+        shortcut={shortcut}
         mode={mode}
         onChooseMode={chooseMode}
         onCollapse={toggleCollapsed}
@@ -42,13 +44,17 @@ export function GamePanel({ layout }: { layout: PanelLayout }) {
   );
 }
 
-function collapsedGameChrome(onToggleCollapsed: () => void): PanelChrome {
+function collapsedGameChrome(
+  shortcut: string | undefined,
+  onToggleCollapsed: () => void,
+): PanelChrome {
   return {
     title: GAME_COLUMN_TITLE,
     tip: GAME_VIEW_TIP,
     icon: <WorldIcon />,
     tone: 'bg-panel',
     rail: null,
+    shortcut,
     expandTip: EXPAND_WORLD_VIEW_TIP,
     collapsed: true,
     onToggleCollapsed,

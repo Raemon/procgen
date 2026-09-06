@@ -89,6 +89,7 @@ import { checkSharedStateSync } from '@/features/game/multiplayer/__tests__/shar
 import { checkWorldsStayApart } from './worldsStayApart.test';
 import { checkWholeWorldNodes } from '@/features/asset-library/worlds/__tests__/wholeWorldNodes.test';
 import { checkSokobanRules } from '@/worlds/sokoban2/__tests__/sokobanRules.test';
+import { checkPanelShortcuts } from './panelShortcuts.test';
 
 function check(name: string, condition: boolean): void {
   test(name, () => assert.ok(condition));
@@ -169,6 +170,7 @@ describe('the hovered tile readout', () => checkTileHoverReadout(check));
 describe('the agent text view', () => checkAsciiAgentView(check));
 describe('the API architecture', () => checkApiArchitecture(check));
 describe('panel hints', () => checkPanelHintsRespectTheToggle(check));
+describe('the command-digit panel shortcuts', () => checkPanelShortcuts(check));
 describe('the walking simulator benchmark', () => checkWalkingSimFun(check));
 describe('the self play loop', () => checkSelfPlayLoop(check));
 describe('feature extraction', () => checkFeatureExtraction(check));

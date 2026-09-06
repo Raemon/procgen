@@ -13,6 +13,7 @@ export interface PanelChrome {
   icon: ReactNode;
   tone: string;
   rail: ReactNode;
+  shortcut?: string;
   expandTip?: TooltipContent;
   headerActions?: ReactNode;
   collapsed: boolean;
@@ -26,7 +27,7 @@ export function Panel({ chrome, children }: { chrome: PanelChrome; children: Rea
   return (
     <div
       className={classes(
-        'border-r border-panel-edge p-3',
+        'p-3',
         chrome.tone,
         chrome.fill ? 'flex h-full min-h-0 flex-col overflow-hidden' : 'overflow-y-auto',
       )}
@@ -53,7 +54,7 @@ function PanelHeader({ chrome }: { chrome: PanelChrome }) {
       <span className="flex-1" />
       {chrome.headerActions}
       <HintsToggle />
-      <CollapseButton title={chrome.title} onCollapse={chrome.onToggleCollapsed} />
+      <CollapseButton title={chrome.title} shortcut={chrome.shortcut} onCollapse={chrome.onToggleCollapsed} />
     </div>
   );
 }

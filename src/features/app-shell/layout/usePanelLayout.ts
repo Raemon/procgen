@@ -3,7 +3,9 @@ import { isNumber, isRecordOf } from '@/features/app-shell/state/persistedUiGuar
 import { PERSISTED_UI_KEYS } from '@/features/app-shell/state/persistedUiKeys';
 import { usePersistedUiSet } from '@/features/app-shell/state/usePersistedUiSet';
 import { usePersistedUiValue } from '@/features/app-shell/state/usePersistedUiValue';
+import { panelShortcutLabel } from './panelShortcut';
 import { MIN_WORLD_WIDTH, panelWidthsThatLeaveRoomForWorld } from './panelWidthBudget';
+import { usePanelShortcuts } from './usePanelShortcuts';
 import { useWindowWidth } from './useWindowWidth';
 
 export type PanelKey = 'library' | 'detail' | 'agents' | 'log' | 'worlds';
@@ -11,7 +13,7 @@ export type ColumnKey = PanelKey | 'game';
 
 const MIN_PANEL_WIDTH = 150;
 const MAX_PANEL_WIDTH = 640;
-const HANDLE_WIDTH = 6;
+const HANDLE_WIDTH = 1;
 export const COLLAPSED_PANEL_WIDTH = 42;
 
 const START_WIDTHS: Readonly<Record<PanelKey, number>> = {
@@ -29,6 +31,7 @@ export interface PanelLayout {
   resizePanel(key: PanelKey, width: number): void;
   resetPanelWidth(key: PanelKey): void;
   toggleCollapsed(key: ColumnKey): void;
+  shortcutOf(key: ColumnKey): string | undefined;
   stretchesIntoFoldedWorldView(key: PanelKey): boolean;
 }
 
@@ -39,7 +42,9 @@ export function usePanelLayout(visible: readonly PanelKey[]): PanelLayout {
     isRecordOf(isNumber),
   );
   const collapsed = usePersistedUiSet(PERSISTED_UI_KEYS.collapsedPanels);
+  const columns: ColumnKey[] = [...visible, 'game'];
   const windowWidth = useWindowWidth();
+  usePanelShortcuts(columns, collapsed.toggle);
 
   const resizePanel = useCallback(
     (key: PanelKey, width: number) => setWidths({ ...widths, [key]: clamped(width) }),
@@ -73,6 +78,7 @@ export function usePanelLayout(visible: readonly PanelKey[]): PanelLayout {
     resizePanel,
     resetPanelWidth,
     toggleCollapsed: (key) => collapsed.toggle(key),
+    shortcutOf: (key) => panelShortcutLabel(columns.indexOf(key)),
     stretchesIntoFoldedWorldView: (key) => visible.indexOf(key) === stretched,
   };
 }

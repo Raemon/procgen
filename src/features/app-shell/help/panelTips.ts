@@ -39,3 +39,8 @@ export function collapsePanelTip(title: string): TooltipContent {
 export function expandPanelTip(title: string): TooltipContent {
   return { title: `expand ${title}`, body: 'Reopens the column at the width you left it.' };
 }
+
+export function tipWithShortcut(tip: TooltipContent, shortcut: string | undefined): TooltipContent {
+  if (!shortcut) return tip;
+  return { ...tip, body: `${tip.body ?? ''} ${shortcut} folds and unfolds it from anywhere.`.trim() };
+}
