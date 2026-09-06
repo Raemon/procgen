@@ -10,7 +10,7 @@ import {
   featuresBeforeEdgesAreScrubbed,
   featuresInRect,
 } from '../features/featuresInRect';
-import { LABYRINTH_CELL_SIZE } from '../labyrinth/labyrinthLattice';
+import { LABYRINTH_CELL_SIZE } from '@/worlds/labyrinth/generate/layout/labyrinthLattice';
 import { allNodeTypes, nodeTypeOf } from '../nodeRegistry';
 import { defaultParams, outputKindOf, type NodeTypeDef } from '../nodeType';
 import type { PipelineState } from '../pipeline/pipelineState';

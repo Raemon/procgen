@@ -3,9 +3,9 @@ import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { reportOffenders } from '@/features/app-shell/__tests__/reportOffenders';
 import { tileBytes, worldFromState } from '@/features/asset-library/worlds/__tests__/pipelineWorldFixtures';
 import { sanitizePipeline } from '@/features/asset-library/worlds/pipeline/sanitizePipeline';
-import { infiniteLabyrinth } from '@/features/asset-library/worlds/seeds/infiniteLabyrinth';
-import { puzzleKnobsOfNode } from '../puzzles/puzzleKnobsFromPipeline';
-import { buildPuzzleRoom } from '../puzzles/rooms/buildPuzzleRoom';
+import { infiniteLabyrinth } from '../node/seed';
+import { puzzleKnobsOfNode } from '../rules/puzzleKnobs';
+import { buildPuzzleRoom } from '../generate/rooms/buildPuzzleRoom';
 
 const LABYRINTH_NODE_ID = 'n1';
 const CHUNKS_PINNED = 1;

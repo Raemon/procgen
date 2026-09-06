@@ -1,9 +1,10 @@
 import type { TakenSpawnKey } from '@/features/asset-library/items/pickups/takenItemSpawns';
 import type { InventoryPlacement } from '@/features/asset-library/items/inventory/inventoryDef';
 import { worldRulesFor } from '@/features/game/worldRules';
-import { LABYRINTH_NODE_TYPE } from '../labyrinth/labyrinthKnobs';
 import { sanitizePipeline } from '../pipeline/sanitizePipeline';
 import type { PipelineState } from '../pipeline/pipelineState';
+
+const LEGACY_PUZZLES_NODE_TYPE = 'labyrinthChunks';
 
 export interface SavedPlayerPose {
   x: number;
@@ -93,8 +94,8 @@ function sanitizeShared(raw: unknown, legacyPuzzles: unknown): Record<string, un
       if (typeof state === 'object' && state !== null) shared[nodeId] = state;
     }
   }
-  if (typeof legacyPuzzles === 'object' && legacyPuzzles !== null && !(LABYRINTH_NODE_TYPE in shared)) {
-    shared[LABYRINTH_NODE_TYPE] = legacyPuzzles;
+  if (typeof legacyPuzzles === 'object' && legacyPuzzles !== null && !(LEGACY_PUZZLES_NODE_TYPE in shared)) {
+    shared[LEGACY_PUZZLES_NODE_TYPE] = legacyPuzzles;
   }
   return shared;
 }
