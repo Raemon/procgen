@@ -76,7 +76,7 @@ export function mountWorldViews(
 
   const unregister = [
     runtime.renderers.add({
-      redraw: () => view3d.onWorldChanged(),
+      redraw: (change) => view3d.redraw(change),
       recenterOnPlayer: () => view3d.recenterOnPlayer(),
     }),
     runtime.renderers.add({

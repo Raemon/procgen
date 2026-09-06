@@ -43,7 +43,7 @@ export function GameStage({ mode }: { mode: ViewMode }) {
 
   useEffect(() => {
     mounted.current?.onModeChanged(mode);
-    runtime.renderers.redrawAll();
+    runtime.renderers.redrawAll('shared-state');
   }, [mode, runtime]);
 
   return (

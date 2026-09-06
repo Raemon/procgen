@@ -8,6 +8,7 @@ import { characterWithId } from '../../multiplayer/client/charactersInPlay';
 import { listenForDragPan } from '../camera/dragPanListener';
 import { listenForWheelZoom } from '../camera/wheelZoomListener';
 import { containerSize, devicePixelRatioCapped, isCollapsed } from '../canvasSurface';
+import type { WorldRedraw } from '@/features/app-shell/runtime/worldRenderers';
 import type { WorldViewDeps } from '../worldViewDeps';
 import { WORLD_CANVAS_CLASSES } from '../worldCanvasClasses';
 import { CoveredCells } from './animations/coveredCells';
@@ -201,7 +202,18 @@ export class View3D {
     this.followCamera.recenterOnPlayer();
   }
 
-  onWorldChanged(): void {
+  redraw(change: WorldRedraw): void {
+    if (change === 'shared-state') this.onSharedStateChanged();
+    else this.onWorldChanged();
+  }
+
+  private onSharedStateChanged(): void {
+    this.streamer.invalidateAll();
+    this.itemMeshes.invalidate();
+    this.worldLights.invalidate();
+  }
+
+  private onWorldChanged(): void {
     this.streamer.invalidateAll();
     this.terrainOverview.invalidate();
     this.worldLights.invalidate();

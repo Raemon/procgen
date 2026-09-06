@@ -1,5 +1,7 @@
+export type WorldRedraw = 'world' | 'shared-state';
+
 export interface WorldRenderer {
-  redraw(): void;
+  redraw(change: WorldRedraw): void;
   recenterOnPlayer(): void;
 }
 
@@ -11,8 +13,8 @@ export class WorldRenderers {
     return () => this.renderers.delete(renderer);
   }
 
-  redrawAll(): void {
-    for (const renderer of this.renderers) renderer.redraw();
+  redrawAll(change: WorldRedraw): void {
+    for (const renderer of this.renderers) renderer.redraw(change);
   }
 
   recenterAll(): void {
