@@ -9,8 +9,7 @@ import { temptingTraps } from '../puzzle/traps/temptingTraps'
 import type { TemptingTrap } from '../puzzle/traps/trapCollector'
 import type { RoomBrief2 } from './briefs'
 import { boxLinesOf } from './boxLines'
-import { certifies, claimsFor, missingClaims } from './certifyClaims'
-import { noteGate } from './furnishGates'
+import { certifies, claimsFor } from './certifyClaims'
 import { metered, meteredSolve, type NodeMeter } from './nodeMeter'
 import { conceptOf, describeRoomPuzzle } from './roomNotes'
 import { motifKey } from './syllabus'
@@ -83,7 +82,6 @@ export function appraise(
   const solved = solveAndPriceLine(board, draft, recipe, meter)
   if (!solved) return null
   if (!solvableAroundParking(board, draft, standards, meter)) {
-    noteGate(recipe.id, 'parking')
     return null
   }
 
@@ -93,29 +91,24 @@ export function appraise(
   const motif = motifOf(draft, recipe, standards)
   const floor = Math.max(trapFloor(recipe, draft), (standards.ledger.get(motif) ?? -1) + 1)
   if (trapCredit < floor) {
-    noteGate(recipe.id, standards.ledger.has(motif) ? 'repeat' : 'traps', `${trapCredit}/${floor}`)
     return null
   }
 
   const proven = claimsFor(recipe, board, draft, solved.report, credited, meter)
   if (!certifies(recipe, proven, credited)) {
-    noteGate(recipe.id, 'certificates', missingClaims(recipe, proven, credited).join('+'))
     return null
   }
 
   const dependencies = metered(meter, () => countDependencies(board, draft))
   if (dependencies < recipe.minDependencies) {
-    noteGate(recipe.id, 'dependencies', `${dependencies}/${recipe.minDependencies}`)
     return null
   }
 
   const families = [...new Set(credited.map((trap) => trap.kind))].sort()
   const concept = conceptOf(board, draft, recipe, families, credited)
   if (claimed.has(concept)) {
-    noteGate(recipe.id, 'uniqueness')
     return null
   }
-  noteGate(recipe.id, 'shipped')
   return {
     recipeId: recipe.id,
     draft,
@@ -164,21 +157,17 @@ interface CertifiedLine {
 function solveAndPriceLine(board: Board, draft: PuzzleDraft, recipe: Recipe, meter: NodeMeter): CertifiedLine | null {
   const report = meteredSolve(meter, board, draft, BASE_SOLVE_BUDGET)
   if (report.verdict !== 'solved' || !report.pushPath || report.pushes === null) {
-    noteGate(recipe.id, 'solve', report.verdict)
     return null
   }
   if (report.pushes < recipe.minPushes) {
-    noteGate(recipe.id, 'minPushes', `${report.pushes}/${recipe.minPushes}`)
     return null
   }
   const boxLines = boxLinesOf(board, report.pushPath)
   if (boxLines < MIN_BOX_LINES) {
-    noteGate(recipe.id, 'boxLines', `${boxLines}`)
     return null
   }
   const { climbs, drops } = heightWork(board, draft, report.pushPath)
   if (needsLedge(recipe) && climbs < 1) {
-    noteGate(recipe.id, 'climbs', 'the line never climbs: the start is already up there')
     return null
   }
   return { report: { ...report, pushPath: report.pushPath }, minPushes: report.pushes, boxLines, climbs, drops }

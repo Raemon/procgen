@@ -1,6 +1,6 @@
 import { derive } from '../rng'
 import { HEIGHT, type RoomPlan, type Vec, type World } from '../types'
-import { index, roomAt } from '../world'
+import { index, roomAt, toWorld } from '../world'
 import { at, ledgeCells, type Rect, type RoomCanvas } from '../puzzle/canvas'
 import { finalise, type Furnishing } from './appraise'
 import type { RoomBrief2 } from './briefs'
@@ -10,7 +10,6 @@ import { allGoals } from './paintWorld'
 import { RECIPES, type RecipeId } from './recipes'
 import { searchRoomPuzzle } from './searchRoomPuzzle'
 import { briefForRung, rungsBelow, type Rung } from './recipeLadder'
-import { toWorld } from '../world'
 
 export type RefurnishRoom = (world: World, roomId: number) => string | null
 

@@ -74,7 +74,7 @@ export function entryCell(layout: Layout, roomId: number, door: Door): Vec {
       return { x: cell.x - room!.x, y: cell.y - room!.y }
     }
   }
-  return { x: 0, y: 0 }
+  throw new Error(`door (${door.x},${door.y}) touches no cell of room ${roomId}`)
 }
 
 function reserveParking(

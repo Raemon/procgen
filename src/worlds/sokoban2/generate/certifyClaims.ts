@@ -57,14 +57,6 @@ function ledgeIsNecessary(board: Board, draft: PuzzleDraft): boolean {
   return draft.crates.some((crate) => board.height[crate.cell] === HEIGHT.Ledge)
 }
 
-export function missingClaims(recipe: Recipe, proven: NecessityReport, traps: TemptingTrap[]): string[] {
-  const open: string[] = recipe.demands.filter((claim) => !certifies({ ...recipe, demands: [claim], eitherOf: [] }, proven, traps))
-  if (recipe.eitherOf.length > 0 && !certifies({ ...recipe, demands: [] }, proven, traps)) {
-    open.push(`either(${recipe.eitherOf.join('|')})`)
-  }
-  return open
-}
-
 export function claimsOf(proven: NecessityReport): string[] {
   const flags: string[] = []
   if (proven.colorsBite) flags.push('colorsBite')

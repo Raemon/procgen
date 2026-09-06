@@ -115,11 +115,7 @@ export function worldRulesFor(nodeType: string): RulesOverlayFactory | undefined
   return factories.get(nodeType);
 }
 
-export function registeredWorldRules(): RulesOverlayFactory[] {
-  return [...factories.values()];
-}
-
-export function inertRules(nodeId: string, nodeType: string): WorldRules {
+function inertRules(nodeId: string, nodeType: string): WorldRules {
   return {
     nodeId,
     nodeType,

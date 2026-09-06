@@ -144,10 +144,6 @@ export function floorComponents(canvas: RoomCanvas): Set<number>[] {
   return components(canvas, (v) => isFloor(canvas, v))
 }
 
-export function ledgeComponents(canvas: RoomCanvas): Set<number>[] {
-  return components(canvas, (v) => isLedge(canvas, v))
-}
-
 export function allHoldableConnected(canvas: RoomCanvas): boolean {
   return components(canvas, (v) => holdable(canvas, v)).length === 1
 }

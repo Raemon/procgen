@@ -1,4 +1,4 @@
-import { HEIGHT, IMPASSABLE, TILE, type Crate, type Goal, type Vec, type World } from './types'
+import { HEIGHT, IMPASSABLE, TILE, type Crate, type Vec, type World } from './types'
 
 export function index(world: { width: number }, x: number, y: number): number {
   return y * world.width + x
@@ -6,11 +6,6 @@ export function index(world: { width: number }, x: number, y: number): number {
 
 export function inBounds(world: { width: number; height: number }, x: number, y: number): boolean {
   return x >= 0 && y >= 0 && x < world.width && y < world.height
-}
-
-export function tileAt(world: World, x: number, y: number): number {
-  if (!inBounds(world, x, y)) return TILE.Void
-  return world.tiles[index(world, x, y)]!
 }
 
 export function terrainHeight(world: World, x: number, y: number): number {
@@ -34,10 +29,6 @@ export function roomAt(world: World, x: number, y: number): number {
 export function holdsCrates(world: World, x: number, y: number): boolean {
   const terrain = terrainHeight(world, x, y)
   return terrain <= HEIGHT.Ledge
-}
-
-export function goalAt(world: World, x: number, y: number): Goal | undefined {
-  return world.goals.find((goal) => goal.x === x && goal.y === y)
 }
 
 export function key(v: Vec): string {
