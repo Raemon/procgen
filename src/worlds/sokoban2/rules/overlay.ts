@@ -16,13 +16,20 @@ import {
 } from '@/features/game/worldRules'
 import { SOKOBAN2_NODE_TYPE } from '../node/dungeonKnobs'
 import { fromDungeon, toDungeon } from '../node/worldValue'
-import { closedDoorsAt, openedDoorsOf } from '../play/doors'
+import { closedDoorsAt } from '../play/doors'
 import { moveKind } from '../play/physics'
 import { wireDungeon, type RoomWiring } from '../play/wiring'
 import { CLIMB, DIRS, HEIGHT, type Crate, type Vec, type World } from '../types'
-import { crateFinder, inBounds, roomAt, surfaceHeight, terrainHeight } from '../world'
+import { inBounds, roomAt, surfaceHeight, terrainHeight } from '../world'
 import { circuitsOf, cratesOf } from './circuits'
-import { doorIsShut, dungeonStateOf, openedDoorsSorted, type DungeonState } from './dungeonState'
+import {
+  doorIsShut,
+  dungeonStateOf,
+  moveCrateTo,
+  openedDoorsSorted,
+  sendRoomCratesHome,
+  type DungeonState,
+} from './dungeonState'
 import { markersOf } from './markers'
 import { dirOf, whyBlocked } from './refusals'
 import { applySnapshotTo, snapshotOf, type Sokoban2Snapshot } from './snapshot'
@@ -100,11 +107,7 @@ class Sokoban2Overlay implements Sokoban2Rules {
     const outcome = moveKind(this.world, this.state.crateAt, from, dir, closedDoorsAt(this.world, this.state.opened))
     if (outcome.kind === 'walk') return STEP_ALLOWED
     if (outcome.kind === 'climb') return stepRefused(`(${attempt.to.x},${attempt.to.y}) stands a step up; jump to get onto it`)
-    if (outcome.kind === 'push') {
-      if (!attempt.mayPush) return stepRefused(`a crate stands at (${attempt.to.x},${attempt.to.y})`)
-      if (attempt.commit) this.pushCrate(outcome.crate, outcome.destination)
-      return STEP_ALLOWED
-    }
+    if (outcome.kind === 'push') return this.shoveTheCrate(outcome.crate, outcome.destination, attempt)
     return stepRefused(whyBlocked(this.state, from, to, attempt.to))
   }
 
@@ -113,12 +116,7 @@ class Sokoban2Overlay implements Sokoban2Rules {
     const dir = dirOf(attempt.dx, attempt.dy)
     if (!dir) return null
     const to = { x: from.x + DIRS[dir].x, y: from.y + DIRS[dir].y }
-    if (!inBounds(this.world, to.x, to.y) || terrainHeight(this.world, to.x, to.y) >= HEIGHT.Wall) return null
-    if (doorIsShut(this.state, to)) return null
-    const feet = surfaceHeight(this.world, this.state.crateAt, from.x, from.y)
-    const surface = surfaceHeight(this.world, this.state.crateAt, to.x, to.y)
-    if (surface > feet + CLIMB) return null
-    return fromDungeon(this.world, to)
+    return this.canLandOn(from, to) ? fromDungeon(this.world, to) : null
   }
 
   markersIn(minX: number, minY: number, maxX: number, maxY: number): Marker[] {
@@ -146,19 +144,7 @@ class Sokoban2Overlay implements Sokoban2Rules {
     const cell = toDungeon(this.world, x, y)
     const room = roomAt(this.world, cell.x, cell.y)
     if (room < 0) return null
-    const original = new Map(this.world.crates.map((crate) => [crate.id, crate]))
-    let moved = false
-    for (const crate of this.state.live) {
-      const home = original.get(crate.id)
-      if (!home || roomAt(this.world, home.x, home.y) !== room) continue
-      if (crate.x === home.x && crate.y === home.y) continue
-      crate.x = home.x
-      crate.y = home.y
-      moved = true
-    }
-    if (!moved) return `room ${room}`
-    this.state.crateAt = crateFinder(this.state.live)
-    this.changes.bump()
+    if (sendRoomCratesHome(this.state, room)) this.changes.bump()
     return `room ${room}`
   }
 
@@ -179,13 +165,16 @@ class Sokoban2Overlay implements Sokoban2Rules {
     this.changes.bump()
   }
 
-  private pushCrate(crate: Crate, destination: Vec): void {
-    const moved = this.state.live.find((each) => each.id === crate.id)
-    if (!moved) return
-    moved.x = destination.x
-    moved.y = destination.y
-    this.state.crateAt = crateFinder(this.state.live)
-    this.state.opened = openedDoorsOf(this.world, this.state.live, this.state.opened)
-    this.changes.bump()
+  private shoveTheCrate(crate: Crate, destination: Vec, attempt: StepAttempt): StepVerdict {
+    if (!attempt.mayPush) return stepRefused(`a crate stands at (${attempt.to.x},${attempt.to.y})`)
+    if (attempt.commit && moveCrateTo(this.state, crate, destination)) this.changes.bump()
+    return STEP_ALLOWED
+  }
+
+  private canLandOn(from: Vec, to: Vec): boolean {
+    if (!inBounds(this.world, to.x, to.y) || terrainHeight(this.world, to.x, to.y) >= HEIGHT.Wall) return false
+    if (doorIsShut(this.state, to)) return false
+    const rise = surfaceHeight(this.world, this.state.crateAt, to.x, to.y) - surfaceHeight(this.world, this.state.crateAt, from.x, from.y)
+    return rise <= CLIMB
   }
 }

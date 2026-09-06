@@ -14,7 +14,8 @@ import { WORLD_CANVAS_CLASSES } from '../worldCanvasClasses';
 import { CoveredCells } from './animations/coveredCells';
 import { puzzleAnimationsOf } from './animations/puzzleAnimations';
 import type { WorldAnimations } from './animations/worldAnimations';
-import { CharacterCamera } from './characterCamera';
+import { CameraRig, type CameraStyle } from './cameraRig';
+import type { CameraView } from './cameraView';
 import { CharacterSpriteAssets } from './characterSpriteAssets';
 import { ChunkMeshStreamer } from './chunkMeshStreamer';
 import { CreatureMeshes } from './creatureMeshes';
@@ -25,8 +26,6 @@ import { RemotePlayerMeshes } from './remotePlayerMeshes';
 import { createCharacterFog, createWorldScene, setFogRange } from './worldScene';
 import { LAMPLIT_AMBIENT, OVERHEAD_AMBIENT, SceneDaylight } from './sceneDaylight';
 import { WorldLights } from './worldLights';
-import { FollowCamera } from './followCamera';
-import { TopDownCamera } from './topDownCamera';
 import { SightShadows } from './sightShadows';
 import { TopDownPlayerMarker } from './topDownPlayerMarker';
 import { worldCellUnderPointer } from './pointerToWorldCell';
@@ -46,7 +45,7 @@ import { TerrainOverview } from './terrainOverview';
 const MAX_FRAME_MS = 100;
 const MOST_SNAPSHOTS_WORTH_QUEUEING = 4;
 
-export type CameraStyle = 'god' | 'character' | 'topdown';
+export type { CameraStyle } from './cameraRig';
 
 interface SnapshotRequest {
   size: number;
@@ -59,11 +58,8 @@ export class View3D {
   private readonly renderer = new THREE.WebGLRenderer({ antialias: true });
   private readonly scene = createWorldScene();
   private readonly daylight = new SceneDaylight(this.scene, OVERHEAD_AMBIENT);
-  private readonly followCamera = new FollowCamera();
-  private readonly characterCamera = new CharacterCamera();
-  private readonly topDownCamera = new TopDownCamera();
+  private readonly rig = new CameraRig();
   private readonly characterFog = createCharacterFog();
-  private cameraStyle: CameraStyle = 'god';
   private readonly worldGroup = new THREE.Group();
   private readonly characterSprites = new CharacterSpriteAssets();
   private readonly presence: PlayerPresence;
@@ -127,9 +123,7 @@ export class View3D {
     });
     this.worldLights = new WorldLights(this.scene, deps);
     this.speechLabels = new SpeechBubbleLabels(container);
-    this.listenForCameraGestures();
-    listenForCaptureDrag(this.canvas, deps.capture, (x, y) => this.cellAtPixel(x, y));
-    listenForTileHover(this.canvas, deps.hoveredTile, (x, y) => this.cellAtPixel(x, y));
+    this.listenForCanvasGestures();
     this.animations = puzzleAnimationsOf(this.worldGroup, {
       puzzleCues: deps.puzzleCues,
       surfaceAt: deps.surfaceAt,
@@ -163,8 +157,8 @@ export class View3D {
   }
 
   setCameraStyle(style: CameraStyle): void {
-    if (this.cameraStyle === style) return;
-    this.cameraStyle = style;
+    if (this.rig.style === style) return;
+    this.rig.lookThrough(style);
     this.scene.fog = style === 'character' ? this.characterFog : null;
     this.daylight.seeInTheDark(style === 'character' ? LAMPLIT_AMBIENT : OVERHEAD_AMBIENT);
     this.streamer.showCeilings(style === 'character');
@@ -173,16 +167,11 @@ export class View3D {
       this.sightShadows.hide();
       this.topDownMarker.hide();
     }
-    this.characterCamera.levelLook();
-    this.characterCamera.snapOnNextFrame();
-    this.followCamera.snapToFocusOnNextUpdate();
-    this.topDownCamera.snapToFocusOnNextUpdate();
     this.resize();
   }
 
   lookBy(step: -1 | 1): void {
-    if (this.cameraStyle !== 'character') return;
-    this.characterCamera.lookBy(step);
+    this.rig.lookBy(step);
   }
 
   private gpuSceneLoad(): GpuSceneLoad {
@@ -197,9 +186,9 @@ export class View3D {
   }
 
   recenterOnPlayer(): void {
-    this.topDownCamera.recenterOnPlayer();
+    this.rig.topDown.recenterOnPlayer();
     if (this.deps.cameraFocus.followedId() !== null) return;
-    this.followCamera.recenterOnPlayer();
+    this.rig.follow.recenterOnPlayer();
   }
 
   redraw(change: WorldRedraw): void {
@@ -226,18 +215,12 @@ export class View3D {
   }
 
   private viewYaw(): number {
-    if (this.cameraStyle === 'god') return this.followCamera.yaw();
-    return this.cameraStyle === 'topdown' ? 0 : facingYawRadians(this.deps.world.facing);
-  }
-
-  private activeCamera(): THREE.PerspectiveCamera {
-    if (this.cameraStyle === 'god') return this.followCamera.camera;
-    return this.cameraStyle === 'topdown' ? this.topDownCamera.camera : this.characterCamera.camera;
+    return this.rig.yaw(facingYawRadians(this.deps.world.facing));
   }
 
   private cellAtPixel(offsetX: number, offsetY: number) {
     return worldCellUnderPointer(
-      this.activeCamera(),
+      this.rig.camera,
       this.canvas,
       offsetX,
       offsetY,
@@ -245,34 +228,18 @@ export class View3D {
     );
   }
 
-  private focusPoint(): { x: number; y: number } {
-    if (this.cameraStyle === 'god') return this.followCamera.focusPoint();
-    return this.cameraStyle === 'topdown'
-      ? this.topDownCamera.focusPoint()
-      : this.characterCamera.focusPoint();
-  }
-
   private focusGroundHeight(): number {
-    const focus = this.focusPoint();
+    const focus = this.rig.focusPoint();
     return this.deps.sampler.elevationAt(Math.floor(focus.x), Math.floor(focus.y));
   }
 
-  private listenForCameraGestures(): void {
-    listenForWheelZoom(this.canvas, (wheelPixelsY) => {
-      if (this.cameraStyle === 'god') this.followCamera.zoomByWheelPixels(wheelPixelsY);
-      else if (this.cameraStyle === 'topdown') this.topDownCamera.zoomByWheelPixels(wheelPixelsY);
-      else this.characterCamera.zoomByWheelPixels(wheelPixelsY);
-    });
+  private listenForCanvasGestures(): void {
+    listenForWheelZoom(this.canvas, (wheelPixelsY) => this.rig.zoomByWheelPixels(wheelPixelsY));
     listenForDragPan(
       this.canvas,
       (dxPixels, dyPixels) => {
-        if (this.cameraStyle === 'topdown') {
-          this.topDownCamera.panByDragPixels(dxPixels, dyPixels);
-          return;
-        }
-        if (this.cameraStyle !== 'god') return;
-        this.deps.cameraFocus.clear();
-        this.followCamera.panByDragPixels(dxPixels, dyPixels);
+        if (this.rig.style === 'god') this.deps.cameraFocus.clear();
+        this.rig.panByDragPixels(dxPixels, dyPixels);
       },
       () => !this.deps.capture.isActive(),
     );
@@ -280,6 +247,8 @@ export class View3D {
       this.deps.cameraFocus.clear();
       this.recenterOnPlayer();
     });
+    listenForCaptureDrag(this.canvas, this.deps.capture, (x, y) => this.cellAtPixel(x, y));
+    listenForTileHover(this.canvas, this.deps.hoveredTile, (x, y) => this.cellAtPixel(x, y));
   }
 
   private resize(): void {
@@ -287,9 +256,7 @@ export class View3D {
     if (isCollapsed(size)) return;
     this.renderer.setPixelRatio(devicePixelRatioCapped());
     this.renderer.setSize(size.cssWidth, size.cssHeight);
-    this.followCamera.setViewportSize(size.cssWidth, size.cssHeight);
-    this.topDownCamera.setViewportSize(size.cssWidth, size.cssHeight);
-    this.characterCamera.setAspect(size.cssWidth / size.cssHeight);
+    this.rig.setViewportSize(size.cssWidth, size.cssHeight);
   }
 
   private onFrame = (time: number): void => {
@@ -303,9 +270,7 @@ export class View3D {
     this.animations.advance(dtSeconds);
     this.presence.advance(dtSeconds);
     this.applySightRadius();
-    this.elapsedSeconds += dtSeconds;
-    advanceFaceArtAnimations(this.elapsedSeconds);
-    const view = { yaw: this.viewYaw(), seconds: this.elapsedSeconds };
+    const view = this.momentToDraw(dtSeconds);
     this.presence.place(view);
     measureWork('creature meshes', () => this.creatureMeshes.syncTo(this.deps.sim, view));
     this.remotePlayerMeshes.syncTo(this.deps.remotePlayers, dtSeconds, view);
@@ -315,8 +280,14 @@ export class View3D {
     this.streamAroundCameraFocus();
     this.lightAroundPlayer();
     this.showSpeechBubbles();
-    measureWork('gpu submit', () => this.renderer.render(this.scene, this.activeCamera()));
+    measureWork('gpu submit', () => this.renderer.render(this.scene, this.rig.camera));
     this.serveSnapshotRequests();
+  }
+
+  private momentToDraw(dtSeconds: number): CameraView {
+    this.elapsedSeconds += dtSeconds;
+    advanceFaceArtAnimations(this.elapsedSeconds);
+    return { yaw: this.viewYaw(), seconds: this.elapsedSeconds };
   }
 
   captureAfterNextFrame(size: number, use: (dataUrl: string) => void): void {
@@ -332,14 +303,14 @@ export class View3D {
   }
 
   private showSpeechBubbles(): void {
-    const firstPerson = this.cameraStyle === 'character';
+    const firstPerson = this.rig.style === 'character';
     const selfId = this.deps.remotePlayers.selfId;
     this.speechLabels.showPinned(firstPerson ? this.deps.speech.linesFor(selfId) : []);
     this.speechLabels.showAnchored(
       speechBubbleAnchors(this.deps.speech, (speakerId) =>
         this.speakerHeadPoint(speakerId, selfId, firstPerson),
       ),
-      this.activeCamera(),
+      this.rig.camera,
     );
   }
 
@@ -369,56 +340,41 @@ export class View3D {
   private applySightRadius(): void {
     const radius = this.sightRadiusTiles();
     setFogRange(this.characterFog, radius);
-    this.characterCamera.setSightRadiusTiles(radius);
+    this.rig.character.setSightRadiusTiles(radius);
   }
 
   private castSightShadows(): void {
-    if (this.cameraStyle !== 'topdown') return;
+    if (this.rig.style !== 'topdown') return;
     this.topDownMarker.hoverOver(this.presence.position);
     this.sightShadows.castAround(
       this.deps.world.playerX,
       this.deps.world.playerY,
       this.sightRadiusTiles(),
-      this.topDownCamera.visibleGroundRadiusTiles(),
+      this.rig.topDown.visibleGroundRadiusTiles(),
     );
   }
 
   private updateActiveCamera(dtSeconds: number): void {
-    const eased = this.presence.eased;
-    if (this.cameraStyle === 'topdown') {
-      this.topDownCamera.update(dtSeconds, eased.x, eased.y, this.focusGroundHeight());
-      return;
-    }
-    if (this.cameraStyle === 'god') {
-      this.followCamera.update(
-        dtSeconds,
-        eased.x,
-        eased.y,
-        facingYawRadians(this.deps.world.facing),
-        this.focusGroundHeight(),
-      );
-      this.aimAtFollowedCharacter();
-      return;
-    }
-    this.characterCamera.update(
-      dtSeconds,
-      eased.x,
-      eased.y,
-      this.presence.elevation(),
-      facingYawRadians(this.deps.world.facing),
-    );
+    this.rig.update(dtSeconds, {
+      x: this.presence.eased.x,
+      y: this.presence.eased.y,
+      groundElevation: this.focusGroundHeight(),
+      eyeElevation: this.presence.elevation(),
+      facingYaw: facingYawRadians(this.deps.world.facing),
+    });
+    this.aimAtFollowedCharacter();
   }
 
   private aimAtFollowedCharacter(): void {
     const followedId = this.deps.cameraFocus.followedId();
-    if (followedId === null) return;
+    if (this.rig.style !== 'god' || followedId === null) return;
     const followed = characterWithId(this.deps.world, this.deps.remotePlayers, followedId);
     if (!followed) {
       this.deps.cameraFocus.clear();
-      this.followCamera.recenterOnPlayer();
+      this.rig.follow.recenterOnPlayer();
       return;
     }
-    this.followCamera.lookAtTile(followed.x, followed.y);
+    this.rig.follow.lookAtTile(followed.x, followed.y);
   }
 
   private lightAroundPlayer(): void {
@@ -429,35 +385,25 @@ export class View3D {
   }
 
   private streamAroundCameraFocus(): void {
-    const focus = this.focusPoint();
-    const camera = this.activeCamera();
-    const viewportHeight = this.renderer.domElement.clientHeight;
+    const focus = this.rig.focusPoint();
     const groundElevation = this.focusGroundHeight();
-    const radiusTiles = this.streamingRadiusTiles(groundElevation);
-    const overviewVisible = this.cameraStyle === 'god' && needsTerrainOverview(radiusTiles);
-    if (overviewVisible) {
-      measureWork('terrain overview', () =>
-        this.terrainOverview.syncAround(focus.x, focus.y, radiusTiles),
-      );
-    } else {
-      this.terrainOverview.hide();
-    }
-    this.streamer.detailFromCamera(camera, viewportHeight, groundElevation);
+    const radiusTiles = this.rig.visibleGroundRadiusTiles(groundElevation, this.sightRadiusTiles());
+    this.showTerrainOverview(focus, radiusTiles);
+    this.streamer.detailFromCamera(this.rig.camera, this.renderer.domElement.clientHeight, groundElevation);
     this.streamer.streamAround(focus.x, focus.y, streamingRadiusChunks(radiusTiles));
     measureWork('item meshes', () =>
-      this.itemMeshes.syncAround(
-        focus.x,
-        focus.y,
-        detailedContentRadiusTiles(radiusTiles),
-      ),
+      this.itemMeshes.syncAround(focus.x, focus.y, detailedContentRadiusTiles(radiusTiles)),
     );
   }
 
-  private streamingRadiusTiles(groundElevation: number): number {
-    if (this.cameraStyle === 'god') {
-      return this.followCamera.visibleGroundRadiusTiles(groundElevation);
+  private showTerrainOverview(focus: { x: number; y: number }, radiusTiles: number): void {
+    if (this.rig.style !== 'god' || !needsTerrainOverview(radiusTiles)) {
+      this.terrainOverview.hide();
+      return;
     }
-    if (this.cameraStyle === 'character') return this.sightRadiusTiles();
-    return Math.max(this.sightRadiusTiles(), this.topDownCamera.visibleGroundRadiusTiles());
+    measureWork('terrain overview', () =>
+      this.terrainOverview.syncAround(focus.x, focus.y, radiusTiles),
+    );
   }
+
 }

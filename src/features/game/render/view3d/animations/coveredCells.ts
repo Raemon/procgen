@@ -12,18 +12,17 @@ export class CoveredCells {
     const covers = (this.covers.get(key) ?? 0) + 1;
     this.covers.set(key, covers);
     if (covers === 1) this.remesh(cell);
-    let lifted = false;
-    return () => {
-      if (lifted) return;
-      lifted = true;
-      const left = (this.covers.get(key) ?? 1) - 1;
-      if (left > 0) {
-        this.covers.set(key, left);
-        return;
-      }
-      this.covers.delete(key);
-      this.remesh(cell);
-    };
+    return actedOnlyOnce(() => this.uncover(cell, key));
+  }
+
+  private uncover(cell: Cell, key: string): void {
+    const left = (this.covers.get(key) ?? 1) - 1;
+    if (left > 0) {
+      this.covers.set(key, left);
+      return;
+    }
+    this.covers.delete(key);
+    this.remesh(cell);
   }
 
   isCovered(x: number, y: number): boolean {
@@ -36,4 +35,13 @@ export class CoveredCells {
         source.markersIn(minX, minY, maxX, maxY).filter((marker) => !this.isCovered(marker.x, marker.y)),
     };
   }
+}
+
+function actedOnlyOnce(act: () => void): () => void {
+  let acted = false;
+  return () => {
+    if (acted) return;
+    acted = true;
+    act();
+  };
 }

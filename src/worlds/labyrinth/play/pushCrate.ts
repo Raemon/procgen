@@ -6,6 +6,15 @@ import type { PuzzleState } from '../rules/state/puzzleState';
 
 export type WalkableProbe = (x: number, y: number) => boolean;
 
+export type CrateShove = (
+  layout: PuzzleRoomLayout,
+  state: PuzzleState,
+  crate: PuzzleFixture,
+  dx: number,
+  dy: number,
+  tileIsWalkable: WalkableProbe,
+) => boolean;
+
 export function crateCanBePushed(
   layout: PuzzleRoomLayout,
   state: PuzzleState,

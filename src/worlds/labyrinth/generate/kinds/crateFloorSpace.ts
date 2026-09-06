@@ -30,11 +30,25 @@ function aCrateSitsOn(space: CrateFloorSpace, cell: Cell): boolean {
 }
 
 export function cellsReachableFrom(space: CrateFloorSpace, from: Cell): Set<number> {
+  return openFloorReachedFrom(space, from, null);
+}
+
+export function canWalkBetween(space: CrateFloorSpace, from: Cell, goal: Cell): boolean {
+  if (!isOpenFloor(space, goal)) return false;
+  return openFloorReachedFrom(space, from, goal).has(cellKey(goal));
+}
+
+function openFloorReachedFrom(
+  space: CrateFloorSpace,
+  from: Cell,
+  until: Cell | null,
+): Set<number> {
   if (!isOpenFloor(space, from)) return new Set();
   const seen = new Set<number>([cellKey(from)]);
   const queue: Cell[] = [from];
   for (let read = 0; read < queue.length; read++) {
     const here = queue[read]!;
+    if (until && here.x === until.x && here.y === until.y) return seen;
     for (const step of CRATE_DIRECTIONS) {
       const next = { x: here.x + step.dx, y: here.y + step.dy };
       if (seen.has(cellKey(next)) || !isOpenFloor(space, next)) continue;
@@ -43,21 +57,4 @@ export function cellsReachableFrom(space: CrateFloorSpace, from: Cell): Set<numb
     }
   }
   return seen;
-}
-
-export function canWalkBetween(space: CrateFloorSpace, from: Cell, goal: Cell): boolean {
-  if (!isOpenFloor(space, from) || !isOpenFloor(space, goal)) return false;
-  const seen = new Set<number>([cellKey(from)]);
-  const queue: Cell[] = [from];
-  for (let read = 0; read < queue.length; read++) {
-    const here = queue[read]!;
-    if (here.x === goal.x && here.y === goal.y) return true;
-    for (const step of CRATE_DIRECTIONS) {
-      const next = { x: here.x + step.dx, y: here.y + step.dy };
-      if (seen.has(cellKey(next)) || !isOpenFloor(space, next)) continue;
-      seen.add(cellKey(next));
-      queue.push(next);
-    }
-  }
-  return false;
 }

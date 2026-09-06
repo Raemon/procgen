@@ -30,14 +30,7 @@ export function createSoundPlayer(isOn: () => boolean = () => true): SoundPlayer
       const audio = ready();
       if (audio.context.state !== 'running') return;
       const recipe = recipes[cue];
-      const out = audio.context.createGain();
-      out.gain.value = Math.max(0, Math.min(1, volume));
-      out.connect(audio.master);
-      const send = audio.context.createGain();
-      send.gain.value = recipe.roomSend;
-      out.connect(send);
-      send.connect(audio.room);
-      recipe.play(audio.context, audio.noise, out);
+      recipe.play(audio.context, audio.noise, cueChannel(audio, volume, recipe.roomSend));
     },
     dispose: () => {
       disposed = true;
@@ -46,4 +39,19 @@ export function createSoundPlayer(isOn: () => boolean = () => true): SoundPlayer
       graph = null;
     },
   };
+}
+
+function cueChannel(audio: AudioGraph, volume: number, roomSend: number): GainNode {
+  const out = audio.context.createGain();
+  out.gain.value = Math.max(0, Math.min(1, volume));
+  out.connect(audio.master);
+  out.connect(sendIntoTheRoom(audio, roomSend));
+  return out;
+}
+
+function sendIntoTheRoom(audio: AudioGraph, roomSend: number): GainNode {
+  const send = audio.context.createGain();
+  send.gain.value = roomSend;
+  send.connect(audio.room);
+  return send;
 }

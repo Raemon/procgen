@@ -50,26 +50,34 @@ registerNodeType({
   generateChunk: denizenChunk,
 });
 
+interface CellCoord {
+  x: number;
+  y: number;
+}
+
 function denizenChunk(ctx: ChunkGenCtx): ChunkValue {
   const labyrinth = ctx.tilesInput('labyrinth');
   if (!labyrinth) return pointsValue([]);
   const seed = ctx.hashSeed(DENIZEN_SEED_LABEL);
   const denizens = denizenKnobsOf(ctx);
   const floorTile = ctx.params.floorTile as number;
+  const points: PointsChunk = cellsOfChunk(ctx).flatMap((cell) => {
+    const floors = floorCellsOf(ctx, labyrinth, cell.x, cell.y, floorTile);
+    const lair = lairInCell(cell.x, cell.y, seed, denizens, floors);
+    return lair ? [{ x: lair.x, y: lair.y, tag: DENIZEN_TAG }] : [];
+  });
+  return pointsValue(points);
+}
+
+function cellsOfChunk(ctx: ChunkGenCtx): CellCoord[] {
   const cellsAcross = ctx.size / LABYRINTH_CELL_SIZE;
   const firstCellX = labyrinthCellCoordOf(ctx.originX);
   const firstCellY = labyrinthCellCoordOf(ctx.originY);
-  const points: PointsChunk = [];
+  const cells: CellCoord[] = [];
   for (let cy = 0; cy < cellsAcross; cy++) {
-    for (let cx = 0; cx < cellsAcross; cx++) {
-      const cellX = firstCellX + cx;
-      const cellY = firstCellY + cy;
-      const floors = floorCellsOf(ctx, labyrinth, cellX, cellY, floorTile);
-      const lair = lairInCell(cellX, cellY, seed, denizens, floors);
-      if (lair) points.push({ x: lair.x, y: lair.y, tag: DENIZEN_TAG });
-    }
+    for (let cx = 0; cx < cellsAcross; cx++) cells.push({ x: firstCellX + cx, y: firstCellY + cy });
   }
-  return pointsValue(points);
+  return cells;
 }
 
 function floorCellsOf(

@@ -58,6 +58,8 @@ function labyrinthChunk(ctx: ChunkGenCtx): ChunkValue {
   return tilesValue(tiles);
 }
 
+type FloorWithinCell = (localX: number, localY: number) => boolean;
+
 function paintCell(
   ctx: ChunkGenCtx,
   tiles: TilesChunk,
@@ -66,46 +68,30 @@ function paintCell(
   knobs: LabyrinthKnobs,
 ): void {
   const exits = chunkExitsOf(cellX, cellY, knobs);
-  if (roleOf(cellX, cellY, knobs) === ROOM) paintRoom(ctx, tiles, cellX, cellY, exits, knobs);
-  else paintSubmaze(ctx, tiles, cellX, cellY, exits, knobs);
+  const isFloor = floorOfCell(cellX, cellY, exits, knobs);
+  const originX = labyrinthCellOrigin(cellX);
+  const originY = labyrinthCellOrigin(cellY);
+  for (let y = 0; y < LABYRINTH_CELL_SIZE; y++) {
+    for (let x = 0; x < LABYRINTH_CELL_SIZE; x++) {
+      tiles[tileIndex(ctx, originX + x, originY + y)] = isFloor(x, y) ? knobs.floorTile : knobs.wallTile;
+    }
+  }
 }
 
-function paintRoom(
-  ctx: ChunkGenCtx,
-  tiles: TilesChunk,
+function floorOfCell(
   cellX: number,
   cellY: number,
   exits: ChunkExits,
   knobs: LabyrinthKnobs,
-): void {
+): FloorWithinCell {
+  if (roleOf(cellX, cellY, knobs) !== ROOM) {
+    const mask = submazeFloorMask(cellX, cellY, exits, knobs);
+    return (localX, localY) => mask[localY * LABYRINTH_CELL_SIZE + localX] === 1;
+  }
   const geometry = roomGeometryOf(cellX, cellY, exits, knobs);
   const originX = labyrinthCellOrigin(cellX);
   const originY = labyrinthCellOrigin(cellY);
-  for (let y = 0; y < LABYRINTH_CELL_SIZE; y++) {
-    for (let x = 0; x < LABYRINTH_CELL_SIZE; x++) {
-      const floor = isRoomFloor(originX + x, originY + y, geometry);
-      tiles[tileIndex(ctx, originX + x, originY + y)] = floor ? knobs.floorTile : knobs.wallTile;
-    }
-  }
-}
-
-function paintSubmaze(
-  ctx: ChunkGenCtx,
-  tiles: TilesChunk,
-  cellX: number,
-  cellY: number,
-  exits: ChunkExits,
-  knobs: LabyrinthKnobs,
-): void {
-  const mask = submazeFloorMask(cellX, cellY, exits, knobs);
-  const originX = labyrinthCellOrigin(cellX);
-  const originY = labyrinthCellOrigin(cellY);
-  for (let y = 0; y < LABYRINTH_CELL_SIZE; y++) {
-    for (let x = 0; x < LABYRINTH_CELL_SIZE; x++) {
-      const floor = mask[y * LABYRINTH_CELL_SIZE + x] === 1;
-      tiles[tileIndex(ctx, originX + x, originY + y)] = floor ? knobs.floorTile : knobs.wallTile;
-    }
-  }
+  return (localX, localY) => isRoomFloor(originX + localX, originY + localY, geometry);
 }
 
 function tileIndex(ctx: ChunkGenCtx, worldX: number, worldY: number): number {
