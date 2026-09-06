@@ -1,8 +1,9 @@
 import * as THREE from 'three';
-import '@/features/game/puzzles/kinds';
+import '@/worlds/client';
+import { NO_ITEMS } from '@/features/asset-library/items/itemAssets';
 import { facingYawRadians } from '@/features/game/facing';
 import { CreatureSim } from '@/features/game/creatureSim/creatureSim';
-import { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
+import { WorldRulesSet } from '@/features/game/worldRulesSet';
 import { CharacterSpriteAssets } from '@/features/game/render/view3d/characterSpriteAssets';
 import { CreatureMeshes } from '@/features/game/render/view3d/creatureMeshes';
 import { isWalkableTile } from '@/features/game/tileWalkability';
@@ -41,7 +42,7 @@ export class HeadlessWorldView {
       this.chunkGroups,
       world.sampler,
       world.tileAssets,
-      new PuzzleWorld(world.store, () => true),
+      overlayOf(world),
     );
     this.lights = new WorldLights(this.scene, tileLightsOnlyDeps(world));
     this.creatures = new CreatureMeshes(
@@ -134,4 +135,13 @@ function capturableRenderer(request: WorldViewRequest): THREE.WebGLRenderer {
   renderer.setSize(request.width, request.height);
   document.body.appendChild(renderer.domElement);
   return renderer;
+}
+
+function overlayOf(world: HeadlessWorld): WorldRulesSet {
+  const rules = new WorldRulesSet({
+    tileIsWalkable: (x, y) => isWalkableTile(world.tileAssets, world.sampler.tileAt(x, y)),
+    elevationAt: (x, y) => world.sampler.elevationAt(x, y),
+  });
+  rules.attach(world.store, { items: NO_ITEMS, builtValueOf: () => null });
+  return rules;
 }

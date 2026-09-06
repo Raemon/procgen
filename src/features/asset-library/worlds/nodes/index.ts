@@ -40,3 +40,4 @@ import './time/bornFilterNode';
 import './village/villagePlotsNode';
 import './village/villageStreetsNode';
 import './customScript/customScriptNode';
+import '@/worlds/client';

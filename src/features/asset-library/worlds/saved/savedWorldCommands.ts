@@ -11,7 +11,7 @@ import { listOf, readOptionalText, readText } from '@/features/app-shell/runtime
 import { runningSavedWorld } from '../running/runningWorld';
 import { freeWorldSeedName } from '../seeds/freeWorldSeedName';
 import { capturedWorld, restoreSavedWorld } from './capturedWorld';
-import type { SavedWorld } from './savedWorld';
+import { describeShared, type SavedWorld } from './savedWorld';
 
 const { define: registerCommand, commands: savedWorldCommands } = createCommandCollection();
 export { savedWorldCommands };
@@ -170,7 +170,5 @@ function noSuchSavedWorld(context: CommandContext, name: string): CommandResult 
 }
 
 function whatHappenedIn(saved: SavedWorld): string {
-  const fixtures = saved.puzzles.on.length;
-  const crates = saved.puzzles.crates.length;
-  return `${saved.takenItems.length} items taken, ${fixtures} fixtures worked, ${crates} crates moved, player at (${saved.player.x},${saved.player.y})`;
+  return `${saved.takenItems.length} items taken, ${describeShared(saved)}, player at (${saved.player.x},${saved.player.y})`;
 }

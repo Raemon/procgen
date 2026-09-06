@@ -1,6 +1,6 @@
 import type { FacingIndex } from '../../facing';
 
-export const PROTOCOL_VERSION = 5;
+export const PROTOCOL_VERSION = 6;
 
 export const Op = {
   Order: 1,
@@ -19,11 +19,12 @@ export type SnapshotRow = [number, number, number, number, number, number];
 export type SnapshotMsg = [typeof Op.Snapshot, number, SnapshotRow[]];
 
 export type EntityKind = 'player' | 'agent';
-export type KickCode = 'version' | 'duplicate' | 'backpressure' | 'abuse';
+export type KickCode = 'version' | 'duplicate' | 'backpressure' | 'abuse' | 'no_such_instance';
 
 export interface HelloMsg {
   t: 'hello';
   v: number;
+  instance?: string;
 }
 
 export interface WelcomeMsg {
@@ -64,21 +65,31 @@ export interface KickMsg {
   message: string;
 }
 
-export interface UseMsg {
-  t: 'use';
+export interface VerbMsg {
+  t: 'verb';
+  action: string;
+  params?: Record<string, unknown>;
 }
 
-export interface ResetRoomMsg {
-  t: 'resetRoom';
+export interface SharedMsg {
+  t: 'shared';
+  states: Record<string, unknown>;
 }
 
-export interface PuzzlesMsg {
-  t: 'puzzles';
-  on: string[];
-  crates: Array<[string, number, number]>;
+export interface BuildingMsg {
+  t: 'building';
+  fraction: number;
+  stage: string;
+  elapsedMs: number;
 }
 
-export type ClientMsg = HelloMsg | SayMsg | OrderMsg | TurnMsg | JumpMsg | UseMsg | ResetRoomMsg;
+export interface NodeBuiltMsg {
+  t: 'nodeBuilt';
+  nodeId: string;
+  signature: string;
+}
+
+export type ClientMsg = HelloMsg | SayMsg | OrderMsg | TurnMsg | JumpMsg | VerbMsg;
 export type ServerMsg =
   | WelcomeMsg
   | EntityMetaMsg
@@ -86,4 +97,6 @@ export type ServerMsg =
   | DocChangedMsg
   | KickMsg
   | SnapshotMsg
-  | PuzzlesMsg;
+  | SharedMsg
+  | BuildingMsg
+  | NodeBuiltMsg;

@@ -66,7 +66,7 @@ function sendWelcome(conn: Connection, deps: WsDeps): void {
     facing: entity.facing,
   });
   deps.feed.sendFullSnapshotTo(conn, deps.loop.tick);
-  deps.feed.sendPuzzlesTo(conn, deps.worldHost.current().puzzles.state);
+  deps.feed.sendSharedTo(conn, deps.worldHost.current().rules.snapshot());
 }
 
 function sanitizeName(raw: unknown): string | null {

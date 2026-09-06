@@ -4,14 +4,13 @@ import type { PipelineStore } from '@/features/asset-library/worlds/pipeline/pip
 import { sanitizePipeline } from '@/features/asset-library/worlds/pipeline/sanitizePipeline';
 import { JUMP_MS, JUMP_UP, ORDER_DIR, ORDER_NONE, type JumpRequest } from '../../sim/movementOrder';
 import { stepDirIndex } from '../../sim/tickMovement';
-import type { WalkabilityProbe } from '../../tileWalkability';
 import type { FacingIndex } from '../../facing';
-import type { PuzzleWorld } from '../../puzzles/puzzleWorld';
 import type { World } from '../../world';
+import type { WorldRulesSet } from '../../worldRulesSet';
 import { SteeredJump } from '../../input/steeredJump';
 import { LocalMovementSim } from './localMovementSim';
 import { NetClient, type NetStatus } from './netClient';
-import { JUMP_IN_PLACE, type PuzzlesMsg, type SnapshotRow, type WelcomeMsg } from './protocol';
+import { JUMP_IN_PLACE, type SharedMsg, type SnapshotRow, type WelcomeMsg } from './protocol';
 import { RemotePlayers } from './remotePlayers';
 
 const TURN_ECHO_QUIET_MS = 400;
@@ -32,11 +31,10 @@ export class MultiplayerSession {
   constructor(
     private readonly world: World,
     private readonly store: PipelineStore,
-    isWalkableAt: WalkabilityProbe,
-    private readonly puzzles: PuzzleWorld,
-    private readonly onPuzzlesApplied: () => void,
+    private readonly rules: WorldRulesSet,
+    private readonly onSharedApplied: () => void,
   ) {
-    this.localSim = new LocalMovementSim(world, isWalkableAt);
+    this.localSim = new LocalMovementSim(world);
     this.client = new NetClient({
       onStatus: (status) => this.acceptStatus(status),
       onWelcome: (msg) => this.acceptWelcome(msg),
@@ -44,7 +42,7 @@ export class MultiplayerSession {
       onEntityMeta: (msg) => this.remotePlayers.applyMeta(msg),
       onSaid: (msg) => this.speech.add(msg.id, msg.text),
       onDocChanged: (name, revision) => this.reloadChangedDoc(name, revision),
-      onPuzzles: (msg) => this.acceptPuzzles(msg),
+      onShared: (msg) => this.acceptShared(msg),
       onKick: (msg) => console.warn(`[net] kicked: ${msg.code} — ${msg.message}`),
     });
     this.lastFacing = world.facing;
@@ -97,12 +95,8 @@ export class MultiplayerSession {
     return this.online;
   }
 
-  sendUse(): void {
-    this.client.sendUse();
-  }
-
-  sendResetRoom(): void {
-    this.client.sendResetRoom();
+  sendVerb(action: string, params: Record<string, unknown> = {}): void {
+    this.client.sendVerb(action, params);
   }
 
   say(rawText: string): void {
@@ -134,9 +128,9 @@ export class MultiplayerSession {
     this.snapToServerPose(msg.x, msg.y, msg.facing);
   }
 
-  private acceptPuzzles(msg: PuzzlesMsg): void {
-    this.puzzles.state.replaceAll({ on: msg.on, crates: msg.crates });
-    this.onPuzzlesApplied();
+  private acceptShared(msg: SharedMsg): void {
+    this.rules.applySnapshot(msg.states);
+    this.onSharedApplied();
   }
 
   private acceptSnapshot(rows: SnapshotRow[]): void {

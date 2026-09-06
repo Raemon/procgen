@@ -1,3 +1,4 @@
+import '@/worlds/server';
 import type { PersistedDocumentName } from '@/features/app-shell/persistence/persistedDocuments';
 import type { Server as HttpServer } from 'node:http';
 import { newAgentApiState, type AgentApiState } from '@/features/agents/api/nodeEntry';

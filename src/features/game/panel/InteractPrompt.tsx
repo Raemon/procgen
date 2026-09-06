@@ -1,10 +1,7 @@
 import { useCallback, useSyncExternalStore } from 'react';
 import { useAppRuntime } from '@/features/app-shell/runtime/appRuntimeContext';
 import type { AppRuntime } from '@/features/app-shell/runtime/appRuntime';
-import {
-  actionWithinReach,
-  interactPrompt,
-} from '../puzzles/interaction/actionWithinReach';
+import { actionWithinReach, interactPrompt } from '../fixtures/actionWithinReach';
 
 export function InteractPrompt() {
   const runtime = useAppRuntime();
@@ -23,7 +20,7 @@ export function InteractPrompt() {
 function promptForWhatIsWithinReach(runtime: AppRuntime): string | null {
   const { world } = runtime;
   return interactPrompt(
-    actionWithinReach(runtime.puzzles, {
+    actionWithinReach(runtime.rules, {
       x: world.playerX,
       y: world.playerY,
       facing: world.facing,

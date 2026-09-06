@@ -1,5 +1,5 @@
 import type { TileAssets } from '@/features/asset-library/tiles/tileAssets';
-import { climbGateFrom } from '@/features/game/climbing';
+import { climbGateFrom, standableProbeFrom } from '@/features/game/climbing';
 import type { CellPoint } from '@/features/game/nearestWalkable';
 import { walkableLandingSpot } from '@/features/game/world';
 import { PipelineEvaluator } from '../eval/evaluator';
@@ -42,7 +42,8 @@ export function spawnPacesOf(
   );
   const isWalkableAt = walkableProbeFrom(cachedTileIdProbe(sampler), assets.tileAssets);
   const elevationAt = cachedElevationProbe(sampler);
-  const spot = walkableLandingSpot(pose.x, pose.y, isWalkableAt, climbGateFrom(elevationAt));
+  const isStandableAt = standableProbeFrom(isWalkableAt, climbGateFrom(elevationAt));
+  const spot = walkableLandingSpot(pose.x, pose.y, isWalkableAt, isStandableAt);
   if (!spot) return 0;
   return walkableCellsFrom(spot, stepProbeFrom(isWalkableAt, elevationAt), PLAYABLE_PACES);
 }

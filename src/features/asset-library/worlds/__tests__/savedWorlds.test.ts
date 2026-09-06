@@ -12,7 +12,10 @@ import { PieceAssets } from '@/features/asset-library/pieces/pieceAssets';
 import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
 import { AssetFolders } from '@/features/asset-library/folders/assetFolders';
 import { TemplateLibrary } from '@/features/asset-library/node-groups/templateLibrary';
-import { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
+import { LABYRINTH_NODE_TYPE } from '@/features/asset-library/worlds/labyrinth/labyrinthKnobs';
+import { WorldRulesSet } from '@/features/game/worldRulesSet';
+import type { LabyrinthRules } from '@/worlds/labyrinth';
+import type { PuzzleStateSnapshot } from '@/worlds/labyrinth/puzzles/state/puzzleState';
 import { assetId, type ItemId } from '@/features/asset-library/asset';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { persistWorld, type ServerWorld } from '@/features/agents/api/serverWorld';
@@ -55,7 +58,7 @@ function checkASaveRemembersWhatThePlayerDid(check: CheckReporter): void {
 
   game.walkTo(0, 0, 0);
   game.takenItems.forgetAll();
-  game.puzzles.state.forgetAll();
+  game.rules.forgetAll();
   const ran = game.act('run_saved_world', { name: 'halfway down' });
 
   check(
@@ -68,7 +71,7 @@ function checkASaveRemembersWhatThePlayerDid(check: CheckReporter): void {
   );
   check(
     'running a save puts back the puzzle fixtures that had been worked',
-    game.puzzles.state.isOn('cell/lever'),
+    game.labyrinth().puzzles.state.isOn('cell/lever'),
   );
 }
 
@@ -171,12 +174,12 @@ function checkRollingANewWorldLeavesTheLastWorldsDoingsBehind(check: CheckReport
   game.act('randomize_world_seed', { seed: 7 });
   check(
     'a roll grows a different world, so what was picked up and worked in the last one is left behind',
-    game.takenItems.snapshot().length === 0 && game.puzzles.state.snapshot().on.length === 0,
+    game.takenItems.snapshot().length === 0 && nothingWorkedIn(game.rules.snapshot()),
   );
   check(
     'the save keeps what was done in it',
     game.savedWorlds.byName('a camp')!.takenItems.length === 1 &&
-      game.savedWorlds.byName('a camp')!.puzzles.on.length === 1,
+      labyrinthStateOf(game.savedWorlds.byName('a camp')!.shared).on.length === 1,
   );
 }
 
@@ -300,7 +303,9 @@ function playableWorld() {
   const savedWorlds = new SavedWorldLibrary({ worlds: [] });
   const takenItems = new TakenItemSpawns();
   const runningWorld = new RunningWorld();
-  const puzzles = new PuzzleWorld(store, () => true);
+  const rules = new WorldRulesSet({ tileIsWalkable: () => true, elevationAt: () => 0 });
+  rules.followStore(store, { items, builtValueOf: () => null });
+  const labyrinth = () => rules.find(LABYRINTH_NODE_TYPE) as LabyrinthRules;
   const pose = { x: 0, y: 0, facing: 0 };
   let settled = 0;
   let inASettle = false;
@@ -331,7 +336,7 @@ function playableWorld() {
         ),
       take: (spawn: ItemSpawn) => takenItems.take(spawn),
     },
-    puzzles,
+    rules,
     regionSampler: { tileAt: () => 0, elevationAt: () => 0, packedVoxelColumnAt: () => null },
     settleTheWorld: (change: () => void) => {
       settled++;
@@ -360,16 +365,17 @@ function playableWorld() {
     savedWorlds,
     worldSeeds,
     takenItems,
-    puzzles,
+    rules,
+    labyrinth,
     runningWorld,
     pose,
-    aSeedName: () => worldSeeds.savedWorldSeeds()[0]!.name,
+    aSeedName: () => 'infinite labyrinth',
     act: (action: string, params?: Record<string, unknown>) =>
       performCommand(context, 'god', action, params),
     walkTo: (x: number, y: number, facing: number) => context.actor.snapTo(x, y, facing as never),
     pickUp: (x: number, y: number, itemId: number) =>
       takenItems.take({ x, y, itemId: itemId as ItemId }),
-    workFixture: (id: string) => puzzles.state.setOn(id, true),
+    workFixture: (id: string) => labyrinth().puzzles.state.setOn(id, true),
     layAnItemOnTheGround: (x: number, y: number) => {
       const item = items.add();
       onTheGround.push({ x, y, itemId: item.id, name: item.name, glyph: '', color: '', tag: 'test' });
@@ -391,4 +397,13 @@ function playableWorld() {
     settledChanges: () => settled,
     escapedTheSettle: () => escaped,
   };
+}
+
+function nothingWorkedIn(shared: Record<string, unknown>): boolean {
+  return Object.values(shared).every((state) => (state as PuzzleStateSnapshot).on.length === 0);
+}
+
+function labyrinthStateOf(shared: Record<string, unknown>): PuzzleStateSnapshot {
+  const [state] = Object.values(shared);
+  return (state ?? { on: [], crates: [] }) as PuzzleStateSnapshot;
 }

@@ -19,7 +19,7 @@ import {
   actionWithinReach,
   interactPrompt,
   type ActionOfferingCells,
-} from '@/features/game/puzzles/interaction/actionWithinReach';
+} from '@/features/game/fixtures/actionWithinReach';
 import type { AgentMode, AgentPose } from './agentMode';
 import { climbStepsOf } from '@/features/game/climbing';
 

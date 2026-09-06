@@ -8,7 +8,7 @@ import {
   type MovingBody,
 } from '../../sim/movementOrder';
 import { tickMovement, type TickRules } from '../../sim/tickMovement';
-import type { WalkabilityProbe } from '../../tileWalkability';
+import { tickRulesOf } from '../../sim/tickRules';
 import type { FacingIndex } from '../../facing';
 import type { World } from '../../world';
 
@@ -17,11 +17,8 @@ export class LocalMovementSim {
   private readonly rules: TickRules;
   private timer = 0;
 
-  constructor(
-    private readonly world: World,
-    isWalkableAt: WalkabilityProbe,
-  ) {
-    this.rules = { isWalkable: isWalkableAt, jumpRules: world.stepRules() };
+  constructor(private readonly world: World) {
+    this.rules = tickRulesOf(world.stepRules());
   }
 
   start(): void {

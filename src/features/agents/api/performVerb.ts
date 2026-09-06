@@ -1,4 +1,8 @@
-import type { CommandParams } from '@/features/app-shell/runtime/commands/command';
+import type {
+  CommandActor,
+  CommandContext,
+  CommandParams,
+} from '@/features/app-shell/runtime/commands/command';
 import { performCommand } from '@/features/app-shell/runtime/commands/performCommand';
 import type { WorldSeedLab } from '@/features/asset-library/worlds/lab/worldSeedLab';
 import { commandFor } from '@/features/app-shell/runtime/commands/commandCatalog';
@@ -28,30 +32,7 @@ export function performVerb(
   lab: WorldSeedLab | null = null,
 ): VerbResult {
   const result = performCommand(
-    {
-      store: world.store,
-      pipelineIsOnScreen: true,
-      tileAssets: world.tileAssets,
-      pieces: world.pieces,
-      cultures: world.cultures,
-      creatures: world.creatures,
-      items: world.items,
-      templates: world.templates,
-      assetFolders: world.assetFolders,
-      worldSeeds: world.worldSeeds,
-      savedWorlds: world.savedWorlds,
-      takenItems: world.takenItems,
-      settleTheWorld: (change: () => void) => change(),
-      runningWorld: world.runningWorld,
-      randomizeHistory: world.randomizeHistory,
-      regionSampler: world.sampler,
-      worldSampler: world.sampler,
-      lab,
-      groundItems: world.groundItems,
-      keyPurse: world.keyPurse,
-      puzzles: world.puzzles,
-      actor: sessionActor(session, world.stepRules),
-    },
+    serverCommandContext(world, sessionActor(session, world.rules), lab),
     session.mode,
     action,
     params,
@@ -63,6 +44,36 @@ export function performVerb(
     summary: result.ok ? result.summary : null,
     failure: result.ok ? null : verbFailure(result.code, result.hint),
     changedPipeline: result.ok && (commandFor(session.mode, action)?.changesWorld ?? false),
+  };
+}
+
+export function serverCommandContext(
+  world: ServerWorld,
+  actor: CommandActor,
+  lab: WorldSeedLab | null,
+): CommandContext {
+  return {
+    store: world.store,
+    pipelineIsOnScreen: true,
+    tileAssets: world.tileAssets,
+    pieces: world.pieces,
+    cultures: world.cultures,
+    creatures: world.creatures,
+    items: world.items,
+    templates: world.templates,
+    assetFolders: world.assetFolders,
+    worldSeeds: world.worldSeeds,
+    savedWorlds: world.savedWorlds,
+    takenItems: world.takenItems,
+    settleTheWorld: (change: () => void) => change(),
+    runningWorld: world.runningWorld,
+    randomizeHistory: world.randomizeHistory,
+    regionSampler: world.sampler,
+    worldSampler: world.sampler,
+    lab,
+    groundItems: world.groundItems,
+    rules: world.rules,
+    actor,
   };
 }
 

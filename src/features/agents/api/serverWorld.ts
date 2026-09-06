@@ -1,5 +1,4 @@
 import '@/features/asset-library/worlds/nodes';
-import { climbGatesFrom, standableProbeFrom } from '@/features/game/climbing';
 import type { WorldSeedLab } from '@/features/asset-library/worlds/lab/worldSeedLab';
 import { AssetFolders } from '@/features/asset-library/folders/assetFolders';
 import { CreatureAssets } from '@/features/asset-library/creatures/creatureAssets';
@@ -18,12 +17,8 @@ import { RandomizeHistory } from '@/features/asset-library/worlds/randomize/rand
 import { TemplateLibrary } from '@/features/asset-library/node-groups/templateLibrary';
 import { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import { nearestWalkable } from '@/features/game/nearestWalkable';
-import type { StepRules } from '@/features/game/sim/stepIsAllowed';
-import { carriedKeysOf } from '@/features/game/puzzles/interaction/carriedKeys';
-import type { KeyPurse } from '@/features/game/puzzles/interaction/keyPurse';
-import { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
-import { PuzzleState } from '@/features/game/puzzles/state/puzzleState';
 import { isWalkableTile } from '@/features/game/tileWalkability';
+import { WorldRulesSet } from '@/features/game/worldRulesSet';
 import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
 import { tilesAsStoredJson } from '@/features/asset-library/tiles/tileStorage';
 import {
@@ -65,11 +60,9 @@ export interface ServerWorld {
   randomizeHistory: RandomizeHistory;
   takenItems: TakenItemSpawns;
   groundItems: GroundItems;
-  puzzles: PuzzleWorld;
-  keyPurse: KeyPurse;
+  rules: WorldRulesSet;
   isWalkable(x: number, y: number): boolean;
   isStandable(x: number, y: number): boolean;
-  stepRules: StepRules;
   spawn(): { x: number; y: number };
 }
 
@@ -113,7 +106,7 @@ export function currentServerWorld(docs: DocSource, previous: ServerWorld | null
     stamp,
     previous?.randomizeHistory ?? new RandomizeHistory(),
     previous?.takenItems ?? new TakenItemSpawns(),
-    previous?.puzzles.state ?? new PuzzleState(),
+    previous?.rules ?? null,
   );
 }
 
@@ -122,7 +115,7 @@ function buildServerWorld(
   stamp: string,
   randomizeHistory: RandomizeHistory,
   takenItems: TakenItemSpawns,
-  puzzleState: PuzzleState,
+  previousRules: WorldRulesSet | null,
 ): ServerWorld {
   const collection = <Name extends CollectionDocumentName>(name: Name) =>
     parseStoredCollection(name, docs.read(name)) ?? undefined;
@@ -151,17 +144,17 @@ function buildServerWorld(
     cultures,
   );
   const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileAssets, sampler.tileAt(x, y));
-  const puzzles = new PuzzleWorld(store, tileIsWalkable, puzzleState, items);
-  sampler.alsoSpawnItemsFrom(puzzles);
-  const isWalkable = (x: number, y: number) => tileIsWalkable(x, y) && !puzzles.blocksAt(x, y);
-  const gates = climbGatesFrom((x, y) => sampler.elevationAt(x, y));
-  const isStandable = standableProbeFrom(isWalkable, gates.climbGateAt);
+  const rules = new WorldRulesSet({ tileIsWalkable, elevationAt: (x, y) => sampler.elevationAt(x, y) });
+  rules.followStore(store, { items, builtValueOf: () => null });
+  if (previousRules) rules.adoptStateOf(previousRules);
+  sampler.alsoSpawnItemsFrom(rules.items);
+  const isWalkable = (x: number, y: number) => rules.isWalkable(x, y);
+  const isStandable = (x: number, y: number) => rules.isStandable(x, y);
   return {
     stamp,
     sampler,
-    puzzles,
-    groundItems: groundItemsOf(sampler, takenItems, puzzles),
-    keyPurse: carriedKeysOf(creatures, items),
+    rules,
+    groundItems: groundItemsOf(sampler, takenItems, rules.items),
     tileAssets,
     store,
     pieces,
@@ -178,12 +171,8 @@ function buildServerWorld(
     takenItems,
     isWalkable,
     isStandable,
-    stepRules: {
-      isWalkableAt: tileIsWalkable,
-      clearTheWay: (x, y, dx, dy, mayPush) => puzzles.clearTheWay(x, y, dx, dy, mayPush),
-      ...gates,
-    },
     spawn: () =>
+      rules.spawn() ??
       nearestWalkable(0, 0, SPAWN_SEARCH_RADIUS, isStandable) ??
       nearestWalkable(0, 0, SPAWN_SEARCH_RADIUS, isWalkable) ?? { x: 0, y: 0 },
   };

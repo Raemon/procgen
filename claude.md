@@ -12,6 +12,7 @@ Keep the source tree aligned with the rendered home-page tree:
 - `src/features/agents` owns Agents. Agent Log is its React child and folder.
 - `src/features/game` owns the running world: input, inventory, lighting, simulation, rendering, capture, puzzles, performance, and multiplayer. Worlds is its React child and folder.
 - `src/infrastructure` owns database, process startup, HTTP adapters, and WebSocket attachment.
+- `src/worlds/<name>` owns one world: its generator nodes, its rules overlay, and its tests. A world registers itself through `src/worlds/client.ts` and `src/worlds/server.ts` and never imports another world. The engine reaches into `src/worlds` only from `src/features/asset-library/worlds/nodes/index.ts` and `src/infrastructure/server/procgenServices.ts`.
 
 Do not add generic `components`, `lib`, `assets`, `abilities`, `commands`, `common`, or `misc` feature roots. Put a product operation beside the UI or runtime concept that owns it. Direct cross-feature imports must name that owning feature explicitly; do not hide dependencies behind catch-all barrels.
 
@@ -26,6 +27,8 @@ Put tests beside their feature under `__tests__` with `*.test.ts` or `*.test.tsx
 When adding or changing procgen node types, preserve determinism, add coverage under `src/features/asset-library/worlds/__tests__`, and register it in `src/features/app-shell/__tests__/app.test.ts`.
 
 A world seed is the recipe — a named pipeline of nodes with a seed number — and lives under `worlds/seeds`. A world is what a seed grows plus what the player has done in it; a saved world is that kept, and lives under `worlds/saved`. Name things for which of the two they are: the sampler, renderers, coordinates and the game `World` are worlds, the library rows and the lab's candidates are world seeds.
+
+Every world is a pipeline. What a world can do beyond walking is a rules overlay registered per node type with `registerWorldRules` in `src/features/game/worldRules.ts`; the engine composes the running pipeline's overlays in `src/features/game/worldRulesSet.ts` and asks them about steps, jumps, fixtures, markers, and shared state. Shared state has no owner: every player and agent works the same crates and doors, and what one overlay keeps per player lives in that actor's `mine` slot.
 
 Node fields are numeric knobs, tile links, or node links. Do not add text, booleans, or string-enum parameters; sizes are numeric knobs. `registerNodeType` enforces this at compile time and runtime. `registerScriptNodeType` is the sole escape hatch.
 

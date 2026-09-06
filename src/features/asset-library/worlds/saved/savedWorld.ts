@@ -1,6 +1,7 @@
 import type { TakenSpawnKey } from '@/features/asset-library/items/pickups/takenItemSpawns';
 import type { InventoryPlacement } from '@/features/asset-library/items/inventory/inventoryDef';
-import type { PuzzleStateSnapshot } from '@/features/game/puzzles/state/puzzleState';
+import { worldRulesFor } from '@/features/game/worldRules';
+import { LABYRINTH_NODE_TYPE } from '../labyrinth/labyrinthKnobs';
 import { sanitizePipeline } from '../pipeline/sanitizePipeline';
 import type { PipelineState } from '../pipeline/pipelineState';
 
@@ -18,7 +19,7 @@ export interface SavedWorld {
   player: SavedPlayerPose;
   takenItems: TakenSpawnKey[];
   carried: InventoryPlacement[];
-  puzzles: PuzzleStateSnapshot;
+  shared: Record<string, unknown>;
 }
 
 export function sanitizeSavedWorld(raw: unknown): SavedWorld | null {
@@ -35,8 +36,16 @@ export function sanitizeSavedWorld(raw: unknown): SavedWorld | null {
     player: sanitizePose(held.player),
     takenItems: sanitizeTakenItems(held.takenItems),
     carried: sanitizeCarried(held.carried),
-    puzzles: sanitizePuzzles(held.puzzles),
+    shared: sanitizeShared(held.shared, held.puzzles),
   };
+}
+
+export function describeShared(saved: Pick<SavedWorld, 'state' | 'shared'>): string {
+  const described = Object.entries(saved.shared).map(([nodeId, state]) => {
+    const nodeType = saved.state.nodes.find((node) => node.id === nodeId)?.type ?? nodeId;
+    return worldRulesFor(nodeType)?.describe?.(state) ?? `${nodeType} worked`;
+  });
+  return described.length === 0 ? 'nothing worked yet' : described.join(', ');
 }
 
 export function sanitizeSavedWorlds(raw: unknown): SavedWorld[] {
@@ -77,21 +86,17 @@ function sanitizeCarried(raw: unknown): InventoryPlacement[] {
     }));
 }
 
-function sanitizePuzzles(raw: unknown): PuzzleStateSnapshot {
-  const held = (raw ?? {}) as { on?: unknown; crates?: unknown };
-  return {
-    on: Array.isArray(held.on) ? held.on.filter((id): id is string => typeof id === 'string') : [],
-    crates: Array.isArray(held.crates)
-      ? held.crates.filter(
-          (crate): crate is [string, number, number] =>
-            Array.isArray(crate) &&
-            crate.length === 3 &&
-            typeof crate[0] === 'string' &&
-            isFiniteNumber(crate[1]) &&
-            isFiniteNumber(crate[2]),
-        )
-      : [],
-  };
+function sanitizeShared(raw: unknown, legacyPuzzles: unknown): Record<string, unknown> {
+  const shared: Record<string, unknown> = {};
+  if (typeof raw === 'object' && raw !== null && !Array.isArray(raw)) {
+    for (const [nodeId, state] of Object.entries(raw as Record<string, unknown>)) {
+      if (typeof state === 'object' && state !== null) shared[nodeId] = state;
+    }
+  }
+  if (typeof legacyPuzzles === 'object' && legacyPuzzles !== null && !(LABYRINTH_NODE_TYPE in shared)) {
+    shared[LABYRINTH_NODE_TYPE] = legacyPuzzles;
+  }
+  return shared;
 }
 
 function isFiniteNumber(value: unknown): value is number {

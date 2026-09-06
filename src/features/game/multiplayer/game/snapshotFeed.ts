@@ -1,5 +1,4 @@
 import { Op, type SnapshotRow } from '../client/protocol';
-import type { PuzzleState } from '../../puzzles/state/puzzleState';
 import type { Connection } from '../host/connection';
 import type { EntityRegistry } from './entities';
 
@@ -22,14 +21,13 @@ export class SnapshotFeed {
     for (const conn of this.connections) conn.knownEntities.delete(entityId);
   }
 
-  broadcastPuzzles(state: PuzzleState): void {
-    for (const conn of this.connections) this.sendPuzzlesTo(conn, state);
+  broadcastShared(states: Record<string, unknown>): void {
+    for (const conn of this.connections) this.sendSharedTo(conn, states);
   }
 
-  sendPuzzlesTo(conn: Connection, state: PuzzleState): void {
+  sendSharedTo(conn: Connection, states: Record<string, unknown>): void {
     if (conn.state !== 'PLAYING') return;
-    const snapshot = state.snapshot();
-    conn.send({ t: 'puzzles', on: snapshot.on, crates: snapshot.crates });
+    conn.send({ t: 'shared', states });
   }
 
   private snapshotRows(): SnapshotRow[] {

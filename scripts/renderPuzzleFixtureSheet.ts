@@ -1,8 +1,8 @@
 import { writeFileSync } from 'node:fs';
 import { TILE_ART_SIZE } from '@/features/asset-library/tiles/art/artSize';
 import type { CubeFace, CubeFaceArt } from '@/features/asset-library/tiles/tileFaceArt';
-import { fixtureLook } from '@/features/game/puzzles/fixtures/fixtureAppearance';
-import type { PuzzleFixtureKind } from '@/features/game/puzzles/fixtures/puzzleFixture';
+import { fixtureLook } from '@/features/game/fixtures/fixtureAppearance';
+import type { PuzzleFixtureKind } from '@/features/game/fixtures/fixtureKinds';
 import { pngBuffer, type RgbImage } from './png/writePng';
 
 const OUTPUT_PATH = 'docs/sokoban-fixture-art.png';

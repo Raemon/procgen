@@ -2,7 +2,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { reportOffenders } from './reportOffenders';
 
-const SOURCE_ROOTS = ['app', 'features', 'infrastructure'];
+const SOURCE_ROOTS = ['app', 'features', 'infrastructure', 'worlds'];
 const FEATURE_ROOTS = ['app-shell', 'asset-library', 'agents', 'game'];
 const FORBIDDEN_CATCH_ALLS = ['components', 'lib', 'abilities', 'commands', 'assets', 'common', 'misc'];
 
@@ -11,7 +11,7 @@ export function checkSourceArchitecture(check: (name: string, condition: boolean
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
     .sort();
-  check('src has exactly the three documented source roots', sameMembers(sourceRoots, SOURCE_ROOTS));
+  check('src has exactly the four documented source roots', sameMembers(sourceRoots, SOURCE_ROOTS));
 
   const featureRoots = readdirSync('src/features', { withFileTypes: true })
     .filter((entry) => entry.isDirectory())

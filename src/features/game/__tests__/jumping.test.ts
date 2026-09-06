@@ -1,5 +1,4 @@
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
-import { JUMP_CLIMB_LIMIT, climbGateFrom } from '../climbing';
 import { EntityRegistry } from '../multiplayer/game/entities';
 import { stepPlayerEntity, type PlayerStepWorld } from '../multiplayer/game/playerStep';
 import { EasedPoint } from '../render/view3d/easedPoint';
@@ -12,20 +11,36 @@ import {
   requestJump,
   type JumpRequest,
 } from '../sim/movementOrder';
-import { NOTHING_IN_THE_WAY } from '../sim/stepIsAllowed';
 import { World } from '../world';
+import { registerWorldRules, rulesWithDefaults, stepRefused, STEP_ALLOWED } from '../worldRules';
+import { nodeOfType, rulesOn, stepRulesOn, storeWithNodes } from './rulesFixtures';
 
 type Ground = (x: number, y: number) => number;
 
 const PIT_AT_ONE: Ground = (x) => (x === 1 ? -4 : 0);
+const CRATE_NODE = 'testCrateAtTwo';
+
+registerWorldRules({
+  nodeType: CRATE_NODE,
+  attach: ({ node }) => {
+    let crateX = 2;
+    return rulesWithDefaults({
+      nodeId: node.id,
+      nodeType: CRATE_NODE,
+      owns: () => true,
+      blocksAt: (x) => x === crateX,
+      step: (attempt, _mine, defaults) => {
+        if (attempt.to.x !== crateX) return defaults.step(attempt);
+        if (!attempt.mayPush) return stepRefused('a crate is in the way');
+        if (attempt.commit) crateX += attempt.dx;
+        return STEP_ALLOWED;
+      },
+    });
+  },
+});
 
 function worldOn(elevationAt: Ground, isWalkableAt: (x: number, y: number) => boolean = () => true) {
-  return new World(
-    isWalkableAt,
-    NOTHING_IN_THE_WAY,
-    climbGateFrom(elevationAt),
-    climbGateFrom(elevationAt, JUMP_CLIMB_LIMIT),
-  );
+  return new World(stepRulesOn({ tileIsWalkable: isWalkableAt, elevationAt }));
 }
 
 export function checkJumping(check: CheckReporter): void {
@@ -66,13 +81,18 @@ export function checkJumping(check: CheckReporter): void {
   })());
 
   check('a jump may not shove a crate out of its landing tile', (() => {
-    const crateAtTwo = new World(
-      (x) => x !== 2,
-      (x, _y, _dx, _dy, mayPush) => x !== 2 || mayPush,
-      climbGateFrom(() => 0),
-      climbGateFrom(() => 0, JUMP_CLIMB_LIMIT),
-    );
-    return crateAtTwo.tryJump(1, 0) && crateAtTwo.playerX === 1;
+    const world = new World(stepRulesOn({ tileIsWalkable: () => true, elevationAt: () => 0 }, storeWithNodes(nodeOfType(CRATE_NODE))));
+    return world.tryJump(1, 0) && world.playerX === 1;
+  })());
+
+  check('walking into that crate pushes it along, since a step may push where a jump may not', (() => {
+    const world = new World(stepRulesOn({ tileIsWalkable: () => true, elevationAt: () => 0 }, storeWithNodes(nodeOfType(CRATE_NODE))));
+    return world.tryStep(1, 0) && world.tryStep(1, 0) && world.playerX === 2;
+  })());
+
+  check('a step explains its refusal in words an agent can act on', (() => {
+    const steep = worldOn((x) => x * 1);
+    return steep.explainStep(1, 0)?.includes('above your level') === true && steep.explainStep(-1, 0) === null;
   })());
 
   check('the server clears the same pit for an entity that asked to jump', serverJumpClearsThePit());
@@ -173,17 +193,8 @@ function aJumpGlidesAcrossTheArc(): boolean {
   return Math.abs(point.x - 2) < 1e-6 && Math.abs(halfway.x - 1) < 1e-6;
 }
 
-function stepWorldOn(elevationAt: Ground, isWalkable: (x: number, y: number) => boolean = () => true): PlayerStepWorld {
-  return {
-    isWalkable,
-    stepRules: {
-      isWalkableAt: isWalkable,
-      clearTheWay: NOTHING_IN_THE_WAY,
-      climbGateAt: climbGateFrom(elevationAt),
-      jumpGateAt: climbGateFrom(elevationAt, JUMP_CLIMB_LIMIT),
-    },
-    puzzles: { couldPushInto: () => false, takeKeysAt: () => [] },
-  };
+function stepWorldOn(elevationAt: Ground): PlayerStepWorld {
+  return { rules: rulesOn({ tileIsWalkable: () => true, elevationAt }) };
 }
 
 function spawnedEntity(registry: EntityRegistry) {

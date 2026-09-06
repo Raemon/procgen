@@ -1,5 +1,3 @@
-import { ANY_CLIMB_ALLOWED, standableProbeFrom, type ClimbGate } from './climbing';
-import type { WalkabilityProbe } from './tileWalkability';
 import { turnedFacing, type FacingIndex } from './facing';
 import { nearestWalkable, type CellPoint } from './nearestWalkable';
 import {
@@ -8,32 +6,25 @@ import {
 } from './vision/characterSight';
 import { DEFAULT_GOD_VIEW_SIZE_TILES, clampGodViewSizeTiles } from './vision/godViewSize';
 import { jumpLandingDelta } from './sim/jumpLanding';
-import { NOTHING_IN_THE_WAY, stepIsAllowed, type StepRules } from './sim/stepIsAllowed';
+import { isAxisStep, type StepRules } from './sim/stepIsAllowed';
 import { WorldEvents, type WorldEvent } from './worldEvents';
 
 const SNAP_SEARCH_RADIUS = 64;
 
+export type CellProbe = (x: number, y: number) => boolean;
+
 export function walkableLandingSpot(
   x: number,
   y: number,
-  isWalkableAt: WalkabilityProbe,
-  climbGateAt: ClimbGate,
+  isWalkableAt: CellProbe,
+  isStandableAt: CellProbe,
 ): CellPoint | null {
-  const standable = standableProbeFrom(isWalkableAt, climbGateAt);
-  if (standable(x, y)) return { x, y };
+  if (isStandableAt(x, y)) return { x, y };
   return (
-    nearestWalkable(x, y, SNAP_SEARCH_RADIUS, standable) ??
+    nearestWalkable(x, y, SNAP_SEARCH_RADIUS, isStandableAt) ??
     nearestWalkable(x, y, SNAP_SEARCH_RADIUS, isWalkableAt)
   );
 }
-
-export type ObstacleResolver = (
-  x: number,
-  y: number,
-  dx: number,
-  dy: number,
-  mayPush: boolean,
-) => boolean;
 
 export class World {
   playerX = 0;
@@ -42,16 +33,8 @@ export class World {
   sightRadiusTiles = DEFAULT_CHARACTER_SIGHT_RADIUS_TILES;
   godViewSizeTiles = DEFAULT_GOD_VIEW_SIZE_TILES;
   private readonly events = new WorldEvents();
-  private readonly rules: StepRules;
 
-  constructor(
-    private readonly isWalkableAt: WalkabilityProbe,
-    clearTheWay: ObstacleResolver = NOTHING_IN_THE_WAY,
-    private readonly climbGateAt: ClimbGate = ANY_CLIMB_ALLOWED,
-    jumpGateAt: ClimbGate = climbGateAt,
-  ) {
-    this.rules = { isWalkableAt, clearTheWay, climbGateAt, jumpGateAt };
-  }
+  constructor(private readonly rules: StepRules) {}
 
   setSightRadiusTiles(radius: number): void {
     const clamped = clampSightRadiusTiles(radius);
@@ -76,14 +59,20 @@ export class World {
     return this.rules;
   }
 
-  tryStep(dx: number, dy: number, mayPush = true): boolean {
-    const nextX = this.playerX + dx;
-    const nextY = this.playerY + dy;
-    if (!stepIsAllowed(this.rules, nextX, nextY, dx, dy, mayPush)) return false;
-    this.playerX = nextX;
-    this.playerY = nextY;
+  tryStep(dx: number, dy: number, mayPush = isAxisStep(dx, dy)): boolean {
+    const from = { x: this.playerX, y: this.playerY };
+    const to = { x: from.x + dx, y: from.y + dy };
+    if (!this.rules.step(from, to, dx, dy, mayPush, true).allowed) return false;
+    this.playerX = to.x;
+    this.playerY = to.y;
     this.events.emit('player-moved');
     return true;
+  }
+
+  explainStep(dx: number, dy: number, mayPush = isAxisStep(dx, dy)): string | null {
+    const from = { x: this.playerX, y: this.playerY };
+    const verdict = this.rules.step(from, { x: from.x + dx, y: from.y + dy }, dx, dy, mayPush, false);
+    return verdict.allowed ? null : verdict.why;
   }
 
   tryJump(dx: number, dy: number): boolean {
@@ -116,7 +105,12 @@ export class World {
   }
 
   ensurePlayerOnWalkableGround(): void {
-    const spot = walkableLandingSpot(this.playerX, this.playerY, this.isWalkableAt, this.climbGateAt);
+    const spot = walkableLandingSpot(
+      this.playerX,
+      this.playerY,
+      (x, y) => this.rules.isWalkableAt(x, y),
+      (x, y) => this.rules.isStandableAt(x, y),
+    );
     if (!spot || (spot.x === this.playerX && spot.y === this.playerY)) return;
     this.playerX = spot.x;
     this.playerY = spot.y;

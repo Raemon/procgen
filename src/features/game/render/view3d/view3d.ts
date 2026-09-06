@@ -96,7 +96,7 @@ export class View3D {
       this.worldGroup,
       deps.sampler,
       deps.tileAssets,
-      deps.puzzles,
+      deps.overlay,
     );
     this.terrainOverview = new TerrainOverview(this.worldGroup, deps.sampler, deps.tileAssets);
     this.creatureMeshes = new CreatureMeshes(
@@ -109,7 +109,7 @@ export class View3D {
     this.remotePlayerMeshes = new RemotePlayerMeshes(
       this.worldGroup,
       deps.creatures,
-      deps.sampler,
+      (x, y) => deps.surfaceAt(x, y),
       this.characterSprites,
     );
     this.selectionBox = new SelectionBox(this.worldGroup);
@@ -416,11 +416,11 @@ export class View3D {
   private playerElevation(): number {
     if (this.jumpArc.airborne()) return this.jumpArc.elevationOver(this.groundUnderPlayer());
     const eased = this.easedPlayer;
-    return this.deps.sampler.elevationAt(Math.round(eased.x), Math.round(eased.y));
+    return this.deps.surfaceAt(Math.round(eased.x), Math.round(eased.y));
   }
 
   private groundUnderPlayer(): number {
-    return this.deps.sampler.elevationAt(this.deps.world.playerX, this.deps.world.playerY);
+    return this.deps.surfaceAt(this.deps.world.playerX, this.deps.world.playerY);
   }
 
   private playerMotion(): CharacterMotion {

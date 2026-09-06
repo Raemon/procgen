@@ -22,7 +22,7 @@ export function checkCreatureObservation(check: CheckReporter): void {
   const bare = buildObservation(sampler, meadowTiles, facingNorth, 'god');
   check('without a creature overlay the spawn cell shows only ground', glyphAt(bare, 0, -3) === '"');
 
-  const overlay = creatureAwareOverlay({ puzzles: NO_OVERLAY, sampler, creatures: wolfAssets });
+  const overlay = creatureAwareOverlay({ rules: NO_OVERLAY, sampler, creatures: wolfAssets });
   const observed = buildObservation(sampler, meadowTiles, facingNorth, 'god', undefined, overlay);
   check('a creature spawn shows its symbol in the observation grid', glyphAt(observed, 0, -3) === 'w');
   check('the legend names the creature after its definition', observed.legend.some((entry) => entry.glyph === 'w' && entry.meaning === 'wolf'));

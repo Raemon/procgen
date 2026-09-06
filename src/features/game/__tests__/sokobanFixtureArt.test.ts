@@ -1,10 +1,10 @@
 import { CUBE_FACES, type CubeFaceArt } from '@/features/asset-library/tiles/tileFaceArt';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
-import { fixtureLook, type FixtureLook } from '../puzzles/fixtures/fixtureAppearance';
-import { fixture } from '../puzzles/fixtures/puzzleFixture';
-import type { PuzzleRoomLayout } from '../puzzles/rooms/puzzleRoomLayout';
-import { fixtureIsOn } from '../puzzles/state/fixtureSignals';
-import { PuzzleState } from '../puzzles/state/puzzleState';
+import { fixtureLook, type FixtureLook } from '../fixtures/fixtureAppearance';
+import { fixture } from '../fixtures/fixtureKinds';
+import type { PuzzleRoomLayout } from '@/worlds/labyrinth/puzzles/rooms/puzzleRoomLayout';
+import { fixtureIsOn } from '@/worlds/labyrinth/puzzles/state/fixtureSignals';
+import { PuzzleState } from '@/worlds/labyrinth/puzzles/state/puzzleState';
 import { markerPlacementsForRect } from '../render/view3d/markerPlacements';
 import type { Marker, WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 

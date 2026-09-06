@@ -20,9 +20,8 @@ import { CultureAssets } from '@/features/asset-library/cultures/cultureAssets';
 import { MAX_STORY_LAYERS, piecesBoundToRole } from '@/features/asset-library/cultures/cultureDef';
 import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
 import type { TileDef } from '@/features/asset-library/tiles/tileDef';
-import { NO_KEYS } from '@/features/game/puzzles/interaction/keyPurse';
-import { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
 import { turnedFacing, type FacingIndex } from '@/features/game/facing';
+import { WorldRulesSet, mineSlotsOf, stepRulesOf } from '@/features/game/worldRulesSet';
 import {
   DEFAULT_CHARACTER_SIGHT_RADIUS_TILES,
   MAX_CHARACTER_SIGHT_RADIUS_TILES,
@@ -66,8 +65,7 @@ function abilityWorld(initialTiles: TileDef[] = []) {
     runningWorld: new RunningWorld(),
     randomizeHistory: new RandomizeHistory(),
     groundItems: NO_GROUND_ITEMS,
-    puzzles: new PuzzleWorld(store, () => true),
-    keyPurse: NO_KEYS,
+    rules: new WorldRulesSet({ tileIsWalkable: () => true, elevationAt: () => 0 }),
     regionSampler: {
       tileAt: () => assetId<'tiles'>(0),
       elevationAt: () => 0,
@@ -83,6 +81,7 @@ function abilityWorld(initialTiles: TileDef[] = []) {
         pose.facing = facing;
       },
       tryStep: (dx: number, dy: number) => ((pose.x += dx), (pose.y += dy), true),
+      explainStep: () => null,
       tryJump: (dx: number, dy: number) => ((pose.x += dx * 2), (pose.y += dy * 2), true),
       turn: (turns: number) => (pose.facing = turnedFacing(pose.facing, turns)),
       sightRadiusTiles: () => sight.radius,
@@ -90,6 +89,7 @@ function abilityWorld(initialTiles: TileDef[] = []) {
       godViewSizeTiles: () => godView.sizeTiles,
       setGodViewSizeTiles: (sizeTiles: number) =>
         (godView.sizeTiles = clampGodViewSizeTiles(sizeTiles)),
+      mine: { get: () => null, set: () => undefined },
     },
   };
   return { context, store, pose, sight, godView, pieces, tileAssets: abilityTiles };
@@ -97,15 +97,27 @@ function abilityWorld(initialTiles: TileDef[] = []) {
 
 function steppingWorld(elevationAt: (x: number, y: number) => number) {
   const ground = abilityWorld();
+  const rules = new WorldRulesSet({ tileIsWalkable: () => true, elevationAt });
+  const stepRules = stepRulesOf(rules, mineSlotsOf(new Map(), rules));
   return {
     ...ground.context,
+    rules,
     worldSampler: {
       tileAt: () => assetId<'tiles'>(0),
       elevationAt,
       markersIn: () => [],
       itemSpawnsIn: () => [],
     } as unknown as WorldSampler,
-    actor: { ...ground.context.actor, tryStep: () => false, tryJump: () => false },
+    actor: {
+      ...ground.context.actor,
+      tryStep: () => false,
+      explainStep: (dx: number, dy: number, mayPush = true) => {
+        const from = { x: ground.pose.x, y: ground.pose.y };
+        const verdict = stepRules.step(from, { x: from.x + dx, y: from.y + dy }, dx, dy, mayPush, false);
+        return verdict.allowed ? null : verdict.why;
+      },
+      tryJump: () => false,
+    },
   };
 }
 

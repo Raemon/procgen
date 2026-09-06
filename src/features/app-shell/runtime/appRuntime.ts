@@ -6,6 +6,7 @@ import {
   type CommandResult,
   type CommandParams,
 } from '@/features/app-shell/runtime/commands/command';
+import { isWorldVerb } from '@/features/game/fixtures/fixtureCommands';
 import { ChatComposerState } from '@/features/game/chat/chatComposerState';
 import { AssetFolders } from '@/features/asset-library/folders/assetFolders';
 import { CreatureAssets } from '@/features/asset-library/creatures/creatureAssets';
@@ -43,14 +44,10 @@ import { debounce } from './debounce';
 import { CameraFocus } from '@/features/game/render/camera/cameraFocus';
 import { CaptureTool } from '@/features/game/capture/captureTool';
 import { HoveredTile } from '@/features/game/hover/hoveredTile';
-import { carriedKeysOf } from '@/features/game/puzzles/interaction/carriedKeys';
-import { PuzzleState } from '@/features/game/puzzles/state/puzzleState';
-import { PuzzleWorld } from '@/features/game/puzzles/puzzleWorld';
-import { playerCanEnter } from '@/features/game/puzzles/playerCanEnter';
 import { isWalkableTile } from '@/features/game/tileWalkability';
 import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
-import { climbGatesFrom } from '@/features/game/climbing';
 import { World } from '@/features/game/world';
+import { WorldRulesSet, mineSlotsOf, stepRulesOf } from '@/features/game/worldRulesSet';
 import { ChangeNotifier } from './changeNotifier';
 import type {
   ReadOnlyAssetFolders,
@@ -100,7 +97,7 @@ export interface AppRuntime {
   capture: CaptureTool;
   cameraFocus: CameraFocus;
   hoveredTile: HoveredTile;
-  puzzles: PuzzleWorld;
+  rules: WorldRulesSet;
   agentOverlay: ObservedOverlay;
   renderers: WorldRenderers;
   perform(action: string, params?: CommandParams): CommandResult;
@@ -138,41 +135,29 @@ export function createAppRuntime(): AppRuntime {
     cultures,
   );
   const tileIsWalkable = (x: number, y: number) => isWalkableTile(tileAssets, sampler.tileAt(x, y));
-  const puzzles = new PuzzleWorld(store, tileIsWalkable, new PuzzleState(), items);
-  sampler.alsoSpawnItemsFrom(puzzles);
-  const groundItems = groundItemsOf(sampler, takenItems, puzzles);
-  const keyPurse = carriedKeysOf(creatures, items);
-  const isWalkableAt = (x: number, y: number) => tileIsWalkable(x, y) && !puzzles.blocksAt(x, y);
-  const playerMayStandAt = (x: number, y: number) =>
-    tileIsWalkable(x, y) && !puzzles.blocksTheWayInAt(x, y);
-  const characterGates = climbGatesFrom((x, y) => sampler.elevationAt(x, y));
-  const world = new World(
-    playerMayStandAt,
-    (x, y, dx, dy, mayPush) => puzzles.clearTheWay(x, y, dx, dy, mayPush),
-    characterGates.climbGateAt,
-    characterGates.jumpGateAt,
-  );
-  const walkIntoCratesToPushThem = playerCanEnter(playerMayStandAt, puzzles, () => ({
-    x: world.playerX,
-    y: world.playerY,
-  }));
-  const net = new MultiplayerSession(world, store, walkIntoCratesToPushThem, puzzles, () =>
-    redrawIfPuzzlesChanged(),
-  );
+  const rules = new WorldRulesSet({ tileIsWalkable, elevationAt: (x, y) => sampler.elevationAt(x, y) });
+  rules.followStore(store, { items, builtValueOf: () => null });
+  sampler.alsoSpawnItemsFrom(rules.items);
+  const groundItems = groundItemsOf(sampler, takenItems, rules.items);
+  const isWalkableAt = (x: number, y: number) => rules.isWalkable(x, y);
+  const localMine = new Map<string, unknown>();
+  const mine = mineSlotsOf(localMine, rules);
+  const world = new World(stepRulesOf(rules, mine));
+  const net = new MultiplayerSession(world, store, rules, () => redrawIfSharedChanged());
   const chatComposer = new ChatComposerState();
   const playerInventoryPanel = new PlayerInventoryPanelState();
   const pickupFeed = new PickupFeed();
   const walkOverPickup = new WalkOverPickup({ creatures, items, groundItems }, pickupFeed);
   const sim = new CreatureSim({ sampler, creatureAssets: creatures, world, isWalkableAt });
   const clock = new CreatureClock(sim);
-  const agentOverlay = creatureAwareOverlay({ puzzles, sampler, creatures }, sim);
+  const agentOverlay = creatureAwareOverlay({ rules, sampler, creatures }, sim);
   const renderers = new WorldRenderers();
   const hoveredTile = new HoveredTile();
   const cameraFocus = new CameraFocus();
   const worldChanged = new ChangeNotifier();
   const randomizeHistory = new RandomizeHistory();
   let playerMode: CommandMode = 'god';
-  let lastPuzzleRevision = puzzles.state.revision();
+  let lastSharedRevision = rules.revision();
   let settlingTheWorld = false;
 
   const capture = new CaptureTool((region) =>
@@ -185,25 +170,18 @@ export function createAppRuntime(): AppRuntime {
   );
 
   function perform(action: string, params: CommandParams = {}): CommandResult {
-    const remote = performPuzzleActionOnServer(action);
+    const remote = performWorldVerbOnServer(action, params);
     if (remote) return remote;
     const result = performCommandOnce(store, action, params);
-    redrawIfPuzzlesChanged();
+    redrawIfSharedChanged();
     if (result.ok && action !== SAVE_WORLD) keepPlayingAfterTheAction.schedule();
     return result;
   }
 
-  function performPuzzleActionOnServer(action: string): CommandResult | null {
-    if (!net.isOnline()) return null;
-    if (action === 'use' || action === 'use_fixture') {
-      net.sendUse();
-      return commandSucceeded('working the fixture here');
-    }
-    if (action === 'reset_room' || action === 'reset_puzzle_room') {
-      net.sendResetRoom();
-      return commandSucceeded('resetting this chamber');
-    }
-    return null;
+  function performWorldVerbOnServer(action: string, params: CommandParams): CommandResult | null {
+    if (!net.isOnline() || !isWorldVerb(action)) return null;
+    net.sendVerb(action, params);
+    return commandSucceeded(`asked the server to ${action.replace(/_/g, ' ')}`);
   }
 
   function performOn(
@@ -214,9 +192,9 @@ export function createAppRuntime(): AppRuntime {
     return edited === store ? perform(action, params) : performCommandOnce(edited, action, params);
   }
 
-  function redrawIfPuzzlesChanged(): void {
-    if (puzzles.state.revision() === lastPuzzleRevision) return;
-    lastPuzzleRevision = puzzles.state.revision();
+  function redrawIfSharedChanged(): void {
+    if (rules.revision() === lastSharedRevision) return;
+    lastSharedRevision = rules.revision();
     renderers.redrawAll();
   }
 
@@ -228,7 +206,7 @@ export function createAppRuntime(): AppRuntime {
     } finally {
       settlingTheWorld = false;
     }
-    lastPuzzleRevision = puzzles.state.revision();
+    lastSharedRevision = rules.revision();
     applyWorldChange();
     renderers.redrawAll();
   }
@@ -263,18 +241,19 @@ export function createAppRuntime(): AppRuntime {
         worldSampler: sampler,
         lab: null,
         groundItems,
-        puzzles,
-        keyPurse,
+        rules,
         actor: {
           pose: () => ({ x: world.playerX, y: world.playerY, facing: world.facing }),
           snapTo: (x, y, facing) => world.snapTo(x, y, facing),
           tryStep: (dx, dy, mayPush) => world.tryStep(dx, dy, mayPush),
+          explainStep: (dx, dy, mayPush) => world.explainStep(dx, dy, mayPush),
           tryJump: (dx, dy) => world.tryJump(dx, dy),
           turn: (eighthTurns) => world.turn(eighthTurns),
           sightRadiusTiles: () => world.sightRadiusTiles,
           setSightRadiusTiles: (radius) => world.setSightRadiusTiles(radius),
           godViewSizeTiles: () => world.godViewSizeTiles,
           setGodViewSizeTiles: (sizeTiles) => world.setGodViewSizeTiles(sizeTiles),
+          mine,
         },
       },
       abilityModeFor(action),
@@ -333,7 +312,7 @@ export function createAppRuntime(): AppRuntime {
   world.on('player-moved', () => {
     if (settlingTheWorld) return;
     walkOverPickup.onSteppedOnto(world.playerX, world.playerY);
-    redrawIfPuzzlesChanged();
+    redrawIfSharedChanged();
     keepPlayingAfterTheAction.schedule();
   });
   world.on('player-moved', () => renderers.recenterAll());
@@ -367,7 +346,7 @@ export function createAppRuntime(): AppRuntime {
     capture,
     cameraFocus,
     hoveredTile,
-    puzzles,
+    rules,
     agentOverlay,
     renderers,
     perform,

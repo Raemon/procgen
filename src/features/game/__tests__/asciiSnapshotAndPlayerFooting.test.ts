@@ -5,10 +5,10 @@ import { EMPTY_TILE } from '@/features/asset-library/worlds/values/chunkValues';
 import { asciiSnapshot } from '../render/ascii/asciiSnapshot';
 import { PLAYER_GLYPH } from '../render/ascii/asciiCells';
 import { isWalkableTile } from '../tileWalkability';
-import { climbGateFrom } from '../climbing';
 import { World } from '../world';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { tileAssets, worldFromState } from '@/features/asset-library/worlds/__tests__/pipelineWorldFixtures';
+import { stepRulesOn } from './rulesFixtures';
 
 export function checkAsciiSnapshotAndPlayerFooting(check: CheckReporter): void {
   check('empty void is walkable', isWalkableTile(tileAssets, EMPTY_TILE));
@@ -19,13 +19,18 @@ export function checkAsciiSnapshotAndPlayerFooting(check: CheckReporter): void {
     'custom markers keep their own glyph and color',
     monsterMarkers.length > 0 && monsterMarkers.every((m) => m.glyph === 'M' && m.color === '#ff4444'),
   );
-  const world = new World((x, y) => isWalkableTile(tileAssets, caves.sampler.tileAt(x, y)));
+  const world = new World(
+    stepRulesOn({
+      tileIsWalkable: (x, y) => isWalkableTile(tileAssets, caves.sampler.tileAt(x, y)),
+      elevationAt: () => 0,
+    }),
+  );
   world.ensurePlayerOnWalkableGround();
   check(
     'player stands on walkable ground after a world change',
     isWalkableTile(tileAssets, caves.sampler.tileAt(world.playerX, world.playerY)),
   );
-  const blockedWorld = new World(() => false);
+  const blockedWorld = new World(stepRulesOn({ tileIsWalkable: () => false, elevationAt: () => 0 }));
   check('a refused step leaves the player in place', !blockedWorld.tryStep(1, 0) && blockedWorld.playerX === 0);
   check('a character may step up exactly half a level but no higher', exactStepUpIsTheLimit());
   check('a character may step down more than one block', aLongStepDownIsAllowed());
@@ -43,24 +48,24 @@ export function checkAsciiSnapshotAndPlayerFooting(check: CheckReporter): void {
 
 function exactStepUpIsTheLimit(): boolean {
   const elevationAt = (x: number) => (x === 0 ? 0 : x === 1 ? 0.5 : 3);
-  const world = new World(() => true, undefined, climbGateFrom(elevationAt));
+  const world = new World(stepRulesOn({ tileIsWalkable: () => true, elevationAt }));
   return world.tryStep(1, 0) && !world.tryStep(1, 0) && world.playerX === 1;
 }
 
 function aRoundedHalfLevelRiseIsClimbable(): boolean {
   const elevationAt = (x: number) => (x === 0 ? 1.6 : 2.1);
-  const world = new World(() => true, undefined, climbGateFrom(elevationAt));
+  const world = new World(stepRulesOn({ tileIsWalkable: () => true, elevationAt }));
   return world.tryStep(1, 0) && world.playerX === 1;
 }
 
 function aRoundedWholeLevelRiseIsRefused(): boolean {
   const elevationAt = (x: number) => (x === 0 ? 1.74 : 2.26);
-  const world = new World(() => true, undefined, climbGateFrom(elevationAt));
+  const world = new World(stepRulesOn({ tileIsWalkable: () => true, elevationAt }));
   return !world.tryStep(1, 0) && world.playerX === 0;
 }
 
 function aLongStepDownIsAllowed(): boolean {
   const elevationAt = (x: number) => (x === 0 ? 3 : 0);
-  const world = new World(() => true, undefined, climbGateFrom(elevationAt));
+  const world = new World(stepRulesOn({ tileIsWalkable: () => true, elevationAt }));
   return world.tryStep(1, 0) && world.playerX === 1;
 }

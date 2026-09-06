@@ -12,7 +12,7 @@ export class GameLoop {
   private running = false;
   private nextAt = 0;
   private timer?: ReturnType<typeof setTimeout>;
-  private lastPuzzleRevision: number | null = null;
+  private lastSharedRevision: number | null = null;
 
   constructor(
     private readonly registry: EntityRegistry,
@@ -51,7 +51,7 @@ export class GameLoop {
   private step(): void {
     this.agentSync.sync();
     this.stepPlayers();
-    this.sharePuzzleChanges();
+    this.shareStateChanges();
     this.feed.broadcast(this.tick);
     this.tick++;
   }
@@ -63,11 +63,12 @@ export class GameLoop {
     }
   }
 
-  private sharePuzzleChanges(): void {
-    const revision = this.worldHost.current().puzzles.state.revision();
-    if (revision === this.lastPuzzleRevision) return;
-    const isFirstLook = this.lastPuzzleRevision === null;
-    this.lastPuzzleRevision = revision;
-    if (!isFirstLook) this.feed.broadcastPuzzles(this.worldHost.current().puzzles.state);
+  private shareStateChanges(): void {
+    const rules = this.worldHost.current().rules;
+    const revision = rules.revision();
+    if (revision === this.lastSharedRevision) return;
+    const isFirstLook = this.lastSharedRevision === null;
+    this.lastSharedRevision = revision;
+    if (!isFirstLook) this.feed.broadcastShared(rules.snapshot());
   }
 }
