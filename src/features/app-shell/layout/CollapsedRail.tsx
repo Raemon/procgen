@@ -1,16 +1,13 @@
 import { classes } from '@/features/app-shell/controls/classes';
 import { tooltipHandlers } from '@/features/app-shell/tooltips/tooltipHandlers';
-import { expandPanelTip } from '../help/panelTips';
+import { expandPanelTip, tipWithShortcut } from '../help/panelTips';
 import type { PanelChrome } from './Panel';
 import { COLLAPSED_PANEL_WIDTH } from './usePanelLayout';
 
 export function CollapsedRail({ chrome }: { chrome: PanelChrome }) {
   return (
     <div
-      className={classes(
-        'flex cursor-pointer overflow-hidden border-r border-panel-edge',
-        chrome.tone,
-      )}
+      className={classes('flex cursor-pointer overflow-hidden', chrome.tone)}
       onClick={chrome.onToggleCollapsed}
     >
       <div
@@ -22,7 +19,9 @@ export function CollapsedRail({ chrome }: { chrome: PanelChrome }) {
           aria-label={`expand ${chrome.title}`}
           onClick={chrome.onToggleCollapsed}
           className="flex shrink-0 cursor-pointer flex-col items-center gap-2"
-          {...tooltipHandlers(chrome.expandTip ?? expandPanelTip(chrome.title))}
+          {...tooltipHandlers(
+            tipWithShortcut(chrome.expandTip ?? expandPanelTip(chrome.title), chrome.shortcut),
+          )}
         >
           {chrome.icon}
           <span className="text-[11px] tracking-[0.12em] uppercase [writing-mode:vertical-rl]">

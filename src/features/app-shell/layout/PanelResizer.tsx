@@ -22,14 +22,16 @@ export function PanelResizer({
   if (disabled) return <div className="bg-panel-edge" />;
   return (
     <div
-      className="cursor-col-resize bg-panel-edge transition-colors hover:bg-accent"
+      className="relative bg-panel-edge transition-colors hover:bg-accent"
       onPointerDown={(event) => (origin.current = beginDrag(event, width))}
       onPointerMove={(event) => resizeWhileDragging(event, origin.current, onResize)}
       onPointerUp={() => (origin.current = null)}
       onPointerCancel={() => (origin.current = null)}
       onDoubleClick={onResetWidth}
       {...tooltipHandlers(RESIZER_TIP)}
-    />
+    >
+      <span className="absolute inset-y-0 -right-[3px] -left-[3px] z-20 cursor-col-resize" />
+    </div>
   );
 }
 
