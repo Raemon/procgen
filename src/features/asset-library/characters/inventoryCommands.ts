@@ -41,9 +41,9 @@ const SLOT_X_HELP = 'inventory column, 0 at the left';
 const SLOT_Y_HELP = 'inventory row, 0 at the top';
 
 function registerInventoryCommand(
-  spec: Omit<CommandSpec, 'mode' | 'group' | 'changesWorld'>,
+  spec: Omit<CommandSpec, 'modes' | 'group' | 'changesWorld'>,
 ): CommandSpec {
-  return registerCommand({ ...spec, mode: 'god', group: 'assets', changesWorld: true });
+  return registerCommand({ ...spec, modes: ['god'], group: 'assets', changesWorld: true });
 }
 
 registerInventoryCommand({

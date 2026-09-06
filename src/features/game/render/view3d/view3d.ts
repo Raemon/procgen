@@ -27,6 +27,9 @@ import { LAMPLIT_AMBIENT, OVERHEAD_AMBIENT, SceneDaylight } from './sceneDayligh
 import { WorldLights } from './worldLights';
 import { PlayerCharacterMesh } from './playerCharacterMesh';
 import { FollowCamera } from './followCamera';
+import { TopDownCamera } from './topDownCamera';
+import { SightShadows } from './sightShadows';
+import { TopDownPlayerMarker } from './topDownPlayerMarker';
 import { worldCellUnderPointer } from './pointerToWorldCell';
 import { SelectionBox } from './selectionBox';
 import { speechBubbleAnchors } from './speechBubbleAnchors';
@@ -45,7 +48,7 @@ const MAX_FRAME_MS = 100;
 const MOST_SNAPSHOTS_WORTH_QUEUEING = 4;
 const STILL_ENOUGH_TILES = 0.05;
 
-export type CameraStyle = 'god' | 'character';
+export type CameraStyle = 'god' | 'character' | 'topdown';
 
 interface SnapshotRequest {
   size: number;
@@ -60,6 +63,7 @@ export class View3D {
   private readonly daylight = new SceneDaylight(this.scene, OVERHEAD_AMBIENT);
   private readonly followCamera = new FollowCamera();
   private readonly characterCamera = new CharacterCamera();
+  private readonly topDownCamera = new TopDownCamera();
   private readonly characterFog = createCharacterFog();
   private cameraStyle: CameraStyle = 'god';
   private readonly worldGroup = new THREE.Group();
@@ -76,6 +80,8 @@ export class View3D {
   private readonly itemMeshes: ItemMeshes;
   private readonly remotePlayerMeshes: RemotePlayerMeshes;
   private readonly selectionBox: SelectionBox;
+  private readonly sightShadows: SightShadows;
+  private readonly topDownMarker: TopDownPlayerMarker;
   private readonly worldLights: WorldLights;
   private readonly speechLabels: SpeechBubbleLabels;
   private readonly resizeObserver = new ResizeObserver(() => this.resize());
@@ -116,6 +122,12 @@ export class View3D {
       this.characterSprites,
     );
     this.selectionBox = new SelectionBox(this.worldGroup);
+    this.topDownMarker = new TopDownPlayerMarker(this.scene);
+    this.sightShadows = new SightShadows(this.scene, {
+      sampler: deps.sampler,
+      tileAssets: deps.tileAssets,
+      explored: deps.world.explored,
+    });
     this.worldLights = new WorldLights(this.scene, deps);
     this.speechLabels = new SpeechBubbleLabels(container);
     this.listenForCameraGestures();
@@ -142,6 +154,8 @@ export class View3D {
     this.player.dispose();
     this.characterSprites.dispose();
     this.selectionBox.dispose();
+    this.sightShadows.dispose();
+    this.topDownMarker.dispose();
     this.worldLights.dispose();
     this.speechLabels.dispose();
     this.terrainOverview.dispose();
@@ -157,9 +171,14 @@ export class View3D {
     this.scene.fog = style === 'character' ? this.characterFog : null;
     this.daylight.seeInTheDark(style === 'character' ? LAMPLIT_AMBIENT : OVERHEAD_AMBIENT);
     this.streamer.showCeilings(style === 'character');
-    this.player.visible = style === 'god';
+    this.player.visible = style !== 'character';
+    if (style !== 'topdown') {
+      this.sightShadows.hide();
+      this.topDownMarker.hide();
+    }
     this.characterCamera.snapOnNextFrame();
     this.followCamera.snapToFocusOnNextUpdate();
+    this.topDownCamera.snapToFocusOnNextUpdate();
     this.resize();
   }
 
@@ -175,6 +194,7 @@ export class View3D {
   }
 
   recenterOnPlayer(): void {
+    this.topDownCamera.recenterOnPlayer();
     if (this.deps.cameraFocus.followedId() !== null) return;
     this.followCamera.recenterOnPlayer();
   }
@@ -184,6 +204,7 @@ export class View3D {
     this.terrainOverview.invalidate();
     this.worldLights.invalidate();
     this.itemMeshes.invalidate();
+    this.sightShadows.invalidate();
     this.creatureMeshes.forgetSprites();
     this.remotePlayerMeshes.forgetSprites();
     this.characterSprites.dispose();
@@ -191,13 +212,13 @@ export class View3D {
   }
 
   private viewYaw(): number {
-    return this.cameraStyle === 'god'
-      ? this.followCamera.yaw()
-      : facingYawRadians(this.deps.world.facing);
+    if (this.cameraStyle === 'god') return this.followCamera.yaw();
+    return this.cameraStyle === 'topdown' ? 0 : facingYawRadians(this.deps.world.facing);
   }
 
   private activeCamera(): THREE.PerspectiveCamera {
-    return this.cameraStyle === 'god' ? this.followCamera.camera : this.characterCamera.camera;
+    if (this.cameraStyle === 'god') return this.followCamera.camera;
+    return this.cameraStyle === 'topdown' ? this.topDownCamera.camera : this.characterCamera.camera;
   }
 
   private cellAtPixel(offsetX: number, offsetY: number) {
@@ -211,8 +232,9 @@ export class View3D {
   }
 
   private focusPoint(): { x: number; y: number } {
-    return this.cameraStyle === 'god'
-      ? this.followCamera.focusPoint()
+    if (this.cameraStyle === 'god') return this.followCamera.focusPoint();
+    return this.cameraStyle === 'topdown'
+      ? this.topDownCamera.focusPoint()
       : this.characterCamera.focusPoint();
   }
 
@@ -224,11 +246,16 @@ export class View3D {
   private listenForCameraGestures(): void {
     listenForWheelZoom(this.canvas, (wheelPixelsY) => {
       if (this.cameraStyle === 'god') this.followCamera.zoomByWheelPixels(wheelPixelsY);
+      else if (this.cameraStyle === 'topdown') this.topDownCamera.zoomByWheelPixels(wheelPixelsY);
       else this.characterCamera.zoomByWheelPixels(wheelPixelsY);
     });
     listenForDragPan(
       this.canvas,
       (dxPixels, dyPixels) => {
+        if (this.cameraStyle === 'topdown') {
+          this.topDownCamera.panByDragPixels(dxPixels, dyPixels);
+          return;
+        }
         if (this.cameraStyle !== 'god') return;
         this.deps.cameraFocus.clear();
         this.followCamera.panByDragPixels(dxPixels, dyPixels);
@@ -237,7 +264,7 @@ export class View3D {
     );
     this.canvas.addEventListener('dblclick', () => {
       this.deps.cameraFocus.clear();
-      this.followCamera.recenterOnPlayer();
+      this.recenterOnPlayer();
     });
   }
 
@@ -247,6 +274,7 @@ export class View3D {
     this.renderer.setPixelRatio(devicePixelRatioCapped());
     this.renderer.setSize(size.cssWidth, size.cssHeight);
     this.followCamera.setViewportSize(size.cssWidth, size.cssHeight);
+    this.topDownCamera.setViewportSize(size.cssWidth, size.cssHeight);
     this.characterCamera.setAspect(size.cssWidth / size.cssHeight);
   }
 
@@ -270,6 +298,7 @@ export class View3D {
     this.remotePlayerMeshes.syncTo(this.deps.remotePlayers, dtSeconds, view);
     this.selectionBox.showRegion(this.deps.capture.selectedRegion(), this.focusGroundHeight());
     this.updateActiveCamera(dtSeconds);
+    this.castSightShadows();
     this.streamAroundCameraFocus();
     this.lightAroundPlayer();
     this.showSpeechBubbles();
@@ -330,8 +359,23 @@ export class View3D {
     this.characterCamera.setSightRadiusTiles(radius);
   }
 
+  private castSightShadows(): void {
+    if (this.cameraStyle !== 'topdown') return;
+    this.topDownMarker.hoverOver(this.player.position);
+    this.sightShadows.castAround(
+      this.deps.world.playerX,
+      this.deps.world.playerY,
+      this.sightRadiusTiles(),
+      this.topDownCamera.visibleGroundRadiusTiles(),
+    );
+  }
+
   private updateActiveCamera(dtSeconds: number): void {
     const eased = this.easedPlayer;
+    if (this.cameraStyle === 'topdown') {
+      this.topDownCamera.update(dtSeconds, eased.x, eased.y, this.focusGroundHeight());
+      return;
+    }
     if (this.cameraStyle === 'god') {
       this.followCamera.update(
         dtSeconds,
@@ -376,10 +420,7 @@ export class View3D {
     const camera = this.activeCamera();
     const viewportHeight = this.renderer.domElement.clientHeight;
     const groundElevation = this.focusGroundHeight();
-    const radiusTiles =
-      this.cameraStyle === 'god'
-        ? this.followCamera.visibleGroundRadiusTiles(groundElevation)
-        : this.sightRadiusTiles();
+    const radiusTiles = this.streamingRadiusTiles(groundElevation);
     const overviewVisible = this.cameraStyle === 'god' && needsTerrainOverview(radiusTiles);
     if (overviewVisible) {
       measureWork('terrain overview', () =>
@@ -397,6 +438,14 @@ export class View3D {
         detailedContentRadiusTiles(radiusTiles),
       ),
     );
+  }
+
+  private streamingRadiusTiles(groundElevation: number): number {
+    if (this.cameraStyle === 'god') {
+      return this.followCamera.visibleGroundRadiusTiles(groundElevation);
+    }
+    if (this.cameraStyle === 'character') return this.sightRadiusTiles();
+    return Math.max(this.sightRadiusTiles(), this.topDownCamera.visibleGroundRadiusTiles());
   }
 
   private placePlayer(view: CameraView): void {

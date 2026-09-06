@@ -30,9 +30,9 @@ export { itemCommands };
 const ITEM_ID_HELP = 'id of an existing item — see GET /api/v1/asset-library/items';
 
 function registerItemCommand(
-  spec: Omit<CommandSpec, 'mode' | 'group' | 'changesWorld'>,
+  spec: Omit<CommandSpec, 'modes' | 'group' | 'changesWorld'>,
 ): CommandSpec {
-  return registerCommand({ ...spec, mode: 'god', group: 'assets', changesWorld: true });
+  return registerCommand({ ...spec, modes: ['god'], group: 'assets', changesWorld: true });
 }
 
 registerItemCommand({

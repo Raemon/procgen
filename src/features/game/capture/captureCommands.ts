@@ -15,7 +15,7 @@ export { captureCommands };
 
 define({
   action: 'capture_region',
-  mode: 'god',
+  modes: ['god'],
   group: 'world',
   humanControl: 'game view: the capture button, then drag a rectangle',
   description: 'Lift a rectangle of the running world into a new Asset Library piece.',

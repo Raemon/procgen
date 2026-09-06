@@ -5,7 +5,7 @@ import { characterNamed } from '@/features/game/multiplayer/client/charactersInP
 import { Select } from '@/features/app-shell/controls/Select';
 import { DIM_READOUT_CLASSES, FIELD_CLASSES } from '@/features/app-shell/controls/fieldClasses';
 import { PanelHint } from '@/features/app-shell/help/PanelHint';
-import type { AgentMode } from '../agentMode';
+import { AGENT_MODES, type AgentMode } from '../agentMode';
 import { createAgent, deleteAgent, startRun, stopRun, type RosterAgent } from './agentsApiClient';
 import { tooltipHandlers } from '@/features/app-shell/tooltips/tooltipHandlers';
 import {
@@ -87,10 +87,7 @@ export function AgentsPanel({
           />
           <Select
             fullWidth={false}
-            options={[
-              { value: 'character', text: 'character' },
-              { value: 'god', text: 'god' },
-            ]}
+            options={AGENT_MODES.map((option) => ({ value: option, text: option }))}
             value={mode}
             tip={AGENT_MODE_TIP}
             onChange={(value) => setMode(value as AgentMode)}

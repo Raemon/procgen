@@ -1,6 +1,6 @@
 import { slideAlongEachAxis, type Step } from '@/features/game/input/cameraRelativeStep';
 import { facingRelativeStep } from '@/features/game/input/facingRelativeStep';
-import { FACING_NAMES, facingVector, type FacingIndex } from '@/features/game/facing';
+import { FACING_NAMES, facingVector, isFacingIndex, type FacingIndex } from '@/features/game/facing';
 import { JUMP_CLIMB_LIMIT, WALK_CLIMB_LIMIT } from '@/features/game/climbing';
 import { JUMP_REACH_TILES, LANDING_DISTANCES } from '@/features/game/sim/jumpLanding';
 import { obstacleRefusal } from '@/features/game/worldRules';
@@ -8,8 +8,10 @@ import {
   commandFailed,
   commandSucceeded,
   type CommandContext,
+  type CommandParams,
   type CommandResult,
 } from '@/features/app-shell/runtime/commands/command';
+import { readInt } from '@/features/app-shell/runtime/commands/commandParams';
 import { createCommandCollection } from '@/features/app-shell/runtime/commands/commandCollection';
 
 const { define: registerCommand, commands: movementCommands } = createCommandCollection();
@@ -19,15 +21,32 @@ export { movementCommands };
 FACING_NAMES.forEach((name, compass) => {
   registerCommand({
     action: `step_${name}`,
-    mode: 'god',
+    modes: ['god', 'topdown'],
     group: 'movement',
-    humanControl: 'W/S/Q/E or ↑/↓, camera-relative',
-    description: `Step one tile ${name}.`,
+    humanControl: 'W/A/S/D or the arrow keys, by compass with north up',
+    description: `Step one tile ${name}, turning to face ${name} whether or not the step lands.`,
     params: {},
     example: { action: `step_${name}` },
     changesWorld: false,
-    apply: (context) => stepBy(context, vectorStep(compass as FacingIndex)),
+    apply: (context) => stepByCompass(context, compass as FacingIndex),
   });
+});
+
+registerCommand({
+  action: 'face',
+  modes: ['god', 'topdown'],
+  group: 'movement',
+  humanControl: 'automatic on stepping by compass',
+  description: `Turn to face one of the eight compass points without moving: ${FACING_NAMES.map((name, compass) => `${compass} ${name}`).join(', ')}. Facing decides nothing about what you see here, but the character view you switch to afterwards looks the way you last faced.`,
+  params: {
+    compass: {
+      kind: 'int',
+      help: `which way to face, 0-7 clockwise from north (${FACING_NAMES.map((name, compass) => `${compass} ${name}`).join(', ')})`,
+    },
+  },
+  example: { action: 'face', compass: 2 },
+  changesWorld: false,
+  apply: (context, params) => faceCompass(context, params),
 });
 
 
@@ -71,7 +90,7 @@ const CHARACTER_STEPS: readonly {
 for (const step of CHARACTER_STEPS) {
   registerCommand({
     action: step.action,
-    mode: 'character',
+    modes: ['character'],
     group: 'movement',
     humanControl: step.humanControl,
     description: step.description,
@@ -97,7 +116,7 @@ const CHARACTER_JUMPS: readonly {
 
 registerCommand({
   action: 'jump',
-  mode: 'character',
+  modes: ['character', 'topdown'],
   group: 'movement',
   humanControl: 'Space',
   description: `Jump straight up and land where you stood. A jump climbs ${JUMP_CLIMB_LIMIT} level where a step climbs ${WALK_CLIMB_LIMIT}, so jump in a direction to reach higher ground.`,
@@ -113,7 +132,7 @@ registerCommand({
 for (const jump of CHARACTER_JUMPS) {
   registerCommand({
     action: jump.action,
-    mode: 'character',
+    modes: ['character'],
     group: 'movement',
     humanControl: jump.humanControl,
     description: `Jump ${JUMP_REACH_TILES} tiles ${jump.action.slice('jump_'.length)}, clearing whatever lies between, and land ${JUMP_REACH_TILES} tiles out or on the tile next to you if the far one is no good. A jump climbs ${JUMP_CLIMB_LIMIT} level.`,
@@ -133,7 +152,7 @@ const TURNS: readonly { action: string; humanControl: string; eighths: -1 | 1 }[
 for (const turn of TURNS) {
   registerCommand({
     action: turn.action,
-    mode: 'character',
+    modes: ['character'],
     group: 'movement',
     humanControl: turn.humanControl,
     description: `Turn 45° ${turn.eighths === -1 ? 'left' : 'right'}. Turning always succeeds.`,
@@ -144,9 +163,26 @@ for (const turn of TURNS) {
   });
 }
 
-function vectorStep(facing: FacingIndex): Step {
-  const vector = facingVector(facing);
-  return [vector.dx, vector.dy];
+function stepByCompass(context: CommandContext, compass: FacingIndex): CommandResult {
+  faceTowards(context, compass);
+  const vector = facingVector(compass);
+  return stepBy(context, [vector.dx, vector.dy]);
+}
+
+function faceCompass(context: CommandContext, params: CommandParams): CommandResult {
+  const read = readInt(params, 'compass');
+  if (!read.ok) return read.failure;
+  if (!isFacingIndex(read.value)) {
+    return commandFailed('invalid_value', "'compass' takes a whole number 0-7, clockwise from north");
+  }
+  faceTowards(context, read.value);
+  return commandSucceeded(`now facing ${FACING_NAMES[read.value]}`);
+}
+
+function faceTowards(context: CommandContext, facing: FacingIndex): void {
+  const pose = context.actor.pose();
+  if (pose.facing === facing) return;
+  context.actor.snapTo(pose.x, pose.y, facing);
 }
 
 function stepBy(context: CommandContext, step: Step): CommandResult {

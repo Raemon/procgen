@@ -29,6 +29,16 @@ export const VIEW_MODE_TIPS: Readonly<Record<ViewMode, TooltipContent>> = {
     body: 'The same overhead view rendered as ASCII — exactly the characters an agent reads over the API. The wheel zooms it the way it zooms the 3-D view, by widening or narrowing the window of world one look hands you.',
     when: 'Checking that what a language model sees matches what you see.',
   },
+  'top-down': {
+    title: 'Top Down',
+    body: 'The world in 3-D straight from above, north always up, walking as the player. You see the disc around you and no further: a wall or a ridge is drawn and everything behind it lies in shadow, and ground you have already walked past stays dimly lit from memory. Move by compass with W/A/S/D or the arrows; the wheel zooms.',
+    when: 'Reading a room or a puzzle as a plan while still playing it blind — what a level looks like to someone inside it, without the first-person camera hiding the layout.',
+  },
+  'agent-top-down': {
+    title: 'Agent Top Down',
+    body: 'The top-down view as the ASCII window an agent receives: the same disc, the same shadows, and a second grid saying which tiles are in sight now and which are only remembered. The memory is per agent and lasts as long as it does.',
+    when: 'Checking that an agent mapping a world by walking it sees what you see.',
+  },
   character: {
     title: '2.5D Character',
     body: 'Walk the world in the body of a player, with the camera at ground level and elevation shaping what you can see.',

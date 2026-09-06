@@ -15,7 +15,7 @@ export { insertCommands };
 
 registerCommand({
   action: 'insert_item',
-  mode: 'god',
+  modes: ['god'],
   group: 'world',
   humanControl: 'library panel, item row: the insert arrow',
   description:
@@ -30,7 +30,7 @@ registerCommand({
 
 registerCommand({
   action: 'insert_creature',
-  mode: 'god',
+  modes: ['god'],
   group: 'world',
   humanControl: 'library panel, creature row: the insert arrow',
   description:

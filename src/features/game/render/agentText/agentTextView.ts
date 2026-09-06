@@ -1,5 +1,6 @@
 import type { AgentMode } from '../../../agents/agentMode';
 import {
+  KNOWLEDGE_GLYPHS,
   buildObservation,
   viewSizeFor,
   type AgentObservation,
@@ -10,7 +11,7 @@ import {
 import { walkabilityPhrase } from '../../../agents/observationText';
 import { BLANK_GLYPH, SELF_GLYPH } from '../../../agents/observedTile';
 import { measureWork } from '../../performance/workTimers';
-import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
+import type { Marker, WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import type { ReadOnlyTileAssets } from '@/features/app-shell/runtime/readOnlyAssets';
 import type { ReadOnlyWorld } from '@/features/app-shell/runtime/readOnlyAssets';
 import type { HoveredCell, HoveredTile } from '../../hover/hoveredTile';
@@ -32,6 +33,7 @@ import { asciiColorOn, onAsciiColorChange } from './asciiColorPreference';
 import {
   ASCII_GLYPH_GRID_CLASSES,
   asciiGlyphPaint,
+  dimmedToMemory,
   type AsciiGlyphPaint,
 } from './asciiGlyphPaint';
 import { elevationGlyphPaint } from './elevationGlyphPaint';
@@ -253,15 +255,27 @@ export class AgentTextView {
       if (glyph === BLANK_GLYPH) return null;
       const x = viewport.originX + column;
       const y = viewport.originY + row;
-      const characterInk = characterInks.get(`${x},${y}`);
-      if (characterInk) return asciiGlyphPaint(characterInk, null);
-      if (glyph === SELF_GLYPH) return asciiGlyphPaint(SELF_INK, null);
-      const markerColor = markers.get(`${x},${y}`)?.color;
-      if (markerColor) return asciiGlyphPaint(markerColor, null);
-      const tile = this.tileAssets.byId(this.sampler.tileAt(x, y));
-      if (!tile?.color) return null;
-      return asciiGlyphPaint(tile.color, tile.walkable);
+      const paint = this.inkOfCell(glyph, x, y, markers, characterInks);
+      if (!paint) return null;
+      return isRememberedCell(obs, row, column) ? dimmedToMemory(paint) : paint;
     };
+  }
+
+  private inkOfCell(
+    glyph: string,
+    x: number,
+    y: number,
+    markers: Map<string, Marker>,
+    characterInks: Map<string, string>,
+  ): AsciiGlyphPaint | null {
+    const characterInk = characterInks.get(`${x},${y}`);
+    if (characterInk) return asciiGlyphPaint(characterInk, null);
+    if (glyph === SELF_GLYPH) return asciiGlyphPaint(SELF_INK, null);
+    const markerColor = markers.get(`${x},${y}`)?.color;
+    if (markerColor) return asciiGlyphPaint(markerColor, null);
+    const tile = this.tileAssets.byId(this.sampler.tileAt(x, y));
+    if (!tile?.color) return null;
+    return asciiGlyphPaint(tile.color, tile.walkable);
   }
 
   private cellAtPixel(offsetX: number, offsetY: number): HoveredCell | null {
@@ -380,4 +394,8 @@ function legendLine(entry: LegendEntry, glyphPaints: Map<string, AsciiGlyphPaint
   const suffix = phrase === null ? '' : ` (${phrase})`;
   line.append(glyph, document.createTextNode(` ${entry.meaning}${suffix}`));
   return line;
+}
+
+function isRememberedCell(obs: AgentObservation, row: number, column: number): boolean {
+  return obs.inSight?.[row]?.[column] === KNOWLEDGE_GLYPHS.memory;
 }

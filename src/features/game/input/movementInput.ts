@@ -11,6 +11,7 @@ export interface MovementDeps {
   moveIntent(forwardInput: number, strafeInput: number): void;
   moveReleased(): void;
   rotate(direction: -1 | 1): void;
+  turnsOnRotationKeys(): boolean;
   isSuspended(): boolean;
 }
 
@@ -47,13 +48,13 @@ export class MovementInput {
   private onKeyDown = (event: KeyboardEvent): void => {
     if (event.repeat || isTypingInFormControl(event) || hasModifier(event)) return;
     if (this.deps.isSuspended()) return;
-    const rotation = ROTATION_KEYS[event.code];
+    const rotation = this.deps.turnsOnRotationKeys() ? ROTATION_KEYS[event.code] : undefined;
     if (rotation) {
       event.preventDefault();
       this.deps.rotate(rotation);
       return;
     }
-    const axis = movementAxisForKey(event.code);
+    const axis = this.axisForKey(event.code);
     if (!axis) return;
     event.preventDefault();
     this.heldAxes.add(axis);
@@ -62,7 +63,7 @@ export class MovementInput {
   };
 
   private onKeyUp = (event: KeyboardEvent): void => {
-    const axis = movementAxisForKey(event.code);
+    const axis = this.axisForKey(event.code);
     if (!axis) return;
     this.heldAxes.delete(axis);
     if (this.heldAxes.size === 0) this.releaseAll();
@@ -71,6 +72,10 @@ export class MovementInput {
   private onBlur = (): void => {
     this.releaseHeldKeys();
   };
+
+  private axisForKey(code: string): MovementAxis | undefined {
+    return movementAxisForKey(code, !this.deps.turnsOnRotationKeys());
+  }
 
   private releaseAll(): void {
     this.stopRepeating();

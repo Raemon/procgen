@@ -18,6 +18,7 @@ export function GameStage({ mode }: { mode: ViewMode }) {
   const agentGodSlot = useRef<HTMLDivElement>(null);
   const agentGodSidebarSlot = useRef<HTMLDivElement>(null);
   const agentCharacterSlot = useRef<HTMLDivElement>(null);
+  const agentTopDownSlot = useRef<HTMLDivElement>(null);
   const featuresSlot = useRef<HTMLDivElement>(null);
   const mounted = useRef<MountedWorldViews | null>(null);
   const latestMode = useRef(mode);
@@ -31,6 +32,7 @@ export function GameStage({ mode }: { mode: ViewMode }) {
         agentGod: agentGodSlot.current!,
         agentGodSidebar: agentGodSidebarSlot.current!,
         agentCharacter: agentCharacterSlot.current!,
+        agentTopDown: agentTopDownSlot.current!,
         features: featuresSlot.current!,
       },
       () => latestMode.current,
@@ -57,6 +59,10 @@ export function GameStage({ mode }: { mode: ViewMode }) {
       <div
         ref={agentCharacterSlot}
         className={classes('absolute inset-0', mode !== 'agent-character' && 'hidden')}
+      />
+      <div
+        ref={agentTopDownSlot}
+        className={classes('absolute inset-0', mode !== 'agent-top-down' && 'hidden')}
       />
       <div
         ref={featuresSlot}

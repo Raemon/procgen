@@ -12,15 +12,24 @@ import {
   DEFAULT_GOD_VIEW_SIZE_TILES,
   clampGodViewSizeTiles,
 } from '@/features/game/vision/godViewSize';
-import { BLANK_GLYPH, SELF_GLYPH, agentCanSee, observedTileAt } from './observedTile';
-import { terrainSightlineFor, type TerrainSightline } from './terrainSightline';
+import {
+  BLANK_GLYPH,
+  SELF_GLYPH,
+  agentCanSee,
+  observedTileAt,
+  rememberedGroundAt,
+  whyItIsUnseen,
+} from './observedTile';
+import { sightWindowFor } from './terrainSightline';
+import type { SightWindow } from '@/features/game/vision/lineOfSight';
+import type { ExploredCells } from '@/features/game/vision/exploredCells';
 import type { MarkerSource } from '@/features/game/render/markerSource';
 import {
   actionWithinReach,
   interactPrompt,
   type ActionOfferingCells,
 } from '@/features/game/fixtures/actionWithinReach';
-import type { AgentMode, AgentPose } from './agentMode';
+import { remembersWhatItHasSeen, seesTheWholeWindow, type AgentMode, type AgentPose } from './agentMode';
 import { climbStepsOf } from '@/features/game/climbing';
 
 export interface ObservedOverlay extends MarkerSource, ActionOfferingCells {}
@@ -38,6 +47,7 @@ export interface LegendEntry {
 export interface ViewVision {
   sightRadiusTiles?: number;
   godViewSizeTiles?: number;
+  explored?: ExploredCells | null;
 }
 
 export interface AgentObservation {
@@ -48,6 +58,7 @@ export interface AgentObservation {
   sightRadiusTiles: number | null;
   godViewSizeTiles: number | null;
   view: string[];
+  inSight: string[] | null;
   elevation: string[] | null;
   elevationFloorSteps: number | null;
   legend: LegendEntry[];
@@ -55,7 +66,7 @@ export interface AgentObservation {
 }
 
 export function viewSizeFor(mode: AgentMode, vision: ViewVision = {}): number {
-  return mode === 'god'
+  return seesTheWholeWindow(mode)
     ? godViewSizeOf(vision)
     : characterViewSize(sightRadiusOf(vision));
 }
@@ -80,35 +91,44 @@ export function buildObservation(
   const size = viewSizeFor(mode, vision);
   const viewport = viewportCenteredOn(pose.x, pose.y, size, size);
   const markers = pointOverlayLookup(sampler, viewport, overlay);
-  const seesPast = terrainSightlineFor(sampler, tileAssets, pose, mode, radius);
+  const sight = sightWindowFor(sampler, tileAssets, pose, mode, radius, vision.explored ?? null);
+  const remembers = remembersWhatItHasSeen(mode);
   const legend = new Map<string, LegendEntry>();
   addFixedLegendEntries(legend, mode, radius);
   const view: string[] = [];
+  const knownRows: string[] = [];
   const stepsSeen: (number | null)[][] = [];
   for (let row = 0; row < size; row++) {
     let line = '';
+    let knownLine = '';
     const stepsRow: (number | null)[] = [];
     for (let column = 0; column < size; column++) {
       const x = viewport.originX + column;
       const y = viewport.originY + row;
-      const seen = cellIsSeen(pose, mode, radius, seesPast, x, y);
-      line += seen
-        ? observedGlyph(sampler, tileAssets, markers, legend, pose, mode, radius, x, y)
-        : BLANK_GLYPH;
-      stepsRow.push(seen ? climbStepsOf(sampler.elevationAt(x, y)) : null);
+      const known = knowledgeOfCell(pose, mode, radius, sight, remembers, x, y);
+      line += glyphForKnowledge(
+        { sampler, tileAssets, markers, legend, pose, mode, radius },
+        known,
+        x,
+        y,
+      );
+      knownLine += KNOWLEDGE_GLYPHS[known];
+      stepsRow.push(known === 'hidden' ? null : climbStepsOf(sampler.elevationAt(x, y)));
     }
     view.push(line);
+    knownRows.push(knownLine);
     stepsSeen.push(stepsRow);
   }
   const ground = elevationGrid(stepsSeen);
   return {
     mode,
     position: { x: pose.x, y: pose.y },
-    facing: mode === 'god' ? FACING_NAMES[pose.facing] : null,
+    facing: seesTheWholeWindow(mode) ? FACING_NAMES[pose.facing] : null,
     viewSize: size,
-    sightRadiusTiles: mode === 'character' ? radius : null,
-    godViewSizeTiles: mode === 'god' ? size : null,
+    sightRadiusTiles: seesTheWholeWindow(mode) ? null : radius,
+    godViewSizeTiles: seesTheWholeWindow(mode) ? size : null,
     view,
+    inSight: remembers ? knownRows : null,
     elevation: ground?.rows ?? null,
     elevationFloorSteps: ground?.floorSteps ?? null,
     legend: [...legend.values()],
@@ -116,16 +136,51 @@ export function buildObservation(
   };
 }
 
-function cellIsSeen(
+export type CellKnowledge = 'sight' | 'memory' | 'hidden';
+
+export const KNOWLEDGE_GLYPHS: Readonly<Record<CellKnowledge, string>> = {
+  sight: '#',
+  memory: '-',
+  hidden: ' ',
+};
+
+interface ObservedCellParts {
+  sampler: WorldSampler;
+  tileAssets: ReadOnlyTileAssets;
+  markers: Map<string, Marker>;
+  legend: Map<string, LegendEntry>;
+  pose: AgentPose;
+  mode: AgentMode;
+  radius: number;
+}
+
+function glyphForKnowledge(
+  parts: ObservedCellParts,
+  known: CellKnowledge,
+  x: number,
+  y: number,
+): string {
+  const { sampler, tileAssets, markers, legend, pose, mode, radius } = parts;
+  if (known === 'hidden') return BLANK_GLYPH;
+  if (known === 'memory') {
+    const observed = rememberedGroundAt(sampler, tileAssets, x, y);
+    return collectGlyph(legend, observed.glyph, observed.meaning, observed.walkable);
+  }
+  return observedGlyph(sampler, tileAssets, markers, legend, pose, mode, radius, x, y);
+}
+
+function knowledgeOfCell(
   pose: AgentPose,
   mode: AgentMode,
   sightRadiusTiles: number,
-  seesPast: TerrainSightline,
+  sight: SightWindow,
+  remembers: boolean,
   x: number,
   y: number,
-): boolean {
-  if (x === pose.x && y === pose.y) return true;
-  return agentCanSee(mode, pose, sightRadiusTiles, x, y) && seesPast(x, y);
+): CellKnowledge {
+  if (x === pose.x && y === pose.y) return 'sight';
+  if (agentCanSee(mode, pose, sightRadiusTiles, x, y) && sight.inSight(x, y)) return 'sight';
+  return remembers && sight.remembered(x, y) ? 'memory' : 'hidden';
 }
 
 const TALLEST_ELEVATION_DIGIT = 35;
@@ -163,8 +218,17 @@ function observedGlyph(
   y: number,
 ): string {
   const observed = observedTileAt(sampler, tileAssets, markers, pose, mode, sightRadiusTiles, x, y);
-  if (theWholeGridSharesOneLegendEntryFor(observed.glyph)) return observed.glyph;
-  return collectLegend(legend, observed.glyph, observed.meaning, observed.walkable);
+  return collectGlyph(legend, observed.glyph, observed.meaning, observed.walkable);
+}
+
+function collectGlyph(
+  legend: Map<string, LegendEntry>,
+  glyph: string,
+  meaning: string,
+  walkable: boolean | null,
+): string {
+  if (theWholeGridSharesOneLegendEntryFor(glyph)) return glyph;
+  return collectLegend(legend, glyph, meaning, walkable);
 }
 
 function theWholeGridSharesOneLegendEntryFor(glyph: string): boolean {
@@ -193,10 +257,12 @@ function addFixedLegendEntries(
   legend.set(SELF_GLYPH, { glyph: SELF_GLYPH, meaning: 'you', walkable: null });
   legend.set(BLANK_GLYPH, {
     glyph: BLANK_GLYPH,
-    meaning:
-      mode === 'character'
-        ? `nothing generated here, or unseen: behind you, past your ${sightRadiusTiles}-tile sight radius (fog), or hidden behind tall ground or a ridge above you`
-        : 'nothing generated here',
+    meaning: blankMeaningFor(mode, sightRadiusTiles),
     walkable: null,
   });
+}
+
+function blankMeaningFor(mode: AgentMode, sightRadiusTiles: number): string {
+  if (seesTheWholeWindow(mode)) return 'nothing generated here';
+  return `nothing generated here, or unseen: ${whyItIsUnseen(mode, sightRadiusTiles)}`;
 }

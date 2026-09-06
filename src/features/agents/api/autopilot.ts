@@ -1,5 +1,6 @@
 import { buildApiDocs } from './docs/apiDocs';
 import { nodeTypesJson, pipelineJson } from '../nodeCatalog';
+import type { AgentMode } from '../agentMode';
 import { buildObservation } from '../observation';
 import { observationText } from '../observationText';
 import { formatUsd, modelIsPriced, usageCostUsd } from '../pricing';
@@ -209,14 +210,22 @@ function systemPrompt(access: WorldAccess, session: AgentSession): string {
     'You keep a notebook across runs: remember saves a note, write_script saves an action sequence you can replay. Every observation repeats both back to you, so save what you would want at the start of a fresh run rather than a log of what you just did.',
     'Every observation also tells you what is left of your dollar budget. When the budget runs out the run stops wherever it stands, so spend it on the goal and record what you learned before it does.',
     'This prompt is written once at the start of a run. Where it describes the world — the tile legend especially — trust the observation in front of you over anything here.',
-    session.mode === 'god'
-      ? 'You can rebuild the world itself with the editing tools; inspect_pipeline and inspect_node_types show what exists and what you can add.'
-      : '',
+    modeAdvice(session.mode),
     '',
     buildApiDocs(access.current().tileAssets),
   ]
     .filter((line) => line !== '')
     .join('\n');
+}
+
+function modeAdvice(mode: AgentMode): string {
+  if (mode === 'god') {
+    return 'You can rebuild the world itself with the editing tools; inspect_pipeline and inspect_node_types show what exists and what you can add.';
+  }
+  if (mode === 'topdown') {
+    return 'You see the whole disc around you, and remember every tile you have already seen, so the in_sight grid is where to look before you walk: ground marked remembered is where you have been, blank is where you have not, and walking to the edge of what you know is how the map grows.';
+  }
+  return '';
 }
 
 function recordReply(run: AutopilotRun, reply: AnthropicReply): ContentBlock[] {

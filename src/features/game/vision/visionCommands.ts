@@ -24,9 +24,9 @@ export { visionCommands };
 
 registerCommand({
   action: 'set_sight_radius',
-  mode: 'character',
+  modes: ['character', 'topdown'],
   group: 'senses',
-  humanControl: 'the sight slider on the character view toolbar',
+  humanControl: 'the sight slider on the character and top-down view toolbar',
   description:
     `Set how far you see, in tiles, from ${MIN_CHARACTER_SIGHT_RADIUS_TILES} to ` +
     `${MAX_CHARACTER_SIGHT_RADIUS_TILES} (default ${DEFAULT_CHARACTER_SIGHT_RADIUS_TILES}). ` +
@@ -66,7 +66,7 @@ function summaryFor(radius: number, asked: number): string {
 
 registerCommand({
   action: 'set_view_size',
-  mode: 'god',
+  modes: ['god'],
   group: 'senses',
   humanControl: 'the mouse wheel over the agent god view',
   description:

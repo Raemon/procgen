@@ -9,7 +9,7 @@ import { asciiColorOn, setAsciiColorOn } from '../render/agentText/asciiColorPre
 import { useSoundOn } from '../sound/soundPreference';
 import { SightRangeControl } from './SightRangeControl';
 import { ASCII_COLOR_TIP, CAPTURE_TIP, LIFE_TIP, SOUND_TIP } from './help/gameTips';
-import { isCharacterControlled, usesAgentText, type ViewMode } from './viewMode';
+import { usesAgentText, usesSightRadius, type ViewMode } from './viewMode';
 
 export function GameToolbar({ mode }: { mode: ViewMode }) {
   const { capture, clock } = useAppRuntime();
@@ -33,7 +33,7 @@ export function GameToolbar({ mode }: { mode: ViewMode }) {
         life
       </Button>
       <SoundToggle />
-      {isCharacterControlled(mode) ? <SightRangeControl /> : null}
+      {usesSightRadius(mode) ? <SightRangeControl /> : null}
       {usesAgentText(mode) ? <AsciiColorToggle /> : null}
     </>
   );

@@ -1,4 +1,4 @@
-import type { FacingIndex } from '../facing';
+import { isFacingIndex, type FacingIndex } from '../facing';
 
 export const TICK_MS = 50;
 export const MOVE_COOLDOWN_TICKS = 3;
@@ -60,5 +60,5 @@ export function takeJumpRequest(body: MovingBody): JumpRequest | null {
 }
 
 export function isDirIndex(dir: unknown): dir is FacingIndex {
-  return typeof dir === 'number' && Number.isInteger(dir) && dir >= 0 && dir <= 7;
+  return isFacingIndex(dir);
 }

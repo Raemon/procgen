@@ -8,6 +8,7 @@ import { jumpLandingDelta } from '@/features/game/sim/jumpLanding';
 import { isAxisStep } from '@/features/game/sim/stepIsAllowed';
 import { mineSlotsOf, stepRulesOf, type WorldRulesSet } from '@/features/game/worldRulesSet';
 import { newNotebook, type AgentNotebook } from './agentNotebook';
+import { ExploredCells } from '@/features/game/vision/exploredCells';
 
 export interface AgentSession {
   id: string;
@@ -23,6 +24,7 @@ export interface AgentSession {
   notebook: AgentNotebook;
   run: AutopilotRun | null;
   mine: Map<string, unknown>;
+  explored: ExploredCells;
 }
 
 export interface TranscriptEntry {
@@ -67,6 +69,7 @@ export function newSession(
     notebook: newNotebook(),
     run: null,
     mine: new Map(),
+    explored: new ExploredCells(),
   };
 }
 
@@ -74,6 +77,7 @@ export function sessionVision(session: AgentSession): ViewVision {
   return {
     sightRadiusTiles: session.sightRadiusTiles,
     godViewSizeTiles: session.godViewSizeTiles,
+    explored: session.explored,
   };
 }
 

@@ -9,7 +9,7 @@ import {
   MIN_GOD_VIEW_SIZE_TILES,
 } from '@/features/game/vision/godViewSize';
 import { CLIMB_STEPS_PER_JUMP, CLIMB_STEPS_PER_WALK } from '@/features/game/climbing';
-import type { AgentObservation, LegendEntry } from './observation';
+import { KNOWLEDGE_GLYPHS, type AgentObservation, type LegendEntry } from './observation';
 
 export function observationText(obs: AgentObservation): string {
   return observationLines(obs).join('\n');
@@ -20,11 +20,21 @@ export function observationLines(obs: AgentObservation): string[] {
     ...headerLines(obs),
     '',
     ...obs.view,
+    ...inSightLines(obs),
     ...elevationLines(obs),
     '',
     'legend:',
     ...legendLines(obs.legend),
     ...interactionLines(obs),
+  ];
+}
+
+function inSightLines(obs: AgentObservation): string[] {
+  if (obs.inSight === null) return [];
+  return [
+    '',
+    `what you know of each tile ('${KNOWLEDGE_GLYPHS.sight}' in sight now, '${KNOWLEDGE_GLYPHS.memory}' remembered from an earlier look so its ground is drawn but whatever moves may have moved, blank never seen):`,
+    ...obs.inSight,
   ];
 }
 
@@ -45,6 +55,7 @@ function interactionLines(obs: AgentObservation): string[] {
 const USE_ACTION: Record<AgentObservation['mode'], string> = {
   god: 'use_fixture',
   character: 'use',
+  topdown: 'use',
 };
 
 function headerLines(obs: AgentObservation): string[] {
@@ -59,6 +70,13 @@ function headerLines(obs: AgentObservation): string[] {
   ];
   if (obs.mode === 'god') {
     lines.push(viewSizeLine(obs.godViewSizeTiles ?? DEFAULT_GOD_VIEW_SIZE_TILES));
+  }
+  if (obs.mode === 'topdown') {
+    lines.push(
+      'you look straight down on yourself, so you see all around you at once — there is no blind side, and facing changes nothing about what you see.',
+      `sight reaches ${obs.sightRadiusTiles} tiles and stops at whatever it cannot see past: a wall or tall ground is drawn, and the ground behind it is blank. tiles you saw on an earlier look stay in the grid as remembered ground.`,
+      sightRadiusLine(obs.sightRadiusTiles ?? DEFAULT_CHARACTER_SIGHT_RADIUS_TILES),
+    );
   }
   if (obs.mode === 'character') {
     lines.push(

@@ -16,6 +16,7 @@ export const AGENT_MODE_TIP: TooltipContent = {
   options: [
     { name: 'character', meaning: 'walks the world from inside it, with only what it can see' },
     { name: 'god', meaning: 'reads the whole map from above' },
+    { name: 'topdown', meaning: 'walks it looking straight down: the whole disc around it, walls casting shadows, and a memory of ground it has already seen' },
   ],
 };
 

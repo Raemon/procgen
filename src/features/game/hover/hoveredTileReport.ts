@@ -45,7 +45,7 @@ export function hoveredTileReport(eyes: AgentEyes, cell: HoveredCell): HoveredTi
   return {
     cell,
     observed: hiddenByTerrain
-      ? unseenTile(radius)
+      ? unseenTile(eyes.mode, radius)
       : observedTileAt(
           eyes.sampler,
           eyes.tileAssets,

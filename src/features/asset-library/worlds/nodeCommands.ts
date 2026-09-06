@@ -30,9 +30,9 @@ export { nodeCommands };
 const NODE_ID_HELP = 'id of an existing node — see GET /api/v1/asset-library/world-seeds/current';
 
 function registerNodeCommand(
-  spec: Omit<CommandSpec, 'mode' | 'group' | 'changesWorld'>,
+  spec: Omit<CommandSpec, 'modes' | 'group' | 'changesWorld'>,
 ): CommandSpec {
-  return registerCommand({ ...spec, mode: 'god', group: 'pipeline', changesWorld: true });
+  return registerCommand({ ...spec, modes: ['god'], group: 'pipeline', changesWorld: true });
 }
 
 registerNodeCommand({

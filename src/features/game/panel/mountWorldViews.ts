@@ -6,19 +6,28 @@ import { listenForPickUpKey } from '../input/pickUpInput';
 import { listenForFixtureKeys, resetKeyAction } from '../input/useFixtureInput';
 import { AgentTextView } from '../render/agentText/agentTextView';
 import { FeaturesView } from '../render/features/featuresView';
-import { View3D } from '../render/view3d/view3d';
+import { View3D, type CameraStyle } from '../render/view3d/view3d';
 import { setWorldViewSnapshotter } from '../render/worldViewSnapshot';
 import type { WorldViewDeps } from '../render/worldViewDeps';
 import { soundOn } from '../sound/soundPreference';
 import { createSoundPlayer } from '../sound/soundSynth';
 import { playWorldSounds } from '../sound/worldSounds';
-import { isCharacterControlled, type ViewMode } from './viewMode';
+import {
+  commandModeOf,
+  isCharacterControlled,
+  isGodView,
+  isTopDownView,
+  usesCompassMovement,
+  type ViewMode,
+} from './viewMode';
+import { stepDirIndex } from '../sim/tickMovement';
 
 export interface ViewSlots {
   view3d: HTMLElement;
   agentGod: HTMLElement;
   agentGodSidebar: HTMLElement;
   agentCharacter: HTMLElement;
+  agentTopDown: HTMLElement;
   features: HTMLElement;
 }
 
@@ -55,6 +64,11 @@ export function mountWorldViews(
     container: slots.agentCharacter,
     mode: 'character',
   });
+  const agentTopDownView = new AgentTextView({
+    ...agentTextViewParts,
+    container: slots.agentTopDown,
+    mode: 'topdown',
+  });
   const featuresView = new FeaturesView(slots.features, worldViewDepsOf(runtime));
 
   setWorldViewSnapshotter((size, use) => view3d.captureAfterNextFrame(size, use));
@@ -73,6 +87,10 @@ export function mountWorldViews(
       recenterOnPlayer: () => agentCharacterView.draw(),
     }),
     runtime.renderers.add({
+      redraw: () => agentTopDownView.draw(),
+      recenterOnPlayer: () => agentTopDownView.draw(),
+    }),
+    runtime.renderers.add({
       redraw: () => featuresView.draw(),
       recenterOnPlayer: () => featuresView.recenterOnPlayer(),
     }),
@@ -80,17 +98,18 @@ export function mountWorldViews(
 
   const movement = new MovementInput({
     moveIntent: (forwardInput, strafeInput) => {
-      const [dx, dy] = isCharacterControlled(currentMode())
-        ? facingRelativeStep(world.facing, forwardInput, strafeInput)
-        : facingRelativeStep(currentMode() === '3d-god' ? world.facing : 0, forwardInput, strafeInput);
+      const byCompass = usesCompassMovement(currentMode());
+      const [dx, dy] = facingRelativeStep(
+        byCompass ? 0 : world.facing,
+        forwardInput,
+        strafeInput,
+      );
+      if (byCompass) faceTheWayYouWalk(perform, dx, dy);
       runtime.net.setMoveIntent(dx, dy);
     },
     moveReleased: () => runtime.net.clearMoveIntent(),
-    rotate: (direction) => {
-      if (isCharacterControlled(currentMode()) || currentMode() === '3d-god') {
-        perform(direction === -1 ? 'turn_left' : 'turn_right');
-      }
-    },
+    rotate: (direction) => perform(direction === -1 ? 'turn_left' : 'turn_right'),
+    turnsOnRotationKeys: () => !usesCompassMovement(currentMode()),
     isSuspended: () => inputIsSuspended(runtime, currentMode()),
   });
 
@@ -121,6 +140,7 @@ export function mountWorldViews(
   const redrawOnSightChange = world.on('sight-changed', () => {
     agentGodView.draw();
     agentCharacterView.draw();
+    agentTopDownView.draw();
   });
 
   const stopWalkingWhileTyping = runtime.chatComposer.subscribe(() => {
@@ -151,14 +171,25 @@ export function mountWorldViews(
       view3d.dispose();
       agentGodView.dispose();
       agentCharacterView.dispose();
+      agentTopDownView.dispose();
     },
     onModeChanged: (mode) => {
-      if (isCharacterControlled(mode)) runtime.cameraFocus.clear();
-      runtime.setPlayerMode(isCharacterControlled(mode) ? 'character' : 'god');
-      view3d.setCameraStyle(mode === 'character' ? 'character' : 'god');
+      if (!isGodView(mode)) runtime.cameraFocus.clear();
+      runtime.setPlayerMode(commandModeOf(mode));
+      view3d.setCameraStyle(cameraStyleOf(mode));
       runtime.hoveredTile.clear();
     },
   };
+}
+
+function cameraStyleOf(mode: ViewMode): CameraStyle {
+  if (isCharacterControlled(mode)) return 'character';
+  return isTopDownView(mode) ? 'topdown' : 'god';
+}
+
+function faceTheWayYouWalk(perform: AppRuntime['perform'], dx: number, dy: number): void {
+  const compass = stepDirIndex(dx, dy);
+  if (compass !== null) perform('face', { compass });
 }
 
 function inputIsSuspended(runtime: AppRuntime, mode: ViewMode): boolean {
