@@ -199,6 +199,10 @@ export class WorldRulesSet {
     return this.owner(x, y)?.resetRoomAt(x, y) ?? null;
   }
 
+  resetGrowsAFreshWorldAt(x: number, y: number): boolean {
+    return this.owner(x, y)?.resetGrowsAFreshWorld() ?? false;
+  }
+
   spawn(): Cell | null {
     for (const rules of this.overlays) {
       const spot = rules.spawn();

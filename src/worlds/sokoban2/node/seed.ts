@@ -9,7 +9,7 @@ export function sokobanDungeon(): ExamplePipeline {
   return {
     name: SOKOBAN_DUNGEON_SEED_NAME,
     description:
-      'A finite maze of twenty-five room slots, every room a crate-pushing puzzle proven solvable before it ships. Walk into a crate to push it along level floor; a crate standing taller than you is something to jump onto, and from its top you can jump up onto a ledge. Each door waits on the room in front of it: finish that room by settling a crate of the right colour on every goal and the door swings open, and once open it stays open. Some rooms want a crate delivered from a neighbour, so a spare is parked by the door with its lane kept clear. Press R to put the room you stand in back the way it was built. The whole maze is built on the server in a few seconds before anyone can enter.',
+      'A finite maze of twenty-five room slots, every room a crate-pushing puzzle proven solvable before it ships. Walk into a crate to push it along level floor; a crate standing taller than you is something to jump onto, and from its top you can jump up onto a ledge. Each door waits on the room in front of it: finish that room by settling a crate of the right colour on every goal and the door swings open, and once open it stays open. Some rooms want a crate delivered from a neighbour, so a spare is parked by the door with its lane kept clear. Press R to leave the whole maze behind and grow a fresh one from a new seed. The whole maze is built on the server in a few seconds before anyone can enter.',
     state: {
       seed: 4711,
       daylight: 1,

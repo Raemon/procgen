@@ -3,7 +3,7 @@ import { facingRelativeStep } from '../input/facingRelativeStep';
 import { listenForJumpKey } from '../input/jumpInput';
 import { MovementInput } from '../input/movementInput';
 import { listenForPickUpKey } from '../input/pickUpInput';
-import { listenForFixtureKeys } from '../input/useFixtureInput';
+import { listenForFixtureKeys, resetKeyAction } from '../input/useFixtureInput';
 import { AgentTextView } from '../render/agentText/agentTextView';
 import { FeaturesView } from '../render/features/featuresView';
 import { View3D } from '../render/view3d/view3d';
@@ -98,8 +98,15 @@ export function mountWorldViews(
 
   const stopFixtureKeys = listenForFixtureKeys({
     use: () => perform(isCharacterControlled(currentMode()) ? 'use' : 'use_fixture'),
-    resetRoom: () =>
-      perform(isCharacterControlled(currentMode()) ? 'reset_room' : 'reset_puzzle_room'),
+    reset: () =>
+      perform(
+        resetKeyAction(
+          runtime.rules,
+          world.playerX,
+          world.playerY,
+          isCharacterControlled(currentMode()),
+        ),
+      ),
     isSuspended: () => inputIsSuspended(runtime, currentMode()),
   });
 

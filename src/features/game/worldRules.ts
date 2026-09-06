@@ -79,6 +79,7 @@ export interface WorldRules {
   actionAt(x: number, y: number): string | null;
   use(x: number, y: number, mine: MineSlots, purse: KeyPurse): UseOutcome;
   resetRoomAt(x: number, y: number): string | null;
+  resetGrowsAFreshWorld(): boolean;
   readonly items: ItemSpawnSource;
   revision(): number;
   snapshot(): unknown;
@@ -130,6 +131,7 @@ export function inertRules(nodeId: string, nodeType: string): WorldRules {
     actionAt: () => null,
     use: (x, y) => nothingToUse(x, y),
     resetRoomAt: () => null,
+    resetGrowsAFreshWorld: () => false,
     items: NO_ITEM_SPAWNS,
     revision: () => 0,
     snapshot: () => null,

@@ -181,6 +181,10 @@ class Sokoban2Overlay implements Sokoban2Rules {
     return `room ${room}`
   }
 
+  resetGrowsAFreshWorld(): boolean {
+    return true
+  }
+
   revision(): number {
     return this.changes
   }

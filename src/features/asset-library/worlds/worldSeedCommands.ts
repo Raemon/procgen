@@ -64,6 +64,16 @@ registerWorldSeedCommand({
 });
 
 registerWorldSeedCommand({
+  action: 'regrow_world',
+  humanControl: 'game panel: R, in a world whose rules grow a fresh one rather than put a room back',
+  description:
+    'Roll a fresh seed and grow the world running again from it, forgetting the crates pushed, doors opened and items taken in the one before. Every node and knob stays as it is, so the same rules lay out somewhere nobody has played yet.',
+  params: {},
+  example: { action: 'regrow_world' },
+  apply: (context) => growAFreshWorld(context),
+});
+
+registerWorldSeedCommand({
   action: 'set_daylight',
   humanControl: 'detail panel, world seed: daylight row',
   description:
@@ -390,6 +400,15 @@ function rollSummaryOf(rolled: PlayableRoll): string {
 
 function arbitrarySeed(): number {
   return (Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0;
+}
+
+function growAFreshWorld(context: CommandContext): CommandResult {
+  const seed = rollInt(mulberry32(arbitrarySeed()), 1, 999_999);
+  context.settleTheWorld(() => {
+    context.store.setSeed(seed);
+    if (context.pipelineIsOnScreen) forgetWhatWasDoneInTheLastWorld(context);
+  });
+  return commandSucceeded(`seed = ${seed}; a fresh world grew from it`);
 }
 
 function loadWorldSeed(context: CommandContext, params: CommandParams): CommandResult {
