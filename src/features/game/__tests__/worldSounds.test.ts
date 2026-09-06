@@ -1,7 +1,8 @@
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { PuzzleCues } from '../circuits/puzzleCues';
 import { JUMP_MS } from '../sim/movementOrder';
-import type { SoundCue, SoundPlayer } from '../sound/soundSynth';
+import type { SoundCue } from '../sound/soundCues';
+import type { SoundPlayer } from '../sound/soundPlayer';
 import { loudnessFrom, playWorldSounds } from '../sound/worldSounds';
 import { World } from '../world';
 import { sceneWithOneCrate } from './cueScenes';

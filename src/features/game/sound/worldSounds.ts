@@ -2,7 +2,8 @@ import type { ReadOnlyWorld } from '@/features/app-shell/runtime/readOnlyAssets'
 import type { PuzzleCues } from '../circuits/puzzleCues';
 import { JUMP_MS } from '../sim/movementOrder';
 import type { Cell } from '../worldRules';
-import type { SoundCue, SoundPlayer } from './soundSynth';
+import type { SoundCue } from './soundCues';
+import type { SoundPlayer } from './soundPlayer';
 
 export interface SoundedWorld {
   world: ReadOnlyWorld;

@@ -11,7 +11,7 @@ import { View3D, type CameraStyle } from '../render/view3d/view3d';
 import { setWorldViewSnapshotter } from '../render/worldViewSnapshot';
 import type { WorldViewDeps } from '../render/worldViewDeps';
 import { soundOn } from '../sound/soundPreference';
-import { createSoundPlayer } from '../sound/soundSynth';
+import { createSoundPlayer } from '../sound/soundPlayer';
 import { playWorldSounds } from '../sound/worldSounds';
 import {
   commandModeOf,
