@@ -56,7 +56,7 @@ for (const spec of RESET_ACTIONS) {
     action: spec.action,
     mode: spec.mode,
     group: 'movement',
-    humanControl: 'R',
+    humanControl: 'R, in a world whose rules put a room back rather than grow a fresh one',
     description: RESET_DESCRIPTION,
     params: {},
     example: { action: spec.action },

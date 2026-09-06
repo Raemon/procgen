@@ -425,6 +425,21 @@ export function checkCommandDispatch(check: CheckReporter): void {
       commands.store.snapshot().seed === beforeSeed
     );
   })());
+  check('regrowing the world rolls a fresh seed and forgets what was done in the world before', (() => {
+    act('god', 'load_world_seed', { name: 'check seed' });
+    const before = commands.store.snapshot();
+    const nodesBefore = JSON.stringify(before.nodes);
+    const seedBefore = before.seed;
+    commands.context.takenItems.take({ x: 1, y: 1, itemId: assetId<'items'>(0) });
+    const regrown = act('god', 'regrow_world');
+    const after = commands.store.snapshot();
+    return (
+      regrown.ok &&
+      after.seed !== seedBefore &&
+      JSON.stringify(after.nodes) === nodesBefore &&
+      commands.context.takenItems.snapshot().length === 0
+    );
+  })());
   check('an unseeded roll lands the player with room to walk and can be undone', (() => {
     const before = JSON.stringify(commands.store.snapshot());
     const rolled = act('god', 'randomize_world_seed');

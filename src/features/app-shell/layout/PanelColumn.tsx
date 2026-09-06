@@ -36,6 +36,7 @@ export function PanelColumn({
           icon,
           tone,
           rail,
+          shortcut: layout.shortcutOf(panelKey),
           headerActions,
           fill,
           collapsed: layout.isCollapsed(panelKey),

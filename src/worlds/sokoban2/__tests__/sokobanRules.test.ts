@@ -8,6 +8,7 @@ import type { NodeInstance } from '@/features/asset-library/worlds/pipeline/pipe
 import { asField, asTiles } from '@/features/asset-library/worlds/values/valueAccess'
 import { nodeOfType, storeWithNodes } from '@/features/game/__tests__/rulesFixtures'
 import { wireMarkersOf } from '@/features/game/circuits/wireMarkers'
+import { resetKeyAction } from '@/features/game/input/useFixtureInput'
 import type { DefaultRules, MineSlots, StepAttempt } from '@/features/game/worldRules'
 import { WorldRulesSet } from '@/features/game/worldRulesSet'
 import { generateWorld2 } from '../generate/generateWorld'
@@ -148,6 +149,7 @@ function checkResetPutsTheRoomBack(check: CheckReporter): void {
   check('a door the room already opened stays open after a reset', rules.openedDoors().length === 1)
   const door = fromDungeon(world, world.doors[0]!)
   check('resetting from a doorway resets nothing, because a doorway belongs to no room', rules.resetRoomAt(door.x, door.y) === null)
+  check('the dungeon still answers R with a fresh maze, leaving the room reset to agents', rules.resetGrowsAFreshWorld())
 }
 
 function checkTheOverlayAgreesWithTheReferee(check: CheckReporter): void {
@@ -210,6 +212,7 @@ function checkTheNodesSliceTheBuiltWorld(check: CheckReporter): void {
   const built = world.find(SOKOBAN2_NODE_TYPE) as Sokoban2Rules
   const spawn = world.spawn()
   check('a rules set attached over the built node knows the dungeon and spawns on its start', built.world !== null && spawn !== null && !world.blocksAt(spawn!.x, spawn!.y))
+  check('R inside the dungeon grows a fresh world, and outside it still puts a room back', resetKeyAction(world, spawn!.x, spawn!.y, true) === 'regrow_world' && resetKeyAction(world, 9999, 9999, true) === 'reset_room')
   const dungeonCell = toDungeon(built.world!, spawn!.x, spawn!.y)
   check('the spawn is painted as floor', asTiles(evaluator.valueFor('dungeon', Math.floor(spawn!.x / 32), Math.floor(spawn!.y / 32)))![((spawn!.y - Math.floor(spawn!.y / 32) * 32) * 32) + (spawn!.x - Math.floor(spawn!.x / 32) * 32)] === floor && index(built.world!, dungeonCell.x, dungeonCell.y) >= 0)
 }
