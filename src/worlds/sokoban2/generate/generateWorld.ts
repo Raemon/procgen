@@ -1,5 +1,5 @@
 import { derive } from '../rng'
-import { buildLayout, type Layout } from './layout'
+import { buildLayout, type Layout } from './layout/buildLayout'
 import type { GenParams } from '../params'
 import type { World } from '../types'
 import { openDoorways } from './openDoorways'

@@ -36,6 +36,11 @@ export class ChunkMeshStreamer {
     this.version++;
   }
 
+  invalidateAt(x: number, y: number): void {
+    const built = this.builtChunks.get(chunkKey(chunkCoordOfCell(x), chunkCoordOfCell(y)));
+    if (built) built.version = -1;
+  }
+
   showCeilings(visible: boolean): void {
     this.ceilingsVisible = visible;
     for (const built of this.builtChunks.values()) this.applyCeilingVisibility(built.group);

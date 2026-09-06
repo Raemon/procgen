@@ -5,8 +5,8 @@ import { checkNodeRegistryAndParamSpecs } from '@/features/asset-library/worlds/
 import { checkProgramCatalog } from '@/features/asset-library/worlds/__tests__/programCatalog.test';
 import { checkHashSpreadsItsDraws } from '@/features/asset-library/worlds/__tests__/hashSpreadsItsDraws.test';
 import { checkChunkDeterminismAndSignatures } from '@/features/asset-library/worlds/__tests__/chunkDeterminismAndSignatures.test';
-import { checkLabyrinthConnectivity } from '@/features/asset-library/worlds/__tests__/labyrinthConnectivity.test';
-import { checkLabyrinthChunkTopology } from '@/features/asset-library/worlds/__tests__/labyrinthChunkTopology.test';
+import { checkLabyrinthConnectivity } from '@/worlds/labyrinth/__tests__/labyrinthConnectivity.test';
+import { checkLabyrinthChunkTopology } from '@/worlds/labyrinth/__tests__/labyrinthChunkTopology.test';
 import { checkCustomScriptNodes } from '@/features/asset-library/worlds/__tests__/customScriptNodes.test';
 import { checkPipelineSanitizeAndEditing } from '@/features/asset-library/worlds/__tests__/pipelineSanitizeAndEditing.test';
 import { checkAsciiSnapshotAndPlayerFooting } from '@/features/game/__tests__/asciiSnapshotAndPlayerFooting.test';
@@ -85,14 +85,19 @@ import { checkSeedWorlds } from '@/features/game/worlds/__tests__/seedWorld.test
 import { routeHandlerTests } from './routeHandlers.test';
 import { bootstrapPersistenceTests } from './bootstrapPersistence.test';
 import { websocketUpgradeRoutingTests } from '@/features/game/__tests__/websocketUpgradeRouting.test';
-import { checkKeyRoomsAndDoors } from '@/worlds/labyrinth/puzzles/__tests__/keyRoomsAndDoors.test';
-import { checkRoomsHoldYouUntilSolved } from '@/worlds/labyrinth/puzzles/__tests__/roomsHoldYouUntilSolved.test';
+import { checkKeyRoomsAndDoors } from '@/worlds/labyrinth/__tests__/keyRoomsAndDoors.test';
+import { checkRoomsHoldYouUntilSolved } from '@/worlds/labyrinth/__tests__/roomsHoldYouUntilSolved.test';
 import { checkSharedStateSync } from '@/features/game/multiplayer/__tests__/sharedStateSync.test';
 import { checkWorldsStayApart } from './worldsStayApart.test';
 import { checkWholeWorldNodes } from '@/features/asset-library/worlds/__tests__/wholeWorldNodes.test';
 import { checkSokobanRules } from '@/worlds/sokoban2/__tests__/sokobanRules.test';
-import { checkCircuitsAndCues } from '@/features/game/__tests__/circuitsAndCues.test';
+import { checkCircuits } from '@/features/game/__tests__/circuits.test';
+import { checkPuzzleCues } from '@/features/game/__tests__/puzzleCues.test';
+import { checkWorldSounds } from '@/features/game/__tests__/worldSounds.test';
+import { checkDoorOpenings } from '@/features/game/__tests__/doorOpenings.test';
 import { checkPanelShortcuts } from './panelShortcuts.test';
+import { checkGenerationPins } from '@/worlds/sokoban2/__tests__/generationPins.test';
+import { checkLabyrinthPins } from '@/worlds/labyrinth/__tests__/labyrinthPins.test';
 
 function check(name: string, condition: boolean): void {
   test(name, () => assert.ok(condition));
@@ -191,4 +196,9 @@ describe('shared world state over the game socket', () => checkSharedStateSync(c
 describe('worlds stay apart from the engine and each other', () => checkWorldsStayApart(check));
 describe('whole-world nodes', () => checkWholeWorldNodes(check));
 describe('the sokoban dungeon rules', () => checkSokobanRules(check));
-describe('circuits, cues and sounds', () => checkCircuitsAndCues(check));
+describe('circuits and their wires', () => checkCircuits(check));
+describe('puzzle cues', () => checkPuzzleCues(check));
+describe('world sounds', () => checkWorldSounds(check));
+describe('door openings', () => checkDoorOpenings(check));
+describe('the sokoban generation pins', () => checkGenerationPins(check));
+describe('the labyrinth generation pins', () => checkLabyrinthPins(check));

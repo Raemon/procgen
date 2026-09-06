@@ -1,5 +1,5 @@
 import '@/features/asset-library/worlds/nodes';
-import { infiniteLabyrinth } from '@/features/asset-library/worlds/seeds/infiniteLabyrinth';
+import { infiniteLabyrinth } from '@/worlds/labyrinth/node/seed';
 import { volcanicIslands } from '@/features/asset-library/worlds/seeds/volcanicIslands';
 import { buildChunkMeshGroup } from '@/features/game/render/view3d/worldMeshes';
 import { drawLoadLine, drawLoadOf } from './chunkDrawLoad';

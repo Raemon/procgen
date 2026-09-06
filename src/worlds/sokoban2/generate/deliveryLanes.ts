@@ -1,5 +1,5 @@
 import type { Rng } from '../rng'
-import type { Layout } from './layout'
+import type { Layout } from './layout/buildLayout'
 import { DIRS, DIR_LIST, type CrateColor, type Door, type Goal, type Vec } from '../types'
 import { at, inside, isFloor, markChannel, reserve, type RoomCanvas } from '../puzzle/canvas'
 
@@ -74,7 +74,7 @@ export function entryCell(layout: Layout, roomId: number, door: Door): Vec {
       return { x: cell.x - room!.x, y: cell.y - room!.y }
     }
   }
-  return { x: 0, y: 0 }
+  throw new Error(`door (${door.x},${door.y}) touches no cell of room ${roomId}`)
 }
 
 function reserveParking(

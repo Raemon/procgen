@@ -70,8 +70,6 @@ export const RECIPE_IDS: RecipeId[] = ['R0', 'R1', 'R2', 'R3', 'R4', 'R5', 'R6',
 
 export const CURRICULUM_IDS: RecipeId[] = ['R0', 'R1', 'R2', 'R7', 'R3', 'R5', 'R6']
 
-export const CURRICULUM: Recipe[] = CURRICULUM_IDS.map((id) => RECIPES[id])
-
 export function recipeOf(id: string): Recipe {
   return RECIPES[id as RecipeId] ?? RECIPES.R1
 }

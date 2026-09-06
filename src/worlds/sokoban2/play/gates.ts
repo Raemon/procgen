@@ -9,10 +9,6 @@ export interface Gate {
   sealed: boolean
 }
 
-export function gateKey(gate: Gate): string {
-  return `${gate.x},${gate.y}`
-}
-
 export function worldGates(world: World, crates: Crate[], latched: Iterable<number> = []): Gate[] {
   const opened = openedDoorsOf(world, crates, latched)
   return world.doors.map((door, id) => ({

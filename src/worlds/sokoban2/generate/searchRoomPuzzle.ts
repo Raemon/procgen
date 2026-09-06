@@ -9,7 +9,6 @@ import { candidateStates } from '../puzzle/reverse/shippableStates'
 import type { LedgePlacement } from '../puzzle/ledges'
 import { appraise, meetsTargets, richer, type Appraisal, type Standards } from './appraise'
 import type { RoomBrief2 } from './briefs'
-import { noteGate } from './furnishGates'
 import { exhausted, type NodeMeter } from './nodeMeter'
 import { crateCap, forbiddenRestCells } from './puzzleBay'
 import { crateCeiling } from './planCurriculum'
@@ -42,7 +41,6 @@ export function searchRoomPuzzle(
     const shape = plannedShape(recipe, brief, attempt)
     const placement = raiseTerrain(canvas, recipe, shape, brief, attempt, rng, bay)
     if (placement === 'failed' || placement === 'noFloors') {
-      noteGate(recipe.id, placement === 'failed' ? 'placeLedge' : 'floorComponent')
       onRetry()
       continue
     }
@@ -122,11 +120,9 @@ function draftsFor(ctx: Attempt, crateCount: number, colors: CrateColor[]): { bo
     ledge: ctx.placement ?? undefined,
     script: ctx.recipe.script,
     lever: ctx.brief.lever,
-    onStall: (stall) => noteGate(ctx.recipe.id, 'reverse', stall),
   })
   if (!run) return null
   const drafts = candidateStates(run).slice(0, CANDIDATES_PER_RUN)
-  if (drafts.length === 0) noteGate(ctx.recipe.id, 'noCandidate')
   return drafts.length > 0 ? { board: run.board, drafts } : null
 }
 

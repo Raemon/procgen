@@ -12,7 +12,7 @@ import { resetKeyAction } from '@/features/game/input/useFixtureInput'
 import type { DefaultRules, MineSlots, StepAttempt } from '@/features/game/worldRules'
 import { WorldRulesSet } from '@/features/game/worldRulesSet'
 import { generateWorld2 } from '../generate/generateWorld'
-import { sokoban2Rules, type Sokoban2Rules } from '../index'
+import { sokoban2Rules, type Sokoban2Rules } from '../rules/overlay'
 import { SOKOBAN2_HEIGHTS_NODE_TYPE, SOKOBAN2_NODE_TYPE } from '../node/dungeonKnobs'
 import { fromDungeon, toDungeon } from '../node/worldValue'
 import { DEFAULT_PARAMS } from '../params'
@@ -149,6 +149,9 @@ function checkResetPutsTheRoomBack(check: CheckReporter): void {
   check('a door the room already opened stays open after a reset', rules.openedDoors().length === 1)
   const door = fromDungeon(world, world.doors[0]!)
   check('resetting from a doorway resets nothing, because a doorway belongs to no room', rules.resetRoomAt(door.x, door.y) === null)
+  const settled = rules.revision()
+  rules.resetRoomAt(player.x, player.y)
+  check('resetting a room nobody has touched leaves the shared revision alone', rules.revision() === settled)
   check('the dungeon still answers R with a fresh maze, leaving the room reset to agents', rules.resetGrowsAFreshWorld())
 }
 

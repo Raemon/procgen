@@ -2,12 +2,12 @@ import { CUBE_FACES, type CubeFaceArt } from '@/features/asset-library/tiles/til
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { fixtureLook, type FixtureLook } from '../fixtures/fixtureAppearance';
 import { fixture } from '../fixtures/fixtureKinds';
-import type { PuzzleRoomLayout } from '@/worlds/labyrinth/puzzles/rooms/puzzleRoomLayout';
-import { fixtureIsOn } from '@/worlds/labyrinth/puzzles/state/fixtureSignals';
-import { PuzzleState } from '@/worlds/labyrinth/puzzles/state/puzzleState';
+import type { PuzzleRoomLayout } from '@/worlds/labyrinth/generate/rooms/puzzleRoomLayout';
+import { fixtureIsOn } from '@/worlds/labyrinth/rules/state/fixtureSignals';
+import { PuzzleState } from '@/worlds/labyrinth/rules/state/puzzleState';
 import { markerPlacementsForRect } from '../render/view3d/markerPlacements';
 import { standingFixtureShape } from '../render/view3d/tileShapes';
-import { crateFaceArtIn } from '../fixtures/fixtureFaceArt';
+import { crateFaceArtIn } from '../fixtures/looks/crate';
 import type { Marker, WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 
 const PLATE_CELL = { x: 4, y: 2 };

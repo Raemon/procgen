@@ -1,5 +1,4 @@
 import type { ExamplePipeline } from './examplePipeline';
-import { infiniteLabyrinth } from './infiniteLabyrinth';
 import { sunkenLabyrinth } from './sunkenLabyrinth';
 import { volcanicIslands } from './volcanicIslands';
 
@@ -16,5 +15,5 @@ export function contributedWorldSeedCount(): number {
 }
 
 export function examplePipelines(): ExamplePipeline[] {
-  return [volcanicIslands(), infiniteLabyrinth(), sunkenLabyrinth(), ...contributed.map((seed) => seed())];
+  return [volcanicIslands(), sunkenLabyrinth(), ...contributed.map((seed) => seed())];
 }

@@ -62,7 +62,3 @@ export function makeRng(seed: number): Rng {
 export function derive(seed: number, label: string): Rng {
   return makeRng((seed ^ hashString(label)) >>> 0)
 }
-
-export function randomSeed(): number {
-  return Math.floor(Math.random() * 1_000_000)
-}

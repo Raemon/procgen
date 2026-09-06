@@ -1,9 +1,21 @@
 import type { Cell } from '../worldRules';
 import { cellKeyOf, cellWithin, type Circuit, type CircuitDoor, type CircuitPlate } from './circuit';
 
-export type PuzzleCue = 'crate-pushed' | 'plate-lit' | 'door-opened' | 'circuit-powered';
+export interface CratePush {
+  from: Cell;
+  to: Cell;
+}
 
-export type PuzzleCueListener = (cells: Cell[]) => void;
+export interface PuzzleCuePayloads {
+  'crate-pushed': CratePush[];
+  'plate-lit': Cell[];
+  'door-opened': Cell[];
+  'circuit-powered': Cell[];
+}
+
+export type PuzzleCue = keyof PuzzleCuePayloads;
+
+export type PuzzleCueListener<C extends PuzzleCue> = (payload: PuzzleCuePayloads[C]) => void;
 
 export interface PuzzleSource {
   circuitsIn(minX: number, minY: number, maxX: number, maxY: number): Circuit[];
@@ -12,26 +24,32 @@ export interface PuzzleSource {
 
 export const CUE_EARSHOT_TILES = 20;
 
-interface Glance {
+interface Earshot {
   minX: number;
   minY: number;
   maxX: number;
   maxY: number;
+}
+
+interface Glance extends Earshot {
   crates: Map<string, Cell>;
   circuits: Map<string, Circuit>;
 }
 
+type FiredCue = { [C in PuzzleCue]: [C, PuzzleCuePayloads[C]] }[PuzzleCue];
+
 export class PuzzleCues {
-  private readonly listeners = new Map<PuzzleCue, Set<PuzzleCueListener>>();
+  private readonly listeners = new Map<PuzzleCue, Set<PuzzleCueListener<PuzzleCue>>>();
   private seen: Glance | null = null;
 
   constructor(private readonly source: PuzzleSource) {}
 
-  on(cue: PuzzleCue, listener: PuzzleCueListener): () => void {
-    const existing = this.listeners.get(cue) ?? new Set<PuzzleCueListener>();
-    existing.add(listener);
+  on<C extends PuzzleCue>(cue: C, listener: PuzzleCueListener<C>): () => void {
+    const existing = this.listeners.get(cue) ?? new Set<PuzzleCueListener<PuzzleCue>>();
+    const heard = listener as PuzzleCueListener<PuzzleCue>;
+    existing.add(heard);
     this.listeners.set(cue, existing);
-    return () => existing.delete(listener);
+    return () => existing.delete(heard);
   }
 
   forget(): void {
@@ -40,63 +58,86 @@ export class PuzzleCues {
 
   sync(centre: Cell): void {
     const next = glanceAround(this.source, centre);
-    if (this.seen) for (const [cue, cells] of cuesBetween(this.seen, next)) this.emit(cue, cells);
+    if (this.seen) for (const [cue, payload] of cuesBetween(this.seen, next)) this.emit(cue, payload);
     this.seen = next;
   }
 
-  private emit(cue: PuzzleCue, cells: Cell[]): void {
-    if (cells.length === 0) return;
-    for (const listener of this.listeners.get(cue) ?? []) listener(cells);
+  private emit<C extends PuzzleCue>(cue: C, payload: PuzzleCuePayloads[C]): void {
+    for (const listener of this.listeners.get(cue) ?? []) listener(payload);
   }
 }
 
+interface CircuitBeforeAndAfter {
+  earlier: Circuit;
+  now: Circuit;
+}
+
 function glanceAround(source: PuzzleSource, centre: Cell): Glance {
-  const minX = centre.x - CUE_EARSHOT_TILES;
-  const minY = centre.y - CUE_EARSHOT_TILES;
-  const maxX = centre.x + CUE_EARSHOT_TILES;
-  const maxY = centre.y + CUE_EARSHOT_TILES;
+  const earshot = earshotAround(centre);
+  const { minX, minY, maxX, maxY } = earshot;
   return {
-    minX,
-    minY,
-    maxX,
-    maxY,
+    ...earshot,
     crates: new Map(source.cratesIn(minX, minY, maxX, maxY).map((cell) => [cellKeyOf(cell), cell])),
     circuits: new Map(source.circuitsIn(minX, minY, maxX, maxY).map((circuit) => [circuit.key, circuit])),
   };
 }
 
-function cuesBetween(before: Glance, after: Glance): Array<[PuzzleCue, Cell[]]> {
-  const found: Array<[PuzzleCue, Cell[]]> = [];
-  const pushed = pushedCrates(before, after);
-  if (pushed.length > 0) found.push(['crate-pushed', pushed]);
-  const lit: Cell[] = [];
-  const opened: Cell[] = [];
-  const powered: Cell[] = [];
-  for (const [key, circuit] of after.circuits) {
-    const earlier = before.circuits.get(key);
-    if (!earlier) continue;
-    lit.push(...newlyTrue(earlier.plates, circuit.plates, (plate) => plate.lit));
-    opened.push(...newlyTrue(earlier.doors, circuit.doors, (door) => door.open));
-    if (!earlier.powered && circuit.powered) powered.push(...circuit.doors);
-  }
-  if (lit.length > 0) found.push(['plate-lit', lit]);
-  if (opened.length > 0) found.push(['door-opened', opened]);
-  if (powered.length > 0) found.push(['circuit-powered', powered]);
-  return found;
+function earshotAround(centre: Cell): Earshot {
+  return {
+    minX: centre.x - CUE_EARSHOT_TILES,
+    minY: centre.y - CUE_EARSHOT_TILES,
+    maxX: centre.x + CUE_EARSHOT_TILES,
+    maxY: centre.y + CUE_EARSHOT_TILES,
+  };
 }
 
-function pushedCrates(before: Glance, after: Glance): Cell[] {
-  const bothSaw = (cell: Cell) =>
-    cellWithin(
-      cell,
-      Math.max(before.minX, after.minX),
-      Math.max(before.minY, after.minY),
-      Math.min(before.maxX, after.maxX),
-      Math.min(before.maxY, after.maxY),
-    );
-  const left = [...before.crates.values()].filter((cell) => bothSaw(cell) && !after.crates.has(cellKeyOf(cell)));
-  const arrived = [...after.crates.values()].filter((cell) => bothSaw(cell) && !before.crates.has(cellKeyOf(cell)));
-  return arrived.filter((cell) => left.some((from) => Math.abs(from.x - cell.x) + Math.abs(from.y - cell.y) === 1));
+function cuesBetween(before: Glance, after: Glance): FiredCue[] {
+  const watched = circuitsWatchedThroughout(before, after);
+  const fired: FiredCue[] = [
+    ['crate-pushed', pushedCrates(before, after)],
+    ['plate-lit', watched.flatMap((circuit) => newlyTrue(circuit.earlier.plates, circuit.now.plates, (plate) => plate.lit))],
+    ['door-opened', watched.flatMap((circuit) => newlyTrue(circuit.earlier.doors, circuit.now.doors, (door) => door.open))],
+    ['circuit-powered', watched.flatMap(doorsThatJustCameAlive)],
+  ];
+  return fired.filter(([, payload]) => payload.length > 0);
+}
+
+function circuitsWatchedThroughout(before: Glance, after: Glance): CircuitBeforeAndAfter[] {
+  return [...after.circuits].flatMap(([key, now]) => {
+    const earlier = before.circuits.get(key);
+    return earlier ? [{ earlier, now }] : [];
+  });
+}
+
+function doorsThatJustCameAlive({ earlier, now }: CircuitBeforeAndAfter): Cell[] {
+  return !earlier.powered && now.powered ? [...now.doors] : [];
+}
+
+function pushedCrates(before: Glance, after: Glance): CratePush[] {
+  const heardBoth = earshotSharedBy(before, after);
+  const left = [...before.crates.values()].filter((cell) => within(cell, heardBoth) && !after.crates.has(cellKeyOf(cell)));
+  const arrived = [...after.crates.values()].filter((cell) => within(cell, heardBoth) && !before.crates.has(cellKeyOf(cell)));
+  return arrived.flatMap((to) => {
+    const from = left.find((cell) => oneTileApart(cell, to));
+    return from ? [{ from, to }] : [];
+  });
+}
+
+function earshotSharedBy(before: Earshot, after: Earshot): Earshot {
+  return {
+    minX: Math.max(before.minX, after.minX),
+    minY: Math.max(before.minY, after.minY),
+    maxX: Math.min(before.maxX, after.maxX),
+    maxY: Math.min(before.maxY, after.maxY),
+  };
+}
+
+function within(cell: Cell, earshot: Earshot): boolean {
+  return cellWithin(cell, earshot.minX, earshot.minY, earshot.maxX, earshot.maxY);
+}
+
+function oneTileApart(one: Cell, other: Cell): boolean {
+  return Math.abs(one.x - other.x) + Math.abs(one.y - other.y) === 1;
 }
 
 function newlyTrue<T extends CircuitPlate | CircuitDoor>(

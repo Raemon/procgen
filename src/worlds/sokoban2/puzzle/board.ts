@@ -1,4 +1,4 @@
-import { HEIGHT, IMPASSABLE, type CrateColor, type Goal, type Vec } from '../types'
+import type { CrateColor, Goal, Vec } from '../types'
 
 export interface Board {
   w: number
@@ -21,18 +21,6 @@ export function cellOf(board: { w: number }, v: Vec): number {
 
 export function vecOf(board: { w: number }, cell: number): Vec {
   return { x: cell % board.w, y: Math.floor(cell / board.w) }
-}
-
-function insideBoard(board: { w: number; h: number }, v: Vec): boolean {
-  return v.x >= 0 && v.y >= 0 && v.x < board.w && v.y < board.h
-}
-
-export function heightAt(board: Board, v: Vec): number {
-  return insideBoard(board, v) ? board.height[cellOf(board, v)]! : IMPASSABLE
-}
-
-export function standable(board: Board, v: Vec): boolean {
-  return heightAt(board, v) <= HEIGHT.Ledge
 }
 
 export function makeBoard(w: number, h: number, height: ArrayLike<number>, goals: Goal[]): Board {

@@ -216,7 +216,7 @@ export function createAppRuntime(): AppRuntime {
     if (rules.revision() === lastSharedRevision) return false;
     lastSharedRevision = rules.revision();
     syncCues();
-    renderers.redrawAll();
+    renderers.redrawAll('shared-state');
     return true;
   }
 
@@ -234,7 +234,6 @@ export function createAppRuntime(): AppRuntime {
     }
     lastSharedRevision = rules.revision();
     applyWorldChange();
-    renderers.redrawAll();
   }
 
   function keepWhatThePlayerHasDone(): void {
@@ -304,7 +303,7 @@ export function createAppRuntime(): AppRuntime {
     sim.forget();
     puzzleCues.forget();
     world.ensurePlayerOnWalkableGround();
-    renderers.redrawAll();
+    renderers.redrawAll('world');
     worldChanged.emit();
   }
 

@@ -1,8 +1,9 @@
 import type { ReadOnlyWorld } from '@/features/app-shell/runtime/readOnlyAssets';
-import type { PuzzleCue, PuzzleCues } from '../circuits/puzzleCues';
+import type { PuzzleCues } from '../circuits/puzzleCues';
 import { JUMP_MS } from '../sim/movementOrder';
 import type { Cell } from '../worldRules';
-import type { SoundCue, SoundPlayer } from './soundSynth';
+import type { SoundCue } from './soundCues';
+import type { SoundPlayer } from './soundPlayer';
 
 export interface SoundedWorld {
   world: ReadOnlyWorld;
@@ -13,8 +14,7 @@ export interface SoundClock {
   now(): number;
 }
 
-const CUE_SOUNDS: Array<[PuzzleCue, SoundCue]> = [
-  ['crate-pushed', 'push'],
+const CIRCUIT_SOUNDS: Array<['plate-lit' | 'door-opened' | 'circuit-powered', SoundCue]> = [
   ['plate-lit', 'plate'],
   ['door-opened', 'door'],
   ['circuit-powered', 'power'],
@@ -39,7 +39,10 @@ export function playWorldSounds(
     sounded.world.on('player-moved', () => {
       if (clock.now() - lastJumpAt >= JUMP_MS) play('step');
     }),
-    ...CUE_SOUNDS.map(([cue, sound]) =>
+    sounded.puzzleCues.on('crate-pushed', (pushes) =>
+      play('push', loudnessFrom(sounded.world, pushes.map((push) => push.to))),
+    ),
+    ...CIRCUIT_SOUNDS.map(([cue, sound]) =>
       sounded.puzzleCues.on(cue, (cells) => play(sound, loudnessFrom(sounded.world, cells))),
     ),
   ];

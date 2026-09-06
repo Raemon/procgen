@@ -9,10 +9,6 @@ function roomPlan(world: World, roomId: number): RoomPlan | undefined {
   return world.rooms.find((room) => room.id === roomId)
 }
 
-export function roomDepth(world: World, roomId: number): number {
-  return roomPlan(world, roomId)?.depth ?? 0
-}
-
 export function roomSolved(world: World, crates: Crate[], roomId: number): boolean {
   const room = roomPlan(world, roomId)
   if (!room || room.goals.length === 0) return true

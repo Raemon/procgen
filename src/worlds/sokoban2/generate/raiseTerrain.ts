@@ -114,8 +114,7 @@ function bayRing(canvas: RoomCanvas, bay: Rect): Vec[] {
       if (onRing && inside(canvas, { x, y }) && !canvas.outside[at(canvas, x, y)]) ring.push({ x, y })
     }
   }
-  const nearestDoor = (cell: Vec) => Math.min(...canvas.entries.map((entry) => Math.abs(entry.x - cell.x) + Math.abs(entry.y - cell.y)), 0)
-  return ring.sort((a, b) => nearestDoor(b) - nearestDoor(a))
+  return ring
 }
 
 function textureCorridor(canvas: RoomCanvas, recipe: Recipe, placement: LedgePlacement | null, bay: Rect, rng: Rng): number {

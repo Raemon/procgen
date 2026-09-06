@@ -12,14 +12,8 @@ export interface GenParams {
   difficultyRamp: number
   crossRoomStart: number
   crossRoomChance: number
-  runSolver: boolean
-
   ledgeChance: number
-
-  lowWallChance: number
-
   colorMixStart: number
-
   lessonJitter: number
 }
 
@@ -37,9 +31,7 @@ export const DEFAULT_PARAMS: GenParams = {
   difficultyRamp: 1,
   crossRoomStart: 0.55,
   crossRoomChance: 0.3,
-  runSolver: false,
   ledgeChance: 0.5,
-  lowWallChance: 0.25,
   colorMixStart: 0.2,
   lessonJitter: 0.25,
 }

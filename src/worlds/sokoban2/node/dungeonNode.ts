@@ -36,6 +36,7 @@ function paintDungeonChunk(ctx: ChunkGenCtx): ChunkValue {
   const floor = ctx.params.floorTile as number
   const ledge = ctx.params.ledgeTile as number
   const wall = ctx.params.wallTile as number
+  if (floor === EMPTY_TILE && wall === EMPTY_TILE) return tilesValue(tiles)
   for (let y = 0; y < ctx.size; y++) {
     for (let x = 0; x < ctx.size; x++) {
       const cell = toDungeon(world, ctx.originX + x, ctx.originY + y)
@@ -46,6 +47,5 @@ function paintDungeonChunk(ctx: ChunkGenCtx): ChunkValue {
       tiles[y * ctx.size + x] = world.tiles[id] === TILE.Door ? floor : height >= HEIGHT.Wall ? wall : height >= HEIGHT.Ledge ? ledge : floor
     }
   }
-  if (floor === EMPTY_TILE && wall === EMPTY_TILE) return tilesValue(ctx.newTiles())
   return tilesValue(tiles)
 }

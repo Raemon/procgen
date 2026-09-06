@@ -1,5 +1,5 @@
 import { derive, type Rng } from '../rng'
-import type { Layout } from './layout'
+import type { Layout } from './layout/buildLayout'
 import { toWorld } from '../world'
 import type { Crate, RoomPlan } from '../types'
 import { at, clearTerrain, type Rect, type RoomCanvas } from '../puzzle/canvas'

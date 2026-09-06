@@ -6,8 +6,7 @@ import { inBounds, index } from '../world'
 import { SOKOBAN2_HEIGHTS_NODE_TYPE, SOKOBAN2_NODE_TYPE } from './dungeonKnobs'
 import { toDungeon } from './worldValue'
 
-export const LEDGE_ELEVATION = HEIGHT.Ledge
-export const WALL_ELEVATION = HEIGHT.Ledge
+const RAISED_ELEVATION = HEIGHT.Ledge
 
 registerNodeType({
   type: SOKOBAN2_HEIGHTS_NODE_TYPE,
@@ -37,7 +36,7 @@ function raiseDungeonChunk(ctx: ChunkGenCtx): ChunkValue {
       const id = index(world, cell.x, cell.y)
       if (world.tiles[id] === TILE.Void || world.tiles[id] === TILE.Door) continue
       const height = world.heights[id]!
-      field[y * ctx.size + x] = height >= HEIGHT.Wall ? WALL_ELEVATION : height >= HEIGHT.Ledge ? LEDGE_ELEVATION : 0
+      field[y * ctx.size + x] = height >= HEIGHT.Ledge ? RAISED_ELEVATION : 0
     }
   }
   return fieldValue(field)

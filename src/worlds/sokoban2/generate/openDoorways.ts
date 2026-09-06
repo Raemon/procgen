@@ -1,4 +1,4 @@
-import type { Layout } from './layout'
+import type { Layout } from './layout/buildLayout'
 import type { Door, Vec } from '../types'
 import { makeCanvas, maskToCells, reserve, type RoomCanvas } from '../puzzle/canvas'
 import { entryCell } from './deliveryLanes'

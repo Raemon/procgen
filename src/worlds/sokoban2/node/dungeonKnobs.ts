@@ -28,7 +28,6 @@ export const DUNGEON_PARAMS: Record<string, KnobParamSpec> = {
   difficultyRamp: number('difficulty ramp', 'How steeply rooms get harder with depth.', 0, 3, 0.1, 1),
   crossRoomStart: number('deliveries start', 'Fraction of the maze depth before rooms may import a crate from another room.', 0, 1, 0.05, 0.55),
   crossRoomChance: number('delivery odds', 'Odds a room past that depth asks for a delivered crate.', 0, 1, 0.05, 0.3),
-  runSolver: { kind: 'toggle', label: 'run the solver', help: 'Also run the full solver over every room while building; slower, stricter.', default: 0 },
   ledgeChance: number('ledges', 'Odds a puzzle room is built around a ledge a crate can drop from; scaled up with depth.', 0, 1, 0.05, 0.5),
   colorMixStart: number('colors mix', 'Fraction of the maze depth before rooms mix red and blue crates.', 0, 1, 0.05, 0.2),
   lessonJitter: number('lesson jitter', 'How far a room may draw its lesson from ahead of or behind its place in the curriculum.', 0, 1, 0.05, 0.25),
@@ -59,9 +58,7 @@ export function genParamsOf(params: Record<string, ParamValue>): GenParams {
     difficultyRamp: numeric('difficultyRamp'),
     crossRoomStart: numeric('crossRoomStart'),
     crossRoomChance: numeric('crossRoomChance'),
-    runSolver: params.runSolver === 1,
     ledgeChance: numeric('ledgeChance'),
-    lowWallChance: DEFAULT_PARAMS.lowWallChance,
     colorMixStart: numeric('colorMixStart'),
     lessonJitter: numeric('lessonJitter'),
   }

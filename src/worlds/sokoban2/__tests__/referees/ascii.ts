@@ -10,7 +10,7 @@ import {
   type World,
 } from '../../types'
 import { index } from '../../world'
-import { bindDoor } from '../../generate/layout'
+import { bindDoor } from '../../generate/layout/doorGraph'
 
 export interface AsciiOptions {
   overlay?: string[]

@@ -7,8 +7,6 @@ export type ElevationProbe = (x: number, y: number) => number;
 export type ClimbGate = (fromX: number, fromY: number, toX: number, toY: number) => boolean;
 export type CellProbe = (x: number, y: number) => boolean;
 
-export const ANY_CLIMB_ALLOWED: ClimbGate = () => true;
-
 const EXIT_STEPS = [
   [1, 0],
   [-1, 0],
@@ -37,18 +35,6 @@ export function climbGateFrom(
 ): ClimbGate {
   return (fromX, fromY, toX, toY) =>
     navigationRiseBetween(elevationAt(fromX, fromY), elevationAt(toX, toY)) <= limit;
-}
-
-export interface ClimbGates {
-  climbGateAt: ClimbGate;
-  jumpGateAt: ClimbGate;
-}
-
-export function climbGatesFrom(elevationAt: ElevationProbe): ClimbGates {
-  return {
-    climbGateAt: climbGateFrom(elevationAt),
-    jumpGateAt: climbGateFrom(elevationAt, JUMP_CLIMB_LIMIT),
-  };
 }
 
 export function climbEffortOfRise(rise: number): number {

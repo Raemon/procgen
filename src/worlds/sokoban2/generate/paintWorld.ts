@@ -1,4 +1,4 @@
-import type { Layout } from './layout'
+import type { Layout } from './layout/buildLayout'
 import {
   HEIGHT,
   TILE,

@@ -1,11 +1,13 @@
-import '@/worlds/labyrinth/puzzles/kinds';
-import { chunkExitsOf, openExitCount, CLOSED } from '@/features/asset-library/worlds/labyrinth/chunkExits';
-import { roleOf, ROOM } from '@/features/asset-library/worlds/labyrinth/chunkRole';
-import { ringOf } from '@/features/asset-library/worlds/labyrinth/chunkRing';
-import { labyrinthKnobsFrom, type LabyrinthKnobs } from '@/features/asset-library/worlds/labyrinth/labyrinthKnobs';
+import '@/worlds/labyrinth/generate/kinds/keyRoom';
+import '@/worlds/labyrinth/generate/kinds/leverRoom';
+import '@/worlds/labyrinth/generate/kinds/sokobanRoom';
+import { chunkExitsOf, openExitCount, CLOSED } from '@/worlds/labyrinth/generate/layout/chunkExits';
+import { roleOf, ROOM } from '@/worlds/labyrinth/generate/layout/chunkRole';
+import { ringOf } from '@/worlds/labyrinth/generate/layout/chunkRing';
+import { labyrinthKnobsFrom, type LabyrinthKnobs } from '@/worlds/labyrinth/node/labyrinthKnobs';
 import { hashString } from '@/features/asset-library/worlds/random/hashString';
 import { mulberry32 } from '@/features/asset-library/worlds/random/mulberry32';
-import { challengeForRing } from '@/worlds/labyrinth/puzzles/rooms/roomDifficulty';
+import { challengeForRing } from '@/worlds/labyrinth/generate/rooms/roomDifficulty';
 
 const GRAPH_RINGS = 8;
 const HISTOGRAM_RINGS = 12;
