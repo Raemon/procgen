@@ -2,7 +2,7 @@ import { ARCANE_CORE, crateFaceArt, crateOnPlateFaceArt } from '@/features/asset
 import type { LookPair } from './look';
 
 export const CRATE_FACE_ART = { off: crateFaceArt(), on: crateOnPlateFaceArt() };
-export const CRATE_STANDS_SQUAT = 0.88;
+export const CRATE_STANDS_SQUAT = 1;
 export const CRATE_FOOTPRINT = 0.84;
 export const CHARGED_CRATE_GLOW = 0.8;
 
@@ -14,7 +14,7 @@ export const CRATE_LOOKS: LookPair = {
   off: {
     glyph: '▣',
     color: ARCANE_CORE,
-    tag: 'crate: a caged power core, push it by walking into it',
+    tag: 'crate: a riveted block, push it by walking into it',
     faceArt: CRATE_FACE_ART.off,
     standingHeight: CRATE_STANDS_SQUAT,
     footprint: CRATE_FOOTPRINT,
@@ -22,7 +22,7 @@ export const CRATE_LOOKS: LookPair = {
   on: {
     glyph: '▩',
     color: ARCANE_CORE,
-    tag: 'crate, its power core charged on the pressure plate beneath it',
+    tag: 'crate, settled and lit on the pressure plate beneath it',
     faceArt: CRATE_FACE_ART.on,
     standingHeight: CRATE_STANDS_SQUAT,
     footprint: CRATE_FOOTPRINT,

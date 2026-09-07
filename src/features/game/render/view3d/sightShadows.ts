@@ -1,8 +1,11 @@
 import * as THREE from 'three';
 import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import type { ReadOnlyTileAssets } from '@/features/app-shell/runtime/readOnlyAssets';
+import { blockLayersOfTile } from '@/features/asset-library/tiles/tileHeight';
+import { EMPTY_TILE } from '@/features/asset-library/worlds/values/chunkValues';
 import type { ExploredCells } from '../../vision/exploredCells';
 import { lineOfSightFrom } from '../../vision/lineOfSight';
+import { tileStandsAsSolidBlock } from './tilePlacements';
 
 const MEMORY_SHADE = 0.25;
 const CEILING_HEADROOM_TILES = 8;
@@ -13,9 +16,16 @@ export interface ShadowedGround {
   explored: ExploredCells;
 }
 
+interface ShadedColumn {
+  x: number;
+  y: number;
+  surface: number;
+  foot: number;
+}
+
 export class SightShadows {
   private readonly group = new THREE.Group();
-  private readonly geometry = flatCellGeometry();
+  private readonly geometry = columnGeometry();
   private readonly unseen = darkMaterial(1);
   private readonly remembered = darkMaterial(1 - MEMORY_SHADE);
   private mesh: THREE.InstancedMesh | null = null;
@@ -58,35 +68,59 @@ export class SightShadows {
       sightRadiusTiles,
       this.deps.explored,
     );
-    const unseenCells: THREE.Vector2[] = [];
-    const rememberedCells: THREE.Vector2[] = [];
+    const unseenColumns: ShadedColumn[] = [];
+    const rememberedColumns: ShadedColumn[] = [];
     let ceiling = -Infinity;
     for (let dy = -shaded; dy <= shaded; dy++) {
       for (let dx = -shaded; dx <= shaded; dx++) {
         const x = centerX + dx;
         const y = centerY + dy;
         if (sight.inSight(x, y)) continue;
-        ceiling = Math.max(ceiling, this.deps.sampler.elevationAt(x, y));
-        (sight.remembered(x, y) ? rememberedCells : unseenCells).push(new THREE.Vector2(x, y));
+        const surface = this.surfaceOf(x, y);
+        ceiling = Math.max(ceiling, surface);
+        const column = { x, y, surface, foot: this.exposedFootOf(x, y, surface) };
+        (sight.remembered(x, y) ? rememberedColumns : unseenColumns).push(column);
       }
     }
     this.clear();
     const height = (Number.isFinite(ceiling) ? ceiling : 0) + CEILING_HEADROOM_TILES;
-    this.mesh = this.addLayer(unseenCells, this.unseen, height);
-    this.rememberedMesh = this.addLayer(rememberedCells, this.remembered, height);
+    this.mesh = this.addLayer(unseenColumns, this.unseen, height);
+    this.rememberedMesh = this.addLayer(rememberedColumns, this.remembered, height);
+  }
+
+  private surfaceOf(x: number, y: number): number {
+    const elevation = this.deps.sampler.elevationAt(x, y);
+    const tileId = this.deps.sampler.tileAt(x, y);
+    if (tileId === EMPTY_TILE) return elevation;
+    const tile = this.deps.tileAssets.byId(tileId);
+    if (!tile || !tileStandsAsSolidBlock(tile)) return elevation;
+    return elevation + blockLayersOfTile(tile);
+  }
+
+  private exposedFootOf(x: number, y: number, surface: number): number {
+    const beside = [
+      this.surfaceOf(x + 1, y),
+      this.surfaceOf(x - 1, y),
+      this.surfaceOf(x, y + 1),
+      this.surfaceOf(x, y - 1),
+    ];
+    return Math.min(surface, ...beside);
   }
 
   private addLayer(
-    cells: readonly THREE.Vector2[],
+    columns: readonly ShadedColumn[],
     material: THREE.Material,
-    height: number,
+    ceiling: number,
   ): THREE.InstancedMesh | null {
-    if (cells.length === 0) return null;
-    const mesh = new THREE.InstancedMesh(this.geometry, material, cells.length);
+    if (columns.length === 0) return null;
+    const mesh = new THREE.InstancedMesh(this.geometry, material, columns.length);
     const placed = new THREE.Matrix4();
-    cells.forEach((cell, index) =>
-      mesh.setMatrixAt(index, placed.makeTranslation(cell.x + 0.5, height, cell.y + 0.5)),
-    );
+    const stretched = new THREE.Matrix4();
+    columns.forEach((column, index) => {
+      const standing = Math.max(0.01, ceiling - column.foot);
+      placed.makeTranslation(column.x + 0.5, column.foot, column.y + 0.5);
+      mesh.setMatrixAt(index, placed.multiply(stretched.makeScale(1, standing, 1)));
+    });
     mesh.instanceMatrix.needsUpdate = true;
     mesh.frustumCulled = false;
     this.group.add(mesh);
@@ -94,7 +128,6 @@ export class SightShadows {
   }
 
   private clear(): void {
-
     for (const mesh of [this.mesh, this.rememberedMesh]) {
       if (!mesh) continue;
       this.group.remove(mesh);
@@ -105,10 +138,10 @@ export class SightShadows {
   }
 }
 
-function flatCellGeometry(): THREE.BufferGeometry {
-  const plane = new THREE.PlaneGeometry(1, 1);
-  plane.rotateX(-Math.PI / 2);
-  return plane;
+function columnGeometry(): THREE.BufferGeometry {
+  const box = new THREE.BoxGeometry(1, 1, 1);
+  box.translate(0, 0.5, 0);
+  return box;
 }
 
 function darkMaterial(opacity: number): THREE.Material {
@@ -117,6 +150,6 @@ function darkMaterial(opacity: number): THREE.Material {
     transparent: opacity < 1,
     opacity,
     depthWrite: opacity >= 1,
-    side: THREE.DoubleSide,
+    side: THREE.FrontSide,
   });
 }

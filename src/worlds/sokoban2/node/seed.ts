@@ -20,7 +20,7 @@ export function sokobanDungeon(): ExamplePipeline {
           label: 'the dungeon',
           folder: 'the dungeon',
           comment:
-            'The whole maze in one node, built whole on the server: 5x5 slots gathered into rooms of up to two slots, a spanning tree of doors with a few loops, and a curriculum of crate puzzles that gets harder with depth. Pale pavers are floor, amber lipped blocks the two-high ledges, dark slate the walls, so the three read apart at a glance from overhead. The rules layer reads this same node to stand the crates, goals and doors in the world.',
+            'The whole maze in one node, built whole on the server: 5x5 slots gathered into rooms of up to two slots, a spanning tree of doors with a few loops, and a curriculum of crate puzzles that gets harder with depth. Dark blue pavers are floor, pale blue-grey brick the two-high ledges, grey stone the walls, so the three read apart at a glance from overhead. The rules layer reads this same node to stand the crates, goals and doors in the world.',
           enabled: true,
           params: {
             ...GEN_PARAMS,
