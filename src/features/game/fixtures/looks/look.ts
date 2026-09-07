@@ -9,6 +9,7 @@ export interface FixtureLook {
   seeThroughUnpaintedArt?: boolean;
   glow?: number;
   footprint?: number;
+  gateOpenness?: number;
 }
 
 export type DoorLock = 'key' | 'mechanism';

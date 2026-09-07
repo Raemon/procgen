@@ -1,5 +1,6 @@
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { PuzzleCues } from '../circuits/puzzleCues';
+import { Fight } from '../combat/fight';
 import { JUMP_MS } from '../sim/movementOrder';
 import type { FootingTerrain } from '../sound/footing';
 import type { OpenSpace } from '../sound/roomSense';
@@ -26,6 +27,7 @@ interface Soundscape {
   world: World;
   scene: CueScene;
   cues: PuzzleCues;
+  fight: Fight;
   heard: Heard[];
   advance(ms: number): void;
   listen(on: boolean): void;
@@ -40,6 +42,7 @@ export function checkWorldSounds(check: CheckReporter): void {
   checkTheRoomAnswers(check);
   checkShovingACrate(check);
   checkLoudnessAndSilence(check);
+  checkCombatSounds(check);
 }
 
 function checkFootfallsAndJumps(check: CheckReporter): void {
@@ -144,6 +147,19 @@ function checkLoudnessAndSilence(check: CheckReporter): void {
   check('stopping disposes the player and unhooks the world', scape.disposed() && scape.heard.length === 0);
 }
 
+function checkCombatSounds(check: CheckReporter): void {
+  const scape = soundscape();
+  scape.heard.length = 0;
+  scape.fight.strikeCreature('gaunt', 4, 2, { x: scape.world.playerX, y: scape.world.playerY });
+  scape.fight.strikeCreature('gaunt', 4, 2, { x: scape.world.playerX, y: scape.world.playerY });
+  scape.fight.strikePlayer(1, { x: scape.world.playerX, y: scape.world.playerY });
+  check(
+    'a blow landing, a creature going down and the player being raked each get their own sound',
+    cuesOf(scape) === 'strike,slain,hurt',
+  );
+  scape.stop();
+}
+
 function cuesOf(scape: Soundscape): string {
   return scape.heard.map((heard) => heard.cue).join();
 }
@@ -169,11 +185,13 @@ function soundscape(terrain: SoundTerrain = OPEN_FLOOR): Soundscape {
   const world = new World(stepRulesOn(FLAT_GROUND));
   const scene = sceneWithOneCrate();
   const cues = new PuzzleCues(scene.source);
-  const stop = playWorldSounds({ world, rules: terrain, puzzleCues: cues }, player, () => on, clock);
+  const fight = new Fight({ vigor: () => 6, strength: () => 2 });
+  const stop = playWorldSounds({ world, rules: terrain, puzzleCues: cues, fight }, player, () => on, clock);
   return {
     world,
     scene,
     cues,
+    fight,
     heard,
     advance: (ms) => {
       now += ms;

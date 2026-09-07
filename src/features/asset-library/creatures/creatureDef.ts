@@ -7,6 +7,8 @@ import { WANDER } from './behaviorKinds';
 import { CHARACTER, CREATURE } from './entityKinds';
 
 export const CREATURE_BODY = { width: 0.7, height: 0.7 };
+export const DEFAULT_VIGOR = 3;
+export const DEFAULT_STRENGTH = 1;
 export const CHARACTER_BODY = { width: 1, height: 2 };
 
 export interface CreatureDef {
@@ -19,6 +21,8 @@ export interface CreatureDef {
   speed: number;
   sight: number;
   roam: number;
+  vigor: number;
+  strength: number;
   bodyWidth: number;
   bodyHeight: number;
   phasing: 0 | 1;
@@ -39,6 +43,8 @@ export function newCreatureWithId(id: CreatureId): CreatureDef {
     speed: 1.5,
     sight: 8,
     roam: 6,
+    vigor: DEFAULT_VIGOR,
+    strength: DEFAULT_STRENGTH,
     bodyWidth: CREATURE_BODY.width,
     bodyHeight: CREATURE_BODY.height,
     phasing: 0,

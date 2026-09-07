@@ -17,6 +17,7 @@ export const DOOR_STANDS_OPEN: FixtureLook = {
   faceArt: DOOR_FACE_ART.on,
   standingHeight: DOOR_STANDS_TALL,
   seeThroughUnpaintedArt: true,
+  gateOpenness: 1,
 };
 
 export const GATE_LOOKS: Record<DoorLock, LookPair> = {
@@ -27,6 +28,7 @@ export const GATE_LOOKS: Record<DoorLock, LookPair> = {
       tag: 'locked door, a keyhole in its brass plate',
       faceArt: DOOR_FACE_ART.key,
       standingHeight: DOOR_STANDS_TALL,
+      gateOpenness: 0,
     },
     on: DOOR_STANDS_OPEN,
   },
@@ -37,6 +39,7 @@ export const GATE_LOOKS: Record<DoorLock, LookPair> = {
       tag: 'door barred from within',
       faceArt: DOOR_FACE_ART.mechanism,
       standingHeight: DOOR_STANDS_TALL,
+      gateOpenness: 0,
     },
     on: DOOR_STANDS_OPEN,
   },

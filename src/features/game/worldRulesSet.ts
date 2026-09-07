@@ -5,12 +5,7 @@ import type { NodeInstance } from '@/features/asset-library/worlds/pipeline/pipe
 import type { Marker } from '@/features/asset-library/worlds/worldSampler';
 import type { Circuit } from './circuits/circuit';
 import { wireMarkersOf } from './circuits/wireMarkers';
-import {
-  JUMP_CLIMB_LIMIT,
-  WALK_CLIMB_LIMIT,
-  navigationRiseBetween,
-  standableProbeFrom,
-} from './climbing';
+import { CLIMB_LIMIT, navigationRiseBetween, standableProbeFrom } from './climbing';
 import type { KeyPurse } from './fixtures/keyPurse';
 import { nothingToUse, type UseOutcome } from './fixtures/useOutcome';
 import { LANDING_DISTANCES } from './sim/jumpLanding';
@@ -162,7 +157,7 @@ export class WorldRulesSet {
   isStandable(x: number, y: number): boolean {
     const walkable = (px: number, py: number) => this.isWalkable(px, py);
     const gate = (fromX: number, fromY: number, toX: number, toY: number) =>
-      this.climbGate({ x: fromX, y: fromY }, { x: toX, y: toY }, WALK_CLIMB_LIMIT);
+      this.climbGate({ x: fromX, y: fromY }, { x: toX, y: toY }, CLIMB_LIMIT);
     return standableProbeFrom(walkable, gate)(x, y);
   }
 
@@ -250,7 +245,7 @@ export class WorldRulesSet {
 
   private defaultStep(attempt: StepAttempt): StepVerdict {
     const { from, to } = attempt;
-    const tooSteep = climbRefusal((x, y) => this.surfaceAt(x, y), from, to, WALK_CLIMB_LIMIT, 'a step');
+    const tooSteep = climbRefusal((x, y) => this.surfaceAt(x, y), from, to, CLIMB_LIMIT, 'a step');
     if (tooSteep) return stepRefused(tooSteep);
     if (!this.isWalkable(to.x, to.y)) return stepRefused(obstacleRefusal(to));
     return STEP_ALLOWED;
@@ -265,7 +260,7 @@ export class WorldRulesSet {
   }
 
   private jumpLands(from: Cell, to: Cell, dx: number, dy: number, distance: number): boolean {
-    if (!this.climbGate(from, to, JUMP_CLIMB_LIMIT)) return false;
+    if (!this.climbGate(from, to, CLIMB_LIMIT)) return false;
     for (let step = 1; step < distance; step++) {
       if (this.blocksAt(from.x + dx * step, from.y + dy * step)) return false;
     }

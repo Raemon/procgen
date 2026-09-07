@@ -1,4 +1,5 @@
 import type { ReadOnlyWorld } from '@/features/app-shell/runtime/readOnlyAssets';
+import type { Fight } from '../combat/fight';
 import type { PuzzleCues } from '../circuits/puzzleCues';
 import {
   DIAGONAL_MOVE_COOLDOWN_TICKS,
@@ -24,6 +25,7 @@ export interface SoundedWorld {
   world: ReadOnlyWorld;
   rules: FootingTerrain & OpenSpace;
   puzzleCues: Pick<PuzzleCues, 'on'>;
+  fight: Pick<Fight, 'on'>;
 }
 
 export interface SoundClock {
@@ -35,6 +37,11 @@ const CIRCUIT_SOUNDS: Array<['plate-lit' | 'door-opened' | 'circuit-powered', So
   ['plate-lit', 'plate'],
   ['door-opened', 'door'],
   ['circuit-powered', 'power'],
+];
+const FIGHT_SOUNDS: Array<['creature-struck' | 'creature-slain' | 'player-struck', SoundCue]> = [
+  ['creature-struck', 'strike'],
+  ['creature-slain', 'slain'],
+  ['player-struck', 'hurt'],
 ];
 const HALF_LOUDNESS_TILES = 6;
 const STEP_SECONDS = (MOVE_COOLDOWN_TICKS * TICK_MS) / 1000;
@@ -110,6 +117,9 @@ export function playWorldSounds(
       sounded.puzzleCues.on(cue, (cells) =>
         play(sound, { volume: loudnessFrom(world, cells), roomSize: roomSizeAround(rules, cells[0]!) }),
       ),
+    ),
+    ...FIGHT_SOUNDS.map(([event, sound]) =>
+      sounded.fight.on(event, (blow) => play(sound, { volume: loudnessFrom(sounded.world, [blow.at]) })),
     ),
   ];
   return () => {

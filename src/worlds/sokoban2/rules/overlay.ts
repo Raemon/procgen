@@ -105,8 +105,7 @@ class Sokoban2Overlay implements Sokoban2Rules {
     const dir = dirOf(attempt.dx, attempt.dy)
     if (!dir) return stepRefused('the dungeon only takes steps along a row or a column')
     const outcome = moveKind(this.world, this.state.crateAt, from, dir, closedDoorsAt(this.world, this.state.opened))
-    if (outcome.kind === 'walk') return STEP_ALLOWED
-    if (outcome.kind === 'climb') return stepRefused(`(${attempt.to.x},${attempt.to.y}) stands a step up; jump to get onto it`)
+    if (outcome.kind === 'walk' || outcome.kind === 'climb') return STEP_ALLOWED
     if (outcome.kind === 'push') return this.shoveTheCrate(outcome.crate, outcome.destination, attempt)
     return stepRefused(whyBlocked(this.state, from, to, attempt.to))
   }

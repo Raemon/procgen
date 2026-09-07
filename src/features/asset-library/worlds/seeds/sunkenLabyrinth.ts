@@ -11,13 +11,14 @@ export const CREVASSE_DEPTH = 0.08;
 export const WALL_HEIGHT = 0.3;
 export const HUSH_RADIUS = 60;
 export const GAUNT_DEPTH_AT_LEAST = 0.55;
+export const GAUNT_DENSITY = 0.012;
 const GAUNT_ONE = 8;
 
 export function sunkenLabyrinth(): ExamplePipeline {
   return {
     name: 'sunken labyrinth',
     description:
-      'You wake in a bare clearing at the bottom of a great open-air gorge, ten ledges below the daylight meadows on its rim, ringed by a labyrinth walled with sheer rock. Uphill is always out: the ground climbs toward the rim in full-level shelves too tall to walk up, so follow the winding ramps where they run and jump (Space) the ledges where they do not. Crevasses wind across the corridors exactly one jump wide — leap them, or drop in and jump back out — and the labyrinth walls sink with the land as you rise, from towering rock crowned in granite, to head-height masonry, to hoppable ridges, until the last of them dissolves into the flowered surface. You are not alone down there: gaunt ones stalk the deep corridors, and once one has seen you it will run you down and rake at you with its claws — the first stretch around the clearing is kept empty, and the climb outruns them for good once the walls shrink to ridges.',
+      'You wake in a bare clearing at the bottom of a great open-air gorge, ten ledges below the daylight meadows on its rim, ringed by a labyrinth walled with sheer rock. Uphill is always out: the ground climbs toward the rim in full-level shelves too tall to walk up, so follow the winding ramps where they run and jump (Space) the ledges where they do not. Crevasses wind across the corridors exactly one jump wide — leap them, or drop in and jump back out — and the labyrinth walls sink with the land as you rise, from towering rock crowned in granite, to head-height masonry, to hoppable ridges, until the last of them dissolves into the flowered surface. You are not alone down there: gaunt ones crowd the deep corridors, and once one has seen you it will run you down and rake at you with its claws. Swing back at them with C — two blows put one down for good, but six rakes of its claws will put you down — or outrun them: the first stretch around the clearing is kept empty, and the climb leaves them behind once the walls shrink to ridges.',
     state: {
       seed: 7414,
       daylight: 1,
@@ -334,9 +335,9 @@ export function sunkenLabyrinth(): ExamplePipeline {
           label: 'the gaunt ones',
           folder: 'what stalks you',
           comment:
-            'One antlered hunter every few hundred deep-corridor cells. Sight 14 spans a corridor and then some, so meeting one usually means being chased; the standoff walls and one-jump crevasses are what you put between you and it.',
+            'One antlered hunter for every eighty-odd cells of deep corridor floor, four times as thick as the first draft of this gorge, so the deep labyrinth is theirs and a corridor is rarely empty for long. Sight 14 spans a corridor and then some, so meeting one means being chased; strike back with C, or put the standoff walls and one-jump crevasses between you and it.',
           enabled: true,
-          params: { density: 0.003, maskAtLeast: GAUNT_DEPTH_AT_LEAST, maskAtMost: 1 },
+          params: { density: GAUNT_DENSITY, maskAtLeast: GAUNT_DEPTH_AT_LEAST, maskAtMost: 1 },
           inputs: { mask: 'haunts' },
           display: { mode: 'creatures', creatureId: GAUNT_ONE },
         },
