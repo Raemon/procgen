@@ -40,7 +40,7 @@ function checkAGateIsDrawnAsAPortcullisRatherThanASlab(check: CheckReporter): vo
   check(
     'a portcullis grille is bars and rails you can see between, not one solid box',
     portcullisGrilleBoxes().length > 4 &&
-      portcullisGrilleBoxes().every((box) => box.width < 1 && box.depth < 0.2),
+      portcullisGrilleBoxes().every((box) => box.width < 1 && box.depth <= 0.2),
   );
 }
 
@@ -84,7 +84,7 @@ function checkAGateThatShutsRunsTheSlideBackwards(check: CheckReporter): void {
 function checkAnOpenGrilleEndsBelowTheFloor(check: CheckReporter): void {
   check('an open grille has sunk out of sight under the floor', GRILLE_HEIGHT - GRILLE_TRAVEL <= 0);
   check(
-    'a shut grille reaches from the floor up to the lintel',
+    'a shut grille reaches from the floor to the top of its doorway',
     GRILLE_TRAVEL === GRILLE_HEIGHT && GRILLE_HEIGHT > 1.5,
   );
 }

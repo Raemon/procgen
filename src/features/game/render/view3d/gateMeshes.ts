@@ -1,12 +1,7 @@
 import * as THREE from 'three';
 import type { Marker, WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import { NO_EXTRA_MARKERS, type MarkerSource } from '../markerSource';
-import {
-  GRILLE_TRAVEL,
-  portcullisFrameBoxes,
-  portcullisGrilleBoxes,
-  type PortcullisBox,
-} from './portcullisBoxes';
+import { GATE_HEIGHT, portcullisGrilleBoxes, type PortcullisBox } from './portcullisBoxes';
 
 export interface GateSighting {
   key: string;
@@ -16,6 +11,9 @@ export interface GateSighting {
 interface StandingGate {
   group: THREE.Group;
   grille: THREE.Group;
+  travel: number;
+  barred: THREE.MeshLambertMaterial;
+  sealed: THREE.Color;
 }
 
 interface TileRect {
@@ -26,8 +24,7 @@ interface TileRect {
 }
 
 const sharedBox = new THREE.BoxGeometry(1, 1, 1);
-const stoneMaterial = new THREE.MeshLambertMaterial({ color: 0x59544b });
-const ironMaterial = new THREE.MeshLambertMaterial({ color: 0x363d47 });
+const LIFTING_INK = new THREE.Color('#fab838');
 
 export function gateKeyAt(x: number, y: number): string {
   return `${x},${y}`;
@@ -75,7 +72,11 @@ export class GateMeshes {
   }
 
   slideEach(slideOf: (key: string) => number): void {
-    for (const [key, gate] of this.gates) gate.grille.position.y = -GRILLE_TRAVEL * slideOf(key);
+    for (const [key, gate] of this.gates) {
+      const slide = slideOf(key);
+      gate.grille.position.y = -gate.travel * slide;
+      gate.barred.color.copy(slide > 0 ? LIFTING_INK : gate.sealed);
+    }
   }
 
   private gateMarkersIn(rect: TileRect): Marker[] {
@@ -94,14 +95,22 @@ export class GateMeshes {
 
   private stand(marker: Marker): void {
     const elevation = this.sampler.elevationAt(marker.x, marker.y);
+    const height = marker.standingHeight ?? GATE_HEIGHT;
     const group = new THREE.Group();
     group.position.set(marker.x + 0.5, elevation, marker.y + 0.5);
     group.rotation.y = this.gateTurn(marker.x, marker.y, elevation);
+    const barred = new THREE.MeshLambertMaterial({ color: new THREE.Color(marker.color) });
     const grille = new THREE.Group();
-    grille.add(boxesMesh(portcullisGrilleBoxes(), ironMaterial));
-    group.add(boxesMesh(portcullisFrameBoxes(), stoneMaterial), grille);
+    grille.add(boxesMesh(portcullisGrilleBoxes(height), barred));
+    group.add(grille);
     this.group.add(group);
-    this.gates.set(gateKeyOf(marker), { group, grille });
+    this.gates.set(gateKeyOf(marker), {
+      group,
+      grille,
+      travel: height,
+      barred,
+      sealed: new THREE.Color(marker.color),
+    });
   }
 
   private gateTurn(x: number, y: number, elevation: number): number {
@@ -119,6 +128,7 @@ export class GateMeshes {
     for (const gate of this.gates.values()) {
       this.group.remove(gate.group);
       gate.group.traverse(disposeInstances);
+      gate.barred.dispose();
     }
     this.gates.clear();
   }

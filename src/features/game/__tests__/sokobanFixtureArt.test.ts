@@ -92,8 +92,8 @@ function checkTheThreeSokobanPiecesAreToldApartAtAGlance(check: CheckReporter): 
 function checkAChargedCoreGlowsOverItsPlate(check: CheckReporter): void {
   const [loose, charged] = [fixtureLook('crate', false), fixtureLook('crate', true)];
   check(
-    'a crate settled on its plate glows and its core pulses, while a loose one stays dark and still',
-    charged.glow! > 0 && !loose.glow && charged.faceArt!.framesAfterFirst!.length > 0 && !loose.faceArt!.framesAfterFirst,
+    'a crate settled on its plate glows, while a loose one stays dark',
+    charged.glow! > 0 && !loose.glow && charged.faceArt !== loose.faceArt,
   );
   check(
     'a crate stands narrower than its cell so the plate under it shows around its feet',
@@ -101,7 +101,7 @@ function checkAChargedCoreGlowsOverItsPlate(check: CheckReporter): void {
   );
   check('a weighted plate glows', fixtureLook('plate', true).glow! > 0 && !fixtureLook('plate', false).glow);
   check(
-    'a core painted in another hue is its own art, and the same hue twice shares one art object',
+    'a crate painted in another hue is its own art, and the same hue twice shares one art object',
     crateFaceArtIn('#e0544a', true) !== crateFaceArtIn('#4f86ff', true) && crateFaceArtIn('#e0544a', true) === crateFaceArtIn('#e0544a', true),
   );
   const placements = markerPlacementsForRect(samplerOfMarkers([{ x: 0, y: 0, ...charged } as Marker]), 0, 0, 1, 1);

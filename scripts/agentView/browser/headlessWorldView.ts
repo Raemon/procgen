@@ -17,6 +17,9 @@ import {
 } from '@/features/game/render/view3d/sceneDaylight';
 import { streamingRadiusChunks } from '@/features/game/render/view3d/streamingRadius';
 import { PlayerCharacterMesh } from '@/features/game/render/view3d/playerCharacterMesh';
+import { SightShadows } from '@/features/game/render/view3d/sightShadows';
+import { ExploredCells } from '@/features/game/vision/exploredCells';
+import { lineOfSightFrom } from '@/features/game/vision/lineOfSight';
 import { WorldLights } from '@/features/game/render/view3d/worldLights';
 import { createCharacterFog, createWorldScene } from '@/features/game/render/view3d/worldScene';
 import type { FramedCamera } from '@/features/game/render/view3d/framedCamera';
@@ -26,6 +29,7 @@ import type { WorldViewRequest } from '../worldViewRequest';
 
 const PLAYER_POSE_SECONDS = 0.42;
 const VISIBLE_GATE_RADIUS_TILES = 48;
+const EARLIER_LOOKS_FURTHER = 3;
 
 export class HeadlessWorldView {
   private readonly renderer: THREE.WebGLRenderer;
@@ -38,6 +42,7 @@ export class HeadlessWorldView {
   private readonly creatures: CreatureMeshes;
   private readonly sim: CreatureSim;
   private readonly player = new PlayerCharacterMesh();
+  private readonly sightShadows: SightShadows | null;
 
   constructor(
     private readonly world: HeadlessWorld,
@@ -69,6 +74,7 @@ export class HeadlessWorldView {
       isWalkableAt: (x, y) => isWalkableTile(world.tileAssets, world.sampler.tileAt(x, y)),
       fight: fightForThePlayer(world.creatureAssets),
     });
+    this.sightShadows = sightShadowsForRequest(this.scene, world, request);
     this.player.visible = request.style !== 'character';
     this.scene.add(this.player.object);
     this.applyCharacterSightline();
@@ -101,6 +107,7 @@ export class HeadlessWorldView {
     this.standPlayerOnTheirTile();
     this.gates.showAround(this.request.x, this.request.y, VISIBLE_GATE_RADIUS_TILES);
     this.lights.syncAround(this.request.x, this.request.y, [this.player.lightSource()]);
+    this.castSightShadows();
     this.showTheLivingWorld();
   }
 
@@ -123,6 +130,17 @@ export class HeadlessWorldView {
         motion: { heading, moving: false },
       },
       { yaw: heading, seconds: PLAYER_POSE_SECONDS },
+    );
+  }
+
+  private castSightShadows(): void {
+    const radius = this.request.sightRadiusTiles;
+    if (!this.sightShadows || radius === null) return;
+    this.sightShadows.castAround(
+      this.request.x,
+      this.request.y,
+      radius,
+      this.framedCamera.visibleRadiusTiles(),
     );
   }
 
@@ -164,6 +182,19 @@ function capturableRenderer(request: WorldViewRequest): THREE.WebGLRenderer {
   renderer.setSize(request.width, request.height);
   document.body.appendChild(renderer.domElement);
   return renderer;
+}
+
+function sightShadowsForRequest(
+  scene: THREE.Scene,
+  world: HeadlessWorld,
+  request: WorldViewRequest,
+): SightShadows | null {
+  const radius = request.sightRadiusTiles;
+  if (request.style !== 'topdown' || radius === null) return null;
+  const explored = new ExploredCells();
+  const here = { x: request.x, y: request.y };
+  lineOfSightFrom(world.sampler, world.tileAssets, here, radius * EARLIER_LOOKS_FURTHER, explored);
+  return new SightShadows(scene, { sampler: world.sampler, tileAssets: world.tileAssets, explored });
 }
 
 function overlayOf(world: HeadlessWorld): WorldRulesSet {
