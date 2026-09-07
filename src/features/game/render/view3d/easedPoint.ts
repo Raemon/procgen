@@ -1,4 +1,4 @@
-const TILE_HOP_SECONDS = 0.15;
+export const TILE_HOP_SECONDS = 0.15;
 const SNAP_DISTANCE_TILES = 4;
 
 export class EasedPoint {

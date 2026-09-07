@@ -127,6 +127,8 @@ export class View3D {
     this.animations = puzzleAnimationsOf(this.worldGroup, {
       puzzleCues: deps.puzzleCues,
       surfaceAt: deps.surfaceAt,
+      elevationAt: (x, y) => deps.sampler.elevationAt(x, y),
+      crates: deps.overlay,
       covered: this.covered,
     });
     this.resizeObserver.observe(container);
@@ -192,6 +194,7 @@ export class View3D {
   }
 
   redraw(change: WorldRedraw): void {
+    this.animations.settle();
     if (change === 'shared-state') this.onSharedStateChanged();
     else this.onWorldChanged();
   }

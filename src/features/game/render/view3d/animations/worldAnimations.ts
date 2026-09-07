@@ -1,5 +1,6 @@
 export interface WorldAnimation {
   advance(dtSeconds: number): void;
+  settle?(): void;
   dispose(): void;
 }
 
@@ -18,6 +19,10 @@ export class WorldAnimations {
 
   advance(dtSeconds: number): void {
     for (const animation of this.animations) animation.advance(dtSeconds);
+  }
+
+  settle(): void {
+    for (const animation of this.animations) animation.settle?.();
   }
 
   dispose(): void {
