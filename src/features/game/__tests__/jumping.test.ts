@@ -44,18 +44,18 @@ function worldOn(elevationAt: Ground, isWalkableAt: (x: number, y: number) => bo
 }
 
 export function checkJumping(check: CheckReporter): void {
-  check('walking crosses half a level but no more', (() => {
-    const gentle = worldOn((x) => x * 0.5);
-    const steep = worldOn((x) => x * 1);
+  check('walking climbs a whole level but no more', (() => {
+    const gentle = worldOn((x) => x * 1);
+    const steep = worldOn((x) => x * 2);
     return gentle.tryStep(1, 0) && gentle.playerX === 1 && !steep.tryStep(1, 0) && steep.playerX === 0;
   })());
 
-  check('a jump climbs onto the ledge that walking refuses', (() => {
+  check('walking is how you go up, so the ledge that once needed a jump is simply stepped onto', (() => {
     const ledge = worldOn((x) => (x === 0 ? 0 : 1), (x) => x !== 2);
-    return !ledge.tryStep(1, 0) && ledge.tryJump(1, 0) && ledge.playerX === 1;
+    return ledge.tryStep(1, 0) && ledge.playerX === 1;
   })());
 
-  check('a jump refuses a rise it cannot reach any more than a step does', (() => {
+  check('a jump refuses a rise it cannot reach any more than a step does, because it climbs no higher', (() => {
     const cliff = worldOn((x) => (x === 0 ? 0 : 2));
     return !cliff.tryStep(1, 0) && !cliff.tryJump(1, 0) && cliff.playerX === 0;
   })());
@@ -63,6 +63,12 @@ export function checkJumping(check: CheckReporter): void {
   check('a jump clears a one-tile pit and lands two tiles out', (() => {
     const world = worldOn(PIT_AT_ONE);
     return world.tryJump(1, 0) && world.playerX === 2;
+  })());
+
+  check('a ledge one tile wide is reached by walking onto it and stops you there, where a jump would sail across', (() => {
+    const walked = worldOn((x) => (x === 1 ? 1 : 0));
+    const jumped = worldOn((x) => (x === 1 ? 1 : 0));
+    return walked.tryStep(1, 0) && walked.playerX === 1 && jumped.tryJump(1, 0) && jumped.playerX === 2;
   })());
 
   check('walking into that same pit drops the walker in it, which is why the jump is worth having', (() => {
@@ -91,7 +97,7 @@ export function checkJumping(check: CheckReporter): void {
   })());
 
   check('a step explains its refusal in words an agent can act on', (() => {
-    const steep = worldOn((x) => x * 1);
+    const steep = worldOn((x) => x * 2);
     return steep.explainStep(1, 0)?.includes('above your level') === true && steep.explainStep(-1, 0) === null;
   })());
 

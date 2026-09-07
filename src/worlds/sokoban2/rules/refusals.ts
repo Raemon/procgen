@@ -16,7 +16,7 @@ export function whyBlocked(state: DungeonState, from: Vec, to: Vec, at: Cell): s
   const crate = crateAt(to.x, to.y)
   if (crate) return `the ${crate.color} crate at ${here} cannot be pushed that way`
   const rise = surfaceHeight(world, crateAt, to.x, to.y) - surfaceHeight(world, crateAt, from.x, from.y)
-  if (rise > CLIMB) return `${here} is a ledge ${rise} up; push a crate against it and jump from the crate`
+  if (rise > CLIMB) return `${here} is a ledge ${rise} up; push a crate against it and walk up the crate`
   return `something at ${here} is in the way`
 }
 

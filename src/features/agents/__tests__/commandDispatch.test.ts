@@ -170,7 +170,7 @@ export function checkCommandDispatch(check: CheckReporter): void {
       result.code === 'blocked' &&
       result.hint.includes('level 2.5') &&
       result.hint.includes('your level 0.5') &&
-      result.hint.includes('climbs at most 0.5')
+      result.hint.includes('climbs at most 1')
     );
   })());
   check('a step refused on flat walkable ground blames an obstacle instead', (() => {
