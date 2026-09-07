@@ -187,9 +187,9 @@ function checkTheOverlayAgreesWithTheReferee(check: CheckReporter): void {
 }
 
 function checkTheNodesSliceTheBuiltWorld(check: CheckReporter): void {
-  const floor = defaultTileId('cobbled street')
-  const wall = defaultTileId('dressed granite wall')
-  const ledge = defaultTileId('flagstone plaza')
+  const floor = defaultTileId('dungeon floor')
+  const wall = defaultTileId('dungeon wall')
+  const ledge = defaultTileId('dungeon ledge')
   const dungeon: NodeInstance = {
     ...nodeOfType(SOKOBAN2_NODE_TYPE, 'dungeon'),
     params: { cols: 2, rows: 2, maxRoomSlots: 1, roomW: 5, roomH: 5, floorTile: floor, ledgeTile: ledge, wallTile: wall },
