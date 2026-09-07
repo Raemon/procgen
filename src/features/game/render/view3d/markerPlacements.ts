@@ -9,6 +9,7 @@ export interface MarkerPlacementsByShape {
   pins: TilePlacement[];
   billboards: TilePlacement[];
   standingFixtures: TilePlacement[];
+  slidingGates: TilePlacement[];
 }
 
 export function markerPlacementsForRect(
@@ -19,7 +20,12 @@ export function markerPlacementsForRect(
   height: number,
   extraMarkers: MarkerSource = NO_EXTRA_MARKERS,
 ): MarkerPlacementsByShape {
-  const shapes: MarkerPlacementsByShape = { pins: [], billboards: [], standingFixtures: [] };
+  const shapes: MarkerPlacementsByShape = {
+    pins: [],
+    billboards: [],
+    standingFixtures: [],
+    slidingGates: [],
+  };
   for (const marker of markersInRect(sampler, minX, minY, width, height, extraMarkers)) {
     shapes[shapeBucketOf(marker)].push(placementForMarker(marker, sampler.elevationAt(marker.x, marker.y)));
   }
@@ -27,6 +33,7 @@ export function markerPlacementsForRect(
 }
 
 function shapeBucketOf(marker: Marker): keyof MarkerPlacementsByShape {
+  if (marker.gateOpenness !== undefined) return 'slidingGates';
   if (marker.standingHeight) return 'standingFixtures';
   return marker.billboardHeight ? 'billboards' : 'pins';
 }

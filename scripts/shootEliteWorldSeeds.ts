@@ -163,6 +163,7 @@ function requestFor(
     height: SHOT_HEIGHT,
     showCeilings: false,
     sightRadiusTiles: style === 'character' ? 40 : null,
+    gateOpenness: null,
   };
 }
 
