@@ -16,6 +16,7 @@ export interface WorldViewRequest {
   height: number;
   showCeilings: boolean;
   sightRadiusTiles: number | null;
+  gateOpenness: number | null;
 }
 
 export const DEFAULT_WORLD_NAME = 'volcanic islands';

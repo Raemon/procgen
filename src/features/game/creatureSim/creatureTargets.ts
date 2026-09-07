@@ -7,6 +7,7 @@ import { distanceBetween, type CreatureInstance } from './creatureInstance';
 const PAUSE_SECONDS = 1.6;
 const ARRIVAL_DISTANCE = 0.35;
 const CHASE_STANDOFF_TILES = 1;
+const RECOIL_REACH_TILES = 1.5;
 const STRIKE_RANGE_TILES = 1.6;
 
 export interface SimWorldView {
@@ -22,12 +23,24 @@ export function retargetCreature(
 ): void {
   creature.repathIn -= dtSeconds;
   creature.attacking = false;
+  if (backsAwayWhileRecoiling(creature, world, dtSeconds)) return;
   if (chaseTargetsPlayer(creature, def, world)) return;
   if (fleeTargetsAwayFromPlayer(creature, def, world)) return;
   if (def.behavior === IDLE) return homeTarget(creature);
   if (def.behavior === PATROL) return patrolTarget(creature, def);
   if (def.behavior === GUARD && !nearHome(creature, def)) return homeTarget(creature);
   wanderTarget(creature, def);
+}
+
+function backsAwayWhileRecoiling(
+  creature: CreatureInstance,
+  world: SimWorldView,
+  dtSeconds: number,
+): boolean {
+  creature.recoilFor = Math.max(0, creature.recoilFor - dtSeconds);
+  if (creature.recoilFor === 0) return false;
+  aimAlong(creature, creature.x - world.playerX, creature.y - world.playerY, RECOIL_REACH_TILES);
+  return true;
 }
 
 function playerInSight(creature: CreatureInstance, def: CreatureDef, world: SimWorldView): boolean {

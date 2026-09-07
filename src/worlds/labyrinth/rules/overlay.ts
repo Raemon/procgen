@@ -1,4 +1,4 @@
-import { WALK_CLIMB_LIMIT } from '@/features/game/climbing';
+import { CLIMB_LIMIT } from '@/features/game/climbing';
 import {
   STEP_ALLOWED,
   climbRefusal,
@@ -66,7 +66,7 @@ function stepThroughTheRoom(
   defaults: DefaultRules,
 ): StepVerdict {
   const { from, to, dx, dy, mayPush, commit } = attempt;
-  const tooSteep = climbRefusal(defaults.surfaceAt, from, to, WALK_CLIMB_LIMIT, 'a step');
+  const tooSteep = climbRefusal(defaults.surfaceAt, from, to, CLIMB_LIMIT, 'a step');
   if (tooSteep) return stepRefused(tooSteep);
   const clear = commit
     ? puzzles.clearTheWay(to.x, to.y, dx, dy, mayPush)

@@ -13,6 +13,7 @@ import type { WorldRedraw } from '@/features/app-shell/runtime/worldRenderers';
 import type { WorldViewDeps } from '../worldViewDeps';
 import { WORLD_CANVAS_CLASSES } from '../worldCanvasClasses';
 import { CoveredCells } from './animations/coveredCells';
+import { DoorOpenings } from './animations/doorOpenings';
 import { puzzleAnimationsOf } from './animations/puzzleAnimations';
 import type { WorldAnimations } from './animations/worldAnimations';
 import { CameraRig, type CameraStyle } from './cameraRig';
@@ -70,6 +71,7 @@ export class View3D {
   private readonly terrainOverview: TerrainOverview;
   private readonly creatureMeshes: CreatureMeshes;
   private readonly itemMeshes: ItemMeshes;
+  private readonly doorOpenings: DoorOpenings;
   private readonly remotePlayerMeshes: RemotePlayerMeshes;
   private readonly selectionBox: SelectionBox;
   private readonly sightShadows: SightShadows;
@@ -106,6 +108,7 @@ export class View3D {
       this.characterSprites,
     );
     this.itemMeshes = new ItemMeshes(this.worldGroup, deps.items, deps.sampler);
+    this.doorOpenings = new DoorOpenings(this.worldGroup, deps.sampler, deps.overlay);
     this.remotePlayerMeshes = new RemotePlayerMeshes(this.worldGroup, (x, y) =>
       deps.surfaceAt(x, y),
     );
@@ -119,9 +122,9 @@ export class View3D {
     this.worldLights = new WorldLights(this.scene, deps);
     this.speechLabels = new SpeechBubbleLabels(container);
     this.listenForCanvasGestures();
-    this.animations = puzzleAnimationsOf(this.worldGroup, {
+    this.animations = puzzleAnimationsOf({
       puzzleCues: deps.puzzleCues,
-      surfaceAt: deps.surfaceAt,
+      doors: this.doorOpenings,
       covered: this.covered,
     });
     this.resizeObserver.observe(container);
@@ -203,6 +206,7 @@ export class View3D {
     this.worldLights.invalidate();
     this.itemMeshes.invalidate();
     this.sightShadows.invalidate();
+    this.doorOpenings.invalidate();
     this.creatureMeshes.forgetSprites();
     this.characterSprites.dispose();
     disposeSharedWorldArt();
@@ -395,6 +399,9 @@ export class View3D {
     this.streamer.streamAround(focus.x, focus.y, streamingRadiusChunks(radiusTiles));
     measureWork('item meshes', () =>
       this.itemMeshes.syncAround(focus.x, focus.y, detailedContentRadiusTiles(radiusTiles)),
+    );
+    measureWork('gate meshes', () =>
+      this.doorOpenings.showAround(focus.x, focus.y, detailedContentRadiusTiles(radiusTiles)),
     );
   }
 

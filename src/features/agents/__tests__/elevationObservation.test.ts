@@ -1,6 +1,6 @@
 import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
-import { CLIMB_STEPS_PER_JUMP, LEVEL_STEP } from '@/features/game/climbing';
+import { CLIMB_STEPS, LEVEL_STEP } from '@/features/game/climbing';
 import { buildObservation, type AgentObservation } from '../observation';
 import { observationText } from '../observationText';
 import { meadowTiles, MEADOW_TILE, stubSampler } from './observationTestKit';
@@ -24,7 +24,7 @@ export function checkElevationObservation(check: CheckReporter): void {
 
   const halfSteps = buildObservation(meadowAt((_x, y) => Math.max(0, -y) * LEVEL_STEP), meadowTiles, facingNorth, 'character');
   check('a rise a step can walk moves the digit by exactly one', digitAt(halfSteps, 0, -1) === '1' && digitAt(halfSteps, 0, -2) === '2');
-  check('a rise only a jump can climb moves the digit by two', digitAt(halfSteps, 0, 0) === '0' && digitAt(halfSteps, 0, -2) === String(CLIMB_STEPS_PER_JUMP));
+  check('the tallest rise a step can climb moves the digit by two', digitAt(halfSteps, 0, 0) === '0' && digitAt(halfSteps, 0, -2) === String(CLIMB_STEPS));
   check('your own tile carries its height too', digitAt(sloped, 0, 0) === '0');
   check('the elevation grid is blank exactly where the view is unseen', blanksAlignWithTheView(sloped));
   check('the observation text carries the elevation grid under its own label', observationText(sloped).includes('elevation (') && observationText(sloped).includes(sloped.elevation!.join('\n')));

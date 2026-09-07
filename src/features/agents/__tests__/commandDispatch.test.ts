@@ -37,6 +37,7 @@ import {
 import { commandsForMode, commandFor } from '@/features/app-shell/runtime/commands/commandCatalog';
 import { performCommand } from '@/features/app-shell/runtime/commands/performCommand';
 import { everyCommand } from '../api/docs/apiDocs';
+import { NOTHING_ALIVE } from '@/features/game/combat/strikes';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 
 function abilityWorld(initialTiles: TileDef[] = []) {
@@ -65,6 +66,7 @@ function abilityWorld(initialTiles: TileDef[] = []) {
     runningWorld: new RunningWorld(),
     randomizeHistory: new RandomizeHistory(),
     groundItems: NO_GROUND_ITEMS,
+    livingCreatures: NOTHING_ALIVE,
     rules: new WorldRulesSet({ tileIsWalkable: () => true, elevationAt: () => 0 }),
     regionSampler: {
       tileAt: () => assetId<'tiles'>(0),
@@ -168,7 +170,7 @@ export function checkCommandDispatch(check: CheckReporter): void {
       result.code === 'blocked' &&
       result.hint.includes('level 2.5') &&
       result.hint.includes('your level 0.5') &&
-      result.hint.includes('climbs at most 0.5')
+      result.hint.includes('climbs at most 1')
     );
   })());
   check('a step refused on flat walkable ground blames an obstacle instead', (() => {

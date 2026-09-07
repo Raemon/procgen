@@ -32,7 +32,7 @@ const NEVER_ASKED: DefaultRules = {
 }
 
 export function checkSokobanRules(check: CheckReporter): void {
-  checkAStepPushesButNeverClimbs(check)
+  checkAStepPushesOrClimbs(check)
   checkAJumpClimbsButNeverPushes(check)
   checkDoorsOpenWhenTheirRoomIsSolvedAndStayOpen(check)
   checkTwoPlayersShareTheCrates(check)
@@ -42,12 +42,12 @@ export function checkSokobanRules(check: CheckReporter): void {
   checkGoalsAreWiredToTheDoorTheyOpen(check)
 }
 
-function checkAStepPushesButNeverClimbs(check: CheckReporter): void {
+function checkAStepPushesOrClimbs(check: CheckReporter): void {
   const rules = rulesFor(worldFromAscii(['######', '#@r..#', '######']))
   const player = rules.spawn()!
   const pinned = rulesFor(worldFromAscii(['#####', '#@r##', '#####']))
-  const refused = pinned.step(attempt(pinned.spawn()!, 1, 0, true, false), NO_MINE, NEVER_ASKED)
-  check('a step into a crate that cannot move is refused, and the hint says to jump onto it', !refused.allowed && refused.why.includes('jump'))
+  const climbed = pinned.step(attempt(pinned.spawn()!, 1, 0, true, true), NO_MINE, NEVER_ASKED)
+  check('a step into a crate that cannot move climbs onto it instead of refusing, and leaves it where it stands', climbed.allowed && pinned.crates()[0]!.x === 2 && pinned.revision() === 0)
   const dry = rules.step(attempt(player, 1, 0, true, false), NO_MINE, NEVER_ASKED)
   const crateBefore = rules.crates()[0]!.x
   check('a dry-run step through a crate is allowed without moving it', dry.allowed && rules.crates()[0]!.x === crateBefore && rules.revision() === 0)
@@ -131,10 +131,12 @@ function checkTwoPlayersShareTheCrates(check: CheckReporter): void {
   const rules = rulesFor(worldFromAscii(['######', '#@r..#', '#....#', '######']))
   const one = rules.spawn()!
   const two = { x: one.x + 1, y: one.y + 1 }
-  const blockedBefore = rules.step(attempt(two, 0, -1, false, false), NO_MINE, NEVER_ASKED)
+  const crate = { x: one.x + 1, y: one.y }
+  const raisedBefore = rules.blocksAt(crate.x, crate.y) && rules.surfaceRiseAt(crate.x, crate.y) === 1
   rules.step(attempt(one, 1, 0, true, true), NO_MINE, NEVER_ASKED)
-  const openAfter = rules.step(attempt(two, 0, -1, false, false), NO_MINE, NEVER_ASKED)
-  check('a crate one player pushes is out of the way of the other, since crates belong to no one', !blockedBefore.allowed && openAfter.allowed)
+  const clearAfter = !rules.blocksAt(crate.x, crate.y) && rules.surfaceRiseAt(crate.x, crate.y) === 0
+  const openAfter = rules.step(attempt(two, 0, -1, true, false), NO_MINE, NEVER_ASKED)
+  check('a crate one player pushes is out of the way of the other, since crates belong to no one', raisedBefore && clearAfter && openAfter.allowed)
   check('nothing is kept per player', rules.initialMine() === null)
 }
 

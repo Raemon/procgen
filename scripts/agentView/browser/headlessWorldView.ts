@@ -2,12 +2,14 @@ import * as THREE from 'three';
 import '@/worlds/client';
 import { NO_ITEMS } from '@/features/asset-library/items/itemAssets';
 import { facingYawRadians } from '@/features/game/facing';
+import { fightForThePlayer } from '@/features/game/combat/fightForThePlayer';
 import { CreatureSim } from '@/features/game/creatureSim/creatureSim';
 import { WorldRulesSet } from '@/features/game/worldRulesSet';
 import { CharacterSpriteAssets } from '@/features/game/render/view3d/characterSpriteAssets';
 import { CreatureMeshes } from '@/features/game/render/view3d/creatureMeshes';
 import { isWalkableTile } from '@/features/game/tileWalkability';
 import { ChunkMeshStreamer } from '@/features/game/render/view3d/chunkMeshStreamer';
+import { DoorOpenings } from '@/features/game/render/view3d/animations/doorOpenings';
 import {
   LAMPLIT_AMBIENT,
   OVERHEAD_AMBIENT,
@@ -23,6 +25,7 @@ import type { HeadlessWorld } from '../../headlessWorld';
 import type { WorldViewRequest } from '../worldViewRequest';
 
 const PLAYER_POSE_SECONDS = 0.42;
+const VISIBLE_GATE_RADIUS_TILES = 48;
 
 export class HeadlessWorldView {
   private readonly renderer: THREE.WebGLRenderer;
@@ -30,6 +33,7 @@ export class HeadlessWorldView {
   private readonly daylight = new SceneDaylight(this.scene);
   private readonly chunkGroups = new THREE.Group();
   private readonly streamer: ChunkMeshStreamer;
+  private readonly gates: DoorOpenings;
   private readonly lights: WorldLights;
   private readonly creatures: CreatureMeshes;
   private readonly sim: CreatureSim;
@@ -42,12 +46,15 @@ export class HeadlessWorldView {
   ) {
     this.renderer = capturableRenderer(request);
     this.scene.add(this.chunkGroups);
+    const overlay = overlayOf(world);
     this.streamer = new ChunkMeshStreamer(
       this.chunkGroups,
       world.sampler,
       world.tileAssets,
-      overlayOf(world),
+      overlay,
     );
+    this.gates = new DoorOpenings(this.chunkGroups, world.sampler, overlay);
+    this.gates.holdEveryGateAt(request.gateOpenness);
     this.lights = new WorldLights(this.scene, tileLightsOnlyDeps(world));
     this.creatures = new CreatureMeshes(
       this.chunkGroups,
@@ -60,6 +67,7 @@ export class HeadlessWorldView {
       creatureAssets: world.creatureAssets,
       world: { playerX: request.x, playerY: request.y },
       isWalkableAt: (x, y) => isWalkableTile(world.tileAssets, world.sampler.tileAt(x, y)),
+      fight: fightForThePlayer(world.creatureAssets),
     });
     this.player.visible = request.style !== 'character';
     this.scene.add(this.player.object);
@@ -91,6 +99,7 @@ export class HeadlessWorldView {
     this.framedCamera.update();
     this.streamAroundFocus();
     this.standPlayerOnTheirTile();
+    this.gates.showAround(this.request.x, this.request.y, VISIBLE_GATE_RADIUS_TILES);
     this.lights.syncAround(this.request.x, this.request.y, [this.player.lightSource()]);
     this.showTheLivingWorld();
   }
@@ -162,6 +171,9 @@ function overlayOf(world: HeadlessWorld): WorldRulesSet {
     tileIsWalkable: (x, y) => isWalkableTile(world.tileAssets, world.sampler.tileAt(x, y)),
     elevationAt: (x, y) => world.sampler.elevationAt(x, y),
   });
-  rules.attach(world.store, { items: NO_ITEMS, builtValueOf: () => null });
+  rules.attach(world.store, {
+    items: NO_ITEMS,
+    builtValueOf: (nodeId) => world.evaluator.builtValueOf(nodeId),
+  });
   return rules;
 }

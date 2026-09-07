@@ -44,6 +44,7 @@ export interface Marker {
   seeThroughUnpaintedArt?: boolean;
   glow?: number;
   footprint?: number;
+  gateOpenness?: number;
 }
 
 export interface CreatureSpawn {

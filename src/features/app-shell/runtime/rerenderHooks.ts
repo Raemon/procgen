@@ -38,6 +38,11 @@ export function useRerenderOnCreatureClockChange(): void {
   useRerenderWhen(useCallback((listener: () => void) => clock.onRunStateChange(listener), [clock]));
 }
 
+export function useRerenderOnFightChange(): void {
+  const { fight } = useAppRuntime();
+  useRerenderWhen(useCallback((listener: () => void) => fight.subscribe(listener), [fight]));
+}
+
 export function useRerenderOnWorldChange(): void {
   useRerenderWhen(useAppRuntime().subscribeToWorldChange);
 }

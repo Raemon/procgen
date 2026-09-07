@@ -1,86 +1,86 @@
-import * as THREE from 'three';
-import { MAX_FACE_ART_SIZE } from '@/features/asset-library/tiles/tileFaceArt';
-import { withTransparency } from '@/features/asset-library/tiles/inkColor';
-import { gateLook } from '../../../fixtures/fixtureAppearance';
-import { DOOR_FACE_ART, DOOR_STANDS_TALL } from '../../../fixtures/looks/door';
+import type * as THREE from 'three';
+import type { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
+import type { MarkerSource } from '../../markerSource';
 import type { Cell } from '../../../worldRules';
-import { coplanarPullOf } from '../coplanarPull';
-import { EVERY_FACE } from '../culling/visibleFaceMask';
-import { sharedTileBoxGeometry } from '../sharedTileGeometries';
-import { tileSurfaceMaterials } from '../tileSurfaces';
+import { GateMeshes, gateKeyAt } from '../gateMeshes';
 import type { WorldAnimation } from './worldAnimations';
 
-export const DOOR_OPENING_SECONDS = 0.6;
-const LEAF_OVERHANG = 1.03;
-const LINTEL_LANE = 'door opening';
+export const DOOR_OPENING_SECONDS = 0.55;
 
-interface OpeningDoor {
-  mesh: THREE.Mesh;
-  floor: number;
-  elapsed: number;
+interface GateOpening {
+  progress: number;
+  target: number;
 }
 
-export type LeafMaterials = () => THREE.Material | THREE.Material[];
+export function easedGateSlide(progress: number): number {
+  const held = Math.min(1, Math.max(0, progress));
+  return held * held * (3 - 2 * held);
+}
 
 export class DoorOpenings implements WorldAnimation {
-  private readonly lifting: OpeningDoor[] = [];
+  private readonly openings = new Map<string, GateOpening>();
+  private readonly gates: GateMeshes;
+  private held: number | null = null;
 
-  constructor(
-    private readonly root: THREE.Group,
-    private readonly elevationAt: (x: number, y: number) => number,
-    private readonly leafMaterials: LeafMaterials = closedLeafMaterials,
-  ) {}
+  constructor(root: THREE.Group, sampler: WorldSampler, markers: MarkerSource) {
+    this.gates = new GateMeshes(root, sampler, markers);
+  }
+
+  showAround(centerX: number, centerY: number, radiusTiles: number): void {
+    for (const gate of this.gates.standAround(centerX, centerY, radiusTiles)) {
+      this.aimAt(gate.key, gate.openness);
+    }
+    this.forgetGatesThatLeft();
+    this.slideEveryGrille();
+  }
 
   open(cells: readonly Cell[]): void {
-    for (const cell of cells) this.lifting.push(this.closedLeafAt(cell));
+    for (const cell of cells) this.aimAt(gateKeyAt(cell.x, cell.y), 1);
   }
 
   advance(dtSeconds: number): void {
-    for (const door of [...this.lifting]) {
-      door.elapsed += dtSeconds;
-      if (door.elapsed >= DOOR_OPENING_SECONDS) this.finish(door);
-      else liftIntoLintel(door, door.elapsed / DOOR_OPENING_SECONDS);
-    }
+    const step = dtSeconds / DOOR_OPENING_SECONDS;
+    for (const opening of this.openings.values()) opening.progress = steppedToward(opening, step);
+    this.slideEveryGrille();
+  }
+
+  slideOf(key: string): number {
+    if (this.held !== null) return easedGateSlide(this.held);
+    return easedGateSlide(this.openings.get(key)?.progress ?? 0);
+  }
+
+  holdEveryGateAt(openness: number | null): void {
+    this.held = openness;
+  }
+
+  invalidate(): void {
+    this.gates.invalidate();
   }
 
   dispose(): void {
-    for (const door of [...this.lifting]) this.finish(door);
+    this.openings.clear();
+    this.gates.dispose();
   }
 
-  private closedLeafAt(cell: Cell): OpeningDoor {
-    const mesh = new THREE.Mesh(sharedTileBoxGeometry(1, 1, 1, EVERY_FACE), this.leafMaterials());
-    mesh.position.set(cell.x + 0.5, 0, cell.y + 0.5);
-    this.root.add(mesh);
-    const door = { mesh, floor: this.elevationAt(cell.x, cell.y), elapsed: 0 };
-    liftIntoLintel(door, 0);
-    return door;
+  private aimAt(key: string, openness: number): void {
+    const target = Math.min(1, Math.max(0, openness));
+    const known = this.openings.get(key);
+    if (known) known.target = target;
+    else this.openings.set(key, { progress: target, target });
   }
 
-  private finish(door: OpeningDoor): void {
-    this.root.remove(door.mesh);
-    this.lifting.splice(this.lifting.indexOf(door), 1);
+  private forgetGatesThatLeft(): void {
+    const standing = this.gates.standingKeys();
+    for (const key of [...this.openings.keys()]) if (!standing.has(key)) this.openings.delete(key);
+  }
+
+  private slideEveryGrille(): void {
+    this.gates.slideEach((key) => this.slideOf(key));
   }
 }
 
-function leafHeightAt(progress: number): number {
-  return DOOR_STANDS_TALL * (1 - progress * progress);
-}
-
-function liftIntoLintel(door: OpeningDoor, progress: number): void {
-  const height = leafHeightAt(progress);
-  door.mesh.scale.set(LEAF_OVERHANG, Math.max(height, 0.001), LEAF_OVERHANG);
-  door.mesh.position.y = door.floor + DOOR_STANDS_TALL - height / 2;
-}
-
-function closedLeafMaterials(): THREE.Material | THREE.Material[] {
-  return tileSurfaceMaterials(
-    {
-      art: DOOR_FACE_ART.mechanism,
-      baseColor: withTransparency(gateLook('mechanism', false).color, false),
-      glow: 0,
-      drawnFromBothSides: false,
-      pull: coplanarPullOf('marker', LINTEL_LANE),
-    },
-    MAX_FACE_ART_SIZE,
-  );
+function steppedToward(opening: GateOpening, step: number): number {
+  const gap = opening.target - opening.progress;
+  if (Math.abs(gap) <= step) return opening.target;
+  return opening.progress + Math.sign(gap) * step;
 }
