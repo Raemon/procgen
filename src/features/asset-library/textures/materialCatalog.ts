@@ -1,6 +1,9 @@
 import type { MaterialSynth } from './materialSynth';
 import { cobbles } from './synth/cobbles';
 import { dressedGranite } from './synth/dressedGranite';
+import { dungeonFloor } from './synth/dungeonFloor';
+import { dungeonLedge } from './synth/dungeonLedge';
+import { dungeonWall } from './synth/dungeonWall';
 import { fieldstone } from './synth/fieldstone';
 import { flagstone } from './synth/flagstone';
 import { forgeCoals, rivetedIron } from './synth/forgeMaterials';
@@ -34,6 +37,9 @@ export const MATERIAL_SYNTHS: MaterialSynth[] = [
   stillWater,
   rivetedIron,
   forgeCoals,
+  dungeonFloor,
+  dungeonLedge,
+  dungeonWall,
 ];
 
 export function materialSynthById(id: string): MaterialSynth | undefined {
