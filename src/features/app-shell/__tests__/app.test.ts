@@ -17,6 +17,7 @@ import { checkGroundHidesWhatIsUnderIt } from '@/features/game/__tests__/groundH
 import { checkInkTransparency } from '@/features/game/__tests__/inkTransparency.test';
 import { checkCameraMovementAndZoom } from '@/features/game/__tests__/cameraMovementAndZoom.test';
 import { checkCharactersOnStage } from '@/features/game/__tests__/charactersOnStage.test';
+import { checkLanternCharacter } from '@/features/game/__tests__/lanternCharacter.test';
 import { checkViewRecentering } from '@/features/game/__tests__/viewRecentering.test';
 import { checkTopDownControls } from '@/features/game/__tests__/topDownControls.test';
 import { checkRandomizeAndPermutation } from '@/features/asset-library/worlds/__tests__/randomizeAndPermutation.test';
@@ -119,6 +120,7 @@ describe('the depth of ground', () => checkGroundHidesWhatIsUnderIt(check));
 describe('transparent ink', () => checkInkTransparency(check));
 describe('camera movement and zoom', () => checkCameraMovementAndZoom(check));
 describe('characters on stage', () => checkCharactersOnStage(check));
+describe('the lantern the player is', () => checkLanternCharacter(check));
 describe('view recentering', () => checkViewRecentering(check));
 describe('randomize and permutation', () => checkRandomizeAndPermutation(check));
 describe('terrain field nodes', () => checkTerrainFieldNodes(check));

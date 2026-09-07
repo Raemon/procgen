@@ -14,12 +14,15 @@ import {
   SceneDaylight,
 } from '@/features/game/render/view3d/sceneDaylight';
 import { streamingRadiusChunks } from '@/features/game/render/view3d/streamingRadius';
+import { PlayerCharacterMesh } from '@/features/game/render/view3d/playerCharacterMesh';
 import { WorldLights } from '@/features/game/render/view3d/worldLights';
 import { createCharacterFog, createWorldScene } from '@/features/game/render/view3d/worldScene';
 import type { FramedCamera } from '@/features/game/render/view3d/framedCamera';
 import { tileLightsOnlyDeps } from '@/features/game/render/view3d/tileLightsOnlyDeps';
 import type { HeadlessWorld } from '../../headlessWorld';
 import type { WorldViewRequest } from '../worldViewRequest';
+
+const PLAYER_POSE_SECONDS = 0.42;
 
 export class HeadlessWorldView {
   private readonly renderer: THREE.WebGLRenderer;
@@ -30,6 +33,7 @@ export class HeadlessWorldView {
   private readonly lights: WorldLights;
   private readonly creatures: CreatureMeshes;
   private readonly sim: CreatureSim;
+  private readonly player = new PlayerCharacterMesh();
 
   constructor(
     private readonly world: HeadlessWorld,
@@ -57,6 +61,8 @@ export class HeadlessWorldView {
       world: { playerX: request.x, playerY: request.y },
       isWalkableAt: (x, y) => isWalkableTile(world.tileAssets, world.sampler.tileAt(x, y)),
     });
+    this.player.visible = request.style !== 'character';
+    this.scene.add(this.player.object);
     this.applyCharacterSightline();
     if (request.showCeilings) this.streamer.showCeilings(true);
   }
@@ -84,7 +90,8 @@ export class HeadlessWorldView {
     this.daylight.setLevel(this.world.store.daylight());
     this.framedCamera.update();
     this.streamAroundFocus();
-    this.lights.syncAround(this.request.x, this.request.y);
+    this.standPlayerOnTheirTile();
+    this.lights.syncAround(this.request.x, this.request.y, [this.player.lightSource()]);
     this.showTheLivingWorld();
   }
 
@@ -95,6 +102,19 @@ export class HeadlessWorldView {
 
   pngDataUrl(): string {
     return this.renderer.domElement.toDataURL('image/png');
+  }
+
+  private standPlayerOnTheirTile(): void {
+    const heading = facingYawRadians(this.request.facing);
+    this.player.standAt(
+      {
+        x: this.request.x + 0.5,
+        y: this.request.y + 0.5,
+        elevation: this.world.sampler.elevationAt(this.request.x, this.request.y),
+        motion: { heading, moving: false },
+      },
+      { yaw: heading, seconds: PLAYER_POSE_SECONDS },
+    );
   }
 
   private showTheLivingWorld(): void {

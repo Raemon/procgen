@@ -42,7 +42,9 @@ export function worldViewCommandFromArgv(argv: readonly string[]): WorldViewComm
 
 function styleFromFlags(flags: CommandLineFlags): WorldViewStyle {
   const style = flags.get('view') ?? 'god';
-  if (style !== 'god' && style !== 'character') throw new Error('--view must be god or character');
+  if (style !== 'god' && style !== 'character' && style !== 'topdown') {
+    throw new Error('--view must be god, character or topdown');
+  }
   return style;
 }
 

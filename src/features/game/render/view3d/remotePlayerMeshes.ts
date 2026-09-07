@@ -1,10 +1,9 @@
 import type * as THREE from 'three';
-import type { ReadOnlyCreatureAssets } from '@/features/app-shell/runtime/readOnlyAssets';
 import type { CharacterMotion } from '@/features/asset-library/characters/characterFrame';
 import type { RemoteEntity, RemotePlayers } from '../../multiplayer/client/remotePlayers';
 import { facingYawRadians, type FacingIndex } from '../../facing';
+import type { LightSource } from '../../light/lightEmission';
 import type { CameraView } from './cameraView';
-import type { CharacterSpriteAssets } from './characterSpriteAssets';
 import { EasedPoint } from './easedPoint';
 import { PlayerCharacterMesh } from './playerCharacterMesh';
 
@@ -19,16 +18,10 @@ export class RemotePlayerMeshes {
 
   constructor(
     private readonly root: THREE.Group,
-    private readonly creatures: ReadOnlyCreatureAssets,
     private readonly surfaceAt: (x: number, y: number) => number,
-    private readonly sprites: CharacterSpriteAssets,
   ) {}
 
   dispose(): void {
-    for (const id of [...this.characters.keys()]) this.dropCharacter(id);
-  }
-
-  forgetSprites(): void {
     for (const id of [...this.characters.keys()]) this.dropCharacter(id);
   }
 
@@ -43,6 +36,10 @@ export class RemotePlayerMeshes {
 
   headPointOf(entityId: number): THREE.Vector3 | null {
     return this.characters.get(entityId)?.position ?? null;
+  }
+
+  lightSources(): LightSource[] {
+    return [...this.characters.values()].map((character) => character.lightSource());
   }
 
   private placeCharacter(entity: RemoteEntity, dtSeconds: number, view: CameraView): void {
@@ -67,7 +64,7 @@ export class RemotePlayerMeshes {
   }
 
   private addCharacter(entity: RemoteEntity): PlayerCharacterMesh {
-    const character = new PlayerCharacterMesh(this.creatures, this.sprites, hueFor(entity));
+    const character = new PlayerCharacterMesh(hueFor(entity));
     this.root.add(character.object);
     this.characters.set(entity.id, character);
     return character;

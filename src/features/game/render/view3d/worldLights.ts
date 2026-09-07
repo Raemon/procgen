@@ -29,8 +29,8 @@ export class WorldLights {
     this.sources.invalidate();
   }
 
-  syncAround(playerX: number, playerY: number): void {
-    const lit = this.sources.around(playerX, playerY);
+  syncAround(playerX: number, playerY: number, carried: readonly LightSource[] = []): void {
+    const lit = [...carried, ...this.sources.around(playerX, playerY)];
     this.pool.show(nearestSources(lit, playerX, playerY, this.pool.capacity));
   }
 }
