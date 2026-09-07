@@ -3,6 +3,7 @@ import type { FramedCamera } from '@/features/game/render/view3d/framedCamera';
 import type { WorldViewRequest } from '../worldViewRequest';
 import { characterCameraForRequest } from './characterCameraForRequest';
 import { godCameraForRequest } from './godCameraForRequest';
+import { topDownCameraForRequest } from './topDownCameraForRequest';
 import { headlessWorldForRequest } from './headlessWorldForName';
 import { HeadlessWorldView } from './headlessWorldView';
 import { renderUntilWorldIsMeshed } from './renderUntilWorldIsMeshed';
@@ -84,5 +85,6 @@ function loadedImage(pngDataUrl: string): Promise<HTMLImageElement> {
 
 function cameraForRequest(request: WorldViewRequest, world: HeadlessWorld): FramedCamera {
   if (request.style === 'character') return characterCameraForRequest(request, world.sampler);
+  if (request.style === 'topdown') return topDownCameraForRequest(request, world.sampler);
   return godCameraForRequest(request);
 }

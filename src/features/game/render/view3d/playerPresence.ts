@@ -1,9 +1,9 @@
 import type * as THREE from 'three';
-import type { ReadOnlyCreatureAssets, ReadOnlyWorld } from '@/features/app-shell/runtime/readOnlyAssets';
+import type { ReadOnlyWorld } from '@/features/app-shell/runtime/readOnlyAssets';
 import type { CharacterMotion } from '@/features/asset-library/characters/characterFrame';
 import { facingYawRadians } from '../../facing';
+import type { LightSource } from '../../light/lightEmission';
 import type { CameraView } from './cameraView';
-import type { CharacterSpriteAssets } from './characterSpriteAssets';
 import { EasedPoint } from './easedPoint';
 import { JumpArc } from './jumpArc';
 import { PlayerCharacterMesh } from './playerCharacterMesh';
@@ -12,7 +12,6 @@ const STILL_ENOUGH_TILES = 0.05;
 
 export interface PlayerPresenceDeps {
   world: ReadOnlyWorld;
-  creatures: ReadOnlyCreatureAssets;
   surfaceAt(x: number, y: number): number;
 }
 
@@ -22,12 +21,9 @@ export class PlayerPresence {
   private readonly jumpArc = new JumpArc();
   private readonly stopWatchingJumps: () => void;
 
-  constructor(
-    private readonly deps: PlayerPresenceDeps,
-    sprites: CharacterSpriteAssets,
-  ) {
+  constructor(private readonly deps: PlayerPresenceDeps) {
     this.eased = new EasedPoint(deps.world.playerX, deps.world.playerY);
-    this.mesh = new PlayerCharacterMesh(deps.creatures, sprites);
+    this.mesh = new PlayerCharacterMesh();
     this.stopWatchingJumps = deps.world.on('player-jumped', () => this.jumpArc.launch(this.groundUnderPlayer()));
   }
 
@@ -58,6 +54,10 @@ export class PlayerPresence {
       },
       view,
     );
+  }
+
+  lightSource(): LightSource {
+    return this.mesh.lightSource();
   }
 
   elevation(): number {

@@ -1,14 +1,12 @@
 import * as THREE from 'three';
-import type { ReadOnlyCreatureAssets } from '@/features/app-shell/runtime/readOnlyAssets';
 import type { CharacterMotion } from '@/features/asset-library/characters/characterFrame';
-import { playerCharacterDef } from '@/features/asset-library/characters/playerCharacter';
+import { lanternLightSource } from '../../light/lanternLight';
+import type { LightSource } from '../../light/lightEmission';
 import type { CameraView } from './cameraView';
-import { characterQuadMesh, dressCharacterQuad } from './characterQuad';
-import type { CharacterSpriteAssets } from './characterSpriteAssets';
-import { createPlayerCapsule } from './playerCapsule';
-import { disposeMeshResources } from './disposeMeshResources';
+import { LanternCube } from './lanternCube';
+import { LANTERN_CENTER_HEIGHT, LANTERN_INK } from './lanternCubeParts';
 
-const CAPSULE_CENTER_HEIGHT = 0.55;
+const TILE_CENTER = 0.5;
 
 export interface PlayerStance {
   x: number;
@@ -20,22 +18,18 @@ export interface PlayerStance {
 export class PlayerCharacterMesh {
   readonly object = new THREE.Group();
 
-  private readonly quad = characterQuadMesh();
-  private readonly capsule: THREE.Mesh;
+  private readonly lantern: LanternCube;
+  private readonly ink: number;
 
-  constructor(
-    private readonly creatures: ReadOnlyCreatureAssets,
-    private readonly sprites: CharacterSpriteAssets,
-    private readonly tint?: number,
-  ) {
-    this.capsule = createPlayerCapsule(tint);
-    this.object.add(this.quad, this.capsule);
+  constructor(tint?: number) {
+    this.ink = tint ?? LANTERN_INK;
+    this.lantern = new LanternCube(this.ink);
+    this.object.add(this.lantern.object);
   }
 
   dispose(): void {
     this.object.removeFromParent();
-    disposeMeshResources(this.quad, { keepMaterials: true, keepGeometry: true });
-    disposeMeshResources(this.capsule);
+    this.lantern.dispose();
   }
 
   set visible(visible: boolean) {
@@ -47,23 +41,12 @@ export class PlayerCharacterMesh {
   }
 
   standAt(stance: PlayerStance, view: CameraView): void {
-    const def = playerCharacterDef(this.creatures);
-    const centerHeight =
-      def === null
-        ? null
-        : dressCharacterQuad(this.quad, {
-            sprites: this.sprites,
-            def,
-            motion: stance.motion,
-            view,
-            tint: this.tint,
-          });
-    this.quad.visible = centerHeight !== null;
-    this.capsule.visible = centerHeight === null;
-    this.object.position.set(
-      stance.x,
-      stance.elevation + (centerHeight ?? CAPSULE_CENTER_HEIGHT),
-      stance.y,
-    );
+    this.object.position.set(stance.x, stance.elevation + LANTERN_CENTER_HEIGHT, stance.y);
+    this.lantern.pose(stance.motion, view.seconds);
+  }
+
+  lightSource(): LightSource {
+    const { x, y, z } = this.object.position;
+    return lanternLightSource(x - TILE_CENTER, z - TILE_CENTER, y, this.ink);
   }
 }

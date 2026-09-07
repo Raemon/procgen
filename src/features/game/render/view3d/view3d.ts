@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { reportGpuSceneLoad, type GpuSceneLoad } from '../../performance/gpuSceneLoad';
+import type { LightSource } from '../../light/lightEmission';
 import { measureWork } from '../../performance/workTimers';
 import { facingYawRadians } from '../../facing';
 import { listenForCaptureDrag } from '../../capture/listenForCaptureDrag';
@@ -91,10 +92,7 @@ export class View3D {
     this.canvas = this.renderer.domElement;
     this.canvas.className = WORLD_CANVAS_CLASSES;
     container.appendChild(this.canvas);
-    this.presence = new PlayerPresence(
-      { world: deps.world, creatures: deps.creatures, surfaceAt: deps.surfaceAt },
-      this.characterSprites,
-    );
+    this.presence = new PlayerPresence({ world: deps.world, surfaceAt: deps.surfaceAt });
     this.scene.add(this.worldGroup, this.presence.object);
     this.streamer = new ChunkMeshStreamer(
       this.worldGroup,
@@ -111,11 +109,8 @@ export class View3D {
     );
     this.itemMeshes = new ItemMeshes(this.worldGroup, deps.items, deps.sampler);
     this.doorOpenings = new DoorOpenings(this.worldGroup, deps.sampler, deps.overlay);
-    this.remotePlayerMeshes = new RemotePlayerMeshes(
-      this.worldGroup,
-      deps.creatures,
-      (x, y) => deps.surfaceAt(x, y),
-      this.characterSprites,
+    this.remotePlayerMeshes = new RemotePlayerMeshes(this.worldGroup, (x, y) =>
+      deps.surfaceAt(x, y),
     );
     this.selectionBox = new SelectionBox(this.worldGroup);
     this.topDownMarker = new TopDownPlayerMarker(this.scene);
@@ -213,7 +208,6 @@ export class View3D {
     this.sightShadows.invalidate();
     this.doorOpenings.invalidate();
     this.creatureMeshes.forgetSprites();
-    this.remotePlayerMeshes.forgetSprites();
     this.characterSprites.dispose();
     disposeSharedWorldArt();
   }
@@ -384,8 +378,16 @@ export class View3D {
   private lightAroundPlayer(): void {
     this.daylight.setLevel(this.deps.store.daylight());
     measureWork('world lights', () =>
-      this.worldLights.syncAround(this.presence.eased.x, this.presence.eased.y),
+      this.worldLights.syncAround(
+        this.presence.eased.x,
+        this.presence.eased.y,
+        this.lanternSources(),
+      ),
     );
+  }
+
+  private lanternSources(): LightSource[] {
+    return [this.presence.lightSource(), ...this.remotePlayerMeshes.lightSources()];
   }
 
   private streamAroundCameraFocus(): void {
