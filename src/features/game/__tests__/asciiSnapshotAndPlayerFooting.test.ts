@@ -32,10 +32,10 @@ export function checkAsciiSnapshotAndPlayerFooting(check: CheckReporter): void {
   );
   const blockedWorld = new World(stepRulesOn({ tileIsWalkable: () => false, elevationAt: () => 0 }));
   check('a refused step leaves the player in place', !blockedWorld.tryStep(1, 0) && blockedWorld.playerX === 0);
-  check('a character may step up exactly half a level but no higher', exactStepUpIsTheLimit());
+  check('a character may step up exactly one level but no higher', exactStepUpIsTheLimit());
   check('a character may step down more than one block', aLongStepDownIsAllowed());
   check('a fractional rise climbs when both heights round to the same half level', aRoundedHalfLevelRiseIsClimbable());
-  check('a small raw rise refuses when its heights round a whole level apart', aRoundedWholeLevelRiseIsRefused());
+  check('a raw rise barely over a level refuses once its heights round further apart', aRoundedOverLevelRiseIsRefused());
 
   const snapshot = asciiSnapshot(caves.sampler, tileAssets, world.playerX, world.playerY, 31, 21);
   const snapshotRows = snapshot.split('\n');
@@ -47,7 +47,7 @@ export function checkAsciiSnapshotAndPlayerFooting(check: CheckReporter): void {
 }
 
 function exactStepUpIsTheLimit(): boolean {
-  const elevationAt = (x: number) => (x === 0 ? 0 : x === 1 ? 0.5 : 3);
+  const elevationAt = (x: number) => (x === 0 ? 0 : x === 1 ? 1 : 3);
   const world = new World(stepRulesOn({ tileIsWalkable: () => true, elevationAt }));
   return world.tryStep(1, 0) && !world.tryStep(1, 0) && world.playerX === 1;
 }
@@ -58,8 +58,8 @@ function aRoundedHalfLevelRiseIsClimbable(): boolean {
   return world.tryStep(1, 0) && world.playerX === 1;
 }
 
-function aRoundedWholeLevelRiseIsRefused(): boolean {
-  const elevationAt = (x: number) => (x === 0 ? 1.74 : 2.26);
+function aRoundedOverLevelRiseIsRefused(): boolean {
+  const elevationAt = (x: number) => (x === 0 ? 1.74 : 2.76);
   const world = new World(stepRulesOn({ tileIsWalkable: () => true, elevationAt }));
   return !world.tryStep(1, 0) && world.playerX === 0;
 }

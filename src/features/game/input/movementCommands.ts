@@ -1,7 +1,7 @@
 import { slideAlongEachAxis, type Step } from '@/features/game/input/cameraRelativeStep';
 import { facingRelativeStep } from '@/features/game/input/facingRelativeStep';
 import { FACING_NAMES, facingVector, isFacingIndex, type FacingIndex } from '@/features/game/facing';
-import { JUMP_CLIMB_LIMIT, WALK_CLIMB_LIMIT } from '@/features/game/climbing';
+import { CLIMB_LIMIT } from '@/features/game/climbing';
 import { JUMP_REACH_TILES, LANDING_DISTANCES } from '@/features/game/sim/jumpLanding';
 import { obstacleRefusal } from '@/features/game/worldRules';
 import {
@@ -24,7 +24,7 @@ FACING_NAMES.forEach((name, compass) => {
     modes: ['god', 'topdown'],
     group: 'movement',
     humanControl: 'W/A/S/D or the arrow keys, by compass with north up',
-    description: `Step one tile ${name}, turning to face ${name} whether or not the step lands.`,
+    description: `Step one tile ${name}, turning to face ${name} whether or not the step lands. Walking is how you go up: a rise of ${CLIMB_LIMIT} level is climbed by walking into it, and a crate is pushed when the cell beyond it is free and climbed onto when it is not.`,
     params: {},
     example: { action: `step_${name}` },
     changesWorld: false,
@@ -60,28 +60,28 @@ const CHARACTER_STEPS: readonly {
   {
     action: 'step_forward',
     humanControl: 'W / ↑',
-    description: 'Step one tile in the direction you face.',
+    description: `Step one tile in the direction you face, climbing straight up a rise of ${CLIMB_LIMIT} level, pushing a crate that has room ahead of it and climbing onto one that has not.`,
     forward: 1,
     strafe: 0,
   },
   {
     action: 'step_back',
     humanControl: 'S / ↓',
-    description: 'Step one tile away from the direction you face.',
+    description: 'Step one tile away from the direction you face, climbing or pushing whatever stands there the same way a forward step does.',
     forward: -1,
     strafe: 0,
   },
   {
     action: 'strafe_left',
     humanControl: 'Q',
-    description: 'Step one tile to your left without turning.',
+    description: 'Step one tile to your left without turning, climbing or pushing whatever stands there the same way a forward step does.',
     forward: 0,
     strafe: -1,
   },
   {
     action: 'strafe_right',
     humanControl: 'E',
-    description: 'Step one tile to your right without turning.',
+    description: 'Step one tile to your right without turning, climbing or pushing whatever stands there the same way a forward step does.',
     forward: 0,
     strafe: 1,
   },
@@ -119,7 +119,7 @@ registerCommand({
   modes: ['character', 'topdown'],
   group: 'movement',
   humanControl: 'Space',
-  description: `Jump straight up and land where you stood. A jump climbs ${JUMP_CLIMB_LIMIT} level where a step climbs ${WALK_CLIMB_LIMIT}, so jump in a direction to reach higher ground.`,
+  description: `Jump straight up and land where you stood. You never jump to go up, you jump to go across: a jump climbs no higher than a step's ${CLIMB_LIMIT} level, so walk into higher ground and jump only to cross a gap.`,
   params: {},
   example: { action: 'jump' },
   changesWorld: false,
@@ -135,7 +135,7 @@ for (const jump of CHARACTER_JUMPS) {
     modes: ['character'],
     group: 'movement',
     humanControl: jump.humanControl,
-    description: `Jump ${JUMP_REACH_TILES} tiles ${jump.action.slice('jump_'.length)}, clearing whatever lies between, and land ${JUMP_REACH_TILES} tiles out or on the tile next to you if the far one is no good. A jump climbs ${JUMP_CLIMB_LIMIT} level.`,
+    description: `Jump ${JUMP_REACH_TILES} tiles ${jump.action.slice('jump_'.length)}, clearing whatever lies between, and land ${JUMP_REACH_TILES} tiles out or on the tile next to you if the far one is no good. You never jump to go up, you jump to go across: a jump climbs no higher than a step's ${CLIMB_LIMIT} level, so it buys distance over a gap and nothing else.`,
     params: {},
     example: { action: jump.action },
     changesWorld: false,
@@ -220,7 +220,7 @@ function jumpRefusal(context: CommandContext, dx: number, dy: number): string {
   const landings = LANDING_DISTANCES.map(
     (distance) => `(${pose.x + dx * distance},${pose.y + dy * distance})`,
   );
-  return `nowhere to land: neither ${landings.join(' nor ')} takes a jump of at most ${JUMP_CLIMB_LIMIT} level up onto open ground`;
+  return `nowhere to land: neither ${landings.join(' nor ')} takes a jump of at most ${CLIMB_LIMIT} level up onto open ground`;
 }
 
 function turnBy(context: CommandContext, eighths: -1 | 1): CommandResult {
