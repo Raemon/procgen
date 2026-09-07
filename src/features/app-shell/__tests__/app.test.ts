@@ -94,6 +94,7 @@ import { checkSokobanRules } from '@/worlds/sokoban2/__tests__/sokobanRules.test
 import { checkCircuits } from '@/features/game/__tests__/circuits.test';
 import { checkPuzzleCues } from '@/features/game/__tests__/puzzleCues.test';
 import { checkWorldSounds } from '@/features/game/__tests__/worldSounds.test';
+import { checkSoundRecipes } from '@/features/game/__tests__/soundRecipes.test';
 import { checkDoorOpenings } from '@/features/game/__tests__/doorOpenings.test';
 import { checkPanelShortcuts } from './panelShortcuts.test';
 import { checkGenerationPins } from '@/worlds/sokoban2/__tests__/generationPins.test';
@@ -199,6 +200,7 @@ describe('the sokoban dungeon rules', () => checkSokobanRules(check));
 describe('circuits and their wires', () => checkCircuits(check));
 describe('puzzle cues', () => checkPuzzleCues(check));
 describe('world sounds', () => checkWorldSounds(check));
+describe('the sound recipes', () => checkSoundRecipes(check));
 describe('door openings', () => checkDoorOpenings(check));
 describe('the sokoban generation pins', () => checkGenerationPins(check));
 describe('the labyrinth generation pins', () => checkLabyrinthPins(check));

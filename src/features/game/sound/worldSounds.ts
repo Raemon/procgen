@@ -1,17 +1,34 @@
 import type { ReadOnlyWorld } from '@/features/app-shell/runtime/readOnlyAssets';
 import type { PuzzleCues } from '../circuits/puzzleCues';
-import { JUMP_MS } from '../sim/movementOrder';
+import {
+  DIAGONAL_MOVE_COOLDOWN_TICKS,
+  JUMP_MS,
+  MOVE_COOLDOWN_TICKS,
+  TICK_MS,
+} from '../sim/movementOrder';
 import type { Cell } from '../worldRules';
+import { footingCueOf, type FootingTerrain } from './footing';
+import { roomSizeAround, type OpenSpace } from './roomSense';
 import type { SoundCue } from './soundCues';
 import type { SoundPlayer } from './soundPlayer';
+import type { SoundShape } from './soundRecipe';
+import {
+  momentumOf,
+  restingStride,
+  strideAfterStep,
+  strideEndsInASettle,
+  STRIDE_REST_MS,
+} from './stride';
 
 export interface SoundedWorld {
   world: ReadOnlyWorld;
+  rules: FootingTerrain & OpenSpace;
   puzzleCues: Pick<PuzzleCues, 'on'>;
 }
 
 export interface SoundClock {
   now(): number;
+  after(ms: number, run: () => void): () => void;
 }
 
 const CIRCUIT_SOUNDS: Array<['plate-lit' | 'door-opened' | 'circuit-powered', SoundCue]> = [
@@ -20,36 +37,90 @@ const CIRCUIT_SOUNDS: Array<['plate-lit' | 'door-opened' | 'circuit-powered', So
   ['circuit-powered', 'power'],
 ];
 const HALF_LOUDNESS_TILES = 6;
+const STEP_SECONDS = (MOVE_COOLDOWN_TICKS * TICK_MS) / 1000;
+const DIAGONAL_STEP_SECONDS = (DIAGONAL_MOVE_COOLDOWN_TICKS * TICK_MS) / 1000;
+const CRATE_GRIND_STRETCH = 1.5;
+
+export function realSoundClock(): SoundClock {
+  return {
+    now: () => Date.now(),
+    after: (ms, run) => {
+      const timer = setTimeout(run, ms);
+      return () => clearTimeout(timer);
+    },
+  };
+}
 
 export function playWorldSounds(
   sounded: SoundedWorld,
   player: SoundPlayer,
   isOn: () => boolean,
-  clock: SoundClock = { now: () => Date.now() },
+  clock: SoundClock = realSoundClock(),
 ): () => void {
+  const { world, rules } = sounded;
   let lastJumpAt = -Infinity;
-  const play = (cue: SoundCue, volume = 1): void => {
-    if (isOn()) player.play(cue, volume);
+  let stride = restingStride();
+  let stood: Cell = { x: world.playerX, y: world.playerY };
+  let cancelRest = () => undefined as void;
+  const here = (): Cell => ({ x: world.playerX, y: world.playerY });
+  const play = (cue: SoundCue, shape: Partial<SoundShape>): void => {
+    if (isOn()) player.play(cue, shape);
+  };
+  const waitForTheRunToEnd = (): void => {
+    cancelRest();
+    cancelRest = clock.after(STRIDE_REST_MS, () => {
+      const ended = stride;
+      stride = restingStride();
+      cancelRest = () => undefined;
+      if (strideEndsInASettle(ended)) {
+        play('settle', { roomSize: roomSizeAround(rules, here()), effort: momentumOf(ended) });
+      }
+    });
   };
   const stops = [
-    sounded.world.on('player-jumped', () => {
+    world.on('player-jumped', () => {
       lastJumpAt = clock.now();
-      play('jump');
+      cancelRest();
+      cancelRest = () => undefined;
+      stride = restingStride();
+      play('jump', { roomSize: roomSizeAround(rules, here()) });
     }),
-    sounded.world.on('player-moved', () => {
-      if (clock.now() - lastJumpAt >= JUMP_MS) play('step');
+    world.on('player-moved', () => {
+      const from = stood;
+      const to = here();
+      stood = to;
+      if (clock.now() - lastJumpAt < JUMP_MS) return;
+      stride = strideAfterStep(stride, to.x - from.x, to.y - from.y);
+      play(footingCueOf(rules, from, to), {
+        roomSize: roomSizeAround(rules, to),
+        effort: momentumOf(stride),
+        seconds: strideSecondsOf(from, to),
+      });
+      waitForTheRunToEnd();
     }),
     sounded.puzzleCues.on('crate-pushed', (pushes) =>
-      play('push', loudnessFrom(sounded.world, pushes.map((push) => push.to))),
+      play('push', {
+        volume: loudnessFrom(world, pushes.map((push) => push.to)),
+        roomSize: roomSizeAround(rules, pushes[0]!.to),
+        effort: momentumOf(stride),
+        seconds: STEP_SECONDS * CRATE_GRIND_STRETCH,
+      }),
     ),
     ...CIRCUIT_SOUNDS.map(([cue, sound]) =>
-      sounded.puzzleCues.on(cue, (cells) => play(sound, loudnessFrom(sounded.world, cells))),
+      sounded.puzzleCues.on(cue, (cells) =>
+        play(sound, { volume: loudnessFrom(world, cells), roomSize: roomSizeAround(rules, cells[0]!) }),
+      ),
     ),
   ];
   return () => {
+    cancelRest();
     for (const stop of stops) stop();
     player.dispose();
   };
+}
+
+function strideSecondsOf(from: Cell, to: Cell): number {
+  return to.x !== from.x && to.y !== from.y ? DIAGONAL_STEP_SECONDS : STEP_SECONDS;
 }
 
 export function loudnessFrom(listener: { playerX: number; playerY: number }, cells: readonly Cell[]): number {
