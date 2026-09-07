@@ -4,6 +4,7 @@ import { listenForJumpKey } from '../input/jumpInput';
 import { listenForLookKeys } from '../input/lookInput';
 import { MovementInput } from '../input/movementInput';
 import { listenForPickUpKey } from '../input/pickUpInput';
+import { listenForStrikeKey } from '../input/strikeInput';
 import { listenForFixtureKeys, resetKeyAction } from '../input/useFixtureInput';
 import { AgentTextView } from '../render/agentText/agentTextView';
 import { FeaturesView } from '../render/features/featuresView';
@@ -143,6 +144,11 @@ export function mountWorldViews(
     isSuspended: () => inputIsSuspended(runtime, currentMode()),
   });
 
+  const stopStrikeKey = listenForStrikeKey({
+    strike: () => perform('strike'),
+    isSuspended: () => inputIsSuspended(runtime, currentMode()),
+  });
+
   const redrawOnSightChange = world.on('sight-changed', () => {
     agentGodView.draw();
     agentCharacterView.draw();
@@ -171,6 +177,7 @@ export function mountWorldViews(
       movement.dispose();
       stopJumpKey();
       stopPickUpKey();
+      stopStrikeKey();
       stopLookKeys();
       stopFixtureKeys();
       for (const remove of unregister) remove();

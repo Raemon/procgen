@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import '@/worlds/client';
 import { NO_ITEMS } from '@/features/asset-library/items/itemAssets';
 import { facingYawRadians } from '@/features/game/facing';
+import { fightForThePlayer } from '@/features/game/combat/fightForThePlayer';
 import { CreatureSim } from '@/features/game/creatureSim/creatureSim';
 import { WorldRulesSet } from '@/features/game/worldRulesSet';
 import { CharacterSpriteAssets } from '@/features/game/render/view3d/characterSpriteAssets';
@@ -56,6 +57,7 @@ export class HeadlessWorldView {
       creatureAssets: world.creatureAssets,
       world: { playerX: request.x, playerY: request.y },
       isWalkableAt: (x, y) => isWalkableTile(world.tileAssets, world.sampler.tileAt(x, y)),
+      fight: fightForThePlayer(world.creatureAssets),
     });
     this.applyCharacterSightline();
     if (request.showCeilings) this.streamer.showCeilings(true);

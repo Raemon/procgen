@@ -89,6 +89,11 @@ export const SOUND_TIP: TooltipContent = {
   body: 'Plays the world: footsteps, jumps, crates scraping along the floor, a goal plate lighting, and a door opening once every goal on its circuit is filled. Off, the world is silent; the setting is remembered.',
 };
 
+export const VIGOR_TIP: TooltipContent = {
+  title: 'vigor',
+  body: 'How much harm the character you play can still take before it goes down, out of the vigor its creature definition gives it. Anything that chases you rakes at you the moment it catches you; C swings back at whatever stands within two tiles ahead, and a creature that has taken more harm than it has vigor is gone for good. Left alone for a few seconds the character mends a point at a time, and going down wakes it back at the spot the world starts you.',
+};
+
 export const LIFE_TIP: TooltipContent = {
   title: 'life',
   body: 'Runs the creature simulation. Paused, creatures hold their positions; the world itself is unaffected either way.',

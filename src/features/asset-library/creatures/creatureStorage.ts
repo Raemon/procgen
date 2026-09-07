@@ -12,7 +12,13 @@ import {
   billboardAsStoredJson,
   type StoredCharacterBillboard,
 } from '../characters/storedCharacterBillboard';
-import { CHARACTER_BODY, CREATURE_BODY, type CreatureDef } from './creatureDef';
+import {
+  CHARACTER_BODY,
+  CREATURE_BODY,
+  DEFAULT_STRENGTH,
+  DEFAULT_VIGOR,
+  type CreatureDef,
+} from './creatureDef';
 import { CHARACTER, CREATURE, isEntityKind } from './entityKinds';
 
 const FILE_NAME = 'creatures';
@@ -60,6 +66,8 @@ function withValidatedArt(stored: CreatureDef): CreatureDef {
   return {
     ...creature,
     ...bodySizeOfStoredCreature(creature, kind, size),
+    vigor: positiveNumber(creature.vigor) ?? DEFAULT_VIGOR,
+    strength: atLeastNothing(creature.strength) ?? DEFAULT_STRENGTH,
     faceArt: faceArtFromStoredShape(creature.faceArt),
     kind,
     inventory: sanitizeInventory(creature.inventory),
@@ -81,6 +89,10 @@ function bodySizeOfStoredCreature(
     bodyWidth: positiveNumber(creature.bodyWidth) ?? legacyCube ?? body.width,
     bodyHeight: positiveNumber(creature.bodyHeight) ?? legacyCube ?? body.height,
   };
+}
+
+function atLeastNothing(value: unknown): number | null {
+  return typeof value === 'number' && value >= 0 ? value : null;
 }
 
 function positiveNumber(value: unknown): number | null {
