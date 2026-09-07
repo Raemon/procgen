@@ -18,6 +18,8 @@ import { TakenItemSpawns } from '@/features/asset-library/items/pickups/takenIte
 import { WalkOverPickup } from '@/features/asset-library/items/pickups/walkOverPickup';
 import { MultiplayerSession } from '@/features/game/multiplayer/client/multiplayerSession';
 import { PuzzleCues } from '@/features/game/circuits/puzzleCues';
+import type { Fight } from '@/features/game/combat/fight';
+import { fightForThePlayer } from '@/features/game/combat/fightForThePlayer';
 import { CreatureClock } from '@/features/game/creatureSim/creatureClock';
 import { CreatureSim } from '@/features/game/creatureSim/creatureSim';
 import { creatureAwareOverlay } from '@/features/agents/creatureMarkers';
@@ -47,7 +49,7 @@ import { CaptureTool } from '@/features/game/capture/captureTool';
 import { HoveredTile } from '@/features/game/hover/hoveredTile';
 import { isWalkableTile } from '@/features/game/tileWalkability';
 import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
-import { World } from '@/features/game/world';
+import { World, walkableLandingSpot } from '@/features/game/world';
 import { WorldRulesSet, mineSlotsOf, stepRulesOf } from '@/features/game/worldRulesSet';
 import { ChangeNotifier } from './changeNotifier';
 import { RemoteBuiltValues } from './remoteBuiltValues';
@@ -97,6 +99,7 @@ export interface AppRuntime {
   pickupFeed: PickupFeed;
   sim: CreatureSim;
   clock: CreatureClock;
+  fight: Fight;
   capture: CaptureTool;
   cameraFocus: CameraFocus;
   hoveredTile: HoveredTile;
@@ -168,7 +171,9 @@ export function createAppRuntime(): AppRuntime {
   const playerInventoryPanel = new PlayerInventoryPanelState();
   const pickupFeed = new PickupFeed();
   const walkOverPickup = new WalkOverPickup({ creatures, items, groundItems }, pickupFeed);
-  const sim = new CreatureSim({ sampler, creatureAssets: creatures, world, isWalkableAt });
+  const fight = fightForThePlayer(creatures);
+  const sim = new CreatureSim({ sampler, creatureAssets: creatures, world, isWalkableAt, fight });
+  fight.on('player-downed', () => wakeAgainAtTheStart());
   const clock = new CreatureClock(sim);
   const agentOverlay = creatureAwareOverlay({ rules, sampler, creatures }, sim);
   const renderers = new WorldRenderers();
@@ -266,6 +271,7 @@ export function createAppRuntime(): AppRuntime {
         worldSampler: sampler,
         lab: null,
         groundItems,
+        livingCreatures: sim,
         rules,
         actor: {
           pose: () => ({ x: world.playerX, y: world.playerY, facing: world.facing }),
@@ -295,6 +301,16 @@ export function createAppRuntime(): AppRuntime {
   function isACharacterCommandSharedWithEveryView(action: string): boolean {
     const command = commandFor('character', action);
     return command?.group === 'senses' || action === 'turn_left' || action === 'turn_right';
+  }
+
+  function wakeAgainAtTheStart(): void {
+    const start =
+      rules.spawn() ??
+      walkableLandingSpot(0, 0, isWalkableAt, (x, y) => rules.isStandable(x, y)) ?? { x: 0, y: 0 };
+    world.snapTo(start.x, start.y, world.facing);
+    world.ensurePlayerOnWalkableGround();
+    fight.mendPlayer();
+    renderers.recenterAll();
   }
 
   function applyWorldChange(): void {
@@ -371,6 +387,7 @@ export function createAppRuntime(): AppRuntime {
     pickupFeed,
     sim,
     clock,
+    fight,
     capture,
     cameraFocus,
     hoveredTile,

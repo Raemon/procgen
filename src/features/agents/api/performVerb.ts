@@ -4,6 +4,7 @@ import type {
   CommandParams,
 } from '@/features/app-shell/runtime/commands/command';
 import { performCommand } from '@/features/app-shell/runtime/commands/performCommand';
+import { NOTHING_ALIVE } from '@/features/game/combat/strikes';
 import type { WorldSeedLab } from '@/features/asset-library/worlds/lab/worldSeedLab';
 import { commandFor } from '@/features/app-shell/runtime/commands/commandCatalog';
 import { failureByCode } from '../failures';
@@ -75,6 +76,7 @@ export function serverCommandContext(
     worldSeeds: world.worldSeeds,
     savedWorlds: world.savedWorlds,
     takenItems: world.takenItems,
+    livingCreatures: NOTHING_ALIVE,
     settleTheWorld: (change: () => void) => change(),
     runningWorld: world.runningWorld,
     randomizeHistory: world.randomizeHistory,

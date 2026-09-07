@@ -6,9 +6,9 @@ import type { CreatureSim } from '@/features/game/creatureSim/creatureSim';
 import type { MarkerSource } from '@/features/game/render/markerSource';
 import type { ObservedOverlay } from './observation';
 
-export type LiveCreatures = Pick<CreatureSim, 'active'>;
+export type LiveCreatures = Pick<CreatureSim, 'active' | 'isSlain'>;
 
-const NOTHING_LIVE: LiveCreatures = { active: () => [] };
+const NOTHING_LIVE: LiveCreatures = { active: () => [], isSlain: () => false };
 
 export interface CreatureHabitat {
   rules: ObservedOverlay;
@@ -47,7 +47,8 @@ export function creatureMarkers(
         appendCreatureMarker(markers, creatures, creature.creatureId, x, y);
       }
       for (const spawn of sampler.creatureSpawnsIn(minX, minY, maxX, maxY)) {
-        if (simulated.has(spawnKeyOf(spawn.tag, spawn.x, spawn.y))) continue;
+        const key = spawnKeyOf(spawn.tag, spawn.x, spawn.y);
+        if (simulated.has(key) || sim.isSlain(key)) continue;
         appendCreatureMarker(markers, creatures, spawn.creatureId, spawn.x, spawn.y);
       }
       return markers;

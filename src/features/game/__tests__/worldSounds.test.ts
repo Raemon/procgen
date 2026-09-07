@@ -1,5 +1,6 @@
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { PuzzleCues } from '../circuits/puzzleCues';
+import { Fight } from '../combat/fight';
 import { JUMP_MS } from '../sim/movementOrder';
 import type { SoundCue } from '../sound/soundCues';
 import type { SoundPlayer } from '../sound/soundPlayer';
@@ -20,7 +21,8 @@ export function checkWorldSounds(check: CheckReporter): void {
   const world = new World(stepRulesOn(FLAT_GROUND));
   const scene = sceneWithOneCrate();
   const cues = new PuzzleCues(scene.source);
-  const stop = playWorldSounds({ world, puzzleCues: cues }, player, () => on, { now: () => now });
+  const fight = new Fight({ vigor: () => 6, strength: () => 2 });
+  const stop = playWorldSounds({ world, puzzleCues: cues, fight }, player, () => on, { now: () => now });
   world.tryStep(1, 0);
   check('a step sounds a footfall', heard.map(([cue]) => cue).join() === 'step');
   world.tryJump(1, 0);
@@ -39,6 +41,14 @@ export function checkWorldSounds(check: CheckReporter): void {
   check(
     'a push, a plate, a door and the power each get their own sound, quieter the farther they happen',
     heard.map(([cue]) => cue).join() === 'push,plate,door,power' && heard[0]![1] > heard[1]![1],
+  );
+  heard.length = 0;
+  fight.strikeCreature('gaunt', 4, 2, { x: world.playerX, y: world.playerY });
+  fight.strikeCreature('gaunt', 4, 2, { x: world.playerX, y: world.playerY });
+  fight.strikePlayer(1, { x: world.playerX, y: world.playerY });
+  check(
+    'a blow landing, a creature going down and the player being raked each get their own sound',
+    heard.map(([cue]) => cue).join() === 'strike,slain,hurt',
   );
   check(
     'loudness is full on the spot and halves six tiles away',
