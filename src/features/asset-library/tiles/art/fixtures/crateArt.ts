@@ -1,9 +1,8 @@
 import { heightInk } from '../../faceArtHeight';
 import type { CubeFaceArt } from '../../tileFaceArt';
 import { TILE_ART_SIZE as SIZE } from '../artSize';
-import { darken, lighten, mixHex, shadedRamp } from '../colorMath';
+import { darken, lighten, mixHex } from '../colorMath';
 import { animatedCubeArt, type CubeArtFramePainters } from '../cubeArtFrom';
-import { patchPainter, specklePainter } from '../painters/grainPainters';
 import {
   barPainter,
   discPainter,
@@ -17,29 +16,23 @@ import { rememberedArt } from '../rememberedArt';
 
 export const ARCANE_CORE = '#4fd8ff';
 
-const IRON = '#4f5663';
-const PLATE_IRON = '#2c313a';
+const IRON = '#8492a6';
+const PLATE_IRON = '#333b48';
 const BOLT = '#a7aeb9';
 const UNDERSIDE = '#1a1c22';
-const FRAME_THICKNESS = 3;
+const FRAME_THICKNESS = 4;
 const CENTRE: PixelPoint = { x: (SIZE - 1) / 2, y: (SIZE - 1) / 2 };
-const WINDOW: PixelRect = { left: 5, top: 5, width: SIZE - 10, height: SIZE - 10 };
-const CAGE_THICKNESS = 2.2;
-const COLLAR_OUTER = 8.6;
-const COLLAR_INNER = 7.2;
-const VEIN_THICKNESS = 1.6;
+const WINDOW: PixelRect = { left: 4, top: 4, width: SIZE - 8, height: SIZE - 8 };
+const CAGE_THICKNESS = 2.8;
+const COLLAR_OUTER = 10.4;
+const COLLAR_INNER = 8.6;
+const VEIN_THICKNESS = 2.2;
 const PULSE_MS = 380;
 const BOLT_CENTRES: PixelPoint[] = [
   { x: 3, y: 3 },
   { x: SIZE - 4, y: 3 },
   { x: 3, y: SIZE - 4 },
   { x: SIZE - 4, y: SIZE - 4 },
-];
-const RUNE_CENTRES: PixelPoint[] = [
-  { x: WINDOW.left + 1.5, y: WINDOW.top + 1.5 },
-  { x: WINDOW.left + WINDOW.width - 2.5, y: WINDOW.top + 1.5 },
-  { x: WINDOW.left + 1.5, y: WINDOW.top + WINDOW.height - 2.5 },
-  { x: WINDOW.left + WINDOW.width - 2.5, y: WINDOW.top + WINDOW.height - 2.5 },
 ];
 
 interface CoreGlow {
@@ -92,9 +85,7 @@ function cagedCorePainter(glow: CoreGlow, cage: PixelPainter): PixelPainter {
     ...veinPainters(glow),
     corePainter(glow),
     cage,
-    ringPainter(CENTRE, COLLAR_OUTER, COLLAR_INNER, darken(IRON, 0.15)),
-    ringPainter(CENTRE, COLLAR_OUTER - 0.6, COLLAR_INNER + 0.6, lighten(IRON, 0.12)),
-    ...runePainters(glow),
+    ringPainter(CENTRE, COLLAR_OUTER, COLLAR_INNER, darken(IRON, 0.4)),
     framePainter(),
     ...boltPainters(),
   );
@@ -105,8 +96,8 @@ function cagedCoreReliefPainter(glow: CoreGlow, cage: PixelPainter): PixelPainte
     flatPainter(heightInk(0.5)),
     rectPainter(WINDOW, heightInk(0.35)),
     ...veinsOf().map(([from, to]) => barPainter(from, to, VEIN_THICKNESS, heightInk(0.45))),
-    discPainter(CENTRE, 6.2 * glow.swell, heightInk(0.6)),
-    discPainter(CENTRE, 3.4 * glow.swell, heightInk(0.74)),
+    discPainter(CENTRE, 8 * glow.swell, heightInk(0.6)),
+    discPainter(CENTRE, 4.6 * glow.swell, heightInk(0.74)),
     cage,
     ringPainter(CENTRE, COLLAR_OUTER, COLLAR_INNER, heightInk(0.8)),
     (x, y) => (isWithinFrame(x, y) ? heightInk(0.88) : null),
@@ -115,30 +106,23 @@ function cagedCoreReliefPainter(glow: CoreGlow, cage: PixelPainter): PixelPainte
 }
 
 function ironPlatePainter(): PixelPainter {
-  return stackedPainters(
-    patchPainter(shadedRamp(PLATE_IRON, 5, 0.14), { seed: 0xc201, cell: 12, size: SIZE }),
-    specklePainter(darken(PLATE_IRON, 0.3), 0xc201 ^ 0x3d, 0.08),
-  );
+  return flatPainter(PLATE_IRON);
 }
 
 function windowPainter(glow: CoreGlow): PixelPainter {
-  const recess = mixHex(darken(PLATE_IRON, 0.4), glow.hue, 0.12 * glow.brightness);
-  return stackedPainters(
-    rectPainter(WINDOW, recess),
-    specklePainter(lighten(recess, 0.08), 0xc207, 0.1),
-  );
+  const recess = mixHex(darken(PLATE_IRON, 0.45), glow.hue, 0.18 * glow.brightness);
+  return rectPainter(WINDOW, recess);
 }
 
 function corePainter(glow: CoreGlow): PixelPainter {
   const lit = (amount: number) => mixHex(darken(glow.hue, 1 - glow.brightness), '#ffffff', amount * glow.brightness);
-  const halo = glow.haloed ? [ringPainter(CENTRE, 9.8 * glow.swell, 8.4 * glow.swell, darken(glow.hue, 0.35))] : [];
+  const halo = glow.haloed ? [ringPainter(CENTRE, 11.6 * glow.swell, 10.2 * glow.swell, darken(glow.hue, 0.35))] : [];
   return stackedPainters(
     ...halo,
-    discPainter(CENTRE, 7 * glow.swell, darken(glow.hue, 0.5)),
-    discPainter(CENTRE, 5.6 * glow.swell, lit(0)),
-    discPainter(CENTRE, 4 * glow.swell, lit(0.3)),
-    discPainter(CENTRE, 2.4 * glow.swell, lit(0.65)),
-    discPainter({ x: CENTRE.x - 1, y: CENTRE.y - 1 }, 1.2, lit(0.9)),
+    discPainter(CENTRE, 8.4 * glow.swell, darken(glow.hue, 0.5)),
+    discPainter(CENTRE, 7.2 * glow.swell, lit(0)),
+    discPainter(CENTRE, 5 * glow.swell, lit(0.35)),
+    discPainter(CENTRE, 2.8 * glow.swell, lit(0.75)),
   );
 }
 
@@ -155,11 +139,6 @@ function veinsOf(): [PixelPoint, PixelPoint][] {
     [CENTRE, { x: CENTRE.x, y: CENTRE.y + reach }],
     [CENTRE, { x: CENTRE.x - reach, y: CENTRE.y }],
   ];
-}
-
-function runePainters(glow: CoreGlow): PixelPainter[] {
-  const ink = glow.haloed ? lighten(glow.hue, 0.35) : darken(glow.hue, 0.55);
-  return RUNE_CENTRES.map((rune) => discPainter(rune, 1.1, ink));
 }
 
 function crossBracesPainter(): PixelPainter {

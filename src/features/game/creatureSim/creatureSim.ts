@@ -1,6 +1,14 @@
 import type { CreatureSpawn, WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import type { CreatureAssets } from '@/features/asset-library/creatures/creatureAssets';
 import { climbGateFrom, type ClimbGate } from '../climbing';
+import type { Fight } from '../combat/fight';
+import {
+  creatureStruckBy,
+  type StrikePose,
+  type StruckCreature,
+  type StrikeableCreatures,
+} from '../combat/strikes';
+import { blowLanded, recoilFrom } from './creatureStrikes';
 import { spawnedCreature, spawnKeyOf, type CreatureInstance } from './creatureInstance';
 import { retargetCreature, type SimWorldView } from './creatureTargets';
 import { moveCreatureTowardTarget } from './moveCreatureTowardTarget';
@@ -16,9 +24,10 @@ export interface CreatureSimDeps {
   creatureAssets: CreatureAssets;
   world: SimWorldView;
   isWalkableAt: WalkabilityProbe;
+  fight: Fight;
 }
 
-export class CreatureSim {
+export class CreatureSim implements StrikeableCreatures {
   private readonly creatures = new Map<string, CreatureInstance>();
   private secondsUntilScan = 0;
   private readonly climbGate: ClimbGate;
@@ -31,20 +40,48 @@ export class CreatureSim {
     return [...this.creatures.values()];
   }
 
+  isSlain(key: string): boolean {
+    return this.deps.fight.creatureIsSlain(key);
+  }
+
   forget(): void {
     this.creatures.clear();
     this.secondsUntilScan = 0;
+    this.deps.fight.forget();
   }
 
   step(dtSeconds: number): void {
     this.rescanSpawnsPeriodically(dtSeconds);
     for (const creature of this.creatures.values()) this.stepOne(creature, dtSeconds);
+    this.deps.fight.recover(dtSeconds);
+  }
+
+  strikeFrom(pose: StrikePose): StruckCreature | null {
+    const target = creatureStruckBy(pose, [...this.creatures.values()]);
+    const def = target && this.deps.creatureAssets.byId(target.creatureId);
+    if (!target || !def) return null;
+    const at = { x: Math.round(target.x), y: Math.round(target.y) };
+    const outcome = this.deps.fight.strikeCreature(
+      target.key,
+      def.vigor,
+      this.deps.fight.playerStrength(),
+      at,
+    );
+    if (outcome === 'slain') this.creatures.delete(target.key);
+    else recoilFrom(target, pose);
+    return { name: def.name, outcome, at };
   }
 
   private stepOne(creature: CreatureInstance, dtSeconds: number): void {
     const def = this.deps.creatureAssets.byId(creature.creatureId);
     if (!def) return;
     retargetCreature(creature, def, this.deps.world, dtSeconds);
+    if (blowLanded(creature, def, dtSeconds)) {
+      this.deps.fight.strikePlayer(def.strength, {
+        x: this.deps.world.playerX,
+        y: this.deps.world.playerY,
+      });
+    }
     const fromX = Math.round(creature.x);
     const fromY = Math.round(creature.y);
     const walkableAndClimbable = (x: number, y: number) =>
@@ -76,7 +113,8 @@ export class CreatureSim {
 
   private spawnIfNew(spawn: CreatureSpawn): void {
     const key = spawnKeyOf(spawn.tag, spawn.x, spawn.y);
-    if (this.creatures.has(key) || !this.deps.creatureAssets.byId(spawn.creatureId)) return;
+    if (this.creatures.has(key) || this.deps.fight.creatureIsSlain(key)) return;
+    if (!this.deps.creatureAssets.byId(spawn.creatureId)) return;
     this.creatures.set(key, spawnedCreature(key, spawn.creatureId, spawn.x, spawn.y));
   }
 

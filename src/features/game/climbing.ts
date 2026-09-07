@@ -1,6 +1,5 @@
 export const LEVEL_STEP = 0.5;
-export const WALK_CLIMB_LIMIT = 0.5;
-export const JUMP_CLIMB_LIMIT = 1;
+export const CLIMB_LIMIT = 1;
 export const CLIMB_EFFORT_WEIGHT = 1.5;
 
 export type ElevationProbe = (x: number, y: number) => number;
@@ -14,8 +13,7 @@ const EXIT_STEPS = [
   [0, -1],
 ] as const;
 
-export const CLIMB_STEPS_PER_WALK = WALK_CLIMB_LIMIT / LEVEL_STEP;
-export const CLIMB_STEPS_PER_JUMP = JUMP_CLIMB_LIMIT / LEVEL_STEP;
+export const CLIMB_STEPS = CLIMB_LIMIT / LEVEL_STEP;
 
 export function navigationLevelOf(elevation: number): number {
   return Math.round(elevation / LEVEL_STEP) * LEVEL_STEP;
@@ -31,7 +29,7 @@ export function navigationRiseBetween(fromElevation: number, toElevation: number
 
 export function climbGateFrom(
   elevationAt: ElevationProbe,
-  limit: number = WALK_CLIMB_LIMIT,
+  limit: number = CLIMB_LIMIT,
 ): ClimbGate {
   return (fromX, fromY, toX, toY) =>
     navigationRiseBetween(elevationAt(fromX, fromY), elevationAt(toX, toY)) <= limit;

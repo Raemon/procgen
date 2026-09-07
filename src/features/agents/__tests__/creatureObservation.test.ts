@@ -43,7 +43,7 @@ function checkLiveCreatureMarkers(check: CheckReporter, den: CreatureSpawn): voi
   wanderer.x = 2.4;
   wanderer.y = -1.6;
 
-  const live = creatureMarkers(sampler, wolfAssets, { active: () => [wanderer] }).markersIn(-5, -5, 5, 5);
+  const live = creatureMarkers(sampler, wolfAssets, { active: () => [wanderer], isSlain: () => false }).markersIn(-5, -5, 5, 5);
   check('a simulated creature is marked at its rounded live position', live.some((marker) => marker.x === 2 && marker.y === -2 && marker.glyph === 'w'));
   check('its home spawn is not drawn a second time while it is simulated', !live.some((marker) => marker.x === den.x && marker.y === den.y));
 

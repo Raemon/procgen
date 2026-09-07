@@ -83,6 +83,10 @@ const TILE_CATALOG = [
   { name: 'lake water', symbol: '≀', color: '#3d6a82', walkable: false, role: 'water', height: POOL_HEIGHT, texture: 'stillWater' },
   { name: 'whitewater', symbol: '⁓', color: '#a8c6cf', walkable: false, role: 'water', height: POOL_HEIGHT, texture: 'stillWater' },
   { name: 'snowfield', symbol: '❄', color: '#e6edf2', walkable: true, role: null, texture: 'scree' },
+
+  { name: 'dungeon floor', symbol: '_', color: '#c9d4e6', walkable: true, role: null, texture: 'dungeonFloor' },
+  { name: 'dungeon ledge', symbol: '▄', color: '#ffc247', walkable: true, role: null, texture: 'dungeonLedge' },
+  { name: 'dungeon wall', symbol: '█', color: '#a9b2c6', walkable: false, role: null, texture: 'dungeonWall' },
 ] as const satisfies readonly TileEntry[];
 
 export type DefaultTileName = (typeof TILE_CATALOG)[number]['name'];

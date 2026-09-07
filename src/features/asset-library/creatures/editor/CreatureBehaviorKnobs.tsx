@@ -7,8 +7,8 @@ import { Slider } from '@/features/app-shell/controls/Slider';
 import { ValueReadout } from '@/features/app-shell/controls/ValueReadout';
 import type { TooltipContent } from '@/features/app-shell/tooltips/tooltipContent';
 
-interface MotionKnob {
-  field: 'speed' | 'sight' | 'roam' | 'bodyWidth' | 'bodyHeight';
+interface CreatureKnob {
+  field: 'speed' | 'sight' | 'roam' | 'vigor' | 'strength' | 'bodyWidth' | 'bodyHeight';
   label: string;
   min: number;
   max: number;
@@ -16,7 +16,7 @@ interface MotionKnob {
   help: string;
 }
 
-const MOTION_KNOBS: readonly MotionKnob[] = [
+const CREATURE_KNOBS: readonly CreatureKnob[] = [
   { field: 'speed', label: 'speed', min: 0, max: 8, step: 0.1, help: 'Tiles per second while moving.' },
   {
     field: 'sight',
@@ -33,6 +33,22 @@ const MOTION_KNOBS: readonly MotionKnob[] = [
     max: 32,
     step: 1,
     help: 'How far from its spawn cell it will stray — the wander radius, the patrol half-length, and the leash a guard returns to.',
+  },
+  {
+    field: 'vigor',
+    label: 'vigor',
+    min: 1,
+    max: 40,
+    step: 1,
+    help: 'How much harm it takes before it goes down and is gone from the world. The player character\'s own vigor is read from the character you play.',
+  },
+  {
+    field: 'strength',
+    label: 'strength',
+    min: 0,
+    max: 10,
+    step: 1,
+    help: 'How much harm one of its blows does. A chasing creature strikes whatever it has caught; at 0 it only crowds you.',
   },
   {
     field: 'bodyWidth',
@@ -68,7 +84,7 @@ export function CreatureBehaviorKnobs({ creature }: { creature: CreatureDef }) {
           onChange={(value) => setKnob({ behavior: Number(value) })}
         />
       </KnobRow>
-      {MOTION_KNOBS.map((knob) => (
+      {CREATURE_KNOBS.map((knob) => (
         <KnobRow key={knob.field} label={knob.label} tip={{ title: knob.label, body: knob.help }}>
           <Slider
             min={knob.min}

@@ -91,11 +91,13 @@ import { checkSharedStateSync } from '@/features/game/multiplayer/__tests__/shar
 import { checkWorldsStayApart } from './worldsStayApart.test';
 import { checkWholeWorldNodes } from '@/features/asset-library/worlds/__tests__/wholeWorldNodes.test';
 import { checkSokobanRules } from '@/worlds/sokoban2/__tests__/sokobanRules.test';
+import { checkSteppingUp } from '@/worlds/sokoban2/__tests__/steppingUp.test';
 import { checkCircuits } from '@/features/game/__tests__/circuits.test';
 import { checkPuzzleCues } from '@/features/game/__tests__/puzzleCues.test';
 import { checkWorldSounds } from '@/features/game/__tests__/worldSounds.test';
 import { checkCrateSlides } from '@/features/game/__tests__/crateSlides.test';
 import { checkDoorOpenings } from '@/features/game/__tests__/doorOpenings.test';
+import { checkFighting } from '@/features/game/__tests__/fighting.test';
 import { checkPanelShortcuts } from './panelShortcuts.test';
 import { checkGenerationPins } from '@/worlds/sokoban2/__tests__/generationPins.test';
 import { checkLabyrinthPins } from '@/worlds/labyrinth/__tests__/labyrinthPins.test';
@@ -197,10 +199,12 @@ describe('shared world state over the game socket', () => checkSharedStateSync(c
 describe('worlds stay apart from the engine and each other', () => checkWorldsStayApart(check));
 describe('whole-world nodes', () => checkWholeWorldNodes(check));
 describe('the sokoban dungeon rules', () => checkSokobanRules(check));
+describe('stepping up in the sokoban dungeon', () => checkSteppingUp(check));
 describe('circuits and their wires', () => checkCircuits(check));
 describe('puzzle cues', () => checkPuzzleCues(check));
 describe('world sounds', () => checkWorldSounds(check));
 describe('door openings', () => checkDoorOpenings(check));
 describe('crate slides', () => checkCrateSlides(check));
+describe('fighting what hunts you', () => checkFighting(check));
 describe('the sokoban generation pins', () => checkGenerationPins(check));
 describe('the labyrinth generation pins', () => checkLabyrinthPins(check));

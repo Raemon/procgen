@@ -9,6 +9,7 @@ import { WorldSampler } from '@/features/asset-library/worlds/worldSampler';
 import { TileAssets } from '@/features/asset-library/tiles/tileAssets';
 import { CreatureAssets } from '@/features/asset-library/creatures/creatureAssets';
 import { ItemAssets } from '@/features/asset-library/items/itemAssets';
+import { fightForThePlayer } from '@/features/game/combat/fightForThePlayer';
 import { CreatureSim } from '@/features/game/creatureSim/creatureSim';
 import { CharacterSpriteAssets } from '@/features/game/render/view3d/characterSpriteAssets';
 import { CreatureMeshes } from '@/features/game/render/view3d/creatureMeshes';
@@ -95,6 +96,7 @@ function simSpawnedAroundOrigin(world: ReturnType<typeof worldOfScatteredItemsAn
     creatureAssets: world.creatureAssets,
     world: { playerX: 0, playerY: 0 },
     isWalkableAt: () => true,
+    fight: fightForThePlayer(world.creatureAssets),
   });
   sim.step(0);
   return sim;

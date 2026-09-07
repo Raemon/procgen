@@ -5,6 +5,9 @@ import type { PipelineState } from '../pipeline/pipelineState';
 import { asField, asTiles } from '../values/valueAccess';
 import { pointsInRect } from '../values/pointsInRect';
 import { GORGE_RADIUS, HUSH_RADIUS, sunkenLabyrinth } from '../seeds/sunkenLabyrinth';
+import { GAUNT_ONE_ID, defaultCreatures } from '@/features/asset-library/creatures/defaultCreatures';
+import { playerCharacterDef } from '@/features/asset-library/characters/playerCharacter';
+import { CreatureAssets } from '@/features/asset-library/creatures/creatureAssets';
 import type { CheckReporter } from '@/features/app-shell/__tests__/reporter';
 import { fieldAt, fieldBytes, stateOfNodes, worldFromState } from './pipelineWorldFixtures';
 
@@ -55,7 +58,13 @@ export function checkSunkenLabyrinthInvariants(check: CheckReporter): void {
 function checkTheGauntOnes(check: CheckReporter, gorge: Gorge): void {
   const survey = { minX: -240, minY: -240, maxX: 240, maxY: 240 };
   const gaunts = pointsInRect(gorge.evaluator, 'gauntOnes', survey);
-  check('gaunt ones haunt the deep labyrinth in numbers', gaunts.length > 20);
+  check('gaunt ones haunt the deep labyrinth in numbers', gaunts.length > 400);
+  const corridors = pointsInRect(gorge.evaluator, 'gauntOnes', { minX: 20, minY: 20, maxX: 100, maxY: 100 });
+  check(
+    'a stretch of deep labyrinth the size of one sight radius holds dozens of them, not one or two',
+    corridors.length > 30,
+  );
+  checkTheyCanBeFought(check);
   check(
     'every gaunt one wakes on walkable corridor floor rather than on a wall or in a crevasse',
     gaunts.every(
@@ -72,6 +81,18 @@ function checkTheGauntOnes(check: CheckReporter, gorge: Gorge): void {
         Math.hypot(lair.x, lair.y) > HUSH_RADIUS / 3 &&
         Math.hypot(lair.x, lair.y) < GORGE_RADIUS / 2,
     ),
+  );
+}
+
+function checkTheyCanBeFought(check: CheckReporter): void {
+  const creatures = new CreatureAssets(defaultCreatures());
+  const gaunt = creatures.byId(GAUNT_ONE_ID)!;
+  const player = playerCharacterDef(creatures)!;
+  check('a gaunt one draws blood when it catches you', gaunt.strength > 0);
+  check(
+    'and takes more than one blow to put down, but fewer than it takes to put you down',
+    Math.ceil(gaunt.vigor / player.strength) > 1 &&
+      Math.ceil(gaunt.vigor / player.strength) < Math.ceil(player.vigor / gaunt.strength),
   );
 }
 

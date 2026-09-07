@@ -1,4 +1,5 @@
 import type { ReadOnlyWorld } from '@/features/app-shell/runtime/readOnlyAssets';
+import type { Fight } from '../combat/fight';
 import type { PuzzleCues } from '../circuits/puzzleCues';
 import { JUMP_MS } from '../sim/movementOrder';
 import type { Cell } from '../worldRules';
@@ -8,6 +9,7 @@ import type { SoundPlayer } from './soundPlayer';
 export interface SoundedWorld {
   world: ReadOnlyWorld;
   puzzleCues: Pick<PuzzleCues, 'on'>;
+  fight: Pick<Fight, 'on'>;
 }
 
 export interface SoundClock {
@@ -18,6 +20,11 @@ const CIRCUIT_SOUNDS: Array<['plate-lit' | 'door-opened' | 'circuit-powered', So
   ['plate-lit', 'plate'],
   ['door-opened', 'door'],
   ['circuit-powered', 'power'],
+];
+const FIGHT_SOUNDS: Array<['creature-struck' | 'creature-slain' | 'player-struck', SoundCue]> = [
+  ['creature-struck', 'strike'],
+  ['creature-slain', 'slain'],
+  ['player-struck', 'hurt'],
 ];
 const HALF_LOUDNESS_TILES = 6;
 
@@ -44,6 +51,9 @@ export function playWorldSounds(
     ),
     ...CIRCUIT_SOUNDS.map(([cue, sound]) =>
       sounded.puzzleCues.on(cue, (cells) => play(sound, loudnessFrom(sounded.world, cells))),
+    ),
+    ...FIGHT_SOUNDS.map(([event, sound]) =>
+      sounded.fight.on(event, (blow) => play(sound, loudnessFrom(sounded.world, [blow.at]))),
     ),
   ];
   return () => {

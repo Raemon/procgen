@@ -1,9 +1,8 @@
 import { heightInk } from '../../faceArtHeight';
 import type { CubeFaceArt } from '../../tileFaceArt';
 import { TILE_ART_SIZE as SIZE } from '../artSize';
-import { darken, lighten, shadedRamp } from '../colorMath';
+import { darken, lighten } from '../colorMath';
 import { cubeArtFrom } from '../cubeArtFrom';
-import { patchPainter, specklePainter } from '../painters/grainPainters';
 import {
   beveledRectPainter,
   convexPolygonPainter,
@@ -16,19 +15,19 @@ import {
 import { stackedPainters, type PixelPainter } from '../pixelCanvas';
 import { rememberedArt } from '../rememberedArt';
 
-const SOCKET_STONE = '#4c4740';
-const SLAB_IRON = '#5b6068';
+const SOCKET_STONE = '#3a3f48';
+const SLAB_IRON = '#767f8d';
 const WAITING_SIGNAL = '#f0b043';
 const PRESSED_SIGNAL = '#6fe08a';
 const CENTRE: PixelPoint = { x: 16, y: 16 };
 const SLAB: PixelRect = { left: 2, top: 2, width: 28, height: 28 };
-const ARROW_TIP_FROM_CENTRE = 7.5;
-const ARROW_TAIL_FROM_CENTRE = 12.5;
-const ARROW_HALF_WIDTH = 3.2;
-const RIM_OUTER = 14.5;
-const RIM_INNER = 12;
-const SOCKET_OUTER = 7;
-const SOCKET_INNER = 4.6;
+const ARROW_TIP_FROM_CENTRE = 8.8;
+const ARROW_TAIL_FROM_CENTRE = 11.4;
+const ARROW_HALF_WIDTH = 3.6;
+const RIM_OUTER = 15;
+const RIM_INNER = 11;
+const SOCKET_OUTER = 8;
+const SOCKET_INNER = 5.6;
 const RIM_BAND: PixelRect = { left: 0, top: 0, width: SIZE, height: SIZE };
 const SIGNAL_BAND: PixelRect = { left: 0, top: 0, width: SIZE, height: 14 };
 
@@ -80,10 +79,7 @@ function plateTopReliefPainter(pose: PlatePose): PixelPainter {
 }
 
 function socketStonePainter(): PixelPainter {
-  return stackedPainters(
-    patchPainter(shadedRamp(SOCKET_STONE, 5, 0.16), { seed: 0x51a5, cell: 16, size: SIZE }),
-    specklePainter(darken(SOCKET_STONE, 0.24), 0x51a7, 0.08),
-  );
+  return () => SOCKET_STONE;
 }
 
 function socketPainter(pose: PlatePose): PixelPainter {

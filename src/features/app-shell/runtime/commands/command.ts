@@ -16,6 +16,7 @@ import type { RandomizeHistory } from '@/features/asset-library/worlds/randomize
 import type { TemplateLibrary } from '@/features/asset-library/node-groups/templateLibrary';
 import type { TileAssets } from '@/features/asset-library/tiles/tileAssets';
 import type { FacingIndex } from '@/features/game/facing';
+import type { StrikeableCreatures } from '@/features/game/combat/strikes';
 import type { MineSlots } from '@/features/game/worldRules';
 import type { WorldRulesSet } from '@/features/game/worldRulesSet';
 
@@ -55,6 +56,7 @@ export interface CommandContext {
   worldSampler: WorldSampler;
   lab: WorldSeedLab | null;
   groundItems: GroundItems;
+  livingCreatures: StrikeableCreatures;
   rules: WorldRulesSet;
   actor: CommandActor;
   settleTheWorld(change: () => void): void;

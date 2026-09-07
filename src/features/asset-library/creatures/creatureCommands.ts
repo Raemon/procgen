@@ -85,6 +85,8 @@ registerCreatureCommand({
     speed: { kind: 'number', help: 'tiles per second', optional: true },
     sight: { kind: 'number', help: 'how many tiles away it notices the player', optional: true },
     roam: { kind: 'number', help: 'how far from its spawn cell it will range', optional: true },
+    vigor: { kind: 'number', help: 'how much harm it takes before it goes down', optional: true },
+    strength: { kind: 'number', help: 'how much harm each of its blows does; 0 for a creature that never hurts anyone', optional: true },
     body_width: { kind: 'number', help: 'how wide its body is, in tiles', optional: true },
     body_height: { kind: 'number', help: 'how tall its body is, in tiles — characters default to 2', optional: true },
     phasing: { kind: 'int', help: '1 if it walks through blocking tiles, 0 if it must go around', optional: true },
@@ -154,7 +156,7 @@ function creaturePatchFrom(params: CommandParams): CreaturePatchRead {
   if (color.ok) patch.color = color.value;
   const symbol = readText(params, 'symbol');
   if (symbol.ok) patch.symbol = [...symbol.value][0]!;
-  for (const knob of ['speed', 'sight', 'roam'] as const) {
+  for (const knob of ['speed', 'sight', 'roam', 'vigor', 'strength'] as const) {
     const read = readNumber(params, knob);
     if (read.ok) patch[knob] = read.value;
   }
